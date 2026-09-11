@@ -2,10 +2,17 @@
 
 Last update: 2026-09-11
 
+## Persistence bootstrap
+
+- GitHub repository `aradenac/poker-engine` is now the durable project source of truth.
+- User-facing artifacts are separated under `user/`; tool/session state under `.project/` and `tools/`; training state under `training/`; permanent validation under `tests/`.
+- Cross-session resume protocol, plan, conventions, training registry and run-manifest template are committed on `main`.
+- Open issue #1 tracks import of existing project artifacts.
+- Open issue #2 tracks implementation of the versioned continuous-training pipeline.
+
 ## Current baseline
 
-- Repository initialized as persistent source of truth.
-- Current application baseline outside GitHub: `poker_range_equity_offline_multiway_v78.html`.
+- Current application baseline still outside GitHub: `poker_range_equity_offline_multiway_v78.html`.
 - Prepared patch: v78 -> v79.
 - v79 objective: remove demonstrated JAM bias and make recommendation selection consistently use the final comparable EV.
 
@@ -35,4 +42,4 @@ Last update: 2026-09-11
 
 ## Known gap
 
-The repository structure is initialized, but the historical application/training artifacts still need to be imported from the prior working files.
+The repository structure is ready, but historical application/training artifacts still need to be imported from the prior working files. The connector refused direct persistence of the full generated patch script, so its exact executable form is not yet authoritative in GitHub; the accepted v79 behaviour remains documented here until the complete application is imported and materialized.
