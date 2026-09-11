@@ -1,0 +1,1 @@
+v83 staging uses Git blobs; payload parts are attached through Git data and reconstructed by the ingestion workflow.
