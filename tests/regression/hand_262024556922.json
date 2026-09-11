@@ -1,0 +1,25 @@
+{
+  "schema": "poker-engine-regression-case/v1",
+  "hand_id": "262024556922",
+  "purpose": "Permanent regression for pathological postflop JAM recommendations and sizing-calibration drift.",
+  "source": "PokerStars Zoom 100/200 fictive population history",
+  "raw_hand_history": "PokerStars Zoom Hand #262024556922:  Hold'em No Limit (100/200) - 2026/09/09 18:45:39 CET [2026/09/09 12:45:39 ET]\nTable 'NLHE 100/200 6 Max' 6-max Seat #1 is the button\nSeat 1: ricardo7188 (40567 in chips) \nSeat 2: jarod622 (11247 in chips) \nSeat 3: rosadezembro (5979 in chips) \nSeat 4: RoiDePiqueNique (43709 in chips) \nSeat 5: buts735 (23223 in chips) \nSeat 6: tygermari0 (34473 in chips) \njarod622: posts small blind 100\nrosadezembro: posts big blind 200\n*** HOLE CARDS ***\nDealt to RoiDePiqueNique [Ts Kh]\nRoiDePiqueNique: raises 400 to 600\nbuts735: folds \ntygermari0: folds \nricardo7188: calls 600\njarod622: folds \nrosadezembro: folds \n*** FLOP *** [4d 8h Ah]\nRoiDePiqueNique: checks \nricardo7188: checks \n*** TURN *** [4d 8h Ah] [Ks]\nRoiDePiqueNique: checks \nricardo7188: checks \n*** RIVER *** [4d 8h Ah Ks] [Ad]\nRoiDePiqueNique: checks \nricardo7188: bets 1417\nRoiDePiqueNique: folds \nUncalled bet (1417) returned to ricardo7188\nricardo7188 collected 1417 from pot\nricardo7188: doesn't show hand \n*** SUMMARY ***\nTotal pot 1500 | Rake 83 \nBoard [4d 8h Ah Ks Ad]\nSeat 1: ricardo7188 (button) collected (1417)\nSeat 2: jarod622 (small blind) folded before Flop\nSeat 3: rosadezembro (big blind) folded before Flop\nSeat 4: RoiDePiqueNique folded on the River\nSeat 5: buts735 folded before Flop (didn't bet)\nSeat 6: tygermari0 folded before Flop (didn't bet)\n",
+  "historical_pathology": {
+    "turn_check": "BET jam",
+    "river_check": "BET jam",
+    "river_fold": "RAISE jam"
+  },
+  "v79_observed": {
+    "application_sha256": "01805f9f300e82c53ba8765ab6c6069b0ba73ad9e8f723f469aaa29b8d6c8c28",
+    "turn_check_best": "125% pot",
+    "river_check_best": "125% pot",
+    "river_facing_bet_best": "CALL"
+  },
+  "required_invariants": [
+    "No hypothetical JAM may be recommended on the turn check decision.",
+    "No hypothetical JAM may be recommended on the river check decision.",
+    "No hypothetical JAM raise may be recommended on the river fold decision.",
+    "Invalidated sizing candidates must never be revived by sizingOptimizationSummary.",
+    "Feed and background review must rank alternatives using the same final EV."
+  ]
+}
