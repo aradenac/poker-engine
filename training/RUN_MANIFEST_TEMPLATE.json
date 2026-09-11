@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "run_id": "YYYYMMDD-HHMM_purpose_shortid",
+  "created_at": null,
+  "status": "candidate",
+  "parent": {
+    "run_id": null,
+    "model_id": null
+  },
+  "source": {
+    "git_commit": null,
+    "application_version": null,
+    "algorithm_version": null
+  },
+  "datasets": [
+    {
+      "dataset_id": null,
+      "version": null,
+      "checksum": null,
+      "role": "train"
+    }
+  ],
+  "parameters": {},
+  "filters": {},
+  "random_seed": null,
+  "counts": {
+    "input_records": null,
+    "accepted_records": null,
+    "rejected_records": null
+  },
+  "metrics": {
+    "baseline": {},
+    "candidate": {},
+    "delta": {}
+  },
+  "regression": {
+    "suite_id": null,
+    "passed": null,
+    "failures": []
+  },
+  "artifacts": [],
+  "decision": {
+    "promoted": false,
+    "reason": null
+  },
+  "notes": null
+}
