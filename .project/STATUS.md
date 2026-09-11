@@ -2,19 +2,17 @@
 
 Last update: 2026-09-11
 
-## Persistence bootstrap
+## Persistence
 
 - GitHub repository `aradenac/poker-engine` is the durable project source of truth.
-- User-facing artifacts are separated under `user/`; tool/session state under `.project/` and `tools/`; training state under `training/`; permanent validation under `tests/`.
+- User-facing artifacts live under `user/`; tool/session state under `.project/` and `tools/`; training state under `training/`; permanent validation under `tests/`.
 - Cross-session resume protocol, plan, conventions, training registry and run-manifest template are committed on `main`.
-- Open issue #1 tracks import of existing project artifacts.
-- Open issue #2 tracks implementation of the versioned continuous-training pipeline.
+- Open issue #1 tracks remaining exact-byte import of large historical artifacts.
+- Open issue #2 tracks the versioned continuous-training pipeline.
 
-## Artifact import in progress
+## Authoritative received source artifacts
 
-Branch: `artifact-import-20260911`.
-
-Five authoritative source artifacts were explicitly re-uploaded on 2026-09-11 and verified locally:
+The following source artifacts were explicitly re-uploaded on 2026-09-11 and verified locally:
 
 - application v78 — SHA-256 `352eabe2b2e6245f6442e79c1ced8dd0b53c5e655d3c5cff52311cdac5b42050`
 - preflop population model v5 — SHA-256 `ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca`
@@ -22,40 +20,60 @@ Five authoritative source artifacts were explicitly re-uploaded on 2026-09-11 an
 - sequential postflop population simulator v4 — SHA-256 `adf948126fe72c137e4a03e843fbe25d8654b6348b352f50e76d50efb8d6cabe`
 - NLHE 100-200 source archive — SHA-256 `6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6`
 
-See `artifacts/IMPORT_MANIFEST_20260911.md` for canonical target paths and source filenames.
+Large exact-byte artifacts are still `pending_import` because the current connector cannot directly upload mounted binary/large-file bytes. Do not falsely mark them committed. The transformation patches and validation reports are persisted on `main`.
 
-The active GitHub connector does not expose a raw mounted-file upload argument. Therefore large JSON and ZIP artifacts are currently registered as `pending_import` rather than falsely marked committed. Do not promote the models or dataset until committed repository objects are verified against the hashes above.
+## Current engine baseline: v83
 
-## Current baseline
+Local full artifact: `poker_range_equity_offline_multiway_v83.html`
+SHA-256: `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`
 
-- Current application baseline: `poker_range_equity_offline_multiway_v78.html` (authoritative uploaded source; exact raw transfer into GitHub pending).
-- Prepared patch: v78 -> v79.
-- v79 objective: remove demonstrated JAM bias and make recommendation selection consistently use the final comparable EV.
+Reproducible patch chain committed on GitHub:
 
-## Validated findings
+- v78 -> v79: final-EV recommendation guard, sparse-node protection, JAM bonus removal
+- v79 -> v80: pot-scaled residual calibration
+- v80 -> v81: effective response-pot correction for unmatched shove amounts
+- v81 -> v82: low-confidence extreme local-P90 support guard + effective aggressor-ratio propagation
+- v82 -> v83: effective opponent all-in sizing candidate instead of irrelevant full Hero-stack JAM when Hero covers
 
-- Artificial JAM calibration bonuses were identified as a structural source of overly aggressive recommendations.
-- Very small empirical nodes can generate implausibly high EVs for raises/JAMs.
-- Recommendation logic and sizing panels must use the same validity filters and the same final EV ordering.
-- Existing P99.5 support guard should be preserved.
+## Key validated findings
 
-## v79 guardrails
+- Artificial JAM calibration bonuses were a structural source of over-aggressive recommendations and remain disabled.
+- Fixed additive BB calibration biased rankings toward larger sizings; v80 scales residual coefficients down in small pots.
+- When Hero's nominal shove exceeds the opponent's effective stack, the unmatched portion must not enter the responder price-to-pot calculation; v81 fixes this.
+- Low/very-low confidence extreme aggression beyond local P90 support should not be recommended; v82 enforces this.
+- A full Hero-stack JAM while covering a shorter opponent is a misleading sizing label. v83 recommends the exact effective amount needed to put the opponent all-in.
 
-- `very_low` node with <5 observations: hypothetical aggression cannot be recommended.
-- 5-9 observations: ordinary sizing may remain eligible when supported, but JAM/overbet is not recommendable.
-- For `very_low` nodes with >=5 observations, sizing outside local support is rejected.
-- `sanityInvalid` sizing must remain invalid everywhere; no permissive fallback.
-- Artificial JAM bonuses removed.
-- Final recommendation = argmax(final comparable EV).
+## v83 behavior benchmark
+
+Deterministic 48-decision HU postflop sample:
+
+- true Hero JAM: 1 / 48 = 2.1%
+- effective opponent all-in sizing: 7 / 48 = 14.6%
+- BET: 23 / 48 = 47.9%
+- CALL: 7 / 48 = 14.6%
+- RAISE: 3 / 48 = 6.2%
+- CHECK: 4 / 48 = 8.3%
+- FOLD: 3 / 48 = 6.2%
+
+The true JAM frequency is now in the same order of magnitude as the observed population JAM rate (~1.3% flop, ~1.4% turn, ~2.5% river). Effective all-ins are reported separately because Hero is not risking their full stack.
+
+Historical pathological hand `#262024556922` on v83:
+
+- flop: best `25% pot` (check within noise)
+- turn: best `125% pot`
+- river before bet: best `100% pot`
+- river facing bet: best `CALL`
+- no absurd JAM recommendation
+
+See `tests/regression/v81_effective_pot_audit.md` and `tests/regression/v83_style_and_effective_allin.md`.
 
 ## Immediate next milestone
 
-1. Complete exact-byte import of the five received artifacts.
-2. Materialize v79 as a complete HTML/application version.
-3. Run regression tests on previously pathological hands.
-4. Audit ordinary sizing calibration offsets.
-5. Benchmark global action/sizing frequencies.
-6. Promote new training artifacts only after regression and held-out evaluation pass.
+1. Audit the seven v83 `all-in effectif` recommendations: hand strength, EV gap, response support and effective sizing.
+2. Simplify user-facing recommendation display to exactly: action, effective sizing, final EV; keep raw/model diagnostics secondary.
+3. Expand regression sample beyond 48 deterministic decisions and preserve all pathological cases.
+4. Audit remaining ordinary sizing distribution after v83.
+5. Resume continuous-training work only after the recommendation engine behavior is stable.
 
 ## Continuous-training contract
 
