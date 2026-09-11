@@ -22,7 +22,7 @@ The following source artifacts were explicitly re-uploaded on 2026-09-11 and ver
 
 Large exact-byte artifacts are still `pending_import` because the current connector cannot directly upload mounted binary/large-file bytes. Do not falsely mark them committed. The transformation patches and validation reports are persisted on `main`.
 
-## Current engine baseline: v83
+## Promoted engine baseline: v83
 
 Local full artifact: `poker_range_equity_offline_multiway_v83.html`
 SHA-256: `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`
@@ -35,6 +35,13 @@ Reproducible patch chain committed on GitHub:
 - v81 -> v82: low-confidence extreme local-P90 support guard + effective aggressor-ratio propagation
 - v82 -> v83: effective opponent all-in sizing candidate instead of irrelevant full Hero-stack JAM when Hero covers
 
+## Experimental branch of work: v84
+
+Local full artifact: `poker_range_equity_offline_multiway_v84.html`
+SHA-256: `09cc514c5fd31fc4e21e1cf7dc48fdceb266f438803c5b16c41d3f6d8bf4103a`
+
+Patch `tools/patch_v83_to_v84.py` is committed. v84 adds fixed 150/200/300% overbets plus adaptive 50%/75%-of-effective-stack candidates. Targeted testing on the 20 v83 effective-all-in recommendations changes 3 of them to intermediate overbets; 17 remain effective all-ins. v84 is **not promoted yet** because the broader regression is incomplete.
+
 ## Key validated findings
 
 - Artificial JAM calibration bonuses were a structural source of over-aggressive recommendations and remain disabled.
@@ -42,22 +49,12 @@ Reproducible patch chain committed on GitHub:
 - When Hero's nominal shove exceeds the opponent's effective stack, the unmatched portion must not enter the responder price-to-pot calculation; v81 fixes this.
 - Low/very-low confidence extreme aggression beyond local P90 support should not be recommended; v82 enforces this.
 - A full Hero-stack JAM while covering a shorter opponent is a misleading sizing label. v83 recommends the exact effective amount needed to put the opponent all-in.
+- The v83 96-decision deterministic benchmark has 2 true Hero JAMs = 2.08%, in line with the observed population order of magnitude.
+- v83 also recommends effective opponent all-ins relatively often. A targeted v84 overbet-grid audit shows most remain materially +EV even after intermediate sizings are added, so a blanket anti-all-in penalty is not justified.
 
-## v83 behavior benchmark
+## Historical pathological hand regression
 
-Deterministic 48-decision HU postflop sample:
-
-- true Hero JAM: 1 / 48 = 2.1%
-- effective opponent all-in sizing: 7 / 48 = 14.6%
-- BET: 23 / 48 = 47.9%
-- CALL: 7 / 48 = 14.6%
-- RAISE: 3 / 48 = 6.2%
-- CHECK: 4 / 48 = 8.3%
-- FOLD: 3 / 48 = 6.2%
-
-The true JAM frequency is now in the same order of magnitude as the observed population JAM rate (~1.3% flop, ~1.4% turn, ~2.5% river). Effective all-ins are reported separately because Hero is not risking their full stack.
-
-Historical pathological hand `#262024556922` on v83:
+Hand `#262024556922` on v83:
 
 - flop: best `25% pot` (check within noise)
 - turn: best `125% pot`
@@ -65,15 +62,19 @@ Historical pathological hand `#262024556922` on v83:
 - river facing bet: best `CALL`
 - no absurd JAM recommendation
 
-See `tests/regression/v81_effective_pot_audit.md` and `tests/regression/v83_style_and_effective_allin.md`.
+See:
+
+- `tests/regression/v81_effective_pot_audit.md`
+- `tests/regression/v83_style_and_effective_allin.md`
+- `tests/regression/v84_overbet_grid_audit.md`
 
 ## Immediate next milestone
 
-1. Audit the seven v83 `all-in effectif` recommendations: hand strength, EV gap, response support and effective sizing.
-2. Simplify user-facing recommendation display to exactly: action, effective sizing, final EV; keep raw/model diagnostics secondary.
-3. Expand regression sample beyond 48 deterministic decisions and preserve all pathological cases.
-4. Audit remaining ordinary sizing distribution after v83.
-5. Resume continuous-training work only after the recommendation engine behavior is stable.
+1. Complete the broader v84 regression in smaller persisted batches; promote only if no regression appears.
+2. Audit continuous response-model tail behavior for facing-price values above local P90, using raw TRAIN evidence rather than arbitrary caps.
+3. Keep the normal UI centered on: recommended action, exact effective sizing, final EV; diagnostics remain secondary.
+4. Expand the permanent pathological-hand suite beyond `#262024556922`.
+5. Resume continuous-training work only after recommendation behavior is stable.
 
 ## Continuous-training contract
 
