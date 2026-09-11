@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "active_dataset": null,
+  "promoted_model": null,
+  "promoted_run": null,
+  "candidate_run": null,
+  "regression_suite": null,
+  "history": [],
+  "notes": "Populate this registry when historical datasets/models are imported. Promotion changes must preserve prior entries in history."
+}
