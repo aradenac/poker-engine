@@ -22,14 +22,10 @@ from tools.training.independent_profiles.build_player_features import (
 )
 from tools.training.independent_profiles.build_model_b import (
     FEATURE_KEYS,
-    POSTFLOP_LEVELS,
-    RANGE_LEVELS,
-    SIZING_LEVELS,
     apply_event,
     combo_class,
     key_for,
     parse_hand,
-    postflop_order,
     preflop_summary,
     relative_position,
     sha256_file,
@@ -79,8 +75,15 @@ def choose_node(levels: list[dict], row: dict, min_observations: int) -> tuple[d
 
 
 def action_probabilities(node: dict, labels: list[str], alpha: float) -> dict[str, float]:
+    """Return a normalized posterior over the legal labels for the current mode.
+
+    Coarse fallback nodes can contain labels from both FREE and FACING states. The
+    denominator therefore uses only counts belonging to ``labels`` rather than the
+    node's aggregate ``n``.
+    """
     counts = node.get("counts", {})
-    den = float(node.get("n", 0)) + alpha * len(labels)
+    legal_n = sum(float(counts.get(label, 0)) for label in labels)
+    den = legal_n + alpha * len(labels)
     return {label: (float(counts.get(label, 0)) + alpha) / den for label in labels}
 
 
@@ -148,11 +151,7 @@ def finalize_action_metrics(metrics: dict) -> dict:
         row = metrics["reliability"][b]
         avg_conf = row["confidence_sum"] / row["n"]
         accuracy = row["correct"] / row["n"]
-        reliability[b] = {
-            "n": row["n"],
-            "confidence": avg_conf,
-            "accuracy": accuracy,
-        }
+        reliability[b] = {"n": row["n"], "confidence": avg_conf, "accuracy": accuracy}
         ece += row["n"] / n * abs(avg_conf - accuracy)
     labels = sorted(set(metrics["observed"]) | set(metrics["predicted_sum"]))
     return {
@@ -308,10 +307,12 @@ def holdout_profile_stability(records, feature_doc: dict, profiles: dict, exclud
         appearances = int(f.get("appearances", 0))
         if appearances < min_hands or player not in train_assignment:
             continue
+
         def shrunk(num_key: str, den_key: str, rate_key: str) -> float:
             den = int(f.get(den_key, 0))
             num = int(f.get(num_key, 0))
             return (num + strength * float(global_rates[rate_key])) / (den + strength)
+
         rates = {
             "vpip": shrunk("vpip_hands", "appearances", "vpip"),
             "pfr": shrunk("pfr_hands", "appearances", "pfr"),
@@ -367,7 +368,6 @@ def evaluate_split(
     sizing_metrics = new_sizing_metrics()
     audit = Counter()
 
-    # Street/mode-only baseline is level 4 in the current Model B contract.
     street_mode_level = next(
         i for i, level in enumerate(actions["levels"]) if level["cols"] == ["street", "mode"]
     )
@@ -529,7 +529,7 @@ def main() -> None:
         },
         "postflop_action": {
             "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
-            "smoothing": "symmetric Dirichlet/additive smoothing",
+            "smoothing": "symmetric Dirichlet/additive smoothing over legal labels for current mode",
             "alpha_per_action": args.action_alpha,
         },
         "sizing": {
