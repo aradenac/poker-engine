@@ -1,5 +1,6 @@
 name: Validate interactive trainer
 
+# Validates the same static HTTP deployment shape used by Cloudflare Pages.
 on:
   push:
     paths:
