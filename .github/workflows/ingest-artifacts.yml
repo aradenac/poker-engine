@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet; then
+          if [ -z "$(git status --porcelain)" ]; then
             echo 'No artifact changes to commit.'
             exit 0
           fi
