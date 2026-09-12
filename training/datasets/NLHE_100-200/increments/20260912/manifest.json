@@ -1,26 +1,13 @@
 {
   "schema": "poker-hand-history-increment/v3-pending-source",
   "selection_rule": "candidate hand ID not present in full known 100/200 lineage (baseline + previously selected increments)",
-  "scope": {
-    "stakes": [
-      "100/200"
-    ]
-  },
+  "scope": {"stakes": ["100/200"]},
   "split_contract": {
     "namespace": "poker-population-split-v1",
     "algorithm": "SHA-256(namespace + ':' + hand_id); first 64 bits big-endian modulo 10000",
-    "TRAIN": [
-      0,
-      7999
-    ],
-    "VALIDATION": [
-      8000,
-      8999
-    ],
-    "TEST": [
-      9000,
-      9999
-    ]
+    "TRAIN": [0, 7999],
+    "VALIDATION": [8000, 8999],
+    "TEST": [9000, 9999]
   },
   "candidate_archive": {
     "intended_path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
@@ -29,12 +16,8 @@
     "archive_entries": 71,
     "parsed_hands": 11896,
     "unique_hands": 11896,
-    "stake_counts": {
-      "100/200": 11896
-    },
-    "language_counts": {
-      "en": 11896
-    },
+    "stake_counts": {"100/200": 11896},
+    "language_counts": {"en": 11896},
     "duplicate_hand_ids": 0,
     "earliest_local_timestamp": "2026-07-22 22:02:31",
     "latest_local_timestamp": "2026-09-12 17:56:33",
@@ -48,30 +31,18 @@
     "previous_increment_fingerprint_sha256": "6142a129292d486c7dedd2aec951b98ed180302d598d38508f45e222f7544bc0",
     "genuinely_unseen_hands": 3268,
     "selected_hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b",
-    "split_counts": {
-      "TRAIN": 2606,
-      "VALIDATION": 320,
-      "TEST": 342
-    },
+    "split_counts": {"TRAIN": 2606, "VALIDATION": 320, "TEST": 342},
     "historical_backfill": {
       "unique_hands": 406,
       "fingerprint_sha256": "b9141771a89d10cee199fce7862e2cd179980b3e62fb17644d60643592863b36",
-      "split_counts": {
-        "TRAIN": 315,
-        "VALIDATION": 44,
-        "TEST": 47
-      }
+      "split_counts": {"TRAIN": 315, "VALIDATION": 44, "TEST": 47}
     },
     "chronological_new_after_20260909_cutoff": {
       "unique_hands": 2862,
       "fingerprint_sha256": "5241ffeb40ecb37dfc8d5e3d441d6e38537e4061b4e16d58f178cc6f86ee53e6",
-      "split_counts": {
-        "TRAIN": 2291,
-        "VALIDATION": 276,
-        "TEST": 295
-      }
+      "split_counts": {"TRAIN": 2291, "VALIDATION": 276, "TEST": 295}
     }
   },
   "source_archive_persisted": false,
-  "note": "Counts/fingerprints computed from the user-supplied local ZIP. source_archive_persisted must become true only after GitHub stores and re-verifies the exact ZIP SHA-256."
+  "note": "Counts/fingerprints computed with the repository's official PokerStars parser from the user-supplied ZIP. source_archive_persisted becomes true only after GitHub stores and re-verifies the exact source ZIP SHA-256."
 }
