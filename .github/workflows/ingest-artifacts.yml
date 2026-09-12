@@ -60,7 +60,7 @@ jobs:
               'training/datasets/NLHE_100-200/snapshots/20260909/manifest.json'
           fi
 
-      - name: Materialize canonical 2026-09-09 ID increment
+      - name: Materialize canonical 2026-09-09 100-200 ID increment
         shell: bash
         run: |
           set -euo pipefail
@@ -71,6 +71,7 @@ jobs:
             python3 tools/datasets/build_hand_history_increment.py \
               --known "$baseline" \
               --candidate "$snapshot" \
+              --stake 100/200 \
               --manifest "$manifest"
           fi
 
