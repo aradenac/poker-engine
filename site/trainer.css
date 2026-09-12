@@ -1,0 +1,38 @@
+/* Player training view — reuses the replayer table/seat/card primitives from index.html. */
+.trainer-page{width:100%;min-height:100vh;padding:14px 18px 30px}
+.trainer-shell{width:min(1580px,calc(100vw - 36px));margin:0 auto}
+.trainer-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#0d1527}
+.trainer-head button{width:auto}
+.trainer-title{font-size:17px;font-weight:950}.trainer-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.trainer-head-spacer{flex:1}.trainer-mode-group{display:flex;gap:4px;padding:4px;background:#0f1729;border:1px solid var(--border);border-radius:10px}
+.trainer-mode-btn{width:auto;padding:7px 10px;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:850}
+.trainer-mode-btn.active{background:#263452;color:#fff}.trainer-mode-btn:hover{border-color:transparent}
+.trainer-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.trainer-main,.trainer-side{border:1px solid var(--border);border-radius:14px;background:rgba(19,26,45,.96);box-shadow:var(--shadow)}
+.trainer-main{padding:12px}.trainer-side{padding:12px;display:grid;gap:10px;position:sticky;top:10px}
+.trainer-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:9px}.trainer-toolbar button{width:auto}
+.trainer-status{flex:1;min-width:240px;font-size:10px;color:var(--muted)}.trainer-status.busy{color:#f1c66d}.trainer-status.error{color:#ff9090}
+.trainer-table-wrap{padding:30px 170px 36px 30px;min-height:620px;overflow:visible}
+.trainer-table-wrap .poker-table{max-width:1000px;height:560px}
+.trainer-seat-profile{font-size:8px;margin-top:3px;color:#f1c66d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trainer-seat-hidden{letter-spacing:1px;color:#71809c;font-weight:900}
+.trainer-decision-box{margin-top:10px;padding:10px;border:1px solid #2b3c5d;border-radius:11px;background:#0d1728}
+.trainer-decision-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.trainer-decision-title{font-size:12px;font-weight:900}.trainer-context{font-size:9px;color:var(--muted)}
+.trainer-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:end}.trainer-actions button{width:auto;min-width:78px}.trainer-actions button.danger{border-color:#723f4b;color:#ffaaaa}
+.trainer-sizing{display:flex;align-items:end;gap:6px;flex-wrap:wrap;margin-left:auto}.trainer-sizing .field{min-width:120px;max-width:145px}.trainer-sizing input{height:38px}
+.trainer-size-presets{display:flex;gap:4px}.trainer-size-presets button{min-width:0;padding:8px 7px;font-size:10px}
+.trainer-recommendation{padding:10px;border-radius:10px;border:1px solid rgba(92,225,185,.30);background:rgba(92,225,185,.07)}
+.trainer-recommendation.hidden-answer{border-style:dashed;border-color:#384965;background:#10192a;color:var(--muted)}
+.trainer-rec-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.trainer-rec-main{font-size:18px;font-weight:950;color:var(--accent2);margin-top:3px}.trainer-rec-ev{font-size:11px;color:#cbd8eb;margin-top:4px}
+.trainer-feedback{padding:10px;border:1px solid #2b3d5d;border-radius:10px;background:#0e182a;min-height:70px}.trainer-feedback.good{border-color:rgba(74,222,128,.38)}.trainer-feedback.close{border-color:rgba(250,204,21,.38)}.trainer-feedback.bad{border-color:rgba(239,68,68,.42)}
+.trainer-feedback-title{font-size:12px;font-weight:900}.trainer-feedback-body{font-size:10px;color:var(--muted);line-height:1.45;margin-top:4px}.trainer-feedback-body b{color:var(--text)}
+.trainer-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.trainer-stat{padding:8px;border:1px solid #263852;border-radius:9px;background:#0c1626}.trainer-stat .k{font-size:8px;color:var(--muted);text-transform:uppercase}.trainer-stat .v{font-size:17px;font-weight:950;margin-top:2px}.trainer-stat.loss .v{color:#f1c66d}
+.trainer-section-title{font-size:11px;font-weight:900;margin-bottom:6px}.trainer-breakdown{display:grid;gap:4px}.trainer-break-row{display:grid;grid-template-columns:1fr auto auto;gap:6px;font-size:9px;padding:5px 6px;border-radius:7px;background:#0d1728}.trainer-break-row span:nth-child(2){color:var(--muted)}.trainer-break-row b{color:#f1c66d}
+.trainer-profile-list{display:grid;gap:5px}.trainer-profile-row{padding:6px 7px;border:1px solid #273a57;border-radius:8px;background:#0c1626;font-size:9px}.trainer-profile-row b{font-size:10px}.trainer-profile-metrics{color:var(--muted);margin-top:2px}
+.trainer-note{font-size:9px;line-height:1.4;color:var(--muted);padding:8px;border-radius:8px;background:#0d1728;border:1px solid #243651}
+.trainer-test-log{display:grid;gap:4px;max-height:180px;overflow:auto}.trainer-test-row{font-size:9px;padding:5px 6px;border-radius:7px;background:#0d1728}.trainer-test-row b{color:#f1c66d}
+.trainer-hand-ended{padding:9px;border:1px solid rgba(241,198,109,.35);border-radius:9px;background:rgba(241,198,109,.07);font-size:10px;color:#e6d6aa}
+body.trainer-view-open{overflow-x:hidden}body.trainer-view-open #floatingEquity{display:none}
+@media(max-width:1050px){.trainer-grid{grid-template-columns:1fr}.trainer-side{position:static}.trainer-table-wrap{padding-right:120px}}
+@media(max-width:760px){.trainer-page{padding:8px 5px 20px}.trainer-shell{width:calc(100vw - 10px)}.trainer-grid{display:block}.trainer-side{margin-top:10px}.trainer-table-wrap{min-height:790px;padding:20px 105px 28px 6px}.trainer-table-wrap .poker-table{height:740px;border-radius:28px}.trainer-sizing{margin-left:0;width:100%}.trainer-head-spacer{display:none}.trainer-mode-group{width:100%;overflow:auto}.trainer-mode-btn{flex:1}.trainer-stat-grid{grid-template-columns:repeat(2,1fr)}}
