@@ -2,10 +2,11 @@
 
 Last update: 2026-09-12
 
-## Persistence
+## Persistence and deployment
 
 - GitHub repository `aradenac/poker-engine` is the durable source of truth.
 - User-facing releases live under `user/releases/`; the runnable site is mirrored at `site/index.html`.
+- The user configured automatic Cloudflare static deployment from GitHub; a GitHub commit may trigger deployment, but `site/index.html` changes only on explicit application promotion.
 - Production population models live under `training/models/`.
 - Raw hand-history datasets live under `training/datasets/`; versioned training/calibration work lives under `training/runs/`; current lineage state lives under `training/state/`.
 - Tooling lives under `tools/`; permanent validation under `tests/`; assistant/project continuity under `.project/`.
@@ -14,10 +15,10 @@ Last update: 2026-09-12
 
 - Promoted application: `v83`.
 - Canonical release: `user/releases/poker_range_equity_offline_multiway_v83.html`.
-- Testable site: `site/index.html`.
+- Testable/deployed site source: `site/index.html`.
 - SHA-256: `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`.
 
-## Production models
+## Production opponent model A — integrated analyzer population model
 
 - Preflop production model: `training/models/preflop_population_model_v5.json`.
   - Version: `preflop_v5_incremental_exact_marginals`.
@@ -25,6 +26,34 @@ Last update: 2026-09-12
 - Postflop production model: `training/models/postflop_population_model_v5.json`.
   - Version: `postflop_v5_clean_continuous`.
   - SHA-256: `6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae`.
+- These models are the opponent models allowed to drive analyzer EV calculations.
+
+## Opponent model B — independent profile model / strategy arena
+
+The independent-validation track exists but is not yet fully reproducible from GitHub.
+
+Persisted component:
+
+- `tools/sequential_postflop_population_sim_v4.py` — sequential simulator that uses independently learned opponent profiles/actions while querying the analyzer only for Hero decisions.
+
+Known historical independent-model components referenced by the simulator/arena:
+
+- per-player profile assignment / profile prevalence;
+- profile-conditioned preflop ranges;
+- marginal action models;
+- continuing-range / action-composition models;
+- empirical sizing distributions;
+- parsed hand and decision tables.
+
+Current reproducibility gap:
+
+- the simulator still imports `independent_decision_arena_seq_v2` from `/mnt/data`;
+- it expects unversioned `/mnt/data/independent_population_v1` and `/mnt/data/sequential_population_inputs_v2` artifacts;
+- these dependencies and their training pipeline are not currently persisted in GitHub.
+
+An earlier `independent_decision_arena_v1.py` exists in the ChatGPT file history and demonstrates the intended independent architecture, but the current sequential v2 arena must be rebuilt/persisted from authoritative datasets rather than treated as an untracked runtime dependency.
+
+This is the highest-priority technical debt before resuming large strategy simulations.
 
 ## Persisted NLHE 100-200 datasets
 
@@ -36,7 +65,6 @@ Historical baseline:
 - Language split: 26,170 EN / 994 FR.
 - Coverage: 2026-07-12 10:31:29 through 2026-09-07 22:32:44.
 - Audit: `training/datasets/NLHE_100-200/source/manifest.json`.
-- Original model-lineage corpus fingerprint remains `91a1b1c285add6ace2aedafa568bfc039c644b94216b9d2fdcd28cea59b73d4b`.
 
 2026-09-09 snapshot:
 
@@ -45,20 +73,19 @@ Historical baseline:
 - 259 hand-history files, 27,677 unique hands, no duplicate hand IDs.
 - Coverage: 2026-07-17 22:40:22 through 2026-09-09 17:48:16.
 - Audit: `training/datasets/NLHE_100-200/snapshots/20260909/manifest.json`.
-- This snapshot is not a blind replacement for the baseline; the persisted incremental run selected only hands newer than the previous cutoff.
 
-Raw archives remain compressed in Git to avoid duplicating tens of megabytes of hand-history text. Audit/training tools read or extract them at runtime.
+Raw archives remain compressed in Git. Audit/training tools read or extract them at runtime.
 
-## Latest persisted training run
+## Latest persisted continuous-training run
 
 Run: `training/runs/20260909_population_increment_v2/`.
 
-- New hands: 1000 from 2026-09-07 through 2026-09-09.
-- Split: 790 TRAIN / 100 VALIDATION / 110 TEST.
-- Preflop v5: accepted.
-- Postflop v6 candidate: rejected; production stays on postflop v5.
-- Evaluation and non-regression outputs are preserved under the run's `evaluation/` directory.
-- Rejected postflop candidate is preserved under the run's `models/` directory.
+- 1,000 certain new hands selected after the previous baseline cutoff.
+- Split: 790 TRAIN / 100 VALIDATION / 110 TEST using the deterministic hand-ID split contract.
+- Preflop v5 candidate: accepted.
+- Postflop v6 candidate: rejected because it degraded the recent VALIDATION and TEST sets; production remains postflop v5.
+- The rejected candidate and additive overlay are preserved for future evidence accumulation.
+- This run proves the model-level promotion loop already works: new evidence -> candidate -> recent + historical non-regression -> explicit accept/reject.
 
 ## v83 validated behavior
 
@@ -70,18 +97,35 @@ Run: `training/runs/20260909_population_increment_v2/`.
 - Deterministic 96-decision benchmark: 2 true Hero JAMs = 2.08%, consistent with the observed population order of magnitude.
 - Historical pathological hand `#262024556922` no longer produces absurd JAM recommendations; river facing bet recommends CALL.
 
-## Experimental work
+## Experimental engine work
 
 - `tools/patch_v83_to_v84.py` and `tests/regression/v84_overbet_grid_audit.md` exist.
-- v84 is not promoted; broader regression is still required before replacing v83.
+- v84 is not promoted.
+- Further engine tuning should now be evaluated through the independent arena as well as the permanent direct regression suite before promotion.
+
+## Continuous-training target architecture
+
+For every new hand-history push:
+
+1. Persist/audit the new snapshot and determine the hand-ID delta against known evidence.
+2. Keep deterministic TRAIN / VALIDATION / TEST assignment.
+3. Train/update candidate integrated model A.
+4. Train/update candidate independent profile model B.
+5. Evaluate/promote or reject each opponent model independently.
+6. Evaluate candidate engine strategy against independent model B using deterministic sequential simulations.
+7. Run permanent recommendation non-regression and style/behavior benchmarks.
+8. Promote a new application only if strategy and regression gates pass.
+9. Persist every input, model, metric, seed contract, report and promotion/rejection decision.
+
+## Immediate next actions
+
+1. Reconstruct and persist the independent profile-model training pipeline from the authoritative NLHE 100-200 datasets.
+2. Remove `/mnt/data` and untracked-pickle dependencies from `tools/sequential_postflop_population_sim_v4.py`.
+3. Create a versioned independent model-B package and baseline its predictive metrics/profile distributions.
+4. Re-run the sequential strategy arena with v83 as the reference engine and persist a deterministic baseline report.
+5. Compare experimental v84 against exactly the same scenario seeds/profile mix; promote only if it improves or is non-inferior without new pathological behavior.
+6. Automate steps 1-5 into the continuous-training workflow for future hand-history snapshots.
 
 ## Remaining bootstrap gap
 
-- `user/releases/poker_range_equity_offline_multiway_v78.html` is not yet committed at its canonical path.
-
-## Immediate next milestone
-
-1. Let the user test v83 from `site/index.html` / `user/releases/` and collect concrete recommendation failures.
-2. Complete the broader v84 regression before any promotion.
-3. Expand the permanent pathological-hand regression suite.
-4. Continue training only through immutable versioned runs with explicit promotion/rejection decisions.
+- `user/releases/poker_range_equity_offline_multiway_v78.html` is not yet committed at its canonical historical path. This does not block current v83 training/validation work.
