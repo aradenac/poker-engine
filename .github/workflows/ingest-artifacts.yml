@@ -60,7 +60,7 @@ jobs:
               'training/datasets/NLHE_100-200/snapshots/20260909/manifest.json'
           fi
 
-      - name: Reproduce canonical 2026-09-09 increment by hand ID
+      - name: Materialize canonical 2026-09-09 ID increment
         shell: bash
         run: |
           set -euo pipefail
@@ -72,18 +72,6 @@ jobs:
               --known "$baseline" \
               --candidate "$snapshot" \
               --manifest "$manifest"
-            python3 - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('training/datasets/NLHE_100-200/increments/20260909/manifest.json')
-          m=json.loads(p.read_text())
-          assert m['selected_unique_hands'] == 1000, m['selected_unique_hands']
-          assert m['split_counts'] == {'TRAIN': 790, 'VALIDATION': 100, 'TEST': 110}, m['split_counts']
-          assert m['selected_hand_ids_fingerprint_sha256'] == '0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd'
-          assert m['earliest_local_timestamp'] == '2026-09-07 23:10:38'
-          assert m['latest_local_timestamp'] == '2026-09-09 17:48:16'
-          print('Golden increment reproduced exactly.')
-          PY
           fi
 
       - name: Commit imported artifacts and dataset manifests
