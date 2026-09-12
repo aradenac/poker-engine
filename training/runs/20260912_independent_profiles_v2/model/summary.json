@@ -1,0 +1,73 @@
+{
+  "schema": "independent-opponent-model-b/v2",
+  "model_version": "independent_model_b_v2_candidate",
+  "independence_contract": "hand histories and TRAIN player features only; no analyser/model-A predictions, EVs, policies, or recommendations are inputs",
+  "fit_split": "TRAIN",
+  "features": {
+    "path": "training/runs/20260912_independent_profiles_v2/features/player_features.json",
+    "sha256": "40b0c5e5b17141654595af6399ad0acc799717eb4575f5e1c1c6c2f89f259e23",
+    "schema": "independent-profile-player-features/v1",
+    "feature_version": "model-b-player-features-v1"
+  },
+  "dataset": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "parsed_hands": 27164,
+        "scoped_hands": 26560
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c",
+        "parsed_hands": 27677,
+        "scoped_hands": 11709
+      }
+    ],
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "unique_scoped_hands": 27735,
+    "split_counts": {
+      "TEST": 2833,
+      "TRAIN": 22149,
+      "VALIDATION": 2753
+    },
+    "overlap_occurrences": 10534,
+    "overlap_payload_differences": 0,
+    "english_preferred_replacements": 0,
+    "sorted_hand_ids_sha256": "521482a13217cc0dec4a93d03c7cbec6668b90edb5f9d68edc6a748291510b5e"
+  },
+  "parameters": {
+    "profiles": 6,
+    "profile_weight_cap": 200,
+    "range_backoff_min_observations": 20,
+    "postflop_backoff_min_observations": 30,
+    "sizing_backoff_min_observations": 12,
+    "random_seed": null
+  },
+  "counts": {
+    "train_unique_hands": 22149,
+    "profile_fit_players": 881,
+    "all_profiled_players": 9132,
+    "hands_parsed": 22149,
+    "invalid_free_call": 6,
+    "invalid_free_fold": 35,
+    "invalid_free_raise": 2,
+    "known_preflop_hands": 21355,
+    "postflop_decisions": 134947,
+    "sizing_observations": 27013,
+    "sizing_over_20x_pot": 151
+  },
+  "profile_weights": {
+    "0": 0.39303234311002305,
+    "1": 0.11698130973118026,
+    "2": 0.04692811072925004,
+    "3": 0.22594981403888706,
+    "4": 0.20578127206817004,
+    "5": 0.011327150322489526
+  },
+  "promotion_status": "candidate_not_promoted"
+}

@@ -1,0 +1,93 @@
+name: Build independent Model B candidate
+
+on:
+  push:
+    paths:
+      - 'tools/training/independent_profiles/build_model_b.py'
+      - 'tools/training/independent_profiles/summarize_model_b.py'
+      - 'tests/independent_profiles/test_build_model_b.py'
+      - 'training/runs/20260912_independent_profiles_v2/features/**'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+      - '.github/workflows/model-b-build.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-model-b:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Unit tests
+        run: python3 tests/independent_profiles/test_build_model_b.py
+
+      - name: Build independent Model B candidate
+        run: |
+          python3 -m tools.training.independent_profiles.build_model_b \
+            --features 'training/runs/20260912_independent_profiles_v2/features/player_features.json' \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --profiles 6 \
+            --output-dir 'training/runs/20260912_independent_profiles_v2/model'
+
+      - name: Build compact audit metrics
+        run: |
+          python3 -m tools.training.independent_profiles.summarize_model_b \
+            --model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --output 'training/runs/20260912_independent_profiles_v2/model/metrics.json'
+
+      - name: Validate model contract
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('training/runs/20260912_independent_profiles_v2/model')
+          s=json.loads((root/'summary.json').read_text())
+          p=json.loads((root/'profiles.json').read_text())
+          r=json.loads((root/'preflop_ranges.json').read_text())
+          a=json.loads((root/'postflop_actions.json').read_text())
+          z=json.loads((root/'sizing.json').read_text())
+          m=json.loads((root/'metrics.json').read_text())
+          assert s['schema']=='independent-opponent-model-b/v2'
+          assert s['fit_split']=='TRAIN'
+          assert s['dataset']['scope']['stakes']==['100/200']
+          assert s['promotion_status']=='candidate_not_promoted'
+          assert len(p['profiles'])==6
+          assert len(p['player_profile'])>0
+          assert len(r['notations'])==169
+          assert sum(r['multiplicity'].values())==1326
+          assert a['labels']['FREE']==['CHECK','BET']
+          assert a['labels']['FACING']==['FOLD','CALL','RAISE']
+          assert s['counts'].get('known_preflop_hands',0)>0
+          assert s['counts'].get('postflop_decisions',0)>0
+          assert s['counts'].get('sizing_observations',0)>0
+          assert m['postflop_action_observations']==s['counts']['postflop_decisions']
+          assert m['sizing']['global']['n']==s['counts']['sizing_observations']
+          assert m['sizing']['over_20x_fraction'] < 0.02, m['sizing']['over_20x_fraction']
+          anomaly_count=sum(m['parser_or_state_anomalies'].values())
+          assert anomaly_count / s['counts']['postflop_decisions'] < 0.001
+          assert 'model-A' in s['independence_contract']
+          print(json.dumps(m,indent=2))
+          PY
+
+      - name: Commit generated model artifacts
+        run: |
+          if [ -z "$(git status --porcelain training/runs/20260912_independent_profiles_v2/model)" ]; then
+            echo 'No generated model changes.'
+            exit 0
+          fi
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add training/runs/20260912_independent_profiles_v2/model
+          git commit -m 'Build independent Model B candidate'
+          git push
