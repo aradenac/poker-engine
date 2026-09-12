@@ -35,6 +35,13 @@ async def main() -> None:
         assert seats == 6, f"expected 6 trainer seats, got {seats}"
         assert await page.locator("#trainerTable .seat.hero").count() == 1
 
+        # Hero must be dealt from the persisted Custom range for this exact role/position.
+        hero_range = await page.evaluate(
+            "() => { const h=trainerState.hand, p=h.positions[h.heroSeat], n=cardsToNotation(h.hole[h.heroSeat]); return {role:h.heroRole, position:p, notation:n, frequency:Number(trainerState.heroRanges?.ranges?.[h.heroRole]?.[p]?.[n]||0)}; }"
+        )
+        assert hero_range["frequency"] > 0, hero_range
+        assert not (hero_range["role"] == "CALLER" and hero_range["position"] == "BB"), hero_range
+
         # Wait until Model A has produced the pending Hero recommendation and the action UI is live.
         await page.wait_for_function(
             "document.querySelector('#trainerStatus')?.textContent.includes('À vous de jouer') && document.querySelectorAll('#trainerControls [data-trainer-action]').length > 0",
@@ -88,6 +95,7 @@ async def main() -> None:
 
         snapshot = {
             "seats": seats,
+            "hero_range": hero_range,
             "guided": guided,
             "guide_state": guide,
             "verdict_state": verdict,
