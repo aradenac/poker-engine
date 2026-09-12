@@ -2,6 +2,10 @@
 
 Dépôt persistant du projet de moteur d'analyse poker.
 
+## Déploiement
+
+- [Consulter le déploiement Cloudflare de production](https://dash.cloudflare.com/335073663ad947e69fb7590bc22b5e73/workers/services/view/poker-engine/production)
+
 ## Organisation
 
 - `user/` : fichiers directement utiles à l'utilisateur (versions exécutables, documentation, exports).
