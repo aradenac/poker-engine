@@ -1,0 +1,92 @@
+name: Validate sequential independent arena
+
+on:
+  push:
+    paths:
+      - 'tools/simulation/**'
+      - 'tests/simulation/**'
+      - 'tools/sequential_postflop_population_sim_v4.py'
+      - 'training/registry.json'
+      - 'training/runs/20260912_independent_profiles_v2/model/**'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+      - 'site/index.html'
+      - '.github/workflows/sequential-arena.yml'
+  pull_request:
+    paths:
+      - 'tools/simulation/**'
+      - 'tests/simulation/**'
+      - 'tools/sequential_postflop_population_sim_v4.py'
+      - 'training/registry.json'
+      - 'training/runs/20260912_independent_profiles_v2/model/**'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+      - 'site/index.html'
+      - '.github/workflows/sequential-arena.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sequential-arena-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deterministic-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile simulation modules
+        run: python3 -m py_compile tools/simulation/*.py tools/sequential_postflop_population_sim_v4.py
+      - name: Model B runtime tests
+        run: python3 tests/simulation/test_model_b_runtime.py
+      - name: Scenario generation tests
+        run: python3 tests/simulation/test_scenarios.py
+      - name: CLI scenario reproducibility
+        run: |
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 2 --reps 2 --seed 20260912 \
+            --scenario-out /tmp/scenarios-a.json --out /tmp/generate-a.json
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 2 --reps 2 --seed 20260912 \
+            --scenario-out /tmp/scenarios-b.json --out /tmp/generate-b.json
+          cmp /tmp/scenarios-a.json /tmp/scenarios-b.json
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/scenarios-a.json'))
+          assert a['schema']=='sequential-arena-scenario-manifest/v1'
+          assert len(a['scenarios'])==4
+          assert a['model_b']['alias']=='independent_model_b_v2'
+          print(a['scenario_fingerprint_sha256'])
+          PY
+
+  browser-smoke:
+    needs: deterministic-core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Inspect analyser review contract
+        run: python3 -m tools.simulation.inspect_oracle_contract --trials 50 --out /tmp/oracle-detail.json
+      - name: Run one deterministic v83 rollout
+        run: |
+          python3 -m tools.simulation.sequential_postflop \
+            --n 1 --reps 1 --seed 20260912 --trials 50 \
+            --policies current \
+            --scenario-out /tmp/scenario.json \
+            --out /tmp/arena.json
+      - name: Validate smoke result contract
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/arena.json'))
+          assert d['schema']=='sequential-independent-arena/v2'
+          assert d['metadata']['model_b']['alias']=='independent_model_b_v2'
+          assert d['metadata']['master_seed']==20260912
+          assert d['metadata']['policies']==['current']
+          assert len(d['results'])==1
+          assert d['results'][0]['scenario_id']==d['scenario_manifest']['scenarios'][0]['scenario_id']
+          assert 'current' in d['summary']
+          print(json.dumps(d['summary'], indent=2))
+          PY
