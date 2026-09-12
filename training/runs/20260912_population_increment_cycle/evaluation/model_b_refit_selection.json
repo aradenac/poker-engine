@@ -1,0 +1,143 @@
+{
+  "schema": "independent-model-b-refit-selection/v1",
+  "cycle": "20260912_population_increment_cycle",
+  "status": "candidate_not_promoted",
+  "independence_contract": "Hand histories only. No Model A EVs, policies, recommendations, or engine outputs are training inputs.",
+  "dataset": {
+    "union_unique_100_200_hands": 31003,
+    "split_counts": {
+      "TRAIN": 24755,
+      "VALIDATION": 3073,
+      "TEST": 3175
+    },
+    "new_increment_unique_hands": 3268,
+    "new_increment_split_counts": {
+      "TRAIN": 2606,
+      "VALIDATION": 320,
+      "TEST": 342
+    },
+    "new_increment_hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b"
+  },
+  "player_features": {
+    "players_observed": 9903,
+    "players_eligible_min_30_hands": 992,
+    "global_train_rates": {
+      "vpip": 0.43952331327528826,
+      "pfr": 0.07652872558577335,
+      "limp": 0.28883584899317577,
+      "threebet": 0.05868241372947038,
+      "post_aggression_frequency": 0.19948062960411256,
+      "post_fold_facing_aggression": 0.4686761569938332
+    }
+  },
+  "selection_contract": {
+    "profile_counts_evaluated": [3, 4, 5, 6, 7, 8],
+    "hyperparameter_split": "VALIDATION",
+    "test_locked_until_structure_selected": true,
+    "constraints": {
+      "minimum_profile_weight": 0.05,
+      "prefer_action_log_loss_improvement": true,
+      "prefer_range_log_loss_improvement": true,
+      "prefer_lower_ece": true,
+      "reject_noisy_micro_profiles": true
+    }
+  },
+  "validation_candidates": [
+    {
+      "k": 3,
+      "min_profile_weight": 0.21423168722896427,
+      "profile_weights": [0.4578108716845396, 0.21423168722896427, 0.3279574410864961],
+      "action_log_loss_improvement_nat_per_decision": 0.026610137700677206,
+      "action_accuracy": 0.668824163969795,
+      "action_ece": 0.008766566285782122,
+      "range_log_loss_improvement_nat_per_hand": 0.08591962160057494,
+      "sizing_inside_train_p10_p90_fraction": 0.8012786361214704,
+      "sizing_above_train_p99_fraction": 0.012519978689397976
+    },
+    {
+      "k": 4,
+      "min_profile_weight": 0.10055,
+      "action_log_loss_improvement_nat_per_decision": 0.0276031,
+      "action_accuracy": 0.670604,
+      "action_ece": 0.012879,
+      "range_log_loss_improvement_nat_per_hand": 0.0422315,
+      "sizing_inside_train_p10_p90_fraction": 0.802611,
+      "sizing_above_train_p99_fraction": 0.013319
+    },
+    {
+      "k": 5,
+      "min_profile_weight": 0.02704,
+      "action_log_loss_improvement_nat_per_decision": 0.0248303,
+      "action_accuracy": 0.662567,
+      "action_ece": 0.01831,
+      "range_log_loss_improvement_nat_per_hand": 0.0234014,
+      "sizing_inside_train_p10_p90_fraction": 0.800479,
+      "sizing_above_train_p99_fraction": 0.011721,
+      "rejection_note": "Creates a profile below the 5% minimum-weight guard."
+    },
+    {
+      "k": 6,
+      "min_profile_weight": 0.02630,
+      "action_log_loss_improvement_nat_per_decision": 0.0181225,
+      "action_accuracy": 0.656796,
+      "action_ece": 0.031799,
+      "range_log_loss_improvement_nat_per_hand": 0.0076653,
+      "rejection_note": "Micro-profile and materially weaker calibration/range signal."
+    },
+    {
+      "k": 7,
+      "min_profile_weight": 0.02399,
+      "action_log_loss_improvement_nat_per_decision": 0.0234378,
+      "action_accuracy": 0.667314,
+      "action_ece": 0.018081,
+      "range_log_loss_improvement_nat_per_hand": 0.0044665,
+      "rejection_note": "Micro-profile and negligible range gain."
+    },
+    {
+      "k": 8,
+      "min_profile_weight": 0.011808,
+      "action_log_loss_improvement_nat_per_decision": 0.0231488,
+      "action_accuracy": 0.666721,
+      "action_ece": 0.025002,
+      "range_log_loss_improvement_nat_per_hand": -0.0087892,
+      "rejection_note": "Micro-profile and range model worse than combinatorial prior."
+    }
+  ],
+  "selected_structure": {
+    "k": 3,
+    "selection_basis": "VALIDATION only",
+    "rationale": "Best balanced action/range/calibration result without micro-profiles. K=4 has marginally higher action gain but loses roughly half the range gain and has worse ECE; K>=5 violates the profile-weight guard."
+  },
+  "locked_test_evaluation_for_selected_k": {
+    "hands": 3175,
+    "actions": {
+      "n": 19276,
+      "log_loss": 0.6520531852912168,
+      "street_mode_fallback_log_loss": 0.6806243299547917,
+      "log_loss_improvement_nat_per_decision": 0.028571144663574927,
+      "accuracy": 0.6796534550736667,
+      "ece": 0.007711366656277638
+    },
+    "ranges": {
+      "n": 3118,
+      "log_loss": 5.076208832440003,
+      "combinatorial_prior_log_loss": 5.140926348900285,
+      "log_loss_improvement_nat_per_hand": 0.06471751646028193
+    },
+    "sizing": {
+      "n": 3853,
+      "inside_training_p10_p90_fraction": 0.8056060212821178,
+      "above_training_p99_fraction": 0.012976901116013496,
+      "median_absolute_log2_error": 1.0004067698427839
+    }
+  },
+  "train_audit": {
+    "known_preflop_hands": 23958,
+    "postflop_decisions": 150908,
+    "sizing_observations": 30112
+  },
+  "promotion_decision": {
+    "decision": "pending_paired_comparison",
+    "reason": "The refreshed K=3 candidate is healthy on the enlarged holdout, but the currently promoted Model B must be evaluated on exactly the same VALIDATION/TEST hands before promotion. Historical metrics from different holdouts are not sufficient for an apples-to-apples promotion decision."
+  }
+}
