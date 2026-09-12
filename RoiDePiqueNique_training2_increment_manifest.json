@@ -1,0 +1,81 @@
+{
+  "schema": "poker-population-increment/v1",
+  "source_file": "RoiDePiqueNique_training2.zip",
+  "historical_baseline": {
+    "preflop_model": "preflop_population_model_v4.json",
+    "postflop_model": "postflop_population_model_v5.json",
+    "historical_unique_hands": 27164,
+    "historical_latest_local_timestamp": "2026-09-07 22:32:44",
+    "historical_corpus_fingerprint_sha256": "91a1b1c285add6ace2aedafa568bfc039c644b94216b9d2fdcd28cea59b73d4b",
+    "historical_split_fingerprints": {
+      "TRAIN": "dccb90062e43fc629f1cbca6379530c85777b42faa1620b9034c47f3406942bc",
+      "VALIDATION": "fd2668c75888adc7c0ed71616aab3f6bffba03d97816d235c5f22de169e6f4da",
+      "TEST": "9c8ae62c7c46b64c71bdce57199ad8962e9ee2f9263439492b89d9faef15ffed"
+    }
+  },
+  "split_contract": {
+    "namespace": "poker-population-split-v1",
+    "algorithm": "SHA-256(namespace + ':' + hand_id); first 64 bits big-endian modulo 10000",
+    "TRAIN": [
+      0,
+      7999
+    ],
+    "VALIDATION": [
+      8000,
+      8999
+    ],
+    "TEST": [
+      9000,
+      9999
+    ]
+  },
+  "source_audit": {
+    "archive_entries": 259,
+    "parsed_hands": 27677,
+    "unique_hands": 27677,
+    "duplicate_hand_ids": 0,
+    "earliest_local_timestamp": "2026-07-17 22:40:22",
+    "latest_local_timestamp": "2026-09-09 17:48:16"
+  },
+  "increment_selection": {
+    "rule": "timestamp strictly greater than historical latest_local_timestamp",
+    "cutoff_local_timestamp": "2026-09-07 22:32:44",
+    "selected_unique_hands": 1000,
+    "earliest_local_timestamp": "2026-09-07 23:10:38",
+    "latest_local_timestamp": "2026-09-09 17:48:16",
+    "day_counts": {
+      "2026-09-07": 113,
+      "2026-09-08": 663,
+      "2026-09-09": 224
+    },
+    "stake_counts": {
+      "100/200": 1000
+    },
+    "showdown_hands": 455,
+    "hands_with_opponent_reveal": 430,
+    "fingerprint_sorted_hand_ids_sha256": "0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd"
+  },
+  "splits": {
+    "TRAIN": {
+      "hand_count": 790,
+      "share": 0.79,
+      "fingerprint_sorted_hand_ids_sha256": "0246c4b5368c16941ad37f7a6c9937f72ffd904a80205dc837a96c3e0f0e1361",
+      "first_hand_id": "262007260864",
+      "last_hand_id": "262023997804"
+    },
+    "VALIDATION": {
+      "hand_count": 100,
+      "share": 0.1,
+      "fingerprint_sorted_hand_ids_sha256": "e91bf5479179ae73fb57941682bb7fe7c93d7b55e661c9e480699a62e836152d",
+      "first_hand_id": "262007261166",
+      "last_hand_id": "262023968272"
+    },
+    "TEST": {
+      "hand_count": 110,
+      "share": 0.11,
+      "fingerprint_sorted_hand_ids_sha256": "ad913f446c4e2a3e71efa0448107f8e22f1e265804df6f8fc303a43a82c2a05c",
+      "first_hand_id": "262007287237",
+      "last_hand_id": "262023997277"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "poker-population-increment-state/v2",
+  "production_preflop": "preflop_population_model_v5.json",
+  "production_postflop": "postflop_population_model_v5.json",
+  "baseline_historical_corpus_fingerprint_sha256": "91a1b1c285add6ace2aedafa568bfc039c644b94216b9d2fdcd28cea59b73d4b",
+  "applied_increment_fingerprints": [
+    {
+      "source": "RoiDePiqueNique_training2.zip",
+      "delta_hand_ids_sha256": "0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd",
+      "hands": 1000,
+      "latest_local_timestamp": "2026-09-09 17:48:16"
+    }
+  ],
+  "split_namespace": "poker-population-split-v1",
+  "next_increment_rule": "deduplicate by PokerStars hand_id against known lineage; preserve stateless split; append TRAIN sufficient statistics to overlay; keep VALIDATION/TEST metrics-only",
+  "postflop_pending_evidence": "overlay_v2 contains 4651 exact-node TRAIN postflop decisions; not activated in production because v6 marginal update failed fresh non-regression"
+}
