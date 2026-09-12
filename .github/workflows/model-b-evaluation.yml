@@ -1,0 +1,121 @@
+name: Evaluate independent Model B holdout
+
+on:
+  push:
+    paths:
+      - 'tools/training/independent_profiles/evaluate_model_b.py'
+      - 'tests/independent_profiles/test_evaluate_model_b.py'
+      - 'training/runs/20260912_independent_profiles_v2/features/**'
+      - 'training/runs/20260912_independent_profiles_v2/model/**'
+      - 'training/runs/20260912_independent_profiles_v2/evaluation/profile_count_selection.json'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+      - '.github/workflows/model-b-evaluation.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-evaluation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Unit tests
+        run: python3 tests/independent_profiles/test_evaluate_model_b.py
+
+      - name: Evaluate deterministic holdout
+        run: |
+          python3 -m tools.training.independent_profiles.evaluate_model_b \
+            --features 'training/runs/20260912_independent_profiles_v2/features/player_features.json' \
+            --model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --action-alpha 1 \
+            --range-prior-strength 50 \
+            --output 'training/runs/20260912_independent_profiles_v2/evaluation/holdout_evaluation.json' \
+            --prediction-contract 'training/runs/20260912_independent_profiles_v2/model/prediction_contract.json'
+
+      - name: Validate evaluation and promotion gates
+        run: |
+          python3 - <<'PY'
+          import json, math
+          from pathlib import Path
+          root=Path('training/runs/20260912_independent_profiles_v2')
+          d=json.loads((root/'evaluation/holdout_evaluation.json').read_text())
+          selection=json.loads((root/'evaluation/profile_count_selection.json').read_text())
+          model=json.loads((root/'model/summary.json').read_text())
+          assert d['schema']=='independent-opponent-model-b-evaluation/v1'
+          assert selection['selection_split']=='VALIDATION'
+          assert selection['test_used_for_selection'] is False
+          assert selection['selected_k']==3
+          assert model['parameters']['profiles']==3
+
+          for split in ('validation','test'):
+              x=d[split]
+              assert x['hands'] > 2000
+              assert x['actions']['n'] > 10000
+              assert x['range']['n'] > 1000
+              assert x['sizing']['n'] > 1000
+              for key in ('log_loss','street_mode_fallback_log_loss','brier','ece_confidence'):
+                  assert math.isfinite(x['actions'][key]), (split,key,x['actions'][key])
+              assert math.isfinite(x['range']['log_loss'])
+              assert math.isfinite(x['range']['combinatorial_prior_log_loss'])
+
+              # Predictive signal must survive deterministic holdout.
+              assert x['actions']['log_loss_improvement'] >= 0.015, (split,'action improvement',x['actions']['log_loss_improvement'])
+              assert x['range']['log_loss_improvement'] > 0.0, (split,'range improvement',x['range']['log_loss_improvement'])
+              assert x['actions']['ece_confidence'] <= 0.05, (split,'ECE',x['actions']['ece_confidence'])
+
+              # Most observations should use TRAIN-known player profiles; cold start remains supported.
+              assert x['actions']['warm_fraction'] >= 0.95, (split,'action warm',x['actions']['warm_fraction'])
+              assert x['range']['warm_fraction'] >= 0.95, (split,'range warm',x['range']['warm_fraction'])
+
+              # Profile labels are intentionally coarse; require majority stability on independent hands.
+              stability=x['profile_stability']['appearance_weighted_stable_fraction']
+              assert stability is not None and stability >= 0.55, (split,'profile stability',stability)
+
+              # Empirical sizing should exhibit expected percentile coverage without tail clipping.
+              assert 0.70 <= x['sizing']['inside_training_p10_p90_fraction'] <= 0.90, (split,'sizing p10-p90',x['sizing']['inside_training_p10_p90_fraction'])
+              assert x['sizing']['above_training_p99_fraction'] <= 0.03, (split,'sizing above p99',x['sizing']['above_training_p99_fraction'])
+
+              anomalies=sum(x['audit'].values())-x['audit'].get('hands_parsed',0)-x['audit'].get('hands_unparsed',0)
+              assert anomalies / x['actions']['n'] < 0.001, (split,'state anomalies',anomalies)
+
+          print(json.dumps({
+              'selected_k': selection['selected_k'],
+              'validation': {
+                  'action_improvement': d['validation']['actions']['log_loss_improvement'],
+                  'range_improvement': d['validation']['range']['log_loss_improvement'],
+                  'ece': d['validation']['actions']['ece_confidence'],
+                  'profile_stability': d['validation']['profile_stability']['appearance_weighted_stable_fraction'],
+              },
+              'test': {
+                  'action_improvement': d['test']['actions']['log_loss_improvement'],
+                  'range_improvement': d['test']['range']['log_loss_improvement'],
+                  'ece': d['test']['actions']['ece_confidence'],
+                  'profile_stability': d['test']['profile_stability']['appearance_weighted_stable_fraction'],
+              },
+          },indent=2))
+          PY
+
+      - name: Commit evaluation artifacts
+        run: |
+          if [ -z "$(git status --porcelain training/runs/20260912_independent_profiles_v2/evaluation training/runs/20260912_independent_profiles_v2/model/prediction_contract.json)" ]; then
+            echo 'No evaluation changes.'
+            exit 0
+          fi
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add training/runs/20260912_independent_profiles_v2/evaluation
+          git add training/runs/20260912_independent_profiles_v2/model/prediction_contract.json
+          git commit -m 'Evaluate final independent Model B K3 holdout'
+          git push

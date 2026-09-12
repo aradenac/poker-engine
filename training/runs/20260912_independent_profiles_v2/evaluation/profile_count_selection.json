@@ -1,0 +1,273 @@
+{
+  "schema": "independent-opponent-model-b-profile-count-selection/v1",
+  "selection_split": "VALIDATION",
+  "test_used_for_selection": false,
+  "selection_rule": "maximize action log-loss improvement subject to non-negative range log-loss improvement; tie-break by range improvement, weighted profile stability, then smaller K",
+  "dataset": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "parsed_hands": 27164,
+        "scoped_hands": 26560
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c",
+        "parsed_hands": 27677,
+        "scoped_hands": 11709
+      }
+    ],
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "unique_scoped_hands": 27735,
+    "split_counts": {
+      "TEST": 2833,
+      "TRAIN": 22149,
+      "VALIDATION": 2753
+    },
+    "overlap_occurrences": 10534,
+    "overlap_payload_differences": 0,
+    "english_preferred_replacements": 0,
+    "sorted_hand_ids_sha256": "521482a13217cc0dec4a93d03c7cbec6668b90edb5f9d68edc6a748291510b5e"
+  },
+  "candidates": [
+    {
+      "k": 3,
+      "profile_weights": {
+        "0": 0.47072171743326585,
+        "1": 0.21978249611600206,
+        "2": 0.30949578645073206
+      },
+      "minimum_profile_weight": 0.21978249611600206,
+      "action_n": 16608,
+      "action_log_loss": 0.6616587494368545,
+      "action_fallback_log_loss": 0.6901259121357849,
+      "action_log_loss_improvement": 0.028467162698930383,
+      "action_ece": 0.008930990187193018,
+      "range_n": 2676,
+      "range_log_loss": 5.035082235307976,
+      "range_prior_log_loss": 5.122421766077595,
+      "range_log_loss_improvement": 0.08733953076961899,
+      "profile_stability_players": 158,
+      "profile_stability": 0.7025316455696202,
+      "profile_stability_weighted": 0.7020689655172414,
+      "train_audit": {
+        "hands_parsed": 22149,
+        "invalid_free_call": 6,
+        "invalid_free_fold": 35,
+        "invalid_free_raise": 2,
+        "known_preflop_hands": 21355,
+        "postflop_decisions": 134947,
+        "sizing_observations": 27013,
+        "sizing_over_20x_pot": 151
+      }
+    },
+    {
+      "k": 4,
+      "profile_weights": {
+        "0": 0.22517772232945718,
+        "1": 0.4129749070194435,
+        "2": 0.1284873593521962,
+        "3": 0.23336001129890308
+      },
+      "minimum_profile_weight": 0.1284873593521962,
+      "action_n": 16608,
+      "action_log_loss": 0.6622769390305043,
+      "action_fallback_log_loss": 0.6901259121357849,
+      "action_log_loss_improvement": 0.027848973105280537,
+      "action_ece": 0.010235721864672585,
+      "range_n": 2676,
+      "range_log_loss": 5.08504976643584,
+      "range_prior_log_loss": 5.122421766077595,
+      "range_log_loss_improvement": 0.03737199964175536,
+      "profile_stability_players": 158,
+      "profile_stability": 0.43670886075949367,
+      "profile_stability_weighted": 0.43264367816091953,
+      "train_audit": {
+        "hands_parsed": 22149,
+        "invalid_free_call": 6,
+        "invalid_free_fold": 35,
+        "invalid_free_raise": 2,
+        "known_preflop_hands": 21355,
+        "postflop_decisions": 134947,
+        "sizing_observations": 27013,
+        "sizing_over_20x_pot": 151
+      }
+    },
+    {
+      "k": 5,
+      "profile_weights": {
+        "0": 0.3050233039875712,
+        "1": 0.32840261757921,
+        "2": 0.1234970104985641,
+        "3": 0.23206063744644792,
+        "4": 0.011016430488206769
+      },
+      "minimum_profile_weight": 0.011016430488206769,
+      "action_n": 16608,
+      "action_log_loss": 0.6665432189584338,
+      "action_fallback_log_loss": 0.6901259121357849,
+      "action_log_loss_improvement": 0.023582693177351025,
+      "action_ece": 0.021913087108508804,
+      "range_n": 2676,
+      "range_log_loss": 5.088568270054729,
+      "range_prior_log_loss": 5.122421766077595,
+      "range_log_loss_improvement": 0.03385349602286598,
+      "profile_stability_players": 158,
+      "profile_stability": 0.46835443037974683,
+      "profile_stability_weighted": 0.48183908045977014,
+      "train_audit": {
+        "hands_parsed": 22149,
+        "invalid_free_call": 6,
+        "invalid_free_fold": 35,
+        "invalid_free_raise": 2,
+        "known_preflop_hands": 21355,
+        "postflop_decisions": 134947,
+        "sizing_observations": 27013,
+        "sizing_over_20x_pot": 151
+      }
+    },
+    {
+      "k": 6,
+      "profile_weights": {
+        "0": 0.39303234311002305,
+        "1": 0.11698130973118026,
+        "2": 0.04692811072925004,
+        "3": 0.22594981403888706,
+        "4": 0.20578127206817004,
+        "5": 0.011327150322489526
+      },
+      "minimum_profile_weight": 0.011327150322489526,
+      "action_n": 16608,
+      "action_log_loss": 0.6670153036910488,
+      "action_fallback_log_loss": 0.6901259121357849,
+      "action_log_loss_improvement": 0.023110608444736096,
+      "action_ece": 0.028782053171717857,
+      "range_n": 2676,
+      "range_log_loss": 5.100106381338769,
+      "range_prior_log_loss": 5.122421766077595,
+      "range_log_loss_improvement": 0.022315384738826223,
+      "profile_stability_players": 158,
+      "profile_stability": 0.5379746835443038,
+      "profile_stability_weighted": 0.5544827586206896,
+      "train_audit": {
+        "hands_parsed": 22149,
+        "invalid_free_call": 6,
+        "invalid_free_fold": 35,
+        "invalid_free_raise": 2,
+        "known_preflop_hands": 21355,
+        "postflop_decisions": 134947,
+        "sizing_observations": 27013,
+        "sizing_over_20x_pot": 151
+      }
+    },
+    {
+      "k": 7,
+      "profile_weights": {
+        "0": 0.2681512169860176,
+        "1": 0.07878160161950944,
+        "2": 0.2926886681418012,
+        "3": 0.12751753683913186,
+        "4": 0.06566545831175556,
+        "5": 0.15673461701426486,
+        "6": 0.01046090108751942
+      },
+      "minimum_profile_weight": 0.01046090108751942,
+      "action_n": 16608,
+      "action_log_loss": 0.6703045269310712,
+      "action_fallback_log_loss": 0.6901259121357849,
+      "action_log_loss_improvement": 0.019821385204713604,
+      "action_ece": 0.022998848437101378,
+      "range_n": 2676,
+      "range_log_loss": 5.115121084653318,
+      "range_prior_log_loss": 5.122421766077595,
+      "range_log_loss_improvement": 0.007300681424276372,
+      "profile_stability_players": 158,
+      "profile_stability": 0.3924050632911392,
+      "profile_stability_weighted": 0.4257471264367816,
+      "train_audit": {
+        "hands_parsed": 22149,
+        "invalid_free_call": 6,
+        "invalid_free_fold": 35,
+        "invalid_free_raise": 2,
+        "known_preflop_hands": 21355,
+        "postflop_decisions": 134947,
+        "sizing_observations": 27013,
+        "sizing_over_20x_pot": 151
+      }
+    },
+    {
+      "k": 8,
+      "profile_weights": {
+        "0": 0.15793041758862578,
+        "1": 0.3656136716727084,
+        "2": 0.07386657878630949,
+        "3": 0.04167412080410527,
+        "4": 0.13746057153618002,
+        "5": 0.12849677510475024,
+        "6": 0.08417682783296455,
+        "7": 0.010781036674356198
+      },
+      "minimum_profile_weight": 0.010781036674356198,
+      "action_n": 16608,
+      "action_log_loss": 0.6646301316956134,
+      "action_fallback_log_loss": 0.6901259121357849,
+      "action_log_loss_improvement": 0.02549578044017147,
+      "action_ece": 0.019395657128122457,
+      "range_n": 2676,
+      "range_log_loss": 5.136728810136703,
+      "range_prior_log_loss": 5.122421766077595,
+      "range_log_loss_improvement": -0.014307044059108579,
+      "profile_stability_players": 158,
+      "profile_stability": 0.27848101265822783,
+      "profile_stability_weighted": 0.3085057471264368,
+      "train_audit": {
+        "hands_parsed": 22149,
+        "invalid_free_call": 6,
+        "invalid_free_fold": 35,
+        "invalid_free_raise": 2,
+        "known_preflop_hands": 21355,
+        "postflop_decisions": 134947,
+        "sizing_observations": 27013,
+        "sizing_over_20x_pot": 151
+      }
+    }
+  ],
+  "selected_k": 3,
+  "selected_candidate": {
+    "k": 3,
+    "profile_weights": {
+      "0": 0.47072171743326585,
+      "1": 0.21978249611600206,
+      "2": 0.30949578645073206
+    },
+    "minimum_profile_weight": 0.21978249611600206,
+    "action_n": 16608,
+    "action_log_loss": 0.6616587494368545,
+    "action_fallback_log_loss": 0.6901259121357849,
+    "action_log_loss_improvement": 0.028467162698930383,
+    "action_ece": 0.008930990187193018,
+    "range_n": 2676,
+    "range_log_loss": 5.035082235307976,
+    "range_prior_log_loss": 5.122421766077595,
+    "range_log_loss_improvement": 0.08733953076961899,
+    "profile_stability_players": 158,
+    "profile_stability": 0.7025316455696202,
+    "profile_stability_weighted": 0.7020689655172414,
+    "train_audit": {
+      "hands_parsed": 22149,
+      "invalid_free_call": 6,
+      "invalid_free_fold": 35,
+      "invalid_free_raise": 2,
+      "known_preflop_hands": 21355,
+      "postflop_decisions": 134947,
+      "sizing_observations": 27013,
+      "sizing_over_20x_pot": 151
+    }
+  },
+  "range_constraint_satisfied_by_any_candidate": true
+}

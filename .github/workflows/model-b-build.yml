@@ -37,7 +37,7 @@ jobs:
             --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
             --stake 100/200 \
             --exclude-player RoiDePiqueNique \
-            --profiles 6 \
+            --profiles 3 \
             --output-dir 'training/runs/20260912_independent_profiles_v2/model'
 
       - name: Build compact audit metrics
@@ -62,8 +62,10 @@ jobs:
           assert s['fit_split']=='TRAIN'
           assert s['dataset']['scope']['stakes']==['100/200']
           assert s['promotion_status']=='candidate_not_promoted'
-          assert len(p['profiles'])==6
+          assert s['parameters']['profiles']==3
+          assert len(p['profiles'])==3
           assert len(p['player_profile'])>0
+          assert min(x['appearance_weight'] for x in p['profiles']) > 0.20
           assert len(r['notations'])==169
           assert sum(r['multiplicity'].values())==1326
           assert a['labels']['FREE']==['CHECK','BET']
@@ -89,5 +91,5 @@ jobs:
           git config user.name 'poker-engine training bot'
           git config user.email 'training-bot@users.noreply.github.com'
           git add training/runs/20260912_independent_profiles_v2/model
-          git commit -m 'Build independent Model B candidate'
+          git commit -m 'Build independent Model B candidate K3'
           git push
