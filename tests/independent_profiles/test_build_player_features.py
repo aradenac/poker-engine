@@ -49,6 +49,21 @@ def french_hand(hand_id: str, villain: str, actions: list[str], stake: str = "10
     ])
 
 
+def legacy_french_hand(hand_id: str, villain: str, actions: list[str], stake: str = "100/200") -> str:
+    return "\n".join([
+        f"Main PokerStars n°{hand_id} :  Hold'em No Limit ({stake}) - 10/09/2026 12:00:00 CET [10/09/2026 6:00:00 ET]",
+        "Table 'Test' 6-max Seat #1 is the button",
+        "Place 1: Hero (20000 en jetons)",
+        f"Place 2: {villain} (20000 en jetons)",
+        "Hero: met 100",
+        f"{villain}: met 200",
+        "*** CARTES FERMÉES ***",
+        *actions,
+        "*** RÉSUMÉ ***",
+        "",
+    ])
+
+
 def write_zip(path: Path, files: dict[str, str]) -> None:
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for name, text in files.items():
@@ -90,6 +105,29 @@ class PlayerFeatureBuilderTest(unittest.TestCase):
             self.assertEqual(v["post_bet"], 1)
             self.assertEqual(out["train_unique_hands"], 2)
             self.assertEqual(out["train_language_counts"], {"en": 1, "fr": 1})
+
+    def test_legacy_french_place_and_passe_are_parsed(self):
+        hid = id_for("TRAIN", 15000)
+        with tempfile.TemporaryDirectory() as td:
+            archive = Path(td) / "legacy-fr.zip"
+            write_zip(archive, {
+                "fr.txt": legacy_french_hand(hid, "Villain", [
+                    "Hero: suit 100",
+                    "Villain: relance 200 à 400",
+                    "Hero: passe.",
+                    "*** FLOP *** [2c 7d Jh]",
+                    "Villain: parole",
+                ]),
+            })
+            by_id, provenance = merge_archives([archive], {"100/200"})
+            out = build_output(by_id, provenance, {"Hero"}, min_hands=1, prior_strength=10.0)
+            villain = next(p for p in out["players"] if p["player"] == "Villain")
+            self.assertEqual(villain["counts"]["appearances"], 1)
+            self.assertEqual(villain["counts"]["pfr_hands"], 1)
+            self.assertEqual(villain["counts"]["vpip_hands"], 1)
+            self.assertEqual(villain["counts"]["post_check"], 1)
+            self.assertEqual(out["parser_audit"]["counts"].get("fr|hands_without_seats", 0), 0)
+            self.assertEqual(out["parser_audit"]["counts"].get("fr|unmatched_actor_lines", 0), 0)
 
     def test_mixed_stake_archive_is_scoped_before_fit(self):
         h1 = id_for("TRAIN", 20000)
