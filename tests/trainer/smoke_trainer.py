@@ -9,6 +9,10 @@ from playwright.async_api import async_playwright
 URL = "http://127.0.0.1:8765/index.html"
 
 
+def folded(text: str) -> str:
+    return text.casefold()
+
+
 async def main() -> None:
     page_errors: list[str] = []
     console_errors: list[str] = []
@@ -39,12 +43,12 @@ async def main() -> None:
 
         # Default Training mode must hide the answer until Hero acts.
         rec_text = await page.locator("#trainerRecommendation").inner_text()
-        assert "Réponse masquée" in rec_text, rec_text
+        assert "réponse masquée" in folded(rec_text), rec_text
 
         # Mode switching is independent of the current hand.
         await page.click('[data-trainer-mode="guided"]')
         guided = await page.locator("#trainerRecommendation").inner_text()
-        assert "Action recommandée" in guided, guided
+        assert "action recommandée" in folded(guided), guided
         await page.click('[data-trainer-mode="training"]')
 
         # Choose a passive legal action first to keep the smoke deterministic enough.
@@ -61,9 +65,9 @@ async def main() -> None:
             timeout=90_000,
         )
         feedback = await page.locator("#trainerFeedback").inner_text()
-        assert "Recommandé" in feedback and "Perte EV" in feedback, feedback
+        assert "recommandé" in folded(feedback) and "perte ev" in folded(feedback), feedback
         stats = await page.locator("#trainerStats").inner_text()
-        assert "Décisions" in stats
+        assert "décisions" in folded(stats)
         decision_value = await page.locator("#trainerStats .trainer-stat").nth(1).locator(".v").inner_text()
         assert int(decision_value.strip()) >= 1
 
@@ -74,6 +78,7 @@ async def main() -> None:
 
         snapshot = {
             "seats": seats,
+            "guided": guided,
             "feedback": feedback,
             "stats": stats,
             "page_errors": page_errors,
