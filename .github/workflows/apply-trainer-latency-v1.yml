@@ -1,0 +1,30 @@
+name: Apply trainer latency optimization v1
+
+on:
+  push:
+    branches: [issue-21-trainer-single-evaluation]
+    paths:
+      - '.github/workflows/apply-trainer-latency-v1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply deterministic patch
+        run: python3 tools/patches/patch_trainer_latency_v1.py
+      - name: Validate syntax and static contract
+        run: |
+          node --check site/trainer.js
+          python3 tests/trainer/test_trainer_static.py
+      - name: Remove one-shot workflow and commit
+        run: |
+          rm .github/workflows/apply-trainer-latency-v1.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add site/trainer.js .github/workflows/apply-trainer-latency-v1.yml
+          git commit -m 'Optimize trainer decision latency for issue 21'
+          git push
