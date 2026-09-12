@@ -32,7 +32,9 @@ HEADER_RE = re.compile(
 )
 EN_DATE_RE = re.compile(r" - (\d{4})/(\d{2})/(\d{2}) (\d{1,2}):(\d{2}):(\d{2})")
 FR_DATE_RE = re.compile(r" - (\d{2})/(\d{2})/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})")
-STAKE_RE = re.compile(r"\((?:[^()]*)?(\d[\d.,]*)\s*/\s*(\d[\d.,]*)(?:[^()]*)?\)")
+STAKE_RE = re.compile(
+    r"\((?:[€$£]\s*)?(\d[\d.,]*)\s*/\s*(?:[€$£]\s*)?(\d[\d.,]*)(?:\s+[A-Za-z]+)?\)"
+)
 
 
 @dataclass(frozen=True)
@@ -72,13 +74,15 @@ def normalize_number(text: str) -> str:
 
 
 def parse_stake(header: str) -> str | None:
-    for match in STAKE_RE.finditer(header):
-        small, big = (normalize_number(x) for x in match.groups())
-        try:
-            if float(small) > 0 and float(big) > 0:
-                return f"{small}/{big}"
-        except ValueError:
-            continue
+    match = STAKE_RE.search(header)
+    if not match:
+        return None
+    small, big = (normalize_number(x) for x in match.groups())
+    try:
+        if float(small) > 0 and float(big) > 0:
+            return f"{small}/{big}"
+    except ValueError:
+        return None
     return None
 
 
