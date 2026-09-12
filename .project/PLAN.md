@@ -118,6 +118,36 @@ Opponent-model promotion and application/strategy promotion are separate decisio
 - `site/index.html` changes only when an application version is explicitly promoted.
 - Cloudflare deployment is expected to rebuild automatically from GitHub commits; training/model commits do not imply a new promoted application even if a deployment job runs.
 
+## GitHub execution backlog
+
+Epic: **#2 Build versioned continuous-training pipeline**.
+
+Implementation order:
+
+1. **#6 Continuous data ingestion and deterministic hand splits** — canonical hand-ID deduplication and immutable increments.
+2. **#7 Continuous training for integrated population model A** — incremental preflop/postflop candidates and predictive promotion decisions.
+3. **#8 Rebuild and version independent opponent-profile model B** — clean reconstruction of the independent environment from repository data.
+4. **#9 Make sequential independent simulation harness reproducible** — remove local-only dependencies and freeze deterministic scenario generation.
+5. **#10 Establish deterministic v83 strategic baseline against independent profiles** — reference strategy benchmark.
+6. **#11 Evaluate v84 and future strategy candidates on the independent benchmark** — paired strategy optimization and candidate decisions.
+7. **#12 Define unified non-regression and promotion gates for models and engine** — machine-readable promotion contract.
+8. **#13 Automate end-to-end continuous training and site promotion** — GitHub-driven orchestration and safe Cloudflare-facing release updates.
+
+Dependency graph:
+
+`#6 -> (#7, #8) -> #9 -> #10 -> #11`
+
+and
+
+`#7 + #8 + #10 -> #12 -> #13`.
+
+PR policy:
+
+- one implementation issue should normally map to one focused PR or a short sequence of explicitly linked PRs;
+- training/model generation and engine-strategy changes should not be mixed in the same PR;
+- generated candidate artifacts may be committed in their originating training PR/run, but promotion pointer changes should remain reviewable and explicit;
+- every PR affecting training or strategy must state dataset/model versions, reproducibility inputs and regression results.
+
 ## Working rules
 
 - GitHub is the durable source of truth.
