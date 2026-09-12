@@ -14,6 +14,88 @@
   "earliest_local_timestamp": "2026/07/14 21:57:49",
   "latest_local_timestamp": "2026/09/07 8:30:30",
   "fingerprint_sorted_hand_ids_sha256": "74c13882665009a21d77e15d019f82e545873908ad7ee97cbd508e2bba49551c",
+  "unmatched_header_samples": [
+    {
+      "path": "HH20260712 Epeigeus VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261417233262 :  Hold'em No Limit (100/200) - 12/07/2026 21:06:54 CET [12/07/2026 15:06:54 ET]"
+    },
+    {
+      "path": "HH20260712 Halleria VII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261416929000 :  Hold'em No Limit (100/200) - 12/07/2026 20:40:09 CET [12/07/2026 14:40:09 ET]"
+    },
+    {
+      "path": "HH20260712 Hyakutake VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261412349328 :  Hold'em No Limit (100/200) - 12/07/2026 11:24:19 CET [12/07/2026 5:24:19 ET]"
+    },
+    {
+      "path": "HH20260712 Irenaea VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261412127204 :  Hold'em No Limit (100/200) - 12/07/2026 10:31:29 CET [12/07/2026 4:31:29 ET]"
+    },
+    {
+      "path": "HH20260712 Isberga VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261415415517 :  Hold'em No Limit (100/200) - 12/07/2026 18:28:28 CET [12/07/2026 12:28:28 ET]"
+    },
+    {
+      "path": "HH20260712 Metsahovi VI - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261416425620 :  Hold'em No Limit (100/200) - 12/07/2026 20:00:32 CET [12/07/2026 14:00:32 ET]"
+    },
+    {
+      "path": "HH20260712 Nekkar VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261412463570 :  Hold'em No Limit (100/200) - 12/07/2026 11:48:35 CET [12/07/2026 5:48:35 ET]"
+    },
+    {
+      "path": "HH20260712 Rosamunde VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261412477954 :  Hold'em No Limit (100/200) - 12/07/2026 11:51:34 CET [12/07/2026 5:51:34 ET]"
+    },
+    {
+      "path": "HH20260712 Seraphina VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261414256211 :  Hold'em No Limit (100/200) - 12/07/2026 16:26:07 CET [12/07/2026 10:26:07 ET]"
+    },
+    {
+      "path": "HH20260712 Sibylla VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261412585789 :  Hold'em No Limit (100/200) - 12/07/2026 12:14:08 CET [12/07/2026 6:14:08 ET]"
+    },
+    {
+      "path": "HH20260712 Sojourner VII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261416365985 :  Hold'em No Limit (100/200) - 12/07/2026 19:53:24 CET [12/07/2026 13:53:24 ET]"
+    },
+    {
+      "path": "HH20260712 Sulamitis VII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261413112419 :  Hold'em No Limit (100/200) - 12/07/2026 13:51:17 CET [12/07/2026 7:51:17 ET]"
+    },
+    {
+      "path": "HH20260712 Vladimir VII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261415367798 :  Hold'em No Limit (100/200) - 12/07/2026 18:24:01 CET [12/07/2026 12:24:01 ET]"
+    },
+    {
+      "path": "HH20260712 Wallia VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261413188568 :  Hold'em No Limit (100/200) - 12/07/2026 14:04:42 CET [12/07/2026 8:04:42 ET]"
+    },
+    {
+      "path": "HH20260712 Zeissia VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261414843669 :  Hold'em No Limit (100/200) - 12/07/2026 17:29:54 CET [12/07/2026 11:29:54 ET]"
+    },
+    {
+      "path": "HH20260714 Basilea VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261433431973 :  Hold'em No Limit (100/200) - 14/07/2026 12:56:16 CET [14/07/2026 6:56:16 ET]"
+    },
+    {
+      "path": "HH20260714 Beagle VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261434093161 :  Hold'em No Limit (100/200) - 14/07/2026 14:50:10 CET [14/07/2026 8:50:10 ET]"
+    },
+    {
+      "path": "HH20260714 Caupolican VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261435805924 :  Hold'em No Limit (100/200) - 14/07/2026 18:29:30 CET [14/07/2026 12:29:30 ET]"
+    },
+    {
+      "path": "HH20260714 Clivia VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261434526683 :  Hold'em No Limit (100/200) - 14/07/2026 15:52:08 CET [14/07/2026 9:52:08 ET]"
+    },
+    {
+      "path": "HH20260714 Ostanina VIII - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "header": "Main PokerStars n°261432751181 :  Hold'em No Limit (100/200) - 14/07/2026 10:22:35 CET [14/07/2026 4:22:35 ET]"
+    }
+  ],
   "files": [
     {
       "path": "HH20260712 Epeigeus VIII - 100-200 - Argent fictif Hold'em No Limit.txt",

@@ -14,6 +14,7 @@
   "earliest_local_timestamp": "2026/07/17 22:40:22",
   "latest_local_timestamp": "2026/09/09 17:48:16",
   "fingerprint_sorted_hand_ids_sha256": "66bc7f344eb021f022d82dc9cb072ee45266a3ad9e963bf459a579dd2024c015",
+  "unmatched_header_samples": [],
   "files": [
     {
       "path": "HH20260717 Asios - 250-500 - Argent fictif Hold'em No Limit.txt",
