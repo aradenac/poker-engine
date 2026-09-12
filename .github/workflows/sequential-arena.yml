@@ -34,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Compile simulation modules
+        run: python3 -m py_compile tools/simulation/*.py tools/sequential_postflop_population_sim_v4.py
       - name: Model B runtime tests
         run: python3 tests/simulation/test_model_b_runtime.py
       - name: Scenario generation tests
