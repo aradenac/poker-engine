@@ -1,0 +1,22 @@
+{
+  "schema": "independent-opponent-model-b-prediction-contract/v1",
+  "model_schema": "independent-opponent-model-b/v2",
+  "profile_assignment": {
+    "known_player": "TRAIN-derived nearest deterministic profile",
+    "cold_start": "profile with largest TRAIN appearance_weight"
+  },
+  "preflop_range": {
+    "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+    "posterior": "(class_count + prior_strength * combo_multiplicity/1326) / (n + prior_strength)",
+    "prior_strength": 50.0
+  },
+  "postflop_action": {
+    "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+    "smoothing": "symmetric Dirichlet/additive smoothing over legal labels for current mode",
+    "alpha_per_action": 1.0
+  },
+  "sizing": {
+    "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+    "distribution": "empirical TRAIN values; no clipping or synthetic tail"
+  }
+}
