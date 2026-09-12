@@ -50,14 +50,19 @@ jobs:
         run: |
           set -euo pipefail
           baseline='training/datasets/NLHE_100-200/source/NLHE 100-200.zip'
-          snapshot='training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'
+          snapshot_20260909='training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'
+          snapshot_20260912='training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip'
           if [ -f "$baseline" ]; then
             python3 tools/datasets/audit_hand_history_archive.py "$baseline" \
               'training/datasets/NLHE_100-200/source/manifest.json'
           fi
-          if [ -f "$snapshot" ]; then
-            python3 tools/datasets/audit_hand_history_archive.py "$snapshot" \
+          if [ -f "$snapshot_20260909" ]; then
+            python3 tools/datasets/audit_hand_history_archive.py "$snapshot_20260909" \
               'training/datasets/NLHE_100-200/snapshots/20260909/manifest.json'
+          fi
+          if [ -f "$snapshot_20260912" ]; then
+            python3 tools/datasets/audit_hand_history_archive.py "$snapshot_20260912" \
+              'training/datasets/NLHE_100-200/snapshots/20260912/manifest.json'
           fi
 
       - name: Materialize canonical 2026-09-09 100-200 ID increment
@@ -73,6 +78,25 @@ jobs:
               --candidate "$snapshot" \
               --stake 100/200 \
               --manifest "$manifest"
+          fi
+
+      - name: Materialize canonical 2026-09-12 100-200 ID increment
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline='training/datasets/NLHE_100-200/source/NLHE 100-200.zip'
+          previous='training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'
+          snapshot='training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip'
+          manifest='training/datasets/NLHE_100-200/increments/20260912/manifest.json'
+          selected='training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip'
+          if [ -f "$baseline" ] && [ -f "$previous" ] && [ -f "$snapshot" ]; then
+            python3 tools/datasets/build_hand_history_increment.py \
+              --known "$baseline" \
+              --known "$previous" \
+              --candidate "$snapshot" \
+              --stake 100/200 \
+              --manifest "$manifest" \
+              --output-zip "$selected"
           fi
 
       - name: Commit imported artifacts and dataset manifests
