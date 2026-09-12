@@ -1,0 +1,87 @@
+{
+  "schema": "poker-model-a-incremental-selection/v1",
+  "cycle": "2026-09-12",
+  "source_increment": {
+    "unique_hands": 3268,
+    "fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b",
+    "split_counts": {"TRAIN": 2606, "VALIDATION": 320, "TEST": 342},
+    "decision_rows": 42964,
+    "parse_errors": 0
+  },
+  "selection_rule": "candidate update weight is selected using VALIDATION only; TEST is diagnostic after selection",
+  "preflop": {
+    "baseline": "preflop_population_model_v5.json",
+    "full_weight_candidate_local_sha256": "e75ac77f34362b6026ed631fcfaafbabe382a64dbc83dfd523452d45f67e8845",
+    "train_population_rows_applied_to_existing_exact_nodes": 9047,
+    "train_population_rows_on_unseen_exact_contexts": 4727,
+    "touched_existing_nodes": 108,
+    "holdout_population_decisions": {"VALIDATION": 1676, "TEST": 1809},
+    "validation_logloss_grid": {
+      "0.00": 0.8419085133896149,
+      "0.05": 0.841935700200535,
+      "0.10": 0.841962851043871,
+      "0.20": 0.8420170265767262,
+      "0.35": 0.8420979131320142,
+      "0.50": 0.8421782623822015,
+      "0.75": 0.8423107721737041,
+      "1.00": 0.8424412847345213,
+      "1.50": 0.8426955720017019
+    },
+    "test_logloss_grid": {
+      "0.00": 0.7974533286767252,
+      "0.05": 0.7974364716750544,
+      "0.10": 0.7974201572251214,
+      "0.20": 0.7973890806126898,
+      "0.35": 0.7973460857834606,
+      "0.50": 0.797307058223333,
+      "0.75": 0.7972498281256909,
+      "1.00": 0.7972011159011511,
+      "1.50": 0.7971246187462566
+    },
+    "paired_bootstrap_full_weight_validation_delta_candidate_minus_baseline": {
+      "mean": 0.0005327713449049666,
+      "ci95": [0.0000645316977, 0.000994719224],
+      "probability_candidate_better": 0.0132
+    },
+    "decision": "RETAIN_BASELINE",
+    "reason": "VALIDATION monotonically prefers zero incremental weight; full-weight degradation is small but consistently positive in paired bootstrap. TEST improvement cannot be used to override validation selection."
+  },
+  "postflop": {
+    "baseline": "postflop_population_model_v5.json",
+    "full_weight_candidate_local_sha256": "45366a58e64999a65728b343c811c0b23ae1c7713bab885c2287db99b5df1d4d",
+    "train_population_rows_applied_to_existing_exact_nodes": 15804,
+    "train_population_rows_on_unseen_exact_contexts": 158,
+    "touched_existing_nodes": 1116,
+    "holdout_population_decisions": {"VALIDATION": 1933, "TEST": 2211},
+    "validation_logloss_grid": {
+      "0.00": 0.6731005275666776,
+      "0.05": 0.6731465564351757,
+      "0.10": 0.673193084762975,
+      "0.20": 0.6732875704638998,
+      "0.35": 0.67343262646594,
+      "0.50": 0.6735813114030267,
+      "0.75": 0.6738361838848971,
+      "1.00": 0.6740985878424058,
+      "1.50": 0.6746409789540515
+    },
+    "test_logloss_grid": {
+      "0.00": 0.6574763647834633,
+      "0.05": 0.6574298156195714,
+      "0.10": 0.6573848264650883,
+      "0.20": 0.6572993045204223,
+      "0.35": 0.6571814078202185,
+      "0.50": 0.6570749105440037,
+      "0.75": 0.6569199956465678,
+      "1.00": 0.6567899319984594,
+      "1.50": 0.6565920414290091
+    },
+    "decision": "RETAIN_BASELINE",
+    "reason": "VALIDATION monotonically prefers zero incremental weight. Response-model and continuous-adjustment parameters were frozen for this conservative first candidate; TEST improvement is diagnostic only."
+  },
+  "production_effect": "NONE",
+  "notes": [
+    "No production Model A pointer is changed by this report.",
+    "Preflop skipped exact contexts are still handled by the existing nearest-node runtime; the next range-model work should target held-out validated coverage rather than blindly adding sparse exact nodes.",
+    "Final cycle closure still requires source archive persistence, independent Model B refit, strategic benchmark and unified non-regression gates."
+  ]
+}
