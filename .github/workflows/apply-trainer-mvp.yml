@@ -1,0 +1,34 @@
+name: Apply trainer MVP integration
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-trainer-mvp.yml'
+      - 'tools/patches/apply_trainer_mvp.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply deterministic patch
+        run: |
+          python3 tools/patches/apply_trainer_mvp.py
+          python3 tools/patches/apply_trainer_mvp.py
+          grep -q 'id="trainerPage"' site/index.html
+          grep -q 'src="./trainer.js"' site/index.html
+          grep -q 'href="./trainer.css"' site/index.html
+      - name: Remove one-shot workflow
+        run: rm .github/workflows/apply-trainer-mvp.yml
+      - name: Commit integration
+        run: |
+          git config user.name 'poker-engine maintenance bot'
+          git config user.email 'maintenance-bot@users.noreply.github.com'
+          git add site/index.html site/trainer.js tools/patches/apply_trainer_mvp.py .github/workflows/apply-trainer-mvp.yml
+          git commit -m 'Integrate interactive 6-max trainer into analyser'
+          git push
