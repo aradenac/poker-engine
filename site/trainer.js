@@ -33,6 +33,7 @@ const trainerState={
   open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,
   handNo:0,evalNo:0,hand:null,recommendation:null,feedback:null,
   pauseAfterDecision:false,busy:false,
+  perf:{evaluations:0,reused:0,totalMs:0,lastMs:0},
   session:{hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)},
   testLog:[]
 };
@@ -282,6 +283,11 @@ function trainerBuildReviewHH(hand,actionLine,actionKind,cost=0){
   lines[0]=lines[0].replace(/Hand #\d+/,`Hand #${evalId}`);return lines.join("\n")+"\n";
 }
 async function trainerWaitFor(fn,timeout=30000){const start=Date.now();while(!fn()){if(Date.now()-start>timeout)throw new Error("Timeout du moteur de recommandation.");await trainerSleep(40);}}
+async function trainerTimedReviewText(text){
+  const started=performance.now();trainerState.perf.evaluations++;
+  try{return await trainerReviewText(text);}
+  finally{const ms=performance.now()-started;trainerState.perf.lastMs=ms;trainerState.perf.totalMs+=ms;}
+}
 async function trainerReviewText(text){
   await trainerWaitFor(()=>!state.reviewBatchBusy,30000);
   const hand=parsePokerStarsHand(text,"trainer");
@@ -303,7 +309,7 @@ function trainerPlaceholderLine(hand){const s=hand.heroSeat,toCall=trainerToCall
 async function trainerComputeRecommendation(){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero)return;
   trainerState.busy=true;trainerState.recommendation=null;trainerRenderStatus("Calcul de la recommandation Model A…","busy");trainerRender();
-  try{const ph=trainerPlaceholderLine(hand),detail=await trainerReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,0));trainerState.recommendation=detail;trainerRenderStatus("À vous de jouer.");}
+  try{const ph=trainerPlaceholderLine(hand),detail=await trainerTimedReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,0));trainerState.recommendation=detail;trainerRenderStatus(`À vous de jouer · calcul ${trainerState.perf.lastMs.toFixed(0)} ms.`);}
   catch(err){trainerRenderStatus(`Recommandation indisponible : ${err.message}`,"error");trainerState.recommendation={error:err.message};}
   finally{trainerState.busy=false;trainerRender();}
 }
@@ -321,16 +327,37 @@ function trainerRecordDecision(detail,playedKind,playedCost){
   const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else s.poor++;
   const key=`${row.position} · ${row.street}`;const b=s.breakdown[key]||(s.breakdown[key]={n:0,loss:0});b.n++;b.loss+=loss;trainerState.testLog.unshift(row);return row;
 }
+function trainerRecommendationMatchesAction(rec,actual){
+  if(!rec||rec.error||!actual)return false;
+  const label=String(rec.bestLabel||"").toUpperCase(),kind=String(actual.kind||"").toUpperCase();
+  if(!label.startsWith(kind))return false;
+  if(!["BET","RAISE"].includes(kind))return true;
+  const bestCost=Number(rec.bestCostBB),playedCost=Number(actual.cost);
+  return Number.isFinite(bestCost)&&Number.isFinite(playedCost)&&Math.abs(bestCost-playedCost)<=0.05;
+}
+function trainerReuseBestAsPlayed(rec){
+  const d=JSON.parse(JSON.stringify(rec));
+  d.chosenEV=Number(d.bestEV);d.lossBB=0;d.withinNoise=true;
+  trainerState.perf.reused++;return d;
+}
 async function trainerHeroAction(kind,cost=0){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero||trainerState.busy||trainerState.pauseAfterDecision)return;
   trainerState.busy=true;hand.awaitingHero=false;trainerRenderStatus("Évaluation de votre décision…","busy");trainerRender();
   let detail=null,row=null,actual=null;
-  try{actual=trainerActualLine(hand,kind,cost);detail=await trainerReviewText(trainerBuildReviewHH(hand,actual.line,actual.kind,actual.cost));row=trainerRecordDecision(detail,actual.kind,actual.cost);}
+  try{
+    actual=trainerActualLine(hand,kind,cost);
+    if(trainerState.mode==="guided"&&trainerRecommendationMatchesAction(trainerState.recommendation,actual)){
+      detail=trainerReuseBestAsPlayed(trainerState.recommendation);
+    }else{
+      detail=await trainerTimedReviewText(trainerBuildReviewHH(hand,actual.line,actual.kind,actual.cost));
+    }
+    trainerState.recommendation=detail;row=trainerRecordDecision(detail,actual.kind,actual.cost);
+  }
   catch(err){trainerRenderStatus(`Décision jouée, mais verdict indisponible : ${err.message}`,"error");}
   trainerApplyAction(hand,hand.heroSeat,kind,cost);trainerState.feedback=detail?{detail,row}:null;trainerState.busy=false;
   if(hand.ended){trainerRenderStatus(`Main terminée · ${hand.winner}.`);trainerRender();return;}
   if(trainerState.mode==="test"){trainerState.feedback=null;trainerRender();await trainerAdvance();}
-  else{trainerState.pauseAfterDecision=true;trainerRenderStatus("Feedback disponible. Continuez lorsque vous êtes prêt.");trainerRender();}
+  else{trainerState.pauseAfterDecision=true;const suffix=trainerState.perf.lastMs?` · dernier calcul ${trainerState.perf.lastMs.toFixed(0)} ms`:"";trainerRenderStatus(`Feedback disponible${suffix}. Continuez lorsque vous êtes prêt.`);trainerRender();}
 }
 
 async function trainerAdvance(){
@@ -338,7 +365,13 @@ async function trainerAdvance(){
   while(!hand.ended){
     if(!hand.queue.length){trainerAdvanceStreetOrShowdown(hand);trainerRender();if(hand.ended)break;await trainerSleep(160);continue;}
     const seat=hand.queue.shift();if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
-    if(seat===hand.heroSeat){hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;trainerRender();await trainerComputeRecommendation();return;}
+    if(seat===hand.heroSeat){
+      hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;
+      trainerRender();
+      if(trainerState.mode==="guided")await trainerComputeRecommendation();
+      else trainerRenderStatus("À vous de jouer · recommandation calculée après votre action.");
+      return;
+    }
     trainerRenderStatus(`${hand.names[seat]} réfléchit…`,"busy");trainerRender();await trainerSleep(220);trainerOpponentAct(hand);trainerRender();await trainerSleep(180);
   }
   if(hand.ended)trainerRenderStatus(`Main terminée · ${hand.winner}.`);
