@@ -178,7 +178,7 @@ Run: `training/runs/20260909_population_increment_v2/`.
 - Unmatched shove amounts no longer distort responder price-to-pot calculations.
 - Low-confidence extreme aggression beyond local P90 support is rejected.
 - When Hero covers a shorter opponent, the engine recommends the exact effective all-in amount instead of a misleading full Hero-stack JAM.
-- Deterministic 96-decision benchmark: 2 true Hero JAMs = 2.08%, consistent with the observed population order of magnitude.
+- The persisted historical 96-decision benchmark report records 2 true Hero JAMs = 2.08%, consistent with the observed population order of magnitude. This result does not prove that the current shipped Monte-Carlo workers are seeded; see the current audit below.
 - Historical pathological hand `#262024556922` no longer produces absurd JAM recommendations; river facing bet recommends CALL.
 
 ## Experimental engine work
@@ -201,15 +201,31 @@ For every new hand-history push:
 8. Promote a new application only if strategy and regression gates pass.
 9. Persist every input, model, metric, seed contract, report and promotion/rejection decision.
 
+## Current audit — 2026-09-12
+
+Audited main: `caaff599707006fab3daa0f39b90b67c37fdaac1`. Simulator PR #44: `899015dd4d29ffcdb9130ddb10d74347b856a0c1`. Full assessment: `user/reports/etat-des-lieux-2026-09-12.md`.
+
+- **Source gap (#35):** September 12 raw ZIP is absent at its canonical main path; registry remains `source_binary_pending`. Reported delta: 3,268 new 100/200 hands (2,606 TRAIN / 320 VALIDATION / 342 TEST), enlarged union 31,003. Exact raw bytes and standard re-audit are required for complete reconstruction.
+- **Simulator (#9 / PR #44):** scenario generation and one-rollout browser CI pass, but HTML uses unseeded `Math.random()` for Hero EV workers. The oracle's `--trials` substitution matches no current HTML string; requested and effective trials can differ. The direct compatibility entrypoint fails to import `tools`. The issue now records reproductions and full-run acceptance criteria.
+- **Model A cycle (#36/#37):** both additive candidates were rejected on VALIDATION and v5 stays promoted. Main has the selection report with local candidate hashes, but not a complete reconstructible cycle. Older extraction/overlay scripts still hard-code `/mnt/data`; remaining work is tracked under #7.
+- **Model B refresh (#38):** branch `issue-38-model-b-refresh-20260912` at `505b1a8a` has the selection report and incumbent-export workflow. Full new feature/model artifacts and paired comparison are not committed there. Promoted Model B remains v2.
+- **Environment validity (#46):** postflop action probabilities are marginal by profile/context, without card strength, board texture, facing-price or SPR conditioning (apart from raise legality). This affects sizing-strategy validation as well as trainer realism. The arena currently supports HU postflop only.
+- **CI coverage (#12):** trainer smoke invokes the main static script, not all five dedicated contracts. Pathological-hand fixtures/audits lack an executable regression runner. Gate specification is now ranked before strategy selection.
+- **Publication (#45):** Cloudflare builds fail for main caaff599 and PR #44 head 899015dd. Main ingestion and the PR's arena jobs succeed. Public site availability/version was not checked; provider logs are needed to diagnose the failure.
+- **Model asset identity:** all seven trainer A/B assets have identical Git blobs to their promoted references.
+
+Local audit: six synthetic ingestion tests passed, one archive-dependent integration test skipped; four trainer performance contracts and trainer.js syntax passed. Worker nondeterminism, ineffective trial replacement and CLI import failure were reproduced. No full training/strategic corpus was rerun.
+
 ## Immediate next actions
 
-1. Finish issue #9 and merge the repo-native sequential simulator using promoted Model B JSON.
-2. Issue #10: run v83 against Model B v2 and persist the deterministic strategic baseline.
-3. Issue #11: compare v84 and later strategy candidates against exactly the same scenarios/profile mix.
-4. Issue #7/#12/#13: complete model-A continuous training, unified promotion gates and end-to-end automation.
-5. Trainer follow-up: expose a complete comparable preflop ACTION / SIZING / EV surface, then enable true interactive preflop drills.
-6. Trainer follow-up: improve Model B with combo-conditioned postflop decisions before treating hidden-card opponent actions as combo-specific evidence.
-7. Trainer follow-up: add targeted drills / retry mistakes / spaced repetition once the core strategic benchmark is stabilized.
+1. P0 #35: persist exact source ZIP and reproduce IDs, splits and hashes.
+2. P0 #9: correct oracle determinism, effective trial control, CLI and candidate B inputs before completing PR #44.
+3. P0 #45: diagnose Cloudflare build failure and verify deployed site identity.
+4. P1 #12/#7: specify/wire gates and finish Model A reconstruction; retain recorded v5/rejection decisions.
+5. P1 #10: freeze v83 + promoted B v2 as a scoped reference using the approved corpus.
+6. P1 #38/#46/#39: finish the B paired decision, validate response realism, and freeze the refreshed reference.
+7. P2 #11/#40 -> #41 -> #42 -> #13: evaluate strategy, run gates, record outcomes, then automate.
+8. Later product work: preflop ACTION / SIZING / EV surface, genuine multiway drills, targeted retry/spaced repetition. Hero BB remains unsupported until a user range is available.
 
 ## Remaining bootstrap gap
 
