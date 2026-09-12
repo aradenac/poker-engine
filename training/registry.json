@@ -6,7 +6,24 @@
       "baseline_archive": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
       "baseline_manifest": "training/datasets/NLHE_100-200/source/manifest.json",
       "latest_snapshot_archive": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
-      "latest_snapshot_manifest": "training/datasets/NLHE_100-200/snapshots/20260909/manifest.json"
+      "latest_snapshot_manifest": "training/datasets/NLHE_100-200/snapshots/20260909/manifest.json",
+      "latest_candidate_snapshot": {
+        "archive": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "snapshot_readme": "training/datasets/NLHE_100-200/snapshots/20260912/README.md",
+        "increment_manifest": "training/datasets/NLHE_100-200/increments/20260912/manifest.json",
+        "status": "source_binary_pending",
+        "source_sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+        "source_size_bytes": 2509906,
+        "source_unique_100_200_hands": 11896,
+        "genuinely_unseen_100_200_hands": 3268,
+        "selected_hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b",
+        "split_counts": {
+          "TRAIN": 2606,
+          "VALIDATION": 320,
+          "TEST": 342
+        },
+        "resulting_union_unique_100_200_hands": 31003
+      }
     }
   },
   "promoted_model": {
@@ -26,7 +43,14 @@
   },
   "candidate_run": null,
   "regression_suite": "training/runs/20260909_population_increment_v2/evaluation/",
-  "pending_import": null,
+  "pending_import": {
+    "type": "complete_hand_history_snapshot",
+    "snapshot_date": "20260912",
+    "target_path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+    "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+    "size_bytes": 2509906,
+    "reason": "Metadata and exact-ID triage are persisted; exact binary ZIP still needs to be stored at the canonical GitHub path and re-audited before the snapshot becomes the latest persisted source."
+  },
   "history": [
     {
       "run_id": "20260909_population_increment_v2",
@@ -43,5 +67,5 @@
       "promotion": "training/runs/20260912_independent_profiles_v2/PROMOTION.json"
     }
   ],
-  "notes": "The historical NLHE 100-200 baseline archive and the 2026-09-09 snapshot are committed and audited at canonical dataset paths. Raw archives remain compressed; manifests provide reproducible identity and corpus statistics. Integrated analyser model A and independent opponent Model B have separate promotion pointers and must remain causally independent."
+  "notes": "The historical baseline and 2026-09-09 snapshot remain the latest fully persisted/audited raw sources. The complete 2026-09-12 inventory has been exactly triaged: 11,896 unique 100/200 hands, 3,268 genuinely unseen, yielding a 31,003-hand baseline+current union. Its raw binary is still pending canonical GitHub persistence. Integrated analyser Model A and independent opponent Model B have separate promotion pointers and remain causally independent."
 }
