@@ -1,0 +1,49 @@
+name: Fix trainer Hero range deck remainder
+
+on:
+  push:
+    branches: [issue-31-hero-custom-ranges]
+    paths:
+      - '.github/workflows/fix-trainer-hero-range-deck.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-31-hero-custom-ranges
+          fetch-depth: 0
+      - name: Fix remaining deck construction and source patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          trainer=Path('site/trainer.js')
+          s=trainer.read_text()
+          old='const remaining=deck.filter(c=>!blocked.has(c));trainerShuffle(remaining);'
+          new='const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);'
+          if old not in s and new not in s: raise SystemExit('trainer remaining-deck marker missing')
+          trainer.write_text(s.replace(old,new,1))
+
+          patch=Path('tools/patches/apply_trainer_hero_custom_ranges.py')
+          p=patch.read_text()
+          oldp='  const remaining=deck.filter(c=>!blocked.has(c));trainerShuffle(remaining);\\n'
+          newp='  const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);\\n'
+          if oldp not in p and newp not in p: raise SystemExit('source patch remaining-deck marker missing')
+          patch.write_text(p.replace(oldp,newp,1))
+          PY
+      - name: Validate
+        run: |
+          node --check site/trainer.js
+          for t in tests/trainer/test_*.py; do python3 "$t"; done
+      - name: Remove one-shot workflow and commit
+        run: |
+          rm .github/workflows/fix-trainer-hero-range-deck.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Fix deck rebuild after custom Hero deal'
+          git push origin HEAD:issue-31-hero-custom-ranges
