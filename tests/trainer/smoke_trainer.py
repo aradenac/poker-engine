@@ -45,20 +45,21 @@ async def main() -> None:
         rec_text = await page.locator("#trainerRecommendation").inner_text()
         assert "réponse masquée" in folded(rec_text), rec_text
 
-        # Mode switching is independent of the current hand.
+        # Switching to Guided mid-decision must compute a real recommendation.
         await page.click('[data-trainer-mode="guided"]')
+        await page.wait_for_function(
+            "trainerState.recommendation && !trainerState.recommendation.error && trainerRecommendationKind(trainerState.hand, trainerState.recommendation)",
+            timeout=90_000,
+        )
         guided = await page.locator("#trainerRecommendation").inner_text()
-        assert "action recommandée" in folded(guided), guided
-        await page.click('[data-trainer-mode="training"]')
-
-        # Choose a passive legal action first to keep the smoke deterministic enough.
-        for action in ("CHECK", "CALL", "FOLD"):
-            loc = page.locator(f'#trainerControls [data-trainer-action="{action}"]')
-            if await loc.count():
-                await loc.first.click()
-                break
-        else:
-            raise AssertionError("no passive Hero action available")
+        assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
+        guide = await page.evaluate(
+            "() => ({label: trainerState.recommendation.bestLabel, cost: Number(trainerState.recommendation.bestCostBB), ev: Number(trainerState.recommendation.bestEV), kind: trainerRecommendationKind(trainerState.hand, trainerState.recommendation)})"
+        )
+        assert guide["kind"] in {"FOLD", "CHECK", "CALL", "BET", "RAISE"}, guide
+        action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
+        assert await action.count(), f"guided action button missing: {guide}"
+        await action.first.click()
 
         await page.wait_for_function(
             "document.querySelector('#trainerFeedback .trainer-feedback-title') && !document.querySelector('#trainerFeedback .trainer-feedback-title').textContent.includes('Feedback')",
@@ -66,6 +67,15 @@ async def main() -> None:
         )
         feedback = await page.locator("#trainerFeedback").inner_text()
         assert "recommandé" in folded(feedback) and "perte ev" in folded(feedback), feedback
+        verdict = await page.evaluate(
+            "() => ({label: trainerState.feedback?.detail?.bestLabel, cost: Number(trainerState.feedback?.detail?.bestCostBB), ev: Number(trainerState.feedback?.detail?.bestEV), chosen: Number(trainerState.feedback?.detail?.chosenEV), loss: Number(trainerState.feedback?.row?.lossBB), reused: Number(trainerState.perf.reused)})"
+        )
+        assert verdict["label"] == guide["label"], (guide, verdict)
+        if guide["cost"] == guide["cost"]:
+            assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
+        assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+        assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
+        assert verdict["reused"] >= 1, (guide, verdict)
         stats = await page.locator("#trainerStats").inner_text()
         assert "décisions" in folded(stats)
         decision_value = await page.locator("#trainerStats .trainer-stat").nth(1).locator(".v").inner_text()
@@ -79,6 +89,8 @@ async def main() -> None:
         snapshot = {
             "seats": seats,
             "guided": guided,
+            "guide_state": guide,
+            "verdict_state": verdict,
             "feedback": feedback,
             "stats": stats,
             "page_errors": page_errors,
