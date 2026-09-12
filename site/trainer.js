@@ -28,12 +28,14 @@ const TRAINER_POSITIONS=["BTN","SB","BB","LJ","HJ","CO"];
 const TRAINER_PREFLOP_ORDER=["LJ","HJ","CO","BTN","SB","BB"];
 const TRAINER_POSTFLOP_ORDER=["SB","BB","LJ","HJ","CO","BTN"];
 const TRAINER_HERO="Hero";
+const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};
+const trainerWarmAssets={started:false,promise:null,modelA:null,modelB:null,startedAt:0,finishedAt:0,error:null};
 
 const trainerState={
   open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,
   handNo:0,evalNo:0,hand:null,recommendation:null,feedback:null,
   pauseAfterDecision:false,busy:false,
-  perf:{evaluations:0,reused:0,totalMs:0,lastMs:0},
+  perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false},
   session:{hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)},
   testLog:[]
 };
@@ -88,6 +90,31 @@ async function trainerFetchText(url){
   if(!r.ok)throw new Error(`${url} : HTTP ${r.status}`);
   return r.text();
 }
+async function trainerLoadWarmAssets(){
+  if(trainerWarmAssets.promise)return trainerWarmAssets.promise;
+  trainerWarmAssets.started=true;trainerWarmAssets.startedAt=performance.now();
+  trainerWarmAssets.promise=(async()=>{
+    try{
+      const [profiles,ranges,actions,sizing,contract,preflop,postflop]=await Promise.all([
+        trainerFetchJson(TRAINER_ASSETS.modelB.profiles),trainerFetchJson(TRAINER_ASSETS.modelB.ranges),
+        trainerFetchJson(TRAINER_ASSETS.modelB.actions),trainerFetchJson(TRAINER_ASSETS.modelB.sizing),
+        trainerFetchJson(TRAINER_ASSETS.modelB.contract),trainerFetchText(TRAINER_ASSETS.modelA.preflop),
+        trainerFetchText(TRAINER_ASSETS.modelA.postflop)
+      ]);
+      trainerWarmAssets.modelB={profiles,ranges,actions,sizing,contract};
+      trainerWarmAssets.modelA={preflop,postflop};
+      trainerWarmAssets.finishedAt=performance.now();
+      trainerState.perf.warmupMs=trainerWarmAssets.finishedAt-trainerWarmAssets.startedAt;
+      return {modelA:trainerWarmAssets.modelA,modelB:trainerWarmAssets.modelB};
+    }catch(err){trainerWarmAssets.error=err;trainerWarmAssets.promise=null;throw err;}
+  })();
+  return trainerWarmAssets.promise;
+}
+function trainerScheduleWarmup(){
+  const start=()=>{if(!trainerWarmAssets.started)trainerLoadWarmAssets().catch(()=>{});};
+  if("requestIdleCallback" in window)window.requestIdleCallback(start,{timeout:2500});
+  else window.setTimeout(start,1200);
+}
 
 async function trainerEnsureModels(){
   if(trainerState.ready)return true;
@@ -96,27 +123,27 @@ async function trainerEnsureModels(){
     return trainerState.ready;
   }
   trainerState.loading=true;trainerState.error="";trainerRenderStatus("Chargement des modèles promus A/B…","busy");
+  const loadStarted=performance.now();
   try{
-    const [profiles,ranges,actions,sizing,contract]=await Promise.all([
-      trainerFetchJson(TRAINER_ASSETS.modelB.profiles),trainerFetchJson(TRAINER_ASSETS.modelB.ranges),
-      trainerFetchJson(TRAINER_ASSETS.modelB.actions),trainerFetchJson(TRAINER_ASSETS.modelB.sizing),
-      trainerFetchJson(TRAINER_ASSETS.modelB.contract)
-    ]);
+    const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB),assets=await trainerLoadWarmAssets();
+    trainerState.perf.warmHit=alreadyWarm;
+    const {profiles,ranges,actions,sizing,contract}=assets.modelB;
     if(profiles.schema!=="independent-opponent-profiles/v2"||ranges.schema!=="independent-preflop-ranges/v2"||actions.schema!=="independent-postflop-actions/v2"||sizing.schema!=="independent-postflop-sizing/v2")throw new Error("Model B : schéma inattendu.");
-    trainerState.modelB={profiles,ranges,actions,sizing,contract};
+    trainerState.modelB=assets.modelB;
 
     if(!state.populationModel){
-      const content=await trainerFetchText(TRAINER_ASSETS.modelA.preflop);
+      const content=assets.modelA.preflop;
       const ok=await applyPopulationModelSnapshot({name:"preflop_population_model_v5.json",content,size:content.length},{persist:false,restored:true});
       if(!ok)throw new Error("Impossible d'initialiser Model A préflop.");
     }
     if(!state.postflopModel){
-      const content=await trainerFetchText(TRAINER_ASSETS.modelA.postflop);
+      const content=assets.modelA.postflop;
       const ok=await applyPostflopModelSnapshot({name:"postflop_population_model_v5.json",content,size:content.length},{persist:false,restored:true});
       if(!ok)throw new Error("Impossible d'initialiser Model A postflop.");
     }
+    trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    trainerRenderStatus("Trainer prêt · Model A v5 + Model B v2 chargés.");
+    trainerRenderStatus(`Trainer prêt · Model A v5 + Model B v2 · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
@@ -363,7 +390,7 @@ async function trainerHeroAction(kind,cost=0){
 async function trainerAdvance(){
   const hand=trainerState.hand;if(!hand||hand.ended||trainerState.pauseAfterDecision)return;
   while(!hand.ended){
-    if(!hand.queue.length){trainerAdvanceStreetOrShowdown(hand);trainerRender();if(hand.ended)break;await trainerSleep(160);continue;}
+    if(!hand.queue.length){trainerAdvanceStreetOrShowdown(hand);trainerRender();if(hand.ended)break;await trainerSleep(TRAINER_DELAYS.street);continue;}
     const seat=hand.queue.shift();if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
     if(seat===hand.heroSeat){
       hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;
@@ -372,7 +399,7 @@ async function trainerAdvance(){
       else trainerRenderStatus("À vous de jouer · recommandation calculée après votre action.");
       return;
     }
-    trainerRenderStatus(`${hand.names[seat]} réfléchit…`,"busy");trainerRender();await trainerSleep(220);trainerOpponentAct(hand);trainerRender();await trainerSleep(180);
+    trainerRenderStatus(`${hand.names[seat]} réfléchit…`,"busy");trainerRender();await trainerSleep(TRAINER_DELAYS.opponentThink);trainerOpponentAct(hand);trainerRender();await trainerSleep(TRAINER_DELAYS.opponentSettle);
   }
   if(hand.ended)trainerRenderStatus(`Main terminée · ${hand.winner}.`);
   trainerRender();
@@ -458,4 +485,5 @@ trainerBackBtn?.addEventListener("click",trainerClose);
 trainerNewHandBtn?.addEventListener("click",trainerNewHand);
 trainerContinueBtn?.addEventListener("click",trainerContinue);
 document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.addEventListener("click",()=>trainerSetMode(b.dataset.trainerMode)));
+trainerScheduleWarmup();
 trainerRenderStatus("Ouvrez une session pour charger les modèles promus.");trainerRender();
