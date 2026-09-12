@@ -6,17 +6,53 @@ Last update: 2026-09-12
 
 - GitHub repository `aradenac/poker-engine` is the durable source of truth.
 - User-facing releases live under `user/releases/`; the runnable site is mirrored at `site/index.html`.
-- The user configured automatic Cloudflare static deployment from GitHub; a GitHub commit may trigger deployment, but `site/index.html` changes only on explicit application promotion.
+- The user configured automatic Cloudflare static deployment from GitHub; a GitHub commit may trigger deployment, but `site/index.html` changes only on explicit application/feature promotion.
 - Production population models live under `training/models/`; immutable training/evaluation artifacts live under `training/runs/`.
 - Raw hand-history datasets live under `training/datasets/`; current model pointers live in `training/registry.json`.
 - Tooling lives under `tools/`; permanent validation under `tests/`; assistant/project continuity under `.project/`.
 
-## Promoted application baseline
+## Promoted engine baseline
 
-- Promoted application: `v83`.
+- Promoted recommendation engine: `v83`.
 - Canonical release: `user/releases/poker_range_equity_offline_multiway_v83.html`.
-- Testable/deployed site source: `site/index.html`.
-- SHA-256: `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`.
+- Canonical v83 release SHA-256: `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`.
+- Deployed static application source: `site/index.html` plus static assets under `site/`.
+- Adding site-level features such as the player trainer does not by itself promote the recommendation engine to a new version; v84 remains experimental.
+
+## Player training view
+
+Issue #19 implements the first interactive player-training MVP on top of the existing analyser rather than creating a second poker engine.
+
+Architecture:
+
+- dedicated `Training 6-max` view inside the existing static application;
+- existing analyser/replayer card, table, parsing and review machinery is reused;
+- Model A v5 remains the single source of Hero recommendation, sizing and EV through `buildReviewBatchPlan()` / `runReviewBatchPlan()`;
+- promoted Model B v2 supplies opponent profile prevalence, preflop ranges, postflop action frequencies and sizing samples;
+- exact promoted A/B artefacts are exposed as static browser assets under `site/assets/trainer/`; no model is retrained or semantically forked for the UI;
+- all seats start at 100 BB and Hero position/button/profile mix/cards are randomized per hand.
+
+MVP behavior:
+
+- six-seat table with Hero + five visible opponent profiles;
+- a heads-up single-raised-pot preflop situation is materialized automatically, then interactive training starts on the flop;
+- opponent postflop actions and sizings are sampled from promoted Model B v2;
+- Hero can FOLD/CHECK/CALL/BET/RAISE using BB sizing or convenient pot-fraction presets;
+- three modes: Guided (recommendation visible before acting), Training (feedback after acting), Test (feedback deferred to hand end);
+- coaching feedback exposes recommended ACTION / exact SIZING / final EV, Hero chosen EV, retained EV loss and Monte-Carlo noise tolerance;
+- session counters and EV-loss breakdown by position/street are accumulated.
+
+Current deliberate boundaries:
+
+- full interactive preflop training is not yet enabled because v83 does not expose the same complete comparable action+sizing EV surface preflop as it does postflop;
+- Model B v2 postflop policy is conditioned on profile/context but not yet on the exact hidden combo, so the trainer documents this limitation rather than pretending combo-conditioned opponent behavior;
+- retry/spaced-repetition drills are a natural follow-up, but the MVP already records enough per-decision context and EV loss to support them.
+
+Validation:
+
+- `tests/trainer/test_trainer_static.py` locks architecture reuse, static assets and stack/blind accounting;
+- `.github/workflows/trainer-smoke.yml` checks JavaScript syntax and patch idempotence, serves the same static HTTP shape used by Cloudflare Pages, then drives the real UI with Playwright;
+- latest browser smoke passed with six seats, promoted Model A/B assets loaded over HTTP, a real Model A recommendation, Hero action feedback, session-stat update, return to analyser, zero page errors and zero console errors.
 
 ## Production opponent model A — integrated analyzer population model
 
@@ -65,7 +101,7 @@ Final holdout results:
 - appearance-weighted profile stability: 70.21% VALIDATION / 73.38% TEST for players with >=10 holdout appearances.
 - sizing calibration: about 80% of holdout aggressive sizings lie inside their TRAIN P10-P90 interval; only about 1.3% exceed their local TRAIN P99.
 
-Model B remains an **external opponent environment**. It must not be used inside Hero EV calculation; its purpose is independent sequential simulation and strategy evaluation.
+Model B remains an **external opponent environment**. It must not be used inside Hero EV calculation; its purpose is independent sequential simulation and strategy evaluation. The player trainer may consume Model B only to generate the opponent environment; Hero recommendations still come exclusively from Model A/the analyser.
 
 ## Persisted NLHE 100-200 datasets and continuous ingestion
 
@@ -133,11 +169,13 @@ For every new hand-history push:
 
 ## Immediate next actions
 
-1. Issue #9: replace `/mnt/data`, pickle and `independent_decision_arena_seq_v2` dependencies in `tools/sequential_postflop_population_sim_v4.py` with the promoted JSON Model B contract.
-2. Make the sequential simulator reproducible from a clean GitHub checkout, with deterministic seeds/scenario manifests.
-3. Issue #10: run v83 against Model B v2 and persist the deterministic strategic baseline.
-4. Issue #11: compare v84 and later strategy candidates against exactly the same scenarios/profile mix.
-5. Issue #7/#12/#13: complete model-A continuous training, unified promotion gates and end-to-end automation.
+1. Finish issue #9 and merge the repo-native sequential simulator using promoted Model B JSON.
+2. Issue #10: run v83 against Model B v2 and persist the deterministic strategic baseline.
+3. Issue #11: compare v84 and later strategy candidates against exactly the same scenarios/profile mix.
+4. Issue #7/#12/#13: complete model-A continuous training, unified promotion gates and end-to-end automation.
+5. Trainer follow-up: expose a complete comparable preflop ACTION / SIZING / EV surface, then enable true interactive preflop drills.
+6. Trainer follow-up: improve Model B with combo-conditioned postflop decisions before treating hidden-card opponent actions as combo-specific evidence.
+7. Trainer follow-up: add targeted drills / retry mistakes / spaced repetition once the core strategic benchmark is stabilized.
 
 ## Remaining bootstrap gap
 
