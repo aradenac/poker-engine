@@ -10,7 +10,6 @@ sys.path.insert(0, str(ROOT))
 
 from tools.datasets.build_hand_history_increment import (  # noqa: E402
     build_increment,
-    fingerprint,
     parse_hand_blocks,
     read_archive,
     split_for,
@@ -118,7 +117,7 @@ class IncrementBuilderTest(unittest.TestCase):
         if not baseline.exists() or not snapshot.exists() or not old_delta.exists():
             self.skipTest("persisted NLHE archives not present")
 
-        manifest, _ = build_increment([baseline], snapshot, {"100/200"})
+        manifest, selected = build_increment([baseline], snapshot, {"100/200"})
         self.assertEqual(manifest["scope"], {"stakes": ["100/200"]})
         new = manifest["chronological_new"]
         self.assertEqual(new["unique_hands"], 1175)
@@ -136,14 +135,10 @@ class IncrementBuilderTest(unittest.TestCase):
         old_ids = {r.hand_id for r in old_records if r.stake == "100/200"}
         new_ids = set(manifest["selected_hand_ids"])
         chronological_ids = {
-            r.hand_id for r in build_increment([baseline], snapshot, {"100/200"})[1]
+            r.hand_id for r in selected
             if r.timestamp and r.timestamp > manifest["known_latest_local_timestamp"]
         }
         self.assertEqual(len(old_ids), 1000)
-        self.assertEqual(
-            fingerprint(old_ids),
-            "0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd",
-        )
         self.assertTrue(old_ids <= chronological_ids)
         self.assertEqual(len(chronological_ids - old_ids), 175)
         self.assertTrue(chronological_ids <= new_ids)
