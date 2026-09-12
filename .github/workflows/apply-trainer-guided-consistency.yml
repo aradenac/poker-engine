@@ -5,6 +5,7 @@ on:
     branches: [issue-30-guided-verdict-consistency]
     paths:
       - 'tools/patches/fix_trainer_guided_consistency.py'
+      - 'tests/trainer/test_trainer_latency_contract.py'
       - '.github/workflows/apply-trainer-guided-consistency.yml'
 
 permissions:
