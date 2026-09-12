@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,8 +33,8 @@ assert caller["LJ"]["AQo"] == 1.0
 
 # Exact-combo enumeration + class frequency means combo multiplicity is naturally respected.
 # Example: BTN PFA 33 contributes 6 combos * 0.6, while A2s contributes 4 combos * 1.0.
-assert 6 * pfa["BTN"]["33"] == 3.6
-assert 4 * pfa["BTN"]["A2s"] == 4.0
+assert math.isclose(6 * pfa["BTN"]["33"], 3.6)
+assert math.isclose(4 * pfa["BTN"]["A2s"], 4.0)
 
 required = [
     'hero:{ranges:"./assets/trainer/hero/custom_ranges_v1.json"}',
