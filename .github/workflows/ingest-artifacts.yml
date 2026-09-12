@@ -7,6 +7,8 @@ on:
       - 'tools/ingest_artifact.py'
       - 'tools/ingest_dispatch.py'
       - 'tools/datasets/audit_hand_history_archive.py'
+      - 'tools/datasets/build_hand_history_increment.py'
+      - 'tests/datasets/test_build_hand_history_increment.py'
       - 'training/datasets/NLHE_100-200/**/*.zip'
       - '.github/workflows/ingest-artifacts.yml'
 
@@ -25,6 +27,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Test hand-history increment builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/datasets/test_build_hand_history_increment.py
 
       - name: Import and verify staged artifacts
         shell: bash
@@ -50,6 +58,32 @@ jobs:
           if [ -f "$snapshot" ]; then
             python3 tools/datasets/audit_hand_history_archive.py "$snapshot" \
               'training/datasets/NLHE_100-200/snapshots/20260909/manifest.json'
+          fi
+
+      - name: Reproduce canonical 2026-09-09 increment by hand ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline='training/datasets/NLHE_100-200/source/NLHE 100-200.zip'
+          snapshot='training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'
+          manifest='training/datasets/NLHE_100-200/increments/20260909/manifest.json'
+          if [ -f "$baseline" ] && [ -f "$snapshot" ]; then
+            python3 tools/datasets/build_hand_history_increment.py \
+              --known "$baseline" \
+              --candidate "$snapshot" \
+              --manifest "$manifest"
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('training/datasets/NLHE_100-200/increments/20260909/manifest.json')
+          m=json.loads(p.read_text())
+          assert m['selected_unique_hands'] == 1000, m['selected_unique_hands']
+          assert m['split_counts'] == {'TRAIN': 790, 'VALIDATION': 100, 'TEST': 110}, m['split_counts']
+          assert m['selected_hand_ids_fingerprint_sha256'] == '0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd'
+          assert m['earliest_local_timestamp'] == '2026-09-07 23:10:38'
+          assert m['latest_local_timestamp'] == '2026-09-09 17:48:16'
+          print('Golden increment reproduced exactly.')
+          PY
           fi
 
       - name: Commit imported artifacts and dataset manifests
