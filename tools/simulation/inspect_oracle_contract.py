@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print one v83 review-detail payload to diagnose the analyser/oracle contract."""
+"""Print one v83 review detail and its completed plan action for contract diagnosis."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 from tools.simulation.model_b_runtime import ModelBEnvironment
 from tools.simulation.scenarios import build_scenario_manifest
-from tools.simulation.sequential_postflop import AnalyzerOracle, action_line, default_paths, preflop_prefix
+from tools.simulation.sequential_postflop import AnalyzerOracle, default_paths, preflop_prefix
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -36,10 +36,21 @@ async def run(out: Path, trials: int) -> None:
     await oracle.start()
     try:
         detail = await oracle.decide(hh)
+        plan_action = await oracle.page.evaluate(
+            """()=>{
+              const a=window.__p?.actions?.[0];
+              if(!a)return null;
+              return JSON.parse(JSON.stringify(a,(k,v)=>{
+                if(k==='hand'||k==='worker'||k==='range'||k==='opponents')return undefined;
+                return (typeof v==='number' && !Number.isFinite(v)) ? null : v;
+              }));
+            }"""
+        )
     finally:
         await oracle.close()
-    out.write_text(json.dumps(detail, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps(detail, indent=2, ensure_ascii=False), flush=True)
+    payload = {"detail": detail, "plan_action": plan_action}
+    out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps(payload, indent=2, ensure_ascii=False), flush=True)
 
 
 def main() -> None:
