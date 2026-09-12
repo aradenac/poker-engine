@@ -1,0 +1,69 @@
+name: Build independent Model B features
+
+on:
+  push:
+    paths:
+      - 'tools/training/independent_profiles/**'
+      - 'tests/independent_profiles/**'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+      - '.github/workflows/model-b-features.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-features-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-features:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Unit tests
+        run: python3 tests/independent_profiles/test_build_player_features.py
+
+      - name: Build TRAIN-only player features
+        run: |
+          python3 tools/training/independent_profiles/build_player_features.py \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --min-hands 30 \
+            --prior-strength 40 \
+            --output 'training/runs/20260912_independent_profiles_v2/features/player_features.json' \
+            --summary 'training/runs/20260912_independent_profiles_v2/features/summary.json'
+
+      - name: Validate independence and provenance
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('training/runs/20260912_independent_profiles_v2/features/player_features.json')
+          d=json.loads(p.read_text())
+          assert d['schema'] == 'independent-profile-player-features/v1'
+          assert d['split_used_for_fit'] == 'TRAIN'
+          assert d['provenance']['scope']['stakes'] == ['100/200']
+          assert d['provenance']['unique_scoped_hands'] == 27735, d['provenance']['unique_scoped_hands']
+          assert 'RoiDePiqueNique' in d['excluded_players']
+          assert 'model-A' in d['independence_contract']
+          assert d['players_total'] > 0
+          print('Model B feature contract validated.')
+          PY
+
+      - name: Commit generated feature artifacts
+        run: |
+          if [ -z "$(git status --porcelain training/runs/20260912_independent_profiles_v2/features)" ]; then
+            echo 'No generated feature changes.'
+            exit 0
+          fi
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add training/runs/20260912_independent_profiles_v2/features
+          git commit -m 'Build independent Model B player features'
+          git push
