@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'tools/training/independent_profiles/build_model_b.py'
+      - 'tools/training/independent_profiles/summarize_model_b.py'
       - 'tests/independent_profiles/test_build_model_b.py'
       - 'training/runs/20260912_independent_profiles_v2/features/**'
       - 'training/datasets/NLHE_100-200/**/*.zip'
@@ -39,6 +40,12 @@ jobs:
             --profiles 6 \
             --output-dir 'training/runs/20260912_independent_profiles_v2/model'
 
+      - name: Build compact audit metrics
+        run: |
+          python3 -m tools.training.independent_profiles.summarize_model_b \
+            --model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --output 'training/runs/20260912_independent_profiles_v2/model/metrics.json'
+
       - name: Validate model contract
         run: |
           python3 - <<'PY'
@@ -50,6 +57,7 @@ jobs:
           r=json.loads((root/'preflop_ranges.json').read_text())
           a=json.loads((root/'postflop_actions.json').read_text())
           z=json.loads((root/'sizing.json').read_text())
+          m=json.loads((root/'metrics.json').read_text())
           assert s['schema']=='independent-opponent-model-b/v2'
           assert s['fit_split']=='TRAIN'
           assert s['dataset']['scope']['stakes']==['100/200']
@@ -63,8 +71,13 @@ jobs:
           assert s['counts'].get('known_preflop_hands',0)>0
           assert s['counts'].get('postflop_decisions',0)>0
           assert s['counts'].get('sizing_observations',0)>0
+          assert m['postflop_action_observations']==s['counts']['postflop_decisions']
+          assert m['sizing']['global']['n']==s['counts']['sizing_observations']
+          assert m['sizing']['over_20x_fraction'] < 0.02, m['sizing']['over_20x_fraction']
+          anomaly_count=sum(m['parser_or_state_anomalies'].values())
+          assert anomaly_count / s['counts']['postflop_decisions'] < 0.001
           assert 'model-A' in s['independence_contract']
-          print(json.dumps(s,indent=2))
+          print(json.dumps(m,indent=2))
           PY
 
       - name: Commit generated model artifacts
