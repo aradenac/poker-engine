@@ -19,7 +19,10 @@ require('trainerState.perf.evaluations++')
 require('detail=await trainerTimedReviewText(')
 
 # Guided mode can reuse the already-computed best result for an exact matching action/sizing.
-require('function trainerRecommendationMatchesAction(rec,actual)')
+# The matcher is now context-aware because sizing-only labels such as "25% pot" need the
+# current decision context to resolve to BET vs RAISE.
+require('function trainerRecommendationKind(hand,rec)')
+require('function trainerRecommendationMatchesAction(rec,actual,hand=trainerState.hand)')
 require('function trainerReuseBestAsPlayed(rec)')
 require('trainerState.perf.reused++')
 
