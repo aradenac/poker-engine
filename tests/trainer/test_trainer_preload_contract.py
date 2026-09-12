@@ -15,7 +15,9 @@ require('async function trainerLoadWarmAssets()')
 require('function trainerScheduleWarmup()')
 require('requestIdleCallback')
 require('trainerScheduleWarmup();')
-require('const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB),assets=await trainerLoadWarmAssets();')
+require('trainerFetchJson(TRAINER_ASSETS.hero.ranges)')
+require('trainerWarmAssets.heroRanges=heroRanges')
+require('const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB&&trainerWarmAssets.heroRanges),assets=await trainerLoadWarmAssets();')
 require('trainerState.perf.warmHit=alreadyWarm;')
 require('trainerState.perf.modelLoadMs=performance.now()-loadStarted;')
 require('await trainerSleep(TRAINER_DELAYS.street);')
@@ -26,7 +28,8 @@ require('await trainerSleep(TRAINER_DELAYS.opponentSettle);')
 for old in ('trainerSleep(160)', 'trainerSleep(220)', 'trainerSleep(180)'):
     assert old not in JS, f"old artificial delay reintroduced: {old}"
 
-# Warmup may fetch/parse assets but must not eagerly mutate analyser model state.
+# Warmup may fetch/parse assets, including the static Hero range, but must not
+# eagerly mutate analyser Model A state.
 warm_start = JS.index('async function trainerLoadWarmAssets()')
 warm_end = JS.index('function trainerScheduleWarmup()', warm_start)
 warm = JS[warm_start:warm_end]

@@ -21,7 +21,8 @@ const TRAINER_ASSETS={
     actions:"./assets/trainer/model_b/postflop_actions.json",
     sizing:"./assets/trainer/model_b/sizing.json",
     contract:"./assets/trainer/model_b/prediction_contract.json"
-  }
+  },
+  hero:{ranges:"./assets/trainer/hero/custom_ranges_v1.json"}
 };
 
 const TRAINER_POSITIONS=["BTN","SB","BB","LJ","HJ","CO"];
@@ -30,11 +31,11 @@ const TRAINER_POSTFLOP_ORDER=["SB","BB","LJ","HJ","CO","BTN"];
 const TRAINER_HERO="Hero";
 const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};
 const TRAINER_REVIEW_CACHE_MAX=96;
-const trainerWarmAssets={started:false,promise:null,modelA:null,modelB:null,startedAt:0,finishedAt:0,error:null};
+const trainerWarmAssets={started:false,promise:null,modelA:null,modelB:null,heroRanges:null,startedAt:0,finishedAt:0,error:null};
 const trainerReviewCache={entries:new Map(),preModel:null,postModel:null,hits:0,misses:0,evictions:0};
 
 const trainerState={
-  open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,
+  open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,heroRanges:null,
   handNo:0,evalNo:0,hand:null,recommendation:null,feedback:null,
   pauseAfterDecision:false,busy:false,sizingTouched:false,
   perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false,cacheHits:0,cacheMisses:0},
@@ -97,17 +98,17 @@ async function trainerLoadWarmAssets(){
   trainerWarmAssets.started=true;trainerWarmAssets.startedAt=performance.now();
   trainerWarmAssets.promise=(async()=>{
     try{
-      const [profiles,ranges,actions,sizing,contract,preflop,postflop]=await Promise.all([
+      const [profiles,ranges,actions,sizing,contract,preflop,postflop,heroRanges]=await Promise.all([
         trainerFetchJson(TRAINER_ASSETS.modelB.profiles),trainerFetchJson(TRAINER_ASSETS.modelB.ranges),
         trainerFetchJson(TRAINER_ASSETS.modelB.actions),trainerFetchJson(TRAINER_ASSETS.modelB.sizing),
         trainerFetchJson(TRAINER_ASSETS.modelB.contract),trainerFetchText(TRAINER_ASSETS.modelA.preflop),
-        trainerFetchText(TRAINER_ASSETS.modelA.postflop)
+        trainerFetchText(TRAINER_ASSETS.modelA.postflop),trainerFetchJson(TRAINER_ASSETS.hero.ranges)
       ]);
       trainerWarmAssets.modelB={profiles,ranges,actions,sizing,contract};
-      trainerWarmAssets.modelA={preflop,postflop};
+      trainerWarmAssets.modelA={preflop,postflop};trainerWarmAssets.heroRanges=heroRanges;
       trainerWarmAssets.finishedAt=performance.now();
       trainerState.perf.warmupMs=trainerWarmAssets.finishedAt-trainerWarmAssets.startedAt;
-      return {modelA:trainerWarmAssets.modelA,modelB:trainerWarmAssets.modelB};
+      return {modelA:trainerWarmAssets.modelA,modelB:trainerWarmAssets.modelB,heroRanges:trainerWarmAssets.heroRanges};
     }catch(err){trainerWarmAssets.error=err;trainerWarmAssets.promise=null;throw err;}
   })();
   return trainerWarmAssets.promise;
@@ -127,11 +128,12 @@ async function trainerEnsureModels(){
   trainerState.loading=true;trainerState.error="";trainerRenderStatus("Chargement des modèles promus A/B…","busy");
   const loadStarted=performance.now();
   try{
-    const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB),assets=await trainerLoadWarmAssets();
+    const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB&&trainerWarmAssets.heroRanges),assets=await trainerLoadWarmAssets();
     trainerState.perf.warmHit=alreadyWarm;
     const {profiles,ranges,actions,sizing,contract}=assets.modelB;
     if(profiles.schema!=="independent-opponent-profiles/v2"||ranges.schema!=="independent-preflop-ranges/v2"||actions.schema!=="independent-postflop-actions/v2"||sizing.schema!=="independent-postflop-sizing/v2")throw new Error("Model B : schéma inattendu.");
-    trainerState.modelB=assets.modelB;
+    if(assets.heroRanges?.schema!=="trainer-hero-preflop-ranges/v1")throw new Error("Ranges Hero : schéma inattendu.");
+    trainerState.modelB=assets.modelB;trainerState.heroRanges=assets.heroRanges;
 
     if(!state.populationModel){
       const content=assets.modelA.preflop;
@@ -145,7 +147,7 @@ async function trainerEnsureModels(){
     }
     trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    trainerRenderStatus(`Trainer prêt · Model A v5 + Model B v2 · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
+    trainerRenderStatus(`Trainer prêt · Model A v5 + Model B v2 + ranges Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
@@ -184,6 +186,18 @@ function trainerSampleRangeCards(profile,position,potType,role,blocked){
   }
   const c=trainerWeightedChoice(combos,weights);return c||combos[trainerRandomInt(combos.length)];
 }
+function trainerHeroRangeMap(role,position){return trainerState.heroRanges?.ranges?.[String(role||"").toUpperCase()]?.[String(position||"").toUpperCase()]||null;}
+function trainerHeroRangeAvailable(role,position){const range=trainerHeroRangeMap(role,position);return !!range&&Object.values(range).some(x=>Number(x)>0);}
+function trainerSampleHeroRangeCards(role,position,blocked=new Set()){
+  const range=trainerHeroRangeMap(role,position);if(!range)return null;
+  const combos=[],weights=[];
+  for(let a=0;a<52;a++)for(let b=a+1;b<52;b++){
+    if(blocked.has(a)||blocked.has(b))continue;
+    const cls=cardsToNotation([a,b]),weight=Number(range[cls])||0;if(!(weight>0))continue;
+    combos.push([a,b]);weights.push(weight);
+  }
+  return combos.length?trainerWeightedChoice(combos,weights):null;
+}
 function trainerActionProbabilities(ctx){
   const m=trainerState.modelB.actions,mode=ctx.mode.toUpperCase(),labels=[...(m.labels?.[mode]||[])];
   const row={profile:Number(ctx.profile),street:ctx.street.toLowerCase(),mode,relative_position:ctx.relative_position,pot_type:ctx.pot_type,preflop_role:ctx.preflop_role};
@@ -202,22 +216,22 @@ function trainerSampleSizing(ctx){const v=trainerSizingValues(ctx);return v.leng
 
 function trainerDraw(deck){if(!deck.length)throw new Error("Paquet vide");return deck.pop();}
 function trainerBuildHand(){
-  trainerState.handNo++;
   const dealer=trainerRandomInt(6),heroSeat=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
   const heroPos=positions[heroSeat],heroRank=TRAINER_PREFLOP_ORDER.indexOf(heroPos);
   let heroRole=(heroRank<5&&heroRank>0)?(Math.random()<.5?"PFA":"CALLER"):(heroRank===0?"PFA":"CALLER");
   let candidates=[];
   if(heroRole==="PFA")candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r>heroRank);
   else candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r<heroRank);
-  if(!candidates.length){heroRole=heroRole==="PFA"?"CALLER":"PFA";return trainerBuildHand();}
+  if(!candidates.length||!trainerHeroRangeAvailable(heroRole,heroPos))return trainerBuildHand();
+  trainerState.handNo++;
   const oppSeat=candidates[trainerRandomInt(candidates.length)].s,oppPos=positions[oppSeat],pfaSeat=heroRole==="PFA"?heroSeat:oppSeat,callerSeat=heroRole==="CALLER"?heroSeat:oppSeat;
   const names=Array.from({length:6},(_,s)=>s===heroSeat?TRAINER_HERO:`Villain ${s+1}`),profiles=Array(6).fill(null);
   for(let s=0;s<6;s++)if(s!==heroSeat)profiles[s]=trainerSampleProfile();
-  const deck=trainerShuffle(Array.from({length:52},(_,i)=>i)),hole=Array.from({length:6},()=>[]),blocked=new Set();
-  hole[heroSeat]=[trainerDraw(deck),trainerDraw(deck)];hole[heroSeat].forEach(c=>blocked.add(c));
+  const hole=Array.from({length:6},()=>[]),blocked=new Set(),heroCards=trainerSampleHeroRangeCards(heroRole,heroPos,blocked);
+  if(!heroCards)return trainerBuildHand();hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
   const oppRole=heroRole==="PFA"?"CALLER":"PFA",oppCards=trainerSampleRangeCards(profiles[oppSeat],oppPos,"SRP",oppRole,blocked);
   hole[oppSeat]=oppCards;for(const c of oppCards)blocked.add(c);
-  const remaining=deck.filter(c=>!blocked.has(c));trainerShuffle(remaining);
+  const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);
   for(let s=0;s<6;s++)if(s!==heroSeat&&s!==oppSeat){hole[s]=[trainerDraw(remaining),trainerDraw(remaining)];}
   const used=new Set(hole.flat()),boardDeck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!used.has(c))),runout=Array.from({length:5},()=>trainerDraw(boardDeck));
 
@@ -470,7 +484,7 @@ function trainerSeatHtml(hand,s){
 function trainerBetSpotsHtml(hand){return hand.streetPaid.map((x,s)=>x>1e-8?`<div class="bet-spot bet${s+1}">${escapeHtml(trainerFmtBB(x))}</div>`:"").join("");}
 function trainerRenderTable(){
   const h=trainerState.hand;if(!trainerTable)return;if(!h){trainerTable.innerHTML='<div class="trainer-note">Cliquez sur « Nouvelle main » pour commencer.</div>';return;}
-  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")}</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
+  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")} · range Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";
