@@ -7,7 +7,7 @@ Last update: 2026-09-12
 - GitHub repository `aradenac/poker-engine` is the durable source of truth.
 - User-facing releases live under `user/releases/`; the runnable site is mirrored at `site/index.html`.
 - Production population models live under `training/models/`.
-- Versioned training/calibration work lives under `training/runs/`; current lineage state lives under `training/state/`.
+- Raw hand-history datasets live under `training/datasets/`; versioned training/calibration work lives under `training/runs/`; current lineage state lives under `training/state/`.
 - Tooling lives under `tools/`; permanent validation under `tests/`; assistant/project continuity under `.project/`.
 
 ## Promoted application baseline
@@ -25,6 +25,29 @@ Last update: 2026-09-12
 - Postflop production model: `training/models/postflop_population_model_v5.json`.
   - Version: `postflop_v5_clean_continuous`.
   - SHA-256: `6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae`.
+
+## Persisted NLHE 100-200 datasets
+
+Historical baseline:
+
+- Archive: `training/datasets/NLHE_100-200/source/NLHE 100-200.zip`.
+- SHA-256: `6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6`.
+- 176 hand-history files, 27,164 unique hands, no duplicate hand IDs.
+- Language split: 26,170 EN / 994 FR.
+- Coverage: 2026-07-12 10:31:29 through 2026-09-07 22:32:44.
+- Audit: `training/datasets/NLHE_100-200/source/manifest.json`.
+- Original model-lineage corpus fingerprint remains `91a1b1c285add6ace2aedafa568bfc039c644b94216b9d2fdcd28cea59b73d4b`.
+
+2026-09-09 snapshot:
+
+- Archive: `training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip`.
+- SHA-256: `7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c`.
+- 259 hand-history files, 27,677 unique hands, no duplicate hand IDs.
+- Coverage: 2026-07-17 22:40:22 through 2026-09-09 17:48:16.
+- Audit: `training/datasets/NLHE_100-200/snapshots/20260909/manifest.json`.
+- This snapshot is not a blind replacement for the baseline; the persisted incremental run selected only hands newer than the previous cutoff.
+
+Raw archives remain compressed in Git to avoid duplicating tens of megabytes of hand-history text. Audit/training tools read or extract them at runtime.
 
 ## Latest persisted training run
 
@@ -52,16 +75,13 @@ Run: `training/runs/20260909_population_increment_v2/`.
 - `tools/patch_v83_to_v84.py` and `tests/regression/v84_overbet_grid_audit.md` exist.
 - v84 is not promoted; broader regression is still required before replacing v83.
 
-## Remaining bootstrap gaps
+## Remaining bootstrap gap
 
 - `user/releases/poker_range_equity_offline_multiway_v78.html` is not yet committed at its canonical path.
-- The raw historical baseline archive `training/datasets/NLHE_100-200/source/NLHE 100-200.zip` is still pending exact import.
-- The original historical corpus fingerprint remains `91a1b1c285add6ace2aedafa568bfc039c644b94216b9d2fdcd28cea59b73d4b`.
 
 ## Immediate next milestone
 
 1. Let the user test v83 from `site/index.html` / `user/releases/` and collect concrete recommendation failures.
 2. Complete the broader v84 regression before any promotion.
 3. Expand the permanent pathological-hand regression suite.
-4. Import the remaining historical v78 and raw baseline corpus when available.
-5. Continue training only through immutable versioned runs with explicit promotion/rejection decisions.
+4. Continue training only through immutable versioned runs with explicit promotion/rejection decisions.

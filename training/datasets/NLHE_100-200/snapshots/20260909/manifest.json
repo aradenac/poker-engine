@@ -1,0 +1,1837 @@
+{
+  "schema": "poker-hand-history-archive-audit/v1",
+  "archive": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+  "archive_size_bytes": 5306939,
+  "archive_sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c",
+  "archive_entries": 259,
+  "text_entries": 259,
+  "total_uncompressed_bytes": 38833187,
+  "compression_ratio": 7.317436096401334,
+  "parsed_hands": 27677,
+  "unique_hands": 27677,
+  "duplicate_hand_ids": 0,
+  "duplicate_hand_occurrences": 0,
+  "language_hand_counts": {
+    "en": 27677,
+    "fr": 0
+  },
+  "earliest_local_timestamp": "2026-07-17 22:40:22",
+  "latest_local_timestamp": "2026-09-09 17:48:16",
+  "fingerprint_sorted_hand_ids_sha256": "66bc7f344eb021f022d82dc9cb072ee45266a3ad9e963bf459a579dd2024c015",
+  "unmatched_header_samples": [],
+  "files": [
+    {
+      "path": "HH20260717 Asios - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 132441,
+      "hands": 90,
+      "en_hands": 90,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260717 Bishop - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 16807,
+      "hands": 13,
+      "en_hands": 13,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260717 Weringia - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 92973,
+      "hands": 65,
+      "en_hands": 65,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Beyer - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 67391,
+      "hands": 44,
+      "en_hands": 44,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Dejan - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 7587,
+      "hands": 5,
+      "en_hands": 5,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Eliane - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 45302,
+      "hands": 29,
+      "en_hands": 29,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Lucidor - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 51964,
+      "hands": 38,
+      "en_hands": 38,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Majuba - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 973,
+      "hands": 1,
+      "en_hands": 1,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Prylis - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 175429,
+      "hands": 118,
+      "en_hands": 118,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260718 Watts - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 35321,
+      "hands": 24,
+      "en_hands": 24,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Bianca II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 23414,
+      "hands": 15,
+      "en_hands": 15,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Blok - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 15167,
+      "hands": 11,
+      "en_hands": 11,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Herget - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 104558,
+      "hands": 69,
+      "en_hands": 69,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Paloque - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 42485,
+      "hands": 29,
+      "en_hands": 29,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Pawona - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 517326,
+      "hands": 352,
+      "en_hands": 352,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Sadira - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 136707,
+      "hands": 90,
+      "en_hands": 90,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Saldanha - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 84143,
+      "hands": 62,
+      "en_hands": 62,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Utra - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 26193,
+      "hands": 17,
+      "en_hands": 17,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260719 Walraven - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 439630,
+      "hands": 313,
+      "en_hands": 313,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260720 Alrischa - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 356391,
+      "hands": 237,
+      "en_hands": 237,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260720 Dibaj - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 9331,
+      "hands": 6,
+      "en_hands": 6,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260720 Jena II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 135271,
+      "hands": 91,
+      "en_hands": 91,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260720 Jih - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 100442,
+      "hands": 67,
+      "en_hands": 67,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260720 Panopaea II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 346865,
+      "hands": 245,
+      "en_hands": 245,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Boliviana II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 14393,
+      "hands": 9,
+      "en_hands": 9,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Erminia - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 105454,
+      "hands": 73,
+      "en_hands": 73,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Haffner - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1342,
+      "hands": 1,
+      "en_hands": 1,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Hippo II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 7514,
+      "hands": 5,
+      "en_hands": 5,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Kolga II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 301265,
+      "hands": 211,
+      "en_hands": 211,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Leontina II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 36923,
+      "hands": 22,
+      "en_hands": 22,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Mandeville - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 214740,
+      "hands": 152,
+      "en_hands": 152,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Neckar II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 132908,
+      "hands": 95,
+      "en_hands": 95,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Nunki - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 278719,
+      "hands": 199,
+      "en_hands": 199,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Pele - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 21146,
+      "hands": 15,
+      "en_hands": 15,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Siarnaq II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1531,
+      "hands": 1,
+      "en_hands": 1,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260721 Stroobantia II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 22135,
+      "hands": 16,
+      "en_hands": 16,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Alderamin II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 86733,
+      "hands": 54,
+      "en_hands": 54,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Algol II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 7266,
+      "hands": 5,
+      "en_hands": 5,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Bernardina II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 14448,
+      "hands": 10,
+      "en_hands": 10,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 El Djezair II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 82677,
+      "hands": 57,
+      "en_hands": 57,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Floirac II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 57370,
+      "hands": 39,
+      "en_hands": 39,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Holmia II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 63722,
+      "hands": 43,
+      "en_hands": 43,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Ianthe - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 36215,
+      "hands": 26,
+      "en_hands": 26,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Joella II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 59253,
+      "hands": 42,
+      "en_hands": 42,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Lavonne II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 157454,
+      "hands": 110,
+      "en_hands": 110,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Nyctimene II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 217598,
+      "hands": 150,
+      "en_hands": 150,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Oceana II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 225658,
+      "hands": 153,
+      "en_hands": 153,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260722 Vesta - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 45494,
+      "hands": 33,
+      "en_hands": 33,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Arosa II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 46824,
+      "hands": 31,
+      "en_hands": 31,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Bengt II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 50255,
+      "hands": 34,
+      "en_hands": 34,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Bessel II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 52221,
+      "hands": 36,
+      "en_hands": 36,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Kiso II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 35306,
+      "hands": 23,
+      "en_hands": 23,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Klytia - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 295078,
+      "hands": 211,
+      "en_hands": 211,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Owa II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 71706,
+      "hands": 54,
+      "en_hands": 54,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Polit II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 219500,
+      "hands": 146,
+      "en_hands": 146,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Taiyuan II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 44498,
+      "hands": 34,
+      "en_hands": 34,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260723 Warck II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 273277,
+      "hands": 185,
+      "en_hands": 185,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Albali II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 149747,
+      "hands": 107,
+      "en_hands": 107,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Alfven II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 53335,
+      "hands": 38,
+      "en_hands": 38,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Alnair III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 109710,
+      "hands": 75,
+      "en_hands": 75,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Arethusa - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 70763,
+      "hands": 48,
+      "en_hands": 48,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Ashlesha II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 15177,
+      "hands": 12,
+      "en_hands": 12,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Askania II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 85851,
+      "hands": 60,
+      "en_hands": 60,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Bahner II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 38577,
+      "hands": 27,
+      "en_hands": 27,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Caupolican II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 167925,
+      "hands": 118,
+      "en_hands": 118,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Colchis II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 140073,
+      "hands": 100,
+      "en_hands": 100,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Cupido II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 99117,
+      "hands": 72,
+      "en_hands": 72,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Elisa II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 64389,
+      "hands": 42,
+      "en_hands": 42,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Juhani - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 29351,
+      "hands": 20,
+      "en_hands": 20,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Juhani II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 27351,
+      "hands": 19,
+      "en_hands": 19,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Kraz III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 57470,
+      "hands": 40,
+      "en_hands": 40,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Laetitia III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 18556,
+      "hands": 12,
+      "en_hands": 12,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Leuschneria II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 9244,
+      "hands": 8,
+      "en_hands": 8,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Lupus III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 99091,
+      "hands": 69,
+      "en_hands": 69,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Merga III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 30881,
+      "hands": 23,
+      "en_hands": 23,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Messina II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 112398,
+      "hands": 74,
+      "en_hands": 74,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Mirnaya II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 60802,
+      "hands": 45,
+      "en_hands": 45,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Nunki III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 13931,
+      "hands": 9,
+      "en_hands": 9,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Pannonia II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 117953,
+      "hands": 80,
+      "en_hands": 80,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Pomona III - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 56990,
+      "hands": 39,
+      "en_hands": 39,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Psyche III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 62444,
+      "hands": 44,
+      "en_hands": 44,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Rostia II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 111860,
+      "hands": 76,
+      "en_hands": 76,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Shao II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 61432,
+      "hands": 42,
+      "en_hands": 42,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Sheratan II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 49923,
+      "hands": 34,
+      "en_hands": 34,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Signe - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 117726,
+      "hands": 85,
+      "en_hands": 85,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Somville II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 54723,
+      "hands": 37,
+      "en_hands": 37,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Thomsen II - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 166698,
+      "hands": 115,
+      "en_hands": 115,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Ulula II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 49347,
+      "hands": 33,
+      "en_hands": 33,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Veniakaverin II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 58607,
+      "hands": 39,
+      "en_hands": 39,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Wezen II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 35521,
+      "hands": 25,
+      "en_hands": 25,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260724 Zaurak II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 17620,
+      "hands": 13,
+      "en_hands": 13,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Behrens II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 21973,
+      "hands": 15,
+      "en_hands": 15,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Celuta III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 12905,
+      "hands": 10,
+      "en_hands": 10,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Elisa II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 9496,
+      "hands": 6,
+      "en_hands": 6,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Fagnes II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 23718,
+      "hands": 16,
+      "en_hands": 16,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Norma III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 17439,
+      "hands": 12,
+      "en_hands": 12,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Sumava II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 20127,
+      "hands": 13,
+      "en_hands": 13,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Toutatis III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 45443,
+      "hands": 31,
+      "en_hands": 31,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260725 Uppsala II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 45196,
+      "hands": 32,
+      "en_hands": 32,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Adelheid III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 12147,
+      "hands": 10,
+      "en_hands": 10,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Algenib III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 64415,
+      "hands": 46,
+      "en_hands": 46,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Alya III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 56696,
+      "hands": 41,
+      "en_hands": 41,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Angetenar III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 78211,
+      "hands": 56,
+      "en_hands": 56,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Bok II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 73183,
+      "hands": 54,
+      "en_hands": 54,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Cetus III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 57773,
+      "hands": 43,
+      "en_hands": 43,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Drakonia III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 26039,
+      "hands": 18,
+      "en_hands": 18,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Enceladus III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 46599,
+      "hands": 33,
+      "en_hands": 33,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Etheridgea III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 9636,
+      "hands": 7,
+      "en_hands": 7,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Eucharis - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 93020,
+      "hands": 64,
+      "en_hands": 64,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Eulalia III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 77205,
+      "hands": 54,
+      "en_hands": 54,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Gaika II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 26232,
+      "hands": 19,
+      "en_hands": 19,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Ingeborg III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 77878,
+      "hands": 54,
+      "en_hands": 54,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Isara III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 89807,
+      "hands": 64,
+      "en_hands": 64,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Juhani - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 64696,
+      "hands": 45,
+      "en_hands": 45,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Koranna II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 103717,
+      "hands": 73,
+      "en_hands": 73,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Kundry III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 45225,
+      "hands": 34,
+      "en_hands": 34,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Kythera III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 52088,
+      "hands": 36,
+      "en_hands": 36,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Lacerta III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 26411,
+      "hands": 19,
+      "en_hands": 19,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Luyten II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 79428,
+      "hands": 53,
+      "en_hands": 53,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Lydia III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 6436,
+      "hands": 5,
+      "en_hands": 5,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Nerthus II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 37643,
+      "hands": 24,
+      "en_hands": 24,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Paloque II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 31092,
+      "hands": 22,
+      "en_hands": 22,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Pherkard II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 6101,
+      "hands": 4,
+      "en_hands": 4,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Rosalia III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 77101,
+      "hands": 52,
+      "en_hands": 52,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Sylvania III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 45530,
+      "hands": 33,
+      "en_hands": 33,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Triton III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 32078,
+      "hands": 22,
+      "en_hands": 22,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Turais III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 13304,
+      "hands": 10,
+      "en_hands": 10,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Valentine III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 91386,
+      "hands": 64,
+      "en_hands": 64,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Veritas III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 59225,
+      "hands": 46,
+      "en_hands": 46,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Wingolfia II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 124276,
+      "hands": 91,
+      "en_hands": 91,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260726 Zoya II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 55177,
+      "hands": 38,
+      "en_hands": 38,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Algebar III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 18106,
+      "hands": 13,
+      "en_hands": 13,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Aquila - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 48063,
+      "hands": 35,
+      "en_hands": 35,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Aquilegia II - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 166170,
+      "hands": 123,
+      "en_hands": 123,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Arete III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 61091,
+      "hands": 46,
+      "en_hands": 46,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Behrens II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 110590,
+      "hands": 75,
+      "en_hands": 75,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Brita II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 27218,
+      "hands": 19,
+      "en_hands": 19,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Cyane III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 49745,
+      "hands": 34,
+      "en_hands": 34,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Delphinus - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 154717,
+      "hands": 105,
+      "en_hands": 105,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Goto - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 24312,
+      "hands": 16,
+      "en_hands": 16,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Hyakutake III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 25382,
+      "hands": 17,
+      "en_hands": 17,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Liberatrix III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 161883,
+      "hands": 111,
+      "en_hands": 111,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Lotis III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 83325,
+      "hands": 60,
+      "en_hands": 60,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Markab III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 21596,
+      "hands": 15,
+      "en_hands": 15,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Nele II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 21152,
+      "hands": 14,
+      "en_hands": 14,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Phad III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 8070,
+      "hands": 6,
+      "en_hands": 6,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Sirius - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 14702,
+      "hands": 10,
+      "en_hands": 10,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260727 Thia III - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 6715,
+      "hands": 5,
+      "en_hands": 5,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Actor II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 112993,
+      "hands": 82,
+      "en_hands": 82,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Lyka III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 91203,
+      "hands": 68,
+      "en_hands": 68,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Menippe III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 27599,
+      "hands": 19,
+      "en_hands": 19,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Naef II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 34993,
+      "hands": 21,
+      "en_hands": 21,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Nata III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 28335,
+      "hands": 24,
+      "en_hands": 24,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 NLHE 250-500 6 Max #2 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 539077,
+      "hands": 386,
+      "en_hands": 386,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 NLHE 250-500 6 Max #3 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 553414,
+      "hands": 398,
+      "en_hands": 398,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 NLHE 250-500 6 Max - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 168725,
+      "hands": 121,
+      "en_hands": 121,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Penelope II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 91490,
+      "hands": 66,
+      "en_hands": 66,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Perrotin III - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 98748,
+      "hands": 70,
+      "en_hands": 70,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260728 Sy II - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 40693,
+      "hands": 27,
+      "en_hands": 27,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260729 NLHE 250-500 6 Max #2 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 289496,
+      "hands": 211,
+      "en_hands": 211,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260729 NLHE 250-500 6 Max #3 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 242678,
+      "hands": 175,
+      "en_hands": 175,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260729 NLHE 250-500 6 Max #4 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 223390,
+      "hands": 163,
+      "en_hands": 163,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260729 NLHE 250-500 6 Max #5 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 5098,
+      "hands": 4,
+      "en_hands": 4,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260729 NLHE 250-500 6 Max - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 359765,
+      "hands": 259,
+      "en_hands": 259,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260730 NLHE 250-500 6 Max #2 - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 182795,
+      "hands": 134,
+      "en_hands": 134,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260730 NLHE 250-500 6 Max - 250-500 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 36079,
+      "hands": 26,
+      "en_hands": 26,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260730 NLHE 5K-10K 6 Max #2 - 5 000-10 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 106846,
+      "hands": 80,
+      "en_hands": 80,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260730 NLHE 5K-10K 6 Max #3 - 5 000-10 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 91544,
+      "hands": 66,
+      "en_hands": 66,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260730 NLHE 5K-10K 6 Max - 5 000-10 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 4426,
+      "hands": 3,
+      "en_hands": 3,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260731 NLHE 1,000-2,000 6 Max #2 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 210894,
+      "hands": 154,
+      "en_hands": 154,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260731 NLHE 1,000-2,000 6 Max #3 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 164774,
+      "hands": 123,
+      "en_hands": 123,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260731 NLHE 1,000-2,000 6 Max - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 104565,
+      "hands": 78,
+      "en_hands": 78,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260731 NLHE 5K-10K 6 Max #4 - 5 000-10 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 29949,
+      "hands": 23,
+      "en_hands": 23,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260731 NLHE 5K-10K 6 Max - 5 000-10 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 313049,
+      "hands": 229,
+      "en_hands": 229,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Aeternitas IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 64449,
+      "hands": 46,
+      "en_hands": 46,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Alfreda IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 120364,
+      "hands": 80,
+      "en_hands": 80,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Alnitak III - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 69845,
+      "hands": 49,
+      "en_hands": 49,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Claudia IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 74155,
+      "hands": 49,
+      "en_hands": 49,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Crocus III - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 85868,
+      "hands": 66,
+      "en_hands": 66,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Gotha IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 72748,
+      "hands": 54,
+      "en_hands": 54,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Hollandia IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 150832,
+      "hands": 104,
+      "en_hands": 104,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Joensuu IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 58886,
+      "hands": 45,
+      "en_hands": 45,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Juvisia IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 149961,
+      "hands": 105,
+      "en_hands": 105,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Leontina IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 91451,
+      "hands": 65,
+      "en_hands": 65,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Lunaria IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 91382,
+      "hands": 68,
+      "en_hands": 68,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Minerva IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 48658,
+      "hands": 35,
+      "en_hands": 35,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Mothallah III - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 77812,
+      "hands": 55,
+      "en_hands": 55,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 NLHE 1,000-2,000 6 Max #2 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 395690,
+      "hands": 286,
+      "en_hands": 286,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 NLHE 1,000-2,000 6 Max #3 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 449730,
+      "hands": 330,
+      "en_hands": 330,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 NLHE 1,000-2,000 6 Max #4 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 469041,
+      "hands": 337,
+      "en_hands": 337,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 NLHE 1,000-2,000 6 Max #5 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 54801,
+      "hands": 39,
+      "en_hands": 39,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 NLHE 1,000-2,000 6 Max #6 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 56242,
+      "hands": 42,
+      "en_hands": 42,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 NLHE 1,000-2,000 6 Max - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 447108,
+      "hands": 329,
+      "en_hands": 329,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Polit IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 60349,
+      "hands": 47,
+      "en_hands": 47,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Signe IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 18270,
+      "hands": 15,
+      "en_hands": 15,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260801 Vibilia IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 154377,
+      "hands": 108,
+      "en_hands": 108,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260802 Ariel IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 83282,
+      "hands": 59,
+      "en_hands": 59,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260802 Aurora IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 53178,
+      "hands": 38,
+      "en_hands": 38,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260802 Cressida IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 60620,
+      "hands": 45,
+      "en_hands": 45,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260802 Hiera IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 57230,
+      "hands": 42,
+      "en_hands": 42,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260802 Mentha IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 38821,
+      "hands": 29,
+      "en_hands": 29,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260802 Rigilkent IV - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 71752,
+      "hands": 53,
+      "en_hands": 53,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #10 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 8852,
+      "hands": 6,
+      "en_hands": 6,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #11 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 139842,
+      "hands": 102,
+      "en_hands": 102,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #12 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 38534,
+      "hands": 28,
+      "en_hands": 28,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #13 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 34708,
+      "hands": 25,
+      "en_hands": 25,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #2 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 368881,
+      "hands": 271,
+      "en_hands": 271,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #3 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 396980,
+      "hands": 298,
+      "en_hands": 298,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #4 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 128764,
+      "hands": 94,
+      "en_hands": 94,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #5 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 77833,
+      "hands": 56,
+      "en_hands": 56,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #6 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 28959,
+      "hands": 21,
+      "en_hands": 21,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #7 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 26820,
+      "hands": 20,
+      "en_hands": 20,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #8 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1184,
+      "hands": 1,
+      "en_hands": 1,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max #9 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 193469,
+      "hands": 140,
+      "en_hands": 140,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260806 NLHE 1,000-2,000 6 Max - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 74455,
+      "hands": 57,
+      "en_hands": 57,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260809 Caupolican - 500-1 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 173164,
+      "hands": 126,
+      "en_hands": 126,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260809 NLHE 1,000-2,000 6 Max #2 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 262522,
+      "hands": 200,
+      "en_hands": 200,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260809 NLHE 1,000-2,000 6 Max #3 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 3408671,
+      "hands": 2460,
+      "en_hands": 2460,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260809 NLHE 1,000-2,000 6 Max #4 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1209444,
+      "hands": 876,
+      "en_hands": 876,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260809 NLHE 1,000-2,000 6 Max - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 66063,
+      "hands": 49,
+      "en_hands": 49,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260809 NLHE 5K-10K 6 Max - 5 000-10 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 269367,
+      "hands": 195,
+      "en_hands": 195,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260810 NLHE 1,000-2,000 6 Max #2 - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 259998,
+      "hands": 188,
+      "en_hands": 188,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260810 NLHE 1,000-2,000 6 Max - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 614677,
+      "hands": 450,
+      "en_hands": 450,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260820  - 1 000-2 000 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1195054,
+      "hands": 861,
+      "en_hands": 861,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260821 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 468083,
+      "hands": 336,
+      "en_hands": 336,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260826 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 363820,
+      "hands": 263,
+      "en_hands": 263,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260826 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 373603,
+      "hands": 269,
+      "en_hands": 269,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260830 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 616178,
+      "hands": 444,
+      "en_hands": 444,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260830 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 566959,
+      "hands": 412,
+      "en_hands": 412,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260901 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 104940,
+      "hands": 73,
+      "en_hands": 73,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260901 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 117632,
+      "hands": 84,
+      "en_hands": 84,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260902 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1190269,
+      "hands": 850,
+      "en_hands": 850,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260902 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 1197321,
+      "hands": 861,
+      "en_hands": 861,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260902 NLHE 100-200 6 Max #5 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 29893,
+      "hands": 22,
+      "en_hands": 22,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260902 NLHE 100-200 6 Max #6 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 13889,
+      "hands": 10,
+      "en_hands": 10,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260902 NLHE 100-200 6 Max #7 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 388009,
+      "hands": 279,
+      "en_hands": 279,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260902 NLHE 100-200 6 Max #8 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 361464,
+      "hands": 257,
+      "en_hands": 257,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260903 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 208940,
+      "hands": 148,
+      "en_hands": 148,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260903 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 235002,
+      "hands": 167,
+      "en_hands": 167,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260903 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 203988,
+      "hands": 144,
+      "en_hands": 144,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260903 NLHE 100-200 6 Max #5 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 168820,
+      "hands": 116,
+      "en_hands": 116,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260903 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 195450,
+      "hands": 139,
+      "en_hands": 139,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 324437,
+      "hands": 231,
+      "en_hands": 231,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 330044,
+      "hands": 233,
+      "en_hands": 233,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 126604,
+      "hands": 90,
+      "en_hands": 90,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #5 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 129540,
+      "hands": 92,
+      "en_hands": 92,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #6 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 26304,
+      "hands": 18,
+      "en_hands": 18,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #7 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 88470,
+      "hands": 61,
+      "en_hands": 61,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max #8 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 76459,
+      "hands": 53,
+      "en_hands": 53,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260906 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 226394,
+      "hands": 159,
+      "en_hands": 159,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260907 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 351109,
+      "hands": 248,
+      "en_hands": 248,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260907 NLHE 100-200 6 Max #9 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 185684,
+      "hands": 128,
+      "en_hands": 128,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260907 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 382842,
+      "hands": 271,
+      "en_hands": 271,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260908 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 31386,
+      "hands": 22,
+      "en_hands": 22,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260908 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 36080,
+      "hands": 25,
+      "en_hands": 25,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260908 NLHE 100-200 6 Max #5 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 484642,
+      "hands": 340,
+      "en_hands": 340,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260908 NLHE 100-200 6 Max #6 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 561276,
+      "hands": 395,
+      "en_hands": 395,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260909 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 165199,
+      "hands": 118,
+      "en_hands": 118,
+      "fr_hands": 0
+    },
+    {
+      "path": "HH20260909 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "bytes": 146490,
+      "hands": 106,
+      "en_hands": 106,
+      "fr_hands": 0
+    }
+  ]
+}

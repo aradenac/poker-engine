@@ -1,6 +1,14 @@
 {
   "schema_version": 1,
-  "active_dataset": "20260909_population_increment_v2",
+  "active_dataset": "NLHE_100-200",
+  "datasets": {
+    "NLHE_100-200": {
+      "baseline_archive": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+      "baseline_manifest": "training/datasets/NLHE_100-200/source/manifest.json",
+      "latest_snapshot_archive": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+      "latest_snapshot_manifest": "training/datasets/NLHE_100-200/snapshots/20260909/manifest.json"
+    }
+  },
   "promoted_model": {
     "preflop": "training/models/preflop_population_model_v5.json",
     "postflop": "training/models/postflop_population_model_v5.json"
@@ -8,13 +16,7 @@
   "promoted_run": "20260909_population_increment_v2",
   "candidate_run": null,
   "regression_suite": "training/runs/20260909_population_increment_v2/evaluation/",
-  "pending_import": {
-    "dataset": {
-      "name": "NLHE 100-200 historical baseline archive",
-      "canonical_path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
-      "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6"
-    }
-  },
+  "pending_import": null,
   "history": [
     {
       "run_id": "20260909_population_increment_v2",
@@ -23,5 +25,5 @@
       "report": "training/runs/20260909_population_increment_v2/evaluation/calibration_release_report.json"
     }
   ],
-  "notes": "Production model files are committed at canonical paths. Only the raw historical NLHE 100-200 baseline archive remains pending exact import."
+  "notes": "The historical NLHE 100-200 baseline archive and the 2026-09-09 snapshot are committed and audited at canonical dataset paths. Raw archives remain compressed; manifests provide reproducible identity and corpus statistics."
 }

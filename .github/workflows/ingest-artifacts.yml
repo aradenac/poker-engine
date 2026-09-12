@@ -6,6 +6,8 @@ on:
       - 'artifacts/inbox/*.json'
       - 'tools/ingest_artifact.py'
       - 'tools/ingest_dispatch.py'
+      - 'tools/datasets/audit_hand_history_archive.py'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
       - '.github/workflows/ingest-artifacts.yml'
 
 permissions:
@@ -30,25 +32,36 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
           manifests=(artifacts/inbox/*.json)
-          if [ ${#manifests[@]} -eq 0 ]; then
-            echo 'No ingestion manifests.'
-            exit 0
-          fi
           for manifest in "${manifests[@]}"; do
             echo "Processing $manifest"
             python3 tools/ingest_dispatch.py "$manifest"
           done
 
-      - name: Commit imported artifacts
+      - name: Audit NLHE hand-history archives
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet; then
+          baseline='training/datasets/NLHE_100-200/source/NLHE 100-200.zip'
+          snapshot='training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'
+          if [ -f "$baseline" ]; then
+            python3 tools/datasets/audit_hand_history_archive.py "$baseline" \
+              'training/datasets/NLHE_100-200/source/manifest.json'
+          fi
+          if [ -f "$snapshot" ]; then
+            python3 tools/datasets/audit_hand_history_archive.py "$snapshot" \
+              'training/datasets/NLHE_100-200/snapshots/20260909/manifest.json'
+          fi
+
+      - name: Commit imported artifacts and dataset manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain)" ]; then
             echo 'No artifact changes to commit.'
             exit 0
           fi
           git config user.name 'poker-engine artifact bot'
           git config user.email 'artifact-bot@users.noreply.github.com'
           git add -A
-          git commit -m 'Import verified staged artifacts'
+          git commit -m 'Import and audit persisted artifacts'
           git push
