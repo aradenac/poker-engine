@@ -3,10 +3,10 @@
 
 The tool compares one candidate archive with one or more already-known archives,
 selects only genuinely unseen hands, applies the stable population split contract,
-and writes a reproducible JSON manifest. Unseen hands are additionally classified
-as historical backfill or chronologically new relative to the latest known hand.
-Optionally it can materialize a ZIP containing only selected hands while preserving
-source-file grouping.
+and writes a reproducible JSON manifest. Optional stake filters are applied before
+ID comparison so mixed-stake source archives cannot contaminate a training lineage.
+Unseen hands are also classified as historical backfill or chronologically new
+relative to the latest known hand in the same filtered scope.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ HEADER_RE = re.compile(
 )
 EN_DATE_RE = re.compile(r" - (\d{4})/(\d{2})/(\d{2}) (\d{1,2}):(\d{2}):(\d{2})")
 FR_DATE_RE = re.compile(r" - (\d{2})/(\d{2})/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})")
+STAKE_RE = re.compile(r"\((?:[^()]*)?(\d[\d.,]*)\s*/\s*(\d[\d.,]*)(?:[^()]*)?\)")
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,7 @@ class HandRecord:
     text: str
     timestamp: str | None
     language: str
+    stake: str | None
 
 
 def sha256_file(path: Path) -> str:
@@ -58,6 +60,26 @@ def decode_text(data: bytes) -> str:
         except UnicodeDecodeError:
             pass
     return data.decode("utf-8", errors="replace")
+
+
+def normalize_number(text: str) -> str:
+    text = text.replace(" ", "").replace(",", ".")
+    try:
+        value = float(text)
+    except ValueError:
+        return text
+    return str(int(value)) if value.is_integer() else str(value)
+
+
+def parse_stake(header: str) -> str | None:
+    for match in STAKE_RE.finditer(header):
+        small, big = (normalize_number(x) for x in match.groups())
+        try:
+            if float(small) > 0 and float(big) > 0:
+                return f"{small}/{big}"
+        except ValueError:
+            continue
+    return None
 
 
 def normalize_timestamp(header: str, language: str) -> str | None:
@@ -83,13 +105,15 @@ def parse_hand_blocks(text: str, source_file: str) -> list[HandRecord]:
         start = match.start()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         block = text[start:end].strip("\r\n") + "\n"
+        header = match.group(0)
         out.append(
             HandRecord(
                 hand_id=hand_id,
                 source_file=source_file,
                 text=block,
-                timestamp=normalize_timestamp(match.group(0), language),
+                timestamp=normalize_timestamp(header, language),
                 language=language,
+                stake=parse_stake(header),
             )
         )
     return out
@@ -104,6 +128,7 @@ def read_archive(path: Path) -> tuple[list[HandRecord], dict]:
 
     counts = Counter(r.hand_id for r in records)
     timestamps = sorted(r.timestamp for r in records if r.timestamp)
+    stake_counts = Counter(r.stake or "UNKNOWN" for r in records)
     return records, {
         "path": path.as_posix(),
         "sha256": sha256_file(path),
@@ -111,6 +136,7 @@ def read_archive(path: Path) -> tuple[list[HandRecord], dict]:
         "archive_entries": len(infos),
         "parsed_hands": len(records),
         "unique_hands": len(counts),
+        "stake_counts": dict(sorted(stake_counts.items())),
         "duplicate_hand_ids": sum(1 for n in counts.values() if n > 1),
         "duplicate_hand_occurrences": sum(n - 1 for n in counts.values() if n > 1),
         "earliest_local_timestamp": timestamps[0] if timestamps else None,
@@ -137,6 +163,7 @@ def records_summary(records: list[HandRecord]) -> dict:
     ids = [r.hand_id for r in records]
     split_counts = Counter(split_for(hid) for hid in ids)
     language_counts = Counter(r.language for r in records)
+    stake_counts = Counter(r.stake or "UNKNOWN" for r in records)
     timestamps = sorted(r.timestamp for r in records if r.timestamp)
     return {
         "unique_hands": len(set(ids)),
@@ -147,24 +174,37 @@ def records_summary(records: list[HandRecord]) -> dict:
             "TEST": split_counts.get("TEST", 0),
         },
         "language_counts": dict(sorted(language_counts.items())),
+        "stake_counts": dict(sorted(stake_counts.items())),
         "earliest_local_timestamp": timestamps[0] if timestamps else None,
         "latest_local_timestamp": timestamps[-1] if timestamps else None,
     }
 
 
-def build_increment(known_archives: list[Path], candidate: Path) -> tuple[dict, list[HandRecord]]:
+def filter_records(records: list[HandRecord], stakes: set[str] | None) -> list[HandRecord]:
+    if not stakes:
+        return records
+    return [r for r in records if r.stake in stakes]
+
+
+def build_increment(
+    known_archives: list[Path], candidate: Path, stakes: set[str] | None = None
+) -> tuple[dict, list[HandRecord]]:
     known_ids: set[str] = set()
     known_records: list[HandRecord] = []
     known_meta = []
     for archive in known_archives:
-        records, meta = read_archive(archive)
+        all_records, meta = read_archive(archive)
+        records = filter_records(all_records, stakes)
         known_records.extend(records)
         known_ids.update(r.hand_id for r in records)
+        meta["filtered_unique_hands"] = len({r.hand_id for r in records})
         known_meta.append(meta)
 
-    candidate_records, candidate_meta = read_archive(candidate)
+    candidate_all, candidate_meta = read_archive(candidate)
+    candidate_records = filter_records(candidate_all, stakes)
     candidate_counts = Counter(r.hand_id for r in candidate_records)
     candidate_unique_ids = set(candidate_counts)
+    candidate_meta["filtered_unique_hands"] = len(candidate_unique_ids)
 
     selected_by_id: dict[str, HandRecord] = {}
     for record in candidate_records:
@@ -189,8 +229,9 @@ def build_increment(known_archives: list[Path], candidate: Path) -> tuple[dict, 
 
     selected_summary = records_summary(selected)
     manifest = {
-        "schema": "poker-hand-history-increment/v2",
-        "selection_rule": "candidate hand ID not present in union of known archive hand IDs",
+        "schema": "poker-hand-history-increment/v3",
+        "selection_rule": "candidate hand ID not present in union of known archive hand IDs after applying scope filters",
+        "scope": {"stakes": sorted(stakes) if stakes else None},
         "classification_rule": "unseen timestamp > latest known timestamp => chronological_new; otherwise historical_backfill; missing timestamp => undated_unseen",
         "split_contract": {
             "namespace": SPLIT_NAMESPACE,
@@ -212,6 +253,7 @@ def build_increment(known_archives: list[Path], candidate: Path) -> tuple[dict, 
         "selected_hand_ids": [r.hand_id for r in selected],
         "split_counts": selected_summary["split_counts"],
         "language_counts": selected_summary["language_counts"],
+        "stake_counts": selected_summary["stake_counts"],
         "earliest_local_timestamp": selected_summary["earliest_local_timestamp"],
         "latest_local_timestamp": selected_summary["latest_local_timestamp"],
         "chronological_new": records_summary(chronological_new),
@@ -239,11 +281,15 @@ def main() -> None:
     parser.add_argument("--known", type=Path, action="append", required=True,
                         help="Previously known hand-history ZIP; may be repeated")
     parser.add_argument("--candidate", type=Path, required=True)
+    parser.add_argument("--stake", action="append", dest="stakes",
+                        help="Limit comparison/training scope to one stake, e.g. 100/200; may be repeated")
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--output-zip", type=Path)
     args = parser.parse_args()
 
-    manifest, selected = build_increment(args.known, args.candidate)
+    manifest, selected = build_increment(
+        args.known, args.candidate, set(args.stakes) if args.stakes else None
+    )
     if args.output_zip:
         write_selected_zip(args.output_zip, selected)
         manifest["output_zip"] = {
@@ -255,6 +301,7 @@ def main() -> None:
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
     args.manifest.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({
+        "scope": manifest["scope"],
         "candidate_overlap_known_hands": manifest["candidate_overlap_known_hands"],
         "selected_unique_hands": manifest["selected_unique_hands"],
         "split_counts": manifest["split_counts"],
