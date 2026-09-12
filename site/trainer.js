@@ -29,13 +29,15 @@ const TRAINER_PREFLOP_ORDER=["LJ","HJ","CO","BTN","SB","BB"];
 const TRAINER_POSTFLOP_ORDER=["SB","BB","LJ","HJ","CO","BTN"];
 const TRAINER_HERO="Hero";
 const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};
+const TRAINER_REVIEW_CACHE_MAX=96;
 const trainerWarmAssets={started:false,promise:null,modelA:null,modelB:null,startedAt:0,finishedAt:0,error:null};
+const trainerReviewCache={entries:new Map(),preModel:null,postModel:null,hits:0,misses:0,evictions:0};
 
 const trainerState={
   open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,
   handNo:0,evalNo:0,hand:null,recommendation:null,feedback:null,
   pauseAfterDecision:false,busy:false,
-  perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false},
+  perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false,cacheHits:0,cacheMisses:0},
   session:{hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)},
   testLog:[]
 };
@@ -310,9 +312,28 @@ function trainerBuildReviewHH(hand,actionLine,actionKind,cost=0){
   lines[0]=lines[0].replace(/Hand #\d+/,`Hand #${evalId}`);return lines.join("\n")+"\n";
 }
 async function trainerWaitFor(fn,timeout=30000){const start=Date.now();while(!fn()){if(Date.now()-start>timeout)throw new Error("Timeout du moteur de recommandation.");await trainerSleep(40);}}
+function trainerReviewCacheClone(value){return JSON.parse(JSON.stringify(value));}
+function trainerReviewCacheNormalize(text){return String(text||"").replace(/Hand #\d+/,"Hand #<trainer>");}
+function trainerReviewCacheEnsureModelIdentity(){
+  if(trainerReviewCache.preModel===state.populationModel&&trainerReviewCache.postModel===state.postflopModel)return;
+  trainerReviewCache.entries.clear();trainerReviewCache.preModel=state.populationModel;trainerReviewCache.postModel=state.postflopModel;
+}
+function trainerReviewCacheGet(text){
+  trainerReviewCacheEnsureModelIdentity();const key=trainerReviewCacheNormalize(text);
+  if(!trainerReviewCache.entries.has(key)){trainerReviewCache.misses++;trainerState.perf.cacheMisses++;return null;}
+  const value=trainerReviewCache.entries.get(key);trainerReviewCache.entries.delete(key);trainerReviewCache.entries.set(key,value);
+  trainerReviewCache.hits++;trainerState.perf.cacheHits++;return trainerReviewCacheClone(value);
+}
+function trainerReviewCacheSet(text,value){
+  trainerReviewCacheEnsureModelIdentity();const key=trainerReviewCacheNormalize(text),copy=trainerReviewCacheClone(value);
+  trainerReviewCache.entries.delete(key);trainerReviewCache.entries.set(key,copy);
+  while(trainerReviewCache.entries.size>TRAINER_REVIEW_CACHE_MAX){const oldest=trainerReviewCache.entries.keys().next().value;trainerReviewCache.entries.delete(oldest);trainerReviewCache.evictions++;}
+}
 async function trainerTimedReviewText(text){
-  const started=performance.now();trainerState.perf.evaluations++;
-  try{return await trainerReviewText(text);}
+  const started=performance.now(),cached=trainerReviewCacheGet(text);
+  if(cached){const ms=performance.now()-started;trainerState.perf.lastMs=ms;trainerState.perf.totalMs+=ms;return cached;}
+  trainerState.perf.evaluations++;
+  try{const result=await trainerReviewText(text);trainerReviewCacheSet(text,result);return result;}
   finally{const ms=performance.now()-started;trainerState.perf.lastMs=ms;trainerState.perf.totalMs+=ms;}
 }
 async function trainerReviewText(text){
