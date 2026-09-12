@@ -3046,23 +3046,69 @@ function finalizeReviewBatchPlan(plan){
     complete:true,details,updatedAt:Date.now(),background:true};
   state.reviewScores[String(hand.id)]=summary;hand.reviewScore=summary;schedulePersistReviewScores();scheduleReviewListRefresh(30);
 }
+function reviewBatchWorkerLimit(){
+  if(!document.body.classList.contains('trainer-view-open'))return 1;
+  const hc=Math.max(1,Number(navigator.hardwareConcurrency)||4);
+  return hc>=8?3:hc>=4?2:1;
+}
 function runReviewBatchPlan(plan){
-  state.reviewBatchBusy=true;const all=[];for(const a of plan.actions)for(const t of a.tasks)all.push({a,t});let pos=0;
-  const finish=()=>{state.reviewBatchWorker=null;state.reviewBatchBusy=false;finalizeReviewBatchPlan(plan);scheduleBackgroundReviewScoring(20);};
-  const next=()=>{
-    if(pos>=all.length){finish();return;}
-    if(state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length){setTimeout(next,280);return;}
-    const {a,t}=all[pos++];let worker;
-    try{worker=(t.kind==='tree'||t.kind==='sizing')?createPostflopBetRaiseEVWorker():createTableEquityWorker();}catch(_){a.failed=true;next();return;}
-    state.reviewBatchWorker=worker;
-    const done=(m,isError)=>{cleanupReplayWorker(worker);state.reviewBatchWorker=null;
-      if(t.kind==='equity'){if(!isError&&m?.type==='result'&&m.out?.names){const idx=m.out.names.indexOf(a.actor);a.values[t.scenario]=idx>=0?m.out.equities[idx]:NaN;}else a.values[t.scenario]=NaN;}
-      else if(t.kind==='tree')a.treeValues[t.scenario]=(!isError&&m?.type==='result')?m.out:null;
-      else if(t.kind==='sizing')a.sizingResults.push({...t.candidate,tree:(!isError&&m?.type==='result')?m.out:null});
-      if(isError||m?.type!=='result')a.failed=true;next();};
-    worker.onmessage=e=>done(e.data,e.data?.type!=='result');worker.onerror=e=>done({type:'error',message:e.message||'Erreur worker'},true);
+  state.reviewBatchBusy=true;
+  const all=[];
+  for(const a of plan.actions)for(const t of a.tasks)all.push({a,t,order:all.length});
+  let pos=0,active=0,finished=false;
+  state.reviewBatchWorkers=[];
+
+  const finish=()=>{
+    if(finished||pos<all.length||active>0)return;
+    finished=true;
+    for(const a of plan.actions){
+      if(!Array.isArray(a.sizingResults))continue;
+      a.sizingResults.sort((x,y)=>Number(x.__reviewOrder||0)-Number(y.__reviewOrder||0));
+      for(const z of a.sizingResults)delete z.__reviewOrder;
+    }
+    state.reviewBatchWorker=null;state.reviewBatchWorkers=[];state.reviewBatchBusy=false;
+    finalizeReviewBatchPlan(plan);scheduleBackgroundReviewScoring(20);
+  };
+
+  const launch=({a,t,order})=>{
+    let worker;
+    try{worker=(t.kind==='tree'||t.kind==='sizing')?createPostflopBetRaiseEVWorker():createTableEquityWorker();}
+    catch(_){a.failed=true;return;}
+    active++;
+    state.reviewBatchWorkers.push(worker);state.reviewBatchWorker=worker;
+    let settled=false;
+    const done=(m,isError)=>{
+      if(settled)return;settled=true;
+      cleanupReplayWorker(worker);
+      const wi=state.reviewBatchWorkers.indexOf(worker);if(wi>=0)state.reviewBatchWorkers.splice(wi,1);
+      state.reviewBatchWorker=state.reviewBatchWorkers[state.reviewBatchWorkers.length-1]||null;
+      active=Math.max(0,active-1);
+      if(t.kind==='equity'){
+        if(!isError&&m?.type==='result'&&m.out?.names){const idx=m.out.names.indexOf(a.actor);a.values[t.scenario]=idx>=0?m.out.equities[idx]:NaN;}
+        else a.values[t.scenario]=NaN;
+      }else if(t.kind==='tree')a.treeValues[t.scenario]=(!isError&&m?.type==='result')?m.out:null;
+      else if(t.kind==='sizing')a.sizingResults.push({...t.candidate,tree:(!isError&&m?.type==='result')?m.out:null,__reviewOrder:order});
+      if(isError||m?.type!=='result')a.failed=true;
+      queueMicrotask(pump);
+    };
+    worker.onmessage=e=>done(e.data,e.data?.type!=='result');
+    worker.onerror=e=>done({type:'error',message:e.message||'Erreur worker'},true);
     try{worker.postMessage(t.snapshot);}catch(err){done({type:'error',message:err?.message||String(err)},true);}
-  };next();
+  };
+
+  const pump=()=>{
+    if(finished)return;
+    if(state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length){
+      if(active===0)setTimeout(pump,80);
+      return;
+    }
+    const limit=reviewBatchWorkerLimit();
+    while(active<limit&&pos<all.length){
+      const item=all[pos++];launch(item);
+    }
+    finish();
+  };
+  pump();
 }
 function scheduleBackgroundReviewScoring(delay=120){
   if(state.reviewBatchBusy||state.reviewBatchScheduled||state.rangeEdition||!state.hhHands.length)return;
