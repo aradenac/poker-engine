@@ -7,3 +7,7 @@ Naming convention:
 `poker_range_equity_offline_multiway_vNN.html`
 
 A release is immutable once referenced by `.project/STATUS.md` as a historical baseline. New work produces a new version rather than overwriting an earlier release.
+
+Current promoted release: `poker_range_equity_offline_multiway_v83.html`.
+
+For convenient browser testing, the promoted release is mirrored at `site/index.html`; `site/RELEASE.json` records its version and SHA-256.
