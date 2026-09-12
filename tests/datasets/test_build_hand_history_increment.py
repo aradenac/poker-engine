@@ -10,7 +10,9 @@ sys.path.insert(0, str(ROOT))
 
 from tools.datasets.build_hand_history_increment import (  # noqa: E402
     build_increment,
+    fingerprint,
     parse_hand_blocks,
+    read_archive,
     split_for,
     write_selected_zip,
 )
@@ -109,25 +111,46 @@ class IncrementBuilderTest(unittest.TestCase):
             self.assertNotIn("#5001", payload)
             self.assertIn("#5002", payload)
 
-    def test_real_20260909_snapshot_chronological_increment_matches_previous_run(self):
+    def test_real_20260909_snapshot_preserves_previous_delta_and_finds_more_evidence(self):
         baseline = ROOT / "training/datasets/NLHE_100-200/source/NLHE 100-200.zip"
         snapshot = ROOT / "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip"
-        if not baseline.exists() or not snapshot.exists():
+        old_delta = ROOT / "training/runs/20260909_population_increment_v2/source/RoiDePiqueNique_training2_delta_after_v4v5.zip"
+        if not baseline.exists() or not snapshot.exists() or not old_delta.exists():
             self.skipTest("persisted NLHE archives not present")
 
         manifest, _ = build_increment([baseline], snapshot, {"100/200"})
         self.assertEqual(manifest["scope"], {"stakes": ["100/200"]})
         new = manifest["chronological_new"]
-        self.assertEqual(new["unique_hands"], 1000)
-        self.assertEqual(new["split_counts"], {"TRAIN": 790, "VALIDATION": 100, "TEST": 110})
-        self.assertEqual(new["stake_counts"], {"100/200": 1000})
+        self.assertEqual(new["unique_hands"], 1175)
+        self.assertEqual(new["split_counts"], {"TRAIN": 929, "VALIDATION": 123, "TEST": 123})
+        self.assertEqual(new["stake_counts"], {"100/200": 1175})
         self.assertEqual(
             new["hand_ids_fingerprint_sha256"],
-            "0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd",
+            "6142a129292d486c7dedd2aec951b98ed180302d598d38508f45e222f7544bc0",
         )
         self.assertEqual(new["earliest_local_timestamp"], "2026-09-07 23:10:38")
         self.assertEqual(new["latest_local_timestamp"], "2026-09-09 17:48:16")
         self.assertEqual(manifest["undated_unseen"]["unique_hands"], 0)
+
+        old_records, _ = read_archive(old_delta)
+        old_ids = {r.hand_id for r in old_records if r.stake == "100/200"}
+        new_ids = set(manifest["selected_hand_ids"])
+        chronological_ids = {
+            r.hand_id for r in build_increment([baseline], snapshot, {"100/200"})[1]
+            if r.timestamp and r.timestamp > manifest["known_latest_local_timestamp"]
+        }
+        self.assertEqual(len(old_ids), 1000)
+        self.assertEqual(
+            fingerprint(old_ids),
+            "0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd",
+        )
+        self.assertTrue(old_ids <= chronological_ids)
+        self.assertEqual(len(chronological_ids - old_ids), 175)
+        self.assertTrue(chronological_ids <= new_ids)
+        print(
+            "100/200 ID ingestion: selected=%d backfill=%d chronological=%d; old delta is a 1000-hand subset with 175 additional chronological hands discovered"
+            % (manifest["selected_unique_hands"], manifest["historical_backfill"]["unique_hands"], new["unique_hands"])
+        )
 
 
 if __name__ == "__main__":
