@@ -192,7 +192,7 @@ function trainerBuildHand(){
   const used=new Set(hole.flat()),boardDeck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!used.has(c))),runout=Array.from({length:5},()=>trainerDraw(boardDeck));
 
   const contrib=Array(6).fill(0),stacks=Array(6).fill(100),folded=Array(6).fill(false),lastAction=Array(6).fill("");
-  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;
+  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;stacks[sb]-=.5;stacks[bb]-=1;
   const id=990000000000+trainerState.handNo*100;
   const lines=[`PokerStars Hand #${id}: Hold'em No Limit (0.50/1.00) - 2026/09/12 14:00:00 CET`,`Table 'Trainer 6-max' 6-max Seat #${dealer+1} is the button`];
   for(let s=0;s<6;s++)lines.push(`Seat ${s+1}: ${names[s]} (100 in chips)`);
@@ -203,8 +203,6 @@ function trainerBuildHand(){
     else if(s===callerSeat){const add=2.5-contrib[s];contrib[s]=2.5;lines.push(`${name}: calls ${trainerNum(add)}`);lastAction[s]=`CALL ${trainerNum(add)} BB`;stacks[s]-=add;}
     else{lines.push(`${name}: folds`);folded[s]=true;lastAction[s]="FOLD";}
   }
-  // Forced blind chips were posted before the voluntary actions.
-  if(sb!==pfaSeat&&sb!==callerSeat)stacks[sb]-=.5;if(bb!==pfaSeat&&bb!==callerSeat)stacks[bb]-=1;
   const pot=contrib.reduce((s,x)=>s+x,0);
   lines.push(`*** FLOP *** [${runout.slice(0,3).map(cardCode).join(" ")}]`);
   const hand={id,dealerSeat:dealer,heroSeat,activeOppSeat:oppSeat,pfaSeat,callerSeat,heroRole,oppRole,positions,names,profiles,hole,runout,

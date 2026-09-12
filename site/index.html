@@ -913,6 +913,7 @@
   .seat.folded .seat-stack{color:#b9c2d2}
 
 </style>
+<link rel="stylesheet" href="./trainer.css">
 </head>
 <body>
 <div id="floatingEquity" class="collapsed" aria-live="polite">
@@ -952,6 +953,7 @@
   <a href="#historiesSection">Fichiers HH</a>
   <a href="#handSelectionSection">Mains</a>
   <a href="#replayerSection">Replayer</a>
+  <a id="trainerNavLink" href="#trainerPage">Training</a>
   <a href="#opponentsSection">Adversaires</a>
   <a href="#cardsSection">Cartes</a>
   <a href="#rangeDisplaySection">Range</a>
@@ -960,6 +962,7 @@
 <div id="mainPage" class="wrap">
   <h1>Poker Range Equity <span style="font-size:.55em;font-weight:600;opacity:.72">v78</span></h1>
   <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
+  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button></div>
   <div id="localPersistenceStatus" class="status" style="margin:10px 0 0">Restauration de la configuration locale…</div>
 
   <div class="grid">
@@ -1146,6 +1149,56 @@
         </div>
       </div>
     </section>
+  </div>
+</div>
+
+<div id="trainerPage" class="trainer-page mode-hidden" aria-hidden="true">
+  <div class="trainer-shell">
+    <div class="trainer-head">
+      <button id="trainerBackBtn" type="button" class="secondary">← Analyseur</button>
+      <div>
+        <div class="trainer-title">Training 6-max</div>
+        <div class="trainer-sub">100 BB · profils population observés · coaching ACTION / SIZING / EV</div>
+      </div>
+      <div class="trainer-head-spacer"></div>
+      <div class="trainer-mode-group" role="group" aria-label="Mode d'entraînement">
+        <button type="button" class="trainer-mode-btn" data-trainer-mode="guided">Guidé</button>
+        <button type="button" class="trainer-mode-btn active" data-trainer-mode="training">Entraînement</button>
+        <button type="button" class="trainer-mode-btn" data-trainer-mode="test">Test</button>
+      </div>
+    </div>
+    <div class="trainer-grid">
+      <section class="trainer-main">
+        <div class="trainer-toolbar">
+          <button id="trainerNewHandBtn" type="button" class="primary">Nouvelle main</button>
+          <button id="trainerContinueBtn" type="button" class="secondary" style="display:none">Continuer</button>
+          <div id="trainerStatus" class="trainer-status" aria-live="polite"></div>
+        </div>
+        <div id="trainerTable"></div>
+        <div id="trainerControls"></div>
+      </section>
+      <aside class="trainer-side">
+        <div id="trainerRecommendation"></div>
+        <div id="trainerFeedback"></div>
+        <section>
+          <div class="trainer-section-title">Session</div>
+          <div id="trainerStats"></div>
+        </section>
+        <section>
+          <div class="trainer-section-title">Erreurs par spot</div>
+          <div id="trainerBreakdown" class="trainer-breakdown"></div>
+        </section>
+        <section>
+          <div class="trainer-section-title">Profils à table</div>
+          <div id="trainerProfiles" class="trainer-profile-list"></div>
+        </section>
+        <section>
+          <div class="trainer-section-title">Bilan Test</div>
+          <div id="trainerTestLog" class="trainer-test-log"></div>
+        </section>
+        <div class="trainer-note">Model B v2 pilote les profils, fréquences d’action et sizings adverses. Limite actuelle : sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Le moteur Model A reste l’unique source de recommandation Hero et d’EV.</div>
+      </aside>
+    </div>
   </div>
 </div>
 
@@ -7194,5 +7247,6 @@ window.addEventListener("beforeunload",()=>{
 /* v82 low-confidence extreme local-P90 guard active */
 /* v83 effective all-in sizing candidate active */
 </script>
+<script src="./trainer.js"></script>
 </body>
 </html>
