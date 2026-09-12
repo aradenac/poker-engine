@@ -7,6 +7,7 @@ on:
       - 'tests/independent_profiles/test_evaluate_model_b.py'
       - 'training/runs/20260912_independent_profiles_v2/features/**'
       - 'training/runs/20260912_independent_profiles_v2/model/**'
+      - 'training/runs/20260912_independent_profiles_v2/evaluation/profile_count_selection.json'
       - 'training/datasets/NLHE_100-200/**/*.zip'
       - '.github/workflows/model-b-evaluation.yml'
 
@@ -43,14 +44,21 @@ jobs:
             --output 'training/runs/20260912_independent_profiles_v2/evaluation/holdout_evaluation.json' \
             --prediction-contract 'training/runs/20260912_independent_profiles_v2/model/prediction_contract.json'
 
-      - name: Validate evaluation integrity
+      - name: Validate evaluation and promotion gates
         run: |
           python3 - <<'PY'
           import json, math
           from pathlib import Path
-          p=Path('training/runs/20260912_independent_profiles_v2/evaluation/holdout_evaluation.json')
-          d=json.loads(p.read_text())
+          root=Path('training/runs/20260912_independent_profiles_v2')
+          d=json.loads((root/'evaluation/holdout_evaluation.json').read_text())
+          selection=json.loads((root/'evaluation/profile_count_selection.json').read_text())
+          model=json.loads((root/'model/summary.json').read_text())
           assert d['schema']=='independent-opponent-model-b-evaluation/v1'
+          assert selection['selection_split']=='VALIDATION'
+          assert selection['test_used_for_selection'] is False
+          assert selection['selected_k']==3
+          assert model['parameters']['profiles']==3
+
           for split in ('validation','test'):
               x=d[split]
               assert x['hands'] > 2000
@@ -61,9 +69,42 @@ jobs:
                   assert math.isfinite(x['actions'][key]), (split,key,x['actions'][key])
               assert math.isfinite(x['range']['log_loss'])
               assert math.isfinite(x['range']['combinatorial_prior_log_loss'])
-              assert 0 <= x['actions']['warm_fraction'] <= 1
-              assert 0 <= x['range']['warm_fraction'] <= 1
-          print('Holdout evaluation integrity validated; no promotion decision made yet.')
+
+              # Predictive signal must survive deterministic holdout.
+              assert x['actions']['log_loss_improvement'] >= 0.015, (split,'action improvement',x['actions']['log_loss_improvement'])
+              assert x['range']['log_loss_improvement'] > 0.0, (split,'range improvement',x['range']['log_loss_improvement'])
+              assert x['actions']['ece_confidence'] <= 0.05, (split,'ECE',x['actions']['ece_confidence'])
+
+              # Most observations should use TRAIN-known player profiles; cold start remains supported.
+              assert x['actions']['warm_fraction'] >= 0.95, (split,'action warm',x['actions']['warm_fraction'])
+              assert x['range']['warm_fraction'] >= 0.95, (split,'range warm',x['range']['warm_fraction'])
+
+              # Profile labels are intentionally coarse; require majority stability on independent hands.
+              stability=x['profile_stability']['appearance_weighted_stable_fraction']
+              assert stability is not None and stability >= 0.55, (split,'profile stability',stability)
+
+              # Empirical sizing should exhibit expected percentile coverage without tail clipping.
+              assert 0.70 <= x['sizing']['inside_training_p10_p90_fraction'] <= 0.90, (split,'sizing p10-p90',x['sizing']['inside_training_p10_p90_fraction'])
+              assert x['sizing']['above_training_p99_fraction'] <= 0.03, (split,'sizing above p99',x['sizing']['above_training_p99_fraction'])
+
+              anomalies=sum(x['audit'].values())-x['audit'].get('hands_parsed',0)-x['audit'].get('hands_unparsed',0)
+              assert anomalies / x['actions']['n'] < 0.001, (split,'state anomalies',anomalies)
+
+          print(json.dumps({
+              'selected_k': selection['selected_k'],
+              'validation': {
+                  'action_improvement': d['validation']['actions']['log_loss_improvement'],
+                  'range_improvement': d['validation']['range']['log_loss_improvement'],
+                  'ece': d['validation']['actions']['ece_confidence'],
+                  'profile_stability': d['validation']['profile_stability']['appearance_weighted_stable_fraction'],
+              },
+              'test': {
+                  'action_improvement': d['test']['actions']['log_loss_improvement'],
+                  'range_improvement': d['test']['range']['log_loss_improvement'],
+                  'ece': d['test']['actions']['ece_confidence'],
+                  'profile_stability': d['test']['profile_stability']['appearance_weighted_stable_fraction'],
+              },
+          },indent=2))
           PY
 
       - name: Commit evaluation artifacts
@@ -76,5 +117,5 @@ jobs:
           git config user.email 'training-bot@users.noreply.github.com'
           git add training/runs/20260912_independent_profiles_v2/evaluation
           git add training/runs/20260912_independent_profiles_v2/model/prediction_contract.json
-          git commit -m 'Evaluate independent Model B holdout'
+          git commit -m 'Evaluate final independent Model B K3 holdout'
           git push
