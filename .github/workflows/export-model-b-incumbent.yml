@@ -1,0 +1,25 @@
+name: Export incumbent Model B for paired evaluation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/export-model-b-incumbent.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: incumbent-model-b-and-snapshot
+          retention-days: 1
+          compression-level: 0
+          path: |
+            training/runs/20260912_independent_profiles_v2/model/
+            training/runs/20260912_independent_profiles_v2/features/summary.json
+            training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip
