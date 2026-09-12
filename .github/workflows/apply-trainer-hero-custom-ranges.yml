@@ -6,6 +6,7 @@ on:
     paths:
       - 'tools/patches/apply_trainer_hero_custom_ranges.py'
       - 'tests/trainer/test_trainer_hero_ranges.py'
+      - 'tests/trainer/test_trainer_preload_contract.py'
       - 'site/assets/trainer/hero/custom_ranges_v1.json'
       - '.github/workflows/apply-trainer-hero-custom-ranges.yml'
 
