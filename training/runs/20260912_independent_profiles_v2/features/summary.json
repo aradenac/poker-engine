@@ -1,0 +1,28 @@
+{
+  "schema": "independent-profile-player-features/v1",
+  "feature_version": "model-b-player-features-v1",
+  "unique_scoped_hands": 27735,
+  "split_counts": {
+    "TEST": 2833,
+    "TRAIN": 22149,
+    "VALIDATION": 2753
+  },
+  "train_unique_hands": 22149,
+  "players_total": 8921,
+  "players_eligible_default": 852,
+  "global_rates": {
+    "vpip": 0.43596772625644015,
+    "pfr": 0.07628074268494216,
+    "limp": 0.28637114805093805,
+    "threebet": 0.059126292058360626,
+    "post_aggression_frequency": 0.20140159384787126,
+    "post_fold_facing_aggression": 0.46913275052250714
+  },
+  "parser_audit": {
+    "counts": {
+      "en|recognized_actions": 278815,
+      "fr|hands_without_seats": 803
+    },
+    "unmatched_samples": {}
+  }
+}
