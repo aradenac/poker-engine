@@ -22,14 +22,17 @@ jobs:
 
           path=Path('tools/simulation/sequential_postflop.py')
           text=path.read_text()
-          old='''        result = await self.page.evaluate("state.reviewScores[Object.keys(state.reviewScores)[0]]")
-          detail = result["details"][-1]
-          self.cache[key] = detail
-          return detail
-          '''
-          # Indentation in the source is 8 spaces; keep an explicit exact block to
-          # avoid accidentally patching any other evaluator.
-          old=old.replace('          detail','        detail').replace('          self.cache','        self.cache').replace('          return','        return')
+          start_marker='        result = await self.page.evaluate("state.reviewScores[Object.keys(state.reviewScores)[0]]")\n'
+          end_marker='        return detail\n\n\nasync def rollout'
+          try:
+              start=text.index(start_marker)
+              end=text.index(end_marker,start)
+          except ValueError as exc:
+              raise SystemExit(f'expected unique AnalyzerOracle.decide markers not found: {exc}')
+          end += len('        return detail\n')
+          old=text[start:end]
+          if old.count('state.reviewScores') != 1 or old.count('self.cache[key]') != 1:
+              raise SystemExit('unexpected decide block shape; refusing patch')
           new='''        detail = await self.page.evaluate(
               """()=>{
                 const result=state.reviewScores[Object.keys(state.reviewScores)[0]];
@@ -116,10 +119,7 @@ jobs:
           self.cache[key] = detail
           return detail
           '''
-          if old not in text:
-              raise SystemExit('expected AnalyzerOracle.decide block not found; refusing fuzzy patch')
-          text=text.replace(old,new,1)
-          path.write_text(text)
+          path.write_text(text[:start]+new+text[end:])
           PY
       - name: Remove one-shot patch workflow
         run: rm .github/workflows/patch-v83-oracle-adapter.yml
