@@ -209,68 +209,59 @@ class AnalyzerOracle:
               const detail=result?.details?.[result.details.length-1];
               const a=window.__p?.actions?.[0];
               if(!detail||!a)return detail;
-              const street=a.street, priorEq=a.values?.[a.sources?.prior], kind=a.actionType, req=a.req;
-              if(!['Flop','Turn','River'].includes(street)||!Number.isFinite(priorEq)||!req)return detail;
+              const priorEq=a.values?.[a.sources?.prior],req=a.req,kind=a.actionType;
+              if(!['Flop','Turn','River'].includes(a.street)||!Number.isFinite(priorEq)||!req)return detail;
               const alts=[];
-              let chosenEV=NaN, chosenSE=NaN, chosenLabel=String(kind||'').toUpperCase();
+              let chosenEV=NaN,chosenSE=0,chosenLabel=String(kind||'').toUpperCase();
               const callEV=()=>{
-                const risk=Math.max(0,Number(req.callRisk)||0);
-                const pot0=Math.max(0,Number(req.potBefore)||0);
-                const rake=actionRakeInfo(a.hand,street,pot0+risk).rakeBB;
-                return priorEq*(pot0+risk-rake)-(1-priorEq)*risk;
+                const cost=Math.max(0,Number(a.toCallBB)||0);
+                if(!(cost>0))return NaN;
+                return priorEq*actionRakeInfo(a.hand,(Number(req.potBefore)||0)+cost).netPotBB-cost;
               };
-              const checkEV=()=>{
-                const r=resolveCheckContinuationEV(a.hand,a.actionIdx,priorEq,{street,opponents:a.opponents,streetForwardOnly:true});
-                return {ev:Number(r?.evBB),se:Number(r?.seBB)};
-              };
+              const checkEV=()=>priorEq*actionRakeInfo(a.hand,Number(req.potBefore)||0).netPotBB;
               if(kind==='fold'){
-                chosenEV=0; chosenSE=0;
-                if(Number(req.toCall)>0)alts.push({label:'CALL',evBB:callEV(),stdErrBB:0,kind:'call'});
-              }else if(kind==='call'){
-                chosenEV=callEV(); chosenSE=0;
-                alts.push({label:'FOLD',evBB:0,stdErrBB:0,kind:'fold'});
+                chosenEV=0;chosenLabel='FOLD';
+                const v=callEV();if(Number.isFinite(v))alts.push({label:'CALL',evBB:v,seBB:0,kind:'call'});
               }else if(kind==='check'){
-                const ce=checkEV(); chosenEV=ce.ev; chosenSE=ce.se;
+                chosenEV=checkEV();chosenLabel='CHECK';
+              }else if(kind==='call'){
+                chosenEV=priorEq*req.netPotAfter-req.cost;chosenLabel='CALL';
+                alts.push({label:'FOLD',evBB:0,seBB:0,kind:'fold'});
               }else if(kind==='bet'){
-                chosenEV=a.treeValues?.prior?.evBB; chosenSE=a.treeValues?.prior?.stdErrBB; chosenLabel='BET réel';
-                const ce=checkEV();
-                if(Number.isFinite(ce.ev))alts.push({label:'CHECK',evBB:ce.ev,stdErrBB:ce.se,kind:'check'});
+                chosenEV=Number(a.treeValues?.prior?.evBB);chosenSE=Number(a.treeValues?.prior?.evStdErrBB)||0;chosenLabel='BET réel';
+                const v=checkEV();if(Number.isFinite(v))alts.push({label:'CHECK',evBB:v,seBB:0,kind:'check'});
               }else if(kind==='raise'){
-                chosenEV=a.treeValues?.prior?.evBB; chosenSE=a.treeValues?.prior?.stdErrBB; chosenLabel='RAISE réel';
-                alts.push({label:'FOLD',evBB:0,stdErrBB:0,kind:'fold'});
-                if(Number(req.toCall)>0)alts.push({label:'CALL',evBB:callEV(),stdErrBB:0,kind:'call'});
+                chosenEV=Number(a.treeValues?.prior?.evBB);chosenSE=Number(a.treeValues?.prior?.evStdErrBB)||0;chosenLabel='RAISE réel';
+                alts.push({label:'FOLD',evBB:0,seBB:0,kind:'fold'});
+                const v=callEV();if(Number.isFinite(v))alts.push({label:'CALL',evBB:v,seBB:0,kind:'call'});
+              }else{
+                return detail;
               }
               annotatePostflopSizingSanity(a.sizingResults||[]);
-              for(const z of a.sizingResults||[]){
-                if(!z?.tree||!Number.isFinite(z.tree.evBB)||z.tree.sanityInvalid)continue;
+              for(const c of a.sizingResults||[]){
+                if(!c.tree||!Number.isFinite(c.tree.evBB)||c.kind==='actual'||c.tree.sanityInvalid)continue;
                 alts.push({
-                  label:z.label,
-                  evBB:Number(z.tree.evBB),
-                  stdErrBB:Number(z.tree.stdErrBB)||0,
-                  costBB:Number(z.cost),
+                  label:c.label,
+                  evBB:Number(c.tree.evBB),
+                  seBB:Number(c.tree.evStdErrBB)||0,
                   kind:'aggression',
-                  responseObservationFloor:z.tree.responseObservationFloor??null,
-                  responseConfidence:z.tree.responseConfidence??null,
-                  responseConfidenceLabel:z.tree.responseConfidenceLabel??null,
-                  responseSource:z.tree.responseSource??null,
-                  responseFallbackPath:Array.isArray(z.tree.responseFallbackPath)?[...z.tree.responseFallbackPath]:[],
-                  continueRangeQuality:z.tree.continueRangeQuality??null,
-                  pAllFold:Number.isFinite(z.tree.pAllFold)?Number(z.tree.pAllFold):null,
-                  terminalFoldContributionBB:Number.isFinite(z.tree.terminalFoldContributionBB)?Number(z.tree.terminalFoldContributionBB):null,
-                  branchProbabilityMass:Number.isFinite(z.tree.branchProbabilityMass)?Number(z.tree.branchProbabilityMass):null
+                  costBB:Number(c.costBB),
+                  responseObservationFloor:c.tree.responseObservationFloor??null,
+                  responseConfidence:c.tree.responseConfidence??null,
+                  responseConfidenceLabel:c.tree.responseConfidenceLabel??null,
+                  responseSource:c.tree.responseSource??null,
+                  responseFallbackPath:Array.isArray(c.tree.responseFallbackPath)?[...c.tree.responseFallbackPath]:[],
+                  continueRangeQuality:c.tree.continueRangeQuality??null,
+                  pAllFold:Number.isFinite(c.tree.pAllFold)?Number(c.tree.pAllFold):null,
+                  terminalFoldContributionBB:Number.isFinite(c.tree.terminalFoldContributionBB)?Number(c.tree.terminalFoldContributionBB):null,
+                  branchProbabilityMass:Number.isFinite(c.tree.branchProbabilityMass)?Number(c.tree.branchProbabilityMass):null
                 });
               }
-              if(Number.isFinite(chosenEV)){
-                alts.push({
-                  label:chosenLabel,
-                  evBB:Number(chosenEV),
-                  stdErrBB:Number(chosenSE)||0,
-                  kind:kind==='call'?'call':(kind==='check'?'check':(kind==='fold'?'fold':'aggression'))
-                });
-              }
-              annotatePostflopPolicyAlternatives(street,alts,Number(req.potBefore)||0);
-              const finite=alts.filter(x=>Number.isFinite(finalDecisionEV(x)));
-              const best=finite.length?[...finite].sort((x,y)=>finalDecisionEV(y)-finalDecisionEV(x))[0]:null;
+              if(!Number.isFinite(chosenEV)||!alts.length)return detail;
+              alts.push({label:chosenLabel,evBB:chosenEV,seBB:chosenSE,kind:'chosen',chosen:true});
+              annotatePostflopPolicyAlternatives(a.street,alts,Number(req.potBefore)||0);
+              const rawBest=alts.slice().sort((x,y)=>Number(y.evBB)-Number(x.evBB))[0];
+              const best=alts.slice().sort((x,y)=>finalDecisionEV(y)-finalDecisionEV(x))[0]||rawBest;
               return {
                 ...detail,
                 alternatives:alts,
