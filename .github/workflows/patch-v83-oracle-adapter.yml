@@ -31,7 +31,7 @@ jobs:
               raise SystemExit(f'expected unique AnalyzerOracle.decide markers not found: {exc}')
           end += len('        return detail\n')
           old=text[start:end]
-          if old.count('state.reviewScores') != 1 or old.count('self.cache[key]') != 1:
+          if old.count('state.reviewScores') != 2 or old.count('self.cache[key]') != 1:
               raise SystemExit('unexpected decide block shape; refusing patch')
           new='''        detail = await self.page.evaluate(
               """()=>{
