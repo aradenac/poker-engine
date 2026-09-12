@@ -231,7 +231,7 @@ function trainerBuildHand(){
   if(!heroCards)return trainerBuildHand();hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
   const oppRole=heroRole==="PFA"?"CALLER":"PFA",oppCards=trainerSampleRangeCards(profiles[oppSeat],oppPos,"SRP",oppRole,blocked);
   hole[oppSeat]=oppCards;for(const c of oppCards)blocked.add(c);
-  const remaining=deck.filter(c=>!blocked.has(c));trainerShuffle(remaining);
+  const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);
   for(let s=0;s<6;s++)if(s!==heroSeat&&s!==oppSeat){hole[s]=[trainerDraw(remaining),trainerDraw(remaining)];}
   const used=new Set(hole.flat()),boardDeck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!used.has(c))),runout=Array.from({length:5},()=>trainerDraw(boardDeck));
 
