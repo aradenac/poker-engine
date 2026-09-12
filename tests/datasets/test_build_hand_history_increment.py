@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 import sys
 import tempfile
 import unittest
@@ -98,6 +97,35 @@ class IncrementBuilderTest(unittest.TestCase):
                 payload = zf.read("session.txt").decode("utf-8")
             self.assertNotIn("#5001", payload)
             self.assertIn("#5002", payload)
+
+    def test_real_20260909_snapshot_id_increment(self):
+        baseline = ROOT / "training/datasets/NLHE_100-200/source/NLHE 100-200.zip"
+        snapshot = ROOT / "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip"
+        if not baseline.exists() or not snapshot.exists():
+            self.skipTest("persisted NLHE archives not present")
+
+        manifest, _ = build_increment([baseline], snapshot)
+        self.assertEqual(manifest["candidate_overlap_known_hands"], 10534)
+        self.assertEqual(manifest["selected_unique_hands"], 17143)
+        self.assertEqual(
+            manifest["split_counts"],
+            {"TRAIN": 13697, "VALIDATION": 1704, "TEST": 1742},
+        )
+        self.assertEqual(
+            manifest["selected_hand_ids_fingerprint_sha256"],
+            "87013dde87556df7f677a22c1a1eacf65c1cd1f75a64936ede3a2df9bb462dcc",
+        )
+        self.assertEqual(manifest["historical_backfill"]["unique_hands"], 16143)
+        new = manifest["chronological_new"]
+        self.assertEqual(new["unique_hands"], 1000)
+        self.assertEqual(new["split_counts"], {"TRAIN": 790, "VALIDATION": 100, "TEST": 110})
+        self.assertEqual(
+            new["hand_ids_fingerprint_sha256"],
+            "0f90b980db4ccdeb98428ae1cc3204c175c5a0c632d80b71abf4536d7bfbcfbd",
+        )
+        self.assertEqual(new["earliest_local_timestamp"], "2026-09-07 23:10:38")
+        self.assertEqual(new["latest_local_timestamp"], "2026-09-09 17:48:16")
+        self.assertEqual(manifest["undated_unseen"]["unique_hands"], 0)
 
 
 if __name__ == "__main__":
