@@ -3,8 +3,10 @@
 
 The tool compares one candidate archive with one or more already-known archives,
 selects only genuinely unseen hands, applies the stable population split contract,
-and writes a reproducible JSON manifest. Optionally it can materialize a ZIP that
-contains only selected hands while preserving the source file grouping.
+and writes a reproducible JSON manifest. Unseen hands are additionally classified
+as historical backfill or chronologically new relative to the latest known hand.
+Optionally it can materialize a ZIP containing only selected hands while preserving
+source-file grouping.
 """
 
 from __future__ import annotations
@@ -81,13 +83,12 @@ def parse_hand_blocks(text: str, source_file: str) -> list[HandRecord]:
         start = match.start()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         block = text[start:end].strip("\r\n") + "\n"
-        header = match.group(0)
         out.append(
             HandRecord(
                 hand_id=hand_id,
                 source_file=source_file,
                 text=block,
-                timestamp=normalize_timestamp(header, language),
+                timestamp=normalize_timestamp(match.group(0), language),
                 language=language,
             )
         )
@@ -96,24 +97,24 @@ def parse_hand_blocks(text: str, source_file: str) -> list[HandRecord]:
 
 def read_archive(path: Path) -> tuple[list[HandRecord], dict]:
     records: list[HandRecord] = []
-    entries = 0
     with zipfile.ZipFile(path) as zf:
         infos = [i for i in zf.infolist() if not i.is_dir()]
-        entries = len(infos)
         for info in infos:
-            text = decode_text(zf.read(info))
-            records.extend(parse_hand_blocks(text, info.filename))
+            records.extend(parse_hand_blocks(decode_text(zf.read(info)), info.filename))
 
     counts = Counter(r.hand_id for r in records)
+    timestamps = sorted(r.timestamp for r in records if r.timestamp)
     return records, {
         "path": path.as_posix(),
         "sha256": sha256_file(path),
         "size_bytes": path.stat().st_size,
-        "archive_entries": entries,
+        "archive_entries": len(infos),
         "parsed_hands": len(records),
         "unique_hands": len(counts),
         "duplicate_hand_ids": sum(1 for n in counts.values() if n > 1),
         "duplicate_hand_occurrences": sum(n - 1 for n in counts.values() if n > 1),
+        "earliest_local_timestamp": timestamps[0] if timestamps else None,
+        "latest_local_timestamp": timestamps[-1] if timestamps else None,
     }
 
 
@@ -132,16 +133,38 @@ def fingerprint(ids: Iterable[str]) -> str:
     return hashlib.sha256("\n".join(ordered).encode()).hexdigest()
 
 
+def records_summary(records: list[HandRecord]) -> dict:
+    ids = [r.hand_id for r in records]
+    split_counts = Counter(split_for(hid) for hid in ids)
+    language_counts = Counter(r.language for r in records)
+    timestamps = sorted(r.timestamp for r in records if r.timestamp)
+    return {
+        "unique_hands": len(set(ids)),
+        "hand_ids_fingerprint_sha256": fingerprint(ids),
+        "split_counts": {
+            "TRAIN": split_counts.get("TRAIN", 0),
+            "VALIDATION": split_counts.get("VALIDATION", 0),
+            "TEST": split_counts.get("TEST", 0),
+        },
+        "language_counts": dict(sorted(language_counts.items())),
+        "earliest_local_timestamp": timestamps[0] if timestamps else None,
+        "latest_local_timestamp": timestamps[-1] if timestamps else None,
+    }
+
+
 def build_increment(known_archives: list[Path], candidate: Path) -> tuple[dict, list[HandRecord]]:
     known_ids: set[str] = set()
+    known_records: list[HandRecord] = []
     known_meta = []
     for archive in known_archives:
         records, meta = read_archive(archive)
+        known_records.extend(records)
         known_ids.update(r.hand_id for r in records)
         known_meta.append(meta)
 
     candidate_records, candidate_meta = read_archive(candidate)
     candidate_counts = Counter(r.hand_id for r in candidate_records)
+    candidate_unique_ids = set(candidate_counts)
 
     selected_by_id: dict[str, HandRecord] = {}
     for record in candidate_records:
@@ -149,14 +172,26 @@ def build_increment(known_archives: list[Path], candidate: Path) -> tuple[dict, 
             selected_by_id[record.hand_id] = record
 
     selected = sorted(selected_by_id.values(), key=lambda r: int(r.hand_id))
-    selected_ids = [r.hand_id for r in selected]
-    split_counts = Counter(split_for(hid) for hid in selected_ids)
-    language_counts = Counter(r.language for r in selected)
-    timestamps = sorted(r.timestamp for r in selected if r.timestamp)
+    overlap_ids = candidate_unique_ids & known_ids
+    known_timestamps = sorted(r.timestamp for r in known_records if r.timestamp)
+    known_latest = known_timestamps[-1] if known_timestamps else None
 
+    chronological_new: list[HandRecord] = []
+    historical_backfill: list[HandRecord] = []
+    undated_unseen: list[HandRecord] = []
+    for record in selected:
+        if record.timestamp is None or known_latest is None:
+            undated_unseen.append(record)
+        elif record.timestamp > known_latest:
+            chronological_new.append(record)
+        else:
+            historical_backfill.append(record)
+
+    selected_summary = records_summary(selected)
     manifest = {
-        "schema": "poker-hand-history-increment/v1",
+        "schema": "poker-hand-history-increment/v2",
         "selection_rule": "candidate hand ID not present in union of known archive hand IDs",
+        "classification_rule": "unseen timestamp > latest known timestamp => chronological_new; otherwise historical_backfill; missing timestamp => undated_unseen",
         "split_contract": {
             "namespace": SPLIT_NAMESPACE,
             "algorithm": "SHA-256(namespace + ':' + hand_id); first 64 bits big-endian modulo 10000",
@@ -167,19 +202,21 @@ def build_increment(known_archives: list[Path], candidate: Path) -> tuple[dict, 
         "known_archives": known_meta,
         "known_unique_hand_ids": len(known_ids),
         "known_hand_ids_fingerprint_sha256": fingerprint(known_ids),
+        "known_latest_local_timestamp": known_latest,
         "candidate_archive": candidate_meta,
-        "candidate_hand_ids_fingerprint_sha256": fingerprint(candidate_counts),
-        "selected_unique_hands": len(selected_ids),
-        "selected_hand_ids_fingerprint_sha256": fingerprint(selected_ids),
-        "selected_hand_ids": selected_ids,
-        "split_counts": {
-            "TRAIN": split_counts.get("TRAIN", 0),
-            "VALIDATION": split_counts.get("VALIDATION", 0),
-            "TEST": split_counts.get("TEST", 0),
-        },
-        "language_counts": dict(sorted(language_counts.items())),
-        "earliest_local_timestamp": timestamps[0] if timestamps else None,
-        "latest_local_timestamp": timestamps[-1] if timestamps else None,
+        "candidate_hand_ids_fingerprint_sha256": fingerprint(candidate_unique_ids),
+        "candidate_overlap_known_hands": len(overlap_ids),
+        "candidate_overlap_hand_ids_fingerprint_sha256": fingerprint(overlap_ids),
+        "selected_unique_hands": selected_summary["unique_hands"],
+        "selected_hand_ids_fingerprint_sha256": selected_summary["hand_ids_fingerprint_sha256"],
+        "selected_hand_ids": [r.hand_id for r in selected],
+        "split_counts": selected_summary["split_counts"],
+        "language_counts": selected_summary["language_counts"],
+        "earliest_local_timestamp": selected_summary["earliest_local_timestamp"],
+        "latest_local_timestamp": selected_summary["latest_local_timestamp"],
+        "chronological_new": records_summary(chronological_new),
+        "historical_backfill": records_summary(historical_backfill),
+        "undated_unseen": records_summary(undated_unseen),
         "candidate_duplicate_hand_ids": candidate_meta["duplicate_hand_ids"],
         "candidate_duplicate_hand_occurrences": candidate_meta["duplicate_hand_occurrences"],
     }
@@ -194,8 +231,7 @@ def write_selected_zip(path: Path, selected: list[HandRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for source_file in sorted(grouped):
-            payload = "\n".join(grouped[source_file]).encode("utf-8")
-            zf.writestr(source_file, payload)
+            zf.writestr(source_file, "\n".join(grouped[source_file]).encode("utf-8"))
 
 
 def main() -> None:
@@ -219,11 +255,12 @@ def main() -> None:
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
     args.manifest.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({
+        "candidate_overlap_known_hands": manifest["candidate_overlap_known_hands"],
         "selected_unique_hands": manifest["selected_unique_hands"],
         "split_counts": manifest["split_counts"],
-        "selected_hand_ids_fingerprint_sha256": manifest["selected_hand_ids_fingerprint_sha256"],
-        "earliest_local_timestamp": manifest["earliest_local_timestamp"],
-        "latest_local_timestamp": manifest["latest_local_timestamp"],
+        "chronological_new": manifest["chronological_new"],
+        "historical_backfill": manifest["historical_backfill"],
+        "undated_unseen": manifest["undated_unseen"],
     }, indent=2))
 
 
