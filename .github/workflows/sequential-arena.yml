@@ -67,8 +67,6 @@ jobs:
         run: |
           python3 -m pip install --user playwright
           python3 -m playwright install --with-deps chromium
-      - name: Inspect analyser review contract
-        run: python3 -m tools.simulation.inspect_oracle_contract --trials 50 --out /tmp/oracle-detail.json
       - name: Run one deterministic v83 rollout
         run: |
           python3 -m tools.simulation.sequential_postflop \
