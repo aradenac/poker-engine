@@ -28,10 +28,19 @@ def decode_text(data: bytes) -> str:
     return data.decode("utf-8", errors="replace")
 
 
+def first_nonempty_line(text: str):
+    for line in text.replace("\r", "").splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return None
+
+
 def audit(archive: Path) -> dict:
     hand_ids = []
     timestamps = []
     per_file = []
+    unmatched_header_samples = []
     total_uncompressed = 0
     text_entries = 0
 
@@ -50,6 +59,10 @@ def audit(archive: Path) -> dict:
             dates = DATE_RE.findall(text)
             if ids or info.filename.lower().endswith((".txt", ".log", ".hh")):
                 text_entries += 1
+            if not ids and len(unmatched_header_samples) < 20:
+                header = first_nonempty_line(text)
+                if header:
+                    unmatched_header_samples.append({"path": info.filename, "header": header})
             hand_ids.extend(ids)
             timestamps.extend(dates)
             per_file.append({
@@ -79,6 +92,7 @@ def audit(archive: Path) -> dict:
         "earliest_local_timestamp": min(timestamps) if timestamps else None,
         "latest_local_timestamp": max(timestamps) if timestamps else None,
         "fingerprint_sorted_hand_ids_sha256": fingerprint,
+        "unmatched_header_samples": unmatched_header_samples,
         "files": per_file,
     }
 
@@ -94,8 +108,8 @@ def main() -> None:
     print(json.dumps({k: result[k] for k in (
         "archive_sha256", "archive_entries", "parsed_hands", "unique_hands",
         "duplicate_hand_ids", "earliest_local_timestamp", "latest_local_timestamp",
-        "fingerprint_sorted_hand_ids_sha256"
-    )}, indent=2))
+        "fingerprint_sorted_hand_ids_sha256", "unmatched_header_samples"
+    )}, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
