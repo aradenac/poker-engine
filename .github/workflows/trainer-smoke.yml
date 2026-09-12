@@ -1,0 +1,69 @@
+name: Validate interactive trainer
+
+on:
+  push:
+    paths:
+      - 'site/index.html'
+      - 'site/trainer.js'
+      - 'site/trainer.css'
+      - 'site/assets/trainer/**'
+      - 'tests/trainer/**'
+      - 'tools/patches/apply_trainer_mvp.py'
+      - '.github/workflows/trainer-smoke.yml'
+  pull_request:
+    paths:
+      - 'site/index.html'
+      - 'site/trainer.js'
+      - 'site/trainer.css'
+      - 'site/assets/trainer/**'
+      - 'tests/trainer/**'
+      - 'tools/patches/apply_trainer_mvp.py'
+      - '.github/workflows/trainer-smoke.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trainer-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: node --check site/trainer.js
+      - name: Architecture regression checks
+        run: python3 tests/trainer/test_trainer_static.py
+      - name: Patch idempotence
+        run: |
+          sha256sum site/index.html site/trainer.js > /tmp/before.sha
+          python3 tools/patches/apply_trainer_mvp.py
+          sha256sum site/index.html site/trainer.js > /tmp/after.sha
+          diff -u /tmp/before.sha /tmp/after.sha
+
+  browser-smoke:
+    needs: static-contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser runtime
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Serve static application
+        run: |
+          python3 -m http.server 8765 --directory site >/tmp/trainer-http.log 2>&1 &
+          echo $! >/tmp/trainer-http.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/trainer-http.log
+          exit 1
+      - name: Exercise Training view
+        run: python3 tests/trainer/smoke_trainer.py
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/trainer-http.log || true
