@@ -1,0 +1,258 @@
+{
+  "schema": "independent-opponent-model-b-metrics/v1",
+  "model_schema": "independent-opponent-model-b/v2",
+  "fit_split": "TRAIN",
+  "profile_summary": [
+    {
+      "profile": 0,
+      "appearance_weight": 0.39303234311002305,
+      "fit_players": 369,
+      "all_players": 3578,
+      "centroid": {
+        "vpip": 0.33191682675985035,
+        "pfr": 0.042149091139847855,
+        "limp": 0.23496353656300065,
+        "threebet": 0.04714301962904566,
+        "post_aggression_frequency": 0.17189427041756505,
+        "post_fold_facing_aggression": 0.4956861927967842
+      }
+    },
+    {
+      "profile": 1,
+      "appearance_weight": 0.11698130973118026,
+      "fit_players": 109,
+      "all_players": 688,
+      "centroid": {
+        "vpip": 0.35147777848121564,
+        "pfr": 0.11976736084250264,
+        "limp": 0.1796059182387855,
+        "threebet": 0.06894721795254334,
+        "post_aggression_frequency": 0.22756046010391773,
+        "post_fold_facing_aggression": 0.4898018624463517
+      }
+    },
+    {
+      "profile": 2,
+      "appearance_weight": 0.04692811072925004,
+      "fit_players": 34,
+      "all_players": 424,
+      "centroid": {
+        "vpip": 0.48769671494497635,
+        "pfr": 0.10490301740569959,
+        "limp": 0.3121662557194053,
+        "threebet": 0.1034739934488494,
+        "post_aggression_frequency": 0.1709369474437931,
+        "post_fold_facing_aggression": 0.47283420893625905
+      }
+    },
+    {
+      "profile": 3,
+      "appearance_weight": 0.22594981403888706,
+      "fit_players": 125,
+      "all_players": 3286,
+      "centroid": {
+        "vpip": 0.510107526982282,
+        "pfr": 0.0902190340268061,
+        "limp": 0.33437108607802657,
+        "threebet": 0.05718632785490693,
+        "post_aggression_frequency": 0.2752948726654294,
+        "post_fold_facing_aggression": 0.4426245774463145
+      }
+    },
+    {
+      "profile": 4,
+      "appearance_weight": 0.20578127206817004,
+      "fit_players": 230,
+      "all_players": 1112,
+      "centroid": {
+        "vpip": 0.5431846554335789,
+        "pfr": 0.0447131700900804,
+        "limp": 0.4078237132307239,
+        "threebet": 0.04972770365456272,
+        "post_aggression_frequency": 0.14383929405248339,
+        "post_fold_facing_aggression": 0.4842868528019123
+      }
+    },
+    {
+      "profile": 5,
+      "appearance_weight": 0.011327150322489526,
+      "fit_players": 14,
+      "all_players": 44,
+      "centroid": {
+        "vpip": 0.5636489261010844,
+        "pfr": 0.26397762388225937,
+        "limp": 0.22158833208733658,
+        "threebet": 0.12744448249663515,
+        "post_aggression_frequency": 0.29517644189424636,
+        "post_fold_facing_aggression": 0.4545745090663573
+      }
+    }
+  ],
+  "preflop_known_hand_observations": 21355,
+  "postflop_action_observations": 134947,
+  "postflop_global_actions": {
+    "BET": 23908,
+    "CALL": 21856,
+    "CHECK": 64155,
+    "FOLD": 21925,
+    "RAISE": 3103
+  },
+  "postflop_actions_by_street_mode": {
+    "flop|FACING": {
+      "n": 21129,
+      "counts": {
+        "CALL": 10012,
+        "FOLD": 9900,
+        "RAISE": 1217
+      }
+    },
+    "flop|FREE": {
+      "n": 38949,
+      "counts": {
+        "BET": 9045,
+        "CHECK": 29904
+      }
+    },
+    "river|FACING": {
+      "n": 11260,
+      "counts": {
+        "CALL": 3931,
+        "FOLD": 6354,
+        "RAISE": 975
+      }
+    },
+    "river|FREE": {
+      "n": 20817,
+      "counts": {
+        "BET": 6836,
+        "CHECK": 13981
+      }
+    },
+    "turn|FACING": {
+      "n": 14495,
+      "counts": {
+        "CALL": 7913,
+        "FOLD": 5671,
+        "RAISE": 911
+      }
+    },
+    "turn|FREE": {
+      "n": 28297,
+      "counts": {
+        "BET": 8027,
+        "CHECK": 20270
+      }
+    }
+  },
+  "sizing": {
+    "global": {
+      "n": 27013,
+      "mean": 1.0178776579794915,
+      "p10": 0.11538499999999999,
+      "p25": 0.222222,
+      "p50": 0.472189,
+      "p75": 0.945,
+      "p90": 1.2875,
+      "p95": 2.450783599999986,
+      "p99": 12.320180040000055
+    },
+    "max": 129.815,
+    "over_20x_count": 151,
+    "over_20x_fraction": 0.005589901158701366,
+    "by_street_mode_action": {
+      "flop|FACING|RAISE": {
+        "n": 1217,
+        "mean": 2.0555438504519308,
+        "p10": 0.3,
+        "p25": 0.5,
+        "p50": 0.971642,
+        "p75": 1.5262,
+        "p90": 4.1210956000000065,
+        "p95": 7.8130462000000005,
+        "p99": 23.07956211999979
+      },
+      "flop|FREE|BET": {
+        "n": 9045,
+        "mean": 0.992999677501382,
+        "p10": 0.142857,
+        "p25": 0.25,
+        "p50": 0.444444,
+        "p75": 0.944706,
+        "p90": 1.0,
+        "p95": 1.942763599999994,
+        "p99": 12.970666519999966
+      },
+      "flop|FREE|RAISE": {
+        "n": 1,
+        "mean": 1.333333,
+        "p10": 1.333333,
+        "p25": 1.333333,
+        "p50": 1.333333,
+        "p75": 1.333333,
+        "p90": 1.333333,
+        "p95": 1.333333,
+        "p99": 1.333333
+      },
+      "river|FACING|RAISE": {
+        "n": 975,
+        "mean": 1.6977289774358972,
+        "p10": 0.266667,
+        "p25": 0.5027295,
+        "p50": 0.971722,
+        "p75": 1.443737,
+        "p90": 2.6964902000000013,
+        "p95": 5.263832099999999,
+        "p99": 11.862513859999995
+      },
+      "river|FREE|BET": {
+        "n": 6836,
+        "mean": 1.0565348042715037,
+        "p10": 0.0934725,
+        "p25": 0.181818,
+        "p50": 0.4723385,
+        "p75": 0.945,
+        "p90": 1.2547139999999999,
+        "p95": 2.66508075,
+        "p99": 13.804999949999797
+      },
+      "river|FREE|RAISE": {
+        "n": 1,
+        "mean": 2.645333,
+        "p10": 2.645333,
+        "p25": 2.645333,
+        "p50": 2.645333,
+        "p75": 2.645333,
+        "p90": 2.645333,
+        "p95": 2.645333,
+        "p99": 2.645333
+      },
+      "turn|FACING|RAISE": {
+        "n": 911,
+        "mean": 1.2826059187705818,
+        "p10": 0.214216,
+        "p25": 0.38067850000000003,
+        "p50": 0.688029,
+        "p75": 1.218667,
+        "p90": 2.140794,
+        "p95": 4.1442855000000005,
+        "p99": 11.050602599999992
+      },
+      "turn|FREE|BET": {
+        "n": 8027,
+        "mean": 0.7428005348199825,
+        "p10": 0.1,
+        "p25": 0.181818,
+        "p50": 0.375,
+        "p75": 0.944286,
+        "p90": 0.945085,
+        "p95": 1.415196399999999,
+        "p99": 7.152933579999956
+      }
+    }
+  },
+  "parser_or_state_anomalies": {
+    "invalid_free_call": 6,
+    "invalid_free_fold": 35,
+    "invalid_free_raise": 2
+  }
+}
