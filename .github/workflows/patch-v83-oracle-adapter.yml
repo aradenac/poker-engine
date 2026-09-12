@@ -1,0 +1,132 @@
+name: Patch v83 oracle adapter
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-v83-oracle-adapter.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch analyser alternatives adapter
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path=Path('tools/simulation/sequential_postflop.py')
+          text=path.read_text()
+          old='''        result = await self.page.evaluate("state.reviewScores[Object.keys(state.reviewScores)[0]]")
+          detail = result["details"][-1]
+          self.cache[key] = detail
+          return detail
+          '''
+          # Indentation in the source is 8 spaces; keep an explicit exact block to
+          # avoid accidentally patching any other evaluator.
+          old=old.replace('          detail','        detail').replace('          self.cache','        self.cache').replace('          return','        return')
+          new='''        detail = await self.page.evaluate(
+              """()=>{
+                const result=state.reviewScores[Object.keys(state.reviewScores)[0]];
+                const detail=result?.details?.[result.details.length-1];
+                const a=window.__p?.actions?.[0];
+                if(!detail||!a)return detail;
+                const street=a.street, priorEq=a.values?.[a.sources?.prior], kind=a.actionType, req=a.req;
+                if(!['Flop','Turn','River'].includes(street)||!Number.isFinite(priorEq)||!req)return detail;
+                const alts=[];
+                let chosenEV=NaN, chosenSE=NaN, chosenLabel=String(kind||'').toUpperCase();
+                const callEV=()=>{
+                  const risk=Math.max(0,Number(req.callRisk)||0);
+                  const pot0=Math.max(0,Number(req.potBefore)||0);
+                  const rake=actionRakeInfo(a.hand,street,pot0+risk).rakeBB;
+                  return priorEq*(pot0+risk-rake)-(1-priorEq)*risk;
+                };
+                const checkEV=()=>{
+                  const r=resolveCheckContinuationEV(a.hand,a.actionIdx,priorEq,{street,opponents:a.opponents,streetForwardOnly:true});
+                  return {ev:Number(r?.evBB),se:Number(r?.seBB)};
+                };
+                if(kind==='fold'){
+                  chosenEV=0; chosenSE=0;
+                  if(Number(req.toCall)>0)alts.push({label:'CALL',evBB:callEV(),stdErrBB:0,kind:'call'});
+                }else if(kind==='call'){
+                  chosenEV=callEV(); chosenSE=0;
+                  alts.push({label:'FOLD',evBB:0,stdErrBB:0,kind:'fold'});
+                }else if(kind==='check'){
+                  const ce=checkEV(); chosenEV=ce.ev; chosenSE=ce.se;
+                }else if(kind==='bet'){
+                  chosenEV=a.treeValues?.prior?.evBB; chosenSE=a.treeValues?.prior?.stdErrBB; chosenLabel='BET réel';
+                  const ce=checkEV();
+                  if(Number.isFinite(ce.ev))alts.push({label:'CHECK',evBB:ce.ev,stdErrBB:ce.se,kind:'check'});
+                }else if(kind==='raise'){
+                  chosenEV=a.treeValues?.prior?.evBB; chosenSE=a.treeValues?.prior?.stdErrBB; chosenLabel='RAISE réel';
+                  alts.push({label:'FOLD',evBB:0,stdErrBB:0,kind:'fold'});
+                  if(Number(req.toCall)>0)alts.push({label:'CALL',evBB:callEV(),stdErrBB:0,kind:'call'});
+                }
+                annotatePostflopSizingSanity(a.sizingResults||[]);
+                for(const z of a.sizingResults||[]){
+                  if(!z?.tree||!Number.isFinite(z.tree.evBB)||z.tree.sanityInvalid)continue;
+                  alts.push({
+                    label:z.label,
+                    evBB:Number(z.tree.evBB),
+                    stdErrBB:Number(z.tree.stdErrBB)||0,
+                    costBB:Number(z.cost),
+                    kind:'aggression',
+                    responseObservationFloor:z.tree.responseObservationFloor??null,
+                    responseConfidence:z.tree.responseConfidence??null,
+                    responseConfidenceLabel:z.tree.responseConfidenceLabel??null,
+                    responseSource:z.tree.responseSource??null,
+                    responseFallbackPath:Array.isArray(z.tree.responseFallbackPath)?[...z.tree.responseFallbackPath]:[],
+                    continueRangeQuality:z.tree.continueRangeQuality??null,
+                    pAllFold:Number.isFinite(z.tree.pAllFold)?Number(z.tree.pAllFold):null,
+                    terminalFoldContributionBB:Number.isFinite(z.tree.terminalFoldContributionBB)?Number(z.tree.terminalFoldContributionBB):null,
+                    branchProbabilityMass:Number.isFinite(z.tree.branchProbabilityMass)?Number(z.tree.branchProbabilityMass):null
+                  });
+                }
+                if(Number.isFinite(chosenEV)){
+                  alts.push({
+                    label:chosenLabel,
+                    evBB:Number(chosenEV),
+                    stdErrBB:Number(chosenSE)||0,
+                    kind:kind==='call'?'call':(kind==='check'?'check':(kind==='fold'?'fold':'aggression'))
+                  });
+                }
+                annotatePostflopPolicyAlternatives(street,alts,Number(req.potBefore)||0);
+                const finite=alts.filter(x=>Number.isFinite(finalDecisionEV(x)));
+                const best=finite.length?[...finite].sort((x,y)=>finalDecisionEV(y)-finalDecisionEV(x))[0]:null;
+                return {
+                  ...detail,
+                  alternatives:alts,
+                  reconstructedBestLabel:best?.label??null,
+                  reconstructedBestEV:best?finalDecisionEV(best):null
+                };
+              }"""
+          )
+          if detail is None:
+              raise RuntimeError("analyser returned no review detail")
+          reconstructed = detail.get("reconstructedBestLabel")
+          if reconstructed and detail.get("bestLabel") and reconstructed != detail.get("bestLabel"):
+              raise RuntimeError(
+                  f"v83 recommendation mismatch: detail={detail.get('bestLabel')!r} reconstructed={reconstructed!r}"
+              )
+          self.cache[key] = detail
+          return detail
+          '''
+          if old not in text:
+              raise SystemExit('expected AnalyzerOracle.decide block not found; refusing fuzzy patch')
+          text=text.replace(old,new,1)
+          path.write_text(text)
+          PY
+      - name: Remove one-shot patch workflow
+        run: rm .github/workflows/patch-v83-oracle-adapter.yml
+      - name: Commit patch
+        run: |
+          git config user.name 'poker-engine maintenance bot'
+          git config user.email 'maintenance-bot@users.noreply.github.com'
+          git add tools/simulation/sequential_postflop.py .github/workflows/patch-v83-oracle-adapter.yml
+          git commit -m 'Adapt sequential oracle to v83 final EV alternatives'
+          git push
