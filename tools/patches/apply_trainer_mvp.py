@@ -121,6 +121,12 @@ def patch_trainer() -> None:
     legacy = '  // Forced blind chips were posted before the voluntary actions.\n  if(sb!==pfaSeat&&sb!==callerSeat)stacks[sb]-=.5;if(bb!==pfaSeat&&bb!==callerSeat)stacks[bb]-=1;\n'
     text = text.replace(legacy, '')
 
+    # Keep the nested template literal syntactically complete. The original MVP
+    # draft missed the closing brace of the inner ${...} expression.
+    broken = '${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))`:"check possible"}'
+    fixed = '${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"}'
+    text = text.replace(broken, fixed)
+
     TRAINER.write_text(text, encoding="utf-8")
 
 
