@@ -17,7 +17,7 @@ jobs:
         with:
           ref: issue-31-hero-custom-ranges
           fetch-depth: 0
-      - name: Fix remaining deck construction and source patch
+      - name: Fix remaining deck construction
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -27,13 +27,6 @@ jobs:
           new='const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);'
           if old not in s and new not in s: raise SystemExit('trainer remaining-deck marker missing')
           trainer.write_text(s.replace(old,new,1))
-
-          patch=Path('tools/patches/apply_trainer_hero_custom_ranges.py')
-          p=patch.read_text()
-          oldp='  const remaining=deck.filter(c=>!blocked.has(c));trainerShuffle(remaining);\\n'
-          newp='  const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);\\n'
-          if oldp not in p and newp not in p: raise SystemExit('source patch remaining-deck marker missing')
-          patch.write_text(p.replace(oldp,newp,1))
           PY
       - name: Validate
         run: |
