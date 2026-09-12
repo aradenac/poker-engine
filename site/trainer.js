@@ -36,7 +36,7 @@ const trainerReviewCache={entries:new Map(),preModel:null,postModel:null,hits:0,
 const trainerState={
   open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,
   handNo:0,evalNo:0,hand:null,recommendation:null,feedback:null,
-  pauseAfterDecision:false,busy:false,
+  pauseAfterDecision:false,busy:false,sizingTouched:false,
   perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false,cacheHits:0,cacheMisses:0},
   session:{hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)},
   testLog:[]
@@ -375,13 +375,37 @@ function trainerRecordDecision(detail,playedKind,playedCost){
   const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else s.poor++;
   const key=`${row.position} · ${row.street}`;const b=s.breakdown[key]||(s.breakdown[key]={n:0,loss:0});b.n++;b.loss+=loss;trainerState.testLog.unshift(row);return row;
 }
-function trainerRecommendationMatchesAction(rec,actual){
-  if(!rec||rec.error||!actual)return false;
-  const label=String(rec.bestLabel||"").toUpperCase(),kind=String(actual.kind||"").toUpperCase();
-  if(!label.startsWith(kind))return false;
+function trainerRecommendationKind(hand,rec){
+  if(!hand||!rec||rec.error)return "";
+  const label=String(rec.bestLabel||"").trim().toUpperCase();
+  if(label.startsWith("FOLD"))return "FOLD";
+  if(label.startsWith("CHECK"))return "CHECK";
+  if(label.startsWith("CALL"))return "CALL";
+  if(label.startsWith("BET"))return "BET";
+  if(label.startsWith("RAISE"))return "RAISE";
+  const cost=Number(rec.bestCostBB);
+  if(Number.isFinite(cost)&&cost>1e-8)return trainerToCall(hand,hand.heroSeat)>1e-8?"RAISE":"BET";
+  return "";
+}
+function trainerRecommendationMatchesAction(rec,actual,hand=trainerState.hand){
+  if(!rec||rec.error||!actual||!hand)return false;
+  const kind=String(actual.kind||"").toUpperCase(),recommended=trainerRecommendationKind(hand,rec);
+  if(!recommended||recommended!==kind)return false;
   if(!["BET","RAISE"].includes(kind))return true;
   const bestCost=Number(rec.bestCostBB),playedCost=Number(actual.cost);
   return Number.isFinite(bestCost)&&Number.isFinite(playedCost)&&Math.abs(bestCost-playedCost)<=0.05;
+}
+function trainerGuideAnchoredDetail(guide,played){
+  const d=JSON.parse(JSON.stringify(played||{})),bestEV=Number(guide?.bestEV),chosenEV=Number(d.chosenEV);
+  d.bestLabel=guide?.bestLabel;d.bestCostBB=guide?.bestCostBB;d.bestEV=bestEV;
+  const loss=Number.isFinite(bestEV)&&Number.isFinite(chosenEV)?Math.max(0,bestEV-chosenEV):Math.max(0,Number(d.lossBB)||0);
+  d.lossBB=loss;d.withinNoise=loss<=0.15;return d;
+}
+function trainerGuidedClickCost(kind){
+  const raw=trainerSizingValue(),rec=trainerState.recommendation,hand=trainerState.hand,k=String(kind||"").toUpperCase();
+  if(trainerState.mode!=="guided"||trainerState.sizingTouched||!rec||rec.error||!["BET","RAISE"].includes(k))return raw;
+  if(trainerRecommendationKind(hand,rec)!==k)return raw;
+  const best=Number(rec.bestCostBB);return Number.isFinite(best)?best:raw;
 }
 function trainerReuseBestAsPlayed(rec){
   const d=JSON.parse(JSON.stringify(rec));
@@ -390,16 +414,18 @@ function trainerReuseBestAsPlayed(rec){
 }
 async function trainerHeroAction(kind,cost=0){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero||trainerState.busy||trainerState.pauseAfterDecision)return;
+  const guide=trainerState.mode==="guided"&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null;
   trainerState.busy=true;hand.awaitingHero=false;trainerRenderStatus("Évaluation de votre décision…","busy");trainerRender();
   let detail=null,row=null,actual=null;
   try{
     actual=trainerActualLine(hand,kind,cost);
-    if(trainerState.mode==="guided"&&trainerRecommendationMatchesAction(trainerState.recommendation,actual)){
-      detail=trainerReuseBestAsPlayed(trainerState.recommendation);
+    if(guide&&trainerRecommendationMatchesAction(guide,actual,hand)){
+      detail=trainerReuseBestAsPlayed(guide);
     }else{
-      detail=await trainerTimedReviewText(trainerBuildReviewHH(hand,actual.line,actual.kind,actual.cost));
+      const played=await trainerTimedReviewText(trainerBuildReviewHH(hand,actual.line,actual.kind,actual.cost));
+      detail=guide?trainerGuideAnchoredDetail(guide,played):played;
     }
-    trainerState.recommendation=detail;row=trainerRecordDecision(detail,actual.kind,actual.cost);
+    trainerState.recommendation=guide||detail;row=trainerRecordDecision(detail,actual.kind,actual.cost);
   }
   catch(err){trainerRenderStatus(`Décision jouée, mais verdict indisponible : ${err.message}`,"error");}
   trainerApplyAction(hand,hand.heroSeat,kind,cost);trainerState.feedback=detail?{detail,row}:null;trainerState.busy=false;
@@ -414,7 +440,7 @@ async function trainerAdvance(){
     if(!hand.queue.length){trainerAdvanceStreetOrShowdown(hand);trainerRender();if(hand.ended)break;await trainerSleep(TRAINER_DELAYS.street);continue;}
     const seat=hand.queue.shift();if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
     if(seat===hand.heroSeat){
-      hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;
+      hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;trainerState.sizingTouched=false;
       trainerRender();
       if(trainerState.mode==="guided")await trainerComputeRecommendation();
       else trainerRenderStatus("À vous de jouer · recommandation calculée après votre action.");
@@ -447,7 +473,10 @@ function trainerRenderTable(){
   trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")}</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
 function trainerBestText(rec){
-  if(!rec||rec.error)return "—";const label=String(rec.bestLabel||"—"),cost=Number(rec.bestCostBB),size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";return `${label}${size}`;
+  if(!rec||rec.error)return "—";
+  const label=String(rec.bestLabel||"—"),kind=trainerRecommendationKind(trainerState.hand,rec),upper=label.toUpperCase();
+  const action=kind&&!upper.startsWith(kind)?`${kind} · `:"",cost=Number(rec.bestCostBB),size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";
+  return `${action}${label}${size}`;
 }
 function trainerRenderRecommendation(){
   if(!trainerRecommendation)return;const h=trainerState.hand,rec=trainerState.recommendation;
@@ -477,8 +506,9 @@ function trainerRenderControls(){
   if(!h.awaitingHero){trainerControls.innerHTML='<div class="trainer-decision-box"><div class="trainer-decision-title">Action adverse en cours…</div></div>';return;}
   const toCall=trainerToCall(h,h.heroSeat),legal=toCall>1e-8?["FOLD","CALL","RAISE"]:["CHECK","BET"],minAgg=toCall>1e-8?toCall+h.lastRaise:Math.max(1,.33*h.pot),recCost=Number(trainerState.recommendation?.bestCostBB);
   trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div><div class="trainer-decision-title">À vous · ${escapeHtml(h.positions[h.heroSeat])} · ${escapeHtml(h.street.toUpperCase())}</div><div class="trainer-context">Pot ${escapeHtml(trainerFmtBB(h.pot))} · ${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"} · stack ${escapeHtml(trainerFmtBB(h.stacks[h.heroSeat]))}</div></div></div><div class="trainer-actions">${legal.map(a=>`<button type="button" class="${a==="FOLD"?"danger secondary":a==="CHECK"||a==="CALL"?"secondary":"primary"}" data-trainer-action="${a}">${a}</button>`).join("")}<div class="trainer-sizing"><div class="field"><label for="trainerSizingInput">Coût ajouté / mise (BB)</label><input id="trainerSizingInput" type="number" min="0" step="0.1" value="${trainerNum(Number.isFinite(recCost)?recCost:minAgg)}"></div><div class="trainer-size-presets"><button type="button" class="secondary" data-size=".5">½ pot</button><button type="button" class="secondary" data-size=".75">¾ pot</button><button type="button" class="secondary" data-size="1">Pot</button><button type="button" class="secondary" data-size="allin">All-in</button></div></div></div></div>`;
-  trainerControls.querySelectorAll("[data-trainer-action]").forEach(b=>b.addEventListener("click",()=>trainerHeroAction(b.dataset.trainerAction,trainerSizingValue())));
-  trainerControls.querySelectorAll("[data-size]").forEach(b=>b.addEventListener("click",()=>{const v=b.dataset.size==="allin"?h.stacks[h.heroSeat]:Math.max(toCall>0?toCall+h.lastRaise:1,Number(b.dataset.size)*h.pot);trainerSetSizing(v);}));
+  const sizingInput=document.getElementById("trainerSizingInput");sizingInput?.addEventListener("input",()=>{trainerState.sizingTouched=true;});
+  trainerControls.querySelectorAll("[data-trainer-action]").forEach(b=>b.addEventListener("click",()=>trainerHeroAction(b.dataset.trainerAction,trainerGuidedClickCost(b.dataset.trainerAction))));
+  trainerControls.querySelectorAll("[data-size]").forEach(b=>b.addEventListener("click",()=>{trainerState.sizingTouched=true;const v=b.dataset.size==="allin"?h.stacks[h.heroSeat]:Math.max(toCall>0?toCall+h.lastRaise:1,Number(b.dataset.size)*h.pot);trainerSetSizing(v);}));
 }
 function trainerRenderStats(){
   if(!trainerStats)return;const s=trainerState.session;trainerStats.innerHTML=`<div class="trainer-stat-grid"><div class="trainer-stat"><div class="k">Mains</div><div class="v">${s.hands}</div></div><div class="trainer-stat"><div class="k">Décisions</div><div class="v">${s.decisions}</div></div><div class="trainer-stat"><div class="k">Bonnes / proches</div><div class="v">${s.good+s.close}</div></div><div class="trainer-stat loss"><div class="k">EV perdue</div><div class="v">${escapeHtml(trainerFmtBB(s.lossBB))}</div></div></div>`;
@@ -498,7 +528,7 @@ async function trainerOpen(){
   trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();if(await trainerEnsureModels()){if(!trainerState.hand)await trainerNewHand();}
 }
 function trainerClose(){trainerState.open=false;trainerPage?.classList.add("mode-hidden");trainerPage?.setAttribute("aria-hidden","true");document.body.classList.remove("trainer-view-open");if(quickNav)quickNav.style.display="";state.appView="main";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
-function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));trainerRender();}
+function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));const needGuide=mode==="guided"&&trainerState.hand?.awaitingHero&&!trainerState.recommendation&&!trainerState.busy;trainerRender();if(needGuide)void trainerComputeRecommendation();}
 
 trainerOpenBtn?.addEventListener("click",trainerOpen);
 trainerNavLink?.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();trainerOpen();},{capture:true});
