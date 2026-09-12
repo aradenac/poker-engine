@@ -5,86 +5,44 @@
   "profile_summary": [
     {
       "profile": 0,
-      "appearance_weight": 0.39303234311002305,
-      "fit_players": 369,
-      "all_players": 3578,
+      "appearance_weight": 0.47072171743326585,
+      "fit_players": 420,
+      "all_players": 4464,
       "centroid": {
-        "vpip": 0.33191682675985035,
-        "pfr": 0.042149091139847855,
-        "limp": 0.23496353656300065,
-        "threebet": 0.04714301962904566,
-        "post_aggression_frequency": 0.17189427041756505,
-        "post_fold_facing_aggression": 0.4956861927967842
+        "vpip": 0.32997538384808517,
+        "pfr": 0.04658612777492595,
+        "limp": 0.22971753091840597,
+        "threebet": 0.04895797605324636,
+        "post_aggression_frequency": 0.1793117324213494,
+        "post_fold_facing_aggression": 0.4962100685453918
       }
     },
     {
       "profile": 1,
-      "appearance_weight": 0.11698130973118026,
-      "fit_players": 109,
-      "all_players": 688,
+      "appearance_weight": 0.21978249611600206,
+      "fit_players": 175,
+      "all_players": 2112,
       "centroid": {
-        "vpip": 0.35147777848121564,
-        "pfr": 0.11976736084250264,
-        "limp": 0.1796059182387855,
-        "threebet": 0.06894721795254334,
-        "post_aggression_frequency": 0.22756046010391773,
-        "post_fold_facing_aggression": 0.4898018624463517
+        "vpip": 0.4540079763289174,
+        "pfr": 0.14007747304536372,
+        "limp": 0.24332987673236423,
+        "threebet": 0.07767070353582488,
+        "post_aggression_frequency": 0.2532052290621038,
+        "post_fold_facing_aggression": 0.4639654500464675
       }
     },
     {
       "profile": 2,
-      "appearance_weight": 0.04692811072925004,
-      "fit_players": 34,
-      "all_players": 424,
+      "appearance_weight": 0.30949578645073206,
+      "fit_players": 286,
+      "all_players": 2556,
       "centroid": {
-        "vpip": 0.48769671494497635,
-        "pfr": 0.10490301740569959,
-        "limp": 0.3121662557194053,
-        "threebet": 0.1034739934488494,
-        "post_aggression_frequency": 0.1709369474437931,
-        "post_fold_facing_aggression": 0.47283420893625905
-      }
-    },
-    {
-      "profile": 3,
-      "appearance_weight": 0.22594981403888706,
-      "fit_players": 125,
-      "all_players": 3286,
-      "centroid": {
-        "vpip": 0.510107526982282,
-        "pfr": 0.0902190340268061,
-        "limp": 0.33437108607802657,
-        "threebet": 0.05718632785490693,
-        "post_aggression_frequency": 0.2752948726654294,
-        "post_fold_facing_aggression": 0.4426245774463145
-      }
-    },
-    {
-      "profile": 4,
-      "appearance_weight": 0.20578127206817004,
-      "fit_players": 230,
-      "all_players": 1112,
-      "centroid": {
-        "vpip": 0.5431846554335789,
-        "pfr": 0.0447131700900804,
-        "limp": 0.4078237132307239,
-        "threebet": 0.04972770365456272,
-        "post_aggression_frequency": 0.14383929405248339,
-        "post_fold_facing_aggression": 0.4842868528019123
-      }
-    },
-    {
-      "profile": 5,
-      "appearance_weight": 0.011327150322489526,
-      "fit_players": 14,
-      "all_players": 44,
-      "centroid": {
-        "vpip": 0.5636489261010844,
-        "pfr": 0.26397762388225937,
-        "limp": 0.22158833208733658,
-        "threebet": 0.12744448249663515,
-        "post_aggression_frequency": 0.29517644189424636,
-        "post_fold_facing_aggression": 0.4545745090663573
+        "vpip": 0.5365916801362438,
+        "pfr": 0.047904094513939316,
+        "limp": 0.3992686919578998,
+        "threebet": 0.05137066760437891,
+        "post_aggression_frequency": 0.15669255531157728,
+        "post_fold_facing_aggression": 0.4777771067057116
       }
     }
   ],

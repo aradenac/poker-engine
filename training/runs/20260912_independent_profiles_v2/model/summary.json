@@ -41,7 +41,7 @@
     "sorted_hand_ids_sha256": "521482a13217cc0dec4a93d03c7cbec6668b90edb5f9d68edc6a748291510b5e"
   },
   "parameters": {
-    "profiles": 6,
+    "profiles": 3,
     "profile_weight_cap": 200,
     "range_backoff_min_observations": 20,
     "postflop_backoff_min_observations": 30,
@@ -62,12 +62,9 @@
     "sizing_over_20x_pot": 151
   },
   "profile_weights": {
-    "0": 0.39303234311002305,
-    "1": 0.11698130973118026,
-    "2": 0.04692811072925004,
-    "3": 0.22594981403888706,
-    "4": 0.20578127206817004,
-    "5": 0.011327150322489526
+    "0": 0.47072171743326585,
+    "1": 0.21978249611600206,
+    "2": 0.30949578645073206
   },
   "promotion_status": "candidate_not_promoted"
 }
