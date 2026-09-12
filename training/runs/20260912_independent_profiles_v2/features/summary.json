@@ -8,21 +8,26 @@
     "VALIDATION": 2753
   },
   "train_unique_hands": 22149,
-  "players_total": 8921,
-  "players_eligible_default": 852,
+  "players_total": 9132,
+  "players_eligible_default": 881,
   "global_rates": {
-    "vpip": 0.43596772625644015,
-    "pfr": 0.07628074268494216,
-    "limp": 0.28637114805093805,
-    "threebet": 0.059126292058360626,
-    "post_aggression_frequency": 0.20140159384787126,
-    "post_fold_facing_aggression": 0.46913275052250714
+    "vpip": 0.44154230026834895,
+    "pfr": 0.07657831552186808,
+    "limp": 0.2902029094675392,
+    "threebet": 0.05970149253731343,
+    "post_aggression_frequency": 0.2001111193421735,
+    "post_fold_facing_aggression": 0.46764078498293515
   },
   "parser_audit": {
     "counts": {
       "en|recognized_actions": 278815,
-      "fr|hands_without_seats": 803
+      "fr|recognized_actions": 11837,
+      "fr|unmatched_actor_lines": 282
     },
-    "unmatched_samples": {}
+    "unmatched_samples": {
+      "fr": [
+        "cache la main perdante."
+      ]
+    }
   }
 }
