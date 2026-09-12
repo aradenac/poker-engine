@@ -30,7 +30,9 @@ import zipfile  # noqa: E402
 SCHEMA = "independent-profile-player-features/v1"
 FEATURE_VERSION = "model-b-player-features-v1"
 
-SEAT_RE = re.compile(r"^(?:Seat|Siège)\s+(\d+)\s*:\s*(.+?)\s+\([^)]*\)\s*$", re.I)
+# PokerStars has used several French renderings over time. Recent exports use
+# "Siège", while older histories in the persisted baseline use "Place".
+SEAT_RE = re.compile(r"^(?:Seat|Siège|Siege|Place)\s+(\d+)\s*:\s*(.+?)\s+\([^)]*\)\s*$", re.I)
 ACTOR_RE = re.compile(r"^(.+?)\s*:\s*(.+)$")
 
 STREET_MARKERS = {
@@ -43,7 +45,7 @@ STREET_MARKERS = {
 }
 
 IGNORED_PREFIXES = (
-    "posts ", "poste ", "shows ", "montre ", "mucks ", "jette ",
+    "posts ", "poste ", "met ", "shows ", "montre ", "mucks ", "jette ",
     "collected ", "a remporté ", "doesn't show", "ne montre pas",
 )
 
@@ -59,7 +61,7 @@ def decode_text(data: bytes) -> str:
 
 def classify_action(body: str) -> str | None:
     value = body.strip().lower()
-    if value.startswith(("folds", "se couche")):
+    if value.startswith(("folds", "se couche", "passe")):
         return "fold"
     if value.startswith(("checks", "parole")):
         return "check"
