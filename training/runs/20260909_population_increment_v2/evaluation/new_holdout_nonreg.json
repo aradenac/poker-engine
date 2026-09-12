@@ -1,0 +1,176 @@
+{
+  "VALIDATION": {
+    "base": {
+      "preflop": {
+        "n": 546,
+        "logloss": 0.8064192861625581,
+        "brier": 0.48000568796649135,
+        "known_n": 99,
+        "known_policy_logloss": 0.8443452527445467,
+        "exact_coverage": 0.989010989010989
+      },
+      "postflop": {
+        "n": 572,
+        "logloss": 0.707518353288111,
+        "brier": 0.4395557660728816,
+        "exact_coverage": 0.9912587412587412
+      },
+      "postflop_by_street": {
+        "flop": {
+          "n": 252,
+          "logloss": 0.690279897628177,
+          "brier": 0.41584179639476204,
+          "exact_coverage": 0.9801587301587301
+        },
+        "turn": {
+          "n": 194,
+          "logloss": 0.7403507493828316,
+          "brier": 0.47568808960873166,
+          "exact_coverage": 1.0
+        },
+        "river": {
+          "n": 126,
+          "logloss": 0.6914437976049945,
+          "brier": 0.43135139776281156,
+          "exact_coverage": 1.0
+        }
+      }
+    },
+    "updated": {
+      "preflop": {
+        "n": 546,
+        "logloss": 0.805702252911176,
+        "brier": 0.47925745069349013,
+        "known_n": 99,
+        "known_policy_logloss": 0.8443452527445467,
+        "exact_coverage": 0.989010989010989
+      },
+      "postflop": {
+        "n": 572,
+        "logloss": 0.7076999747921953,
+        "brier": 0.4396744463812402,
+        "exact_coverage": 0.9912587412587412
+      },
+      "postflop_by_street": {
+        "flop": {
+          "n": 252,
+          "logloss": 0.6903851693500969,
+          "brier": 0.41592801658621337,
+          "exact_coverage": 0.9801587301587301
+        },
+        "turn": {
+          "n": 194,
+          "logloss": 0.7410984476460166,
+          "brier": 0.47631811101258487,
+          "exact_coverage": 1.0
+        },
+        "river": {
+          "n": 126,
+          "logloss": 0.6909065401713014,
+          "brier": 0.43074769534842855,
+          "exact_coverage": 1.0
+        }
+      }
+    },
+    "delta": {
+      "preflop": {
+        "logloss": -0.0007170332513820599,
+        "brier": -0.0007482372730012177,
+        "exact_coverage": 0.0,
+        "known_policy_logloss": 0.0
+      },
+      "postflop": {
+        "logloss": 0.000181621504084295,
+        "brier": 0.00011868030835859855,
+        "exact_coverage": 0.0
+      }
+    }
+  },
+  "TEST": {
+    "base": {
+      "preflop": {
+        "n": 595,
+        "logloss": 0.8255828022361356,
+        "brier": 0.4941046761822421,
+        "known_n": 126,
+        "known_policy_logloss": 0.7411275617248658,
+        "exact_coverage": 0.9899159663865547
+      },
+      "postflop": {
+        "n": 673,
+        "logloss": 0.6954570134180966,
+        "brier": 0.433313960646453,
+        "exact_coverage": 0.9895988112927192
+      },
+      "postflop_by_street": {
+        "flop": {
+          "n": 296,
+          "logloss": 0.6499013967382721,
+          "brier": 0.3950099624996419,
+          "exact_coverage": 0.9966216216216216
+        },
+        "turn": {
+          "n": 213,
+          "logloss": 0.6900063093353304,
+          "brier": 0.42287428015872364,
+          "exact_coverage": 0.9859154929577465
+        },
+        "river": {
+          "n": 164,
+          "logloss": 0.7847586140696645,
+          "brier": 0.5160068593985412,
+          "exact_coverage": 0.9817073170731707
+        }
+      }
+    },
+    "updated": {
+      "preflop": {
+        "n": 595,
+        "logloss": 0.823863080707793,
+        "brier": 0.4938391712890059,
+        "known_n": 126,
+        "known_policy_logloss": 0.7411275617248658,
+        "exact_coverage": 0.9899159663865547
+      },
+      "postflop": {
+        "n": 673,
+        "logloss": 0.6958850986066959,
+        "brier": 0.4332951512265631,
+        "exact_coverage": 0.9895988112927192
+      },
+      "postflop_by_street": {
+        "flop": {
+          "n": 296,
+          "logloss": 0.6502364675880429,
+          "brier": 0.3948997184977648,
+          "exact_coverage": 0.9966216216216216
+        },
+        "turn": {
+          "n": 213,
+          "logloss": 0.6905435786651534,
+          "brier": 0.42278475725522335,
+          "exact_coverage": 0.9859154929577465
+        },
+        "river": {
+          "n": 164,
+          "logloss": 0.7852127725644417,
+          "brier": 0.5162449195413166,
+          "exact_coverage": 0.9817073170731707
+        }
+      }
+    },
+    "delta": {
+      "preflop": {
+        "logloss": -0.0017197215283425438,
+        "brier": -0.0002655048932361792,
+        "exact_coverage": 0.0,
+        "known_policy_logloss": 0.0
+      },
+      "postflop": {
+        "logloss": 0.0004280851885992698,
+        "brier": -1.880941988990914e-05,
+        "exact_coverage": 0.0
+      }
+    }
+  }
+}
