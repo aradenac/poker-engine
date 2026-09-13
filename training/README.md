@@ -15,6 +15,8 @@ This directory stores the reproducible learning state of the poker engine.
 - `runs/` — one directory per training/calibration run.
 - `models/` — promoted or candidate model artifacts and metadata.
 - `evaluations/` — benchmark results, holdout results and comparison reports.
+- `gates/` — normalized evidence snapshots for promotion/non-regression decisions.
+- `PROMOTION_GATE_CONTRACT.json` — versioned, pre-specified thresholds and holdout rules used before any promoted pointer may advance.
 - `registry.json` — small source-of-truth index pointing to the active/promoted state.
 
 ## Run contract
@@ -34,6 +36,23 @@ Every run should record at least:
 - regression-suite result;
 - produced artifacts;
 - promotion decision and rationale.
+
+## Promotion gate contract
+
+`tools/evaluate_promotion_gates.py` consumes a normalized `poker-promotion-evidence/v1` document and emits `poker-promotion-gate-report/v1`.
+
+The gate vocabulary is deliberately strict:
+
+- `PASS` — required evidence exists and satisfies the pre-specified contract;
+- `FAIL` — evidence exists and violates a required gate;
+- `BLOCKED` — required evidence does not yet exist;
+- `NOT_APPLICABLE` — the check is outside this transition, for example deployment verification before a new site release is attempted.
+
+A rejected candidate is not itself a failed training cycle. `RETAIN_BASELINE` is a valid explicit outcome when the candidate and comparison evidence are persisted. Conversely, missing candidate artifacts, missing paired comparisons, missing strategy baselines or reuse of TEST for selection must never be interpreted as a pass.
+
+Use `--require-ready` only at the actual promotion boundary. It returns a non-zero exit code unless the aggregate gate is `PASS`; `registry.json` must remain unchanged before that point. The current cycle evidence is kept under `gates/` so outstanding blockers remain machine-readable rather than living only in issue prose.
+
+Strategy TEST is a final confirmation holdout. Selection and retuning use VALIDATION; after the finalist is frozen, TEST may confirm or reject it but must not be used to choose another candidate in the same cycle.
 
 ## Continuous-improvement rule
 
