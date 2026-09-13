@@ -1,0 +1,518 @@
+{
+  "schema": "independent-model-b-response-conditioned-selection/v1",
+  "scope": "heads-up-compatible postflop opponent response representation; no Hero strategy selection",
+  "dataset": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "parsed_hands": 27164,
+        "scoped_hands": 26560
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c",
+        "parsed_hands": 27677,
+        "scoped_hands": 11709
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+        "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed",
+        "parsed_hands": 3268,
+        "scoped_hands": 3268
+      }
+    ],
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "unique_scoped_hands": 31003,
+    "split_counts": {
+      "TEST": 3175,
+      "TRAIN": 24755,
+      "VALIDATION": 3073
+    },
+    "overlap_occurrences": 10534,
+    "overlap_payload_differences": 0,
+    "english_preferred_replacements": 0,
+    "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+  },
+  "train_hands": 24755,
+  "incumbent_model_dir": "training/runs/20260912_independent_profiles_v2/model",
+  "incumbent_artifacts": {
+    "profiles_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+    "ranges_sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+    "actions_sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+    "sizing_sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e"
+  },
+  "selection_policy": {
+    "model_selection_split": "VALIDATION",
+    "test_used_for_selection": false,
+    "variants": [
+      "price",
+      "price_spr",
+      "price_spr_texture"
+    ],
+    "gate": "paired action log-loss CI95 upper <= 0; action ECE <= .05; sizing p10-p90 coverage .70-.90; sizing >p99 <= .03"
+  },
+  "strength_conditioning": {
+    "status": "withheld_revealed_selection_bias",
+    "reason": "revealed-card FACING sample excludes folds by construction; training fold response by revealed strength would encode showdown selection bias",
+    "diagnostic_source": "training/runs/20260913_model_b_response_audit/response_conditioning_audit.json"
+  },
+  "variants": {
+    "price": {
+      "conditioning_dimensions": [
+        "price_bucket"
+      ],
+      "validation": {
+        "split": "VALIDATION",
+        "incumbent_actions": {
+          "n": 18540,
+          "log_loss": 0.6601361132945038,
+          "brier": 0.42881526539845394,
+          "accuracy": 0.6694714131607336,
+          "ece_confidence": 0.008001559090560639,
+          "selected_level_counts": {
+            "0": 18261,
+            "1": 158,
+            "2": 121
+          },
+          "observed_frequency": {
+            "BET": 0.17934196332254584,
+            "CALL": 0.16364617044228694,
+            "CHECK": 0.4709816612729234,
+            "FOLD": 0.162891046386192,
+            "RAISE": 0.02313915857605178
+          },
+          "mean_predicted_frequency": {
+            "BET": 0.1746287022082367,
+            "CALL": 0.15984818987357294,
+            "CHECK": 0.4756949223872404,
+            "FOLD": 0.16640864513272993,
+            "RAISE": 0.02341954039822245
+          }
+        },
+        "candidate_actions": {
+          "n": 18540,
+          "log_loss": 0.6493315675813534,
+          "brier": 0.41954696054371055,
+          "accuracy": 0.6872168284789644,
+          "ece_confidence": 0.013172382817579391,
+          "selected_level_counts": {
+            "0": 17803,
+            "1": 408,
+            "2": 266,
+            "3": 63
+          },
+          "observed_frequency": {
+            "BET": 0.17934196332254584,
+            "CALL": 0.16364617044228694,
+            "CHECK": 0.4709816612729234,
+            "FOLD": 0.162891046386192,
+            "RAISE": 0.02313915857605178
+          },
+          "mean_predicted_frequency": {
+            "BET": 0.17467879820466634,
+            "CALL": 0.16023734475090384,
+            "CHECK": 0.4756448263908156,
+            "FOLD": 0.1655688677050688,
+            "RAISE": 0.023870162948556088
+          }
+        },
+        "paired_action_log_loss": {
+          "cluster_unit": "hand_id",
+          "hands": 2538,
+          "bootstrap_samples": 5000,
+          "seed": 20260913,
+          "observed": -0.010804545713133565,
+          "ci95": [
+            -0.013315177510580718,
+            -0.008412044661947475
+          ],
+          "probability_candidate_better": 1.0,
+          "decisions": 18540
+        },
+        "incumbent_sizing": {
+          "n": 3754,
+          "median_absolute_log2_error": 1.000159690021005,
+          "p90_absolute_log2_error": 2.418438509972283,
+          "inside_training_p10_p90_fraction": 0.8036760788492275,
+          "above_training_p99_fraction": 0.012519978689397976,
+          "below_training_p10_fraction": 0.10335641981885989,
+          "warm_fraction": 1.0,
+          "cold_fraction": 0.0,
+          "selected_level_counts": {
+            "0": 3741,
+            "1": 13
+          }
+        },
+        "candidate_sizing": {
+          "n": 3754,
+          "median_absolute_log2_error": 1.0002045871355991,
+          "p90_absolute_log2_error": 2.396592554257514,
+          "inside_training_p10_p90_fraction": 0.797815663292488,
+          "above_training_p99_fraction": 0.012253596164091636,
+          "below_training_p10_fraction": 0.10708577517314864,
+          "warm_fraction": 1.0,
+          "cold_fraction": 0.0,
+          "selected_level_counts": {
+            "0": 3722,
+            "1": 26,
+            "2": 5,
+            "3": 1
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": {
+          "paired_action_ci95_upper_le_zero": true,
+          "action_ece_le_0_05": true,
+          "sizing_p10_p90_coverage": true,
+          "sizing_above_p99_le_0_03": true
+        }
+      }
+    },
+    "price_spr": {
+      "conditioning_dimensions": [
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "validation": {
+        "split": "VALIDATION",
+        "incumbent_actions": {
+          "n": 18540,
+          "log_loss": 0.6601361132945038,
+          "brier": 0.42881526539845394,
+          "accuracy": 0.6694714131607336,
+          "ece_confidence": 0.008001559090560639,
+          "selected_level_counts": {
+            "0": 18261,
+            "1": 158,
+            "2": 121
+          },
+          "observed_frequency": {
+            "BET": 0.17934196332254584,
+            "CALL": 0.16364617044228694,
+            "CHECK": 0.4709816612729234,
+            "FOLD": 0.162891046386192,
+            "RAISE": 0.02313915857605178
+          },
+          "mean_predicted_frequency": {
+            "BET": 0.1746287022082367,
+            "CALL": 0.15984818987357294,
+            "CHECK": 0.4756949223872404,
+            "FOLD": 0.16640864513272993,
+            "RAISE": 0.02341954039822245
+          }
+        },
+        "candidate_actions": {
+          "n": 18540,
+          "log_loss": 0.6525860545455816,
+          "brier": 0.42107229401005236,
+          "accuracy": 0.6837108953613807,
+          "ece_confidence": 0.010554127763557677,
+          "selected_level_counts": {
+            "0": 16129,
+            "1": 949,
+            "2": 919,
+            "3": 503,
+            "4": 34,
+            "5": 5,
+            "6": 1
+          },
+          "observed_frequency": {
+            "BET": 0.17934196332254584,
+            "CALL": 0.16364617044228694,
+            "CHECK": 0.4709816612729234,
+            "FOLD": 0.162891046386192,
+            "RAISE": 0.02313915857605178
+          },
+          "mean_predicted_frequency": {
+            "BET": 0.1745324832681791,
+            "CALL": 0.1596262914432652,
+            "CHECK": 0.4757911413272968,
+            "FOLD": 0.1646221728120891,
+            "RAISE": 0.02542791114917714
+          }
+        },
+        "paired_action_log_loss": {
+          "cluster_unit": "hand_id",
+          "hands": 2538,
+          "bootstrap_samples": 5000,
+          "seed": 20260913,
+          "observed": -0.007550058748906855,
+          "ci95": [
+            -0.010696330537873814,
+            -0.004348897143051032
+          ],
+          "probability_candidate_better": 1.0,
+          "decisions": 18540
+        },
+        "incumbent_sizing": {
+          "n": 3754,
+          "median_absolute_log2_error": 1.000159690021005,
+          "p90_absolute_log2_error": 2.418438509972283,
+          "inside_training_p10_p90_fraction": 0.8036760788492275,
+          "above_training_p99_fraction": 0.012519978689397976,
+          "below_training_p10_fraction": 0.10335641981885989,
+          "warm_fraction": 1.0,
+          "cold_fraction": 0.0,
+          "selected_level_counts": {
+            "0": 3741,
+            "1": 13
+          }
+        },
+        "candidate_sizing": {
+          "n": 3754,
+          "median_absolute_log2_error": 1.0,
+          "p90_absolute_log2_error": 2.399141697743353,
+          "inside_training_p10_p90_fraction": 0.7866275972296217,
+          "above_training_p99_fraction": 0.020511454448588172,
+          "below_training_p10_fraction": 0.11880660628662759,
+          "warm_fraction": 1.0,
+          "cold_fraction": 0.0,
+          "selected_level_counts": {
+            "0": 3600,
+            "1": 126,
+            "2": 15,
+            "3": 13
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": {
+          "paired_action_ci95_upper_le_zero": true,
+          "action_ece_le_0_05": true,
+          "sizing_p10_p90_coverage": true,
+          "sizing_above_p99_le_0_03": true
+        }
+      }
+    },
+    "price_spr_texture": {
+      "conditioning_dimensions": [
+        "price_bucket",
+        "spr_bucket",
+        "texture_bucket"
+      ],
+      "validation": {
+        "split": "VALIDATION",
+        "incumbent_actions": {
+          "n": 18540,
+          "log_loss": 0.6601361132945038,
+          "brier": 0.42881526539845394,
+          "accuracy": 0.6694714131607336,
+          "ece_confidence": 0.008001559090560639,
+          "selected_level_counts": {
+            "0": 18261,
+            "1": 158,
+            "2": 121
+          },
+          "observed_frequency": {
+            "BET": 0.17934196332254584,
+            "CALL": 0.16364617044228694,
+            "CHECK": 0.4709816612729234,
+            "FOLD": 0.162891046386192,
+            "RAISE": 0.02313915857605178
+          },
+          "mean_predicted_frequency": {
+            "BET": 0.1746287022082367,
+            "CALL": 0.15984818987357294,
+            "CHECK": 0.4756949223872404,
+            "FOLD": 0.16640864513272993,
+            "RAISE": 0.02341954039822245
+          }
+        },
+        "candidate_actions": {
+          "n": 18540,
+          "log_loss": 0.6609421064218763,
+          "brier": 0.427227870845435,
+          "accuracy": 0.6777238403451996,
+          "ece_confidence": 0.013965877804701193,
+          "selected_level_counts": {
+            "0": 12226,
+            "1": 1728,
+            "2": 1900,
+            "3": 1830,
+            "4": 602,
+            "5": 238,
+            "6": 14,
+            "7": 2
+          },
+          "observed_frequency": {
+            "BET": 0.17934196332254584,
+            "CALL": 0.16364617044228694,
+            "CHECK": 0.4709816612729234,
+            "FOLD": 0.162891046386192,
+            "RAISE": 0.02313915857605178
+          },
+          "mean_predicted_frequency": {
+            "BET": 0.1741155956118534,
+            "CALL": 0.1611591040059877,
+            "CHECK": 0.4762080289836193,
+            "FOLD": 0.161061171893145,
+            "RAISE": 0.02745609950539857
+          }
+        },
+        "paired_action_log_loss": {
+          "cluster_unit": "hand_id",
+          "hands": 2538,
+          "bootstrap_samples": 5000,
+          "seed": 20260913,
+          "observed": 0.0008059931273872597,
+          "ci95": [
+            -0.0028354427253051186,
+            0.0044887463212432265
+          ],
+          "probability_candidate_better": 0.3302,
+          "decisions": 18540
+        },
+        "incumbent_sizing": {
+          "n": 3754,
+          "median_absolute_log2_error": 1.000159690021005,
+          "p90_absolute_log2_error": 2.418438509972283,
+          "inside_training_p10_p90_fraction": 0.8036760788492275,
+          "above_training_p99_fraction": 0.012519978689397976,
+          "below_training_p10_fraction": 0.10335641981885989,
+          "warm_fraction": 1.0,
+          "cold_fraction": 0.0,
+          "selected_level_counts": {
+            "0": 3741,
+            "1": 13
+          }
+        },
+        "candidate_sizing": {
+          "n": 3754,
+          "median_absolute_log2_error": 1.0,
+          "p90_absolute_log2_error": 2.4848665960170537,
+          "inside_training_p10_p90_fraction": 0.7682472029834843,
+          "above_training_p99_fraction": 0.026904635055940332,
+          "below_training_p10_fraction": 0.12706446457112414,
+          "warm_fraction": 1.0,
+          "cold_fraction": 0.0,
+          "selected_level_counts": {
+            "0": 3196,
+            "1": 285,
+            "2": 187,
+            "3": 86
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": {
+          "paired_action_ci95_upper_le_zero": false,
+          "action_ece_le_0_05": true,
+          "sizing_p10_p90_coverage": true,
+          "sizing_above_p99_le_0_03": true
+        }
+      }
+    }
+  },
+  "selected_variant": "price",
+  "test_locked_confirmation": {
+    "split": "TEST",
+    "incumbent_actions": {
+      "n": 19276,
+      "log_loss": 0.6525207572359272,
+      "brier": 0.42325042122005996,
+      "accuracy": 0.6800166009545549,
+      "ece_confidence": 0.010058320812836596,
+      "selected_level_counts": {
+        "0": 19008,
+        "1": 129,
+        "2": 139
+      },
+      "observed_frequency": {
+        "BET": 0.17721518987341772,
+        "CALL": 0.1557895829010168,
+        "CHECK": 0.4844366051047935,
+        "FOLD": 0.1598879435567545,
+        "RAISE": 0.02267067856401743
+      },
+      "mean_predicted_frequency": {
+        "BET": 0.1780727681860117,
+        "CALL": 0.15438423918872182,
+        "CHECK": 0.4835790267922067,
+        "FOLD": 0.16118856902213652,
+        "RAISE": 0.022775396810924425
+      }
+    },
+    "candidate_actions": {
+      "n": 19276,
+      "log_loss": 0.642772875274524,
+      "brier": 0.4152074794801517,
+      "accuracy": 0.6931417306495123,
+      "ece_confidence": 0.011140541569462571,
+      "selected_level_counts": {
+        "0": 18544,
+        "1": 379,
+        "2": 283,
+        "3": 70
+      },
+      "observed_frequency": {
+        "BET": 0.17721518987341772,
+        "CALL": 0.1557895829010168,
+        "CHECK": 0.4844366051047935,
+        "FOLD": 0.1598879435567545,
+        "RAISE": 0.02267067856401743
+      },
+      "mean_predicted_frequency": {
+        "BET": 0.17795535182905214,
+        "CALL": 0.1538437490236541,
+        "CHECK": 0.4836964431491687,
+        "FOLD": 0.1615320429304405,
+        "RAISE": 0.02297241306769325
+      }
+    },
+    "paired_action_log_loss": {
+      "cluster_unit": "hand_id",
+      "hands": 2662,
+      "bootstrap_samples": 5000,
+      "seed": 20260913,
+      "observed": -0.009747881961388056,
+      "ci95": [
+        -0.011985833635633367,
+        -0.0074593928558797035
+      ],
+      "probability_candidate_better": 1.0,
+      "decisions": 19276
+    },
+    "incumbent_sizing": {
+      "n": 3853,
+      "median_absolute_log2_error": 1.0006790751082728,
+      "p90_absolute_log2_error": 2.4712533599943014,
+      "inside_training_p10_p90_fraction": 0.8030106410589152,
+      "above_training_p99_fraction": 0.013755515182974305,
+      "below_training_p10_fraction": 0.09161692187905528,
+      "warm_fraction": 1.0,
+      "cold_fraction": 0.0,
+      "selected_level_counts": {
+        "0": 3841,
+        "1": 12
+      }
+    },
+    "candidate_sizing": {
+      "n": 3853,
+      "median_absolute_log2_error": 1.000378833627954,
+      "p90_absolute_log2_error": 2.4150360565830815,
+      "inside_training_p10_p90_fraction": 0.7983389566571503,
+      "above_training_p99_fraction": 0.014534129249935116,
+      "below_training_p10_fraction": 0.09602906825849987,
+      "warm_fraction": 1.0,
+      "cold_fraction": 0.0,
+      "selected_level_counts": {
+        "0": 3812,
+        "1": 34,
+        "2": 6,
+        "3": 1
+      }
+    }
+  },
+  "decision": "PROMOTE_RESPONSE_CANDIDATE",
+  "production_effect": "NONE",
+  "independence_contract": "hand histories plus frozen promoted Model B profiles/ranges only; no Model A outputs"
+}

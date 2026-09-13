@@ -1,0 +1,26 @@
+{
+  "schema": "independent-opponent-model-b-prediction-contract/v2",
+  "model_schema": "independent-opponent-model-b/v3-response-conditioned",
+  "profile_assignment": "unchanged from promoted independent_model_b_v2",
+  "preflop_range": "byte-identical promoted v2 artifact",
+  "postflop_action": {
+    "selection": "finest hierarchy node with n >= 30, then explicit v2-compatible backoff",
+    "smoothing": "symmetric Dirichlet/additive smoothing over legal labels",
+    "alpha_per_action": 1.0,
+    "conditioning_dimensions": [
+      "price_bucket"
+    ]
+  },
+  "sizing": {
+    "selection": "finest hierarchy node with n >= 12, then explicit v2-compatible backoff",
+    "distribution": "empirical TRAIN values; no clipping or synthetic tail",
+    "conditioning_dimensions": [
+      "price_bucket"
+    ]
+  },
+  "hand_strength": {
+    "status": "withheld_revealed_selection_bias",
+    "reason": "FACING folds are structurally absent from showdown/revealed-card strength data; no MNAR-biased strength-conditioned fold table is trained"
+  },
+  "independence": "hand histories plus promoted Model B profile assignments only; no Model A EV, policy, recommendation, or response output"
+}

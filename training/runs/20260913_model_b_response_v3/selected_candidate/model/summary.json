@@ -1,0 +1,75 @@
+{
+  "schema": "independent-opponent-model-b/v3-response-conditioned",
+  "model_version": "independent_model_b_v3_response_conditioned_candidate",
+  "fit_split": "TRAIN",
+  "dataset": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "parsed_hands": 27164,
+        "scoped_hands": 26560
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c",
+        "parsed_hands": 27677,
+        "scoped_hands": 11709
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+        "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed",
+        "parsed_hands": 3268,
+        "scoped_hands": 3268
+      }
+    ],
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "unique_scoped_hands": 31003,
+    "split_counts": {
+      "TEST": 3175,
+      "TRAIN": 24755,
+      "VALIDATION": 3073
+    },
+    "overlap_occurrences": 10534,
+    "overlap_payload_differences": 0,
+    "english_preferred_replacements": 0,
+    "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+  },
+  "conditioning_dimensions": [
+    "price_bucket"
+  ],
+  "counts": {
+    "invalid_free_call": 6,
+    "invalid_free_fold": 36,
+    "invalid_free_raise": 2,
+    "postflop_decisions": 150908,
+    "sizing_observations": 30110,
+    "sizing_observations_direct": 26690
+  },
+  "profiles_and_ranges": "frozen promoted independent_model_b_v2",
+  "hand_strength_conditioning": "withheld_revealed_selection_bias",
+  "validation_gate": {
+    "pass": true,
+    "checks": {
+      "paired_action_ci95_upper_le_zero": true,
+      "action_ece_le_0_05": true,
+      "sizing_p10_p90_coverage": true,
+      "sizing_above_p99_le_0_03": true
+    }
+  },
+  "test_locked_confirmation": {
+    "pass": true,
+    "checks": {
+      "paired_action_ci95_upper_le_zero": true,
+      "action_ece_le_0_05": true,
+      "sizing_p10_p90_coverage": true,
+      "sizing_above_p99_le_0_03": true
+    }
+  },
+  "promotion_status": "candidate_not_promoted",
+  "production_effect": "NONE"
+}
