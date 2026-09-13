@@ -64,6 +64,10 @@ jobs:
             --candidate training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json \
             --overlay training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json \
             --limit 6
+          python3 tools/training/inspect_coverage_formula.py \
+            --model training/models/postflop_population_model_v5.json
+          python3 tools/training/inspect_coverage_formula.py \
+            --model training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json
       - name: Rebuild the 2026-09-12 Model A normalized increment
         run: |
           python3 tools/training/build_incremental_decisions_v2.py \
