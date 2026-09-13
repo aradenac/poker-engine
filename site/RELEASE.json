@@ -1,13 +1,27 @@
 {
+  "schema": "poker-site-release/v2",
   "application": "Poker Range Equity Offline",
   "version": "v83",
   "artifact": "site/index.html",
   "release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
   "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+  "identity": {
+    "engine_release": {
+      "artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
+      "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4"
+    },
+    "assembled_site": {
+      "entrypoint": "site/index.html",
+      "git_blob_sha": "8b2a63722562f913fb95871f24be664e9c210c68",
+      "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
+      "assembled_from_commit": "c4555d3e18c3be90a72c42964c18f963442736f7"
+    }
+  },
   "status": "promoted",
   "published": true,
   "models": {
     "preflop": "training/models/preflop_population_model_v5.json",
     "postflop": "training/models/postflop_population_model_v5.json"
-  }
+  },
+  "notes": "Legacy artifact/release_artifact/sha256 fields are retained for compatibility. identity.engine_release is the immutable v83 engine artifact; identity.assembled_site identifies the later site assembly that embeds trainer/assets and must not be confused with the canonical v83 engine hash."
 }

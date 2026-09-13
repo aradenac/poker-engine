@@ -9,6 +9,11 @@ on:
       - 'training/registry.json'
       - 'training/runs/20260912_independent_profiles_v2/model/**'
       - 'training/datasets/NLHE_100-200/**/*.zip'
+      - 'training/PROMOTION_GATE_CONTRACT.json'
+      - 'training/gates/**'
+      - 'tools/evaluate_promotion_gates.py'
+      - 'tests/test_promotion_gates.py'
+      - 'site/RELEASE.json'
       - 'site/index.html'
       - '.github/workflows/sequential-arena.yml'
   pull_request:
@@ -19,6 +24,11 @@ on:
       - 'training/registry.json'
       - 'training/runs/20260912_independent_profiles_v2/model/**'
       - 'training/datasets/NLHE_100-200/**/*.zip'
+      - 'training/PROMOTION_GATE_CONTRACT.json'
+      - 'training/gates/**'
+      - 'tools/evaluate_promotion_gates.py'
+      - 'tests/test_promotion_gates.py'
+      - 'site/RELEASE.json'
       - 'site/index.html'
       - '.github/workflows/sequential-arena.yml'
 
@@ -34,8 +44,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compile simulation modules
-        run: python3 -m py_compile tools/simulation/*.py tools/sequential_postflop_population_sim_v4.py
+      - name: Compile simulation and gate modules
+        run: python3 -m py_compile tools/simulation/*.py tools/sequential_postflop_population_sim_v4.py tools/evaluate_promotion_gates.py tests/test_promotion_gates.py
+      - name: Promotion gate contract
+        run: |
+          python3 tests/test_promotion_gates.py
+          python3 tools/evaluate_promotion_gates.py \
+            --evidence training/gates/20260912_evidence.json \
+            --out /tmp/promotion-gate-report.json
+          if python3 tools/evaluate_promotion_gates.py \
+            --evidence training/gates/20260912_evidence.json \
+            --require-ready >/tmp/promotion-gate-require-ready.json; then
+            echo 'Current incomplete cycle unexpectedly passed the final promotion barrier'
+            exit 1
+          fi
       - name: Oracle and policy contracts
         run: |
           python3 tools/sequential_postflop_population_sim_v4.py --help
