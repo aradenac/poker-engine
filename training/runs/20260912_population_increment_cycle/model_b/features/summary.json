@@ -1,0 +1,33 @@
+{
+  "schema": "independent-profile-player-features/v1",
+  "feature_version": "model-b-player-features-v1",
+  "unique_scoped_hands": 31003,
+  "split_counts": {
+    "TEST": 3175,
+    "TRAIN": 24755,
+    "VALIDATION": 3073
+  },
+  "train_unique_hands": 24755,
+  "players_total": 9903,
+  "players_eligible_default": 992,
+  "global_rates": {
+    "vpip": 0.43952331327528826,
+    "pfr": 0.07652872558577335,
+    "limp": 0.28883584899317577,
+    "threebet": 0.05868241372947038,
+    "post_aggression_frequency": 0.19948062960411256,
+    "post_fold_facing_aggression": 0.4686761569938332
+  },
+  "parser_audit": {
+    "counts": {
+      "en|recognized_actions": 313009,
+      "fr|recognized_actions": 11837,
+      "fr|unmatched_actor_lines": 282
+    },
+    "unmatched_samples": {
+      "fr": [
+        "cache la main perdante."
+      ]
+    }
+  }
+}

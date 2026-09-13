@@ -3,12 +3,14 @@ name: Evaluate independent Model B holdout
 on:
   push:
     paths:
-      - 'tools/training/independent_profiles/evaluate_model_b.py'
-      - 'tests/independent_profiles/test_evaluate_model_b.py'
+      - 'tools/training/independent_profiles/**'
+      - 'tests/independent_profiles/**'
       - 'training/runs/20260912_independent_profiles_v2/features/**'
       - 'training/runs/20260912_independent_profiles_v2/model/**'
       - 'training/runs/20260912_independent_profiles_v2/evaluation/profile_count_selection.json'
+      - 'training/runs/20260912_population_increment_cycle/evaluation/model_b_refit_selection.json'
       - 'training/datasets/NLHE_100-200/**/*.zip'
+      - 'training/PROMOTION_GATE_CONTRACT.json'
       - '.github/workflows/model-b-evaluation.yml'
 
 permissions:
@@ -69,24 +71,15 @@ jobs:
                   assert math.isfinite(x['actions'][key]), (split,key,x['actions'][key])
               assert math.isfinite(x['range']['log_loss'])
               assert math.isfinite(x['range']['combinatorial_prior_log_loss'])
-
-              # Predictive signal must survive deterministic holdout.
               assert x['actions']['log_loss_improvement'] >= 0.015, (split,'action improvement',x['actions']['log_loss_improvement'])
               assert x['range']['log_loss_improvement'] > 0.0, (split,'range improvement',x['range']['log_loss_improvement'])
               assert x['actions']['ece_confidence'] <= 0.05, (split,'ECE',x['actions']['ece_confidence'])
-
-              # Most observations should use TRAIN-known player profiles; cold start remains supported.
               assert x['actions']['warm_fraction'] >= 0.95, (split,'action warm',x['actions']['warm_fraction'])
               assert x['range']['warm_fraction'] >= 0.95, (split,'range warm',x['range']['warm_fraction'])
-
-              # Profile labels are intentionally coarse; require majority stability on independent hands.
               stability=x['profile_stability']['appearance_weighted_stable_fraction']
               assert stability is not None and stability >= 0.55, (split,'profile stability',stability)
-
-              # Empirical sizing should exhibit expected percentile coverage without tail clipping.
               assert 0.70 <= x['sizing']['inside_training_p10_p90_fraction'] <= 0.90, (split,'sizing p10-p90',x['sizing']['inside_training_p10_p90_fraction'])
               assert x['sizing']['above_training_p99_fraction'] <= 0.03, (split,'sizing above p99',x['sizing']['above_training_p99_fraction'])
-
               anomalies=sum(x['audit'].values())-x['audit'].get('hands_parsed',0)-x['audit'].get('hands_unparsed',0)
               assert anomalies / x['actions']['n'] < 0.001, (split,'state anomalies',anomalies)
 
@@ -118,4 +111,136 @@ jobs:
           git add training/runs/20260912_independent_profiles_v2/evaluation
           git add training/runs/20260912_independent_profiles_v2/model/prediction_contract.json
           git commit -m 'Evaluate final independent Model B K3 holdout'
+          git push
+
+  compare-cycle-refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Paired comparison unit tests
+        run: |
+          python3 tests/independent_profiles/test_build_player_features.py
+          python3 tests/independent_profiles/test_build_model_b.py
+          python3 tests/independent_profiles/test_evaluate_model_b.py
+          python3 tests/independent_profiles/test_compare_model_b_paired.py
+
+      - name: Rebuild refreshed TRAIN-only features
+        run: |
+          CYCLE='training/runs/20260912_population_increment_cycle/model_b'
+          python3 tools/training/independent_profiles/build_player_features.py \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --min-hands 30 \
+            --prior-strength 40 \
+            --output "$CYCLE/features/player_features.json" \
+            --summary "$CYCLE/features/summary.json"
+          python3 - <<'PY'
+          import json
+          p='training/runs/20260912_population_increment_cycle/model_b/features/player_features.json'
+          d=json.load(open(p))
+          assert d['split_used_for_fit']=='TRAIN'
+          assert d['provenance']['unique_scoped_hands']==31003, d['provenance']
+          assert d['provenance']['split_counts']=={'TRAIN':24755,'VALIDATION':3073,'TEST':3175}, d['provenance']['split_counts']
+          assert d['players_eligible_default']==992, d['players_eligible_default']
+          assert 'model-A' in d['independence_contract']
+          PY
+
+      - name: Build frozen K3 refreshed candidate
+        run: |
+          CYCLE='training/runs/20260912_population_increment_cycle/model_b'
+          python3 -m tools.training.independent_profiles.build_model_b \
+            --features "$CYCLE/features/player_features.json" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --profiles 3 \
+            --output-dir "$CYCLE/model"
+          python3 -m tools.training.independent_profiles.summarize_model_b \
+            --model-dir "$CYCLE/model" \
+            --output "$CYCLE/model/metrics.json"
+          python3 - <<'PY'
+          import json
+          root='training/runs/20260912_population_increment_cycle/model_b/model/'
+          d=json.load(open(root+'summary.json'))
+          assert d['fit_split']=='TRAIN'
+          assert d['parameters']['profiles']==3
+          assert d['promotion_status']=='candidate_not_promoted'
+          assert d['counts']['known_preflop_hands']==23958, d['counts']
+          assert d['counts']['postflop_decisions']==150908, d['counts']
+          assert d['counts']['sizing_observations']==30112, d['counts']
+          PY
+
+      - name: Score candidate and incumbent on identical enlarged holdout
+        run: |
+          CYCLE='training/runs/20260912_population_increment_cycle/model_b'
+          COMMON="--archive training/datasets/NLHE_100-200/source/NLHE\ 100-200.zip"
+          python3 -m tools.training.independent_profiles.evaluate_model_b \
+            --features "$CYCLE/features/player_features.json" \
+            --model-dir "$CYCLE/model" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 --exclude-player RoiDePiqueNique \
+            --action-alpha 1 --range-prior-strength 50 \
+            --output "$CYCLE/evaluation/candidate_holdout.json" \
+            --prediction-contract "$CYCLE/model/prediction_contract.json"
+          python3 -m tools.training.independent_profiles.evaluate_model_b \
+            --features 'training/runs/20260912_independent_profiles_v2/features/player_features.json' \
+            --model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 --exclude-player RoiDePiqueNique \
+            --action-alpha 1 --range-prior-strength 50 \
+            --output "$CYCLE/evaluation/incumbent_holdout.json"
+
+      - name: Run pre-specified paired promotion gate
+        run: |
+          CYCLE='training/runs/20260912_population_increment_cycle/model_b'
+          python3 tools/training/independent_profiles/compare_model_b_paired.py \
+            --incumbent-features 'training/runs/20260912_independent_profiles_v2/features/player_features.json' \
+            --incumbent-model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --incumbent-evaluation "$CYCLE/evaluation/incumbent_holdout.json" \
+            --candidate-features "$CYCLE/features/player_features.json" \
+            --candidate-model-dir "$CYCLE/model" \
+            --candidate-evaluation "$CYCLE/evaluation/candidate_holdout.json" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 --exclude-player RoiDePiqueNique \
+            --bootstrap-samples 5000 --seed 20260913 \
+            --code-commit "$GITHUB_SHA" \
+            --output "$CYCLE/evaluation/paired_comparison.json"
+          python3 - <<'PY'
+          import json
+          selection=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_b_refit_selection.json'))
+          report=json.load(open('training/runs/20260912_population_increment_cycle/model_b/evaluation/paired_comparison.json'))
+          assert selection['selected_structure']['k']==3
+          assert selection['selected_structure']['selection_basis']=='VALIDATION only'
+          assert report['dataset']['unique_scoped_hands']==31003
+          assert report['decision']['test_used_for_selection'] is False
+          assert report['decision']['production_effect']=='NONE'
+          print(json.dumps(report['decision'], indent=2))
+          PY
+
+      - name: Persist candidate and paired evidence on branch
+        run: |
+          CYCLE='training/runs/20260912_population_increment_cycle/model_b'
+          if [ -z "$(git status --porcelain "$CYCLE")" ]; then
+            echo 'No refreshed Model B artifact changes.'
+            exit 0
+          fi
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add "$CYCLE"
+          git commit -m 'Persist refreshed Model B K3 candidate and paired gate'
           git push
