@@ -1,0 +1,103 @@
+name: Model B response-conditioning audit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/training/independent_profiles/audit_response_conditioning.py'
+      - 'tests/independent_profiles/test_audit_response_conditioning.py'
+      - '.github/workflows/model-b-response-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Unit test audit helpers
+        run: python3 tests/independent_profiles/test_audit_response_conditioning.py
+
+      - name: Audit promoted incumbent on frozen VALIDATION and TEST
+        run: |
+          python3 -m tools.training.independent_profiles.audit_response_conditioning \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake '100/200' \
+            --exclude-player 'RoiDePiqueNique' \
+            --model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --min-bucket-observations 30 \
+            --output 'training/runs/20260913_model_b_response_audit/response_conditioning_audit.json'
+
+      - name: Write compact selection-safe summary
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          src = Path('training/runs/20260913_model_b_response_audit/response_conditioning_audit.json')
+          dst = Path('training/runs/20260913_model_b_response_audit/response_conditioning_summary.json')
+          doc = json.loads(src.read_text())
+          out = {
+              'schema': 'independent-model-b-response-conditioning-summary/v1',
+              'source_audit': src.as_posix(),
+              'model_dir': doc['model_dir'],
+              'test_used_for_model_selection': False,
+              'revealed_hand_caveat': doc['revealed_hand_caveat'],
+              'validation': {},
+              'test_locked_confirmation': {},
+          }
+          for source_key, target_key in [('validation', 'validation'), ('test', 'test_locked_confirmation')]:
+              split = doc[source_key]
+              target = {
+                  'coverage': split['coverage'],
+                  'revealed_hand_selection_bias': split['revealed_hand_selection_bias'],
+                  'matched_base_context_sensitivity': {},
+              }
+              for dim, row in split['matched_base_context_sensitivity'].items():
+                  target['matched_base_context_sensitivity'][dim] = {
+                      'min_observations_per_bucket': row['min_observations_per_bucket'],
+                      'contexts_with_two_or_more_supported_buckets': row['contexts_with_two_or_more_supported_buckets'],
+                      'supported_observations': row['supported_observations'],
+                      'weighted_mean_observed_target_rate_gap': row['weighted_mean_observed_target_rate_gap'],
+                      'max_observed_target_rate_gap': row['max_observed_target_rate_gap'],
+                      'max_model_target_probability_gap': row['max_model_target_probability_gap'],
+                  }
+              out[target_key] = target
+          dst.write_text(json.dumps(out, indent=2, ensure_ascii=False) + '\n')
+          PY
+
+      - name: Validate independence and selection split
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('training/runs/20260913_model_b_response_audit/response_conditioning_audit.json')
+          d = json.loads(p.read_text())
+          assert d['test_used_for_model_selection'] is False
+          assert 'no Model A' in d['independence_contract'] or 'no analyser/model-A' in d['independence_contract'] or 'no Model A EV' in d['independence_contract']
+          assert d['model_dir'] == 'training/runs/20260912_independent_profiles_v2/model'
+          assert d['dataset']['unique_scoped_hands'] == 31003
+          PY
+
+      - name: Persist deterministic audit evidence
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- training/runs/20260913_model_b_response_audit; then
+            echo 'Audit evidence already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add training/runs/20260913_model_b_response_audit
+          git commit -m 'Persist Model B response-conditioning audit evidence'
+          git push origin HEAD:${GITHUB_REF_NAME}
