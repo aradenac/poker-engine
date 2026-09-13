@@ -42,6 +42,19 @@ def make_zip(path: Path, files: dict[str, str]) -> None:
 
 
 class IncrementBuilderTest(unittest.TestCase):
+    def test_selected_zip_has_fixed_metadata_and_bytes(self):
+        from unittest.mock import patch
+        records = parse_hand_blocks(en_hand("123"), "hands.txt")
+        with tempfile.TemporaryDirectory() as td:
+            a, b = Path(td) / "a.zip", Path(td) / "b.zip"
+            with patch("zipfile.time.localtime", side_effect=AssertionError("wall clock used")):
+                write_selected_zip(a, records)
+                write_selected_zip(b, records)
+            self.assertEqual(a.read_bytes(), b.read_bytes())
+            with zipfile.ZipFile(a) as archive:
+                self.assertEqual(archive.infolist()[0].date_time, (1980, 1, 1, 0, 0, 0))
+
+
     def test_parser_supports_english_and_french_headers(self):
         records = parse_hand_blocks(en_hand("1001") + "\n" + fr_hand("1002"), "mixed.txt")
         self.assertEqual([r.hand_id for r in records], ["1001", "1002"])
@@ -150,3 +163,4 @@ class IncrementBuilderTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
