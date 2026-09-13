@@ -43,12 +43,12 @@ jobs:
         run: |
           python3 tools/training/build_incremental_decisions_v2.py \
             --source training/runs/20260909_population_increment_v2/source/RoiDePiqueNique_training2_delta_after_v4v5.zip \
-            --out /tmp/model-a-0909-decisions.jsonl \
+            --out /tmp/poker_population_increment_decisions_v2.jsonl \
             --summary /tmp/model-a-0909-summary.json
-          cmp /tmp/model-a-0909-decisions.jsonl \
+          cmp /tmp/poker_population_increment_decisions_v2.jsonl \
             training/runs/20260909_population_increment_v2/data/poker_population_increment_decisions_v2.jsonl
           python3 tools/training/build_population_increment_overlay_v2.py \
-            --decisions /tmp/model-a-0909-decisions.jsonl \
+            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \
             --out /tmp/model-a-0909-overlay.json \
             --provenance-out /tmp/model-a-0909-overlay-provenance.json
           cmp /tmp/model-a-0909-overlay.json \
