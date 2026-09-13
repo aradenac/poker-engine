@@ -1,0 +1,48 @@
+name: Diagnose Model B evaluator provenance
+
+on:
+  push:
+    branches:
+      - issue-38-model-b-final-20260913
+    paths:
+      - '.github/workflows/model-b-evaluator-provenance-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  evaluator-provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Evaluate incumbent on canonical enlarged lineage
+        run: |
+          python3 -m tools.training.independent_profiles.evaluate_model_b \
+            --features 'training/runs/20260912_independent_profiles_v2/features/player_features.json' \
+            --model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 --exclude-player RoiDePiqueNique \
+            --action-alpha 1 --range-prior-strength 50 \
+            --output /tmp/incumbent-holdout.json
+      - name: Compare evaluator and direct merge provenance
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from tools.training.independent_profiles.build_player_features import merge_archives
+          report=json.load(open('/tmp/incumbent-holdout.json'))
+          paths=[
+            Path('training/datasets/NLHE_100-200/source/NLHE 100-200.zip'),
+            Path('training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'),
+            Path('training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip'),
+          ]
+          _, direct=merge_archives(paths, {'100/200'})
+          print('EVALUATOR_DATASET')
+          print(json.dumps(report['dataset'], indent=2))
+          print('DIRECT_DATASET')
+          print(json.dumps(direct, indent=2))
+          assert report['dataset']==direct, (report['dataset'], direct)
+          assert direct['sorted_hand_ids_sha256']=='4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf'
+          PY
