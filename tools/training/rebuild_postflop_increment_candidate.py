@@ -82,8 +82,8 @@ def rebuild(*, baseline: Path, overlay_path: Path, decisions: Path, out: Path,
         applied_by_street[street]+=dn; applied_by_mode[mode]+=dn; applied_rows+=dn
 
     # Historical ranking is a stable sort by exact population count: original node
-    # order is the deterministic tie-break. The first boundary-crossing node belongs
-    # to each core set.
+    # order is the deterministic tie-break. The historical candidate also serialized
+    # nodes in this ranked order, so restore that order after assigning ranks.
     total=sum(int((n.get("coverage") or {}).get("population_decisions") or 0) for n in obj.get("nodes",[]))
     ranked=sorted(enumerate(obj.get("nodes",[])),key=lambda item:(-int((item[1].get("coverage") or {}).get("population_decisions") or 0),item[0]))
     cumulative=0
@@ -92,6 +92,7 @@ def rebuild(*, baseline: Path, overlay_path: Path, decisions: Path, out: Path,
         cumulative+=count; cov["population_share"]=count/total if total else 0.0
         cov["core90"]=previous<0.90; cov["core95"]=previous<0.95; cov["core99"]=previous<0.99
         node["rank_population"]=rank
+    obj["nodes"]=[node for _idx,node in ranked]
     obj["coverage"]={f"core{pct}_nodes":sum(bool((n.get("coverage") or {}).get(f"core{pct}")) for n in obj.get("nodes",[])) for pct in (90,95,99)}
 
     dataset=obj.setdefault("dataset",{})
