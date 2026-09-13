@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import copy
 import json
+import sys
 from pathlib import Path
 
-from tools.evaluate_promotion_gates import evaluate
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from tools.evaluate_promotion_gates import evaluate  # noqa: E402
+
 CONTRACT = json.loads((ROOT / "training" / "PROMOTION_GATE_CONTRACT.json").read_text(encoding="utf-8"))
 
 
