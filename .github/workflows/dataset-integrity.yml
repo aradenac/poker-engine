@@ -53,7 +53,7 @@ jobs:
             --provenance-out /tmp/model-a-0909-overlay-provenance.json
           cmp /tmp/model-a-0909-overlay.json \
             training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json
-      - name: Rebuild the persisted 2026-09-09 rejected postflop candidate
+      - name: Rebuild and verify the persisted 2026-09-09 rejected postflop candidate
         run: |
           python3 tools/training/rebuild_postflop_increment_candidate.py \
             --baseline training/models/postflop_population_model_v5.json \
@@ -63,12 +63,35 @@ jobs:
             --source-label RoiDePiqueNique_training2.zip \
             --lineage-fingerprint 809862c9090110dfecf6382492158fa585a905c3c5e1991daeb5199937643814 \
             --out /tmp/postflop-v6-rebuilt.json
-          python3 tools/training/inspect_model_delta.py \
-            --baseline /tmp/postflop-v6-rebuilt.json \
-            --candidate training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json \
-            --max-samples 4
-          cmp /tmp/postflop-v6-rebuilt.json \
-            training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json
+          python3 - <<'PY'
+          import json, math
+          rebuilt=json.load(open('/tmp/postflop-v6-rebuilt.json'))
+          persisted=json.load(open('training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json'))
+          rn=rebuilt['nodes']; pn=persisted['nodes']
+          key=lambda n:n.get('canonical_key') or n.get('id')
+          assert len(rn)==len(pn)
+          assert [key(n) for n in rn]==[key(n) for n in pn]
+          for frozen in ('response_models','combo_policy_models','hand_policy_prior'):
+              assert rebuilt.get(frozen)==persisted.get(frozen), frozen
+          max_diff=0.0; changed=0
+          for r,p in zip(rn,pn):
+              k=key(r)
+              for field in ('context','population_observed','coverage','rank_population'):
+                  assert r.get(field)==p.get(field), (k,field)
+              rm=r['population_model']; pm=p['population_model']
+              assert rm.get('legal_actions')==pm.get('legal_actions'), k
+              assert rm.get('method')==pm.get('method'), k
+              assert set(rm['frequencies'])==set(pm['frequencies']), k
+              for action,x in rm['frequencies'].items():
+                  y=pm['frequencies'][action]; d=abs(float(x)-float(y)); max_diff=max(max_diff,d)
+                  changed += int(d != 0.0)
+                  assert math.isclose(float(x),float(y),rel_tol=0.0,abs_tol=1e-9), (k,action,x,y,d)
+          assert rebuilt['coverage']==persisted['coverage']
+          assert rebuilt['incremental_update']['train_population_rows_applied']==4651
+          assert rebuilt['incremental_update']['train_population_rows_skipped_no_exact_node']==45
+          assert rebuilt['incremental_update']['touched_nodes']==666
+          print(json.dumps({'status':'SEMANTICALLY_EQUIVALENT','nodes':len(rn),'changed_frequency_values':changed,'max_frequency_abs_diff':max_diff,'atol':1e-9},indent=2))
+          PY
       - name: Rebuild the 2026-09-12 Model A normalized increment
         run: |
           python3 tools/training/build_incremental_decisions_v2.py \
@@ -98,4 +121,51 @@ jobs:
           overlay=json.load(open('/tmp/model-a-0912-overlay.json'))
           assert overlay['summary']['train_population_rows']==29736, overlay['summary']
           print(json.dumps({'summary':summary,'train_population_rows':dict(counts)}, indent=2))
+          PY
+      - name: Rebuild the 2026-09-12 postflop full-weight candidate
+        run: |
+          python3 tools/training/rebuild_postflop_increment_candidate.py \
+            --baseline training/models/postflop_population_model_v5.json \
+            --overlay /tmp/model-a-0912-overlay.json \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --date 2026-09-12 \
+            --source-label selected_100_200.zip \
+            --lineage-fingerprint 9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b \
+            --model-version postflop_v6_20260912_full_weight_REJECTED \
+            --out /tmp/model-a-0912-postflop-candidate.json
+          python3 - <<'PY'
+          import hashlib, json
+          p='/tmp/model-a-0912-postflop-candidate.json'
+          obj=json.load(open(p))
+          inc=obj['incremental_update']
+          assert inc['train_population_rows_applied']==15804, inc
+          assert inc['train_population_rows_skipped_no_exact_node']==158, inc
+          assert inc['touched_nodes']==1116, inc
+          semantic={
+              'nodes':obj['nodes'],
+              'coverage':obj['coverage'],
+              'response_models':obj.get('response_models'),
+              'combo_policy_models':obj.get('combo_policy_models'),
+              'hand_policy_prior':obj.get('hand_policy_prior'),
+          }
+          semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+          byte_sha=hashlib.sha256(open(p,'rb').read()).hexdigest()
+          print(json.dumps({'status':'REBUILT','byte_sha256':byte_sha,'semantic_sha256':semantic_sha,'expected_historical_local_sha256':'45366a58e64999a65728b343c811c0b23ae1c7713bab885c2287db99b5df1d4d','incremental_update':inc},indent=2))
+          PY
+      - name: Inspect 2026-09-12 preflop candidate inputs
+        run: |
+          python3 - <<'PY'
+          import json
+          base=json.load(open('training/models/preflop_population_model_v5.json'))
+          overlay=json.load(open('/tmp/model-a-0912-overlay.json'))
+          print('TOP_LEVEL', sorted(base.keys()))
+          print('OVERLAY_PREFLOP_NODES', len(overlay.get('preflop_nodes',[])))
+          print('BASE_NODES', len(base.get('nodes',[])))
+          print('TRAINING', json.dumps(base.get('training',{}),sort_keys=True)[:3000])
+          if base.get('nodes'):
+              n=base['nodes'][0]
+              print('NODE_KEYS', sorted(n.keys()))
+              print('NODE_SAMPLE', json.dumps(n,sort_keys=True)[:5000])
+          if overlay.get('preflop_nodes'):
+              print('OVERLAY_SAMPLE', json.dumps(overlay['preflop_nodes'][0],sort_keys=True)[:5000])
           PY
