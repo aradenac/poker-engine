@@ -1,94 +1,17 @@
 {
   "schema": "poker-promotion-evidence/v1",
   "cycle": "2026-09-12",
-  "data_integrity": {
-    "source_verified": true,
-    "exact_deduplication": true,
-    "split_disjoint": true,
-    "fingerprints_recorded": true,
-    "parse_errors": 0,
-    "source_sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
-    "selected_hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b",
-    "evidence": "training/datasets/NLHE_100-200/snapshots/20260912/manifest.json"
-  },
+  "data_integrity": {"source_verified": true, "exact_deduplication": true, "split_disjoint": true, "fingerprints_recorded": true, "parse_errors": 0, "source_sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb", "selected_hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b", "evidence": "training/datasets/NLHE_100-200/snapshots/20260912/manifest.json"},
   "model_a": {
-    "preflop": {
-      "selection_split": "VALIDATION",
-      "test_used_for_selection": false,
-      "comparison_complete": true,
-      "candidate_persisted": true,
-      "candidate_rebuild_status": "REPRODUCIBLE_REJECTED_CANDIDATE",
-      "candidate_semantic_sha256": "44aea7e3f26e001fa8faba00e87fb6e56484a5b9458a575cd0330de1cd7ffaa4",
-      "decision": "RETAIN_BASELINE",
-      "validation_delta_candidate_minus_baseline": 0.0005327713449049666,
-      "paired_validation_delta_ci95": [0.0000645316977, 0.000994719224],
-      "reason": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs; its historical local-only byte hash is retained as provenance without falsely claiming byte identity."
-    },
-    "postflop": {
-      "selection_split": "VALIDATION",
-      "test_used_for_selection": false,
-      "comparison_complete": true,
-      "candidate_persisted": true,
-      "candidate_rebuild_status": "REPRODUCIBLE_REJECTED_CANDIDATE",
-      "candidate_semantic_sha256": "8f29abdd96fcd8e07ba2a827a3577070b0d6195517e86a2f547dade15bc55cce",
-      "decision": "RETAIN_BASELINE",
-      "validation_delta_candidate_minus_baseline": 0.0009980602757282,
-      "reason": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs and the 2026-09-09 historical rejection is reproduced semantically within 1e-9."
-    },
+    "preflop": {"selection_split": "VALIDATION", "test_used_for_selection": false, "comparison_complete": true, "candidate_persisted": true, "candidate_rebuild_status": "REPRODUCIBLE_REJECTED_CANDIDATE", "candidate_semantic_sha256": "44aea7e3f26e001fa8faba00e87fb6e56484a5b9458a575cd0330de1cd7ffaa4", "decision": "RETAIN_BASELINE", "validation_delta_candidate_minus_baseline": 0.0005327713449049666, "paired_validation_delta_ci95": [0.0000645316977, 0.000994719224], "reason": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs; its historical local-only byte hash is retained as provenance without falsely claiming byte identity."},
+    "postflop": {"selection_split": "VALIDATION", "test_used_for_selection": false, "comparison_complete": true, "candidate_persisted": true, "candidate_rebuild_status": "REPRODUCIBLE_REJECTED_CANDIDATE", "candidate_semantic_sha256": "8f29abdd96fcd8e07ba2a827a3577070b0d6195517e86a2f547dade15bc55cce", "decision": "RETAIN_BASELINE", "validation_delta_candidate_minus_baseline": 0.0009980602757282, "reason": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs and the 2026-09-09 historical rejection is reproduced semantically within 1e-9."},
     "evidence": "training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json"
   },
-  "model_b": {
-    "selection_split": "VALIDATION",
-    "test_used_for_selection": false,
-    "independent_from_model_a": true,
-    "reason": "The same-structure 2026-09-12 refresh is pending persistence and paired incumbent/candidate comparison under #38."
-  },
-  "strategy": {
-    "baseline_persisted": true,
-    "selection_split": "VALIDATION",
-    "test_used_for_tuning": false,
-    "change_scope": ["heads_up_postflop"],
-    "unsupported_contexts_covered": false,
-    "scenario_manifest_persisted": true,
-    "baseline_evidence": "training/evaluations/20260913_v83_model_b_v2_baseline/baseline_reference.json",
-    "suspicious_states_evidence": "training/evaluations/20260913_v83_model_b_v2_baseline/suspicious_states.json",
-    "immutable_run": "GitHub Actions 34747037677",
-    "reason": "The scoped v83/Model-B-v2 VALIDATION and protected TEST baselines required by #10 are frozen and reproducible. Candidate strategy comparison remains intentionally incomplete, and environment-validity evidence remains pending #46; therefore this subsystem is still BLOCKED for promotion-oriented strategy changes."
-  },
-  "regressions": {
-    "pathological_engine_suite_pass": true,
-    "trainer_contract_suite_pass": true,
-    "sequential_arena_contract_suite_pass": true,
-    "evidence": {
-      "pathological": "PR #52 / Actions 34745732428",
-      "trainer": "PR #49",
-      "sequential_arena": "PR #55 / Actions 34747037677"
-    }
-  },
-  "provenance": {
-    "code_commit": "c3b9cd58954bbcca3e11fc3a47fdac0c1c335048",
-    "dataset_fingerprints": [
-      "source_sha256:374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
-      "selected_ids_sha256:9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b"
-    ],
-    "model_hashes": [
-      "preflop_sha256:ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
-      "postflop_sha256:6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
-      "model_b_profiles_sha256:adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
-      "model_b_postflop_actions_sha256:60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb"
-    ]
-  },
-  "release_identity": {
-    "engine_release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
-    "engine_release_sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
-    "assembled_site_entrypoint": "site/index.html",
-    "assembled_site_git_blob_sha": "8b2a63722562f913fb95871f24be664e9c210c68",
-    "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
-    "assembled_from_commit": "c4555d3e18c3be90a72c42964c18f963442736f7"
-  },
+  "model_b": {"selection_split": "VALIDATION", "test_used_for_selection": false, "independent_from_model_a": true, "reason": "The same-structure 2026-09-12 refresh is pending persistence and paired incumbent/candidate comparison under #38."},
+  "strategy": {"baseline_persisted": true, "selection_split": "VALIDATION", "test_used_for_tuning": false, "change_scope": ["heads_up_postflop"], "unsupported_contexts_covered": false, "scenario_manifest_persisted": true, "baseline_evidence": "training/evaluations/20260913_v83_model_b_v2_baseline/baseline_reference.json", "suspicious_states_evidence": "training/evaluations/20260913_v83_model_b_v2_baseline/suspicious_states.json", "immutable_run": "GitHub Actions 34747037677", "reason": "The scoped v83/Model-B-v2 VALIDATION and protected TEST baselines required by #10 are frozen and reproducible. Candidate strategy comparison remains intentionally incomplete, and environment-validity evidence remains pending #46; therefore this subsystem is still BLOCKED for promotion-oriented strategy changes."},
+  "regressions": {"pathological_engine_suite_pass": true, "trainer_contract_suite_pass": true, "sequential_arena_contract_suite_pass": true, "evidence": {"pathological": "PR #52 / Actions 34745732428", "trainer": "PR #49", "sequential_arena": "PR #55 / Actions 34747037677"}},
+  "provenance": {"code_commit": "c3b9cd58954bbcca3e11fc3a47fdac0c1c335048", "dataset_fingerprints": ["source_sha256:374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb", "selected_ids_sha256:9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b"], "model_hashes": ["preflop_sha256:ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca", "postflop_sha256:6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae", "model_b_profiles_sha256:adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea", "model_b_postflop_actions_sha256:60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb"]},
+  "release_identity": {"engine_release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html", "engine_release_sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4", "assembled_site_entrypoint": "site/index.html", "assembled_site_git_blob_sha": "8b2a63722562f913fb95871f24be664e9c210c68", "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13", "assembled_from_commit": "c4555d3e18c3be90a72c42964c18f963442736f7"},
   "registry_transition": {"unchanged_before_explicit_promotion": true},
-  "deployment": {
-    "site_release_attempted": false,
-    "note": "Deployment verification remains tracked independently in #45. No new site/engine promotion is attempted by this evidence snapshot."
-  }
+  "deployment": {"site_release_attempted": false, "note": "Deployment verification remains tracked independently in #45. No new site/engine promotion is attempted by this evidence snapshot."}
 }
