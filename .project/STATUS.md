@@ -178,7 +178,7 @@ Run: `training/runs/20260909_population_increment_v2/`.
 - Unmatched shove amounts no longer distort responder price-to-pot calculations.
 - Low-confidence extreme aggression beyond local P90 support is rejected.
 - When Hero covers a shorter opponent, the engine recommends the exact effective all-in amount instead of a misleading full Hero-stack JAM.
-- Deterministic 96-decision benchmark: 2 true Hero JAMs = 2.08%, consistent with the observed population order of magnitude.
+- The persisted historical 96-decision benchmark report records 2 true Hero JAMs = 2.08%, consistent with the observed population order of magnitude. This result does not prove that the current shipped Monte-Carlo workers are seeded; see the current audit below.
 - Historical pathological hand `#262024556922` no longer produces absurd JAM recommendations; river facing bet recommends CALL.
 
 ## Experimental engine work
@@ -201,15 +201,26 @@ For every new hand-history push:
 8. Promote a new application only if strategy and regression gates pass.
 9. Persist every input, model, metric, seed contract, report and promotion/rejection decision.
 
+## Current delivery — 2026-09-13
+
+- **#35 delivered, PR #48 merged:** exact September 12 raw ZIP, GitHub-generated audit, full 3,268 selected IDs and increment ZIP are persisted. Registry points at the verified snapshot; promoted Model A v5 and independent Model B v2 are retained. Mandatory dataset integrity CI passed.
+- **#9 / PR #44:** seeded main/worker oracle, verified effective trial budgets, repaired compatibility CLI and policy fallthrough, explicit candidate B directory, environment fingerprint checks and code provenance are pushed. At b6c81900, Actions run 34737065605 passed full fresh-browser result equality and 1200/2400 effective-budget checks. Final head 01f549d9 additionally has actual-worker seed sensitivity and eight betting/all-in accounting fixtures; final CI is queued, so the PR remains open.
+- **#12 / PR #49:** all six existing trainer contracts are wired to CI. All pass locally with the promoted assets materialized. The final CI is queued. Unified strategy/model promotion criteria and pathological-hand runner remain open under #12.
+- **ZIP reproducibility / PR #50:** ingestion's derived ZIP used current timestamps, causing automatic commit 9a5066da without changed hands. A fixed epoch/platform/permissions writer and regression are pushed; raw evidence is untouched. CI is queued.
+- **#45 remains open:** Cloudflare succeeded on main 487f206f (version bbebdd15-efd8-42e6-93c1-1e73a47973df), then failed on main 9a5066da and later PR heads. Neither root cause nor public URL/build identity is established. Provider logs/public URL are required; no speculative deployment configuration change was made.
+- **Models/strategy:** no new model or strategy was promoted. #7 retains Model A reconstruction debt; #38 retains refreshed B artifact/paired-selection work. #10/#39 baselines follow a validated arena. #46 retains response realism limitations (marginal actions, HU postflop only).
+
+Local checks: six trainer contract scripts, 26 simulation Python tests, production-worker seed/budget checks and September 12 source integrity pass. The historic-delta dataset integration test skips locally because its older derived archive is not materialized; the new September 12 gate is mandatory and does not skip.
+
+The September 12 assessment is a historical audit, not the current delivery status.
+
 ## Immediate next actions
 
-1. Finish issue #9 and merge the repo-native sequential simulator using promoted Model B JSON.
-2. Issue #10: run v83 against Model B v2 and persist the deterministic strategic baseline.
-3. Issue #11: compare v84 and later strategy candidates against exactly the same scenarios/profile mix.
-4. Issue #7/#12/#13: complete model-A continuous training, unified promotion gates and end-to-end automation.
-5. Trainer follow-up: expose a complete comparable preflop ACTION / SIZING / EV surface, then enable true interactive preflop drills.
-6. Trainer follow-up: improve Model B with combo-conditioned postflop decisions before treating hidden-card opponent actions as combo-specific evidence.
-7. Trainer follow-up: add targeted drills / retry mistakes / spaced repetition once the core strategic benchmark is stabilized.
+1. Complete final queued CI and merge PR #44, #49 and #50 if green; verify derived ZIP regeneration becomes clean.
+2. Resolve #45 using provider logs and the configured public URL.
+3. Finish #12 promotion-gate specification and executable pathological-hand regression, then #7 model reconstruction.
+4. Establish scoped v83/Bv2 reference #10; perform #38 paired B decision, #46 response checks and #39 refreshed reference.
+5. Only then evaluate #11/#40, execute #41, record #42 and automate #13.
 
 ## Remaining bootstrap gap
 

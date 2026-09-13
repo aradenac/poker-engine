@@ -1,6 +1,6 @@
 # Project Plan
 
-## Current focus — Reproducible independent strategy arena
+## Current focus — Reproducible evidence before strategy promotion
 
 The project operates as a continuous-learning system with three separate layers:
 
@@ -10,11 +10,47 @@ The project operates as a continuous-learning system with three separate layers:
 
 Keeping model B independent is essential: strategy evaluation must not simply confirm the same assumptions already embedded in the analyzer.
 
-### Current milestone
+### Current milestone — audit 2026-09-12
 
-Issue **#8 is complete in implementation**: Model B v2 is rebuilt from repository hand histories, selected on VALIDATION only, evaluated on untouched TEST, and promoted under alias `independent_model_b_v2` with an immutable promotion record.
+Historical audit base: main `caaff599707006fab3daa0f39b90b67c37fdaac1`; PR #44 head `899015dd4d29ffcdb9130ddb10d74347b856a0c1`. User-facing assessment: `user/reports/etat-des-lieux-2026-09-12.md`.
 
-The active implementation target is now **#9 — Make sequential independent simulation harness reproducible**. The old simulator still depends on `/mnt/data`, historical pickle inputs, and `independent_decision_arena_seq_v2`; those dependencies must be replaced by repository-relative JSON Model B inputs and deterministic scenario generation.
+Model B v2 (#8) and the ingestion foundation (#6) are complete. The trainer feature and performance/Guided/custom-range corrections are merged. Current promoted recommendations still use engine v83 and Model A preflop/postflop v5.
+
+#35 was delivered by PR #48: exact source, materialized increment and mandatory integrity gate. Immediate blockers are #9 / PR #44 (oracle determinism, effective trial override and compatibility CLI defects), and #45 (failed Cloudflare builds). The #36/#37 candidate rejection decisions remain closed; reconstruction debt is tracked under #7. The #38 candidate has a branch report but needs full artifacts and a paired incumbent comparison.
+
+### Ordered execution backlog
+
+Delivery 2026-09-13: #35 is complete (PR #48, main 487f206f). PR #44 adds seeded oracle workers, effective trial verification and betting/accounting tests; PR #49 wires all existing trainer contracts. Their final CI/integration status is tracked in STATUS.md. Cloudflare is intermittent: main 487f206f succeeded, subsequent ingestion commit 9a5066da failed; public URL verification remains open.
+
+P0: unblock source/reproducibility/publication. P1: validate models, environment and benchmark. P2: select/promote/automate after the prerequisites. P3: historical cleanup. Epics #2 and #43 coordinate these tasks; they are not additional deliveries.
+
+| Rank | Priority | Issue | Next deliverable |
+|---:|:---:|---|---|
+| 2 | P0 | #9 | Complete PR #44 after fixing the reproduced determinism, trial-control and compatibility-entrypoint defects. Passing scenario generation and one rollout smoke do not yet prove full engine reproducibility. |
+| 3 | P0 | #45 | Restore a verified deployment of the intended site. Main and PR #44 Cloudflare builds fail; current public application availability was not checked. |
+| 4 | P1 | #12 | Specify promotion criteria before strategy selection; wire missing regression checks now. The complete gate can become green only after model/baseline evidence exists. |
+| 5 | P1 | #7 | Finish repo-native Model A reconstruction and persist rejected-candidate evidence. Keep #36/#37 closed as rejection decisions; track their remaining reproducibility debt here instead of retraining blindly. |
+| 6 | P1 | #10 | Freeze a scoped v83 + promoted Model B v2 diagnostic baseline after #9. It can run without waiting for #35/#38. Report the heads-up postflop scope and Model B limitations. |
+| 7 | P1 | #38 | After #35, persist the refreshed candidate and features, then compare incumbent and candidate on exactly the same enlarged holdout. The inspected branch contains a selection report and export workflow, not the full new candidate. |
+| 8 | P1 | #46 | Validate response realism and sensitivity before using the independent environment as the sole sizing-strategy promotion gate. |
+| 9 | P1 | #39 | Build the refreshed baseline after the Model B decision and the old-environment reference. Separate changed data/environment from changed Hero policy. |
+| 10 | P2 | #11 | Evaluate policy candidates only once the baseline and promotion criteria are ready. Coordinate the current-cycle execution with #40; do not count the same benchmark twice. |
+| 11 | P2 | #40 | Current-cycle strategy search, executed jointly with the #11 capability work after #39 and environment-validity/gate prerequisites. |
+| 12 | P2 | #41 | Run the complete pre-specified gate across data, models, strategy, replay and trainer; this is the execution of the contract defined under #12. |
+| 13 | P2 | #42 | Record independent promotion/rejection decisions and complete immutable cycle evidence after #41. Verify site assets, release provenance and rollback pointers together. |
+| 14 | P2 | #13 | Automate the chain after one end-to-end cycle is reproducible and its gates are meaningful; validate rejection leaves promoted pointers unchanged. |
+| 15 | P3 | #1 | Historical bootstrap cleanup. Current v83, production models and the two older raw archives are present; the documented remaining gap is historical v78. This does not block current engine work. |
+
+### Dependency and validation rules
+
+- #35 unlocks new-data reconstruction and #38. It does not block #9 or an old-corpus reference under #10.
+- Correct #9 before the #10/#39 full benchmarks; the existing CI checks deterministic scenarios plus one rollout only.
+- Start #12 gate specification/wiring before policy selection; final PASS still requires the completed model and benchmark evidence.
+- #10 freezes v83 + Model B v2 as a scoped HU postflop reference. #38 produces an independent retain/promote decision; #46 addresses response realism before promotion-grade sizing conclusions.
+- #39 holds v83/Model A fixed to measure environment drift, then #11/#40 hold that selected environment fixed to compare engine candidates. #11 and #40 share one cycle deliverable.
+- Use strategy VALIDATION scenarios for tuning and a protected final TEST set. Record effective worker trial budgets and seeds, code/model/data hashes, paired uncertainty and context coverage.
+- #41 executes the pre-specified #12 gates; #42 records independent outcomes and verifies assembled site/model identities; #13 automates the already reproducible cycle.
+- The arena only generates HU postflop states. Its utility is conditional from the flop, not an overall session win rate. Current marginal Model B alone is insufficient evidence of sizing optimality; see #46.
 
 ## Phase 1 — Reproducible independent arena
 
@@ -140,26 +176,9 @@ Opponent-model promotion and application/strategy promotion are separate decisio
 
 ## GitHub execution backlog
 
-Epic: **#2 Build versioned continuous-training pipeline**.
+The ranked list is at the start of this plan and in the issue priority/rank blocks. Capability epic: #2. Current cycle umbrella: #43. Completed capabilities #6/#8 and trainer issues are outside the active queue.
 
-Implementation order/status:
-
-1. **#6 Continuous data ingestion and deterministic hand splits** — implemented foundation.
-2. **#7 Continuous training for integrated population model A** — partially implemented; further automation remains.
-3. **#8 Rebuild and version independent opponent-profile model B** — implemented and promoted as `independent_model_b_v2`.
-4. **#9 Make sequential independent simulation harness reproducible** — **current focus**.
-5. **#10 Establish deterministic v83 strategic baseline against independent profiles**.
-6. **#11 Evaluate v84 and future strategy candidates on the independent benchmark**.
-7. **#12 Define unified non-regression and promotion gates for models and engine**.
-8. **#13 Automate end-to-end continuous training and site promotion**.
-
-Dependency graph:
-
-`#6 -> (#7, #8) -> #9 -> #10 -> #11`
-
-and
-
-`#7 + #8 + #10 -> #12 -> #13`.
+Distinguish capability work (#7/#9/#10/#11/#12/#13) from cycle execution (#35–#42); one implementation/benchmark may satisfy both linked tickets. Historical v78 import (#1) remains P3.
 
 ## Working rules
 
