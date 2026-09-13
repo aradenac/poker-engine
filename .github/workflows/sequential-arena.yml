@@ -68,6 +68,8 @@ jobs:
         run: python3 tests/simulation/test_model_b_runtime.py
       - name: Scenario generation tests
         run: python3 tests/simulation/test_scenarios.py
+      - name: Strategic baseline report tests
+        run: python3 tests/simulation/test_baseline_report.py
       - name: CLI scenario reproducibility
         run: |
           python3 -m tools.simulation.sequential_postflop \
@@ -135,3 +137,90 @@ jobs:
         with:
           name: sequential-arena-reproducibility
           path: /tmp/arena*.json
+
+  v83-baseline-validation:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: deterministic-core
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Run frozen VALIDATION baseline and diagnostic policy set
+        run: |
+          python3 -m tools.simulation.sequential_postflop \
+            --n 32 --reps 2 --seed 20260912 --split VALIDATION --trials 1200 \
+            --policies current,no_jam,cap_2,cap_3,cap_4 \
+            --scenario-out /tmp/v83-baseline-validation-scenarios.json \
+            --out /tmp/v83-baseline-validation-arena.json
+          python3 -m tools.simulation.baseline_report \
+            --arena /tmp/v83-baseline-validation-arena.json \
+            --out /tmp/v83-baseline-validation-report.json
+      - name: Validate baseline identity
+        run: |
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/v83-baseline-validation-report.json'))
+          assert d['schema']=='sequential-v83-baseline-report/v1'
+          assert d['provenance']['scenario_split']=='VALIDATION'
+          assert d['provenance']['model_b']['alias']=='independent_model_b_v2'
+          assert d['provenance']['code_commit']==os.environ['GITHUB_SHA']
+          assert d['sample']['base_hands'] >= 20
+          assert d['policies']['current']['overall']['utility_ci95_cluster_bootstrap'] is not None
+          assert d['diagnostic_policy_set_regret'] is not None
+          print(json.dumps(d['sample'], indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v83-model-b-v2-baseline-validation
+          path: |
+            /tmp/v83-baseline-validation-scenarios.json
+            /tmp/v83-baseline-validation-arena.json
+            /tmp/v83-baseline-validation-report.json
+
+  v83-baseline-test:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: deterministic-core
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Run frozen current-policy TEST reference only
+        run: |
+          python3 -m tools.simulation.sequential_postflop \
+            --n 32 --reps 2 --seed 20260912 --split TEST --trials 1200 \
+            --policies current \
+            --scenario-out /tmp/v83-baseline-test-scenarios.json \
+            --out /tmp/v83-baseline-test-arena.json
+          python3 -m tools.simulation.baseline_report \
+            --arena /tmp/v83-baseline-test-arena.json \
+            --out /tmp/v83-baseline-test-report.json
+      - name: Validate protected TEST reference
+        run: |
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/v83-baseline-test-report.json'))
+          assert d['schema']=='sequential-v83-baseline-report/v1'
+          assert d['provenance']['scenario_split']=='TEST'
+          assert d['provenance']['policies']==['current']
+          assert d['provenance']['model_b']['alias']=='independent_model_b_v2'
+          assert d['provenance']['code_commit']==os.environ['GITHUB_SHA']
+          assert d['sample']['base_hands'] >= 20
+          assert d['policies']['current']['overall']['utility_ci95_cluster_bootstrap'] is not None
+          assert d['diagnostic_policy_set_regret'] is None
+          print(json.dumps(d['sample'], indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v83-model-b-v2-baseline-test
+          path: |
+            /tmp/v83-baseline-test-scenarios.json
+            /tmp/v83-baseline-test-arena.json
+            /tmp/v83-baseline-test-report.json
