@@ -1,0 +1,110 @@
+{
+  "schema": "independent-model-b-paired-refresh/v1",
+  "cycle": "20260913_model_b_refresh_cycle",
+  "independence_contract": "Hand histories only; no Model A EV, policy, recommendation or engine outputs used.",
+  "selection": {
+    "selected_k": 3,
+    "profile_weights": [
+      0.4578108716845396,
+      0.21423168722896427,
+      0.3279574410864961
+    ],
+    "selection_split": "VALIDATION",
+    "test_used_for_selection": false,
+    "no_micro_profile": true
+  },
+  "comparison_contract": "Candidate and incumbent are evaluated by the same evaluator on identical enlarged VALIDATION/TEST hands and observation sets.",
+  "splits": {
+    "validation": {
+      "hands": 3073,
+      "candidate": {
+        "action_n": 18540,
+        "action_log_loss": 0.6603153600641698,
+        "action_improvement": 0.028178448277744933,
+        "action_ece": 0.008140579241861531,
+        "range_n": 2970,
+        "range_log_loss": 5.023373224938859,
+        "range_improvement": 0.10072603926198806,
+        "sizing_n": 3754,
+        "sizing_inside_p10_p90": 0.7940863079381992,
+        "sizing_above_p99": 0.012519978689397976,
+        "profile_stability_weighted": 0.7194192377495463
+      },
+      "incumbent": {
+        "action_n": 18540,
+        "action_log_loss": 0.6601361132945038,
+        "action_improvement": 0.028339155459194375,
+        "action_ece": 0.008001559090560639,
+        "range_n": 2970,
+        "range_log_loss": 5.039595787634105,
+        "range_improvement": 0.08450347656674267,
+        "sizing_n": 3754,
+        "sizing_inside_p10_p90": 0.8036760788492275,
+        "sizing_above_p99": 0.012519978689397976,
+        "profile_stability_weighted": 0.7226860254083485
+      },
+      "candidate_minus_incumbent": {
+        "action_log_loss": 0.00017924676966596387,
+        "action_improvement": -0.0001607071814494418,
+        "action_ece": 0.00013902015130089207,
+        "range_log_loss": -0.016222562695245912,
+        "range_improvement": 0.016222562695245385,
+        "sizing_inside_p10_p90": -0.009589770911028306,
+        "sizing_above_p99": 0.0,
+        "profile_stability_weighted": -0.0032667876588021727
+      }
+    },
+    "test": {
+      "hands": 3175,
+      "candidate": {
+        "action_n": 19276,
+        "action_log_loss": 0.6510069139706682,
+        "action_improvement": 0.029617415984123412,
+        "action_ece": 0.008256416131162474,
+        "range_n": 3118,
+        "range_log_loss": 5.060722621609168,
+        "range_improvement": 0.08020372729111722,
+        "sizing_n": 3853,
+        "sizing_inside_p10_p90": 0.794186348300026,
+        "sizing_above_p99": 0.012976901116013496,
+        "profile_stability_weighted": 0.7538461538461538
+      },
+      "incumbent": {
+        "action_n": 19276,
+        "action_log_loss": 0.6525207572359272,
+        "action_improvement": 0.02814491323353709,
+        "action_ece": 0.010058320812836596,
+        "range_n": 3118,
+        "range_log_loss": 5.084721220165468,
+        "range_improvement": 0.056205128734817277,
+        "sizing_n": 3853,
+        "sizing_inside_p10_p90": 0.8030106410589152,
+        "sizing_above_p99": 0.013755515182974305,
+        "profile_stability_weighted": 0.7501538461538462
+      },
+      "candidate_minus_incumbent": {
+        "action_log_loss": -0.0015138432652589406,
+        "action_improvement": 0.0014725027505863228,
+        "action_ece": -0.0018019046816741217,
+        "range_log_loss": -0.023998598556300266,
+        "range_improvement": 0.02399859855629994,
+        "sizing_inside_p10_p90": -0.008824292758889185,
+        "sizing_above_p99": -0.0007786140669608088,
+        "profile_stability_weighted": 0.0036923076923076614
+      }
+    }
+  },
+  "decision": "RETAIN_INCUMBENT",
+  "decision_basis": "VALIDATION candidate must not worsen aggregate action or range log-loss, retain positive action/range signal and ECE <= 0.05, and satisfy the >=5% profile-weight guard. TEST is diagnostic only after this decision.",
+  "artifacts": {
+    "features_sha256": "09b362d71958157c2def62c5cbdfcaecc7121560e0ac5814b1197871f80cb8d3",
+    "selection_sha256": "d0539b8e212cc8c3fc6535b8a7695b4b3f20a2c363b2ca92cfc7e4aa6921a8af",
+    "candidate_summary_sha256": "9408c3792627bf54f41af597a59f9debcf699ca82d9cf80f6d862b3ec038a455",
+    "candidate_profiles_sha256": "31bcd339d522de4041c798fa330bccf24e0959330823f72e29491be45e37a7f0",
+    "candidate_ranges_sha256": "599cfef065b47d8a09b67fde7aca70fcd094a17b75d61c05551d6756c9de17d7",
+    "candidate_actions_sha256": "5fb3eae1bf56f5059197740b066022bddb87df04f817497f83a3d02f27cbdbe8",
+    "candidate_sizing_sha256": "9817bb5ff4747aa02676cd9c49e1a7f569dd965baf5a048380355b86d34cb0b3",
+    "candidate_holdout_sha256": "fbf21573939ab753999917108714bc541c7b85386b647d9119cad7ab83d28ccc",
+    "incumbent_holdout_sha256": "ddbb9ed831539e4eaf6c4632cb35e09b623d67a3fcfd1fe5d3ee8e25b878013d"
+  }
+}

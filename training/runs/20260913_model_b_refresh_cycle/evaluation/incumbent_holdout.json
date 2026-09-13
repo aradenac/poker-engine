@@ -1,0 +1,2125 @@
+{
+  "schema": "independent-opponent-model-b-evaluation/v1",
+  "model": {
+    "dir": "training/runs/20260912_independent_profiles_v2/model",
+    "summary_sha256": "b3f71ba8d36f6768e4f4242518076178916f9e1bc0fafe6ac20ff9a85584943c",
+    "profiles_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+    "ranges_sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+    "actions_sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+    "sizing_sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e"
+  },
+  "dataset": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "parsed_hands": 27164,
+        "scoped_hands": 26560
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c",
+        "parsed_hands": 27677,
+        "scoped_hands": 11709
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+        "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed",
+        "parsed_hands": 3268,
+        "scoped_hands": 3268
+      }
+    ],
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "unique_scoped_hands": 31003,
+    "split_counts": {
+      "TEST": 3175,
+      "TRAIN": 24755,
+      "VALIDATION": 3073
+    },
+    "overlap_occurrences": 10534,
+    "overlap_payload_differences": 0,
+    "english_preferred_replacements": 0,
+    "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+  },
+  "prediction_contract": {
+    "schema": "independent-opponent-model-b-prediction-contract/v1",
+    "model_schema": "independent-opponent-model-b/v2",
+    "profile_assignment": {
+      "known_player": "TRAIN-derived nearest deterministic profile",
+      "cold_start": "profile with largest TRAIN appearance_weight"
+    },
+    "preflop_range": {
+      "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+      "posterior": "(class_count + prior_strength * combo_multiplicity/1326) / (n + prior_strength)",
+      "prior_strength": 50.0
+    },
+    "postflop_action": {
+      "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+      "smoothing": "symmetric Dirichlet/additive smoothing over legal labels for current mode",
+      "alpha_per_action": 1.0
+    },
+    "sizing": {
+      "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+      "distribution": "empirical TRAIN values; no clipping or synthetic tail"
+    }
+  },
+  "validation": {
+    "split": "VALIDATION",
+    "hands": 3073,
+    "range": {
+      "n": 2970,
+      "log_loss": 5.039595787634105,
+      "combinatorial_prior_log_loss": 5.124099264200847,
+      "log_loss_improvement": 0.08450347656674267,
+      "warm_fraction": 0.9468013468013468,
+      "cold_fraction": 0.0531986531986532,
+      "selected_level_counts": {
+        "0": 2833,
+        "1": 107,
+        "2": 17,
+        "3": 13
+      },
+      "by_profile": {
+        "0": {
+          "n": 1202,
+          "log_loss": 4.930499188303097,
+          "combinatorial_prior_log_loss": 5.151026394145787,
+          "log_loss_improvement": 0.2205272058426901
+        },
+        "1": {
+          "n": 675,
+          "log_loss": 5.14207201478728,
+          "combinatorial_prior_log_loss": 5.132037441856721,
+          "log_loss_improvement": -0.010034572930558
+        },
+        "2": {
+          "n": 1093,
+          "log_loss": 5.096286235088346,
+          "combinatorial_prior_log_loss": 5.089584460804725,
+          "log_loss_improvement": -0.006701774283620494
+        }
+      }
+    },
+    "actions": {
+      "n": 18540,
+      "log_loss": 0.6601361132945038,
+      "street_mode_fallback_log_loss": 0.6884752687536982,
+      "log_loss_improvement": 0.028339155459194375,
+      "brier": 0.42881526539845394,
+      "accuracy": 0.6694714131607336,
+      "ece_confidence": 0.008001559090560639,
+      "warm_fraction": 0.9490291262135923,
+      "cold_fraction": 0.050970873786407765,
+      "selected_level_counts": {
+        "0": 18261,
+        "1": 158,
+        "2": 121
+      },
+      "observed_frequency": {
+        "BET": 0.17934196332254584,
+        "CALL": 0.16364617044228694,
+        "CHECK": 0.4709816612729234,
+        "FOLD": 0.162891046386192,
+        "RAISE": 0.02313915857605178
+      },
+      "mean_predicted_frequency": {
+        "BET": 0.1746287022082367,
+        "CALL": 0.15984818987357294,
+        "CHECK": 0.4756949223872404,
+        "FOLD": 0.16640864513272993,
+        "RAISE": 0.02341954039822245
+      },
+      "frequency_residual": {
+        "BET": -0.004713261114309142,
+        "CALL": -0.003797980568713999,
+        "CHECK": 0.0047132611143170244,
+        "FOLD": 0.0035175987465379255,
+        "RAISE": 0.0002803818221706715
+      },
+      "reliability": {
+        "4": {
+          "n": 1266,
+          "confidence": 0.4750635326072212,
+          "accuracy": 0.47472353870458134
+        },
+        "5": {
+          "n": 5218,
+          "confidence": 0.5437170783928663,
+          "accuracy": 0.5383288616328095
+        },
+        "6": {
+          "n": 3579,
+          "confidence": 0.6512374692322328,
+          "accuracy": 0.6462699077954736
+        },
+        "7": {
+          "n": 3766,
+          "confidence": 0.744865967342518,
+          "accuracy": 0.7336696760488582
+        },
+        "8": {
+          "n": 4711,
+          "confidence": 0.8460748509467612,
+          "accuracy": 0.8333687115262153
+        }
+      }
+    },
+    "actions_by_profile_street_mode": {
+      "P0|flop|FACING": {
+        "n": 1108,
+        "log_loss": 0.8540114758176861,
+        "street_mode_fallback_log_loss": 0.8857028181410169,
+        "log_loss_improvement": 0.03169134232333081,
+        "brier": 0.5392478587718729,
+        "accuracy": 0.5361010830324909,
+        "ece_confidence": 0.028559090270165947,
+        "warm_fraction": 0.8709386281588448,
+        "cold_fraction": 0.12906137184115524,
+        "selected_level_counts": {
+          "0": 1078,
+          "1": 23,
+          "2": 7
+        },
+        "observed_frequency": {
+          "CALL": 0.4296028880866426,
+          "FOLD": 0.5072202166064982,
+          "RAISE": 0.0631768953068592
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.3987054115851178,
+          "FOLD": 0.552697173387976,
+          "RAISE": 0.048597415026904865
+        },
+        "frequency_residual": {
+          "CALL": -0.0308974765015248,
+          "FOLD": 0.045476956781477784,
+          "RAISE": -0.014579480279954336
+        },
+        "reliability": {
+          "4": {
+            "n": 330,
+            "confidence": 0.4820961026716858,
+            "accuracy": 0.4636363636363636
+          },
+          "5": {
+            "n": 438,
+            "confidence": 0.5387911810046196,
+            "accuracy": 0.5182648401826484
+          },
+          "6": {
+            "n": 333,
+            "confidence": 0.6660997623353277,
+            "accuracy": 0.6216216216216216
+          },
+          "7": {
+            "n": 7,
+            "confidence": 0.75,
+            "accuracy": 1.0
+          }
+        }
+      },
+      "P0|flop|FREE": {
+        "n": 2241,
+        "log_loss": 0.48782380632436945,
+        "street_mode_fallback_log_loss": 0.5246549595758216,
+        "log_loss_improvement": 0.03683115325145227,
+        "brier": 0.31201622015003583,
+        "accuracy": 0.7965194109772423,
+        "ece_confidence": 0.02067003553731183,
+        "warm_fraction": 0.8763944667559126,
+        "cold_fraction": 0.12360553324408746,
+        "selected_level_counts": {
+          "0": 2205,
+          "1": 31,
+          "2": 5
+        },
+        "observed_frequency": {
+          "BET": 0.2177599286033021,
+          "CHECK": 0.7822400713966979
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.2056765365769201,
+          "CHECK": 0.794323463423087
+        },
+        "frequency_residual": {
+          "BET": -0.012083392026382006,
+          "CHECK": 0.012083392026389084
+        },
+        "reliability": {
+          "5": {
+            "n": 117,
+            "confidence": 0.5618940201168309,
+            "accuracy": 0.6324786324786325
+          },
+          "6": {
+            "n": 78,
+            "confidence": 0.6317776593630132,
+            "accuracy": 0.4230769230769231
+          },
+          "7": {
+            "n": 459,
+            "confidence": 0.7613171185596445,
+            "accuracy": 0.7668845315904139
+          },
+          "8": {
+            "n": 1587,
+            "confidence": 0.8476553560058896,
+            "accuracy": 0.8355387523629489
+          }
+        }
+      },
+      "P0|river|FACING": {
+        "n": 630,
+        "log_loss": 0.8741068202298952,
+        "street_mode_fallback_log_loss": 0.9069339454649517,
+        "log_loss_improvement": 0.032827125235056494,
+        "brier": 0.5321994476017137,
+        "accuracy": 0.5825396825396826,
+        "ece_confidence": 0.02839106867666314,
+        "warm_fraction": 0.8603174603174604,
+        "cold_fraction": 0.13968253968253969,
+        "selected_level_counts": {
+          "0": 611,
+          "1": 6,
+          "2": 13
+        },
+        "observed_frequency": {
+          "CALL": 0.3253968253968254,
+          "FOLD": 0.5793650793650794,
+          "RAISE": 0.09523809523809523
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.3140236855064676,
+          "FOLD": 0.6019957118200328,
+          "RAISE": 0.08398060267350024
+        },
+        "frequency_residual": {
+          "CALL": -0.01137313989035782,
+          "FOLD": 0.022630632454953337,
+          "RAISE": -0.01125749256459499
+        },
+        "reliability": {
+          "4": {
+            "n": 114,
+            "confidence": 0.4686465865310424,
+            "accuracy": 0.4298245614035088
+          },
+          "5": {
+            "n": 186,
+            "confidence": 0.5479291144533956,
+            "accuracy": 0.510752688172043
+          },
+          "6": {
+            "n": 184,
+            "confidence": 0.6498929692183795,
+            "accuracy": 0.657608695652174
+          },
+          "7": {
+            "n": 146,
+            "confidence": 0.7337407770521176,
+            "accuracy": 0.6986301369863014
+          }
+        }
+      },
+      "P0|river|FREE": {
+        "n": 1194,
+        "log_loss": 0.6220117854950857,
+        "street_mode_fallback_log_loss": 0.6275814491733335,
+        "log_loss_improvement": 0.005569663678247677,
+        "brier": 0.4306749734113882,
+        "accuracy": 0.6792294807370184,
+        "ece_confidence": 0.01724364030607078,
+        "warm_fraction": 0.8835845896147404,
+        "cold_fraction": 0.11641541038525963,
+        "selected_level_counts": {
+          "0": 1177,
+          "2": 17
+        },
+        "observed_frequency": {
+          "BET": 0.32077051926298156,
+          "CHECK": 0.6792294807370184
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.30352687895691044,
+          "CHECK": 0.6964731210430964
+        },
+        "frequency_residual": {
+          "BET": -0.017243640306071117,
+          "CHECK": 0.017243640306078056
+        },
+        "reliability": {
+          "5": {
+            "n": 54,
+            "confidence": 0.578125,
+            "accuracy": 0.46296296296296297
+          },
+          "6": {
+            "n": 673,
+            "confidence": 0.6641717892937433,
+            "accuracy": 0.6523031203566122
+          },
+          "7": {
+            "n": 383,
+            "confidence": 0.7469964689136221,
+            "accuracy": 0.7362924281984334
+          },
+          "8": {
+            "n": 84,
+            "confidence": 0.8009868421052618,
+            "accuracy": 0.7738095238095238
+          }
+        }
+      },
+      "P0|turn|FACING": {
+        "n": 755,
+        "log_loss": 0.865237908317852,
+        "street_mode_fallback_log_loss": 0.8718121383644871,
+        "log_loss_improvement": 0.00657423004663512,
+        "brier": 0.5443641252539716,
+        "accuracy": 0.5377483443708609,
+        "ece_confidence": 0.017910794516097776,
+        "warm_fraction": 0.8728476821192053,
+        "cold_fraction": 0.1271523178807947,
+        "selected_level_counts": {
+          "0": 715,
+          "1": 20,
+          "2": 20
+        },
+        "observed_frequency": {
+          "CALL": 0.5271523178807948,
+          "FOLD": 0.41324503311258276,
+          "RAISE": 0.059602649006622516
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.46934704143991784,
+          "FOLD": 0.4766369490089799,
+          "RAISE": 0.05401600955110048
+        },
+        "frequency_residual": {
+          "CALL": -0.05780527644087691,
+          "FOLD": 0.06339191589639714,
+          "RAISE": -0.005586639455522034
+        },
+        "reliability": {
+          "4": {
+            "n": 44,
+            "confidence": 0.47395160132126934,
+            "accuracy": 0.6136363636363636
+          },
+          "5": {
+            "n": 698,
+            "confidence": 0.5420276528363852,
+            "accuracy": 0.5315186246418339
+          },
+          "6": {
+            "n": 13,
+            "confidence": 0.6122139509236284,
+            "accuracy": 0.6153846153846154
+          }
+        }
+      },
+      "P0|turn|FREE": {
+        "n": 1616,
+        "log_loss": 0.5880216056696087,
+        "street_mode_fallback_log_loss": 0.6007361848957679,
+        "log_loss_improvement": 0.012714579226159126,
+        "brier": 0.39951938386544456,
+        "accuracy": 0.7116336633663366,
+        "ece_confidence": 0.02859525415604043,
+        "warm_fraction": 0.875,
+        "cold_fraction": 0.125,
+        "selected_level_counts": {
+          "0": 1593,
+          "1": 8,
+          "2": 15
+        },
+        "observed_frequency": {
+          "BET": 0.28836633663366334,
+          "CHECK": 0.7116336633663366
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.2597710824776328,
+          "CHECK": 0.7402289175223767
+        },
+        "frequency_residual": {
+          "BET": -0.028595254156030536,
+          "CHECK": 0.02859525415604014
+        },
+        "reliability": {
+          "5": {
+            "n": 100,
+            "confidence": 0.5550747613042696,
+            "accuracy": 0.47
+          },
+          "6": {
+            "n": 105,
+            "confidence": 0.6326995023152658,
+            "accuracy": 0.6095238095238096
+          },
+          "7": {
+            "n": 1031,
+            "confidence": 0.7393834058152041,
+            "accuracy": 0.7138700290979632
+          },
+          "8": {
+            "n": 380,
+            "confidence": 0.8209597774925159,
+            "accuracy": 0.7973684210526316
+          }
+        }
+      },
+      "P1|flop|FACING": {
+        "n": 585,
+        "log_loss": 0.9140229553129121,
+        "street_mode_fallback_log_loss": 0.9638908374727798,
+        "log_loss_improvement": 0.04986788215986764,
+        "brier": 0.5655336570602342,
+        "accuracy": 0.5213675213675214,
+        "ece_confidence": 0.020781768221698374,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 577,
+          "1": 3,
+          "2": 5
+        },
+        "observed_frequency": {
+          "CALL": 0.49743589743589745,
+          "FOLD": 0.4017094017094017,
+          "RAISE": 0.10085470085470086
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.47888722757134516,
+          "FOLD": 0.40393604689692747,
+          "RAISE": 0.11717672553172852
+        },
+        "frequency_residual": {
+          "CALL": -0.01854866986455228,
+          "FOLD": 0.0022266451875257443,
+          "RAISE": 0.01632202467702766
+        },
+        "reliability": {
+          "4": {
+            "n": 282,
+            "confidence": 0.47652835102173163,
+            "accuracy": 0.5106382978723404
+          },
+          "5": {
+            "n": 289,
+            "confidence": 0.5219293038716319,
+            "accuracy": 0.5190311418685121
+          },
+          "6": {
+            "n": 14,
+            "confidence": 0.6642313872199831,
+            "accuracy": 0.7857142857142857
+          }
+        }
+      },
+      "P1|flop|FREE": {
+        "n": 1123,
+        "log_loss": 0.5989352420399944,
+        "street_mode_fallback_log_loss": 0.7082753352240037,
+        "log_loss_improvement": 0.10934009318400925,
+        "brier": 0.40900760962372285,
+        "accuracy": 0.709706144256456,
+        "ece_confidence": 0.040831298826055774,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1119,
+          "1": 3,
+          "2": 1
+        },
+        "observed_frequency": {
+          "BET": 0.371326803205699,
+          "CHECK": 0.628673196794301
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.4031602213534397,
+          "CHECK": 0.5968397786465615
+        },
+        "frequency_residual": {
+          "BET": 0.03183341814774071,
+          "CHECK": -0.031833418147739545
+        },
+        "reliability": {
+          "5": {
+            "n": 4,
+            "confidence": 0.538198134372417,
+            "accuracy": 0.25
+          },
+          "6": {
+            "n": 814,
+            "confidence": 0.6536574955986927,
+            "accuracy": 0.6904176904176904
+          },
+          "7": {
+            "n": 305,
+            "confidence": 0.7187607952081744,
+            "accuracy": 0.7672131147540984
+          }
+        }
+      },
+      "P1|river|FACING": {
+        "n": 273,
+        "log_loss": 0.9161384513828122,
+        "street_mode_fallback_log_loss": 0.9321903845656189,
+        "log_loss_improvement": 0.01605193318280663,
+        "brier": 0.5681384149645367,
+        "accuracy": 0.5238095238095238,
+        "ece_confidence": 0.045661695175299985,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 262,
+          "1": 3,
+          "2": 8
+        },
+        "observed_frequency": {
+          "CALL": 0.4065934065934066,
+          "FOLD": 0.5054945054945055,
+          "RAISE": 0.08791208791208792
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.3742090399379769,
+          "FOLD": 0.5056177628300523,
+          "RAISE": 0.1201731972319705
+        },
+        "frequency_residual": {
+          "CALL": -0.03238436665542971,
+          "FOLD": 0.0001232573355468558,
+          "RAISE": 0.032261109319882575
+        },
+        "reliability": {
+          "4": {
+            "n": 130,
+            "confidence": 0.4572003802523564,
+            "accuracy": 0.5153846153846153
+          },
+          "5": {
+            "n": 135,
+            "confidence": 0.5604918377630828,
+            "accuracy": 0.5259259259259259
+          },
+          "6": {
+            "n": 8,
+            "confidence": 0.6544117647058824,
+            "accuracy": 0.625
+          }
+        }
+      },
+      "P1|river|FREE": {
+        "n": 563,
+        "log_loss": 0.6732855998818411,
+        "street_mode_fallback_log_loss": 0.7005293041268159,
+        "log_loss_improvement": 0.02724370424497472,
+        "brier": 0.4804138616787368,
+        "accuracy": 0.5968028419182948,
+        "ece_confidence": 0.0459062937550034,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 554,
+          "1": 7,
+          "2": 2
+        },
+        "observed_frequency": {
+          "BET": 0.4227353463587922,
+          "CHECK": 0.5772646536412078
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.46494256886800484,
+          "CHECK": 0.5350574311319952
+        },
+        "frequency_residual": {
+          "BET": 0.04220722250921266,
+          "CHECK": -0.042207222509212605
+        },
+        "reliability": {
+          "5": {
+            "n": 507,
+            "confidence": 0.5439060655382691,
+            "accuracy": 0.5877712031558185
+          },
+          "6": {
+            "n": 24,
+            "confidence": 0.6859483945463428,
+            "accuracy": 0.5833333333333334
+          },
+          "7": {
+            "n": 32,
+            "confidence": 0.7142857142857143,
+            "accuracy": 0.75
+          }
+        }
+      },
+      "P1|turn|FACING": {
+        "n": 398,
+        "log_loss": 0.8840581099921313,
+        "street_mode_fallback_log_loss": 0.9067461212712671,
+        "log_loss_improvement": 0.022688011279135868,
+        "brier": 0.549558837780873,
+        "accuracy": 0.5226130653266332,
+        "ece_confidence": 0.04325582965435848,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 386,
+          "1": 11,
+          "2": 1
+        },
+        "observed_frequency": {
+          "CALL": 0.5226130653266332,
+          "FOLD": 0.39949748743718594,
+          "RAISE": 0.07788944723618091
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.5618258943552714,
+          "FOLD": 0.3296009459410737,
+          "RAISE": 0.10857315970365546
+        },
+        "frequency_residual": {
+          "CALL": 0.03921282902863821,
+          "FOLD": -0.06989654149611224,
+          "RAISE": 0.030683712467474547
+        },
+        "reliability": {
+          "4": {
+            "n": 46,
+            "confidence": 0.489472322109622,
+            "accuracy": 0.3695652173913043
+          },
+          "5": {
+            "n": 243,
+            "confidence": 0.5444197475531874,
+            "accuracy": 0.5020576131687243
+          },
+          "6": {
+            "n": 101,
+            "confidence": 0.6222924515390981,
+            "accuracy": 0.6138613861386139
+          },
+          "8": {
+            "n": 8,
+            "confidence": 0.8056803594351732,
+            "accuracy": 0.875
+          }
+        }
+      },
+      "P1|turn|FREE": {
+        "n": 780,
+        "log_loss": 0.6559952409012336,
+        "street_mode_fallback_log_loss": 0.7112625651139572,
+        "log_loss_improvement": 0.05526732421272362,
+        "brier": 0.46348052277830093,
+        "accuracy": 0.6294871794871795,
+        "ece_confidence": 0.03964560842123333,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 778,
+          "1": 1,
+          "2": 1
+        },
+        "observed_frequency": {
+          "BET": 0.4076923076923077,
+          "CHECK": 0.5923076923076923
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.4504829513596699,
+          "CHECK": 0.549517048640331
+        },
+        "frequency_residual": {
+          "BET": 0.04279064366736224,
+          "CHECK": -0.042790643667361294
+        },
+        "reliability": {
+          "5": {
+            "n": 426,
+            "confidence": 0.5585299384503598,
+            "accuracy": 0.6150234741784038
+          },
+          "6": {
+            "n": 295,
+            "confidence": 0.6116647490540897,
+            "accuracy": 0.6237288135593221
+          },
+          "7": {
+            "n": 59,
+            "confidence": 0.7068062827225128,
+            "accuracy": 0.7627118644067796
+          }
+        }
+      },
+      "P2|flop|FACING": {
+        "n": 1227,
+        "log_loss": 0.840750207698082,
+        "street_mode_fallback_log_loss": 0.8431545231791638,
+        "log_loss_improvement": 0.0024043154810818677,
+        "brier": 0.5416612137375053,
+        "accuracy": 0.4930725346373268,
+        "ece_confidence": 0.03421077837864517,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1210,
+          "1": 8,
+          "2": 9
+        },
+        "observed_frequency": {
+          "CALL": 0.4898125509372453,
+          "FOLD": 0.4669926650366748,
+          "RAISE": 0.04319478402607987
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.519522379073644,
+          "FOLD": 0.443543483450288,
+          "RAISE": 0.03693413747607068
+        },
+        "frequency_residual": {
+          "CALL": 0.029709828136398664,
+          "FOLD": -0.023449181586386814,
+          "RAISE": -0.006260646550009186
+        },
+        "reliability": {
+          "4": {
+            "n": 207,
+            "confidence": 0.4843779291941155,
+            "accuracy": 0.4444444444444444
+          },
+          "5": {
+            "n": 1000,
+            "confidence": 0.5319186004143458,
+            "accuracy": 0.499
+          },
+          "6": {
+            "n": 11,
+            "confidence": 0.6098369715390991,
+            "accuracy": 0.6363636363636364
+          },
+          "7": {
+            "n": 9,
+            "confidence": 0.7222222222222222,
+            "accuracy": 0.7777777777777778
+          }
+        }
+      },
+      "P2|flop|FREE": {
+        "n": 1998,
+        "log_loss": 0.446133245775331,
+        "street_mode_fallback_log_loss": 0.4785238409971076,
+        "log_loss_improvement": 0.032390595221776654,
+        "brier": 0.2754676159437092,
+        "accuracy": 0.8283283283283284,
+        "ece_confidence": 0.01966938870669525,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1988,
+          "1": 7,
+          "2": 3
+        },
+        "observed_frequency": {
+          "BET": 0.17917917917917917,
+          "CHECK": 0.8208208208208209
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.1559998976008959,
+          "CHECK": 0.8440001023991097
+        },
+        "frequency_residual": {
+          "BET": -0.02317928157828328,
+          "CHECK": 0.023179281578288857
+        },
+        "reliability": {
+          "5": {
+            "n": 87,
+            "confidence": 0.531750791271031,
+            "accuracy": 0.5402298850574713
+          },
+          "6": {
+            "n": 2,
+            "confidence": 0.6440677966101694,
+            "accuracy": 0.0
+          },
+          "7": {
+            "n": 3,
+            "confidence": 0.7021276595744682,
+            "accuracy": 1.0
+          },
+          "8": {
+            "n": 1906,
+            "confidence": 0.8611647454680272,
+            "accuracy": 0.842077649527807
+          }
+        }
+      },
+      "P2|river|FACING": {
+        "n": 661,
+        "log_loss": 0.8779742074157506,
+        "street_mode_fallback_log_loss": 0.8869344728380362,
+        "log_loss_improvement": 0.00896026542228564,
+        "brier": 0.5428446786141041,
+        "accuracy": 0.556732223903177,
+        "ece_confidence": 0.008519683662803399,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 647,
+          "1": 8,
+          "2": 6
+        },
+        "observed_frequency": {
+          "CALL": 0.3661119515885023,
+          "FOLD": 0.5597579425113465,
+          "RAISE": 0.07413010590015129
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.3602171158128317,
+          "FOLD": 0.5601606329966738,
+          "RAISE": 0.07962225119049776
+        },
+        "frequency_residual": {
+          "CALL": -0.0058948357756705705,
+          "FOLD": 0.0004026904853273727,
+          "RAISE": 0.005492145290346473
+        },
+        "reliability": {
+          "4": {
+            "n": 113,
+            "confidence": 0.45539942031197655,
+            "accuracy": 0.46017699115044247
+          },
+          "5": {
+            "n": 350,
+            "confidence": 0.5500867250246053,
+            "accuracy": 0.5428571428571428
+          },
+          "6": {
+            "n": 198,
+            "confidence": 0.6492994527159319,
+            "accuracy": 0.6363636363636364
+          }
+        }
+      },
+      "P2|river|FREE": {
+        "n": 1085,
+        "log_loss": 0.5939319673713767,
+        "street_mode_fallback_log_loss": 0.6044795819010784,
+        "log_loss_improvement": 0.010547614529701701,
+        "brier": 0.4051552288908179,
+        "accuracy": 0.7115207373271889,
+        "ece_confidence": 0.014702748258535056,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1076,
+          "1": 4,
+          "2": 5
+        },
+        "observed_frequency": {
+          "BET": 0.28847926267281104,
+          "CHECK": 0.7115207373271889
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.2814712051938124,
+          "CHECK": 0.7185287948061866
+        },
+        "frequency_residual": {
+          "BET": -0.0070080574789986305,
+          "CHECK": 0.007008057478997687
+        },
+        "reliability": {
+          "5": {
+            "n": 25,
+            "confidence": 0.5225941157861438,
+            "accuracy": 0.52
+          },
+          "6": {
+            "n": 318,
+            "confidence": 0.6913252258970746,
+            "accuracy": 0.6698113207547169
+          },
+          "7": {
+            "n": 681,
+            "confidence": 0.7310893353637122,
+            "accuracy": 0.723935389133627
+          },
+          "8": {
+            "n": 61,
+            "confidence": 0.8004201680672268,
+            "accuracy": 0.8688524590163934
+          }
+        }
+      },
+      "P2|turn|FACING": {
+        "n": 846,
+        "log_loss": 0.8079224878820563,
+        "street_mode_fallback_log_loss": 0.8229121926926671,
+        "log_loss_improvement": 0.014989704810610752,
+        "brier": 0.5099271626159676,
+        "accuracy": 0.5981087470449172,
+        "ece_confidence": 0.01905094074530599,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 836,
+          "1": 8,
+          "2": 2
+        },
+        "observed_frequency": {
+          "CALL": 0.5933806146572104,
+          "FOLD": 0.3617021276595745,
+          "RAISE": 0.04491725768321513
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.577016112768555,
+          "FOLD": 0.3708016216577463,
+          "RAISE": 0.05218226557369791
+        },
+        "frequency_residual": {
+          "CALL": -0.016364501888655347,
+          "FOLD": 0.009099493998171837,
+          "RAISE": 0.007265007890482775
+        },
+        "reliability": {
+          "5": {
+            "n": 529,
+            "confidence": 0.5572467270194713,
+            "accuracy": 0.5727788279773157
+          },
+          "6": {
+            "n": 306,
+            "confidence": 0.6120594993209459,
+            "accuracy": 0.6372549019607843
+          },
+          "7": {
+            "n": 11,
+            "confidence": 0.7099253403601231,
+            "accuracy": 0.7272727272727273
+          }
+        }
+      },
+      "P2|turn|FREE": {
+        "n": 1457,
+        "log_loss": 0.5294164512494879,
+        "street_mode_fallback_log_loss": 0.5523256463623412,
+        "log_loss_improvement": 0.02290919511285328,
+        "brier": 0.3477067546185902,
+        "accuracy": 0.7638984214138641,
+        "ece_confidence": 0.02540612418059904,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1449,
+          "1": 7,
+          "2": 1
+        },
+        "observed_frequency": {
+          "BET": 0.2361015785861359,
+          "CHECK": 0.7638984214138641
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.21381023181761605,
+          "CHECK": 0.7861897681823916
+        },
+        "frequency_residual": {
+          "BET": -0.02229134676851985,
+          "CHECK": 0.02229134676852751
+        },
+        "reliability": {
+          "5": {
+            "n": 30,
+            "confidence": 0.5067567567567566,
+            "accuracy": 0.4666666666666667
+          },
+          "6": {
+            "n": 102,
+            "confidence": 0.6732595775613192,
+            "accuracy": 0.6078431372549019
+          },
+          "7": {
+            "n": 640,
+            "confidence": 0.7763631687069935,
+            "accuracy": 0.734375
+          },
+          "8": {
+            "n": 685,
+            "confidence": 0.8244246491318252,
+            "accuracy": 0.8277372262773722
+          }
+        }
+      }
+    },
+    "sizing": {
+      "n": 3754,
+      "median_absolute_log2_error": 1.000159690021005,
+      "p90_absolute_log2_error": 2.418438509972283,
+      "inside_training_p10_p90_fraction": 0.8036760788492275,
+      "above_training_p99_fraction": 0.012519978689397976,
+      "below_training_p10_fraction": 0.10335641981885989,
+      "warm_fraction": 0.9456579648375066,
+      "cold_fraction": 0.05434203516249334,
+      "selected_level_counts": {
+        "0": 3741,
+        "1": 13
+      }
+    },
+    "profile_stability": {
+      "min_holdout_appearances": 10,
+      "players_evaluated": 196,
+      "stable_fraction": 0.7142857142857143,
+      "appearance_weighted_stable_fraction": 0.7226860254083485,
+      "transition_counts": {
+        "0->0": 92,
+        "0->1": 14,
+        "0->2": 11,
+        "1->0": 10,
+        "1->1": 9,
+        "2->0": 13,
+        "2->1": 8,
+        "2->2": 39
+      },
+      "parser_audit": {
+        "en|recognized_actions": 38792,
+        "fr|recognized_actions": 1321,
+        "fr|unmatched_actor_lines": 20
+      }
+    },
+    "audit": {
+      "hands_parsed": 3073,
+      "invalid_free_call": 3,
+      "invalid_free_fold": 10
+    }
+  },
+  "test": {
+    "split": "TEST",
+    "hands": 3175,
+    "range": {
+      "n": 3118,
+      "log_loss": 5.084721220165468,
+      "combinatorial_prior_log_loss": 5.140926348900285,
+      "log_loss_improvement": 0.056205128734817277,
+      "warm_fraction": 0.9480436177036562,
+      "cold_fraction": 0.05195638229634381,
+      "selected_level_counts": {
+        "0": 2998,
+        "1": 91,
+        "2": 16,
+        "3": 13
+      },
+      "by_profile": {
+        "0": {
+          "n": 1300,
+          "log_loss": 5.016518522353709,
+          "combinatorial_prior_log_loss": 5.162817406409814,
+          "log_loss_improvement": 0.14629888405610472
+        },
+        "1": {
+          "n": 653,
+          "log_loss": 5.121279676711772,
+          "combinatorial_prior_log_loss": 5.121368346857358,
+          "log_loss_improvement": 8.867014558630121e-05
+        },
+        "2": {
+          "n": 1165,
+          "log_loss": 5.140335670835493,
+          "combinatorial_prior_log_loss": 5.127461113339124,
+          "log_loss_improvement": -0.012874557496368559
+        }
+      }
+    },
+    "actions": {
+      "n": 19276,
+      "log_loss": 0.6525207572359272,
+      "street_mode_fallback_log_loss": 0.6806656704694642,
+      "log_loss_improvement": 0.02814491323353709,
+      "brier": 0.42325042122005996,
+      "accuracy": 0.6800166009545549,
+      "ece_confidence": 0.010058320812836596,
+      "warm_fraction": 0.9520128657397801,
+      "cold_fraction": 0.047987134260219964,
+      "selected_level_counts": {
+        "0": 19008,
+        "1": 129,
+        "2": 139
+      },
+      "observed_frequency": {
+        "BET": 0.17721518987341772,
+        "CALL": 0.1557895829010168,
+        "CHECK": 0.4844366051047935,
+        "FOLD": 0.1598879435567545,
+        "RAISE": 0.02267067856401743
+      },
+      "mean_predicted_frequency": {
+        "BET": 0.1780727681860117,
+        "CALL": 0.15438423918872182,
+        "CHECK": 0.4835790267922067,
+        "FOLD": 0.16118856902213652,
+        "RAISE": 0.022775396810924425
+      },
+      "frequency_residual": {
+        "BET": 0.0008575783125939762,
+        "CALL": -0.0014053437122949763,
+        "CHECK": -0.0008575783125868153,
+        "FOLD": 0.0013006254653820104,
+        "RAISE": 0.00010471824690699502
+      },
+      "reliability": {
+        "4": {
+          "n": 1198,
+          "confidence": 0.4746700607445104,
+          "accuracy": 0.48330550918196996
+        },
+        "5": {
+          "n": 5280,
+          "confidence": 0.5441965818139755,
+          "accuracy": 0.5517045454545455
+        },
+        "6": {
+          "n": 3906,
+          "confidence": 0.6507702910895203,
+          "accuracy": 0.6633384536610343
+        },
+        "7": {
+          "n": 3928,
+          "confidence": 0.7440373522136489,
+          "accuracy": 0.734725050916497
+        },
+        "8": {
+          "n": 4964,
+          "confidence": 0.8455332220464153,
+          "accuracy": 0.8338033843674456
+        }
+      }
+    },
+    "actions_by_profile_street_mode": {
+      "P0|flop|FACING": {
+        "n": 1156,
+        "log_loss": 0.8165478591695658,
+        "street_mode_fallback_log_loss": 0.8567837623680037,
+        "log_loss_improvement": 0.040235903198437735,
+        "brier": 0.5215588088547268,
+        "accuracy": 0.5501730103806228,
+        "ece_confidence": 0.018339258486537034,
+        "warm_fraction": 0.8987889273356401,
+        "cold_fraction": 0.10121107266435986,
+        "selected_level_counts": {
+          "0": 1131,
+          "1": 19,
+          "2": 6
+        },
+        "observed_frequency": {
+          "CALL": 0.41695501730103807,
+          "FOLD": 0.5337370242214533,
+          "RAISE": 0.04930795847750865
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.3928045848823843,
+          "FOLD": 0.5597019275816977,
+          "RAISE": 0.047493487535918345
+        },
+        "frequency_residual": {
+          "CALL": -0.024150432418653778,
+          "FOLD": 0.025964903360244374,
+          "RAISE": -0.0018144709415903043
+        },
+        "reliability": {
+          "4": {
+            "n": 311,
+            "confidence": 0.4833756140524689,
+            "accuracy": 0.47266881028938906
+          },
+          "5": {
+            "n": 446,
+            "confidence": 0.5407902450520018,
+            "accuracy": 0.5022421524663677
+          },
+          "6": {
+            "n": 391,
+            "confidence": 0.6641378965394531,
+            "accuracy": 0.6624040920716112
+          },
+          "7": {
+            "n": 8,
+            "confidence": 0.75,
+            "accuracy": 0.75
+          }
+        }
+      },
+      "P0|flop|FREE": {
+        "n": 2434,
+        "log_loss": 0.47110314603125414,
+        "street_mode_fallback_log_loss": 0.5167813651245607,
+        "log_loss_improvement": 0.04567821909330662,
+        "brier": 0.2978357263901967,
+        "accuracy": 0.8097781429745275,
+        "ece_confidence": 0.0042709263299004355,
+        "warm_fraction": 0.8792111750205424,
+        "cold_fraction": 0.12078882497945768,
+        "selected_level_counts": {
+          "0": 2405,
+          "1": 23,
+          "2": 6
+        },
+        "observed_frequency": {
+          "BET": 0.21117502054231718,
+          "CHECK": 0.7888249794576828
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.2071186901440408,
+          "CHECK": 0.7928813098559693
+        },
+        "frequency_residual": {
+          "BET": -0.004056330398276381,
+          "CHECK": 0.004056330398286456
+        },
+        "reliability": {
+          "5": {
+            "n": 131,
+            "confidence": 0.5650036109367508,
+            "accuracy": 0.6106870229007634
+          },
+          "6": {
+            "n": 80,
+            "confidence": 0.6293625268019133,
+            "accuracy": 0.6125
+          },
+          "7": {
+            "n": 523,
+            "confidence": 0.7614433094720656,
+            "accuracy": 0.7609942638623327
+          },
+          "8": {
+            "n": 1700,
+            "confidence": 0.8477487913402066,
+            "accuracy": 0.8494117647058823
+          }
+        }
+      },
+      "P0|river|FACING": {
+        "n": 586,
+        "log_loss": 0.9005287717078407,
+        "street_mode_fallback_log_loss": 0.9264064863344327,
+        "log_loss_improvement": 0.025877714626591945,
+        "brier": 0.5488289306743349,
+        "accuracy": 0.5597269624573379,
+        "ece_confidence": 0.05906256951937356,
+        "warm_fraction": 0.8976109215017065,
+        "cold_fraction": 0.10238907849829351,
+        "selected_level_counts": {
+          "0": 566,
+          "1": 8,
+          "2": 12
+        },
+        "observed_frequency": {
+          "CALL": 0.3447098976109215,
+          "FOLD": 0.5546075085324232,
+          "RAISE": 0.10068259385665529
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.31454317891615213,
+          "FOLD": 0.605784452223867,
+          "RAISE": 0.07967236885998205
+        },
+        "frequency_residual": {
+          "CALL": -0.03016671869476939,
+          "FOLD": 0.051176943691443766,
+          "RAISE": -0.021010224996673238
+        },
+        "reliability": {
+          "4": {
+            "n": 86,
+            "confidence": 0.46898983049742726,
+            "accuracy": 0.4186046511627907
+          },
+          "5": {
+            "n": 180,
+            "confidence": 0.5481900366644785,
+            "accuracy": 0.45555555555555555
+          },
+          "6": {
+            "n": 189,
+            "confidence": 0.6487947149407145,
+            "accuracy": 0.6613756613756614
+          },
+          "7": {
+            "n": 131,
+            "confidence": 0.7345460674791073,
+            "accuracy": 0.648854961832061
+          }
+        }
+      },
+      "P0|river|FREE": {
+        "n": 1321,
+        "log_loss": 0.6079012574058037,
+        "street_mode_fallback_log_loss": 0.6163503264065217,
+        "log_loss_improvement": 0.008449069000717903,
+        "brier": 0.41818432555477847,
+        "accuracy": 0.6949280847842544,
+        "ece_confidence": 0.014171255726984562,
+        "warm_fraction": 0.8811506434519304,
+        "cold_fraction": 0.11884935654806965,
+        "selected_level_counts": {
+          "0": 1301,
+          "2": 20
+        },
+        "observed_frequency": {
+          "BET": 0.30507191521574567,
+          "CHECK": 0.6949280847842544
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.3062651587582308,
+          "CHECK": 0.6937348412417781
+        },
+        "frequency_residual": {
+          "BET": 0.0011932435424851229,
+          "CHECK": -0.0011932435424762966
+        },
+        "reliability": {
+          "5": {
+            "n": 45,
+            "confidence": 0.578125,
+            "accuracy": 0.6
+          },
+          "6": {
+            "n": 794,
+            "confidence": 0.6641802891036586,
+            "accuracy": 0.6700251889168766
+          },
+          "7": {
+            "n": 404,
+            "confidence": 0.7439900421976781,
+            "accuracy": 0.7227722772277227
+          },
+          "8": {
+            "n": 78,
+            "confidence": 0.8009868421052619,
+            "accuracy": 0.8589743589743589
+          }
+        }
+      },
+      "P0|turn|FACING": {
+        "n": 789,
+        "log_loss": 0.8806949819390788,
+        "street_mode_fallback_log_loss": 0.8912996362032473,
+        "log_loss_improvement": 0.010604654264168515,
+        "brier": 0.5523409453142921,
+        "accuracy": 0.532319391634981,
+        "ece_confidence": 0.012035545648786502,
+        "warm_fraction": 0.8745247148288974,
+        "cold_fraction": 0.12547528517110265,
+        "selected_level_counts": {
+          "0": 748,
+          "1": 15,
+          "2": 26
+        },
+        "observed_frequency": {
+          "CALL": 0.5310519645120405,
+          "FOLD": 0.3979721166032953,
+          "RAISE": 0.07097591888466413
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.47197035454276914,
+          "FOLD": 0.4748341456805173,
+          "RAISE": 0.05319549977671321
+        },
+        "frequency_residual": {
+          "CALL": -0.059081609969271365,
+          "FOLD": 0.076862029077222,
+          "RAISE": -0.017780419107950925
+        },
+        "reliability": {
+          "4": {
+            "n": 35,
+            "confidence": 0.4739541017828934,
+            "accuracy": 0.45714285714285713
+          },
+          "5": {
+            "n": 736,
+            "confidence": 0.5406621810001903,
+            "accuracy": 0.53125
+          },
+          "6": {
+            "n": 18,
+            "confidence": 0.6122062923138193,
+            "accuracy": 0.7222222222222222
+          }
+        }
+      },
+      "P0|turn|FREE": {
+        "n": 1735,
+        "log_loss": 0.5710617769956986,
+        "street_mode_fallback_log_loss": 0.5877549390496989,
+        "log_loss_improvement": 0.01669316205400028,
+        "brier": 0.3845176260511713,
+        "accuracy": 0.7256484149855907,
+        "ece_confidence": 0.012966079812472706,
+        "warm_fraction": 0.885878962536023,
+        "cold_fraction": 0.11412103746397695,
+        "selected_level_counts": {
+          "0": 1715,
+          "1": 6,
+          "2": 14
+        },
+        "observed_frequency": {
+          "BET": 0.2743515850144092,
+          "CHECK": 0.7256484149855907
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.26148428451826905,
+          "CHECK": 0.7385157154817397
+        },
+        "frequency_residual": {
+          "BET": -0.012867300496140155,
+          "CHECK": 0.012867300496148926
+        },
+        "reliability": {
+          "5": {
+            "n": 117,
+            "confidence": 0.5556310020370552,
+            "accuracy": 0.4700854700854701
+          },
+          "6": {
+            "n": 100,
+            "confidence": 0.6302102999143431,
+            "accuracy": 0.59
+          },
+          "7": {
+            "n": 1117,
+            "confidence": 0.7380309759963846,
+            "accuracy": 0.7305282005371531
+          },
+          "8": {
+            "n": 401,
+            "confidence": 0.8202351843967361,
+            "accuracy": 0.8204488778054863
+          }
+        }
+      },
+      "P1|flop|FACING": {
+        "n": 600,
+        "log_loss": 0.8817036439861077,
+        "street_mode_fallback_log_loss": 0.9204249859842482,
+        "log_loss_improvement": 0.038721341998140514,
+        "brier": 0.547551983350068,
+        "accuracy": 0.545,
+        "ece_confidence": 0.04247159284745873,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 585,
+          "1": 6,
+          "2": 9
+        },
+        "observed_frequency": {
+          "CALL": 0.4766666666666667,
+          "FOLD": 0.44333333333333336,
+          "RAISE": 0.08
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.4772710683015206,
+          "FOLD": 0.4062369899141911,
+          "RAISE": 0.11649194178428987
+        },
+        "frequency_residual": {
+          "CALL": 0.0006044016348539238,
+          "FOLD": -0.03709634341914225,
+          "RAISE": 0.03649194178428987
+        },
+        "reliability": {
+          "4": {
+            "n": 299,
+            "confidence": 0.47718208326558503,
+            "accuracy": 0.4983277591973244
+          },
+          "5": {
+            "n": 287,
+            "confidence": 0.522648655179832,
+            "accuracy": 0.5888501742160279
+          },
+          "6": {
+            "n": 14,
+            "confidence": 0.6543259029640657,
+            "accuracy": 0.6428571428571429
+          }
+        }
+      },
+      "P1|flop|FREE": {
+        "n": 1192,
+        "log_loss": 0.6096800687411634,
+        "street_mode_fallback_log_loss": 0.7126673877219513,
+        "log_loss_improvement": 0.1029873189807878,
+        "brier": 0.4190147907881278,
+        "accuracy": 0.7021812080536913,
+        "ece_confidence": 0.03621281419107937,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1187,
+          "1": 4,
+          "2": 1
+        },
+        "observed_frequency": {
+          "BET": 0.375,
+          "CHECK": 0.625
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.4076366845906059,
+          "CHECK": 0.5923633154093948
+        },
+        "frequency_residual": {
+          "BET": 0.032636684590605924,
+          "CHECK": -0.0326366845906052
+        },
+        "reliability": {
+          "5": {
+            "n": 5,
+            "confidence": 0.5155124892334195,
+            "accuracy": 0.6
+          },
+          "6": {
+            "n": 873,
+            "confidence": 0.647882893253115,
+            "accuracy": 0.6895761741122566
+          },
+          "7": {
+            "n": 314,
+            "confidence": 0.7186464879875697,
+            "accuracy": 0.7388535031847133
+          }
+        }
+      },
+      "P1|river|FACING": {
+        "n": 311,
+        "log_loss": 0.8853502758440142,
+        "street_mode_fallback_log_loss": 0.9045926917543122,
+        "log_loss_improvement": 0.01924241591029804,
+        "brier": 0.5443425648637965,
+        "accuracy": 0.5562700964630225,
+        "ece_confidence": 0.03945584159493008,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 305,
+          "1": 2,
+          "2": 4
+        },
+        "observed_frequency": {
+          "CALL": 0.3408360128617363,
+          "FOLD": 0.5691318327974276,
+          "RAISE": 0.09003215434083602
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.36933941398557113,
+          "FOLD": 0.5064943541263011,
+          "RAISE": 0.1241662318881277
+        },
+        "frequency_residual": {
+          "CALL": 0.028503401123834815,
+          "FOLD": -0.06263747867112657,
+          "RAISE": 0.03413407754729168
+        },
+        "reliability": {
+          "4": {
+            "n": 145,
+            "confidence": 0.4514717727639126,
+            "accuracy": 0.4896551724137931
+          },
+          "5": {
+            "n": 142,
+            "confidence": 0.5602812947906214,
+            "accuracy": 0.5915492957746479
+          },
+          "6": {
+            "n": 24,
+            "confidence": 0.6544117647058824,
+            "accuracy": 0.75
+          }
+        }
+      },
+      "P1|river|FREE": {
+        "n": 571,
+        "log_loss": 0.6558843842219202,
+        "street_mode_fallback_log_loss": 0.6574512888706234,
+        "log_loss_improvement": 0.0015669046487033363,
+        "brier": 0.4636969370882926,
+        "accuracy": 0.6427320490367776,
+        "ece_confidence": 0.07552992165566158,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 566,
+          "1": 3,
+          "2": 2
+        },
+        "observed_frequency": {
+          "BET": 0.36252189141856395,
+          "CHECK": 0.637478108581436
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.45668621360870754,
+          "CHECK": 0.543313786391293
+        },
+        "frequency_residual": {
+          "BET": 0.09416432219014359,
+          "CHECK": -0.09416432219014303
+        },
+        "reliability": {
+          "5": {
+            "n": 490,
+            "confidence": 0.5456864333716755,
+            "accuracy": 0.6183673469387755
+          },
+          "6": {
+            "n": 53,
+            "confidence": 0.688416271367853,
+            "accuracy": 0.8113207547169812
+          },
+          "7": {
+            "n": 28,
+            "confidence": 0.7142857142857142,
+            "accuracy": 0.75
+          }
+        }
+      },
+      "P1|turn|FACING": {
+        "n": 401,
+        "log_loss": 0.9096119755787816,
+        "street_mode_fallback_log_loss": 0.9214656680255984,
+        "log_loss_improvement": 0.011853692446816852,
+        "brier": 0.5642448451245173,
+        "accuracy": 0.5461346633416458,
+        "ece_confidence": 0.06288283269035075,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 393,
+          "1": 8
+        },
+        "observed_frequency": {
+          "CALL": 0.543640897755611,
+          "FOLD": 0.36658354114713215,
+          "RAISE": 0.08977556109725686
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.565527502916237,
+          "FOLD": 0.31927761879160305,
+          "RAISE": 0.11519487829216007
+        },
+        "frequency_residual": {
+          "CALL": 0.021886605160626016,
+          "FOLD": -0.047305922355529106,
+          "RAISE": 0.025419317194903215
+        },
+        "reliability": {
+          "4": {
+            "n": 31,
+            "confidence": 0.4901699814051258,
+            "accuracy": 0.45161290322580644
+          },
+          "5": {
+            "n": 252,
+            "confidence": 0.5460030015090873,
+            "accuracy": 0.5793650793650794
+          },
+          "6": {
+            "n": 110,
+            "confidence": 0.6196512864076624,
+            "accuracy": 0.4909090909090909
+          },
+          "8": {
+            "n": 8,
+            "confidence": 0.8064826700898587,
+            "accuracy": 0.625
+          }
+        }
+      },
+      "P1|turn|FREE": {
+        "n": 802,
+        "log_loss": 0.6467972230584661,
+        "street_mode_fallback_log_loss": 0.6847346540757835,
+        "log_loss_improvement": 0.03793743101731737,
+        "brier": 0.4544679639221195,
+        "accuracy": 0.6633416458852868,
+        "ece_confidence": 0.0745303317827706,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 796,
+          "1": 4,
+          "2": 2
+        },
+        "observed_frequency": {
+          "BET": 0.3790523690773067,
+          "CHECK": 0.6209476309226932
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.4544673537050547,
+          "CHECK": 0.5455326462949467
+        },
+        "frequency_residual": {
+          "BET": 0.07541498462774798,
+          "CHECK": -0.07541498462774654
+        },
+        "reliability": {
+          "5": {
+            "n": 420,
+            "confidence": 0.55736998616165,
+            "accuracy": 0.6285714285714286
+          },
+          "6": {
+            "n": 340,
+            "confidence": 0.6130747524940571,
+            "accuracy": 0.6911764705882353
+          },
+          "7": {
+            "n": 42,
+            "confidence": 0.7068062827225133,
+            "accuracy": 0.7857142857142857
+          }
+        }
+      },
+      "P2|flop|FACING": {
+        "n": 1220,
+        "log_loss": 0.8436300878990319,
+        "street_mode_fallback_log_loss": 0.8558403535375332,
+        "log_loss_improvement": 0.012210265638501168,
+        "brier": 0.5418532776706676,
+        "accuracy": 0.5008196721311475,
+        "ece_confidence": 0.033757242355191834,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1204,
+          "1": 8,
+          "2": 8
+        },
+        "observed_frequency": {
+          "CALL": 0.47704918032786886,
+          "FOLD": 0.4737704918032787,
+          "RAISE": 0.04918032786885246
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.5203916488956325,
+          "FOLD": 0.441961093748027,
+          "RAISE": 0.03764725735634322
+        },
+        "frequency_residual": {
+          "CALL": 0.04334246856776364,
+          "FOLD": -0.03180939805525168,
+          "RAISE": -0.011533070512509236
+        },
+        "reliability": {
+          "4": {
+            "n": 192,
+            "confidence": 0.48434377081945373,
+            "accuracy": 0.5104166666666666
+          },
+          "5": {
+            "n": 1005,
+            "confidence": 0.5317394228670398,
+            "accuracy": 0.49850746268656715
+          },
+          "6": {
+            "n": 16,
+            "confidence": 0.6077602583586625,
+            "accuracy": 0.4375
+          },
+          "7": {
+            "n": 7,
+            "confidence": 0.7222222222222222,
+            "accuracy": 0.7142857142857143
+          }
+        }
+      },
+      "P2|flop|FREE": {
+        "n": 2053,
+        "log_loss": 0.44878579234290594,
+        "street_mode_fallback_log_loss": 0.47860837606204076,
+        "log_loss_improvement": 0.029822583719134793,
+        "brier": 0.27746926861431354,
+        "accuracy": 0.8290306867998052,
+        "ece_confidence": 0.022176728465431374,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 2041,
+          "1": 9,
+          "2": 3
+        },
+        "observed_frequency": {
+          "BET": 0.1792498782269849,
+          "CHECK": 0.8207501217730151
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.155134799725459,
+          "CHECK": 0.8448652002745458
+        },
+        "frequency_residual": {
+          "BET": -0.024115078501525916,
+          "CHECK": 0.024115078501530718
+        },
+        "reliability": {
+          "5": {
+            "n": 82,
+            "confidence": 0.5312301166489924,
+            "accuracy": 0.573170731707317
+          },
+          "7": {
+            "n": 3,
+            "confidence": 0.7021276595744682,
+            "accuracy": 1.0
+          },
+          "8": {
+            "n": 1968,
+            "confidence": 0.8603638597985119,
+            "accuracy": 0.8394308943089431
+          }
+        }
+      },
+      "P2|river|FACING": {
+        "n": 656,
+        "log_loss": 0.8747523437231935,
+        "street_mode_fallback_log_loss": 0.8877976423275817,
+        "log_loss_improvement": 0.01304529860438815,
+        "brier": 0.5381069541574904,
+        "accuracy": 0.586890243902439,
+        "ece_confidence": 0.04097444283786172,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 646,
+          "1": 4,
+          "2": 6
+        },
+        "observed_frequency": {
+          "CALL": 0.3597560975609756,
+          "FOLD": 0.5640243902439024,
+          "RAISE": 0.07621951219512195
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.360431973829641,
+          "FOLD": 0.5583410736875055,
+          "RAISE": 0.08122695248285637
+        },
+        "frequency_residual": {
+          "CALL": 0.0006758762686653874,
+          "FOLD": -0.005683316556396867,
+          "RAISE": 0.0050074402877344215
+        },
+        "reliability": {
+          "4": {
+            "n": 99,
+            "confidence": 0.45528560048843186,
+            "accuracy": 0.48484848484848486
+          },
+          "5": {
+            "n": 394,
+            "confidence": 0.5513753735310916,
+            "accuracy": 0.5989847715736041
+          },
+          "6": {
+            "n": 163,
+            "confidence": 0.6514994240567,
+            "accuracy": 0.6196319018404908
+          }
+        }
+      },
+      "P2|river|FREE": {
+        "n": 1145,
+        "log_loss": 0.599218453454223,
+        "street_mode_fallback_log_loss": 0.6092852442653759,
+        "log_loss_improvement": 0.010066790811152897,
+        "brier": 0.40962392391590613,
+        "accuracy": 0.7048034934497817,
+        "ece_confidence": 0.01574004248382887,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1138,
+          "1": 2,
+          "2": 5
+        },
+        "observed_frequency": {
+          "BET": 0.29519650655021834,
+          "CHECK": 0.7048034934497817
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.2794564640663885,
+          "CHECK": 0.7205435359336102
+        },
+        "frequency_residual": {
+          "BET": -0.01574004248382982,
+          "CHECK": 0.015740042483828542
+        },
+        "reliability": {
+          "5": {
+            "n": 22,
+            "confidence": 0.5187800178309513,
+            "accuracy": 0.36363636363636365
+          },
+          "6": {
+            "n": 327,
+            "confidence": 0.6921364903171991,
+            "accuracy": 0.6850152905198776
+          },
+          "7": {
+            "n": 726,
+            "confidence": 0.7317508872634616,
+            "accuracy": 0.7203856749311295
+          },
+          "8": {
+            "n": 70,
+            "confidence": 0.8004201680672268,
+            "accuracy": 0.7428571428571429
+          }
+        }
+      },
+      "P2|turn|FACING": {
+        "n": 803,
+        "log_loss": 0.8261576541736586,
+        "street_mode_fallback_log_loss": 0.8405486718253882,
+        "log_loss_improvement": 0.014391017651729562,
+        "brier": 0.5188933325056219,
+        "accuracy": 0.5902864259028643,
+        "ece_confidence": 0.017273272511926112,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 787,
+          "1": 4,
+          "2": 12
+        },
+        "observed_frequency": {
+          "CALL": 0.5877957658779577,
+          "FOLD": 0.3586550435865504,
+          "RAISE": 0.053549190535491904
+        },
+        "mean_predicted_frequency": {
+          "CALL": 0.5800705703785076,
+          "FOLD": 0.368200568259532,
+          "RAISE": 0.051728861361960775
+        },
+        "frequency_residual": {
+          "CALL": -0.007725195499450055,
+          "FOLD": 0.009545524672981587,
+          "RAISE": -0.0018203291735311294
+        },
+        "reliability": {
+          "5": {
+            "n": 499,
+            "confidence": 0.5591490035910718,
+            "accuracy": 0.5711422845691383
+          },
+          "6": {
+            "n": 288,
+            "confidence": 0.6124554036141733,
+            "accuracy": 0.6284722222222222
+          },
+          "7": {
+            "n": 16,
+            "confidence": 0.7045591787439616,
+            "accuracy": 0.5
+          }
+        }
+      },
+      "P2|turn|FREE": {
+        "n": 1501,
+        "log_loss": 0.5382771913610662,
+        "street_mode_fallback_log_loss": 0.5551713873343039,
+        "log_loss_improvement": 0.01689419597323778,
+        "brier": 0.3541322694916143,
+        "accuracy": 0.7608261159227182,
+        "ece_confidence": 0.02563003962852299,
+        "warm_fraction": 1.0,
+        "cold_fraction": 0.0,
+        "selected_level_counts": {
+          "0": 1494,
+          "1": 4,
+          "2": 3
+        },
+        "observed_frequency": {
+          "BET": 0.23917388407728182,
+          "CHECK": 0.7608261159227182
+        },
+        "mean_predicted_frequency": {
+          "BET": 0.2135438444487595,
+          "CHECK": 0.7864561555512484
+        },
+        "frequency_residual": {
+          "BET": -0.02563003962852231,
+          "CHECK": 0.025630039628530166
+        },
+        "reliability": {
+          "5": {
+            "n": 27,
+            "confidence": 0.5067567567567566,
+            "accuracy": 0.2962962962962963
+          },
+          "6": {
+            "n": 126,
+            "confidence": 0.6798734445246125,
+            "accuracy": 0.6349206349206349
+          },
+          "7": {
+            "n": 609,
+            "confidence": 0.775269073753568,
+            "accuracy": 0.7619047619047619
+          },
+          "8": {
+            "n": 739,
+            "confidence": 0.8240667620080602,
+            "accuracy": 0.7983761840324763
+          }
+        }
+      }
+    },
+    "sizing": {
+      "n": 3853,
+      "median_absolute_log2_error": 1.0006790751082728,
+      "p90_absolute_log2_error": 2.4712533599943014,
+      "inside_training_p10_p90_fraction": 0.8030106410589152,
+      "above_training_p99_fraction": 0.013755515182974305,
+      "below_training_p10_fraction": 0.09161692187905528,
+      "warm_fraction": 0.9475733194913055,
+      "cold_fraction": 0.05242668050869452,
+      "selected_level_counts": {
+        "0": 3841,
+        "1": 12
+      }
+    },
+    "profile_stability": {
+      "min_holdout_appearances": 10,
+      "players_evaluated": 215,
+      "stable_fraction": 0.7441860465116279,
+      "appearance_weighted_stable_fraction": 0.7501538461538462,
+      "transition_counts": {
+        "0->0": 110,
+        "0->1": 9,
+        "0->2": 14,
+        "1->0": 9,
+        "1->1": 17,
+        "1->2": 1,
+        "2->0": 18,
+        "2->1": 4,
+        "2->2": 33
+      },
+      "parser_audit": {
+        "en|recognized_actions": 40140,
+        "fr|recognized_actions": 1541,
+        "fr|unmatched_actor_lines": 36
+      }
+    },
+    "audit": {
+      "hands_parsed": 3175,
+      "invalid_free_call": 1,
+      "invalid_free_fold": 7
+    }
+  }
+}

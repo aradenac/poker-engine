@@ -1,0 +1,5800 @@
+{
+  "schema": "independent-postflop-actions/v2",
+  "labels": {
+    "FREE": [
+      "CHECK",
+      "BET"
+    ],
+    "FACING": [
+      "FOLD",
+      "CALL",
+      "RAISE"
+    ]
+  },
+  "backoff_min_observations": 30,
+  "levels": [
+    {
+      "cols": [
+        "profile",
+        "street",
+        "mode",
+        "relative_position",
+        "pot_type",
+        "preflop_role"
+      ],
+      "data": {
+        "0|flop|FACING|IP|3BP|CALLER": {
+          "n": 34,
+          "counts": {
+            "CALL": 16,
+            "FOLD": 13,
+            "RAISE": 5
+          }
+        },
+        "0|flop|FACING|IP|3BP|PFA": {
+          "n": 9,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 1,
+            "RAISE": 6
+          }
+        },
+        "0|flop|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1
+          }
+        },
+        "0|flop|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 103,
+          "counts": {
+            "CALL": 44,
+            "FOLD": 53,
+            "RAISE": 6
+          }
+        },
+        "0|flop|FACING|IP|LIMPED|LIMPER": {
+          "n": 943,
+          "counts": {
+            "CALL": 421,
+            "FOLD": 478,
+            "RAISE": 44
+          }
+        },
+        "0|flop|FACING|IP|SRP|CALLER": {
+          "n": 702,
+          "counts": {
+            "CALL": 313,
+            "FOLD": 334,
+            "RAISE": 55
+          }
+        },
+        "0|flop|FACING|IP|SRP|PFA": {
+          "n": 111,
+          "counts": {
+            "CALL": 57,
+            "FOLD": 24,
+            "RAISE": 30
+          }
+        },
+        "0|flop|FACING|MIDDLE|3BP|CALLER": {
+          "n": 48,
+          "counts": {
+            "CALL": 24,
+            "FOLD": 20,
+            "RAISE": 4
+          }
+        },
+        "0|flop|FACING|MIDDLE|3BP|PFA": {
+          "n": 5,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 4
+          }
+        },
+        "0|flop|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 570,
+          "counts": {
+            "CALL": 174,
+            "FOLD": 379,
+            "RAISE": 17
+          }
+        },
+        "0|flop|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 700,
+          "counts": {
+            "CALL": 266,
+            "FOLD": 404,
+            "RAISE": 30
+          }
+        },
+        "0|flop|FACING|MIDDLE|SRP|CALLER": {
+          "n": 511,
+          "counts": {
+            "CALL": 229,
+            "FOLD": 256,
+            "RAISE": 26
+          }
+        },
+        "0|flop|FACING|MIDDLE|SRP|PFA": {
+          "n": 48,
+          "counts": {
+            "CALL": 24,
+            "FOLD": 20,
+            "RAISE": 4
+          }
+        },
+        "0|flop|FACING|ONLY|3BP|CALLER": {
+          "n": 12,
+          "counts": {
+            "CALL": 9,
+            "FOLD": 3
+          }
+        },
+        "0|flop|FACING|ONLY|3BP|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|flop|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 22,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 17
+          }
+        },
+        "0|flop|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 26,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 21
+          }
+        },
+        "0|flop|FACING|ONLY|SRP|CALLER": {
+          "n": 74,
+          "counts": {
+            "CALL": 35,
+            "FOLD": 39
+          }
+        },
+        "0|flop|FACING|ONLY|SRP|PFA": {
+          "n": 32,
+          "counts": {
+            "CALL": 19,
+            "FOLD": 13
+          }
+        },
+        "0|flop|FACING|OOP|3BP|CALLER": {
+          "n": 72,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 44,
+            "RAISE": 10
+          }
+        },
+        "0|flop|FACING|OOP|3BP|PFA": {
+          "n": 3,
+          "counts": {
+            "CALL": 2,
+            "RAISE": 1
+          }
+        },
+        "0|flop|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 8,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 3
+          }
+        },
+        "0|flop|FACING|OOP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|flop|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 1033,
+          "counts": {
+            "CALL": 295,
+            "FOLD": 724,
+            "RAISE": 14
+          }
+        },
+        "0|flop|FACING|OOP|LIMPED|LIMPER": {
+          "n": 831,
+          "counts": {
+            "CALL": 287,
+            "FOLD": 529,
+            "RAISE": 15
+          }
+        },
+        "0|flop|FACING|OOP|SRP|CALLER": {
+          "n": 1019,
+          "counts": {
+            "CALL": 412,
+            "FOLD": 567,
+            "RAISE": 40
+          }
+        },
+        "0|flop|FACING|OOP|SRP|PFA": {
+          "n": 71,
+          "counts": {
+            "CALL": 33,
+            "FOLD": 32,
+            "RAISE": 6
+          }
+        },
+        "0|flop|FREE|IP|3BP|CALLER": {
+          "n": 23,
+          "counts": {
+            "BET": 10,
+            "CHECK": 13
+          }
+        },
+        "0|flop|FREE|IP|3BP|PFA": {
+          "n": 13,
+          "counts": {
+            "BET": 11,
+            "CHECK": 2
+          }
+        },
+        "0|flop|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "BET": 1,
+            "CHECK": 3
+          }
+        },
+        "0|flop|FREE|IP|4BP_PLUS|PFA": {
+          "n": 2,
+          "counts": {
+            "BET": 1,
+            "CHECK": 1
+          }
+        },
+        "0|flop|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 407,
+          "counts": {
+            "BET": 77,
+            "CHECK": 330
+          }
+        },
+        "0|flop|FREE|IP|LIMPED|LIMPER": {
+          "n": 2188,
+          "counts": {
+            "BET": 507,
+            "CHECK": 1681
+          }
+        },
+        "0|flop|FREE|IP|SRP|CALLER": {
+          "n": 520,
+          "counts": {
+            "BET": 139,
+            "CHECK": 381
+          }
+        },
+        "0|flop|FREE|IP|SRP|PFA": {
+          "n": 286,
+          "counts": {
+            "BET": 174,
+            "CHECK": 112
+          }
+        },
+        "0|flop|FREE|MIDDLE|3BP|CALLER": {
+          "n": 53,
+          "counts": {
+            "BET": 10,
+            "CHECK": 43
+          }
+        },
+        "0|flop|FREE|MIDDLE|3BP|PFA": {
+          "n": 2,
+          "counts": {
+            "BET": 1,
+            "CHECK": 1
+          }
+        },
+        "0|flop|FREE|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 3,
+          "counts": {
+            "CHECK": 3
+          }
+        },
+        "0|flop|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "0|flop|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 1848,
+          "counts": {
+            "BET": 220,
+            "CHECK": 1628
+          }
+        },
+        "0|flop|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 1740,
+          "counts": {
+            "BET": 303,
+            "CHECK": 1437
+          }
+        },
+        "0|flop|FREE|MIDDLE|SRP|CALLER": {
+          "n": 722,
+          "counts": {
+            "BET": 139,
+            "CHECK": 583
+          }
+        },
+        "0|flop|FREE|MIDDLE|SRP|PFA": {
+          "n": 180,
+          "counts": {
+            "BET": 91,
+            "CHECK": 89
+          }
+        },
+        "0|flop|FREE|OOP|3BP|CALLER": {
+          "n": 83,
+          "counts": {
+            "BET": 17,
+            "CHECK": 66
+          }
+        },
+        "0|flop|FREE|OOP|3BP|PFA": {
+          "n": 18,
+          "counts": {
+            "BET": 16,
+            "CHECK": 2
+          }
+        },
+        "0|flop|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 6,
+          "counts": {
+            "BET": 3,
+            "CHECK": 3
+          }
+        },
+        "0|flop|FREE|OOP|4BP_PLUS|PFA": {
+          "n": 2,
+          "counts": {
+            "BET": 2
+          }
+        },
+        "0|flop|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 2368,
+          "counts": {
+            "BET": 260,
+            "CHECK": 2108
+          }
+        },
+        "0|flop|FREE|OOP|LIMPED|LIMPER": {
+          "n": 1948,
+          "counts": {
+            "BET": 331,
+            "CHECK": 1617
+          }
+        },
+        "0|flop|FREE|OOP|SRP|CALLER": {
+          "n": 1491,
+          "counts": {
+            "BET": 243,
+            "CHECK": 1248
+          }
+        },
+        "0|flop|FREE|OOP|SRP|PFA": {
+          "n": 271,
+          "counts": {
+            "BET": 159,
+            "CHECK": 112
+          }
+        },
+        "0|river|FACING|IP|3BP|CALLER": {
+          "n": 11,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 6
+          }
+        },
+        "0|river|FACING|IP|3BP|PFA": {
+          "n": 3,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 1
+          }
+        },
+        "0|river|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|river|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 161,
+          "counts": {
+            "CALL": 65,
+            "FOLD": 77,
+            "RAISE": 19
+          }
+        },
+        "0|river|FACING|IP|LIMPED|LIMPER": {
+          "n": 809,
+          "counts": {
+            "CALL": 270,
+            "FOLD": 453,
+            "RAISE": 86
+          }
+        },
+        "0|river|FACING|IP|SRP|CALLER": {
+          "n": 260,
+          "counts": {
+            "CALL": 94,
+            "FOLD": 120,
+            "RAISE": 46
+          }
+        },
+        "0|river|FACING|IP|SRP|PFA": {
+          "n": 80,
+          "counts": {
+            "CALL": 37,
+            "FOLD": 37,
+            "RAISE": 6
+          }
+        },
+        "0|river|FACING|MIDDLE|3BP|CALLER": {
+          "n": 9,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 5,
+            "RAISE": 1
+          }
+        },
+        "0|river|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 203,
+          "counts": {
+            "CALL": 42,
+            "FOLD": 145,
+            "RAISE": 16
+          }
+        },
+        "0|river|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 242,
+          "counts": {
+            "CALL": 48,
+            "FOLD": 174,
+            "RAISE": 20
+          }
+        },
+        "0|river|FACING|MIDDLE|SRP|CALLER": {
+          "n": 72,
+          "counts": {
+            "CALL": 22,
+            "FOLD": 48,
+            "RAISE": 2
+          }
+        },
+        "0|river|FACING|MIDDLE|SRP|PFA": {
+          "n": 16,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 11,
+            "RAISE": 2
+          }
+        },
+        "0|river|FACING|ONLY|3BP|CALLER": {
+          "n": 2,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1
+          }
+        },
+        "0|river|FACING|ONLY|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|river|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 39,
+          "counts": {
+            "CALL": 16,
+            "FOLD": 23
+          }
+        },
+        "0|river|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 58,
+          "counts": {
+            "CALL": 23,
+            "FOLD": 35
+          }
+        },
+        "0|river|FACING|ONLY|SRP|CALLER": {
+          "n": 61,
+          "counts": {
+            "CALL": 34,
+            "FOLD": 27
+          }
+        },
+        "0|river|FACING|ONLY|SRP|PFA": {
+          "n": 15,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 8
+          }
+        },
+        "0|river|FACING|OOP|3BP|CALLER": {
+          "n": 12,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 6
+          }
+        },
+        "0|river|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "0|river|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 554,
+          "counts": {
+            "CALL": 128,
+            "FOLD": 409,
+            "RAISE": 17
+          }
+        },
+        "0|river|FACING|OOP|LIMPED|LIMPER": {
+          "n": 489,
+          "counts": {
+            "CALL": 153,
+            "FOLD": 314,
+            "RAISE": 22
+          }
+        },
+        "0|river|FACING|OOP|SRP|CALLER": {
+          "n": 294,
+          "counts": {
+            "CALL": 94,
+            "FOLD": 184,
+            "RAISE": 16
+          }
+        },
+        "0|river|FACING|OOP|SRP|PFA": {
+          "n": 41,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 21,
+            "RAISE": 2
+          }
+        },
+        "0|river|FREE|IP|3BP|CALLER": {
+          "n": 22,
+          "counts": {
+            "BET": 8,
+            "CHECK": 14
+          }
+        },
+        "0|river|FREE|IP|3BP|PFA": {
+          "n": 2,
+          "counts": {
+            "BET": 2
+          }
+        },
+        "0|river|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "0|river|FREE|IP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "0|river|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 265,
+          "counts": {
+            "BET": 59,
+            "CHECK": 206
+          }
+        },
+        "0|river|FREE|IP|LIMPED|LIMPER": {
+          "n": 1249,
+          "counts": {
+            "BET": 395,
+            "CHECK": 854
+          }
+        },
+        "0|river|FREE|IP|SRP|CALLER": {
+          "n": 324,
+          "counts": {
+            "BET": 112,
+            "CHECK": 212
+          }
+        },
+        "0|river|FREE|IP|SRP|PFA": {
+          "n": 143,
+          "counts": {
+            "BET": 52,
+            "CHECK": 91
+          }
+        },
+        "0|river|FREE|MIDDLE|3BP|CALLER": {
+          "n": 8,
+          "counts": {
+            "BET": 1,
+            "CHECK": 7
+          }
+        },
+        "0|river|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 673,
+          "counts": {
+            "BET": 132,
+            "CHECK": 541
+          }
+        },
+        "0|river|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 603,
+          "counts": {
+            "BET": 132,
+            "CHECK": 471
+          }
+        },
+        "0|river|FREE|MIDDLE|SRP|CALLER": {
+          "n": 186,
+          "counts": {
+            "BET": 53,
+            "CHECK": 133
+          }
+        },
+        "0|river|FREE|MIDDLE|SRP|PFA": {
+          "n": 39,
+          "counts": {
+            "BET": 16,
+            "CHECK": 23
+          }
+        },
+        "0|river|FREE|OOP|3BP|CALLER": {
+          "n": 25,
+          "counts": {
+            "BET": 10,
+            "CHECK": 15
+          }
+        },
+        "0|river|FREE|OOP|3BP|PFA": {
+          "n": 5,
+          "counts": {
+            "BET": 3,
+            "CHECK": 2
+          }
+        },
+        "0|river|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "0|river|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 1622,
+          "counts": {
+            "BET": 442,
+            "CHECK": 1180
+          }
+        },
+        "0|river|FREE|OOP|LIMPED|LIMPER": {
+          "n": 1292,
+          "counts": {
+            "BET": 435,
+            "CHECK": 857
+          }
+        },
+        "0|river|FREE|OOP|SRP|CALLER": {
+          "n": 751,
+          "counts": {
+            "BET": 250,
+            "CHECK": 501
+          }
+        },
+        "0|river|FREE|OOP|SRP|PFA": {
+          "n": 142,
+          "counts": {
+            "BET": 65,
+            "CHECK": 77
+          }
+        },
+        "0|turn|FACING|IP|3BP|CALLER": {
+          "n": 21,
+          "counts": {
+            "CALL": 13,
+            "FOLD": 8
+          }
+        },
+        "0|turn|FACING|IP|3BP|PFA": {
+          "n": 3,
+          "counts": {
+            "CALL": 2,
+            "RAISE": 1
+          }
+        },
+        "0|turn|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "FOLD": 2
+          }
+        },
+        "0|turn|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 140,
+          "counts": {
+            "CALL": 73,
+            "FOLD": 54,
+            "RAISE": 13
+          }
+        },
+        "0|turn|FACING|IP|LIMPED|LIMPER": {
+          "n": 817,
+          "counts": {
+            "CALL": 433,
+            "FOLD": 332,
+            "RAISE": 52
+          }
+        },
+        "0|turn|FACING|IP|SRP|CALLER": {
+          "n": 418,
+          "counts": {
+            "CALL": 217,
+            "FOLD": 160,
+            "RAISE": 41
+          }
+        },
+        "0|turn|FACING|IP|SRP|PFA": {
+          "n": 94,
+          "counts": {
+            "CALL": 55,
+            "FOLD": 29,
+            "RAISE": 10
+          }
+        },
+        "0|turn|FACING|MIDDLE|3BP|CALLER": {
+          "n": 16,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 4,
+            "RAISE": 1
+          }
+        },
+        "0|turn|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 343,
+          "counts": {
+            "CALL": 150,
+            "FOLD": 184,
+            "RAISE": 9
+          }
+        },
+        "0|turn|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 405,
+          "counts": {
+            "CALL": 181,
+            "FOLD": 208,
+            "RAISE": 16
+          }
+        },
+        "0|turn|FACING|MIDDLE|SRP|CALLER": {
+          "n": 187,
+          "counts": {
+            "CALL": 89,
+            "FOLD": 86,
+            "RAISE": 12
+          }
+        },
+        "0|turn|FACING|MIDDLE|SRP|PFA": {
+          "n": 20,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 14,
+            "RAISE": 1
+          }
+        },
+        "0|turn|FACING|ONLY|3BP|CALLER": {
+          "n": 4,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1
+          }
+        },
+        "0|turn|FACING|ONLY|3BP|PFA": {
+          "n": 4,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1
+          }
+        },
+        "0|turn|FACING|ONLY|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "0|turn|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 16,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 11
+          }
+        },
+        "0|turn|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 37,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 19
+          }
+        },
+        "0|turn|FACING|ONLY|SRP|CALLER": {
+          "n": 57,
+          "counts": {
+            "CALL": 36,
+            "FOLD": 21
+          }
+        },
+        "0|turn|FACING|ONLY|SRP|PFA": {
+          "n": 11,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 4
+          }
+        },
+        "0|turn|FACING|OOP|3BP|CALLER": {
+          "n": 21,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 11,
+            "RAISE": 3
+          }
+        },
+        "0|turn|FACING|OOP|3BP|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|turn|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|turn|FACING|OOP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "0|turn|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 700,
+          "counts": {
+            "CALL": 268,
+            "FOLD": 415,
+            "RAISE": 17
+          }
+        },
+        "0|turn|FACING|OOP|LIMPED|LIMPER": {
+          "n": 602,
+          "counts": {
+            "CALL": 240,
+            "FOLD": 337,
+            "RAISE": 25
+          }
+        },
+        "0|turn|FACING|OOP|SRP|CALLER": {
+          "n": 509,
+          "counts": {
+            "CALL": 275,
+            "FOLD": 211,
+            "RAISE": 23
+          }
+        },
+        "0|turn|FACING|OOP|SRP|PFA": {
+          "n": 63,
+          "counts": {
+            "CALL": 30,
+            "FOLD": 32,
+            "RAISE": 1
+          }
+        },
+        "0|turn|FREE|IP|3BP|CALLER": {
+          "n": 20,
+          "counts": {
+            "BET": 9,
+            "CHECK": 11
+          }
+        },
+        "0|turn|FREE|IP|3BP|PFA": {
+          "n": 5,
+          "counts": {
+            "BET": 4,
+            "CHECK": 1
+          }
+        },
+        "0|turn|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "BET": 1,
+            "CHECK": 1
+          }
+        },
+        "0|turn|FREE|IP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "0|turn|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 327,
+          "counts": {
+            "BET": 78,
+            "CHECK": 249
+          }
+        },
+        "0|turn|FREE|IP|LIMPED|LIMPER": {
+          "n": 1701,
+          "counts": {
+            "BET": 489,
+            "CHECK": 1212
+          }
+        },
+        "0|turn|FREE|IP|SRP|CALLER": {
+          "n": 425,
+          "counts": {
+            "BET": 161,
+            "CHECK": 264
+          }
+        },
+        "0|turn|FREE|IP|SRP|PFA": {
+          "n": 203,
+          "counts": {
+            "BET": 89,
+            "CHECK": 114
+          }
+        },
+        "0|turn|FREE|MIDDLE|3BP|CALLER": {
+          "n": 16,
+          "counts": {
+            "BET": 4,
+            "CHECK": 12
+          }
+        },
+        "0|turn|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "0|turn|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 1088,
+          "counts": {
+            "BET": 174,
+            "CHECK": 914
+          }
+        },
+        "0|turn|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 1052,
+          "counts": {
+            "BET": 245,
+            "CHECK": 807
+          }
+        },
+        "0|turn|FREE|MIDDLE|SRP|CALLER": {
+          "n": 352,
+          "counts": {
+            "BET": 98,
+            "CHECK": 254
+          }
+        },
+        "0|turn|FREE|MIDDLE|SRP|PFA": {
+          "n": 69,
+          "counts": {
+            "BET": 24,
+            "CHECK": 45
+          }
+        },
+        "0|turn|FREE|OOP|3BP|CALLER": {
+          "n": 44,
+          "counts": {
+            "BET": 12,
+            "CHECK": 32
+          }
+        },
+        "0|turn|FREE|OOP|3BP|PFA": {
+          "n": 8,
+          "counts": {
+            "BET": 5,
+            "CHECK": 3
+          }
+        },
+        "0|turn|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 3,
+          "counts": {
+            "CHECK": 3
+          }
+        },
+        "0|turn|FREE|OOP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "0|turn|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 1953,
+          "counts": {
+            "BET": 374,
+            "CHECK": 1579
+          }
+        },
+        "0|turn|FREE|OOP|LIMPED|LIMPER": {
+          "n": 1594,
+          "counts": {
+            "BET": 420,
+            "CHECK": 1174
+          }
+        },
+        "0|turn|FREE|OOP|SRP|CALLER": {
+          "n": 1020,
+          "counts": {
+            "BET": 276,
+            "CHECK": 744
+          }
+        },
+        "0|turn|FREE|OOP|SRP|PFA": {
+          "n": 213,
+          "counts": {
+            "BET": 101,
+            "CHECK": 112
+          }
+        },
+        "1|flop|FACING|IP|3BP|CALLER": {
+          "n": 102,
+          "counts": {
+            "CALL": 55,
+            "FOLD": 33,
+            "RAISE": 14
+          }
+        },
+        "1|flop|FACING|IP|3BP|PFA": {
+          "n": 93,
+          "counts": {
+            "CALL": 36,
+            "FOLD": 11,
+            "RAISE": 46
+          }
+        },
+        "1|flop|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 20,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 2,
+            "RAISE": 7
+          }
+        },
+        "1|flop|FACING|IP|4BP_PLUS|PFA": {
+          "n": 13,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1,
+            "RAISE": 9
+          }
+        },
+        "1|flop|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 48,
+          "counts": {
+            "CALL": 23,
+            "FOLD": 19,
+            "RAISE": 6
+          }
+        },
+        "1|flop|FACING|IP|LIMPED|LIMPER": {
+          "n": 552,
+          "counts": {
+            "CALL": 264,
+            "FOLD": 210,
+            "RAISE": 78
+          }
+        },
+        "1|flop|FACING|IP|SRP|CALLER": {
+          "n": 489,
+          "counts": {
+            "CALL": 245,
+            "FOLD": 177,
+            "RAISE": 67
+          }
+        },
+        "1|flop|FACING|IP|SRP|PFA": {
+          "n": 353,
+          "counts": {
+            "CALL": 168,
+            "FOLD": 80,
+            "RAISE": 105
+          }
+        },
+        "1|flop|FACING|MIDDLE|3BP|CALLER": {
+          "n": 57,
+          "counts": {
+            "CALL": 28,
+            "FOLD": 21,
+            "RAISE": 8
+          }
+        },
+        "1|flop|FACING|MIDDLE|3BP|PFA": {
+          "n": 18,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 5,
+            "RAISE": 6
+          }
+        },
+        "1|flop|FACING|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 5,
+          "counts": {
+            "CALL": 5
+          }
+        },
+        "1|flop|FACING|MIDDLE|4BP_PLUS|PFA": {
+          "n": 5,
+          "counts": {
+            "CALL": 3,
+            "RAISE": 2
+          }
+        },
+        "1|flop|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 241,
+          "counts": {
+            "CALL": 92,
+            "FOLD": 130,
+            "RAISE": 19
+          }
+        },
+        "1|flop|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 390,
+          "counts": {
+            "CALL": 193,
+            "FOLD": 158,
+            "RAISE": 39
+          }
+        },
+        "1|flop|FACING|MIDDLE|SRP|CALLER": {
+          "n": 385,
+          "counts": {
+            "CALL": 189,
+            "FOLD": 156,
+            "RAISE": 40
+          }
+        },
+        "1|flop|FACING|MIDDLE|SRP|PFA": {
+          "n": 198,
+          "counts": {
+            "CALL": 102,
+            "FOLD": 57,
+            "RAISE": 39
+          }
+        },
+        "1|flop|FACING|ONLY|3BP|CALLER": {
+          "n": 37,
+          "counts": {
+            "CALL": 21,
+            "FOLD": 16
+          }
+        },
+        "1|flop|FACING|ONLY|3BP|PFA": {
+          "n": 33,
+          "counts": {
+            "CALL": 24,
+            "FOLD": 9
+          }
+        },
+        "1|flop|FACING|ONLY|4BP_PLUS|CALLER": {
+          "n": 12,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 1
+          }
+        },
+        "1|flop|FACING|ONLY|4BP_PLUS|PFA": {
+          "n": 4,
+          "counts": {
+            "CALL": 4
+          }
+        },
+        "1|flop|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 7,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 3
+          }
+        },
+        "1|flop|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 20,
+          "counts": {
+            "CALL": 9,
+            "FOLD": 11
+          }
+        },
+        "1|flop|FACING|ONLY|SRP|CALLER": {
+          "n": 68,
+          "counts": {
+            "CALL": 38,
+            "FOLD": 30
+          }
+        },
+        "1|flop|FACING|ONLY|SRP|PFA": {
+          "n": 79,
+          "counts": {
+            "CALL": 54,
+            "FOLD": 25
+          }
+        },
+        "1|flop|FACING|OOP|3BP|CALLER": {
+          "n": 118,
+          "counts": {
+            "CALL": 56,
+            "FOLD": 49,
+            "RAISE": 13
+          }
+        },
+        "1|flop|FACING|OOP|3BP|PFA": {
+          "n": 56,
+          "counts": {
+            "CALL": 27,
+            "FOLD": 15,
+            "RAISE": 14
+          }
+        },
+        "1|flop|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 19,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 6,
+            "RAISE": 3
+          }
+        },
+        "1|flop|FACING|OOP|4BP_PLUS|PFA": {
+          "n": 12,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 2,
+            "RAISE": 4
+          }
+        },
+        "1|flop|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 320,
+          "counts": {
+            "CALL": 125,
+            "FOLD": 177,
+            "RAISE": 18
+          }
+        },
+        "1|flop|FACING|OOP|LIMPED|LIMPER": {
+          "n": 412,
+          "counts": {
+            "CALL": 182,
+            "FOLD": 213,
+            "RAISE": 17
+          }
+        },
+        "1|flop|FACING|OOP|SRP|CALLER": {
+          "n": 607,
+          "counts": {
+            "CALL": 275,
+            "FOLD": 284,
+            "RAISE": 48
+          }
+        },
+        "1|flop|FACING|OOP|SRP|PFA": {
+          "n": 270,
+          "counts": {
+            "CALL": 134,
+            "FOLD": 101,
+            "RAISE": 35
+          }
+        },
+        "1|flop|FREE|IP|3BP|CALLER": {
+          "n": 68,
+          "counts": {
+            "BET": 26,
+            "CHECK": 42
+          }
+        },
+        "1|flop|FREE|IP|3BP|PFA": {
+          "n": 124,
+          "counts": {
+            "BET": 86,
+            "CHECK": 38
+          }
+        },
+        "1|flop|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 17,
+          "counts": {
+            "BET": 8,
+            "CHECK": 9
+          }
+        },
+        "1|flop|FREE|IP|4BP_PLUS|PFA": {
+          "n": 13,
+          "counts": {
+            "BET": 12,
+            "CHECK": 1
+          }
+        },
+        "1|flop|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 153,
+          "counts": {
+            "BET": 55,
+            "CHECK": 98
+          }
+        },
+        "1|flop|FREE|IP|LIMPED|LIMPER": {
+          "n": 1051,
+          "counts": {
+            "BET": 384,
+            "CHECK": 667
+          }
+        },
+        "1|flop|FREE|IP|SRP|CALLER": {
+          "n": 363,
+          "counts": {
+            "BET": 138,
+            "CHECK": 225
+          }
+        },
+        "1|flop|FREE|IP|SRP|PFA": {
+          "n": 1028,
+          "counts": {
+            "BET": 708,
+            "CHECK": 320
+          }
+        },
+        "1|flop|FREE|MIDDLE|3BP|CALLER": {
+          "n": 74,
+          "counts": {
+            "BET": 30,
+            "CHECK": 44
+          }
+        },
+        "1|flop|FREE|MIDDLE|3BP|PFA": {
+          "n": 41,
+          "counts": {
+            "BET": 27,
+            "CHECK": 14
+          }
+        },
+        "1|flop|FREE|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 8,
+          "counts": {
+            "BET": 3,
+            "CHECK": 5
+          }
+        },
+        "1|flop|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 11,
+          "counts": {
+            "BET": 4,
+            "CHECK": 7
+          }
+        },
+        "1|flop|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 733,
+          "counts": {
+            "BET": 213,
+            "CHECK": 520
+          }
+        },
+        "1|flop|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 980,
+          "counts": {
+            "BET": 377,
+            "CHECK": 603
+          }
+        },
+        "1|flop|FREE|MIDDLE|SRP|CALLER": {
+          "n": 523,
+          "counts": {
+            "BET": 167,
+            "CHECK": 356
+          }
+        },
+        "1|flop|FREE|MIDDLE|SRP|PFA": {
+          "n": 657,
+          "counts": {
+            "BET": 411,
+            "CHECK": 246
+          }
+        },
+        "1|flop|FREE|OOP|3BP|CALLER": {
+          "n": 173,
+          "counts": {
+            "BET": 56,
+            "CHECK": 117
+          }
+        },
+        "1|flop|FREE|OOP|3BP|PFA": {
+          "n": 224,
+          "counts": {
+            "BET": 152,
+            "CHECK": 72
+          }
+        },
+        "1|flop|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 32,
+          "counts": {
+            "BET": 12,
+            "CHECK": 20
+          }
+        },
+        "1|flop|FREE|OOP|4BP_PLUS|PFA": {
+          "n": 28,
+          "counts": {
+            "BET": 18,
+            "CHECK": 10
+          }
+        },
+        "1|flop|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 781,
+          "counts": {
+            "BET": 218,
+            "CHECK": 563
+          }
+        },
+        "1|flop|FREE|OOP|LIMPED|LIMPER": {
+          "n": 1127,
+          "counts": {
+            "BET": 339,
+            "CHECK": 788
+          }
+        },
+        "1|flop|FREE|OOP|SRP|CALLER": {
+          "n": 986,
+          "counts": {
+            "BET": 265,
+            "CHECK": 721
+          }
+        },
+        "1|flop|FREE|OOP|SRP|PFA": {
+          "n": 1096,
+          "counts": {
+            "BET": 704,
+            "CHECK": 392
+          }
+        },
+        "1|river|FACING|IP|3BP|CALLER": {
+          "n": 30,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 10,
+            "RAISE": 5
+          }
+        },
+        "1|river|FACING|IP|3BP|PFA": {
+          "n": 35,
+          "counts": {
+            "CALL": 16,
+            "FOLD": 11,
+            "RAISE": 8
+          }
+        },
+        "1|river|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 7,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 2
+          }
+        },
+        "1|river|FACING|IP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "1|river|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 68,
+          "counts": {
+            "CALL": 23,
+            "FOLD": 27,
+            "RAISE": 18
+          }
+        },
+        "1|river|FACING|IP|LIMPED|LIMPER": {
+          "n": 451,
+          "counts": {
+            "CALL": 156,
+            "FOLD": 228,
+            "RAISE": 67
+          }
+        },
+        "1|river|FACING|IP|SRP|CALLER": {
+          "n": 245,
+          "counts": {
+            "CALL": 106,
+            "FOLD": 91,
+            "RAISE": 48
+          }
+        },
+        "1|river|FACING|IP|SRP|PFA": {
+          "n": 264,
+          "counts": {
+            "CALL": 105,
+            "FOLD": 104,
+            "RAISE": 55
+          }
+        },
+        "1|river|FACING|MIDDLE|3BP|CALLER": {
+          "n": 9,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 3
+          }
+        },
+        "1|river|FACING|MIDDLE|3BP|PFA": {
+          "n": 2,
+          "counts": {
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "1|river|FACING|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "1|river|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 66,
+          "counts": {
+            "CALL": 25,
+            "FOLD": 34,
+            "RAISE": 7
+          }
+        },
+        "1|river|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 140,
+          "counts": {
+            "CALL": 30,
+            "FOLD": 95,
+            "RAISE": 15
+          }
+        },
+        "1|river|FACING|MIDDLE|SRP|CALLER": {
+          "n": 75,
+          "counts": {
+            "CALL": 22,
+            "FOLD": 43,
+            "RAISE": 10
+          }
+        },
+        "1|river|FACING|MIDDLE|SRP|PFA": {
+          "n": 66,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 35,
+            "RAISE": 13
+          }
+        },
+        "1|river|FACING|ONLY|3BP|CALLER": {
+          "n": 17,
+          "counts": {
+            "CALL": 8,
+            "FOLD": 9
+          }
+        },
+        "1|river|FACING|ONLY|3BP|PFA": {
+          "n": 13,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 3
+          }
+        },
+        "1|river|FACING|ONLY|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "1|river|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 17,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 10
+          }
+        },
+        "1|river|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 59,
+          "counts": {
+            "CALL": 28,
+            "FOLD": 31
+          }
+        },
+        "1|river|FACING|ONLY|SRP|CALLER": {
+          "n": 48,
+          "counts": {
+            "CALL": 24,
+            "FOLD": 24
+          }
+        },
+        "1|river|FACING|ONLY|SRP|PFA": {
+          "n": 76,
+          "counts": {
+            "CALL": 35,
+            "FOLD": 41
+          }
+        },
+        "1|river|FACING|OOP|3BP|CALLER": {
+          "n": 18,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 15
+          }
+        },
+        "1|river|FACING|OOP|3BP|PFA": {
+          "n": 19,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 6,
+            "RAISE": 2
+          }
+        },
+        "1|river|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1
+          }
+        },
+        "1|river|FACING|OOP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "1|river|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 225,
+          "counts": {
+            "CALL": 73,
+            "FOLD": 138,
+            "RAISE": 14
+          }
+        },
+        "1|river|FACING|OOP|LIMPED|LIMPER": {
+          "n": 278,
+          "counts": {
+            "CALL": 95,
+            "FOLD": 170,
+            "RAISE": 13
+          }
+        },
+        "1|river|FACING|OOP|SRP|CALLER": {
+          "n": 207,
+          "counts": {
+            "CALL": 74,
+            "FOLD": 116,
+            "RAISE": 17
+          }
+        },
+        "1|river|FACING|OOP|SRP|PFA": {
+          "n": 174,
+          "counts": {
+            "CALL": 75,
+            "FOLD": 87,
+            "RAISE": 12
+          }
+        },
+        "1|river|FREE|IP|3BP|CALLER": {
+          "n": 32,
+          "counts": {
+            "BET": 13,
+            "CHECK": 19
+          }
+        },
+        "1|river|FREE|IP|3BP|PFA": {
+          "n": 48,
+          "counts": {
+            "BET": 24,
+            "CHECK": 24
+          }
+        },
+        "1|river|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "BET": 3,
+            "CHECK": 1
+          }
+        },
+        "1|river|FREE|IP|4BP_PLUS|PFA": {
+          "n": 6,
+          "counts": {
+            "BET": 3,
+            "CHECK": 3
+          }
+        },
+        "1|river|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 121,
+          "counts": {
+            "BET": 54,
+            "CHECK": 67
+          }
+        },
+        "1|river|FREE|IP|LIMPED|LIMPER": {
+          "n": 618,
+          "counts": {
+            "BET": 269,
+            "CHECK": 349
+          }
+        },
+        "1|river|FREE|IP|SRP|CALLER": {
+          "n": 243,
+          "counts": {
+            "BET": 119,
+            "CHECK": 124
+          }
+        },
+        "1|river|FREE|IP|SRP|PFA": {
+          "n": 501,
+          "counts": {
+            "BET": 268,
+            "CHECK": 233
+          }
+        },
+        "1|river|FREE|MIDDLE|3BP|CALLER": {
+          "n": 15,
+          "counts": {
+            "BET": 7,
+            "CHECK": 8
+          }
+        },
+        "1|river|FREE|MIDDLE|3BP|PFA": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "1|river|FREE|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "BET": 1,
+            "CHECK": 3
+          }
+        },
+        "1|river|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 4,
+          "counts": {
+            "BET": 3,
+            "CHECK": 1
+          }
+        },
+        "1|river|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 228,
+          "counts": {
+            "BET": 59,
+            "CHECK": 169
+          }
+        },
+        "1|river|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 285,
+          "counts": {
+            "BET": 82,
+            "CHECK": 203
+          }
+        },
+        "1|river|FREE|MIDDLE|SRP|CALLER": {
+          "n": 125,
+          "counts": {
+            "BET": 53,
+            "CHECK": 72
+          }
+        },
+        "1|river|FREE|MIDDLE|SRP|PFA": {
+          "n": 150,
+          "counts": {
+            "BET": 63,
+            "CHECK": 87
+          }
+        },
+        "1|river|FREE|OOP|3BP|CALLER": {
+          "n": 65,
+          "counts": {
+            "BET": 34,
+            "CHECK": 31
+          }
+        },
+        "1|river|FREE|OOP|3BP|PFA": {
+          "n": 94,
+          "counts": {
+            "BET": 48,
+            "CHECK": 46
+          }
+        },
+        "1|river|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 9,
+          "counts": {
+            "BET": 2,
+            "CHECK": 7
+          }
+        },
+        "1|river|FREE|OOP|4BP_PLUS|PFA": {
+          "n": 10,
+          "counts": {
+            "BET": 6,
+            "CHECK": 4
+          }
+        },
+        "1|river|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 609,
+          "counts": {
+            "BET": 275,
+            "CHECK": 334
+          }
+        },
+        "1|river|FREE|OOP|LIMPED|LIMPER": {
+          "n": 855,
+          "counts": {
+            "BET": 415,
+            "CHECK": 440
+          }
+        },
+        "1|river|FREE|OOP|SRP|CALLER": {
+          "n": 586,
+          "counts": {
+            "BET": 274,
+            "CHECK": 312
+          }
+        },
+        "1|river|FREE|OOP|SRP|PFA": {
+          "n": 682,
+          "counts": {
+            "BET": 395,
+            "CHECK": 287
+          }
+        },
+        "1|turn|FACING|IP|3BP|CALLER": {
+          "n": 62,
+          "counts": {
+            "CALL": 34,
+            "FOLD": 18,
+            "RAISE": 10
+          }
+        },
+        "1|turn|FACING|IP|3BP|PFA": {
+          "n": 50,
+          "counts": {
+            "CALL": 29,
+            "FOLD": 10,
+            "RAISE": 11
+          }
+        },
+        "1|turn|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 9,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 3,
+            "RAISE": 3
+          }
+        },
+        "1|turn|FACING|IP|4BP_PLUS|PFA": {
+          "n": 4,
+          "counts": {
+            "CALL": 2,
+            "RAISE": 2
+          }
+        },
+        "1|turn|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 43,
+          "counts": {
+            "CALL": 28,
+            "FOLD": 14,
+            "RAISE": 1
+          }
+        },
+        "1|turn|FACING|IP|LIMPED|LIMPER": {
+          "n": 497,
+          "counts": {
+            "CALL": 264,
+            "FOLD": 156,
+            "RAISE": 77
+          }
+        },
+        "1|turn|FACING|IP|SRP|CALLER": {
+          "n": 326,
+          "counts": {
+            "CALL": 203,
+            "FOLD": 78,
+            "RAISE": 45
+          }
+        },
+        "1|turn|FACING|IP|SRP|PFA": {
+          "n": 308,
+          "counts": {
+            "CALL": 179,
+            "FOLD": 74,
+            "RAISE": 55
+          }
+        },
+        "1|turn|FACING|MIDDLE|3BP|CALLER": {
+          "n": 19,
+          "counts": {
+            "CALL": 9,
+            "FOLD": 7,
+            "RAISE": 3
+          }
+        },
+        "1|turn|FACING|MIDDLE|3BP|PFA": {
+          "n": 8,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "1|turn|FACING|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "CALL": 4
+          }
+        },
+        "1|turn|FACING|MIDDLE|4BP_PLUS|PFA": {
+          "n": 4,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1
+          }
+        },
+        "1|turn|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 134,
+          "counts": {
+            "CALL": 66,
+            "FOLD": 55,
+            "RAISE": 13
+          }
+        },
+        "1|turn|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 227,
+          "counts": {
+            "CALL": 120,
+            "FOLD": 84,
+            "RAISE": 23
+          }
+        },
+        "1|turn|FACING|MIDDLE|SRP|CALLER": {
+          "n": 127,
+          "counts": {
+            "CALL": 69,
+            "FOLD": 43,
+            "RAISE": 15
+          }
+        },
+        "1|turn|FACING|MIDDLE|SRP|PFA": {
+          "n": 116,
+          "counts": {
+            "CALL": 62,
+            "FOLD": 38,
+            "RAISE": 16
+          }
+        },
+        "1|turn|FACING|ONLY|3BP|CALLER": {
+          "n": 22,
+          "counts": {
+            "CALL": 16,
+            "FOLD": 6
+          }
+        },
+        "1|turn|FACING|ONLY|3BP|PFA": {
+          "n": 20,
+          "counts": {
+            "CALL": 20
+          }
+        },
+        "1|turn|FACING|ONLY|4BP_PLUS|CALLER": {
+          "n": 6,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 2
+          }
+        },
+        "1|turn|FACING|ONLY|4BP_PLUS|PFA": {
+          "n": 4,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1
+          }
+        },
+        "1|turn|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 17,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 13
+          }
+        },
+        "1|turn|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 23,
+          "counts": {
+            "CALL": 13,
+            "FOLD": 10
+          }
+        },
+        "1|turn|FACING|ONLY|SRP|CALLER": {
+          "n": 37,
+          "counts": {
+            "CALL": 26,
+            "FOLD": 11
+          }
+        },
+        "1|turn|FACING|ONLY|SRP|PFA": {
+          "n": 61,
+          "counts": {
+            "CALL": 49,
+            "FOLD": 12
+          }
+        },
+        "1|turn|FACING|OOP|3BP|CALLER": {
+          "n": 46,
+          "counts": {
+            "CALL": 26,
+            "FOLD": 15,
+            "RAISE": 5
+          }
+        },
+        "1|turn|FACING|OOP|3BP|PFA": {
+          "n": 29,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 4,
+            "RAISE": 7
+          }
+        },
+        "1|turn|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 10,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 2,
+            "RAISE": 2
+          }
+        },
+        "1|turn|FACING|OOP|4BP_PLUS|PFA": {
+          "n": 5,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 1
+          }
+        },
+        "1|turn|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 264,
+          "counts": {
+            "CALL": 131,
+            "FOLD": 119,
+            "RAISE": 14
+          }
+        },
+        "1|turn|FACING|OOP|LIMPED|LIMPER": {
+          "n": 336,
+          "counts": {
+            "CALL": 186,
+            "FOLD": 129,
+            "RAISE": 21
+          }
+        },
+        "1|turn|FACING|OOP|SRP|CALLER": {
+          "n": 344,
+          "counts": {
+            "CALL": 210,
+            "FOLD": 116,
+            "RAISE": 18
+          }
+        },
+        "1|turn|FACING|OOP|SRP|PFA": {
+          "n": 231,
+          "counts": {
+            "CALL": 128,
+            "FOLD": 80,
+            "RAISE": 23
+          }
+        },
+        "1|turn|FREE|IP|3BP|CALLER": {
+          "n": 51,
+          "counts": {
+            "BET": 26,
+            "CHECK": 25
+          }
+        },
+        "1|turn|FREE|IP|3BP|PFA": {
+          "n": 77,
+          "counts": {
+            "BET": 46,
+            "CHECK": 31
+          }
+        },
+        "1|turn|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 8,
+          "counts": {
+            "BET": 4,
+            "CHECK": 4
+          }
+        },
+        "1|turn|FREE|IP|4BP_PLUS|PFA": {
+          "n": 11,
+          "counts": {
+            "BET": 9,
+            "CHECK": 2
+          }
+        },
+        "1|turn|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 157,
+          "counts": {
+            "BET": 70,
+            "CHECK": 87
+          }
+        },
+        "1|turn|FREE|IP|LIMPED|LIMPER": {
+          "n": 863,
+          "counts": {
+            "BET": 390,
+            "CHECK": 473
+          }
+        },
+        "1|turn|FREE|IP|SRP|CALLER": {
+          "n": 299,
+          "counts": {
+            "BET": 146,
+            "CHECK": 153
+          }
+        },
+        "1|turn|FREE|IP|SRP|PFA": {
+          "n": 722,
+          "counts": {
+            "BET": 419,
+            "CHECK": 303
+          }
+        },
+        "1|turn|FREE|MIDDLE|3BP|CALLER": {
+          "n": 31,
+          "counts": {
+            "BET": 9,
+            "CHECK": 22
+          }
+        },
+        "1|turn|FREE|MIDDLE|3BP|PFA": {
+          "n": 10,
+          "counts": {
+            "BET": 5,
+            "CHECK": 5
+          }
+        },
+        "1|turn|FREE|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 3,
+          "counts": {
+            "CHECK": 3
+          }
+        },
+        "1|turn|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 5,
+          "counts": {
+            "BET": 2,
+            "CHECK": 3
+          }
+        },
+        "1|turn|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 405,
+          "counts": {
+            "BET": 114,
+            "CHECK": 291
+          }
+        },
+        "1|turn|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 511,
+          "counts": {
+            "BET": 185,
+            "CHECK": 326
+          }
+        },
+        "1|turn|FREE|MIDDLE|SRP|CALLER": {
+          "n": 263,
+          "counts": {
+            "BET": 107,
+            "CHECK": 156
+          }
+        },
+        "1|turn|FREE|MIDDLE|SRP|PFA": {
+          "n": 285,
+          "counts": {
+            "BET": 130,
+            "CHECK": 155
+          }
+        },
+        "1|turn|FREE|OOP|3BP|CALLER": {
+          "n": 104,
+          "counts": {
+            "BET": 52,
+            "CHECK": 52
+          }
+        },
+        "1|turn|FREE|OOP|3BP|PFA": {
+          "n": 139,
+          "counts": {
+            "BET": 83,
+            "CHECK": 56
+          }
+        },
+        "1|turn|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 20,
+          "counts": {
+            "BET": 6,
+            "CHECK": 14
+          }
+        },
+        "1|turn|FREE|OOP|4BP_PLUS|PFA": {
+          "n": 15,
+          "counts": {
+            "BET": 10,
+            "CHECK": 5
+          }
+        },
+        "1|turn|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 714,
+          "counts": {
+            "BET": 279,
+            "CHECK": 435
+          }
+        },
+        "1|turn|FREE|OOP|LIMPED|LIMPER": {
+          "n": 1006,
+          "counts": {
+            "BET": 429,
+            "CHECK": 577
+          }
+        },
+        "1|turn|FREE|OOP|SRP|CALLER": {
+          "n": 744,
+          "counts": {
+            "BET": 296,
+            "CHECK": 448
+          }
+        },
+        "1|turn|FREE|OOP|SRP|PFA": {
+          "n": 886,
+          "counts": {
+            "BET": 546,
+            "CHECK": 340
+          }
+        },
+        "2|flop|FACING|IP|3BP|CALLER": {
+          "n": 82,
+          "counts": {
+            "CALL": 44,
+            "FOLD": 31,
+            "RAISE": 7
+          }
+        },
+        "2|flop|FACING|IP|3BP|PFA": {
+          "n": 6,
+          "counts": {
+            "CALL": 4,
+            "RAISE": 2
+          }
+        },
+        "2|flop|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 8,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 4
+          }
+        },
+        "2|flop|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 105,
+          "counts": {
+            "CALL": 55,
+            "FOLD": 49,
+            "RAISE": 1
+          }
+        },
+        "2|flop|FACING|IP|LIMPED|LIMPER": {
+          "n": 1988,
+          "counts": {
+            "CALL": 1130,
+            "FOLD": 783,
+            "RAISE": 75
+          }
+        },
+        "2|flop|FACING|IP|SRP|CALLER": {
+          "n": 1350,
+          "counts": {
+            "CALL": 719,
+            "FOLD": 550,
+            "RAISE": 81
+          }
+        },
+        "2|flop|FACING|IP|SRP|PFA": {
+          "n": 63,
+          "counts": {
+            "CALL": 41,
+            "FOLD": 6,
+            "RAISE": 16
+          }
+        },
+        "2|flop|FACING|MIDDLE|3BP|CALLER": {
+          "n": 96,
+          "counts": {
+            "CALL": 53,
+            "FOLD": 40,
+            "RAISE": 3
+          }
+        },
+        "2|flop|FACING|MIDDLE|3BP|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "2|flop|FACING|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 5,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 2
+          }
+        },
+        "2|flop|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 477,
+          "counts": {
+            "CALL": 246,
+            "FOLD": 223,
+            "RAISE": 8
+          }
+        },
+        "2|flop|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 1554,
+          "counts": {
+            "CALL": 827,
+            "FOLD": 678,
+            "RAISE": 49
+          }
+        },
+        "2|flop|FACING|MIDDLE|SRP|CALLER": {
+          "n": 1097,
+          "counts": {
+            "CALL": 596,
+            "FOLD": 449,
+            "RAISE": 52
+          }
+        },
+        "2|flop|FACING|MIDDLE|SRP|PFA": {
+          "n": 58,
+          "counts": {
+            "CALL": 41,
+            "FOLD": 9,
+            "RAISE": 8
+          }
+        },
+        "2|flop|FACING|ONLY|3BP|CALLER": {
+          "n": 32,
+          "counts": {
+            "CALL": 20,
+            "FOLD": 12
+          }
+        },
+        "2|flop|FACING|ONLY|3BP|PFA": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "2|flop|FACING|ONLY|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 3
+          }
+        },
+        "2|flop|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 11,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 9
+          }
+        },
+        "2|flop|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 49,
+          "counts": {
+            "CALL": 20,
+            "FOLD": 29
+          }
+        },
+        "2|flop|FACING|ONLY|SRP|CALLER": {
+          "n": 129,
+          "counts": {
+            "CALL": 54,
+            "FOLD": 75
+          }
+        },
+        "2|flop|FACING|ONLY|SRP|PFA": {
+          "n": 14,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 4
+          }
+        },
+        "2|flop|FACING|OOP|3BP|CALLER": {
+          "n": 110,
+          "counts": {
+            "CALL": 59,
+            "FOLD": 47,
+            "RAISE": 4
+          }
+        },
+        "2|flop|FACING|OOP|3BP|PFA": {
+          "n": 7,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 1,
+            "RAISE": 2
+          }
+        },
+        "2|flop|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 11,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 6
+          }
+        },
+        "2|flop|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 614,
+          "counts": {
+            "CALL": 282,
+            "FOLD": 325,
+            "RAISE": 7
+          }
+        },
+        "2|flop|FACING|OOP|LIMPED|LIMPER": {
+          "n": 1701,
+          "counts": {
+            "CALL": 844,
+            "FOLD": 829,
+            "RAISE": 28
+          }
+        },
+        "2|flop|FACING|OOP|SRP|CALLER": {
+          "n": 1764,
+          "counts": {
+            "CALL": 857,
+            "FOLD": 853,
+            "RAISE": 54
+          }
+        },
+        "2|flop|FACING|OOP|SRP|PFA": {
+          "n": 62,
+          "counts": {
+            "CALL": 38,
+            "FOLD": 23,
+            "RAISE": 1
+          }
+        },
+        "2|flop|FREE|IP|3BP|CALLER": {
+          "n": 50,
+          "counts": {
+            "BET": 14,
+            "CHECK": 36
+          }
+        },
+        "2|flop|FREE|IP|3BP|PFA": {
+          "n": 16,
+          "counts": {
+            "BET": 8,
+            "CHECK": 8
+          }
+        },
+        "2|flop|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "2|flop|FREE|IP|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "2|flop|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 296,
+          "counts": {
+            "BET": 35,
+            "CHECK": 261
+          }
+        },
+        "2|flop|FREE|IP|LIMPED|LIMPER": {
+          "n": 3869,
+          "counts": {
+            "BET": 655,
+            "CHECK": 3214
+          }
+        },
+        "2|flop|FREE|IP|SRP|CALLER": {
+          "n": 947,
+          "counts": {
+            "BET": 178,
+            "CHECK": 769
+          }
+        },
+        "2|flop|FREE|IP|SRP|PFA": {
+          "n": 173,
+          "counts": {
+            "BET": 96,
+            "CHECK": 77
+          }
+        },
+        "2|flop|FREE|MIDDLE|3BP|CALLER": {
+          "n": 79,
+          "counts": {
+            "BET": 10,
+            "CHECK": 69
+          }
+        },
+        "2|flop|FREE|MIDDLE|3BP|PFA": {
+          "n": 6,
+          "counts": {
+            "BET": 4,
+            "CHECK": 2
+          }
+        },
+        "2|flop|FREE|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|flop|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|flop|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 1382,
+          "counts": {
+            "BET": 164,
+            "CHECK": 1218
+          }
+        },
+        "2|flop|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 3470,
+          "counts": {
+            "BET": 534,
+            "CHECK": 2936
+          }
+        },
+        "2|flop|FREE|MIDDLE|SRP|CALLER": {
+          "n": 1440,
+          "counts": {
+            "BET": 188,
+            "CHECK": 1252
+          }
+        },
+        "2|flop|FREE|MIDDLE|SRP|PFA": {
+          "n": 140,
+          "counts": {
+            "BET": 69,
+            "CHECK": 71
+          }
+        },
+        "2|flop|FREE|OOP|3BP|CALLER": {
+          "n": 125,
+          "counts": {
+            "BET": 15,
+            "CHECK": 110
+          }
+        },
+        "2|flop|FREE|OOP|3BP|PFA": {
+          "n": 15,
+          "counts": {
+            "BET": 10,
+            "CHECK": 5
+          }
+        },
+        "2|flop|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 15,
+          "counts": {
+            "BET": 3,
+            "CHECK": 12
+          }
+        },
+        "2|flop|FREE|OOP|4BP_PLUS|PFA": {
+          "n": 2,
+          "counts": {
+            "BET": 2
+          }
+        },
+        "2|flop|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 1219,
+          "counts": {
+            "BET": 134,
+            "CHECK": 1085
+          }
+        },
+        "2|flop|FREE|OOP|LIMPED|LIMPER": {
+          "n": 3324,
+          "counts": {
+            "BET": 423,
+            "CHECK": 2901
+          }
+        },
+        "2|flop|FREE|OOP|SRP|CALLER": {
+          "n": 2388,
+          "counts": {
+            "BET": 286,
+            "CHECK": 2102
+          }
+        },
+        "2|flop|FREE|OOP|SRP|PFA": {
+          "n": 220,
+          "counts": {
+            "BET": 117,
+            "CHECK": 103
+          }
+        },
+        "2|river|FACING|IP|3BP|CALLER": {
+          "n": 33,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 13,
+            "RAISE": 2
+          }
+        },
+        "2|river|FACING|IP|3BP|PFA": {
+          "n": 2,
+          "counts": {
+            "CALL": 1,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 3,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 150,
+          "counts": {
+            "CALL": 66,
+            "FOLD": 68,
+            "RAISE": 16
+          }
+        },
+        "2|river|FACING|IP|LIMPED|LIMPER": {
+          "n": 1845,
+          "counts": {
+            "CALL": 659,
+            "FOLD": 968,
+            "RAISE": 218
+          }
+        },
+        "2|river|FACING|IP|SRP|CALLER": {
+          "n": 685,
+          "counts": {
+            "CALL": 305,
+            "FOLD": 305,
+            "RAISE": 75
+          }
+        },
+        "2|river|FACING|IP|SRP|PFA": {
+          "n": 58,
+          "counts": {
+            "CALL": 32,
+            "FOLD": 21,
+            "RAISE": 5
+          }
+        },
+        "2|river|FACING|MIDDLE|3BP|CALLER": {
+          "n": 16,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 9,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 190,
+          "counts": {
+            "CALL": 45,
+            "FOLD": 129,
+            "RAISE": 16
+          }
+        },
+        "2|river|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 607,
+          "counts": {
+            "CALL": 203,
+            "FOLD": 360,
+            "RAISE": 44
+          }
+        },
+        "2|river|FACING|MIDDLE|SRP|CALLER": {
+          "n": 230,
+          "counts": {
+            "CALL": 71,
+            "FOLD": 134,
+            "RAISE": 25
+          }
+        },
+        "2|river|FACING|MIDDLE|SRP|PFA": {
+          "n": 16,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 9,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|ONLY|3BP|CALLER": {
+          "n": 18,
+          "counts": {
+            "CALL": 13,
+            "FOLD": 5
+          }
+        },
+        "2|river|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 39,
+          "counts": {
+            "CALL": 14,
+            "FOLD": 25
+          }
+        },
+        "2|river|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 149,
+          "counts": {
+            "CALL": 73,
+            "FOLD": 76
+          }
+        },
+        "2|river|FACING|ONLY|SRP|CALLER": {
+          "n": 112,
+          "counts": {
+            "CALL": 59,
+            "FOLD": 53
+          }
+        },
+        "2|river|FACING|ONLY|SRP|PFA": {
+          "n": 16,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 6
+          }
+        },
+        "2|river|FACING|OOP|3BP|CALLER": {
+          "n": 16,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 11,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|OOP|3BP|PFA": {
+          "n": 3,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 4,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 453,
+          "counts": {
+            "CALL": 145,
+            "FOLD": 291,
+            "RAISE": 17
+          }
+        },
+        "2|river|FACING|OOP|LIMPED|LIMPER": {
+          "n": 1131,
+          "counts": {
+            "CALL": 340,
+            "FOLD": 743,
+            "RAISE": 48
+          }
+        },
+        "2|river|FACING|OOP|SRP|CALLER": {
+          "n": 635,
+          "counts": {
+            "CALL": 229,
+            "FOLD": 381,
+            "RAISE": 25
+          }
+        },
+        "2|river|FACING|OOP|SRP|PFA": {
+          "n": 51,
+          "counts": {
+            "CALL": 20,
+            "FOLD": 27,
+            "RAISE": 4
+          }
+        },
+        "2|river|FREE|IP|3BP|CALLER": {
+          "n": 23,
+          "counts": {
+            "BET": 5,
+            "CHECK": 18
+          }
+        },
+        "2|river|FREE|IP|3BP|PFA": {
+          "n": 8,
+          "counts": {
+            "BET": 3,
+            "CHECK": 5
+          }
+        },
+        "2|river|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "2|river|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 227,
+          "counts": {
+            "BET": 62,
+            "CHECK": 165
+          }
+        },
+        "2|river|FREE|IP|LIMPED|LIMPER": {
+          "n": 2375,
+          "counts": {
+            "BET": 642,
+            "CHECK": 1733
+          }
+        },
+        "2|river|FREE|IP|SRP|CALLER": {
+          "n": 642,
+          "counts": {
+            "BET": 189,
+            "CHECK": 453
+          }
+        },
+        "2|river|FREE|IP|SRP|PFA": {
+          "n": 83,
+          "counts": {
+            "BET": 33,
+            "CHECK": 50
+          }
+        },
+        "2|river|FREE|MIDDLE|3BP|CALLER": {
+          "n": 20,
+          "counts": {
+            "BET": 4,
+            "CHECK": 16
+          }
+        },
+        "2|river|FREE|MIDDLE|3BP|PFA": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|river|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "2|river|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 555,
+          "counts": {
+            "BET": 111,
+            "CHECK": 444
+          }
+        },
+        "2|river|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 1314,
+          "counts": {
+            "BET": 295,
+            "CHECK": 1019
+          }
+        },
+        "2|river|FREE|MIDDLE|SRP|CALLER": {
+          "n": 422,
+          "counts": {
+            "BET": 98,
+            "CHECK": 324
+          }
+        },
+        "2|river|FREE|MIDDLE|SRP|PFA": {
+          "n": 38,
+          "counts": {
+            "BET": 10,
+            "CHECK": 28
+          }
+        },
+        "2|river|FREE|OOP|3BP|CALLER": {
+          "n": 52,
+          "counts": {
+            "BET": 20,
+            "CHECK": 32
+          }
+        },
+        "2|river|FREE|OOP|3BP|PFA": {
+          "n": 10,
+          "counts": {
+            "BET": 6,
+            "CHECK": 4
+          }
+        },
+        "2|river|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 5,
+          "counts": {
+            "CHECK": 5
+          }
+        },
+        "2|river|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 990,
+          "counts": {
+            "BET": 277,
+            "CHECK": 713
+          }
+        },
+        "2|river|FREE|OOP|LIMPED|LIMPER": {
+          "n": 2513,
+          "counts": {
+            "BET": 778,
+            "CHECK": 1735
+          }
+        },
+        "2|river|FREE|OOP|SRP|CALLER": {
+          "n": 1376,
+          "counts": {
+            "BET": 408,
+            "CHECK": 968
+          }
+        },
+        "2|river|FREE|OOP|SRP|PFA": {
+          "n": 131,
+          "counts": {
+            "BET": 61,
+            "CHECK": 70
+          }
+        },
+        "2|turn|FACING|IP|3BP|CALLER": {
+          "n": 49,
+          "counts": {
+            "CALL": 31,
+            "FOLD": 15,
+            "RAISE": 3
+          }
+        },
+        "2|turn|FACING|IP|3BP|PFA": {
+          "n": 3,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 1
+          }
+        },
+        "2|turn|FACING|IP|4BP_PLUS|CALLER": {
+          "n": 5,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 1
+          }
+        },
+        "2|turn|FACING|IP|LIMPED|BB_CHECK": {
+          "n": 153,
+          "counts": {
+            "CALL": 94,
+            "FOLD": 51,
+            "RAISE": 8
+          }
+        },
+        "2|turn|FACING|IP|LIMPED|LIMPER": {
+          "n": 1981,
+          "counts": {
+            "CALL": 1189,
+            "FOLD": 671,
+            "RAISE": 121
+          }
+        },
+        "2|turn|FACING|IP|SRP|CALLER": {
+          "n": 929,
+          "counts": {
+            "CALL": 591,
+            "FOLD": 256,
+            "RAISE": 82
+          }
+        },
+        "2|turn|FACING|IP|SRP|PFA": {
+          "n": 67,
+          "counts": {
+            "CALL": 38,
+            "FOLD": 16,
+            "RAISE": 13
+          }
+        },
+        "2|turn|FACING|MIDDLE|3BP|CALLER": {
+          "n": 28,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 10
+          }
+        },
+        "2|turn|FACING|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "RAISE": 1
+          }
+        },
+        "2|turn|FACING|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 312,
+          "counts": {
+            "CALL": 172,
+            "FOLD": 128,
+            "RAISE": 12
+          }
+        },
+        "2|turn|FACING|MIDDLE|LIMPED|LIMPER": {
+          "n": 991,
+          "counts": {
+            "CALL": 533,
+            "FOLD": 410,
+            "RAISE": 48
+          }
+        },
+        "2|turn|FACING|MIDDLE|SRP|CALLER": {
+          "n": 470,
+          "counts": {
+            "CALL": 266,
+            "FOLD": 177,
+            "RAISE": 27
+          }
+        },
+        "2|turn|FACING|MIDDLE|SRP|PFA": {
+          "n": 42,
+          "counts": {
+            "CALL": 20,
+            "FOLD": 22
+          }
+        },
+        "2|turn|FACING|ONLY|3BP|CALLER": {
+          "n": 13,
+          "counts": {
+            "CALL": 9,
+            "FOLD": 4
+          }
+        },
+        "2|turn|FACING|ONLY|3BP|PFA": {
+          "n": 3,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 1
+          }
+        },
+        "2|turn|FACING|ONLY|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "CALL": 2
+          }
+        },
+        "2|turn|FACING|ONLY|LIMPED|BB_CHECK": {
+          "n": 14,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 9
+          }
+        },
+        "2|turn|FACING|ONLY|LIMPED|LIMPER": {
+          "n": 66,
+          "counts": {
+            "CALL": 28,
+            "FOLD": 38
+          }
+        },
+        "2|turn|FACING|ONLY|SRP|CALLER": {
+          "n": 94,
+          "counts": {
+            "CALL": 65,
+            "FOLD": 29
+          }
+        },
+        "2|turn|FACING|ONLY|SRP|PFA": {
+          "n": 13,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 2
+          }
+        },
+        "2|turn|FACING|OOP|3BP|CALLER": {
+          "n": 51,
+          "counts": {
+            "CALL": 30,
+            "FOLD": 18,
+            "RAISE": 3
+          }
+        },
+        "2|turn|FACING|OOP|3BP|PFA": {
+          "n": 5,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 2
+          }
+        },
+        "2|turn|FACING|OOP|4BP_PLUS|CALLER": {
+          "n": 2,
+          "counts": {
+            "FOLD": 2
+          }
+        },
+        "2|turn|FACING|OOP|LIMPED|BB_CHECK": {
+          "n": 534,
+          "counts": {
+            "CALL": 283,
+            "FOLD": 238,
+            "RAISE": 13
+          }
+        },
+        "2|turn|FACING|OOP|LIMPED|LIMPER": {
+          "n": 1368,
+          "counts": {
+            "CALL": 758,
+            "FOLD": 563,
+            "RAISE": 47
+          }
+        },
+        "2|turn|FACING|OOP|SRP|CALLER": {
+          "n": 971,
+          "counts": {
+            "CALL": 567,
+            "FOLD": 364,
+            "RAISE": 40
+          }
+        },
+        "2|turn|FACING|OOP|SRP|PFA": {
+          "n": 57,
+          "counts": {
+            "CALL": 35,
+            "FOLD": 20,
+            "RAISE": 2
+          }
+        },
+        "2|turn|FREE|IP|3BP|CALLER": {
+          "n": 35,
+          "counts": {
+            "BET": 11,
+            "CHECK": 24
+          }
+        },
+        "2|turn|FREE|IP|3BP|PFA": {
+          "n": 12,
+          "counts": {
+            "BET": 7,
+            "CHECK": 5
+          }
+        },
+        "2|turn|FREE|IP|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|turn|FREE|IP|LIMPED|BB_CHECK": {
+          "n": 241,
+          "counts": {
+            "BET": 52,
+            "CHECK": 189
+          }
+        },
+        "2|turn|FREE|IP|LIMPED|LIMPER": {
+          "n": 3127,
+          "counts": {
+            "BET": 763,
+            "CHECK": 2364
+          }
+        },
+        "2|turn|FREE|IP|SRP|CALLER": {
+          "n": 790,
+          "counts": {
+            "BET": 228,
+            "CHECK": 562
+          }
+        },
+        "2|turn|FREE|IP|SRP|PFA": {
+          "n": 122,
+          "counts": {
+            "BET": 57,
+            "CHECK": 65
+          }
+        },
+        "2|turn|FREE|MIDDLE|3BP|CALLER": {
+          "n": 38,
+          "counts": {
+            "BET": 11,
+            "CHECK": 27
+          }
+        },
+        "2|turn|FREE|MIDDLE|3BP|PFA": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "2|turn|FREE|MIDDLE|4BP_PLUS|CALLER": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|turn|FREE|MIDDLE|4BP_PLUS|PFA": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|turn|FREE|MIDDLE|LIMPED|BB_CHECK": {
+          "n": 858,
+          "counts": {
+            "BET": 124,
+            "CHECK": 734
+          }
+        },
+        "2|turn|FREE|MIDDLE|LIMPED|LIMPER": {
+          "n": 2144,
+          "counts": {
+            "BET": 348,
+            "CHECK": 1796
+          }
+        },
+        "2|turn|FREE|MIDDLE|SRP|CALLER": {
+          "n": 754,
+          "counts": {
+            "BET": 132,
+            "CHECK": 622
+          }
+        },
+        "2|turn|FREE|MIDDLE|SRP|PFA": {
+          "n": 68,
+          "counts": {
+            "BET": 23,
+            "CHECK": 45
+          }
+        },
+        "2|turn|FREE|OOP|3BP|CALLER": {
+          "n": 81,
+          "counts": {
+            "BET": 15,
+            "CHECK": 66
+          }
+        },
+        "2|turn|FREE|OOP|3BP|PFA": {
+          "n": 17,
+          "counts": {
+            "BET": 11,
+            "CHECK": 6
+          }
+        },
+        "2|turn|FREE|OOP|4BP_PLUS|CALLER": {
+          "n": 10,
+          "counts": {
+            "BET": 5,
+            "CHECK": 5
+          }
+        },
+        "2|turn|FREE|OOP|LIMPED|BB_CHECK": {
+          "n": 1137,
+          "counts": {
+            "BET": 223,
+            "CHECK": 914
+          }
+        },
+        "2|turn|FREE|OOP|LIMPED|LIMPER": {
+          "n": 2944,
+          "counts": {
+            "BET": 604,
+            "CHECK": 2340
+          }
+        },
+        "2|turn|FREE|OOP|SRP|CALLER": {
+          "n": 1780,
+          "counts": {
+            "BET": 348,
+            "CHECK": 1432
+          }
+        },
+        "2|turn|FREE|OOP|SRP|PFA": {
+          "n": 172,
+          "counts": {
+            "BET": 83,
+            "CHECK": 89
+          }
+        }
+      }
+    },
+    {
+      "cols": [
+        "profile",
+        "street",
+        "mode",
+        "relative_position",
+        "pot_type"
+      ],
+      "data": {
+        "0|flop|FACING|IP|3BP": {
+          "n": 43,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 14,
+            "RAISE": 11
+          }
+        },
+        "0|flop|FACING|IP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1
+          }
+        },
+        "0|flop|FACING|IP|LIMPED": {
+          "n": 1046,
+          "counts": {
+            "CALL": 465,
+            "FOLD": 531,
+            "RAISE": 50
+          }
+        },
+        "0|flop|FACING|IP|SRP": {
+          "n": 813,
+          "counts": {
+            "CALL": 370,
+            "FOLD": 358,
+            "RAISE": 85
+          }
+        },
+        "0|flop|FACING|MIDDLE|3BP": {
+          "n": 53,
+          "counts": {
+            "CALL": 25,
+            "FOLD": 24,
+            "RAISE": 4
+          }
+        },
+        "0|flop|FACING|MIDDLE|LIMPED": {
+          "n": 1270,
+          "counts": {
+            "CALL": 440,
+            "FOLD": 783,
+            "RAISE": 47
+          }
+        },
+        "0|flop|FACING|MIDDLE|SRP": {
+          "n": 559,
+          "counts": {
+            "CALL": 253,
+            "FOLD": 276,
+            "RAISE": 30
+          }
+        },
+        "0|flop|FACING|ONLY|3BP": {
+          "n": 13,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 3
+          }
+        },
+        "0|flop|FACING|ONLY|LIMPED": {
+          "n": 48,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 38
+          }
+        },
+        "0|flop|FACING|ONLY|SRP": {
+          "n": 106,
+          "counts": {
+            "CALL": 54,
+            "FOLD": 52
+          }
+        },
+        "0|flop|FACING|OOP|3BP": {
+          "n": 75,
+          "counts": {
+            "CALL": 20,
+            "FOLD": 44,
+            "RAISE": 11
+          }
+        },
+        "0|flop|FACING|OOP|4BP_PLUS": {
+          "n": 9,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 3
+          }
+        },
+        "0|flop|FACING|OOP|LIMPED": {
+          "n": 1864,
+          "counts": {
+            "CALL": 582,
+            "FOLD": 1253,
+            "RAISE": 29
+          }
+        },
+        "0|flop|FACING|OOP|SRP": {
+          "n": 1090,
+          "counts": {
+            "CALL": 445,
+            "FOLD": 599,
+            "RAISE": 46
+          }
+        },
+        "0|flop|FREE|IP|3BP": {
+          "n": 36,
+          "counts": {
+            "BET": 21,
+            "CHECK": 15
+          }
+        },
+        "0|flop|FREE|IP|4BP_PLUS": {
+          "n": 6,
+          "counts": {
+            "BET": 2,
+            "CHECK": 4
+          }
+        },
+        "0|flop|FREE|IP|LIMPED": {
+          "n": 2595,
+          "counts": {
+            "BET": 584,
+            "CHECK": 2011
+          }
+        },
+        "0|flop|FREE|IP|SRP": {
+          "n": 806,
+          "counts": {
+            "BET": 313,
+            "CHECK": 493
+          }
+        },
+        "0|flop|FREE|MIDDLE|3BP": {
+          "n": 55,
+          "counts": {
+            "BET": 11,
+            "CHECK": 44
+          }
+        },
+        "0|flop|FREE|MIDDLE|4BP_PLUS": {
+          "n": 4,
+          "counts": {
+            "BET": 1,
+            "CHECK": 3
+          }
+        },
+        "0|flop|FREE|MIDDLE|LIMPED": {
+          "n": 3588,
+          "counts": {
+            "BET": 523,
+            "CHECK": 3065
+          }
+        },
+        "0|flop|FREE|MIDDLE|SRP": {
+          "n": 902,
+          "counts": {
+            "BET": 230,
+            "CHECK": 672
+          }
+        },
+        "0|flop|FREE|OOP|3BP": {
+          "n": 101,
+          "counts": {
+            "BET": 33,
+            "CHECK": 68
+          }
+        },
+        "0|flop|FREE|OOP|4BP_PLUS": {
+          "n": 8,
+          "counts": {
+            "BET": 5,
+            "CHECK": 3
+          }
+        },
+        "0|flop|FREE|OOP|LIMPED": {
+          "n": 4316,
+          "counts": {
+            "BET": 591,
+            "CHECK": 3725
+          }
+        },
+        "0|flop|FREE|OOP|SRP": {
+          "n": 1762,
+          "counts": {
+            "BET": 402,
+            "CHECK": 1360
+          }
+        },
+        "0|river|FACING|IP|3BP": {
+          "n": 14,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 7
+          }
+        },
+        "0|river|FACING|IP|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|river|FACING|IP|LIMPED": {
+          "n": 970,
+          "counts": {
+            "CALL": 335,
+            "FOLD": 530,
+            "RAISE": 105
+          }
+        },
+        "0|river|FACING|IP|SRP": {
+          "n": 340,
+          "counts": {
+            "CALL": 131,
+            "FOLD": 157,
+            "RAISE": 52
+          }
+        },
+        "0|river|FACING|MIDDLE|3BP": {
+          "n": 9,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 5,
+            "RAISE": 1
+          }
+        },
+        "0|river|FACING|MIDDLE|LIMPED": {
+          "n": 445,
+          "counts": {
+            "CALL": 90,
+            "FOLD": 319,
+            "RAISE": 36
+          }
+        },
+        "0|river|FACING|MIDDLE|SRP": {
+          "n": 88,
+          "counts": {
+            "CALL": 25,
+            "FOLD": 59,
+            "RAISE": 4
+          }
+        },
+        "0|river|FACING|ONLY|3BP": {
+          "n": 2,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1
+          }
+        },
+        "0|river|FACING|ONLY|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "0|river|FACING|ONLY|LIMPED": {
+          "n": 97,
+          "counts": {
+            "CALL": 39,
+            "FOLD": 58
+          }
+        },
+        "0|river|FACING|ONLY|SRP": {
+          "n": 76,
+          "counts": {
+            "CALL": 41,
+            "FOLD": 35
+          }
+        },
+        "0|river|FACING|OOP|3BP": {
+          "n": 12,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 6
+          }
+        },
+        "0|river|FACING|OOP|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "0|river|FACING|OOP|LIMPED": {
+          "n": 1043,
+          "counts": {
+            "CALL": 281,
+            "FOLD": 723,
+            "RAISE": 39
+          }
+        },
+        "0|river|FACING|OOP|SRP": {
+          "n": 335,
+          "counts": {
+            "CALL": 112,
+            "FOLD": 205,
+            "RAISE": 18
+          }
+        },
+        "0|river|FREE|IP|3BP": {
+          "n": 24,
+          "counts": {
+            "BET": 10,
+            "CHECK": 14
+          }
+        },
+        "0|river|FREE|IP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "BET": 1,
+            "CHECK": 1
+          }
+        },
+        "0|river|FREE|IP|LIMPED": {
+          "n": 1514,
+          "counts": {
+            "BET": 454,
+            "CHECK": 1060
+          }
+        },
+        "0|river|FREE|IP|SRP": {
+          "n": 467,
+          "counts": {
+            "BET": 164,
+            "CHECK": 303
+          }
+        },
+        "0|river|FREE|MIDDLE|3BP": {
+          "n": 8,
+          "counts": {
+            "BET": 1,
+            "CHECK": 7
+          }
+        },
+        "0|river|FREE|MIDDLE|LIMPED": {
+          "n": 1276,
+          "counts": {
+            "BET": 264,
+            "CHECK": 1012
+          }
+        },
+        "0|river|FREE|MIDDLE|SRP": {
+          "n": 225,
+          "counts": {
+            "BET": 69,
+            "CHECK": 156
+          }
+        },
+        "0|river|FREE|OOP|3BP": {
+          "n": 30,
+          "counts": {
+            "BET": 13,
+            "CHECK": 17
+          }
+        },
+        "0|river|FREE|OOP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "0|river|FREE|OOP|LIMPED": {
+          "n": 2914,
+          "counts": {
+            "BET": 877,
+            "CHECK": 2037
+          }
+        },
+        "0|river|FREE|OOP|SRP": {
+          "n": 893,
+          "counts": {
+            "BET": 315,
+            "CHECK": 578
+          }
+        },
+        "0|turn|FACING|IP|3BP": {
+          "n": 24,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 8,
+            "RAISE": 1
+          }
+        },
+        "0|turn|FACING|IP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "FOLD": 2
+          }
+        },
+        "0|turn|FACING|IP|LIMPED": {
+          "n": 957,
+          "counts": {
+            "CALL": 506,
+            "FOLD": 386,
+            "RAISE": 65
+          }
+        },
+        "0|turn|FACING|IP|SRP": {
+          "n": 512,
+          "counts": {
+            "CALL": 272,
+            "FOLD": 189,
+            "RAISE": 51
+          }
+        },
+        "0|turn|FACING|MIDDLE|3BP": {
+          "n": 16,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 4,
+            "RAISE": 1
+          }
+        },
+        "0|turn|FACING|MIDDLE|LIMPED": {
+          "n": 748,
+          "counts": {
+            "CALL": 331,
+            "FOLD": 392,
+            "RAISE": 25
+          }
+        },
+        "0|turn|FACING|MIDDLE|SRP": {
+          "n": 207,
+          "counts": {
+            "CALL": 94,
+            "FOLD": 100,
+            "RAISE": 13
+          }
+        },
+        "0|turn|FACING|ONLY|3BP": {
+          "n": 8,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 2
+          }
+        },
+        "0|turn|FACING|ONLY|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "0|turn|FACING|ONLY|LIMPED": {
+          "n": 53,
+          "counts": {
+            "CALL": 23,
+            "FOLD": 30
+          }
+        },
+        "0|turn|FACING|ONLY|SRP": {
+          "n": 68,
+          "counts": {
+            "CALL": 43,
+            "FOLD": 25
+          }
+        },
+        "0|turn|FACING|OOP|3BP": {
+          "n": 22,
+          "counts": {
+            "CALL": 8,
+            "FOLD": 11,
+            "RAISE": 3
+          }
+        },
+        "0|turn|FACING|OOP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1
+          }
+        },
+        "0|turn|FACING|OOP|LIMPED": {
+          "n": 1302,
+          "counts": {
+            "CALL": 508,
+            "FOLD": 752,
+            "RAISE": 42
+          }
+        },
+        "0|turn|FACING|OOP|SRP": {
+          "n": 572,
+          "counts": {
+            "CALL": 305,
+            "FOLD": 243,
+            "RAISE": 24
+          }
+        },
+        "0|turn|FREE|IP|3BP": {
+          "n": 25,
+          "counts": {
+            "BET": 13,
+            "CHECK": 12
+          }
+        },
+        "0|turn|FREE|IP|4BP_PLUS": {
+          "n": 3,
+          "counts": {
+            "BET": 2,
+            "CHECK": 1
+          }
+        },
+        "0|turn|FREE|IP|LIMPED": {
+          "n": 2028,
+          "counts": {
+            "BET": 567,
+            "CHECK": 1461
+          }
+        },
+        "0|turn|FREE|IP|SRP": {
+          "n": 628,
+          "counts": {
+            "BET": 250,
+            "CHECK": 378
+          }
+        },
+        "0|turn|FREE|MIDDLE|3BP": {
+          "n": 16,
+          "counts": {
+            "BET": 4,
+            "CHECK": 12
+          }
+        },
+        "0|turn|FREE|MIDDLE|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "0|turn|FREE|MIDDLE|LIMPED": {
+          "n": 2140,
+          "counts": {
+            "BET": 419,
+            "CHECK": 1721
+          }
+        },
+        "0|turn|FREE|MIDDLE|SRP": {
+          "n": 421,
+          "counts": {
+            "BET": 122,
+            "CHECK": 299
+          }
+        },
+        "0|turn|FREE|OOP|3BP": {
+          "n": 52,
+          "counts": {
+            "BET": 17,
+            "CHECK": 35
+          }
+        },
+        "0|turn|FREE|OOP|4BP_PLUS": {
+          "n": 4,
+          "counts": {
+            "CHECK": 4
+          }
+        },
+        "0|turn|FREE|OOP|LIMPED": {
+          "n": 3547,
+          "counts": {
+            "BET": 794,
+            "CHECK": 2753
+          }
+        },
+        "0|turn|FREE|OOP|SRP": {
+          "n": 1233,
+          "counts": {
+            "BET": 377,
+            "CHECK": 856
+          }
+        },
+        "1|flop|FACING|IP|3BP": {
+          "n": 195,
+          "counts": {
+            "CALL": 91,
+            "FOLD": 44,
+            "RAISE": 60
+          }
+        },
+        "1|flop|FACING|IP|4BP_PLUS": {
+          "n": 33,
+          "counts": {
+            "CALL": 14,
+            "FOLD": 3,
+            "RAISE": 16
+          }
+        },
+        "1|flop|FACING|IP|LIMPED": {
+          "n": 600,
+          "counts": {
+            "CALL": 287,
+            "FOLD": 229,
+            "RAISE": 84
+          }
+        },
+        "1|flop|FACING|IP|SRP": {
+          "n": 842,
+          "counts": {
+            "CALL": 413,
+            "FOLD": 257,
+            "RAISE": 172
+          }
+        },
+        "1|flop|FACING|MIDDLE|3BP": {
+          "n": 75,
+          "counts": {
+            "CALL": 35,
+            "FOLD": 26,
+            "RAISE": 14
+          }
+        },
+        "1|flop|FACING|MIDDLE|4BP_PLUS": {
+          "n": 10,
+          "counts": {
+            "CALL": 8,
+            "RAISE": 2
+          }
+        },
+        "1|flop|FACING|MIDDLE|LIMPED": {
+          "n": 631,
+          "counts": {
+            "CALL": 285,
+            "FOLD": 288,
+            "RAISE": 58
+          }
+        },
+        "1|flop|FACING|MIDDLE|SRP": {
+          "n": 583,
+          "counts": {
+            "CALL": 291,
+            "FOLD": 213,
+            "RAISE": 79
+          }
+        },
+        "1|flop|FACING|ONLY|3BP": {
+          "n": 70,
+          "counts": {
+            "CALL": 45,
+            "FOLD": 25
+          }
+        },
+        "1|flop|FACING|ONLY|4BP_PLUS": {
+          "n": 16,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 1
+          }
+        },
+        "1|flop|FACING|ONLY|LIMPED": {
+          "n": 27,
+          "counts": {
+            "CALL": 13,
+            "FOLD": 14
+          }
+        },
+        "1|flop|FACING|ONLY|SRP": {
+          "n": 147,
+          "counts": {
+            "CALL": 92,
+            "FOLD": 55
+          }
+        },
+        "1|flop|FACING|OOP|3BP": {
+          "n": 174,
+          "counts": {
+            "CALL": 83,
+            "FOLD": 64,
+            "RAISE": 27
+          }
+        },
+        "1|flop|FACING|OOP|4BP_PLUS": {
+          "n": 31,
+          "counts": {
+            "CALL": 16,
+            "FOLD": 8,
+            "RAISE": 7
+          }
+        },
+        "1|flop|FACING|OOP|LIMPED": {
+          "n": 732,
+          "counts": {
+            "CALL": 307,
+            "FOLD": 390,
+            "RAISE": 35
+          }
+        },
+        "1|flop|FACING|OOP|SRP": {
+          "n": 877,
+          "counts": {
+            "CALL": 409,
+            "FOLD": 385,
+            "RAISE": 83
+          }
+        },
+        "1|flop|FREE|IP|3BP": {
+          "n": 192,
+          "counts": {
+            "BET": 112,
+            "CHECK": 80
+          }
+        },
+        "1|flop|FREE|IP|4BP_PLUS": {
+          "n": 30,
+          "counts": {
+            "BET": 20,
+            "CHECK": 10
+          }
+        },
+        "1|flop|FREE|IP|LIMPED": {
+          "n": 1204,
+          "counts": {
+            "BET": 439,
+            "CHECK": 765
+          }
+        },
+        "1|flop|FREE|IP|SRP": {
+          "n": 1391,
+          "counts": {
+            "BET": 846,
+            "CHECK": 545
+          }
+        },
+        "1|flop|FREE|MIDDLE|3BP": {
+          "n": 115,
+          "counts": {
+            "BET": 57,
+            "CHECK": 58
+          }
+        },
+        "1|flop|FREE|MIDDLE|4BP_PLUS": {
+          "n": 19,
+          "counts": {
+            "BET": 7,
+            "CHECK": 12
+          }
+        },
+        "1|flop|FREE|MIDDLE|LIMPED": {
+          "n": 1713,
+          "counts": {
+            "BET": 590,
+            "CHECK": 1123
+          }
+        },
+        "1|flop|FREE|MIDDLE|SRP": {
+          "n": 1180,
+          "counts": {
+            "BET": 578,
+            "CHECK": 602
+          }
+        },
+        "1|flop|FREE|OOP|3BP": {
+          "n": 397,
+          "counts": {
+            "BET": 208,
+            "CHECK": 189
+          }
+        },
+        "1|flop|FREE|OOP|4BP_PLUS": {
+          "n": 60,
+          "counts": {
+            "BET": 30,
+            "CHECK": 30
+          }
+        },
+        "1|flop|FREE|OOP|LIMPED": {
+          "n": 1908,
+          "counts": {
+            "BET": 557,
+            "CHECK": 1351
+          }
+        },
+        "1|flop|FREE|OOP|SRP": {
+          "n": 2082,
+          "counts": {
+            "BET": 969,
+            "CHECK": 1113
+          }
+        },
+        "1|river|FACING|IP|3BP": {
+          "n": 65,
+          "counts": {
+            "CALL": 31,
+            "FOLD": 21,
+            "RAISE": 13
+          }
+        },
+        "1|river|FACING|IP|4BP_PLUS": {
+          "n": 8,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 3
+          }
+        },
+        "1|river|FACING|IP|LIMPED": {
+          "n": 519,
+          "counts": {
+            "CALL": 179,
+            "FOLD": 255,
+            "RAISE": 85
+          }
+        },
+        "1|river|FACING|IP|SRP": {
+          "n": 509,
+          "counts": {
+            "CALL": 211,
+            "FOLD": 195,
+            "RAISE": 103
+          }
+        },
+        "1|river|FACING|MIDDLE|3BP": {
+          "n": 11,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 4,
+            "RAISE": 1
+          }
+        },
+        "1|river|FACING|MIDDLE|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "FOLD": 1
+          }
+        },
+        "1|river|FACING|MIDDLE|LIMPED": {
+          "n": 206,
+          "counts": {
+            "CALL": 55,
+            "FOLD": 129,
+            "RAISE": 22
+          }
+        },
+        "1|river|FACING|MIDDLE|SRP": {
+          "n": 141,
+          "counts": {
+            "CALL": 40,
+            "FOLD": 78,
+            "RAISE": 23
+          }
+        },
+        "1|river|FACING|ONLY|3BP": {
+          "n": 30,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 12
+          }
+        },
+        "1|river|FACING|ONLY|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "CALL": 1
+          }
+        },
+        "1|river|FACING|ONLY|LIMPED": {
+          "n": 76,
+          "counts": {
+            "CALL": 35,
+            "FOLD": 41
+          }
+        },
+        "1|river|FACING|ONLY|SRP": {
+          "n": 124,
+          "counts": {
+            "CALL": 59,
+            "FOLD": 65
+          }
+        },
+        "1|river|FACING|OOP|3BP": {
+          "n": 37,
+          "counts": {
+            "CALL": 14,
+            "FOLD": 21,
+            "RAISE": 2
+          }
+        },
+        "1|river|FACING|OOP|4BP_PLUS": {
+          "n": 5,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 1
+          }
+        },
+        "1|river|FACING|OOP|LIMPED": {
+          "n": 503,
+          "counts": {
+            "CALL": 168,
+            "FOLD": 308,
+            "RAISE": 27
+          }
+        },
+        "1|river|FACING|OOP|SRP": {
+          "n": 381,
+          "counts": {
+            "CALL": 149,
+            "FOLD": 203,
+            "RAISE": 29
+          }
+        },
+        "1|river|FREE|IP|3BP": {
+          "n": 80,
+          "counts": {
+            "BET": 37,
+            "CHECK": 43
+          }
+        },
+        "1|river|FREE|IP|4BP_PLUS": {
+          "n": 10,
+          "counts": {
+            "BET": 6,
+            "CHECK": 4
+          }
+        },
+        "1|river|FREE|IP|LIMPED": {
+          "n": 739,
+          "counts": {
+            "BET": 323,
+            "CHECK": 416
+          }
+        },
+        "1|river|FREE|IP|SRP": {
+          "n": 744,
+          "counts": {
+            "BET": 387,
+            "CHECK": 357
+          }
+        },
+        "1|river|FREE|MIDDLE|3BP": {
+          "n": 16,
+          "counts": {
+            "BET": 7,
+            "CHECK": 9
+          }
+        },
+        "1|river|FREE|MIDDLE|4BP_PLUS": {
+          "n": 8,
+          "counts": {
+            "BET": 4,
+            "CHECK": 4
+          }
+        },
+        "1|river|FREE|MIDDLE|LIMPED": {
+          "n": 513,
+          "counts": {
+            "BET": 141,
+            "CHECK": 372
+          }
+        },
+        "1|river|FREE|MIDDLE|SRP": {
+          "n": 275,
+          "counts": {
+            "BET": 116,
+            "CHECK": 159
+          }
+        },
+        "1|river|FREE|OOP|3BP": {
+          "n": 159,
+          "counts": {
+            "BET": 82,
+            "CHECK": 77
+          }
+        },
+        "1|river|FREE|OOP|4BP_PLUS": {
+          "n": 19,
+          "counts": {
+            "BET": 8,
+            "CHECK": 11
+          }
+        },
+        "1|river|FREE|OOP|LIMPED": {
+          "n": 1464,
+          "counts": {
+            "BET": 690,
+            "CHECK": 774
+          }
+        },
+        "1|river|FREE|OOP|SRP": {
+          "n": 1268,
+          "counts": {
+            "BET": 669,
+            "CHECK": 599
+          }
+        },
+        "1|turn|FACING|IP|3BP": {
+          "n": 112,
+          "counts": {
+            "CALL": 63,
+            "FOLD": 28,
+            "RAISE": 21
+          }
+        },
+        "1|turn|FACING|IP|4BP_PLUS": {
+          "n": 13,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 3,
+            "RAISE": 5
+          }
+        },
+        "1|turn|FACING|IP|LIMPED": {
+          "n": 540,
+          "counts": {
+            "CALL": 292,
+            "FOLD": 170,
+            "RAISE": 78
+          }
+        },
+        "1|turn|FACING|IP|SRP": {
+          "n": 634,
+          "counts": {
+            "CALL": 382,
+            "FOLD": 152,
+            "RAISE": 100
+          }
+        },
+        "1|turn|FACING|MIDDLE|3BP": {
+          "n": 27,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 8,
+            "RAISE": 4
+          }
+        },
+        "1|turn|FACING|MIDDLE|4BP_PLUS": {
+          "n": 8,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 1
+          }
+        },
+        "1|turn|FACING|MIDDLE|LIMPED": {
+          "n": 361,
+          "counts": {
+            "CALL": 186,
+            "FOLD": 139,
+            "RAISE": 36
+          }
+        },
+        "1|turn|FACING|MIDDLE|SRP": {
+          "n": 243,
+          "counts": {
+            "CALL": 131,
+            "FOLD": 81,
+            "RAISE": 31
+          }
+        },
+        "1|turn|FACING|ONLY|3BP": {
+          "n": 42,
+          "counts": {
+            "CALL": 36,
+            "FOLD": 6
+          }
+        },
+        "1|turn|FACING|ONLY|4BP_PLUS": {
+          "n": 10,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 3
+          }
+        },
+        "1|turn|FACING|ONLY|LIMPED": {
+          "n": 40,
+          "counts": {
+            "CALL": 17,
+            "FOLD": 23
+          }
+        },
+        "1|turn|FACING|ONLY|SRP": {
+          "n": 98,
+          "counts": {
+            "CALL": 75,
+            "FOLD": 23
+          }
+        },
+        "1|turn|FACING|OOP|3BP": {
+          "n": 75,
+          "counts": {
+            "CALL": 44,
+            "FOLD": 19,
+            "RAISE": 12
+          }
+        },
+        "1|turn|FACING|OOP|4BP_PLUS": {
+          "n": 15,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 3,
+            "RAISE": 2
+          }
+        },
+        "1|turn|FACING|OOP|LIMPED": {
+          "n": 600,
+          "counts": {
+            "CALL": 317,
+            "FOLD": 248,
+            "RAISE": 35
+          }
+        },
+        "1|turn|FACING|OOP|SRP": {
+          "n": 575,
+          "counts": {
+            "CALL": 338,
+            "FOLD": 196,
+            "RAISE": 41
+          }
+        },
+        "1|turn|FREE|IP|3BP": {
+          "n": 128,
+          "counts": {
+            "BET": 72,
+            "CHECK": 56
+          }
+        },
+        "1|turn|FREE|IP|4BP_PLUS": {
+          "n": 19,
+          "counts": {
+            "BET": 13,
+            "CHECK": 6
+          }
+        },
+        "1|turn|FREE|IP|LIMPED": {
+          "n": 1020,
+          "counts": {
+            "BET": 460,
+            "CHECK": 560
+          }
+        },
+        "1|turn|FREE|IP|SRP": {
+          "n": 1021,
+          "counts": {
+            "BET": 565,
+            "CHECK": 456
+          }
+        },
+        "1|turn|FREE|MIDDLE|3BP": {
+          "n": 41,
+          "counts": {
+            "BET": 14,
+            "CHECK": 27
+          }
+        },
+        "1|turn|FREE|MIDDLE|4BP_PLUS": {
+          "n": 8,
+          "counts": {
+            "BET": 2,
+            "CHECK": 6
+          }
+        },
+        "1|turn|FREE|MIDDLE|LIMPED": {
+          "n": 916,
+          "counts": {
+            "BET": 299,
+            "CHECK": 617
+          }
+        },
+        "1|turn|FREE|MIDDLE|SRP": {
+          "n": 548,
+          "counts": {
+            "BET": 237,
+            "CHECK": 311
+          }
+        },
+        "1|turn|FREE|OOP|3BP": {
+          "n": 243,
+          "counts": {
+            "BET": 135,
+            "CHECK": 108
+          }
+        },
+        "1|turn|FREE|OOP|4BP_PLUS": {
+          "n": 35,
+          "counts": {
+            "BET": 16,
+            "CHECK": 19
+          }
+        },
+        "1|turn|FREE|OOP|LIMPED": {
+          "n": 1720,
+          "counts": {
+            "BET": 708,
+            "CHECK": 1012
+          }
+        },
+        "1|turn|FREE|OOP|SRP": {
+          "n": 1630,
+          "counts": {
+            "BET": 842,
+            "CHECK": 788
+          }
+        },
+        "2|flop|FACING|IP|3BP": {
+          "n": 88,
+          "counts": {
+            "CALL": 48,
+            "FOLD": 31,
+            "RAISE": 9
+          }
+        },
+        "2|flop|FACING|IP|4BP_PLUS": {
+          "n": 8,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 4
+          }
+        },
+        "2|flop|FACING|IP|LIMPED": {
+          "n": 2093,
+          "counts": {
+            "CALL": 1185,
+            "FOLD": 832,
+            "RAISE": 76
+          }
+        },
+        "2|flop|FACING|IP|SRP": {
+          "n": 1413,
+          "counts": {
+            "CALL": 760,
+            "FOLD": 556,
+            "RAISE": 97
+          }
+        },
+        "2|flop|FACING|MIDDLE|3BP": {
+          "n": 97,
+          "counts": {
+            "CALL": 54,
+            "FOLD": 40,
+            "RAISE": 3
+          }
+        },
+        "2|flop|FACING|MIDDLE|4BP_PLUS": {
+          "n": 5,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 2
+          }
+        },
+        "2|flop|FACING|MIDDLE|LIMPED": {
+          "n": 2031,
+          "counts": {
+            "CALL": 1073,
+            "FOLD": 901,
+            "RAISE": 57
+          }
+        },
+        "2|flop|FACING|MIDDLE|SRP": {
+          "n": 1155,
+          "counts": {
+            "CALL": 637,
+            "FOLD": 458,
+            "RAISE": 60
+          }
+        },
+        "2|flop|FACING|ONLY|3BP": {
+          "n": 33,
+          "counts": {
+            "CALL": 21,
+            "FOLD": 12
+          }
+        },
+        "2|flop|FACING|ONLY|4BP_PLUS": {
+          "n": 4,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 3
+          }
+        },
+        "2|flop|FACING|ONLY|LIMPED": {
+          "n": 60,
+          "counts": {
+            "CALL": 22,
+            "FOLD": 38
+          }
+        },
+        "2|flop|FACING|ONLY|SRP": {
+          "n": 143,
+          "counts": {
+            "CALL": 64,
+            "FOLD": 79
+          }
+        },
+        "2|flop|FACING|OOP|3BP": {
+          "n": 117,
+          "counts": {
+            "CALL": 63,
+            "FOLD": 48,
+            "RAISE": 6
+          }
+        },
+        "2|flop|FACING|OOP|4BP_PLUS": {
+          "n": 11,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 6
+          }
+        },
+        "2|flop|FACING|OOP|LIMPED": {
+          "n": 2315,
+          "counts": {
+            "CALL": 1126,
+            "FOLD": 1154,
+            "RAISE": 35
+          }
+        },
+        "2|flop|FACING|OOP|SRP": {
+          "n": 1826,
+          "counts": {
+            "CALL": 895,
+            "FOLD": 876,
+            "RAISE": 55
+          }
+        },
+        "2|flop|FREE|IP|3BP": {
+          "n": 66,
+          "counts": {
+            "BET": 22,
+            "CHECK": 44
+          }
+        },
+        "2|flop|FREE|IP|4BP_PLUS": {
+          "n": 3,
+          "counts": {
+            "BET": 1,
+            "CHECK": 2
+          }
+        },
+        "2|flop|FREE|IP|LIMPED": {
+          "n": 4165,
+          "counts": {
+            "BET": 690,
+            "CHECK": 3475
+          }
+        },
+        "2|flop|FREE|IP|SRP": {
+          "n": 1120,
+          "counts": {
+            "BET": 274,
+            "CHECK": 846
+          }
+        },
+        "2|flop|FREE|MIDDLE|3BP": {
+          "n": 85,
+          "counts": {
+            "BET": 14,
+            "CHECK": 71
+          }
+        },
+        "2|flop|FREE|MIDDLE|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "2|flop|FREE|MIDDLE|LIMPED": {
+          "n": 4852,
+          "counts": {
+            "BET": 698,
+            "CHECK": 4154
+          }
+        },
+        "2|flop|FREE|MIDDLE|SRP": {
+          "n": 1580,
+          "counts": {
+            "BET": 257,
+            "CHECK": 1323
+          }
+        },
+        "2|flop|FREE|OOP|3BP": {
+          "n": 140,
+          "counts": {
+            "BET": 25,
+            "CHECK": 115
+          }
+        },
+        "2|flop|FREE|OOP|4BP_PLUS": {
+          "n": 17,
+          "counts": {
+            "BET": 5,
+            "CHECK": 12
+          }
+        },
+        "2|flop|FREE|OOP|LIMPED": {
+          "n": 4543,
+          "counts": {
+            "BET": 557,
+            "CHECK": 3986
+          }
+        },
+        "2|flop|FREE|OOP|SRP": {
+          "n": 2608,
+          "counts": {
+            "BET": 403,
+            "CHECK": 2205
+          }
+        },
+        "2|river|FACING|IP|3BP": {
+          "n": 35,
+          "counts": {
+            "CALL": 19,
+            "FOLD": 13,
+            "RAISE": 3
+          }
+        },
+        "2|river|FACING|IP|4BP_PLUS": {
+          "n": 3,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|IP|LIMPED": {
+          "n": 1995,
+          "counts": {
+            "CALL": 725,
+            "FOLD": 1036,
+            "RAISE": 234
+          }
+        },
+        "2|river|FACING|IP|SRP": {
+          "n": 743,
+          "counts": {
+            "CALL": 337,
+            "FOLD": 326,
+            "RAISE": 80
+          }
+        },
+        "2|river|FACING|MIDDLE|3BP": {
+          "n": 16,
+          "counts": {
+            "CALL": 6,
+            "FOLD": 9,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|MIDDLE|LIMPED": {
+          "n": 797,
+          "counts": {
+            "CALL": 248,
+            "FOLD": 489,
+            "RAISE": 60
+          }
+        },
+        "2|river|FACING|MIDDLE|SRP": {
+          "n": 246,
+          "counts": {
+            "CALL": 77,
+            "FOLD": 143,
+            "RAISE": 26
+          }
+        },
+        "2|river|FACING|ONLY|3BP": {
+          "n": 18,
+          "counts": {
+            "CALL": 13,
+            "FOLD": 5
+          }
+        },
+        "2|river|FACING|ONLY|LIMPED": {
+          "n": 188,
+          "counts": {
+            "CALL": 87,
+            "FOLD": 101
+          }
+        },
+        "2|river|FACING|ONLY|SRP": {
+          "n": 128,
+          "counts": {
+            "CALL": 69,
+            "FOLD": 59
+          }
+        },
+        "2|river|FACING|OOP|3BP": {
+          "n": 19,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 12,
+            "RAISE": 2
+          }
+        },
+        "2|river|FACING|OOP|4BP_PLUS": {
+          "n": 4,
+          "counts": {
+            "CALL": 2,
+            "FOLD": 1,
+            "RAISE": 1
+          }
+        },
+        "2|river|FACING|OOP|LIMPED": {
+          "n": 1584,
+          "counts": {
+            "CALL": 485,
+            "FOLD": 1034,
+            "RAISE": 65
+          }
+        },
+        "2|river|FACING|OOP|SRP": {
+          "n": 686,
+          "counts": {
+            "CALL": 249,
+            "FOLD": 408,
+            "RAISE": 29
+          }
+        },
+        "2|river|FREE|IP|3BP": {
+          "n": 31,
+          "counts": {
+            "BET": 8,
+            "CHECK": 23
+          }
+        },
+        "2|river|FREE|IP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "2|river|FREE|IP|LIMPED": {
+          "n": 2602,
+          "counts": {
+            "BET": 704,
+            "CHECK": 1898
+          }
+        },
+        "2|river|FREE|IP|SRP": {
+          "n": 725,
+          "counts": {
+            "BET": 222,
+            "CHECK": 503
+          }
+        },
+        "2|river|FREE|MIDDLE|3BP": {
+          "n": 21,
+          "counts": {
+            "BET": 4,
+            "CHECK": 17
+          }
+        },
+        "2|river|FREE|MIDDLE|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "BET": 1
+          }
+        },
+        "2|river|FREE|MIDDLE|LIMPED": {
+          "n": 1869,
+          "counts": {
+            "BET": 406,
+            "CHECK": 1463
+          }
+        },
+        "2|river|FREE|MIDDLE|SRP": {
+          "n": 460,
+          "counts": {
+            "BET": 108,
+            "CHECK": 352
+          }
+        },
+        "2|river|FREE|OOP|3BP": {
+          "n": 62,
+          "counts": {
+            "BET": 26,
+            "CHECK": 36
+          }
+        },
+        "2|river|FREE|OOP|4BP_PLUS": {
+          "n": 5,
+          "counts": {
+            "CHECK": 5
+          }
+        },
+        "2|river|FREE|OOP|LIMPED": {
+          "n": 3503,
+          "counts": {
+            "BET": 1055,
+            "CHECK": 2448
+          }
+        },
+        "2|river|FREE|OOP|SRP": {
+          "n": 1507,
+          "counts": {
+            "BET": 469,
+            "CHECK": 1038
+          }
+        },
+        "2|turn|FACING|IP|3BP": {
+          "n": 52,
+          "counts": {
+            "CALL": 33,
+            "FOLD": 16,
+            "RAISE": 3
+          }
+        },
+        "2|turn|FACING|IP|4BP_PLUS": {
+          "n": 5,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 1
+          }
+        },
+        "2|turn|FACING|IP|LIMPED": {
+          "n": 2134,
+          "counts": {
+            "CALL": 1283,
+            "FOLD": 722,
+            "RAISE": 129
+          }
+        },
+        "2|turn|FACING|IP|SRP": {
+          "n": 996,
+          "counts": {
+            "CALL": 629,
+            "FOLD": 272,
+            "RAISE": 95
+          }
+        },
+        "2|turn|FACING|MIDDLE|3BP": {
+          "n": 28,
+          "counts": {
+            "CALL": 18,
+            "FOLD": 10
+          }
+        },
+        "2|turn|FACING|MIDDLE|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "RAISE": 1
+          }
+        },
+        "2|turn|FACING|MIDDLE|LIMPED": {
+          "n": 1303,
+          "counts": {
+            "CALL": 705,
+            "FOLD": 538,
+            "RAISE": 60
+          }
+        },
+        "2|turn|FACING|MIDDLE|SRP": {
+          "n": 512,
+          "counts": {
+            "CALL": 286,
+            "FOLD": 199,
+            "RAISE": 27
+          }
+        },
+        "2|turn|FACING|ONLY|3BP": {
+          "n": 16,
+          "counts": {
+            "CALL": 11,
+            "FOLD": 5
+          }
+        },
+        "2|turn|FACING|ONLY|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CALL": 2
+          }
+        },
+        "2|turn|FACING|ONLY|LIMPED": {
+          "n": 80,
+          "counts": {
+            "CALL": 33,
+            "FOLD": 47
+          }
+        },
+        "2|turn|FACING|ONLY|SRP": {
+          "n": 107,
+          "counts": {
+            "CALL": 76,
+            "FOLD": 31
+          }
+        },
+        "2|turn|FACING|OOP|3BP": {
+          "n": 56,
+          "counts": {
+            "CALL": 33,
+            "FOLD": 20,
+            "RAISE": 3
+          }
+        },
+        "2|turn|FACING|OOP|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "FOLD": 2
+          }
+        },
+        "2|turn|FACING|OOP|LIMPED": {
+          "n": 1902,
+          "counts": {
+            "CALL": 1041,
+            "FOLD": 801,
+            "RAISE": 60
+          }
+        },
+        "2|turn|FACING|OOP|SRP": {
+          "n": 1028,
+          "counts": {
+            "CALL": 602,
+            "FOLD": 384,
+            "RAISE": 42
+          }
+        },
+        "2|turn|FREE|IP|3BP": {
+          "n": 47,
+          "counts": {
+            "BET": 18,
+            "CHECK": 29
+          }
+        },
+        "2|turn|FREE|IP|4BP_PLUS": {
+          "n": 1,
+          "counts": {
+            "CHECK": 1
+          }
+        },
+        "2|turn|FREE|IP|LIMPED": {
+          "n": 3368,
+          "counts": {
+            "BET": 815,
+            "CHECK": 2553
+          }
+        },
+        "2|turn|FREE|IP|SRP": {
+          "n": 912,
+          "counts": {
+            "BET": 285,
+            "CHECK": 627
+          }
+        },
+        "2|turn|FREE|MIDDLE|3BP": {
+          "n": 40,
+          "counts": {
+            "BET": 11,
+            "CHECK": 29
+          }
+        },
+        "2|turn|FREE|MIDDLE|4BP_PLUS": {
+          "n": 2,
+          "counts": {
+            "CHECK": 2
+          }
+        },
+        "2|turn|FREE|MIDDLE|LIMPED": {
+          "n": 3002,
+          "counts": {
+            "BET": 472,
+            "CHECK": 2530
+          }
+        },
+        "2|turn|FREE|MIDDLE|SRP": {
+          "n": 822,
+          "counts": {
+            "BET": 155,
+            "CHECK": 667
+          }
+        },
+        "2|turn|FREE|OOP|3BP": {
+          "n": 98,
+          "counts": {
+            "BET": 26,
+            "CHECK": 72
+          }
+        },
+        "2|turn|FREE|OOP|4BP_PLUS": {
+          "n": 10,
+          "counts": {
+            "BET": 5,
+            "CHECK": 5
+          }
+        },
+        "2|turn|FREE|OOP|LIMPED": {
+          "n": 4081,
+          "counts": {
+            "BET": 827,
+            "CHECK": 3254
+          }
+        },
+        "2|turn|FREE|OOP|SRP": {
+          "n": 1952,
+          "counts": {
+            "BET": 431,
+            "CHECK": 1521
+          }
+        }
+      }
+    },
+    {
+      "cols": [
+        "profile",
+        "street",
+        "mode",
+        "relative_position"
+      ],
+      "data": {
+        "0|flop|FACING|IP": {
+          "n": 1904,
+          "counts": {
+            "CALL": 854,
+            "FOLD": 904,
+            "RAISE": 146
+          }
+        },
+        "0|flop|FACING|MIDDLE": {
+          "n": 1882,
+          "counts": {
+            "CALL": 718,
+            "FOLD": 1083,
+            "RAISE": 81
+          }
+        },
+        "0|flop|FACING|ONLY": {
+          "n": 167,
+          "counts": {
+            "CALL": 74,
+            "FOLD": 93
+          }
+        },
+        "0|flop|FACING|OOP": {
+          "n": 3038,
+          "counts": {
+            "CALL": 1053,
+            "FOLD": 1899,
+            "RAISE": 86
+          }
+        },
+        "0|flop|FREE|IP": {
+          "n": 3443,
+          "counts": {
+            "BET": 920,
+            "CHECK": 2523
+          }
+        },
+        "0|flop|FREE|MIDDLE": {
+          "n": 4549,
+          "counts": {
+            "BET": 765,
+            "CHECK": 3784
+          }
+        },
+        "0|flop|FREE|OOP": {
+          "n": 6187,
+          "counts": {
+            "BET": 1031,
+            "CHECK": 5156
+          }
+        },
+        "0|river|FACING|IP": {
+          "n": 1325,
+          "counts": {
+            "CALL": 474,
+            "FOLD": 694,
+            "RAISE": 157
+          }
+        },
+        "0|river|FACING|MIDDLE": {
+          "n": 542,
+          "counts": {
+            "CALL": 118,
+            "FOLD": 383,
+            "RAISE": 41
+          }
+        },
+        "0|river|FACING|ONLY": {
+          "n": 176,
+          "counts": {
+            "CALL": 82,
+            "FOLD": 94
+          }
+        },
+        "0|river|FACING|OOP": {
+          "n": 1391,
+          "counts": {
+            "CALL": 399,
+            "FOLD": 935,
+            "RAISE": 57
+          }
+        },
+        "0|river|FREE|IP": {
+          "n": 2007,
+          "counts": {
+            "BET": 629,
+            "CHECK": 1378
+          }
+        },
+        "0|river|FREE|MIDDLE": {
+          "n": 1509,
+          "counts": {
+            "BET": 334,
+            "CHECK": 1175
+          }
+        },
+        "0|river|FREE|OOP": {
+          "n": 3839,
+          "counts": {
+            "BET": 1205,
+            "CHECK": 2634
+          }
+        },
+        "0|turn|FACING|IP": {
+          "n": 1495,
+          "counts": {
+            "CALL": 793,
+            "FOLD": 585,
+            "RAISE": 117
+          }
+        },
+        "0|turn|FACING|MIDDLE": {
+          "n": 971,
+          "counts": {
+            "CALL": 436,
+            "FOLD": 496,
+            "RAISE": 39
+          }
+        },
+        "0|turn|FACING|ONLY": {
+          "n": 130,
+          "counts": {
+            "CALL": 72,
+            "FOLD": 58
+          }
+        },
+        "0|turn|FACING|OOP": {
+          "n": 1898,
+          "counts": {
+            "CALL": 822,
+            "FOLD": 1007,
+            "RAISE": 69
+          }
+        },
+        "0|turn|FREE|IP": {
+          "n": 2684,
+          "counts": {
+            "BET": 832,
+            "CHECK": 1852
+          }
+        },
+        "0|turn|FREE|MIDDLE": {
+          "n": 2578,
+          "counts": {
+            "BET": 546,
+            "CHECK": 2032
+          }
+        },
+        "0|turn|FREE|OOP": {
+          "n": 4836,
+          "counts": {
+            "BET": 1188,
+            "CHECK": 3648
+          }
+        },
+        "1|flop|FACING|IP": {
+          "n": 1670,
+          "counts": {
+            "CALL": 805,
+            "FOLD": 533,
+            "RAISE": 332
+          }
+        },
+        "1|flop|FACING|MIDDLE": {
+          "n": 1299,
+          "counts": {
+            "CALL": 619,
+            "FOLD": 527,
+            "RAISE": 153
+          }
+        },
+        "1|flop|FACING|ONLY": {
+          "n": 260,
+          "counts": {
+            "CALL": 165,
+            "FOLD": 95
+          }
+        },
+        "1|flop|FACING|OOP": {
+          "n": 1814,
+          "counts": {
+            "CALL": 815,
+            "FOLD": 847,
+            "RAISE": 152
+          }
+        },
+        "1|flop|FREE|IP": {
+          "n": 2817,
+          "counts": {
+            "BET": 1417,
+            "CHECK": 1400
+          }
+        },
+        "1|flop|FREE|MIDDLE": {
+          "n": 3027,
+          "counts": {
+            "BET": 1232,
+            "CHECK": 1795
+          }
+        },
+        "1|flop|FREE|OOP": {
+          "n": 4447,
+          "counts": {
+            "BET": 1764,
+            "CHECK": 2683
+          }
+        },
+        "1|river|FACING|IP": {
+          "n": 1101,
+          "counts": {
+            "CALL": 426,
+            "FOLD": 474,
+            "RAISE": 201
+          }
+        },
+        "1|river|FACING|MIDDLE": {
+          "n": 359,
+          "counts": {
+            "CALL": 101,
+            "FOLD": 212,
+            "RAISE": 46
+          }
+        },
+        "1|river|FACING|ONLY": {
+          "n": 231,
+          "counts": {
+            "CALL": 113,
+            "FOLD": 118
+          }
+        },
+        "1|river|FACING|OOP": {
+          "n": 926,
+          "counts": {
+            "CALL": 335,
+            "FOLD": 533,
+            "RAISE": 58
+          }
+        },
+        "1|river|FREE|IP": {
+          "n": 1573,
+          "counts": {
+            "BET": 753,
+            "CHECK": 820
+          }
+        },
+        "1|river|FREE|MIDDLE": {
+          "n": 812,
+          "counts": {
+            "BET": 268,
+            "CHECK": 544
+          }
+        },
+        "1|river|FREE|OOP": {
+          "n": 2910,
+          "counts": {
+            "BET": 1449,
+            "CHECK": 1461
+          }
+        },
+        "1|turn|FACING|IP": {
+          "n": 1299,
+          "counts": {
+            "CALL": 742,
+            "FOLD": 353,
+            "RAISE": 204
+          }
+        },
+        "1|turn|FACING|MIDDLE": {
+          "n": 639,
+          "counts": {
+            "CALL": 339,
+            "FOLD": 229,
+            "RAISE": 71
+          }
+        },
+        "1|turn|FACING|ONLY": {
+          "n": 190,
+          "counts": {
+            "CALL": 135,
+            "FOLD": 55
+          }
+        },
+        "1|turn|FACING|OOP": {
+          "n": 1265,
+          "counts": {
+            "CALL": 709,
+            "FOLD": 466,
+            "RAISE": 90
+          }
+        },
+        "1|turn|FREE|IP": {
+          "n": 2188,
+          "counts": {
+            "BET": 1110,
+            "CHECK": 1078
+          }
+        },
+        "1|turn|FREE|MIDDLE": {
+          "n": 1513,
+          "counts": {
+            "BET": 552,
+            "CHECK": 961
+          }
+        },
+        "1|turn|FREE|OOP": {
+          "n": 3628,
+          "counts": {
+            "BET": 1701,
+            "CHECK": 1927
+          }
+        },
+        "2|flop|FACING|IP": {
+          "n": 3602,
+          "counts": {
+            "CALL": 1997,
+            "FOLD": 1423,
+            "RAISE": 182
+          }
+        },
+        "2|flop|FACING|MIDDLE": {
+          "n": 3288,
+          "counts": {
+            "CALL": 1767,
+            "FOLD": 1401,
+            "RAISE": 120
+          }
+        },
+        "2|flop|FACING|ONLY": {
+          "n": 240,
+          "counts": {
+            "CALL": 108,
+            "FOLD": 132
+          }
+        },
+        "2|flop|FACING|OOP": {
+          "n": 4269,
+          "counts": {
+            "CALL": 2089,
+            "FOLD": 2084,
+            "RAISE": 96
+          }
+        },
+        "2|flop|FREE|IP": {
+          "n": 5354,
+          "counts": {
+            "BET": 987,
+            "CHECK": 4367
+          }
+        },
+        "2|flop|FREE|MIDDLE": {
+          "n": 6519,
+          "counts": {
+            "BET": 969,
+            "CHECK": 5550
+          }
+        },
+        "2|flop|FREE|OOP": {
+          "n": 7308,
+          "counts": {
+            "BET": 990,
+            "CHECK": 6318
+          }
+        },
+        "2|river|FACING|IP": {
+          "n": 2776,
+          "counts": {
+            "CALL": 1082,
+            "FOLD": 1376,
+            "RAISE": 318
+          }
+        },
+        "2|river|FACING|MIDDLE": {
+          "n": 1059,
+          "counts": {
+            "CALL": 331,
+            "FOLD": 641,
+            "RAISE": 87
+          }
+        },
+        "2|river|FACING|ONLY": {
+          "n": 334,
+          "counts": {
+            "CALL": 169,
+            "FOLD": 165
+          }
+        },
+        "2|river|FACING|OOP": {
+          "n": 2293,
+          "counts": {
+            "CALL": 741,
+            "FOLD": 1455,
+            "RAISE": 97
+          }
+        },
+        "2|river|FREE|IP": {
+          "n": 3360,
+          "counts": {
+            "BET": 934,
+            "CHECK": 2426
+          }
+        },
+        "2|river|FREE|MIDDLE": {
+          "n": 2351,
+          "counts": {
+            "BET": 519,
+            "CHECK": 1832
+          }
+        },
+        "2|river|FREE|OOP": {
+          "n": 5077,
+          "counts": {
+            "BET": 1550,
+            "CHECK": 3527
+          }
+        },
+        "2|turn|FACING|IP": {
+          "n": 3187,
+          "counts": {
+            "CALL": 1949,
+            "FOLD": 1011,
+            "RAISE": 227
+          }
+        },
+        "2|turn|FACING|MIDDLE": {
+          "n": 1844,
+          "counts": {
+            "CALL": 1009,
+            "FOLD": 747,
+            "RAISE": 88
+          }
+        },
+        "2|turn|FACING|ONLY": {
+          "n": 205,
+          "counts": {
+            "CALL": 122,
+            "FOLD": 83
+          }
+        },
+        "2|turn|FACING|OOP": {
+          "n": 2988,
+          "counts": {
+            "CALL": 1676,
+            "FOLD": 1207,
+            "RAISE": 105
+          }
+        },
+        "2|turn|FREE|IP": {
+          "n": 4328,
+          "counts": {
+            "BET": 1118,
+            "CHECK": 3210
+          }
+        },
+        "2|turn|FREE|MIDDLE": {
+          "n": 3866,
+          "counts": {
+            "BET": 638,
+            "CHECK": 3228
+          }
+        },
+        "2|turn|FREE|OOP": {
+          "n": 6141,
+          "counts": {
+            "BET": 1289,
+            "CHECK": 4852
+          }
+        }
+      }
+    },
+    {
+      "cols": [
+        "profile",
+        "street",
+        "mode"
+      ],
+      "data": {
+        "0|flop|FACING": {
+          "n": 6991,
+          "counts": {
+            "CALL": 2699,
+            "FOLD": 3979,
+            "RAISE": 313
+          }
+        },
+        "0|flop|FREE": {
+          "n": 14179,
+          "counts": {
+            "BET": 2716,
+            "CHECK": 11463
+          }
+        },
+        "0|river|FACING": {
+          "n": 3434,
+          "counts": {
+            "CALL": 1073,
+            "FOLD": 2106,
+            "RAISE": 255
+          }
+        },
+        "0|river|FREE": {
+          "n": 7355,
+          "counts": {
+            "BET": 2168,
+            "CHECK": 5187
+          }
+        },
+        "0|turn|FACING": {
+          "n": 4494,
+          "counts": {
+            "CALL": 2123,
+            "FOLD": 2146,
+            "RAISE": 225
+          }
+        },
+        "0|turn|FREE": {
+          "n": 10098,
+          "counts": {
+            "BET": 2566,
+            "CHECK": 7532
+          }
+        },
+        "1|flop|FACING": {
+          "n": 5043,
+          "counts": {
+            "CALL": 2404,
+            "FOLD": 2002,
+            "RAISE": 637
+          }
+        },
+        "1|flop|FREE": {
+          "n": 10291,
+          "counts": {
+            "BET": 4413,
+            "CHECK": 5878
+          }
+        },
+        "1|river|FACING": {
+          "n": 2617,
+          "counts": {
+            "CALL": 975,
+            "FOLD": 1337,
+            "RAISE": 305
+          }
+        },
+        "1|river|FREE": {
+          "n": 5295,
+          "counts": {
+            "BET": 2470,
+            "CHECK": 2825
+          }
+        },
+        "1|turn|FACING": {
+          "n": 3393,
+          "counts": {
+            "CALL": 1925,
+            "FOLD": 1103,
+            "RAISE": 365
+          }
+        },
+        "1|turn|FREE": {
+          "n": 7329,
+          "counts": {
+            "BET": 3363,
+            "CHECK": 3966
+          }
+        },
+        "2|flop|FACING": {
+          "n": 11399,
+          "counts": {
+            "CALL": 5961,
+            "FOLD": 5040,
+            "RAISE": 398
+          }
+        },
+        "2|flop|FREE": {
+          "n": 19181,
+          "counts": {
+            "BET": 2946,
+            "CHECK": 16235
+          }
+        },
+        "2|river|FACING": {
+          "n": 6462,
+          "counts": {
+            "CALL": 2323,
+            "FOLD": 3637,
+            "RAISE": 502
+          }
+        },
+        "2|river|FREE": {
+          "n": 10788,
+          "counts": {
+            "BET": 3003,
+            "CHECK": 7785
+          }
+        },
+        "2|turn|FACING": {
+          "n": 8224,
+          "counts": {
+            "CALL": 4756,
+            "FOLD": 3048,
+            "RAISE": 420
+          }
+        },
+        "2|turn|FREE": {
+          "n": 14335,
+          "counts": {
+            "BET": 3045,
+            "CHECK": 11290
+          }
+        }
+      }
+    },
+    {
+      "cols": [
+        "street",
+        "mode"
+      ],
+      "data": {
+        "flop|FACING": {
+          "n": 23433,
+          "counts": {
+            "CALL": 11064,
+            "FOLD": 11021,
+            "RAISE": 1348
+          }
+        },
+        "flop|FREE": {
+          "n": 43651,
+          "counts": {
+            "BET": 10075,
+            "CHECK": 33576
+          }
+        },
+        "river|FACING": {
+          "n": 12513,
+          "counts": {
+            "CALL": 4371,
+            "FOLD": 7080,
+            "RAISE": 1062
+          }
+        },
+        "river|FREE": {
+          "n": 23438,
+          "counts": {
+            "BET": 7641,
+            "CHECK": 15797
+          }
+        },
+        "turn|FACING": {
+          "n": 16111,
+          "counts": {
+            "CALL": 8804,
+            "FOLD": 6297,
+            "RAISE": 1010
+          }
+        },
+        "turn|FREE": {
+          "n": 31762,
+          "counts": {
+            "BET": 8974,
+            "CHECK": 22788
+          }
+        }
+      }
+    },
+    {
+      "cols": [],
+      "data": {
+        "ALL": {
+          "n": 150908,
+          "counts": {
+            "BET": 26690,
+            "CALL": 24239,
+            "CHECK": 72161,
+            "FOLD": 24398,
+            "RAISE": 3420
+          }
+        }
+      }
+    }
+  ]
+}
