@@ -277,7 +277,13 @@ def write_selected_zip(path: Path, selected: list[HandRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for source_file in sorted(grouped):
-            zf.writestr(source_file, "\n".join(grouped[source_file]).encode("utf-8"))
+            # ZipInfo's fixed epoch removes wall-clock timestamps from derived
+            # artifacts, so a rebuild cannot create a spurious ingestion commit.
+            info = zipfile.ZipInfo(source_file, date_time=(1980, 1, 1, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            zf.writestr(info, "\n".join(grouped[source_file]).encode("utf-8"),
+                        compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
 
 
 def main() -> None:
@@ -317,3 +323,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
