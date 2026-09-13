@@ -135,6 +135,7 @@ jobs:
           python3 - <<'PY'
           import hashlib, json
           base=json.load(open('training/models/preflop_population_model_v5.json'))
+          manifest=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json'))
           obj=json.load(open('/tmp/model-a-0912-preflop-candidate.json'))
           inc=obj['incremental_update']
           assert inc['train_population_rows_applied']==9047, inc
@@ -157,10 +158,12 @@ jobs:
               'nodes':obj['nodes'],'coverage':obj['coverage'],'hand_grid':obj.get('hand_grid'),
               'response_models':obj.get('response_models'),'revealed_policy_models':obj.get('revealed_policy_models'),
           }
+          semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+          assert semantic_sha==manifest['preflop']['semantic_sha256'], (semantic_sha,manifest['preflop']['semantic_sha256'])
           print(json.dumps({
               'status':'REBUILT','byte_sha256':hashlib.sha256(open('/tmp/model-a-0912-preflop-candidate.json','rb').read()).hexdigest(),
-              'semantic_sha256':hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
-              'expected_historical_local_sha256':'e75ac77f34362b6026ed631fcfaafbabe382a64dbc83dfd523452d45f67e8845',
+              'semantic_sha256':semantic_sha,
+              'historical_local_sha256_not_persisted':manifest['preflop']['historical_local_sha256_not_persisted'],
               'incremental_update':inc},indent=2))
           PY
       - name: Rebuild the 2026-09-12 postflop full-weight candidate
@@ -177,6 +180,7 @@ jobs:
           python3 - <<'PY'
           import hashlib, json
           p='/tmp/model-a-0912-postflop-candidate.json'
+          manifest=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json'))
           obj=json.load(open(p))
           inc=obj['incremental_update']
           assert inc['train_population_rows_applied']==15804, inc
@@ -191,5 +195,7 @@ jobs:
           }
           semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()
           byte_sha=hashlib.sha256(open(p,'rb').read()).hexdigest()
-          print(json.dumps({'status':'REBUILT','byte_sha256':byte_sha,'semantic_sha256':semantic_sha,'expected_historical_local_sha256':'45366a58e64999a65728b343c811c0b23ae1c7713bab885c2287db99b5df1d4d','incremental_update':inc},indent=2))
+          assert semantic_sha==manifest['postflop']['semantic_sha256'], (semantic_sha,manifest['postflop']['semantic_sha256'])
+          assert byte_sha==manifest['postflop']['generated_byte_sha256'], (byte_sha,manifest['postflop']['generated_byte_sha256'])
+          print(json.dumps({'status':'REBUILT','byte_sha256':byte_sha,'semantic_sha256':semantic_sha,'historical_local_sha256_not_persisted':manifest['postflop']['historical_local_sha256_not_persisted'],'incremental_update':inc},indent=2))
           PY
