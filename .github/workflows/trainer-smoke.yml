@@ -35,8 +35,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: JavaScript syntax
         run: node --check site/trainer.js
-      - name: Architecture regression checks
-        run: python3 tests/trainer/test_trainer_static.py
+      - name: All trainer regression contracts
+        run: |
+          set -euo pipefail
+          for test in tests/trainer/test_*.py; do
+            python3 "$test"
+          done
       - name: Patch idempotence
         run: |
           sha256sum site/index.html site/trainer.js > /tmp/before.sha
@@ -68,3 +72,4 @@ jobs:
       - name: Show server log on failure
         if: failure()
         run: cat /tmp/trainer-http.log || true
+
