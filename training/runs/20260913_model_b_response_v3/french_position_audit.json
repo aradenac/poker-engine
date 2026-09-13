@@ -39,13 +39,6 @@
       }
     }
   },
-  "before_fix": {
-    "full_corpus_button_missing": 994,
-    "full_corpus_french_hands": 994,
-    "test_french_hands": 101,
-    "train_french_hands": 803,
-    "validation_french_hands": 90
-  },
   "dataset_provenance": {
     "archives": [
       {
@@ -82,6 +75,13 @@
       "VALIDATION": 3073
     },
     "unique_scoped_hands": 31003
+  },
+  "defect_before_fix": {
+    "full_corpus_button_missing": 994,
+    "full_corpus_french_hands": 994,
+    "test_french_hands": 101,
+    "train_french_hands": 803,
+    "validation_french_hands": 90
   },
   "production_effect": "NONE",
   "schema": "model-b-french-position-audit/v1",
