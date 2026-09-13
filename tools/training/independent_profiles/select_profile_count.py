@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Compare Model B profile counts using VALIDATION only.
 
-TEST is intentionally not touched here. The selected K maximizes validation action
-log-loss improvement subject to non-negative range improvement; if no candidate
-meets the range constraint, the best action improvement is selected and flagged.
+TEST is intentionally not touched here. Selection first applies explicit structural
+VALIDATION constraints (range signal, profile balance, profile stability), then
+maximizes action log-loss improvement inside the feasible set. This prevents a tiny
+action-only gain from selecting unstable or undersupported micro-profiles.
 """
 
 from __future__ import annotations
@@ -21,6 +22,46 @@ from tools.training.independent_profiles.evaluate_model_b import evaluate_split,
 SCHEMA = "independent-opponent-model-b-profile-count-selection/v1"
 
 
+def choose_candidate(
+    candidates: list[dict],
+    *,
+    min_profile_weight: float = 0.0,
+    min_weighted_stability: float = 0.0,
+) -> tuple[dict, list[dict]]:
+    """Return selected candidate and the structurally feasible subset.
+
+    The constraints are evaluated on VALIDATION-only quantities. If no candidate
+    satisfies every requested constraint, selection fails instead of silently
+    relaxing a promotion guard.
+    """
+    feasible = []
+    for c in candidates:
+        stability = c.get("profile_stability_weighted")
+        if c["range_log_loss_improvement"] < 0:
+            continue
+        if c["minimum_profile_weight"] < min_profile_weight:
+            continue
+        if stability is None or stability < min_weighted_stability:
+            continue
+        feasible.append(c)
+    if not feasible:
+        raise ValueError(
+            "no profile-count candidate satisfies VALIDATION structural constraints: "
+            f"min_profile_weight={min_profile_weight}, "
+            f"min_weighted_stability={min_weighted_stability}"
+        )
+    selected = max(
+        feasible,
+        key=lambda c: (
+            c["action_log_loss_improvement"],
+            c["range_log_loss_improvement"],
+            c["profile_stability_weighted"],
+            -c["k"],
+        ),
+    )
+    return selected, feasible
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--features", type=Path, required=True)
@@ -30,6 +71,8 @@ def main() -> None:
     parser.add_argument("--k", type=int, action="append", required=True)
     parser.add_argument("--action-alpha", type=float, default=1.0)
     parser.add_argument("--range-prior-strength", type=float, default=50.0)
+    parser.add_argument("--min-profile-weight", type=float, default=0.0)
+    parser.add_argument("--min-weighted-stability", type=float, default=0.0)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -78,27 +121,30 @@ def main() -> None:
         del profiles, ranges, actions, sizings, validation
         gc.collect()
 
-    feasible = [c for c in candidates if c["range_log_loss_improvement"] >= 0]
-    pool = feasible or candidates
-    selected = max(
-        pool,
-        key=lambda c: (
-            c["action_log_loss_improvement"],
-            c["range_log_loss_improvement"],
-            c["profile_stability_weighted"] if c["profile_stability_weighted"] is not None else -1,
-            -c["k"],
-        ),
+    selected, feasible = choose_candidate(
+        candidates,
+        min_profile_weight=args.min_profile_weight,
+        min_weighted_stability=args.min_weighted_stability,
     )
+    feasible_ks = {c["k"] for c in feasible}
+    for candidate in candidates:
+        candidate["structurally_feasible"] = candidate["k"] in feasible_ks
+
     result = {
         "schema": SCHEMA,
         "selection_split": "VALIDATION",
         "test_used_for_selection": False,
-        "selection_rule": "maximize action log-loss improvement subject to non-negative range log-loss improvement; tie-break by range improvement, weighted profile stability, then smaller K",
+        "selection_rule": "filter by non-negative range improvement, minimum profile weight and minimum weighted profile stability; maximize action log-loss improvement among feasible candidates; tie-break by range improvement, stability, then smaller K",
+        "selection_constraints": {
+            "range_log_loss_improvement_min": 0.0,
+            "minimum_profile_weight": args.min_profile_weight,
+            "minimum_weighted_profile_stability": args.min_weighted_stability,
+        },
         "dataset": provenance,
         "candidates": candidates,
         "selected_k": selected["k"],
         "selected_candidate": selected,
-        "range_constraint_satisfied_by_any_candidate": bool(feasible),
+        "feasible_k": sorted(feasible_ks),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
