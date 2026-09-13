@@ -107,6 +107,7 @@
   "notes": [
     "The historical 2026-09-12 candidate files were local-only and are not falsely presented as persisted byte-identical artifacts.",
     "The persisted rebuilders plus immutable repo inputs and semantic digests are the authoritative reconstruction path.",
+    "Candidate serialization includes rebuild metadata; the semantic digest and immutable inputs are the durable identity used by CI, while a byte digest is additionally pinned where the historical serializer is fully reproduced.",
     "TEST results did not participate in selection; both components retain the v5 production baselines."
   ]
 }
