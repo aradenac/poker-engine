@@ -40,12 +40,16 @@ def test_mixed_candidate_does_not_fake_sign():
     assert stats["range_log_loss_delta_candidate_minus_incumbent"]["observed"] > 0
 
 
-def test_dataset_identity_requires_same_hands_splits_and_fingerprint():
-    dataset = {
+def canonical_dataset():
+    return {
         "unique_scoped_hands": 31003,
         "split_counts": {"TRAIN": 24755, "VALIDATION": 3073, "TEST": 3175},
         "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf",
     }
+
+
+def test_dataset_identity_requires_same_hands_splits_and_fingerprint():
+    dataset = canonical_dataset()
     left = {"dataset": dict(dataset)}
     right = {"dataset": dict(dataset)}
     assert assert_same_dataset(left, right) == dataset
@@ -59,8 +63,22 @@ def test_dataset_identity_requires_same_hands_splits_and_fingerprint():
         raise AssertionError("paired comparison accepted a different holdout identity")
 
 
+def test_dataset_identity_rejects_split_mismatch():
+    left = {"dataset": canonical_dataset()}
+    changed = canonical_dataset()
+    changed["split_counts"] = {"TRAIN": 24754, "VALIDATION": 3074, "TEST": 3175}
+    right = {"dataset": changed}
+    try:
+        assert_same_dataset(left, right)
+    except AssertionError as exc:
+        assert exc.args[0][0] == "split_counts"
+    else:
+        raise AssertionError("paired comparison accepted a different deterministic split")
+
+
 if __name__ == "__main__":
     test_better_candidate_is_negative_and_reproducible()
     test_mixed_candidate_does_not_fake_sign()
     test_dataset_identity_requires_same_hands_splits_and_fingerprint()
+    test_dataset_identity_rejects_split_mismatch()
     print("paired Model B comparison tests: PASS")
