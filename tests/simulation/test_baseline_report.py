@@ -62,8 +62,8 @@ def synthetic_arena() -> dict:
     scenarios = [
         scenario("s1", "h1", 0, 0, "BTN", "SRP", ["As", "Ah"], ["Ac", "7d", "2h"], ["9s", "Kd"], 10.0, 15.0),
         scenario("s2", "h1", 1, 1, "BTN", "SRP", ["As", "Ah"], ["Ac", "7d", "2h"], ["Ts", "Kd"], 10.0, 15.0),
-        scenario("s3", "h2", 0, 1, "CO", "3BP", ["Ks", "Qs"], ["Js", "Ts", "2d"], ["9s", "3c"], 12.0, 60.0),
-        scenario("s4", "h2", 1, 2, "CO", "3BP", ["Ks", "Qs"], ["Js", "Ts", "2d"], ["8s", "3c"], 12.0, 60.0),
+        scenario("s3", "h2", 0, 1, "CO", "3BP", ["Ks", "Qs"], ["Js", "Ts", "9d"], ["8s", "3c"], 12.0, 60.0),
+        scenario("s4", "h2", 1, 2, "CO", "3BP", ["Ks", "Qs"], ["Js", "Ts", "9d"], ["7s", "3c"], 12.0, 60.0),
     ]
     results = [
         row("s1", "h1", 0, 0, "current", 2.0, "125% pot", ratio=1.25),
