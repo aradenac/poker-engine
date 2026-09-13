@@ -8,7 +8,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from tools.training.independent_profiles.compare_model_b_paired import metric_delta, paired_bootstrap  # noqa: E402
+from tools.training.independent_profiles.compare_model_b_paired import (  # noqa: E402
+    assert_same_dataset,
+    metric_delta,
+    paired_bootstrap,
+)
 
 
 def test_better_candidate_is_negative_and_reproducible():
@@ -36,7 +40,27 @@ def test_mixed_candidate_does_not_fake_sign():
     assert stats["range_log_loss_delta_candidate_minus_incumbent"]["observed"] > 0
 
 
+def test_dataset_identity_requires_same_hands_splits_and_fingerprint():
+    dataset = {
+        "unique_scoped_hands": 31003,
+        "split_counts": {"TRAIN": 24755, "VALIDATION": 3073, "TEST": 3175},
+        "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf",
+    }
+    left = {"dataset": dict(dataset)}
+    right = {"dataset": dict(dataset)}
+    assert assert_same_dataset(left, right) == dataset
+
+    right["dataset"]["sorted_hand_ids_sha256"] = "different"
+    try:
+        assert_same_dataset(left, right)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("paired comparison accepted a different holdout identity")
+
+
 if __name__ == "__main__":
     test_better_candidate_is_negative_and_reproducible()
     test_mixed_candidate_does_not_fake_sign()
+    test_dataset_identity_requires_same_hands_splits_and_fingerprint()
     print("paired Model B comparison tests: PASS")
