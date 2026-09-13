@@ -1,0 +1,135 @@
+{
+  "schema": "independent-model-b-paired-comparison/v1",
+  "cycle": "2026-09-12",
+  "code_commit": "b677b651df38fb9e70e4c34ef125db375f116f07",
+  "contract": {
+    "path": "training/PROMOTION_GATE_CONTRACT.json",
+    "sha256": "941b42901833ee9772fb3d9291808a2dbcb6553088fdbef9d6c0ce3eaec6879a",
+    "selection_split": "VALIDATION",
+    "paired_confidence_required": true
+  },
+  "dataset": {
+    "unique_scoped_hands": 31003,
+    "split_counts": {
+      "TEST": 3175,
+      "TRAIN": 24755,
+      "VALIDATION": 3073
+    },
+    "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+  },
+  "candidate": {
+    "dir": "training/runs/20260912_population_increment_cycle/model_b/model",
+    "summary_sha256": "d275b7e998b5704b9549b519d4f520270a896bbf1b933174eca99e31b66ee6eb",
+    "profiles_sha256": "31bcd339d522de4041c798fa330bccf24e0959330823f72e29491be45e37a7f0",
+    "ranges_sha256": "599cfef065b47d8a09b67fde7aca70fcd094a17b75d61c05551d6756c9de17d7",
+    "actions_sha256": "5fb3eae1bf56f5059197740b066022bddb87df04f817497f83a3d02f27cbdbe8",
+    "sizing_sha256": "9817bb5ff4747aa02676cd9c49e1a7f569dd965baf5a048380355b86d34cb0b3"
+  },
+  "incumbent": {
+    "dir": "training/runs/20260912_independent_profiles_v2/model",
+    "summary_sha256": "b3f71ba8d36f6768e4f4242518076178916f9e1bc0fafe6ac20ff9a85584943c",
+    "profiles_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+    "ranges_sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+    "actions_sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+    "sizing_sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e"
+  },
+  "paired": {
+    "validation": {
+      "cluster_unit": "hand_id",
+      "hands": 3073,
+      "bootstrap_samples": 5000,
+      "seed": 20260913,
+      "action_log_loss_delta_candidate_minus_incumbent": {
+        "observed": 0.0001792467696841508,
+        "ci95": [
+          -0.0010721814574275925,
+          0.001402833163900634
+        ],
+        "probability_candidate_better": 0.388,
+        "decisions": 18540
+      },
+      "range_log_loss_delta_candidate_minus_incumbent": {
+        "observed": -0.016222562695234963,
+        "ci95": [
+          -0.030823961560193295,
+          -0.0016142643175274295
+        ],
+        "probability_candidate_better": 0.9848,
+        "revealed_hands": 2970
+      }
+    },
+    "test": {
+      "cluster_unit": "hand_id",
+      "hands": 3175,
+      "bootstrap_samples": 5000,
+      "seed": 21260916,
+      "action_log_loss_delta_candidate_minus_incumbent": {
+        "observed": -0.0015138432652364686,
+        "ci95": [
+          -0.0027609193999785504,
+          -0.0003144317584348304
+        ],
+        "probability_candidate_better": 0.9932,
+        "decisions": 19276
+      },
+      "range_log_loss_delta_candidate_minus_incumbent": {
+        "observed": -0.023998598556303062,
+        "ci95": [
+          -0.03972046072088407,
+          -0.008065644755457327
+        ],
+        "probability_candidate_better": 0.9988,
+        "revealed_hands": 3118
+      }
+    }
+  },
+  "guardrails": {
+    "validation": {
+      "checks": {
+        "action_ece": true,
+        "known_player_coverage": true,
+        "weighted_profile_stability": true,
+        "state_anomaly_rate": true,
+        "sizing_p10_p90_coverage": true,
+        "sizing_above_p99_tail": true
+      },
+      "pass": true,
+      "observed": {
+        "action_ece": 0.008140579241861531,
+        "known_player_coverage": 0.9812837108953614,
+        "weighted_profile_stability": 0.7194192377495463,
+        "state_anomaly_rate": 0.0007011866235167206,
+        "sizing_p10_p90_coverage": 0.7940863079381992,
+        "sizing_above_p99_tail": 0.012519978689397976
+      }
+    },
+    "test": {
+      "checks": {
+        "action_ece": true,
+        "known_player_coverage": true,
+        "weighted_profile_stability": true,
+        "state_anomaly_rate": true,
+        "sizing_p10_p90_coverage": true,
+        "sizing_above_p99_tail": true
+      },
+      "pass": true,
+      "observed": {
+        "action_ece": 0.008256416131162474,
+        "known_player_coverage": 0.9857854326623781,
+        "weighted_profile_stability": 0.7538461538461538,
+        "state_anomaly_rate": 0.0004150238638721727,
+        "sizing_p10_p90_coverage": 0.794186348300026,
+        "sizing_above_p99_tail": 0.012976901116013496
+      }
+    }
+  },
+  "decision": {
+    "validation_selection_pass": false,
+    "locked_test_confirmation_pass": true,
+    "test_used_for_selection": false,
+    "outcome": "RETAIN_INCUMBENT",
+    "production_effect": "NONE",
+    "reason": "Candidate does not clear every pre-specified paired 95% action/range and absolute guardrail requirement; incumbent remains promoted. TEST was not used to retune or select an alternative."
+  },
+  "scope_limit": "Same-structure Model B refresh only. Response-representation realism remains governed by issue #46 and is not proven by this comparison."
+}
