@@ -48,6 +48,63 @@ jobs:
             --incumbent-model-dir 'training/runs/20260912_independent_profiles_v2/model' \
             --output-dir 'training/runs/20260913_model_b_response_v3'
 
+      - name: Validate complete position coverage
+        run: |
+          python3 - <<'PY'
+          import collections, json
+          from pathlib import Path
+          from tools.datasets.build_hand_history_increment import split_for
+          from tools.training.independent_profiles.build_model_b import parse_hand
+          from tools.training.independent_profiles.build_player_features import merge_archives
+
+          archives=[
+            Path('training/datasets/NLHE_100-200/source/NLHE 100-200.zip'),
+            Path('training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'),
+            Path('training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip'),
+          ]
+          records, provenance=merge_archives(archives, {'100/200'})
+          rows=[]
+          for hid, record in records.items():
+              hand=parse_hand(record)
+              assert hand is not None
+              positions=hand.get('positions') or {}
+              rows.append({
+                'split':split_for(hid),
+                'language':record.language,
+                'button_missing':hand.get('button') is None,
+                'all_positions_na':bool(positions) and all(v=='NA' for v in positions.values()),
+              })
+          def summary(xs):
+              return {
+                'hands':len(xs),
+                'languages':dict(sorted(collections.Counter(x['language'] for x in xs).items())),
+                'button_missing':sum(x['button_missing'] for x in xs),
+                'all_positions_na':sum(x['all_positions_na'] for x in xs),
+              }
+          report={
+            'schema':'model-b-french-position-audit/v1',
+            'status':'PASS_AFTER_FIX',
+            'defect_before_fix':{
+              'full_corpus_french_hands':994,
+              'full_corpus_button_missing':994,
+              'train_french_hands':803,
+              'validation_french_hands':90,
+              'test_french_hands':101
+            },
+            'dataset_provenance':provenance,
+            'after_fix':{
+              'full_corpus':summary(rows),
+              'by_split':{s:summary([x for x in rows if x['split']==s]) for s in ('TRAIN','VALIDATION','TEST')},
+            },
+            'production_effect':'NONE'
+          }
+          assert report['after_fix']['full_corpus']['hands']==31003
+          assert report['after_fix']['full_corpus']['button_missing']==0, report
+          assert report['after_fix']['full_corpus']['all_positions_na']==0, report
+          out=Path('training/runs/20260913_model_b_response_v3/french_position_audit.json')
+          out.write_text(json.dumps(report,indent=2,ensure_ascii=False,sort_keys=True)+'\n')
+          PY
+
       - name: Validate selection protocol
         run: |
           python3 - <<'PY'
@@ -63,6 +120,10 @@ jobs:
           assert d['production_effect'] == 'NONE'
           assert 'no Model A outputs' in d['independence_contract']
           assert d['strength_conditioning']['status'] == 'withheld_revealed_selection_bias'
+          audit=json.loads(Path('training/runs/20260913_model_b_response_v3/french_position_audit.json').read_text())
+          assert audit['status']=='PASS_AFTER_FIX'
+          assert audit['after_fix']['full_corpus']['button_missing']==0
+          assert audit['after_fix']['full_corpus']['all_positions_na']==0
           if d['selected_variant'] is None:
               assert d['test_locked_confirmation'] is None
               assert d['decision'] == 'RETAIN_INCUMBENT'
