@@ -1,0 +1,517 @@
+{
+  "schema": "sequential-environment-drift-report/v1",
+  "provenance": {
+    "scenario_fingerprint_sha256": "e96bdd997c5166c1f911ec1640f535f91385b71bd24c4880128dbd5e41fbaa3e",
+    "scenario_split": "VALIDATION",
+    "master_seed": 20260912,
+    "trials": 1200,
+    "engine": {
+      "path": "site/index.html",
+      "sha256": "d17da4b43a8bd6e33513969979f57cac6fc22155047c029ccb92dca8864cb9e0"
+    },
+    "model_a": {
+      "preflop": {
+        "path": "training/models/preflop_population_model_v5.json",
+        "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+      },
+      "postflop": {
+        "path": "training/models/postflop_population_model_v5.json",
+        "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+      }
+    },
+    "incumbent_model_b": {
+      "alias": "independent_model_b_v2",
+      "artifact_sha256": {
+        "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+        "preflop_ranges.json": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+        "postflop_actions.json": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+        "sizing.json": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e",
+        "prediction_contract.json": "e682e1000006b0bd3128c591af2dba9d5668a06d41219669cbf7cb66f9e2bb4e"
+      }
+    },
+    "candidate_model_b": {
+      "alias": "candidate",
+      "artifact_sha256": {
+        "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+        "preflop_ranges.json": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+        "postflop_actions.json": "eeeeaf210b658a77ceae502859cad0f93fc599ccb11200693ac5adfcc5c8ba12",
+        "sizing.json": "1b80a165d102e86cd80af5779f1564df8e123c9d5ae87d3fea02f741d89f2c1b",
+        "prediction_contract.json": "10e527b55bb10447c9471782198838f0dabbef7919e14f3543d5f0f5b5f47335"
+      }
+    },
+    "scenario_materialization": {
+      "retargeted": true,
+      "source_alias": "independent_model_b_v2",
+      "target_alias": "independent_model_b_v3_response_conditioned_candidate",
+      "dependency_files": [
+        "profiles.json",
+        "preflop_ranges.json"
+      ],
+      "dependency_sha256": {
+        "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+        "preflop_ranges.json": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf"
+      },
+      "scenario_fingerprint_unchanged": true
+    },
+    "strategy_changed": false,
+    "model_a_changed": false,
+    "production_effect": "NONE",
+    "input_sha256": {
+      "incumbent_arena": "2044446ccdcc4e3dd9cda2034f9563ea20484f2c3a7358015ccd77edc5d7b9d9",
+      "candidate_arena": "3fa6eab45182a397e73bb970869f6ced4cd9cf62c484eb4a5f28ceace7280d98"
+    }
+  },
+  "current_policy": {
+    "overall": {
+      "paired_scenarios": 64,
+      "paired_base_hands": 32,
+      "mean_incumbent_utility_bb": 16.145780078125,
+      "mean_candidate_utility_bb": 9.998744921875,
+      "mean_delta_candidate_minus_incumbent_bb": -6.1470351562499985,
+      "delta_ci95_cluster_bootstrap": [
+        -13.105774140625,
+        -0.7307256250000073
+      ],
+      "same_terminal_fraction": 0.8125,
+      "same_hero_action_sequence_fraction": 0.703125,
+      "same_first_hero_action_fraction": 0.96875
+    },
+    "by_profile": {
+      "0": {
+        "paired_scenarios": 39,
+        "paired_base_hands": 28,
+        "mean_incumbent_utility_bb": 24.194928846153843,
+        "mean_candidate_utility_bb": 15.70814935897436,
+        "mean_delta_candidate_minus_incumbent_bb": -8.486779487179486,
+        "delta_ci95_cluster_bootstrap": [
+          -18.166331518640344,
+          -1.8672395489926645
+        ],
+        "same_terminal_fraction": 0.8461538461538461,
+        "same_hero_action_sequence_fraction": 0.717948717948718,
+        "same_first_hero_action_fraction": 0.9487179487179487
+      },
+      "1": {
+        "paired_scenarios": 10,
+        "paired_base_hands": 10,
+        "mean_incumbent_utility_bb": 5.925560000000002,
+        "mean_candidate_utility_bb": 10.526885,
+        "mean_delta_candidate_minus_incumbent_bb": 4.601324999999998,
+        "delta_ci95_cluster_bootstrap": [
+          -1.1782700000000017,
+          11.906042124999995
+        ],
+        "same_terminal_fraction": 0.7,
+        "same_hero_action_sequence_fraction": 0.5,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "2": {
+        "paired_scenarios": 15,
+        "paired_base_hands": 13,
+        "mean_incumbent_utility_bb": 2.031473333333334,
+        "mean_candidate_utility_bb": -5.197799999999999,
+        "mean_delta_candidate_minus_incumbent_bb": -7.229273333333333,
+        "delta_ci95_cluster_bootstrap": [
+          -25.166861346153848,
+          1.5154538461538465
+        ],
+        "same_terminal_fraction": 0.8,
+        "same_hero_action_sequence_fraction": 0.8,
+        "same_first_hero_action_fraction": 1.0
+      }
+    },
+    "by_hero_position": {
+      "BB": {
+        "paired_scenarios": 30,
+        "paired_base_hands": 15,
+        "mean_incumbent_utility_bb": 11.449605833333333,
+        "mean_candidate_utility_bb": 6.001164166666666,
+        "mean_delta_candidate_minus_incumbent_bb": -5.4484416666666675,
+        "delta_ci95_cluster_bootstrap": [
+          -17.68062125,
+          2.3093495416666623
+        ],
+        "same_terminal_fraction": 0.7666666666666667,
+        "same_hero_action_sequence_fraction": 0.5666666666666667,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "BTN": {
+        "paired_scenarios": 8,
+        "paired_base_hands": 4,
+        "mean_incumbent_utility_bb": 16.867575,
+        "mean_candidate_utility_bb": 16.867575,
+        "mean_delta_candidate_minus_incumbent_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "same_terminal_fraction": 1.0,
+        "same_hero_action_sequence_fraction": 1.0,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "CO": {
+        "paired_scenarios": 6,
+        "paired_base_hands": 3,
+        "mean_incumbent_utility_bb": 15.373941666666662,
+        "mean_candidate_utility_bb": 4.6976499999999985,
+        "mean_delta_candidate_minus_incumbent_bb": -10.676291666666664,
+        "delta_ci95_cluster_bootstrap": [
+          -32.02887499999999,
+          0.0
+        ],
+        "same_terminal_fraction": 0.8333333333333334,
+        "same_hero_action_sequence_fraction": 1.0,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "HJ": {
+        "paired_scenarios": 4,
+        "paired_base_hands": 2,
+        "mean_incumbent_utility_bb": 24.188625000000002,
+        "mean_candidate_utility_bb": 20.673125,
+        "mean_delta_candidate_minus_incumbent_bb": -3.515500000000003,
+        "delta_ci95_cluster_bootstrap": [
+          -5.8873500000000085,
+          -1.1436499999999974
+        ],
+        "same_terminal_fraction": 0.75,
+        "same_hero_action_sequence_fraction": 0.5,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "LJ": {
+        "paired_scenarios": 12,
+        "paired_base_hands": 6,
+        "mean_incumbent_utility_bb": 21.807999999999996,
+        "mean_candidate_utility_bb": 9.154895833333338,
+        "mean_delta_candidate_minus_incumbent_bb": -12.653104166666658,
+        "delta_ci95_cluster_bootstrap": [
+          -30.374016666666638,
+          -1.6833041666666668
+        ],
+        "same_terminal_fraction": 0.75,
+        "same_hero_action_sequence_fraction": 0.6666666666666666,
+        "same_first_hero_action_fraction": 0.8333333333333334
+      },
+      "SB": {
+        "paired_scenarios": 4,
+        "paired_base_hands": 2,
+        "mean_incumbent_utility_bb": 26.05175,
+        "mean_candidate_utility_bb": 26.05175,
+        "mean_delta_candidate_minus_incumbent_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "same_terminal_fraction": 1.0,
+        "same_hero_action_sequence_fraction": 1.0,
+        "same_first_hero_action_fraction": 1.0
+      }
+    },
+    "by_initial_spr": {
+      "16+": {
+        "paired_scenarios": 24,
+        "paired_base_hands": 12,
+        "mean_incumbent_utility_bb": 10.407586458333334,
+        "mean_candidate_utility_bb": 2.499380208333333,
+        "mean_delta_candidate_minus_incumbent_bb": -7.908206250000002,
+        "delta_ci95_cluster_bootstrap": [
+          -22.047305,
+          -0.4586312500000002
+        ],
+        "same_terminal_fraction": 0.8333333333333334,
+        "same_hero_action_sequence_fraction": 0.75,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "2-4": {
+        "paired_scenarios": 6,
+        "paired_base_hands": 3,
+        "mean_incumbent_utility_bb": 34.7521,
+        "mean_candidate_utility_bb": 34.7521,
+        "mean_delta_candidate_minus_incumbent_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "same_terminal_fraction": 1.0,
+        "same_hero_action_sequence_fraction": 1.0,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "4-8": {
+        "paired_scenarios": 12,
+        "paired_base_hands": 6,
+        "mean_incumbent_utility_bb": 2.508999999999999,
+        "mean_candidate_utility_bb": 4.182604166666667,
+        "mean_delta_candidate_minus_incumbent_bb": 1.6736041666666672,
+        "delta_ci95_cluster_bootstrap": [
+          -3.053591666666667,
+          7.622287500000001
+        ],
+        "same_terminal_fraction": 0.9166666666666666,
+        "same_hero_action_sequence_fraction": 0.5833333333333334,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "8-16": {
+        "paired_scenarios": 22,
+        "paired_base_hands": 11,
+        "mean_incumbent_utility_bb": 24.769420454545454,
+        "mean_candidate_utility_bb": 14.601395454545457,
+        "mean_delta_candidate_minus_incumbent_bb": -10.168024999999997,
+        "delta_ci95_cluster_bootstrap": [
+          -21.38524443181817,
+          -1.3633394318181826
+        ],
+        "same_terminal_fraction": 0.6818181818181818,
+        "same_hero_action_sequence_fraction": 0.6363636363636364,
+        "same_first_hero_action_fraction": 0.9090909090909091
+      }
+    },
+    "by_pot_type": {
+      "3BP": {
+        "paired_scenarios": 4,
+        "paired_base_hands": 2,
+        "mean_incumbent_utility_bb": 20.9630375,
+        "mean_candidate_utility_bb": 15.539599999999997,
+        "mean_delta_candidate_minus_incumbent_bb": -5.4234375,
+        "delta_ci95_cluster_bootstrap": [
+          -10.846875,
+          0.0
+        ],
+        "same_terminal_fraction": 1.0,
+        "same_hero_action_sequence_fraction": 0.75,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "LIMPED": {
+        "paired_scenarios": 14,
+        "paired_base_hands": 7,
+        "mean_incumbent_utility_bb": 2.66275,
+        "mean_candidate_utility_bb": 2.577417857142857,
+        "mean_delta_candidate_minus_incumbent_bb": -0.08533214285714319,
+        "delta_ci95_cluster_bootstrap": [
+          -1.6213107142857142,
+          1.8589142857142857
+        ],
+        "same_terminal_fraction": 0.7857142857142857,
+        "same_hero_action_sequence_fraction": 0.7142857142857143,
+        "same_first_hero_action_fraction": 1.0
+      },
+      "SRP": {
+        "paired_scenarios": 46,
+        "paired_base_hands": 23,
+        "mean_incumbent_utility_bb": 19.83041902173913,
+        "mean_candidate_utility_bb": 11.775596195652176,
+        "mean_delta_candidate_minus_incumbent_bb": -8.054822826086955,
+        "delta_ci95_cluster_bootstrap": [
+          -17.38321288043478,
+          -0.5662095923913063
+        ],
+        "same_terminal_fraction": 0.8043478260869565,
+        "same_hero_action_sequence_fraction": 0.6956521739130435,
+        "same_first_hero_action_fraction": 0.9565217391304348
+      }
+    }
+  },
+  "policy_sensitivity": {
+    "available": true,
+    "incumbent": {
+      "cap_2": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": -6.0253,
+        "delta_ci95_cluster_bootstrap": [
+          -14.402214843749999,
+          -2.2065682614427006e-16
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 60,
+          "loss": 4
+        }
+      },
+      "cap_3": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": -6.0253,
+        "delta_ci95_cluster_bootstrap": [
+          -14.429330468749995,
+          -2.220446049250313e-16
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 60,
+          "loss": 4
+        }
+      },
+      "cap_4": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": -6.0253,
+        "delta_ci95_cluster_bootstrap": [
+          -14.243964843749996,
+          0.0
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 60,
+          "loss": 4
+        }
+      },
+      "no_jam": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 64,
+          "loss": 0
+        }
+      }
+    },
+    "candidate": {
+      "cap_2": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.6449656249999987,
+        "delta_ci95_cluster_bootstrap": [
+          -4.865307812500003,
+          7.028267187499999
+        ],
+        "win_tie_loss": {
+          "win": 2,
+          "tie": 60,
+          "loss": 2
+        }
+      },
+      "cap_3": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.8730281249999987,
+        "delta_ci95_cluster_bootstrap": [
+          -4.637245312500003,
+          7.256329687499999
+        ],
+        "win_tie_loss": {
+          "win": 2,
+          "tie": 61,
+          "loss": 1
+        }
+      },
+      "cap_4": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.8730281249999989,
+        "delta_ci95_cluster_bootstrap": [
+          -4.637245312500003,
+          7.256329687499999
+        ],
+        "win_tie_loss": {
+          "win": 2,
+          "tie": 61,
+          "loss": 1
+        }
+      },
+      "no_jam": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 64,
+          "loss": 0
+        }
+      }
+    },
+    "incumbent_regret": {
+      "definition": "Diagnostic regret of current versus the best realized utility among only the explicitly evaluated policy variants; not exhaustive action-level counterfactual regret.",
+      "policy_set": [
+        "cap_2",
+        "cap_3",
+        "cap_4",
+        "current",
+        "no_jam"
+      ],
+      "paired_scenarios": 64,
+      "mean_regret_bb": 4.440892098500626e-16,
+      "ci95_cluster_bootstrap": [
+        0.0,
+        1.3322676295501878e-15
+      ]
+    },
+    "candidate_regret": {
+      "definition": "Diagnostic regret of current versus the best realized utility among only the explicitly evaluated policy variants; not exhaustive action-level counterfactual regret.",
+      "policy_set": [
+        "cap_2",
+        "cap_3",
+        "cap_4",
+        "current",
+        "no_jam"
+      ],
+      "paired_scenarios": 64,
+      "mean_regret_bb": 2.56653046875,
+      "ci95_cluster_bootstrap": [
+        0.0,
+        7.5518374999999995
+      ]
+    },
+    "difference_in_difference": {
+      "no_jam": {
+        "estimate_bb": 0.0,
+        "ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "paired_scenarios": 64
+      },
+      "cap_2": {
+        "estimate_bb": 6.670265624999997,
+        "ci95_cluster_bootstrap": [
+          0.7358579101562511,
+          14.215998300781248
+        ],
+        "paired_scenarios": 64
+      },
+      "cap_3": {
+        "estimate_bb": 6.898328124999997,
+        "ci95_cluster_bootstrap": [
+          0.74016015625,
+          14.284937519531237
+        ],
+        "paired_scenarios": 64
+      },
+      "cap_4": {
+        "estimate_bb": 6.898328124999997,
+        "ci95_cluster_bootstrap": [
+          0.7401601562499998,
+          14.827934374999993
+        ],
+        "paired_scenarios": 64
+      }
+    }
+  },
+  "scope": {
+    "supported": [
+      "heads_up_postflop"
+    ],
+    "not_supported": [
+      "multiway",
+      "preflop",
+      "overall_cash_game_win_rate"
+    ],
+    "candidate_response_dimension": "facing_price_to_pot",
+    "strategy_promotion_authorized": false
+  }
+}

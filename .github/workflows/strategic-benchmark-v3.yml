@@ -1,0 +1,293 @@
+name: Paired v83 strategic benchmark v2 vs v3
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-39-strategic-benchmark-v3-20260913
+    paths:
+      - 'tools/simulation/retarget_scenario_manifest.py'
+      - 'tools/simulation/conditioned_baseline_runner.py'
+      - 'tools/simulation/conditioned_baseline_report.py'
+      - 'tools/simulation/environment_drift_report.py'
+      - 'tests/simulation/test_environment_drift_report.py'
+      - 'training/runs/20260913_model_b_response_v3/**'
+      - '.github/workflows/strategic-benchmark-v3.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strategic-benchmark-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  V2_MODEL: training/runs/20260912_independent_profiles_v2/model
+  V3_MODEL: training/runs/20260913_model_b_response_v3/selected_candidate/model
+  V3_SELECTION: training/runs/20260913_model_b_response_v3/selection.json
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and test paired-environment contracts
+        run: |
+          python3 -m py_compile \
+            tools/simulation/retarget_scenario_manifest.py \
+            tools/simulation/conditioned_baseline_runner.py \
+            tools/simulation/conditioned_baseline_report.py \
+            tools/simulation/environment_drift_report.py
+          python3 tests/simulation/test_environment_drift_report.py
+          python3 tests/simulation/test_model_b_conditioned_runtime.py
+          python3 - <<'PY'
+          import json
+          d=json.load(open('training/runs/20260913_model_b_response_v3/selection.json'))
+          assert d['selected_variant']=='price'
+          assert d['decision']=='PROMOTE_RESPONSE_CANDIDATE'
+          assert d['production_effect']=='NONE'
+          assert d['selection_policy']['test_used_for_selection'] is False
+          PY
+
+  scenarios:
+    needs: contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Freeze shared v2 scenario manifests
+        run: |
+          mkdir -p /tmp/scenarios
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 32 --reps 2 --seed 20260912 --split VALIDATION \
+            --scenario-out /tmp/scenarios/validation-v2.json --out /tmp/gen-validation.json
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 32 --reps 2 --seed 20260912 --split TEST \
+            --scenario-out /tmp/scenarios/test-v2.json --out /tmp/gen-test.json
+      - name: Retarget only after scenario dependencies match exactly
+        run: |
+          python3 tools/simulation/retarget_scenario_manifest.py \
+            --manifest /tmp/scenarios/validation-v2.json \
+            --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
+            --out /tmp/scenarios/validation-v3.json
+          python3 tools/simulation/retarget_scenario_manifest.py \
+            --manifest /tmp/scenarios/test-v2.json \
+            --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
+            --out /tmp/scenarios/test-v3.json
+          python3 - <<'PY'
+          import json
+          for split in ('validation','test'):
+              a=json.load(open(f'/tmp/scenarios/{split}-v2.json'))
+              b=json.load(open(f'/tmp/scenarios/{split}-v3.json'))
+              assert a['scenario_fingerprint_sha256']==b['scenario_fingerprint_sha256']
+              assert a['scenarios']==b['scenarios']
+              assert len(a['scenarios'])==64
+              assert len({x['hand_id'] for x in a['scenarios']})==32
+              assert b['scenario_materialization_provenance']['scenario_fingerprint_unchanged'] is True
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue39-scenarios
+          path: /tmp/scenarios/*.json
+
+  arena:
+    needs: scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: validation-v2
+            split: validation
+            env: v2
+            runner: tools.simulation.baseline_runner
+            reporter: tools.simulation.baseline_report
+            policies: current,no_jam,cap_2,cap_3,cap_4
+          - name: validation-v3
+            split: validation
+            env: v3
+            runner: tools.simulation.conditioned_baseline_runner
+            reporter: tools.simulation.conditioned_baseline_report
+            policies: current,no_jam,cap_2,cap_3,cap_4
+          - name: test-v2
+            split: test
+            env: v2
+            runner: tools.simulation.baseline_runner
+            reporter: tools.simulation.baseline_report
+            policies: current
+          - name: test-v3
+            split: test
+            env: v3
+            runner: tools.simulation.conditioned_baseline_runner
+            reporter: tools.simulation.conditioned_baseline_report
+            policies: current
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue39-scenarios
+          path: /tmp/scenarios
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Run frozen v83 arena
+        env:
+          MATRIX_ENV: ${{ matrix.env }}
+          MATRIX_SPLIT: ${{ matrix.split }}
+          MATRIX_RUNNER: ${{ matrix.runner }}
+          MATRIX_POLICIES: ${{ matrix.policies }}
+        run: |
+          mkdir -p /tmp/out
+          EXTRA=()
+          if [ "$MATRIX_ENV" = v3 ]; then EXTRA=(--model-b-dir "$V3_MODEL"); fi
+          python3 -m "$MATRIX_RUNNER" \
+            --scenario-manifest "/tmp/scenarios/${MATRIX_SPLIT}-${MATRIX_ENV}.json" \
+            --trials 1200 --policies "$MATRIX_POLICIES" \
+            "${EXTRA[@]}" --out /tmp/out/arena.json
+      - name: Build baseline report
+        run: python3 -m ${{ matrix.reporter }} --arena /tmp/out/arena.json --out /tmp/out/report.json
+      - name: Validate arena identity
+        env:
+          MATRIX_ENV: ${{ matrix.env }}
+          MATRIX_SPLIT: ${{ matrix.split }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          a=json.load(open('/tmp/out/arena.json'))
+          r=json.load(open('/tmp/out/report.json'))
+          assert a['schema']=='sequential-independent-arena/v2'
+          assert a['metadata']['scenario_split']==os.environ['MATRIX_SPLIT'].upper()
+          assert a['metadata']['observed_monte_carlo_trials']==[1200]
+          assert r['sample']['base_hands']==32
+          assert r['sample']['scenarios']==64
+          assert 'oracle_reconstruction_fallback' in a['metadata']
+          if os.environ['MATRIX_ENV']=='v3':
+              assert r['environment_variant']=='independent_model_b_v3_response_conditioned_candidate'
+              assert r['promotion_status']['production_effect']=='NONE'
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue39-${{ matrix.name }}
+          path: /tmp/out/*.json
+
+  compare-and-persist:
+    needs: arena
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue39-validation-v2
+          path: /tmp/validation-v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue39-validation-v3
+          path: /tmp/validation-v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue39-test-v2
+          path: /tmp/test-v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue39-test-v3
+          path: /tmp/test-v3
+      - name: Measure paired environment drift
+        run: |
+          python3 -m tools.simulation.environment_drift_report \
+            --incumbent-arena /tmp/validation-v2/arena.json \
+            --candidate-arena /tmp/validation-v3/arena.json \
+            --out /tmp/validation-drift.json
+          python3 -m tools.simulation.environment_drift_report \
+            --incumbent-arena /tmp/test-v2/arena.json \
+            --candidate-arena /tmp/test-v3/arena.json \
+            --out /tmp/test-drift.json
+      - name: Validate protected benchmark contract
+        run: |
+          python3 - <<'PY'
+          import json
+          s=json.load(open('training/runs/20260913_model_b_response_v3/selection.json'))
+          v=json.load(open('/tmp/validation-drift.json'))
+          t=json.load(open('/tmp/test-drift.json'))
+          vr=json.load(open('/tmp/validation-v3/report.json'))
+          tr=json.load(open('/tmp/test-v3/report.json'))
+          assert s['selected_variant']=='price' and s['production_effect']=='NONE'
+          for d in (v,t):
+              assert d['schema']=='sequential-environment-drift-report/v1'
+              assert d['provenance']['strategy_changed'] is False
+              assert d['provenance']['model_a_changed'] is False
+              assert d['provenance']['production_effect']=='NONE'
+              assert d['current_policy']['overall']['paired_base_hands']==32
+              assert d['current_policy']['overall']['delta_ci95_cluster_bootstrap'] is not None
+          assert v['policy_sensitivity']['available'] is True
+          assert t['policy_sensitivity']['available'] is False
+          assert vr['diagnostic_policy_set_regret'] is not None
+          assert tr['diagnostic_policy_set_regret'] is None
+          PY
+      - name: Persist aggregate benchmark evidence
+        run: |
+          OUT=training/evaluations/20260913_v83_model_b_v3_baseline
+          mkdir -p "$OUT"
+          cp /tmp/validation-v3/report.json "$OUT/validation_baseline_report.json"
+          cp /tmp/test-v3/report.json "$OUT/test_baseline_report.json"
+          cp /tmp/validation-drift.json "$OUT/validation_environment_drift.json"
+          cp /tmp/test-drift.json "$OUT/test_environment_drift.json"
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          out=Path('training/evaluations/20260913_v83_model_b_v3_baseline')
+          val=json.load(open(out/'validation_baseline_report.json'))
+          test=json.load(open(out/'test_baseline_report.json'))
+          vd=json.load(open(out/'validation_environment_drift.json'))
+          td=json.load(open(out/'test_environment_drift.json'))
+          sel_path=Path('training/runs/20260913_model_b_response_v3/selection.json')
+          sel=json.load(open(sel_path)
+          )
+          pathologies={
+              'schema':'sequential-v83-model-b-v3-pathologies/v1',
+              'validation':val['policies']['current']['suspicious_decisions'],
+              'test':test['policies']['current']['suspicious_decisions'],
+              'rule':'Diagnostic fixtures only; TEST states are not strategy-selection targets.'
+          }
+          (out/'suspicious_states.json').write_text(json.dumps(pathologies,indent=2,ensure_ascii=False)+'\n')
+          ref={
+              'schema':'sequential-v83-model-b-v3-benchmark-reference/v1',
+              'candidate_selection_sha256':hashlib.sha256(sel_path.read_bytes()).hexdigest(),
+              'selected_response_variant':sel['selected_variant'],
+              'candidate_production_effect':sel['production_effect'],
+              'validation':vd['current_policy']['overall'],
+              'test':td['current_policy']['overall'],
+              'validation_policy_sensitivity':vd['policy_sensitivity'],
+              'validation_scenario_fingerprint':vd['provenance']['scenario_fingerprint_sha256'],
+              'test_scenario_fingerprint':td['provenance']['scenario_fingerprint_sha256'],
+              'candidate_model_b':vd['provenance']['candidate_model_b'],
+              'engine':vd['provenance']['engine'],
+              'model_a':vd['provenance']['model_a'],
+              'scope':vd['scope'],
+          }
+          (out/'benchmark_reference.json').write_text(json.dumps(ref,indent=2,ensure_ascii=False)+'\n')
+          vo=vd['current_policy']['overall']; to=td['current_policy']['overall']
+          text=f'''# v83 / response-conditioned Model B v3 strategic baseline\n\nIssue #39 benchmark with Hero v83 and Model A frozen. The selected Model B candidate changes only postflop response/sizing and conditions FACING behavior on price-to-pot. Production pointers are unchanged.\n\nThe benchmark uses master seed 20260912, 32 base hands per split, 2 deterministic repetitions and 1200 analyser trials per decision. VALIDATION runs current/no_jam/cap_2/cap_3/cap_4; TEST runs current only. v2 and v3 consume identical cards, profiles, runouts and seeds after byte-identical profile/range dependency verification.\n\nVALIDATION candidate-minus-v2 current-policy realized utility delta: {vo['mean_delta_candidate_minus_incumbent_bb']:.6f} BB, CI95 {vo['delta_ci95_cluster_bootstrap']}.\n\nTEST candidate-minus-v2 current-policy realized utility delta: {to['mean_delta_candidate_minus_incumbent_bb']:.6f} BB, CI95 {to['delta_ci95_cluster_bootstrap']}.\n\nThis is heads-up postflop environment evidence, not an overall cash-game win rate. It does not authorize Hero strategy or Model B production promotion. TEST is reserved confirmation evidence and must not be tuned against.\n'''
+          (out/'README.md').write_text(text)
+          PY
+          git config user.name 'poker-engine benchmark bot'
+          git config user.email 'benchmark-bot@users.noreply.github.com'
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            echo 'Benchmark evidence already current.'
+            exit 0
+          fi
+          git commit -m 'Persist v83 strategic benchmark against Model B v3'
+          git push origin HEAD:${GITHUB_REF_NAME}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: issue39-environment-drift
+          path: |
+            /tmp/validation-drift.json
+            /tmp/test-drift.json
