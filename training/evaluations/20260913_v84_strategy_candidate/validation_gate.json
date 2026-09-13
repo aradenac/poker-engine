@@ -1,0 +1,68 @@
+{
+  "schema": "paired-strategy-candidate-report/v1",
+  "phase": "VALIDATION",
+  "metric": "conditional_postflop_utility_bb",
+  "interpretation": "Future utility measured from the generated flop state; preflop contributions are sunk and this is not an overall cash-game win rate.",
+  "paired_scenarios": 64,
+  "paired_base_hands": 32,
+  "mean_baseline_utility_bb": 9.998744921875,
+  "mean_candidate_utility_bb": 10.038586328125001,
+  "mean_delta_candidate_minus_v83_bb": 0.039841406250000266,
+  "delta_ci95_cluster_bootstrap": [
+    -4.440892098500626e-16,
+    0.1195242187500008
+  ],
+  "required_ci95_lower_at_least": 0.0,
+  "gate_pass": false,
+  "decision": "RETAIN_V83",
+  "same_terminal_fraction": 1.0,
+  "same_action_sequence_fraction": 0.859375,
+  "selection_split": "VALIDATION",
+  "test_used_for_selection": false,
+  "provenance": {
+    "scenario_fingerprint_sha256": "e96bdd997c5166c1f911ec1640f535f91385b71bd24c4880128dbd5e41fbaa3e",
+    "master_seed": 20260912,
+    "trials": 1200,
+    "model_a": {
+      "preflop": {
+        "path": "training/models/preflop_population_model_v5.json",
+        "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+      },
+      "postflop": {
+        "path": "training/models/postflop_population_model_v5.json",
+        "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+      }
+    },
+    "model_b": {
+      "alias": "candidate",
+      "artifact_sha256": {
+        "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+        "preflop_ranges.json": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+        "postflop_actions.json": "eeeeaf210b658a77ceae502859cad0f93fc599ccb11200693ac5adfcc5c8ba12",
+        "sizing.json": "1b80a165d102e86cd80af5779f1564df8e123c9d5ae87d3fea02f741d89f2c1b",
+        "prediction_contract.json": "10e527b55bb10447c9471782198838f0dabbef7919e14f3543d5f0f5b5f47335"
+      }
+    },
+    "baseline_engine": {
+      "path": "site/index.html",
+      "sha256": "d17da4b43a8bd6e33513969979f57cac6fc22155047c029ccb92dca8864cb9e0"
+    },
+    "candidate_engine": {
+      "path": "/tmp/v84.html",
+      "sha256": "0649784bc2c25504ec3b96828be9e88977db2b295cace0fc388833f880ae5dc7"
+    }
+  },
+  "scope": {
+    "candidate_change": "postflop sizing candidate grid only",
+    "supported": [
+      "heads_up_postflop"
+    ],
+    "preflop_changed": false,
+    "multiway_promotion_supported": false
+  },
+  "input_sha256": {
+    "baseline_arena": "1b35c7b398091580559fbde8e372d59f4e8541edb0deb0b333a259204dde464a",
+    "candidate_arena": "c925baf50077b296b1a549e711002e70dcef782f1c6843b7dd32de6d96ab0e57",
+    "gate_contract": "941b42901833ee9772fb3d9291808a2dbcb6553088fdbef9d6c0ce3eaec6879a"
+  }
+}
