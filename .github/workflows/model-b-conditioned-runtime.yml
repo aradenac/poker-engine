@@ -1,0 +1,26 @@
+name: Model B conditioned runtime
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/simulation/model_b_conditioned_runtime.py'
+      - 'tools/simulation/sequential_postflop_conditioned.py'
+      - 'tests/simulation/test_model_b_conditioned_runtime.py'
+      - 'training/runs/20260913_model_b_response_v3/**'
+      - '.github/workflows/model-b-conditioned-runtime.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile isolated arena
+        run: |
+          python3 -m py_compile tools/simulation/model_b_conditioned_runtime.py
+          python3 -m py_compile tools/simulation/sequential_postflop_conditioned.py
+      - name: Test price-conditioned runtime
+        run: python3 tests/simulation/test_model_b_conditioned_runtime.py
