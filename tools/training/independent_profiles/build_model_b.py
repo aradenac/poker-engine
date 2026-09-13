@@ -352,7 +352,7 @@ def parse_hand(record: HandRecord) -> dict | None:
     button = None
     button_patterns = [
         r"Seat #(\d+) is the button",
-        r"(?:Siège|Siege|Place)\s*#?(\d+)\s+est le bouton",
+        r"(?:Siège|Siege|Place)\s*#?(\d+)\s+est\s+(?:le|au)\s+bouton",
     ]
     for pattern in button_patterns:
         m = re.search(pattern, record.text, re.I)

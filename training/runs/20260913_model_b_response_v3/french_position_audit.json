@@ -1,0 +1,89 @@
+{
+  "after_fix": {
+    "by_split": {
+      "TEST": {
+        "all_positions_na": 0,
+        "button_missing": 0,
+        "hands": 3175,
+        "languages": {
+          "en": 3074,
+          "fr": 101
+        }
+      },
+      "TRAIN": {
+        "all_positions_na": 0,
+        "button_missing": 0,
+        "hands": 24755,
+        "languages": {
+          "en": 23952,
+          "fr": 803
+        }
+      },
+      "VALIDATION": {
+        "all_positions_na": 0,
+        "button_missing": 0,
+        "hands": 3073,
+        "languages": {
+          "en": 2983,
+          "fr": 90
+        }
+      }
+    },
+    "full_corpus": {
+      "all_positions_na": 0,
+      "button_missing": 0,
+      "hands": 31003,
+      "languages": {
+        "en": 30009,
+        "fr": 994
+      }
+    }
+  },
+  "before_fix": {
+    "full_corpus_button_missing": 994,
+    "full_corpus_french_hands": 994,
+    "test_french_hands": 101,
+    "train_french_hands": 803,
+    "validation_french_hands": 90
+  },
+  "dataset_provenance": {
+    "archives": [
+      {
+        "parsed_hands": 27164,
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "scoped_hands": 26560,
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6"
+      },
+      {
+        "parsed_hands": 27677,
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "scoped_hands": 11709,
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c"
+      },
+      {
+        "parsed_hands": 3268,
+        "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+        "scoped_hands": 3268,
+        "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed"
+      }
+    ],
+    "english_preferred_replacements": 0,
+    "overlap_occurrences": 10534,
+    "overlap_payload_differences": 0,
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf",
+    "split_counts": {
+      "TEST": 3175,
+      "TRAIN": 24755,
+      "VALIDATION": 3073
+    },
+    "unique_scoped_hands": 31003
+  },
+  "production_effect": "NONE",
+  "schema": "model-b-french-position-audit/v1",
+  "status": "PASS_AFTER_FIX"
+}
