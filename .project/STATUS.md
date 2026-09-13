@@ -201,31 +201,26 @@ For every new hand-history push:
 8. Promote a new application only if strategy and regression gates pass.
 9. Persist every input, model, metric, seed contract, report and promotion/rejection decision.
 
-## Current audit — 2026-09-12
+## Current delivery — 2026-09-13
 
-Audited main: `caaff599707006fab3daa0f39b90b67c37fdaac1`. Simulator PR #44: `899015dd4d29ffcdb9130ddb10d74347b856a0c1`. Full assessment: `user/reports/etat-des-lieux-2026-09-12.md`.
+- **#35 delivered, PR #48 merged:** exact September 12 raw ZIP, GitHub-generated audit, full 3,268 selected IDs and increment ZIP are persisted. Registry points at the verified snapshot; promoted Model A v5 and independent Model B v2 are retained. Mandatory dataset integrity CI passed.
+- **#9 / PR #44:** seeded main/worker oracle, verified effective trial budgets, repaired compatibility CLI and policy fallthrough, explicit candidate B directory, environment fingerprint checks and code provenance are pushed. At b6c81900, Actions run 34737065605 passed full fresh-browser result equality and 1200/2400 effective-budget checks. Final head 01f549d9 additionally has actual-worker seed sensitivity and eight betting/all-in accounting fixtures; final CI is queued, so the PR remains open.
+- **#12 / PR #49:** all six existing trainer contracts are wired to CI. All pass locally with the promoted assets materialized. The final CI is queued. Unified strategy/model promotion criteria and pathological-hand runner remain open under #12.
+- **ZIP reproducibility / PR #50:** ingestion's derived ZIP used current timestamps, causing automatic commit 9a5066da without changed hands. A fixed epoch/platform/permissions writer and regression are pushed; raw evidence is untouched. CI is queued.
+- **#45 remains open:** Cloudflare succeeded on main 487f206f (version bbebdd15-efd8-42e6-93c1-1e73a47973df), then failed on main 9a5066da and later PR heads. Neither root cause nor public URL/build identity is established. Provider logs/public URL are required; no speculative deployment configuration change was made.
+- **Models/strategy:** no new model or strategy was promoted. #7 retains Model A reconstruction debt; #38 retains refreshed B artifact/paired-selection work. #10/#39 baselines follow a validated arena. #46 retains response realism limitations (marginal actions, HU postflop only).
 
-- **Source gap (#35):** September 12 raw ZIP is absent at its canonical main path; registry remains `source_binary_pending`. Reported delta: 3,268 new 100/200 hands (2,606 TRAIN / 320 VALIDATION / 342 TEST), enlarged union 31,003. Exact raw bytes and standard re-audit are required for complete reconstruction.
-- **Simulator (#9 / PR #44):** scenario generation and one-rollout browser CI pass, but HTML uses unseeded `Math.random()` for Hero EV workers. The oracle's `--trials` substitution matches no current HTML string; requested and effective trials can differ. The direct compatibility entrypoint fails to import `tools`. The issue now records reproductions and full-run acceptance criteria.
-- **Model A cycle (#36/#37):** both additive candidates were rejected on VALIDATION and v5 stays promoted. Main has the selection report with local candidate hashes, but not a complete reconstructible cycle. Older extraction/overlay scripts still hard-code `/mnt/data`; remaining work is tracked under #7.
-- **Model B refresh (#38):** branch `issue-38-model-b-refresh-20260912` at `505b1a8a` has the selection report and incumbent-export workflow. Full new feature/model artifacts and paired comparison are not committed there. Promoted Model B remains v2.
-- **Environment validity (#46):** postflop action probabilities are marginal by profile/context, without card strength, board texture, facing-price or SPR conditioning (apart from raise legality). This affects sizing-strategy validation as well as trainer realism. The arena currently supports HU postflop only.
-- **CI coverage (#12):** trainer smoke invokes the main static script, not all five dedicated contracts. Pathological-hand fixtures/audits lack an executable regression runner. Gate specification is now ranked before strategy selection.
-- **Publication (#45):** Cloudflare builds fail for main caaff599 and PR #44 head 899015dd. Main ingestion and the PR's arena jobs succeed. Public site availability/version was not checked; provider logs are needed to diagnose the failure.
-- **Model asset identity:** all seven trainer A/B assets have identical Git blobs to their promoted references.
+Local checks: six trainer contract scripts, 26 simulation Python tests, production-worker seed/budget checks and September 12 source integrity pass. The historic-delta dataset integration test skips locally because its older derived archive is not materialized; the new September 12 gate is mandatory and does not skip.
 
-Local audit: six synthetic ingestion tests passed, one archive-dependent integration test skipped; four trainer performance contracts and trainer.js syntax passed. Worker nondeterminism, ineffective trial replacement and CLI import failure were reproduced. No full training/strategic corpus was rerun.
+The September 12 assessment is a historical audit, not the current delivery status.
 
 ## Immediate next actions
 
-1. P0 #35: persist exact source ZIP and reproduce IDs, splits and hashes.
-2. P0 #9: correct oracle determinism, effective trial control, CLI and candidate B inputs before completing PR #44.
-3. P0 #45: diagnose Cloudflare build failure and verify deployed site identity.
-4. P1 #12/#7: specify/wire gates and finish Model A reconstruction; retain recorded v5/rejection decisions.
-5. P1 #10: freeze v83 + promoted B v2 as a scoped reference using the approved corpus.
-6. P1 #38/#46/#39: finish the B paired decision, validate response realism, and freeze the refreshed reference.
-7. P2 #11/#40 -> #41 -> #42 -> #13: evaluate strategy, run gates, record outcomes, then automate.
-8. Later product work: preflop ACTION / SIZING / EV surface, genuine multiway drills, targeted retry/spaced repetition. Hero BB remains unsupported until a user range is available.
+1. Complete final queued CI and merge PR #44, #49 and #50 if green; verify derived ZIP regeneration becomes clean.
+2. Resolve #45 using provider logs and the configured public URL.
+3. Finish #12 promotion-gate specification and executable pathological-hand regression, then #7 model reconstruction.
+4. Establish scoped v83/Bv2 reference #10; perform #38 paired B decision, #46 response checks and #39 refreshed reference.
+5. Only then evaluate #11/#40, execute #41, record #42 and automate #13.
 
 ## Remaining bootstrap gap
 

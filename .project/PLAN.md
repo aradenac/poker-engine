@@ -12,19 +12,20 @@ Keeping model B independent is essential: strategy evaluation must not simply co
 
 ### Current milestone — audit 2026-09-12
 
-Audit base: main `caaff599707006fab3daa0f39b90b67c37fdaac1`; PR #44 head `899015dd4d29ffcdb9130ddb10d74347b856a0c1`. User-facing assessment: `user/reports/etat-des-lieux-2026-09-12.md`.
+Historical audit base: main `caaff599707006fab3daa0f39b90b67c37fdaac1`; PR #44 head `899015dd4d29ffcdb9130ddb10d74347b856a0c1`. User-facing assessment: `user/reports/etat-des-lieux-2026-09-12.md`.
 
 Model B v2 (#8) and the ingestion foundation (#6) are complete. The trainer feature and performance/Guided/custom-range corrections are merged. Current promoted recommendations still use engine v83 and Model A preflop/postflop v5.
 
-Immediate blockers are #35 (exact September 12 source ZIP absent), #9 / PR #44 (oracle determinism, effective trial override and compatibility CLI defects), and #45 (failed Cloudflare builds). The #36/#37 candidate rejection decisions remain closed; reconstruction debt is tracked under #7. The #38 candidate has a branch report but needs full artifacts and a paired incumbent comparison.
+#35 was delivered by PR #48: exact source, materialized increment and mandatory integrity gate. Immediate blockers are #9 / PR #44 (oracle determinism, effective trial override and compatibility CLI defects), and #45 (failed Cloudflare builds). The #36/#37 candidate rejection decisions remain closed; reconstruction debt is tracked under #7. The #38 candidate has a branch report but needs full artifacts and a paired incumbent comparison.
 
 ### Ordered execution backlog
+
+Delivery 2026-09-13: #35 is complete (PR #48, main 487f206f). PR #44 adds seeded oracle workers, effective trial verification and betting/accounting tests; PR #49 wires all existing trainer contracts. Their final CI/integration status is tracked in STATUS.md. Cloudflare is intermittent: main 487f206f succeeded, subsequent ingestion commit 9a5066da failed; public URL verification remains open.
 
 P0: unblock source/reproducibility/publication. P1: validate models, environment and benchmark. P2: select/promote/automate after the prerequisites. P3: historical cleanup. Epics #2 and #43 coordinate these tasks; they are not additional deliveries.
 
 | Rank | Priority | Issue | Next deliverable |
 |---:|:---:|---|---|
-| 1 | P0 | #35 | Persist the exact 2026-09-12 raw ZIP and verify the 3,268-hand delta before treating this cycle as reproducible. The main registry still says source_binary_pending. This blocks the new-data cycle; it does not block an old-corpus diagnostic baseline. |
 | 2 | P0 | #9 | Complete PR #44 after fixing the reproduced determinism, trial-control and compatibility-entrypoint defects. Passing scenario generation and one rollout smoke do not yet prove full engine reproducibility. |
 | 3 | P0 | #45 | Restore a verified deployment of the intended site. Main and PR #44 Cloudflare builds fail; current public application availability was not checked. |
 | 4 | P1 | #12 | Specify promotion criteria before strategy selection; wire missing regression checks now. The complete gate can become green only after model/baseline evidence exists. |
