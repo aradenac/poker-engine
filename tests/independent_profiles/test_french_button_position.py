@@ -38,14 +38,14 @@ class FrenchButtonPositionTest(unittest.TestCase):
         hand = parse_hand(record("est au bouton"))
         self.assertIsNotNone(hand)
         self.assertEqual(hand["button"], 1)
-        self.assertEqual(hand["positions"]["Hero"], "BTN")
+        self.assertEqual(hand["positions"]["Hero"], "SB_BTN")
         self.assertEqual(hand["positions"]["Villain"], "BB")
 
     def test_legacy_french_est_le_bouton_grammar_remains_supported(self) -> None:
         hand = parse_hand(record("est le bouton"))
         self.assertIsNotNone(hand)
         self.assertEqual(hand["button"], 1)
-        self.assertEqual(hand["positions"]["Hero"], "BTN")
+        self.assertEqual(hand["positions"]["Hero"], "SB_BTN")
         self.assertEqual(hand["positions"]["Villain"], "BB")
 
 
