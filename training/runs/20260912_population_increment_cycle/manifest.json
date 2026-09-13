@@ -1,0 +1,74 @@
+{
+  "schema": "poker-model-a-increment-run/v2",
+  "cycle": "2026-09-12",
+  "decision": {
+    "preflop": "RETAIN_BASELINE",
+    "postflop": "RETAIN_BASELINE",
+    "production_effect": "NONE"
+  },
+  "source_increment": {
+    "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+    "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed",
+    "unique_hands": 3268,
+    "hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b",
+    "split_counts": {
+      "TRAIN": 2606,
+      "VALIDATION": 320,
+      "TEST": 342
+    },
+    "lineage_manifest": "training/datasets/NLHE_100-200/increments/20260912/manifest.json"
+  },
+  "parent_models": {
+    "preflop": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "postflop": {
+      "path": "training/models/postflop_population_model_v5.json",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    }
+  },
+  "normalized_increment": {
+    "builder": "tools/training/build_incremental_decisions_v2.py",
+    "overlay_builder": "tools/training/build_population_increment_overlay_v2.py",
+    "commands": [
+      "python3 tools/training/build_incremental_decisions_v2.py --source training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip --out <decisions.jsonl> --summary <summary.json>",
+      "python3 tools/training/build_population_increment_overlay_v2.py --decisions <decisions.jsonl> --out <overlay.json> --provenance-out <overlay-provenance.json>"
+    ],
+    "ci_contract": ".github/workflows/dataset-integrity.yml",
+    "status": "REPRODUCIBLE_FROM_REPO_INPUTS",
+    "expected": {
+      "decision_rows": 42964,
+      "train_population_preflop_rows": 13774,
+      "train_population_postflop_rows": 15962,
+      "train_population_rows": 29736,
+      "preflop_train_rows_applied_to_existing_exact_nodes": 9047,
+      "preflop_train_rows_on_unseen_exact_contexts": 4727,
+      "postflop_train_rows_applied_to_existing_exact_nodes": 15804,
+      "postflop_train_rows_on_unseen_exact_contexts": 158
+    }
+  },
+  "rejected_full_weight_candidates": {
+    "preflop": {
+      "expected_sha256": "e75ac77f34362b6026ed631fcfaafbabe382a64dbc83dfd523452d45f67e8845",
+      "status": "PENDING_EXACT_REBUILDER",
+      "selection": "VALIDATION monotonically selects zero incremental weight"
+    },
+    "postflop": {
+      "expected_sha256": "45366a58e64999a65728b343c811c0b23ae1c7713bab885c2287db99b5df1d4d",
+      "status": "PENDING_EXACT_REBUILDER",
+      "selection": "VALIDATION monotonically selects zero incremental weight"
+    }
+  },
+  "holdout_contract": {
+    "selection_split": "VALIDATION",
+    "test_used_for_selection": false,
+    "test_role": "diagnostic_after_selection_only"
+  },
+  "evaluation": "training/runs/20260912_population_increment_cycle/evaluation/model_a_incremental_selection.json",
+  "notes": [
+    "This manifest preserves the historical RETAIN_BASELINE decisions; reproducibility work must not reselect a candidate using TEST.",
+    "The normalized increment and TRAIN overlay are now rebuilt in CI from persisted repo inputs.",
+    "Exact candidate model reconstruction remains intentionally explicit as pending rather than claiming a hash match that has not yet been demonstrated."
+  ]
+}
