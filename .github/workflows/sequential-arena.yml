@@ -112,6 +112,24 @@ jobs:
           python3 -m tools.simulation.sequential_postflop \
             --scenario-manifest /tmp/scenario.json --trials 2400 \
             --policies current --out /tmp/arena-2400.json
+      - name: Exercise recovered review-detail state
+        run: |
+          python3 -m tools.simulation.baseline_runner \
+            --n 1 --start 5 --reps 2 --seed 20260912 --split TEST --trials 1200 \
+            --policies current \
+            --scenario-out /tmp/fallback-regression-scenarios.json \
+            --out /tmp/fallback-regression-arena.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/fallback-regression-arena.json'))
+          assert len(d['scenario_manifest']['scenarios'])==2
+          assert len(d['results'])==2
+          fb=d['metadata']['oracle_reconstruction_fallback']
+          assert fb['count'] >= 1, fb
+          assert fb['unique_states'] >= 1, fb
+          assert all(x['terminal'] for x in d['results'])
+          print(json.dumps(fb, indent=2))
+          PY
       - name: Validate smoke result contract
         run: |
           python3 - <<'PY'
@@ -136,7 +154,9 @@ jobs:
         if: always()
         with:
           name: sequential-arena-reproducibility
-          path: /tmp/arena*.json
+          path: |
+            /tmp/arena*.json
+            /tmp/fallback-regression-*.json
 
   v83-baseline-validation:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -151,7 +171,7 @@ jobs:
           python3 -m playwright install --with-deps chromium
       - name: Run frozen VALIDATION baseline and diagnostic policy set
         run: |
-          python3 -m tools.simulation.sequential_postflop \
+          python3 -m tools.simulation.baseline_runner \
             --n 32 --reps 2 --seed 20260912 --split VALIDATION --trials 1200 \
             --policies current,no_jam,cap_2,cap_3,cap_4 \
             --scenario-out /tmp/v83-baseline-validation-scenarios.json \
@@ -163,6 +183,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
+          raw=json.load(open('/tmp/v83-baseline-validation-arena.json'))
           d=json.load(open('/tmp/v83-baseline-validation-report.json'))
           assert d['schema']=='sequential-v83-baseline-report/v1'
           assert d['provenance']['scenario_split']=='VALIDATION'
@@ -171,7 +192,8 @@ jobs:
           assert d['sample']['base_hands'] >= 20
           assert d['policies']['current']['overall']['utility_ci95_cluster_bootstrap'] is not None
           assert d['diagnostic_policy_set_regret'] is not None
-          print(json.dumps(d['sample'], indent=2))
+          assert 'oracle_reconstruction_fallback' in raw['metadata']
+          print(json.dumps({'sample':d['sample'],'fallback':raw['metadata']['oracle_reconstruction_fallback']}, indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -194,7 +216,7 @@ jobs:
           python3 -m playwright install --with-deps chromium
       - name: Run frozen current-policy TEST reference only
         run: |
-          python3 -m tools.simulation.sequential_postflop \
+          python3 -m tools.simulation.baseline_runner \
             --n 32 --reps 2 --seed 20260912 --split TEST --trials 1200 \
             --policies current \
             --scenario-out /tmp/v83-baseline-test-scenarios.json \
@@ -206,6 +228,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
+          raw=json.load(open('/tmp/v83-baseline-test-arena.json'))
           d=json.load(open('/tmp/v83-baseline-test-report.json'))
           assert d['schema']=='sequential-v83-baseline-report/v1'
           assert d['provenance']['scenario_split']=='TEST'
@@ -215,7 +238,8 @@ jobs:
           assert d['sample']['base_hands'] >= 20
           assert d['policies']['current']['overall']['utility_ci95_cluster_bootstrap'] is not None
           assert d['diagnostic_policy_set_regret'] is None
-          print(json.dumps(d['sample'], indent=2))
+          assert 'oracle_reconstruction_fallback' in raw['metadata']
+          print(json.dumps({'sample':d['sample'],'fallback':raw['metadata']['oracle_reconstruction_fallback']}, indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
