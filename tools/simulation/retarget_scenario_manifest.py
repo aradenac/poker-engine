@@ -4,7 +4,11 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 
 from tools.simulation.model_b_conditioned_runtime import ConditionedModelBEnvironment
 from tools.simulation.model_b_runtime import ModelBEnvironment
