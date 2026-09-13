@@ -23,33 +23,77 @@ jobs:
         run: |
           python3 - <<'PY'
           import collections, json
+          from pathlib import Path
+          from tools.datasets.build_hand_history_increment import split_for
           from tools.simulation.scenarios import eligible_base_scenarios
           from tools.simulation.model_b_runtime import hseed
+          from tools.training.independent_profiles.build_model_b import parse_hand
+          from tools.training.independent_profiles.build_player_features import merge_archives
 
-          base, meta = eligible_base_scenarios(split='VALIDATION')
-          ordered=sorted(base,key=lambda x:(hseed(20260912,'base-hand',x['hand_id']),x['hand_id']))
-          selected=ordered[:96]
+          archives=[
+            Path('training/datasets/NLHE_100-200/source/NLHE 100-200.zip'),
+            Path('training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'),
+            Path('training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip'),
+          ]
+          records, provenance=merge_archives(archives, {'100/200'})
+
+          corpus=[]
+          for hid, record in records.items():
+              hand=parse_hand(record)
+              if hand is None:
+                  corpus.append({'split':split_for(hid),'language':record.language,'parsed':False,'button_missing':True,'all_na':True})
+                  continue
+              positions=hand.get('positions') or {}
+              corpus.append({
+                'split':split_for(hid),
+                'language':record.language,
+                'parsed':True,
+                'button_missing':hand.get('button') is None,
+                'all_na':bool(positions) and all(v=='NA' for v in positions.values()),
+              })
 
           def summarize(rows):
-              out={
+              by_lang={}
+              for lang in sorted({x['language'] for x in rows}):
+                  ys=[x for x in rows if x['language']==lang]
+                  by_lang[lang]={
+                    'hands':len(ys),
+                    'parse_failures':sum(not x['parsed'] for x in ys),
+                    'button_missing':sum(x['button_missing'] for x in ys),
+                    'all_positions_na':sum(x['all_na'] for x in ys),
+                  }
+              return {
                 'hands':len(rows),
-                'language':dict(collections.Counter(x.get('source_language') for x in rows)),
+                'languages':dict(sorted(collections.Counter(x['language'] for x in rows).items())),
+                'parse_failures':sum(not x['parsed'] for x in rows),
+                'button_missing':sum(x['button_missing'] for x in rows),
+                'all_positions_na':sum(x['all_na'] for x in rows),
+                'by_language':by_lang,
+              }
+
+          base, _ = eligible_base_scenarios(split='VALIDATION')
+          ordered=sorted(base,key=lambda x:(hseed(20260912,'base-hand',x['hand_id']),x['hand_id']))
+          selected=ordered[:96]
+          def summarize_scenarios(rows):
+              return {
+                'hands':len(rows),
+                'languages':dict(sorted(collections.Counter(x.get('source_language') for x in rows).items())),
                 'hands_with_any_NA':sum(any(v=='NA' for v in x.get('positions',{}).values()) for x in rows),
                 'hands_all_NA':sum(bool(x.get('positions')) and all(v=='NA' for v in x['positions'].values()) for x in rows),
               }
-              out['by_language']={}
-              for lang in sorted({x.get('source_language') for x in rows}):
-                  ys=[x for x in rows if x.get('source_language')==lang]
-                  out['by_language'][str(lang)]={
-                    'hands':len(ys),
-                    'hands_with_any_NA':sum(any(v=='NA' for v in x.get('positions',{}).values()) for x in ys),
-                    'hands_all_NA':sum(bool(x.get('positions')) and all(v=='NA' for v in x['positions'].values()) for x in ys),
-                  }
-              return out
 
-          doc={'eligible_validation':summarize(base),'selected_96':summarize(selected),'selected_hand_ids':[x['hand_id'] for x in selected]}
+          doc={
+            'schema':'model-b-french-position-audit/v1',
+            'dataset_provenance':provenance,
+            'full_corpus':summarize(corpus),
+            'by_split':{s:summarize([x for x in corpus if x['split']==s]) for s in ('TRAIN','VALIDATION','TEST')},
+            'strategy_validation_eligible':summarize_scenarios(base),
+            'strategy_validation_selected_96':summarize_scenarios(selected),
+            'production_effect':'NONE',
+          }
           print(json.dumps(doc,indent=2,ensure_ascii=False))
-          open('/tmp/french-position-audit.json','w').write(json.dumps(doc,indent=2,ensure_ascii=False)+'\n')
+          open('/tmp/french-position-audit.json','w').write(json.dumps(doc,indent=2,ensure_ascii=False,sort_keys=True)+'\n')
+          assert provenance['unique_scoped_hands']==31003, provenance
           PY
       - uses: actions/upload-artifact@v4
         with:
