@@ -1,0 +1,23 @@
+name: Persisted dataset integrity
+
+on:
+  push:
+    paths: ['training/registry.json', 'training/datasets/**', 'tools/datasets/**', 'tests/datasets/**', '.github/workflows/dataset-integrity.yml']
+  pull_request:
+    paths: ['training/registry.json', 'training/datasets/**', 'tools/datasets/**', 'tests/datasets/**', '.github/workflows/dataset-integrity.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact sources, unseen IDs, splits and materialized payloads
+        run: |
+          python3 tests/datasets/test_build_hand_history_increment.py
+          python3 tests/datasets/test_persisted_snapshot.py

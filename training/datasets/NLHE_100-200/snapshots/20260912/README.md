@@ -53,4 +53,4 @@ The complete uploaded ZIP belongs under `snapshots/20260912/source/` as immutabl
 
 The ingestion workflow automatically audits this snapshot and regenerates `increments/20260912/manifest.json` plus `increments/20260912/source/selected_100_200.zip` when the canonical raw ZIP is present.
 
-Until the binary source ZIP is actually present at the canonical GitHub path and re-verified there, `increments/20260912/manifest.json` remains marked as pending source persistence. Metadata must not be mistaken for binary persistence.
+The exact ZIP is now persisted and was re-audited by GitHub Actions run 34713730307. The generated increment contains the full selected ID list and a materialized ZIP. The mandatory dataset-integrity workflow checks the source hash, exact unseen IDs, splits and selected hand payloads. Model promotion is separate.
