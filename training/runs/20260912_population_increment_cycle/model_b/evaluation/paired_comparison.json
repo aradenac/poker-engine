@@ -1,7 +1,7 @@
 {
   "schema": "independent-model-b-paired-comparison/v1",
   "cycle": "2026-09-12",
-  "code_commit": "1ca923e626e2a301b40834a51f73db4dadc7ab84",
+  "code_commit": "94959a3b45f6c73a68e10322197131c6f216f05c",
   "contract": {
     "path": "training/PROMOTION_GATE_CONTRACT.json",
     "sha256": "941b42901833ee9772fb3d9291808a2dbcb6553088fdbef9d6c0ce3eaec6879a",
