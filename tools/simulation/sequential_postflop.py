@@ -85,7 +85,7 @@ def choose_variant(detail: dict, policy: str, pot_bb: float) -> dict:
     by_label = {x.get("label"): x for x in alternatives}
     current = by_label.get(detail.get("bestLabel"))
     if current is None:
-        current = max(alternatives, key=lambda x: finite_value(x) or -1e99)
+        current = max(alternatives, key=lambda x: finite_value(x))
 
     def value(x: dict) -> float:
         return float(finite_value(x) if finite_value(x) is not None else -1e99)
@@ -97,10 +97,14 @@ def choose_variant(detail: dict, policy: str, pot_bb: float) -> dict:
         return current
     if policy == "no_jam":
         return best_nonjam if "jam" in str(current.get("label", "")).lower() else current
-    if policy.startswith("jam_margin_") and "jam" in str(current.get("label", "")).lower():
+    if policy.startswith("jam_margin_"):
+        if "jam" not in str(current.get("label", "")).lower():
+            return current
         threshold = float(policy.rsplit("_", 1)[-1])
         return current if value(current) - value(best_nonjam) >= threshold else best_nonjam
-    if policy.startswith("weakjam_") and "jam" in str(current.get("label", "")).lower():
+    if policy.startswith("weakjam_"):
+        if "jam" not in str(current.get("label", "")).lower():
+            return current
         try:
             threshold = float(policy.rsplit("_", 1)[-1])
         except ValueError:
@@ -136,12 +140,16 @@ class AnalyzerOracle:
         preflop_model: Path,
         postflop_model: Path,
         trials: int,
+        seed: int = 20260912,
         chromium_executable: str | None = None,
     ) -> None:
         self.engine_html = Path(engine_html)
         self.preflop_model = Path(preflop_model)
         self.postflop_model = Path(postflop_model)
         self.trials = int(trials)
+        if self.trials < 1200:
+            raise ValueError("--trials must be >= 1200 (analyser worker minimum)")
+        self.seed = int(seed)
         self.chromium_executable = chromium_executable
         self.pw = None
         self.browser = None
@@ -158,14 +166,13 @@ class AnalyzerOracle:
         self.browser = await self.pw.chromium.launch(**launch_kwargs)
         self.page = await self.browser.new_page()
         html = self.engine_html.read_text(encoding="utf-8")
-        if self.trials != 2500:
-            html = html.replace("snap.trials=2500", f"snap.trials={self.trials}")
         await self.page.set_content(html, wait_until="domcontentloaded", timeout=30000)
         await self.page.set_input_files("#populationModelInput", str(self.preflop_model))
         await self.page.wait_for_function("state.populationModel&&state.populationModel.nodes.length>0", timeout=30000)
         await self.page.set_input_files("#postflopModelInput", str(self.postflop_model))
         await self.page.wait_for_function("state.postflopModel&&state.postflopModel.nodes.length>0", timeout=30000)
         await self.page.evaluate("scheduleBackgroundReviewScoring=()=>{};")
+        await self.page.evaluate((Path(__file__).with_name("oracle_runtime.js")).read_text(), {"trials": self.trials})
 
     async def close(self) -> None:
         if self.browser:
@@ -177,6 +184,8 @@ class AnalyzerOracle:
         key = hashlib.sha256(hand_history.encode("utf-8")).hexdigest()
         if key in self.cache:
             return self.cache[key]
+        await self.page.evaluate("seed => window.__arenaReset(seed)",
+                                 hseed(self.seed, key) & 0xffffffff)
         synthetic_id = str(800000000000000000 + (int(key[:15], 16) % 100000000000000000))
         hh_state = re.sub(
             r"(PokerStars(?: Zoom)? Hand #)\d+",
@@ -203,6 +212,9 @@ class AnalyzerOracle:
             "!state.reviewBatchBusy && state.reviewScores && Object.keys(state.reviewScores).length>0",
             timeout=30000,
         )
+        runtime = await self.page.evaluate("window.__arena")
+        if runtime["errors"]:
+            raise RuntimeError(str(runtime["errors"]))
         detail = await self.page.evaluate(
             """()=>{
               const result=state.reviewScores[Object.keys(state.reviewScores)[0]];
@@ -549,7 +561,10 @@ def default_paths(root: Path) -> dict[str, Path]:
 
 def load_or_build_manifest(args, env: ModelBEnvironment) -> dict:
     if args.scenario_manifest:
-        return json.loads(Path(args.scenario_manifest).read_text(encoding="utf-8"))
+        manifest = json.loads(Path(args.scenario_manifest).read_text(encoding="utf-8"))
+        if manifest.get("model_b", {}).get("artifact_sha256") != env.artifact_fingerprints():
+            raise ValueError("scenario manifest Model B fingerprints do not match selected environment")
+        return manifest
     return build_scenario_manifest(
         env=env,
         count=args.n,
@@ -563,7 +578,8 @@ def load_or_build_manifest(args, env: ModelBEnvironment) -> dict:
 
 
 async def run(args) -> dict:
-    env = ModelBEnvironment.from_registry(ROOT)
+    env = (ModelBEnvironment(Path(args.model_b_dir), alias="candidate")
+           if args.model_b_dir else ModelBEnvironment.from_registry(ROOT))
     manifest = load_or_build_manifest(args, env)
     scenario_out = Path(args.scenario_out) if args.scenario_out else None
     if scenario_out:
@@ -588,6 +604,7 @@ async def run(args) -> dict:
         preflop_model=preflop,
         postflop_model=postflop,
         trials=args.trials,
+        seed=manifest["master_seed"],
         chromium_executable=args.chromium,
     )
     results: list[dict] = []
@@ -613,6 +630,7 @@ async def run(args) -> dict:
                 })
                 results.append(row)
                 print(f"  {policy}: utility={row['utility_bb']:.3f} decisions={row['hero_decisions']} {row['terminal']}", flush=True)
+        runtime = await oracle.page.evaluate("window.__arena")
     finally:
         await oracle.close()
 
@@ -627,6 +645,9 @@ async def run(args) -> dict:
         "scenario_split": manifest["split"],
         "master_seed": manifest["master_seed"],
         "trials": int(args.trials),
+        "oracle_rng": "mulberry32/fnv1a-snapshot/v1",
+        "observed_monte_carlo_trials": sorted(set(runtime["observations"])),
+        "simulation_source_sha256": {p.name: sha256_file(p) for p in sorted(Path(__file__).parent.glob("*.py")) + [Path(__file__).with_name("oracle_runtime.js")]},
         "policies": policies,
     }
     return {
@@ -645,13 +666,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--reps", type=int, default=1)
     parser.add_argument("--seed", type=int, default=20260912)
-    parser.add_argument("--split", default="TEST", choices=("TRAIN", "VALIDATION", "TEST"))
+    parser.add_argument("--split", default="VALIDATION", choices=("TRAIN", "VALIDATION", "TEST"))
     parser.add_argument("--hero", default="RoiDePiqueNique")
-    parser.add_argument("--trials", type=int, default=1000)
+    parser.add_argument("--trials", type=int, default=1200)
     parser.add_argument("--policies", default="current,no_jam,cap_2,cap_3,cap_4")
     parser.add_argument("--engine", default=defaults["engine"].as_posix())
     parser.add_argument("--preflop-model", default=defaults["preflop"].as_posix())
     parser.add_argument("--postflop-model", default=defaults["postflop"].as_posix())
+    parser.add_argument("--model-b-dir", default="", help="explicit independent candidate model directory; does not modify promoted pointers")
     parser.add_argument("--chromium", default=None, help="optional Chromium executable path")
     parser.add_argument("--scenario-manifest", default="", help="reuse an existing scenario manifest verbatim")
     parser.add_argument("--scenario-out", default="", help="write generated scenario manifest")
@@ -671,3 +693,4 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
+

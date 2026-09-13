@@ -36,6 +36,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compile simulation modules
         run: python3 -m py_compile tools/simulation/*.py tools/sequential_postflop_population_sim_v4.py
+      - name: Oracle and policy contracts
+        run: |
+          python3 tools/sequential_postflop_population_sim_v4.py --help
+          python3 tests/simulation/test_oracle_contract.py
       - name: Model B runtime tests
         run: python3 tests/simulation/test_model_b_runtime.py
       - name: Scenario generation tests
@@ -70,15 +74,28 @@ jobs:
       - name: Run one deterministic v83 rollout
         run: |
           python3 -m tools.simulation.sequential_postflop \
-            --n 1 --reps 1 --seed 20260912 --trials 50 \
+            --n 1 --reps 1 --seed 20260912 --trials 1200 \
             --policies current \
             --scenario-out /tmp/scenario.json \
             --out /tmp/arena.json
+      - name: Repeat in a fresh browser and verify a different trial budget
+        run: |
+          python3 tools/sequential_postflop_population_sim_v4.py \
+            --scenario-manifest /tmp/scenario.json --trials 1200 \
+            --policies current --out /tmp/arena-repeat.json
+          python3 -m tools.simulation.sequential_postflop \
+            --scenario-manifest /tmp/scenario.json --trials 2400 \
+            --policies current --out /tmp/arena-2400.json
       - name: Validate smoke result contract
         run: |
           python3 - <<'PY'
           import json
           d=json.load(open('/tmp/arena.json'))
+          repeat=json.load(open('/tmp/arena-repeat.json'))
+          assert d==repeat, 'Fresh-browser full rollout is not reproducible'
+          assert d['metadata']['observed_monte_carlo_trials']==[1200]
+          other=json.load(open('/tmp/arena-2400.json'))
+          assert other['metadata']['observed_monte_carlo_trials']==[2400]
           assert d['schema']=='sequential-independent-arena/v2'
           assert d['metadata']['model_b']['alias']=='independent_model_b_v2'
           assert d['metadata']['master_seed']==20260912
@@ -88,3 +105,9 @@ jobs:
           assert 'current' in d['summary']
           print(json.dumps(d['summary'], indent=2))
           PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sequential-arena-reproducibility
+          path: /tmp/arena*.json
