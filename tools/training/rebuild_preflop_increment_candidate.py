@@ -41,16 +41,7 @@ def rebuild(*, baseline: Path, overlay_path: Path, decisions: Path, out: Path,
     omap={node_key(x):x for x in overlay.get("preflop_nodes",[])}
     alphas=list((base.get("training",{}) or {}).get("selected_hierarchy_alphas") or [])
     alpha_exact=int(alphas[-1] if alphas else 40)
-    applied_rows=0; touched=0; train_hands_applied=set(); applied_by_action=collections.Counter()
-
-    existing_keys={node_key(n) for n in obj.get("nodes",[])}
-    with decisions.open(encoding="utf-8") as f:
-        for line in f:
-            row=json.loads(line)
-            if row.get("split")!="TRAIN" or row.get("is_hero") or row.get("street")!="preflop":
-                continue
-            if row.get("canonical_key") in existing_keys:
-                train_hands_applied.add(str(row["hand_id"]))
+    applied_rows=0; touched=0; applied_by_action=collections.Counter()
 
     for node in obj.get("nodes",[]):
         key=node_key(node); delta=omap.get(key)
@@ -107,7 +98,6 @@ def rebuild(*, baseline: Path, overlay_path: Path, decisions: Path, out: Path,
         "alpha_exact":alpha_exact,
         "train_population_rows_available":train_available,"train_population_rows_applied":applied_rows,
         "train_population_rows_skipped_no_exact_node":skipped,"touched_nodes":touched,
-        "train_hands_with_at_least_one_applied_preflop_row":len(train_hands_applied),
         "applied_by_action":dict(sorted(applied_by_action.items())),
         "policy169":"FROZEN from v5","revealed_policy_models":"FROZEN from v5",
         "response_models":"FROZEN from v5","continuous_population":"FROZEN from v5",
