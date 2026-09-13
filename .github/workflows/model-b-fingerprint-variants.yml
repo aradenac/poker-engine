@@ -1,0 +1,40 @@
+name: Identify Model B fingerprint convention
+
+on:
+  push:
+    branches:
+      - issue-38-model-b-final-20260913
+    paths:
+      - '.github/workflows/model-b-fingerprint-variants.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  variants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hash canonical hand IDs with serialization variants
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          from tools.training.independent_profiles.build_player_features import merge_archives
+          paths=[Path('training/datasets/NLHE_100-200/source/NLHE 100-200.zip'),Path('training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip'),Path('training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip')]
+          by_id,p=merge_archives(paths,{'100/200'})
+          ids=sorted(by_id)
+          variants={
+            'newline_no_trailing':'\n'.join(ids),
+            'newline_trailing':'\n'.join(ids)+'\n',
+            'json_compact':json.dumps(ids,separators=(',',':')),
+            'json_default':json.dumps(ids),
+            'concat':' '.join(ids),
+            'no_separator':' '.join(ids).replace(' ',''),
+          }
+          target='641860209e455957b279553d8847edcb74bd09474703f21e2f935a652c09cd87'
+          print('canonical',p['sorted_hand_ids_sha256'])
+          for name,text in variants.items():
+            h=hashlib.sha256(text.encode()).hexdigest()
+            print(name,h,'TARGET' if h==target else '')
+          PY
