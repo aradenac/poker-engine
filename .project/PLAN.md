@@ -16,17 +16,16 @@ Historical audit base: main `caaff599707006fab3daa0f39b90b67c37fdaac1`; PR #44 h
 
 Model B v2 (#8) and the ingestion foundation (#6) are complete. The trainer feature and performance/Guided/custom-range corrections are merged. Current promoted recommendations still use engine v83 and Model A preflop/postflop v5.
 
-#35 was delivered by PR #48: exact source, materialized increment and mandatory integrity gate. Immediate blockers are #9 / PR #44 (oracle determinism, effective trial override and compatibility CLI defects), and #45 (failed Cloudflare builds). The #36/#37 candidate rejection decisions remain closed; reconstruction debt is tracked under #7. The #38 candidate has a branch report but needs full artifacts and a paired incumbent comparison.
+#35 was delivered by PR #48: exact source, materialized increment and mandatory integrity gate. The remaining P0 blocker is #45 (intermittent Cloudflare builds and unverified public deployment). The #36/#37 candidate rejection decisions remain closed; reconstruction debt is tracked under #7. The #38 candidate has a branch report but needs full artifacts and a paired incumbent comparison.
 
 ### Ordered execution backlog
 
-Delivery 2026-09-13: #35 is complete (PR #48, main 487f206f). PR #44 adds seeded oracle workers, effective trial verification and betting/accounting tests; PR #49 wires all existing trainer contracts. Their final CI/integration status is tracked in STATUS.md. Cloudflare is intermittent: main 487f206f succeeded, subsequent ingestion commit 9a5066da failed; public URL verification remains open.
+Delivery 2026-09-13: #35 and #9 are complete (PR #48/#44). PR #49 wires all six trainer contracts; PR #50 eliminates derived ZIP timestamp churn. All relevant CI gates passed and these changes are merged. Cloudflare remains intermittent and public deployment identity remains unverified (#45).
 
 P0: unblock source/reproducibility/publication. P1: validate models, environment and benchmark. P2: select/promote/automate after the prerequisites. P3: historical cleanup. Epics #2 and #43 coordinate these tasks; they are not additional deliveries.
 
 | Rank | Priority | Issue | Next deliverable |
 |---:|:---:|---|---|
-| 2 | P0 | #9 | Complete PR #44 after fixing the reproduced determinism, trial-control and compatibility-entrypoint defects. Passing scenario generation and one rollout smoke do not yet prove full engine reproducibility. |
 | 3 | P0 | #45 | Restore a verified deployment of the intended site. Main and PR #44 Cloudflare builds fail; current public application availability was not checked. |
 | 4 | P1 | #12 | Specify promotion criteria before strategy selection; wire missing regression checks now. The complete gate can become green only after model/baseline evidence exists. |
 | 5 | P1 | #7 | Finish repo-native Model A reconstruction and persist rejected-candidate evidence. Keep #36/#37 closed as rejection decisions; track their remaining reproducibility debt here instead of retraining blindly. |
@@ -44,7 +43,7 @@ P0: unblock source/reproducibility/publication. P1: validate models, environment
 ### Dependency and validation rules
 
 - #35 unlocks new-data reconstruction and #38. It does not block #9 or an old-corpus reference under #10.
-- Correct #9 before the #10/#39 full benchmarks; the existing CI checks deterministic scenarios plus one rollout only.
+- #9 is delivered: CI checks full fresh-browser reproduction, actual worker seeds/budgets and betting fixtures. #10/#39 must now supply statistical benchmark evidence beyond smoke coverage.
 - Start #12 gate specification/wiring before policy selection; final PASS still requires the completed model and benchmark evidence.
 - #10 freezes v83 + Model B v2 as a scoped HU postflop reference. #38 produces an independent retain/promote decision; #46 addresses response realism before promotion-grade sizing conclusions.
 - #39 holds v83/Model A fixed to measure environment drift, then #11/#40 hold that selected environment fixed to compare engine candidates. #11 and #40 share one cycle deliverable.

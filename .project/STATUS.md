@@ -204,9 +204,9 @@ For every new hand-history push:
 ## Current delivery — 2026-09-13
 
 - **#35 delivered, PR #48 merged:** exact September 12 raw ZIP, GitHub-generated audit, full 3,268 selected IDs and increment ZIP are persisted. Registry points at the verified snapshot; promoted Model A v5 and independent Model B v2 are retained. Mandatory dataset integrity CI passed.
-- **#9 / PR #44:** seeded main/worker oracle, verified effective trial budgets, repaired compatibility CLI and policy fallthrough, explicit candidate B directory, environment fingerprint checks and code provenance are pushed. At b6c81900, Actions run 34737065605 passed full fresh-browser result equality and 1200/2400 effective-budget checks. Final head 01f549d9 additionally has actual-worker seed sensitivity and eight betting/all-in accounting fixtures; final CI is queued, so the PR remains open.
-- **#12 / PR #49:** all six existing trainer contracts are wired to CI. All pass locally with the promoted assets materialized. The final CI is queued. Unified strategy/model promotion criteria and pathological-hand runner remain open under #12.
-- **ZIP reproducibility / PR #50:** ingestion's derived ZIP used current timestamps, causing automatic commit 9a5066da without changed hands. A fixed epoch/platform/permissions writer and regression are pushed; raw evidence is untouched. CI is queued.
+- **#9 delivered, PR #44 merged at 536af84c:** seeded main/worker oracle, observed trial budgets, compatibility CLI and policy fixes, explicit candidate B selection, fingerprint checks and code provenance. Final revision 01f549d9 passed Actions run 34737202248: full fresh-browser result equality at 1200 trials, observed 1200/2400 budgets, actual-worker seed sensitivity and eight betting/all-in accounting fixtures.
+- **#12 partial delivery, PR #49 merged at 71f322eb:** all six existing trainer contracts are wired to CI. Static contracts, patch idempotence and browser smoke passed. Unified model/strategy promotion criteria and the pathological-hand runner remain open under #12.
+- **ZIP reproducibility delivered, PR #50 merged at 4f13ee42:** fixed epoch/platform/permissions eliminate timestamp churn. Fixed derived ZIP and matching manifest are persisted; original sources untouched. Actions run 34737535625 passed all eight builder tests and regenerated the artifacts with 'No artifact changes to commit.' Mandatory integrity run 34737536961 passed.
 - **#45 remains open:** Cloudflare succeeded on main 487f206f (version bbebdd15-efd8-42e6-93c1-1e73a47973df), then failed on main 9a5066da and later PR heads. Neither root cause nor public URL/build identity is established. Provider logs/public URL are required; no speculative deployment configuration change was made.
 - **Models/strategy:** no new model or strategy was promoted. #7 retains Model A reconstruction debt; #38 retains refreshed B artifact/paired-selection work. #10/#39 baselines follow a validated arena. #46 retains response realism limitations (marginal actions, HU postflop only).
 
@@ -216,11 +216,10 @@ The September 12 assessment is a historical audit, not the current delivery stat
 
 ## Immediate next actions
 
-1. Complete final queued CI and merge PR #44, #49 and #50 if green; verify derived ZIP regeneration becomes clean.
-2. Resolve #45 using provider logs and the configured public URL.
-3. Finish #12 promotion-gate specification and executable pathological-hand regression, then #7 model reconstruction.
-4. Establish scoped v83/Bv2 reference #10; perform #38 paired B decision, #46 response checks and #39 refreshed reference.
-5. Only then evaluate #11/#40, execute #41, record #42 and automate #13.
+1. Resolve #45 using provider logs and the configured public URL.
+2. Finish #12 promotion-gate specification and executable pathological-hand regression, then #7 model reconstruction.
+3. Establish scoped v83/Bv2 reference #10; perform #38 paired B decision, #46 response checks and #39 refreshed reference.
+4. Only then evaluate #11/#40, execute #41, record #42 and automate #13.
 
 ## Remaining bootstrap gap
 
