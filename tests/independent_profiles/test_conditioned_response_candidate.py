@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
 from tools.training.independent_profiles.conditioned_response_candidate import (
     action_levels,
     sizing_levels,
