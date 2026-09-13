@@ -1,0 +1,234 @@
+name: Refresh Model B on 2026-09-12 cycle
+
+on:
+  push:
+    paths:
+      - '.github/workflows/model-b-refresh-cycle.yml'
+      - 'tools/training/independent_profiles/**'
+      - 'tests/independent_profiles/**'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-refresh-cycle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      RUN_DIR: training/runs/20260913_model_b_refresh_cycle
+      INCUMBENT_DIR: training/runs/20260912_independent_profiles_v2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Unit tests
+        run: |
+          python3 tests/independent_profiles/test_build_player_features.py
+          python3 tests/independent_profiles/test_build_model_b.py
+          python3 tests/independent_profiles/test_evaluate_model_b.py
+
+      - name: Rebuild TRAIN-only player features on enlarged lineage
+        run: |
+          mkdir -p "$RUN_DIR/features" "$RUN_DIR/evaluation" "$RUN_DIR/model"
+          python3 tools/training/independent_profiles/build_player_features.py \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --min-hands 30 \
+            --prior-strength 40 \
+            --output "$RUN_DIR/features/player_features.json" \
+            --summary "$RUN_DIR/features/summary.json"
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open(os.environ['RUN_DIR']+'/features/player_features.json'))
+          assert d['split_used_for_fit']=='TRAIN'
+          assert d['provenance']['unique_scoped_hands']==31003, d['provenance']['unique_scoped_hands']
+          assert d['players_total']==9903, d['players_total']
+          assert len(d['players'])==992, len(d['players'])
+          assert 'model-A' in d['independence_contract']
+          print({'players_total':d['players_total'],'eligible':len(d['players'])})
+          PY
+
+      - name: Select profile count using VALIDATION only
+        run: |
+          python3 -m tools.training.independent_profiles.select_profile_count \
+            --features "$RUN_DIR/features/player_features.json" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --k 3 --k 4 --k 5 --k 6 --k 7 --k 8 \
+            --action-alpha 1 \
+            --range-prior-strength 50 \
+            --output "$RUN_DIR/evaluation/profile_count_selection.json"
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open(os.environ['RUN_DIR']+'/evaluation/profile_count_selection.json'))
+          assert d['selection_split']=='VALIDATION'
+          assert d['test_used_for_selection'] is False
+          assert d['selected_k']==3, d['selected_k']
+          weights=next(x for x in d['candidates'] if x['k']==3)['profile_weights']
+          assert min(weights)>=0.05, weights
+          print({'selected_k':d['selected_k'],'weights':weights})
+          PY
+
+      - name: Build refreshed K3 candidate
+        run: |
+          python3 -m tools.training.independent_profiles.build_model_b \
+            --features "$RUN_DIR/features/player_features.json" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --profiles 3 \
+            --output-dir "$RUN_DIR/model"
+          python3 -m tools.training.independent_profiles.summarize_model_b \
+            --model-dir "$RUN_DIR/model" \
+            --output "$RUN_DIR/model/metrics.json"
+
+      - name: Evaluate refreshed candidate on enlarged holdout
+        run: |
+          python3 -m tools.training.independent_profiles.evaluate_model_b \
+            --features "$RUN_DIR/features/player_features.json" \
+            --model-dir "$RUN_DIR/model" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --action-alpha 1 \
+            --range-prior-strength 50 \
+            --output "$RUN_DIR/evaluation/candidate_holdout.json" \
+            --prediction-contract "$RUN_DIR/model/prediction_contract.json"
+
+      - name: Evaluate promoted incumbent on the identical enlarged holdout
+        run: |
+          python3 -m tools.training.independent_profiles.evaluate_model_b \
+            --features "$INCUMBENT_DIR/features/player_features.json" \
+            --model-dir "$INCUMBENT_DIR/model" \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --action-alpha 1 \
+            --range-prior-strength 50 \
+            --output "$RUN_DIR/evaluation/incumbent_holdout.json"
+
+      - name: Record paired comparison and promotion decision
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path(os.environ['RUN_DIR'])
+          cand=json.loads((root/'evaluation/candidate_holdout.json').read_text())
+          inc=json.loads((root/'evaluation/incumbent_holdout.json').read_text())
+          sel=json.loads((root/'evaluation/profile_count_selection.json').read_text())
+          def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+          def metric(d, split, group, key): return d[split][group][key]
+          splits={}
+          for split in ('validation','test'):
+              assert cand[split]['hands']==inc[split]['hands'], (split,cand[split]['hands'],inc[split]['hands'])
+              splits[split]={
+                'hands':cand[split]['hands'],
+                'candidate':{
+                  'action_log_loss':metric(cand,split,'actions','log_loss'),
+                  'action_improvement':metric(cand,split,'actions','log_loss_improvement'),
+                  'action_ece':metric(cand,split,'actions','ece_confidence'),
+                  'range_log_loss':metric(cand,split,'range','log_loss'),
+                  'range_improvement':metric(cand,split,'range','log_loss_improvement'),
+                  'sizing_inside_p10_p90':metric(cand,split,'sizing','inside_training_p10_p90_fraction'),
+                  'sizing_above_p99':metric(cand,split,'sizing','above_training_p99_fraction'),
+                },
+                'incumbent':{
+                  'action_log_loss':metric(inc,split,'actions','log_loss'),
+                  'action_improvement':metric(inc,split,'actions','log_loss_improvement'),
+                  'action_ece':metric(inc,split,'actions','ece_confidence'),
+                  'range_log_loss':metric(inc,split,'range','log_loss'),
+                  'range_improvement':metric(inc,split,'range','log_loss_improvement'),
+                  'sizing_inside_p10_p90':metric(inc,split,'sizing','inside_training_p10_p90_fraction'),
+                  'sizing_above_p99':metric(inc,split,'sizing','above_training_p99_fraction'),
+                },
+              }
+              c=splits[split]['candidate']; i=splits[split]['incumbent']
+              splits[split]['candidate_minus_incumbent']={
+                'action_log_loss':c['action_log_loss']-i['action_log_loss'],
+                'action_ece':c['action_ece']-i['action_ece'],
+                'range_log_loss':c['range_log_loss']-i['range_log_loss'],
+                'sizing_inside_p10_p90':c['sizing_inside_p10_p90']-i['sizing_inside_p10_p90'],
+                'sizing_above_p99':c['sizing_above_p99']-i['sizing_above_p99'],
+              }
+          # Promotion selection is VALIDATION-only. TEST is reported after that decision.
+          v=splits['validation']['candidate_minus_incumbent']
+          no_micro=min(next(x for x in sel['candidates'] if x['k']==3)['profile_weights'])>=0.05
+          validation_competitive=(v['action_log_loss']<=0.0 and v['range_log_loss']<=0.0 and splits['validation']['candidate']['action_ece']<=0.05)
+          decision='PROMOTE' if no_micro and validation_competitive else 'RETAIN_INCUMBENT'
+          report={
+            'schema':'independent-model-b-paired-refresh/v1',
+            'cycle':'20260913_model_b_refresh_cycle',
+            'independence_contract':'Hand histories only; no Model A EV, policy, recommendation or engine outputs used.',
+            'selection':{'selected_k':sel['selected_k'],'selection_split':'VALIDATION','test_used_for_selection':False,'no_micro_profile':no_micro},
+            'comparison_contract':'Candidate and incumbent evaluated by the same evaluator on the exact same enlarged VALIDATION/TEST hand union.',
+            'splits':splits,
+            'decision':decision,
+            'decision_basis':'VALIDATION candidate must not worsen aggregate action log-loss or range log-loss, must keep action ECE <= 0.05, and must satisfy the >=5% profile-weight guard. TEST is diagnostic only after the decision.',
+            'artifacts':{
+              'features_sha256':sha(root/'features/player_features.json'),
+              'selection_sha256':sha(root/'evaluation/profile_count_selection.json'),
+              'candidate_summary_sha256':sha(root/'model/summary.json'),
+              'candidate_profiles_sha256':sha(root/'model/profiles.json'),
+              'candidate_ranges_sha256':sha(root/'model/preflop_ranges.json'),
+              'candidate_actions_sha256':sha(root/'model/postflop_actions.json'),
+              'candidate_sizing_sha256':sha(root/'model/sizing.json'),
+              'candidate_holdout_sha256':sha(root/'evaluation/candidate_holdout.json'),
+              'incumbent_holdout_sha256':sha(root/'evaluation/incumbent_holdout.json'),
+            }
+          }
+          (root/'DECISION.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+
+      - name: Validate acceptance contract
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path(os.environ['RUN_DIR'])
+          d=json.loads((root/'DECISION.json').read_text())
+          assert d['selection']['selected_k']==3
+          assert d['selection']['selection_split']=='VALIDATION'
+          assert d['selection']['test_used_for_selection'] is False
+          assert d['selection']['no_micro_profile'] is True
+          for split in ('validation','test'):
+              x=d['splits'][split]
+              assert x['hands']>3000
+              assert x['candidate']['action_improvement']>=0.015
+              assert x['candidate']['range_improvement']>0
+              assert x['candidate']['action_ece']<=0.05
+              assert 0.70<=x['candidate']['sizing_inside_p10_p90']<=0.90
+              assert x['candidate']['sizing_above_p99']<=0.03
+          assert d['decision'] in ('PROMOTE','RETAIN_INCUMBENT')
+          print('Model B paired refresh gate:',d['decision'])
+          PY
+
+      - name: Persist immutable refreshed candidate and comparison
+        run: |
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add "$RUN_DIR"
+          if git diff --cached --quiet; then
+            echo 'No generated Model B changes.'
+            exit 0
+          fi
+          git commit -m 'Persist paired Model B refresh candidate'
+          git push
