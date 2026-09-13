@@ -1,0 +1,74 @@
+name: Model B response realism audit
+
+on:
+  push:
+    paths:
+      - '.github/workflows/model-b-response-audit.yml'
+      - 'tools/training/independent_profiles/audit_response_conditioning.py'
+      - 'tools/training/independent_profiles/build_model_b.py'
+      - 'tools/training/independent_profiles/evaluate_model_b.py'
+      - 'tools/simulation/model_b_runtime.py'
+      - 'tests/independent_profiles/test_audit_response_conditioning.py'
+      - 'training/datasets/NLHE_100-200/**/*.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-response-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      OUT_DIR: training/runs/20260913_model_b_response_audit
+      MODEL_DIR: training/runs/20260912_independent_profiles_v2/model
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Unit-test audit helpers
+        run: python3 tests/independent_profiles/test_audit_response_conditioning.py
+      - name: Audit held-out response conditioning
+        run: |
+          mkdir -p "$OUT_DIR"
+          python3 -m tools.training.independent_profiles.audit_response_conditioning \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --model-dir "$MODEL_DIR" \
+            --stake 100/200 --exclude-player RoiDePiqueNique \
+            --min-bucket-observations 20 \
+            --output "$OUT_DIR/response_conditioning_audit.json"
+      - name: Verify audit contract
+        run: |
+          python3 - <<'PY'
+          import json, os
+          p=os.environ['OUT_DIR']+'/response_conditioning_audit.json'
+          d=json.load(open(p))
+          assert d['schema']=='independent-model-b-response-conditioning-audit/v1'
+          assert d['dataset']['unique_scoped_hands']==31003
+          assert d['test_used_for_model_selection'] is False
+          assert set(d['runtime_conditioning_contract']['does_not_condition_on'])=={'facing_price_to_pot','SPR','board_texture','hidden_or_revealed_hand_strength'}
+          for split in ('validation','test'):
+              s=d[split]
+              assert s['audit_counts']['decisions']>10000, (split,s['audit_counts'])
+              assert s['coverage']['board_decision_fraction']>0.95
+              assert s['coverage']['stack_decision_fraction']>0.95
+              assert 0.05<s['coverage']['revealed_decision_fraction']<0.95
+              assert len(s['marginal_buckets']['price'])>=5
+              assert len(s['marginal_buckets']['strength'])>=4
+              price=s['matched_base_context_sensitivity']['price']
+              assert price['contexts_with_two_or_more_supported_buckets']>0, price
+          print('response-conditioning audit contract OK')
+          PY
+      - name: Persist machine-readable audit
+        run: |
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add "$OUT_DIR/response_conditioning_audit.json"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Persist Model B response realism audit'
+          git push
