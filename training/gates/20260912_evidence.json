@@ -86,9 +86,7 @@
     "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
     "assembled_from_commit": "c4555d3e18c3be90a72c42964c18f963442736f7"
   },
-  "registry_transition": {
-    "unchanged_before_explicit_promotion": true
-  },
+  "registry_transition": {"unchanged_before_explicit_promotion": true},
   "deployment": {
     "site_release_attempted": false,
     "note": "Deployment verification remains tracked independently in #45. No new site/engine promotion is attempted by this evidence snapshot."
