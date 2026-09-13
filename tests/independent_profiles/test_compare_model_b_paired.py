@@ -2,7 +2,13 @@
 from __future__ import annotations
 
 import math
-from tools.training.independent_profiles.compare_model_b_paired import metric_delta, paired_bootstrap
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from tools.training.independent_profiles.compare_model_b_paired import metric_delta, paired_bootstrap  # noqa: E402
 
 
 def test_better_candidate_is_negative_and_reproducible():
