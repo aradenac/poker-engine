@@ -1,0 +1,48 @@
+"""Mandatory source integrity gate; missing archives must fail, never skip."""
+import json
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from tools.datasets.build_hand_history_increment import (
+    build_increment, fingerprint, read_archive, sha256_file,
+)
+
+
+class PersistedSnapshotTests(unittest.TestCase):
+    def test_source_and_exact_increment(self):
+        base = ROOT / 'training/datasets/NLHE_100-200'
+        source = base / 'snapshots/20260912/source/RoiDePiqueNique.zip'
+        self.assertEqual(sha256_file(source),
+                         '374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb')
+        manifest, selected = build_increment(
+            [base / 'source/NLHE 100-200.zip',
+             base / 'snapshots/20260909/source/RoiDePiqueNique_training2.zip'],
+            source, {'100/200'})
+        self.assertEqual(manifest['candidate_archive']['unique_hands'], 11896)
+        self.assertEqual(manifest['known_unique_hand_ids'], 27735)
+        self.assertEqual(manifest['selected_unique_hands'], 3268)
+        self.assertEqual(manifest['split_counts'],
+                         {'TRAIN': 2606, 'VALIDATION': 320, 'TEST': 342})
+        self.assertEqual(manifest['selected_hand_ids_fingerprint_sha256'],
+                         '9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b')
+        persisted = json.loads((base / 'increments/20260912/manifest.json').read_text())
+        for key in ('selected_hand_ids', 'split_counts', 'candidate_hand_ids_fingerprint_sha256'):
+            self.assertEqual(manifest[key], persisted[key], key)
+        archive = base / 'increments/20260912/source/selected_100_200.zip'
+        records, _ = read_archive(archive)
+        self.assertEqual(len(records), 3268)
+        self.assertEqual({r.hand_id: r.text for r in records},
+                         {r.hand_id: r.text for r in selected})
+        self.assertEqual(sha256_file(archive), persisted['output_zip']['sha256'])
+        registry = json.loads((ROOT / 'training/registry.json').read_text())
+        dataset = registry['datasets']['NLHE_100-200']
+        self.assertEqual(dataset['latest_candidate_snapshot']['status'],
+                         'source_verified_increment_materialized')
+        self.assertIsNone(registry['pending_import'])
+
+
+if __name__ == '__main__':
+    unittest.main()

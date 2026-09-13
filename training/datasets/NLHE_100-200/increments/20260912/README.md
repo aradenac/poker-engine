@@ -21,4 +21,4 @@ Against the complete already-approved lineage (historical baseline + exact 2026-
 - 406 are historical backfill;
 - 2,862 are chronological additions after the 2026-09-09 cutoff.
 
-`manifest.json` records the exact fingerprints and split counts. It remains marked `source_archive_persisted=false` until the exact source ZIP is stored in GitHub and the stored bytes re-verify to the source SHA-256 above.
+`manifest.json` and `source/selected_100_200.zip` were generated from the GitHub-stored source by Actions run 34713730307. The manifest records all 3,268 selected IDs, source and output hashes, lineage and deterministic splits. The dataset-integrity gate reproduces the selection and verifies the materialized payloads.
