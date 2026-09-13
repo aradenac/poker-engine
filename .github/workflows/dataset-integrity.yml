@@ -2,9 +2,27 @@ name: Persisted dataset integrity
 
 on:
   push:
-    paths: ['training/registry.json', 'training/datasets/**', 'tools/datasets/**', 'tests/datasets/**', '.github/workflows/dataset-integrity.yml']
+    paths:
+      - 'training/registry.json'
+      - 'training/datasets/**'
+      - 'training/runs/20260909_population_increment_v2/**'
+      - 'training/runs/20260912_population_increment_cycle/**'
+      - 'tools/datasets/**'
+      - 'tools/training/**'
+      - 'tests/datasets/**'
+      - 'tests/training/**'
+      - '.github/workflows/dataset-integrity.yml'
   pull_request:
-    paths: ['training/registry.json', 'training/datasets/**', 'tools/datasets/**', 'tests/datasets/**', '.github/workflows/dataset-integrity.yml']
+    paths:
+      - 'training/registry.json'
+      - 'training/datasets/**'
+      - 'training/runs/20260909_population_increment_v2/**'
+      - 'training/runs/20260912_population_increment_cycle/**'
+      - 'tools/datasets/**'
+      - 'tools/training/**'
+      - 'tests/datasets/**'
+      - 'tests/training/**'
+      - '.github/workflows/dataset-integrity.yml'
   workflow_dispatch:
 
 permissions:
@@ -21,3 +39,47 @@ jobs:
         run: |
           python3 tests/datasets/test_build_hand_history_increment.py
           python3 tests/datasets/test_persisted_snapshot.py
+      - name: Reproduce the 2026-09-09 Model A decision and overlay artifacts
+        run: |
+          python3 tools/training/build_incremental_decisions_v2.py \
+            --source training/runs/20260909_population_increment_v2/source/RoiDePiqueNique_training2_delta_after_v4v5.zip \
+            --out /tmp/poker_population_increment_decisions_v2.jsonl \
+            --summary /tmp/model-a-0909-summary.json
+          cmp /tmp/poker_population_increment_decisions_v2.jsonl \
+            training/runs/20260909_population_increment_v2/data/poker_population_increment_decisions_v2.jsonl
+          python3 tools/training/build_population_increment_overlay_v2.py \
+            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \
+            --out /tmp/model-a-0909-overlay.json \
+            --provenance-out /tmp/model-a-0909-overlay-provenance.json
+          cmp /tmp/model-a-0909-overlay.json \
+            training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json
+      - name: Rebuild the 2026-09-12 Model A normalized increment
+        run: |
+          python3 tools/training/build_incremental_decisions_v2.py \
+            --source training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip \
+            --out /tmp/model-a-0912-decisions.jsonl \
+            --summary /tmp/model-a-0912-summary.json
+          python3 tools/training/build_population_increment_overlay_v2.py \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --out /tmp/model-a-0912-overlay.json \
+            --provenance-out /tmp/model-a-0912-overlay-provenance.json
+          python3 - <<'PY'
+          import collections, json
+          summary=json.load(open('/tmp/model-a-0912-summary.json'))
+          assert summary['source_unique_hands']==3268, summary
+          assert summary['parsed_hands']==3268, summary
+          assert summary['source_hand_ids_fingerprint_sha256']=='9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b'
+          assert summary['hands_by_split']=={'TRAIN':2606,'VALIDATION':320,'TEST':342}, summary['hands_by_split']
+          assert summary['rows_total']==42964, summary['rows_total']
+          counts=collections.Counter()
+          with open('/tmp/model-a-0912-decisions.jsonl') as f:
+              for line in f:
+                  row=json.loads(line)
+                  if row['split']=='TRAIN' and not row['is_hero']:
+                      counts[row['street'] if row['street']=='preflop' else 'postflop'] += 1
+          assert counts['preflop']==13774, counts
+          assert counts['postflop']==15962, counts
+          overlay=json.load(open('/tmp/model-a-0912-overlay.json'))
+          assert overlay['summary']['train_population_rows']==29736, overlay['summary']
+          print(json.dumps({'summary':summary,'train_population_rows':dict(counts)}, indent=2))
+          PY
