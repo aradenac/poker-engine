@@ -1,0 +1,253 @@
+{
+  "schema": "independent-model-b-response-conditioning-summary/v1",
+  "source_audit": "training/runs/20260913_model_b_response_audit/response_conditioning_audit.json",
+  "model_dir": "training/runs/20260912_independent_profiles_v2/model",
+  "test_used_for_model_selection": false,
+  "revealed_hand_caveat": "strength buckets use only showdown/revealed hole cards and are selection-biased; revealed-vs-all response deltas are reported explicitly",
+  "validation": {
+    "coverage": {
+      "revealed_decision_fraction": 0.47135922330097085,
+      "stack_decision_fraction": 0.9998921251348436,
+      "board_decision_fraction": 1.0
+    },
+    "revealed_hand_selection_bias": {
+      "FREE": {
+        "all": {
+          "n": 12057,
+          "observed_target_rate": 0.2757734096375549,
+          "observed_target_rate_ci95": [
+            0.26786859196099644,
+            0.2838210679048624
+          ],
+          "mean_model_target_probability": 0.26852584713782107,
+          "action_log_loss": 0.5520965972622744,
+          "action_counts": {
+            "BET": 3325,
+            "CHECK": 8732
+          },
+          "action_frequency": {
+            "BET": 0.2757734096375549,
+            "CHECK": 0.7242265903624451
+          }
+        },
+        "revealed": {
+          "n": 6450,
+          "observed_target_rate": 0.25100775193798447,
+          "observed_target_rate_ci95": [
+            0.24057630126725135,
+            0.26173562408276035
+          ],
+          "mean_model_target_probability": 0.281349639860797,
+          "action_log_loss": 0.5395914566541234,
+          "action_counts": {
+            "BET": 1619,
+            "CHECK": 4831
+          },
+          "action_frequency": {
+            "BET": 0.25100775193798447,
+            "CHECK": 0.7489922480620155
+          }
+        },
+        "revealed_minus_all_target_rate": -0.024765657699570454
+      },
+      "FACING": {
+        "all": {
+          "n": 6483,
+          "observed_target_rate": 0.4658337189572729,
+          "observed_target_rate_ci95": [
+            0.45371465049681475,
+            0.4779932549343893
+          ],
+          "mean_model_target_probability": 0.4758933026007732,
+          "action_log_loss": 0.8610666153461134,
+          "action_counts": {
+            "CALL": 3034,
+            "FOLD": 3020,
+            "RAISE": 429
+          },
+          "action_frequency": {
+            "CALL": 0.4679932130186642,
+            "FOLD": 0.4658337189572729,
+            "RAISE": 0.06617306802406293
+          }
+        },
+        "revealed": {
+          "n": 2289,
+          "observed_target_rate": 0.0,
+          "observed_target_rate_ci95": [
+            0.0,
+            0.0016754755321955076
+          ],
+          "mean_model_target_probability": 0.46311235953736624,
+          "action_log_loss": 1.034213761795258,
+          "action_counts": {
+            "CALL": 1973,
+            "RAISE": 316
+          },
+          "action_frequency": {
+            "CALL": 0.8619484491044124,
+            "RAISE": 0.1380515508955876
+          }
+        },
+        "revealed_minus_all_target_rate": -0.4658337189572729
+      }
+    },
+    "matched_base_context_sensitivity": {
+      "price": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 27,
+        "supported_observations": 3165,
+        "weighted_mean_observed_target_rate_gap": 0.19483187914161607,
+        "max_observed_target_rate_gap": 0.3664383561643836,
+        "max_model_target_probability_gap": 7.771561172376096e-16
+      },
+      "spr": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 39,
+        "supported_observations": 6630,
+        "weighted_mean_observed_target_rate_gap": 0.09582815585955413,
+        "max_observed_target_rate_gap": 0.2569027611044418,
+        "max_model_target_probability_gap": 1.0547118733938987e-15
+      },
+      "strength": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 21,
+        "supported_observations": 2392,
+        "weighted_mean_observed_target_rate_gap": 0.14633274155631815,
+        "max_observed_target_rate_gap": 0.27941176470588236,
+        "max_model_target_probability_gap": 4.996003610813204e-16
+      },
+      "texture": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 58,
+        "supported_observations": 9027,
+        "weighted_mean_observed_target_rate_gap": 0.08429540274429598,
+        "max_observed_target_rate_gap": 0.3233695652173913,
+        "max_model_target_probability_gap": 7.771561172376096e-16
+      }
+    }
+  },
+  "test_locked_confirmation": {
+    "coverage": {
+      "revealed_decision_fraction": 0.48205021788752855,
+      "stack_decision_fraction": 0.999844366051048,
+      "board_decision_fraction": 1.0
+    },
+    "revealed_hand_selection_bias": {
+      "FREE": {
+        "all": {
+          "n": 12754,
+          "observed_target_rate": 0.2678375411635565,
+          "observed_target_rate_ci95": [
+            0.2602227850053216,
+            0.2755921133392385
+          ],
+          "mean_model_target_probability": 0.2691336584250872,
+          "action_log_loss": 0.5469571291282723,
+          "action_counts": {
+            "BET": 3416,
+            "CHECK": 9338
+          },
+          "action_frequency": {
+            "BET": 0.2678375411635565,
+            "CHECK": 0.7321624588364435
+          }
+        },
+        "revealed": {
+          "n": 7022,
+          "observed_target_rate": 0.23241241811449728,
+          "observed_target_rate_ci95": [
+            0.22268120409999595,
+            0.24243625599190247
+          ],
+          "mean_model_target_probability": 0.2785205306095708,
+          "action_log_loss": 0.5251759152677761,
+          "action_counts": {
+            "BET": 1632,
+            "CHECK": 5390
+          },
+          "action_frequency": {
+            "BET": 0.23241241811449728,
+            "CHECK": 0.7675875818855027
+          }
+        },
+        "revealed_minus_all_target_rate": -0.03542512304905923
+      },
+      "FACING": {
+        "all": {
+          "n": 6522,
+          "observed_target_rate": 0.4725544311560871,
+          "observed_target_rate_ci95": [
+            0.46045755363793367,
+            0.48468362171636853
+          ],
+          "mean_model_target_probability": 0.4763984753864924,
+          "action_log_loss": 0.8589541385430439,
+          "action_counts": {
+            "CALL": 3003,
+            "FOLD": 3082,
+            "RAISE": 437
+          },
+          "action_frequency": {
+            "CALL": 0.4604415823367065,
+            "FOLD": 0.4725544311560871,
+            "RAISE": 0.06700398650720638
+          }
+        },
+        "revealed": {
+          "n": 2270,
+          "observed_target_rate": 0.0,
+          "observed_target_rate_ci95": [
+            0.0,
+            0.0016894756433341704
+          ],
+          "mean_model_target_probability": 0.46091473412494455,
+          "action_log_loss": 1.029768538273366,
+          "action_counts": {
+            "CALL": 1960,
+            "RAISE": 310
+          },
+          "action_frequency": {
+            "CALL": 0.8634361233480177,
+            "RAISE": 0.13656387665198239
+          }
+        },
+        "revealed_minus_all_target_rate": -0.4725544311560871
+      }
+    },
+    "matched_base_context_sensitivity": {
+      "price": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 27,
+        "supported_observations": 3275,
+        "weighted_mean_observed_target_rate_gap": 0.1866749341237942,
+        "max_observed_target_rate_gap": 0.3078431372549019,
+        "max_model_target_probability_gap": 8.881784197001252e-16
+      },
+      "spr": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 45,
+        "supported_observations": 7750,
+        "weighted_mean_observed_target_rate_gap": 0.09191990871534182,
+        "max_observed_target_rate_gap": 0.25813953488372093,
+        "max_model_target_probability_gap": 1.4432899320127035e-15
+      },
+      "strength": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 23,
+        "supported_observations": 2887,
+        "weighted_mean_observed_target_rate_gap": 0.14745664456967966,
+        "max_observed_target_rate_gap": 0.5176767676767676,
+        "max_model_target_probability_gap": 6.661338147750939e-16
+      },
+      "texture": {
+        "min_observations_per_bucket": 30,
+        "contexts_with_two_or_more_supported_buckets": 64,
+        "supported_observations": 10118,
+        "weighted_mean_observed_target_rate_gap": 0.08891188487314892,
+        "max_observed_target_rate_gap": 0.2857900318133616,
+        "max_model_target_probability_gap": 1.2212453270876722e-15
+      }
+    }
+  }
+}
