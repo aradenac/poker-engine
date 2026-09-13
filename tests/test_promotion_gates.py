@@ -185,7 +185,8 @@ def test_current_cycle_snapshot_cannot_be_promoted_yet() -> None:
     assert report["status"] in {"FAIL", "BLOCKED"}, report
     assert report["promotion_ready"] is False
     assert report["rules"]["registry_update_allowed"] is False
-    assert by_name(report, "model_a_preflop")["status"] == "FAIL"
+    assert by_name(report, "model_a_preflop")["status"] == "PASS"
+    assert by_name(report, "model_a_postflop")["status"] == "PASS"
     assert by_name(report, "model_b")["status"] == "BLOCKED"
     assert by_name(report, "strategy")["status"] == "BLOCKED"
 
