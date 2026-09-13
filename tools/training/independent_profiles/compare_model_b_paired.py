@@ -2,7 +2,7 @@
 """Paired incumbent-vs-candidate gate for independent Model B.
 
 The two models are scored on exactly the same deterministic VALIDATION/TEST
-hands.  Per-hand loss sums are the bootstrap cluster unit, preventing multiple
+hands. Per-hand loss sums are the bootstrap cluster unit, preventing multiple
 decisions from one poker hand from being treated as independent observations.
 Model selection remains VALIDATION-only; TEST is a locked confirmation of the
 already frozen K=3 candidate.
@@ -14,11 +14,18 @@ import hashlib
 import json
 import math
 import random
+import sys
 from collections import defaultdict
 from pathlib import Path
 
-from tools.datasets.build_hand_history_increment import split_for
-from tools.training.independent_profiles.build_model_b import (
+# Support both `python -m ...compare_model_b_paired` and direct execution from
+# the repository root, which is how the promotion-gate workflow invokes this
+# script. Python otherwise places only this script directory on sys.path.
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+
+from tools.datasets.build_hand_history_increment import split_for  # noqa: E402
+from tools.training.independent_profiles.build_model_b import (  # noqa: E402
     apply_event,
     combo_class,
     key_for,
@@ -26,8 +33,8 @@ from tools.training.independent_profiles.build_model_b import (
     preflop_summary,
     relative_position,
 )
-from tools.training.independent_profiles.build_player_features import merge_archives
-from tools.training.independent_profiles.evaluate_model_b import (
+from tools.training.independent_profiles.build_player_features import merge_archives  # noqa: E402
+from tools.training.independent_profiles.evaluate_model_b import (  # noqa: E402
     EPS,
     action_probabilities,
     choose_node,
@@ -83,7 +90,13 @@ def load_bundle(feature_path: Path, model_dir: Path) -> dict:
     }
 
 
-def score_hand(hand: dict, bundle: dict, excluded_players: set[str], action_alpha: float, range_prior_strength: float) -> dict:
+def score_hand(
+    hand: dict,
+    bundle: dict,
+    excluded_players: set[str],
+    action_alpha: float,
+    range_prior_strength: float,
+) -> dict:
     profiles = bundle["profiles"]
     ranges = bundle["ranges"]
     actions = bundle["actions"]
@@ -183,7 +196,15 @@ def score_hand(hand: dict, bundle: dict, excluded_players: set[str], action_alph
     }
 
 
-def paired_rows(records, split_name: str, incumbent: dict, candidate: dict, excluded_players: set[str], action_alpha: float, range_prior_strength: float) -> list[dict]:
+def paired_rows(
+    records,
+    split_name: str,
+    incumbent: dict,
+    candidate: dict,
+    excluded_players: set[str],
+    action_alpha: float,
+    range_prior_strength: float,
+) -> list[dict]:
     rows = []
     for record in records:
         if split_for(record.hand_id) != split_name:
@@ -195,13 +216,15 @@ def paired_rows(records, split_name: str, incumbent: dict, candidate: dict, excl
         cand = score_hand(hand, candidate, excluded_players, action_alpha, range_prior_strength)
         if base["action_n"] != cand["action_n"] or base["range_n"] != cand["range_n"]:
             raise AssertionError((record.hand_id, base, cand))
-        rows.append({
-            "hand_id": str(record.hand_id),
-            "action_n": base["action_n"],
-            "action_delta_loss_sum": cand["action_loss_sum"] - base["action_loss_sum"],
-            "range_n": base["range_n"],
-            "range_delta_loss_sum": cand["range_loss_sum"] - base["range_loss_sum"],
-        })
+        rows.append(
+            {
+                "hand_id": str(record.hand_id),
+                "action_n": base["action_n"],
+                "action_delta_loss_sum": cand["action_loss_sum"] - base["action_loss_sum"],
+                "range_n": base["range_n"],
+                "range_delta_loss_sum": cand["range_loss_sum"] - base["range_loss_sum"],
+            }
+        )
     return rows
 
 
@@ -255,7 +278,9 @@ def paired_bootstrap(rows: list[dict], *, seed: int, samples: int) -> dict:
 def anomaly_rate(split: dict) -> float:
     audit = split.get("audit", {})
     n = int(split.get("actions", {}).get("n", 0))
-    anomalies = sum(int(v) for k, v in audit.items() if k not in {"hands_parsed", "hands_unparsed"})
+    anomalies = sum(
+        int(v) for k, v in audit.items() if k not in {"hands_parsed", "hands_unparsed"}
+    )
     return anomalies / n if n else math.inf
 
 
@@ -277,10 +302,15 @@ def guardrails(split: dict, contract: dict) -> dict:
     checks = {
         "action_ece": float(split["actions"]["ece_confidence"]) <= float(g["max_action_ece"]),
         "known_player_coverage": float(split["actions"]["warm_fraction"]) >= float(g["min_known_player_coverage"]),
-        "weighted_profile_stability": float(split["profile_stability"]["appearance_weighted_stable_fraction"]) >= float(g["min_weighted_profile_stability"]),
+        "weighted_profile_stability": float(
+            split["profile_stability"]["appearance_weighted_stable_fraction"]
+        ) >= float(g["min_weighted_profile_stability"]),
         "state_anomaly_rate": anomaly_rate(split) <= float(g["max_state_anomaly_rate"]),
-        "sizing_p10_p90_coverage": 0.70 <= float(split["sizing"]["inside_training_p10_p90_fraction"]) <= 0.90,
-        "sizing_above_p99_tail": float(split["sizing"]["above_training_p99_fraction"]) <= 0.03,
+        "sizing_p10_p90_coverage": 0.70
+        <= float(split["sizing"]["inside_training_p10_p90_fraction"])
+        <= 0.90,
+        "sizing_above_p99_tail": float(split["sizing"]["above_training_p99_fraction"])
+        <= 0.03,
     }
     return {
         "checks": checks,
@@ -288,7 +318,9 @@ def guardrails(split: dict, contract: dict) -> dict:
         "observed": {
             "action_ece": split["actions"]["ece_confidence"],
             "known_player_coverage": split["actions"]["warm_fraction"],
-            "weighted_profile_stability": split["profile_stability"]["appearance_weighted_stable_fraction"],
+            "weighted_profile_stability": split["profile_stability"][
+                "appearance_weighted_stable_fraction"
+            ],
             "state_anomaly_rate": anomaly_rate(split),
             "sizing_p10_p90_coverage": split["sizing"]["inside_training_p10_p90_fraction"],
             "sizing_above_p99_tail": split["sizing"]["above_training_p99_fraction"],
@@ -298,11 +330,17 @@ def guardrails(split: dict, contract: dict) -> dict:
 
 def comparison_pass(stats: dict, contract: dict) -> bool:
     rule = contract["model_b"]["candidate_vs_incumbent"]
-    action_limit = float(rule["action_log_loss_delta_candidate_minus_incumbent_ci95_upper_at_most"])
-    range_limit = float(rule["range_log_loss_delta_candidate_minus_incumbent_ci95_upper_at_most"])
+    action_limit = float(
+        rule["action_log_loss_delta_candidate_minus_incumbent_ci95_upper_at_most"]
+    )
+    range_limit = float(
+        rule["range_log_loss_delta_candidate_minus_incumbent_ci95_upper_at_most"]
+    )
     return (
-        float(stats["action_log_loss_delta_candidate_minus_incumbent"]["ci95"][1]) <= action_limit
-        and float(stats["range_log_loss_delta_candidate_minus_incumbent"]["ci95"][1]) <= range_limit
+        float(stats["action_log_loss_delta_candidate_minus_incumbent"]["ci95"][1])
+        <= action_limit
+        and float(stats["range_log_loss_delta_candidate_minus_incumbent"]["ci95"][1])
+        <= range_limit
     )
 
 
@@ -319,7 +357,9 @@ def main() -> None:
     p.add_argument("--exclude-player", action="append", default=[])
     p.add_argument("--action-alpha", type=float, default=1.0)
     p.add_argument("--range-prior-strength", type=float, default=50.0)
-    p.add_argument("--contract", type=Path, default=Path("training/PROMOTION_GATE_CONTRACT.json"))
+    p.add_argument(
+        "--contract", type=Path, default=Path("training/PROMOTION_GATE_CONTRACT.json")
+    )
     p.add_argument("--bootstrap-samples", type=int, default=5000)
     p.add_argument("--seed", type=int, default=20260913)
     p.add_argument("--code-commit", default=None)
@@ -346,7 +386,15 @@ def main() -> None:
 
     split_stats = {}
     for i, split in enumerate(("VALIDATION", "TEST")):
-        rows = paired_rows(records, split, incumbent, candidate, excluded, args.action_alpha, args.range_prior_strength)
+        rows = paired_rows(
+            records,
+            split,
+            incumbent,
+            candidate,
+            excluded,
+            args.action_alpha,
+            args.range_prior_strength,
+        )
         split_stats[split.lower()] = paired_bootstrap(
             rows, seed=args.seed + i * 1000003, samples=args.bootstrap_samples
         )
@@ -367,7 +415,9 @@ def main() -> None:
             "path": args.contract.as_posix(),
             "sha256": sha256_file(args.contract),
             "selection_split": contract["model_b"]["selection_split"],
-            "paired_confidence_required": contract["model_b"]["candidate_vs_incumbent"]["paired_confidence_required_for_promotion"],
+            "paired_confidence_required": contract["model_b"]["candidate_vs_incumbent"][
+                "paired_confidence_required_for_promotion"
+            ],
         },
         "dataset": dataset,
         "candidate": candidate_eval["model"],
@@ -382,14 +432,19 @@ def main() -> None:
             "production_effect": "NONE",
             "reason": (
                 "Candidate clears paired 95% action/range non-regression on VALIDATION and locked TEST plus absolute guardrails. Explicit promotion is still a separate state transition."
-                if promote else
-                "Candidate does not clear every pre-specified paired 95% action/range and absolute guardrail requirement; incumbent remains promoted. TEST was not used to retune or select an alternative."
+                if promote
+                else "Candidate does not clear every pre-specified paired 95% action/range and absolute guardrail requirement; incumbent remains promoted. TEST was not used to retune or select an alternative."
             ),
         },
-        "scope_limit": "Same-structure Model B refresh only. Response-representation realism remains governed by issue #46 and is not proven by this comparison.",
+        "scope_limit": (
+            "Same-structure Model B refresh only. Response-representation realism remains "
+            "governed by issue #46 and is not proven by this comparison."
+        ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.output.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 
