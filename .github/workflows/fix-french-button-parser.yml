@@ -6,10 +6,15 @@ on:
       - issue-46-french-position-audit
     paths:
       - '.github/workflows/fix-french-button-parser.yml'
+      - 'tests/independent_profiles/test_french_button_position.py'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: fix-french-model-b-button-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   fix-and-verify:
