@@ -92,7 +92,7 @@ jobs:
       - name: Persist deterministic audit evidence
         if: github.event_name == 'push'
         run: |
-          if git diff --quiet -- training/runs/20260913_model_b_response_audit; then
+          if [ -z "$(git status --porcelain -- training/runs/20260913_model_b_response_audit)" ]; then
             echo 'Audit evidence already current.'
             exit 0
           fi
