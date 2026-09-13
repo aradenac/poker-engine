@@ -40,6 +40,8 @@ jobs:
         run: |
           python3 tools/sequential_postflop_population_sim_v4.py --help
           python3 tests/simulation/test_oracle_contract.py
+          node tests/simulation/test_oracle_workers.cjs
+          python3 tests/simulation/test_rollout_accounting.py
       - name: Model B runtime tests
         run: python3 tests/simulation/test_model_b_runtime.py
       - name: Scenario generation tests

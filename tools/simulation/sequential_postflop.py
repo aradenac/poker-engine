@@ -18,6 +18,7 @@ import json
 import math
 import re
 import statistics
+import subprocess
 import sys
 from pathlib import Path
 
@@ -368,7 +369,7 @@ async def rollout(scenario: dict, policy: str, oracle: AnalyzerOracle, env: Mode
             else:
                 mode = "FACING" if to_call > 1e-9 else "FREE"
                 relative = "OOP" if actor == order[0] else "IP"
-                can_raise = remaining > to_call + last_raise_inc + 1e-9
+                can_raise = remaining > to_call + 1e-9 and stacks[other] - total[other] > 1e-9
                 action = env.sample_action(
                     seed_parts=(scenario["environment_seed"], street, opponent_action_no, "action"),
                     profile=profile,
@@ -407,6 +408,23 @@ async def rollout(scenario: dict, policy: str, oracle: AnalyzerOracle, env: Mode
                         if cost <= to_call + 1e-9:
                             kind, cost = "CALL", min(to_call, remaining)
 
+            # Apply heads-up betting legality to both actors. An all-in opponent
+            # cannot face another raise; an opening bet is at least one BB unless
+            # the actor is all-in for less. A short raise never lowers the next
+            # full-raise increment.
+            if kind == "AGG":
+                if stacks[other] - total[other] <= 1e-9 or cost <= to_call + 1e-9:
+                    kind, cost = ("CALL", min(to_call, remaining)) if to_call > 1e-9 else ("CHECK", 0.0)
+                else:
+                    minimum = to_call + last_raise_inc if to_call > 1e-9 else 1.0
+                    cost = min(remaining, max(minimum, round(cost * bb_chips) / bb_chips))
+            if kind == "CALL" and to_call <= 1e-9:
+                kind, cost = "CHECK", 0.0
+            if kind == "CHECK" and to_call > 1e-9:
+                raise RuntimeError("illegal check facing a bet")
+            if actor == hero:
+                hero_actions[-1]["executed_kind"] = kind
+                hero_actions[-1]["executed_cost_bb"] = cost
             if kind == "FOLD":
                 history_lines.append(action_line(actor, "FOLD", 0.0, street_paid[actor], max_paid, remaining, bb_chips))
                 if actor == hero:
@@ -452,7 +470,7 @@ async def rollout(scenario: dict, policy: str, oracle: AnalyzerOracle, env: Mode
                 if actor == hero:
                     post_invested += cost
                 new_max = max(street_paid.values())
-                last_raise_inc = max(0.005, new_max - old_max)
+                last_raise_inc = max(last_raise_inc, new_max - old_max)
                 pending = [other]
 
             if total[hero] >= stacks[hero] - 1e-9 or total[opponent] >= stacks[opponent] - 1e-9:
@@ -634,6 +652,10 @@ async def run(args) -> dict:
     finally:
         await oracle.close()
 
+    try:
+        code_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True, stderr=subprocess.DEVNULL).strip()
+    except (OSError, subprocess.CalledProcessError):
+        code_commit = None
     metadata = {
         "engine": {"path": engine.relative_to(ROOT).as_posix() if engine.is_relative_to(ROOT) else engine.as_posix(), "sha256": sha256_file(engine)},
         "model_a": {
@@ -645,6 +667,7 @@ async def run(args) -> dict:
         "scenario_split": manifest["split"],
         "master_seed": manifest["master_seed"],
         "trials": int(args.trials),
+        "code_commit": code_commit,
         "oracle_rng": "mulberry32/fnv1a-snapshot/v1",
         "observed_monte_carlo_trials": sorted(set(runtime["observations"])),
         "simulation_source_sha256": {p.name: sha256_file(p) for p in sorted(Path(__file__).parent.glob("*.py")) + [Path(__file__).with_name("oracle_runtime.js")]},
