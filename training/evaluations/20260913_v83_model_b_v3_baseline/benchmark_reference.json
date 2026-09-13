@@ -1,0 +1,265 @@
+{
+  "schema": "sequential-v83-model-b-v3-benchmark-reference/v1",
+  "candidate_selection_sha256": "0e39df6580d21a95e03fb41b36a2c4b2cb88c63efb0dfe14d54e353e1b4aeb54",
+  "selected_response_variant": "price",
+  "candidate_production_effect": "NONE",
+  "validation": {
+    "paired_scenarios": 64,
+    "paired_base_hands": 32,
+    "mean_incumbent_utility_bb": 16.145780078125,
+    "mean_candidate_utility_bb": 9.998744921875,
+    "mean_delta_candidate_minus_incumbent_bb": -6.1470351562499985,
+    "delta_ci95_cluster_bootstrap": [
+      -13.105774140625,
+      -0.7307256250000073
+    ],
+    "same_terminal_fraction": 0.8125,
+    "same_hero_action_sequence_fraction": 0.703125,
+    "same_first_hero_action_fraction": 0.96875
+  },
+  "test": {
+    "paired_scenarios": 64,
+    "paired_base_hands": 32,
+    "mean_incumbent_utility_bb": 8.34893125,
+    "mean_candidate_utility_bb": 4.8677046875,
+    "mean_delta_candidate_minus_incumbent_bb": -3.4812265625,
+    "delta_ci95_cluster_bootstrap": [
+      -9.784060292968748,
+      1.5205606054687464
+    ],
+    "same_terminal_fraction": 0.890625,
+    "same_hero_action_sequence_fraction": 0.8125,
+    "same_first_hero_action_fraction": 0.9375
+  },
+  "validation_policy_sensitivity": {
+    "available": true,
+    "incumbent": {
+      "cap_2": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": -6.0253,
+        "delta_ci95_cluster_bootstrap": [
+          -14.402214843749999,
+          -2.2065682614427006e-16
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 60,
+          "loss": 4
+        }
+      },
+      "cap_3": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": -6.0253,
+        "delta_ci95_cluster_bootstrap": [
+          -14.429330468749995,
+          -2.220446049250313e-16
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 60,
+          "loss": 4
+        }
+      },
+      "cap_4": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": -6.0253,
+        "delta_ci95_cluster_bootstrap": [
+          -14.243964843749996,
+          0.0
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 60,
+          "loss": 4
+        }
+      },
+      "no_jam": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 64,
+          "loss": 0
+        }
+      }
+    },
+    "candidate": {
+      "cap_2": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.6449656249999987,
+        "delta_ci95_cluster_bootstrap": [
+          -4.865307812500003,
+          7.028267187499999
+        ],
+        "win_tie_loss": {
+          "win": 2,
+          "tie": 60,
+          "loss": 2
+        }
+      },
+      "cap_3": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.8730281249999987,
+        "delta_ci95_cluster_bootstrap": [
+          -4.637245312500003,
+          7.256329687499999
+        ],
+        "win_tie_loss": {
+          "win": 2,
+          "tie": 61,
+          "loss": 1
+        }
+      },
+      "cap_4": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.8730281249999989,
+        "delta_ci95_cluster_bootstrap": [
+          -4.637245312500003,
+          7.256329687499999
+        ],
+        "win_tie_loss": {
+          "win": 2,
+          "tie": 61,
+          "loss": 1
+        }
+      },
+      "no_jam": {
+        "reference": "current",
+        "paired_scenarios": 64,
+        "paired_base_hands": 32,
+        "mean_delta_utility_bb": 0.0,
+        "delta_ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "win_tie_loss": {
+          "win": 0,
+          "tie": 64,
+          "loss": 0
+        }
+      }
+    },
+    "incumbent_regret": {
+      "definition": "Diagnostic regret of current versus the best realized utility among only the explicitly evaluated policy variants; not exhaustive action-level counterfactual regret.",
+      "policy_set": [
+        "cap_2",
+        "cap_3",
+        "cap_4",
+        "current",
+        "no_jam"
+      ],
+      "paired_scenarios": 64,
+      "mean_regret_bb": 4.440892098500626e-16,
+      "ci95_cluster_bootstrap": [
+        0.0,
+        1.3322676295501878e-15
+      ]
+    },
+    "candidate_regret": {
+      "definition": "Diagnostic regret of current versus the best realized utility among only the explicitly evaluated policy variants; not exhaustive action-level counterfactual regret.",
+      "policy_set": [
+        "cap_2",
+        "cap_3",
+        "cap_4",
+        "current",
+        "no_jam"
+      ],
+      "paired_scenarios": 64,
+      "mean_regret_bb": 2.56653046875,
+      "ci95_cluster_bootstrap": [
+        0.0,
+        7.5518374999999995
+      ]
+    },
+    "difference_in_difference": {
+      "no_jam": {
+        "estimate_bb": 0.0,
+        "ci95_cluster_bootstrap": [
+          0.0,
+          0.0
+        ],
+        "paired_scenarios": 64
+      },
+      "cap_2": {
+        "estimate_bb": 6.670265624999997,
+        "ci95_cluster_bootstrap": [
+          0.7358579101562511,
+          14.215998300781248
+        ],
+        "paired_scenarios": 64
+      },
+      "cap_3": {
+        "estimate_bb": 6.898328124999997,
+        "ci95_cluster_bootstrap": [
+          0.74016015625,
+          14.284937519531237
+        ],
+        "paired_scenarios": 64
+      },
+      "cap_4": {
+        "estimate_bb": 6.898328124999997,
+        "ci95_cluster_bootstrap": [
+          0.7401601562499998,
+          14.827934374999993
+        ],
+        "paired_scenarios": 64
+      }
+    }
+  },
+  "validation_scenario_fingerprint": "e96bdd997c5166c1f911ec1640f535f91385b71bd24c4880128dbd5e41fbaa3e",
+  "test_scenario_fingerprint": "1ff3c3a5ed32edb6f909fac9cc57bdb720349ade2ca49ac8e88df326a67719b2",
+  "candidate_model_b": {
+    "alias": "candidate",
+    "artifact_sha256": {
+      "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+      "preflop_ranges.json": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+      "postflop_actions.json": "eeeeaf210b658a77ceae502859cad0f93fc599ccb11200693ac5adfcc5c8ba12",
+      "sizing.json": "1b80a165d102e86cd80af5779f1564df8e123c9d5ae87d3fea02f741d89f2c1b",
+      "prediction_contract.json": "10e527b55bb10447c9471782198838f0dabbef7919e14f3543d5f0f5b5f47335"
+    }
+  },
+  "engine": {
+    "path": "site/index.html",
+    "sha256": "d17da4b43a8bd6e33513969979f57cac6fc22155047c029ccb92dca8864cb9e0"
+  },
+  "model_a": {
+    "preflop": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "postflop": {
+      "path": "training/models/postflop_population_model_v5.json",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    }
+  },
+  "scope": {
+    "supported": [
+      "heads_up_postflop"
+    ],
+    "not_supported": [
+      "multiway",
+      "preflop",
+      "overall_cash_game_win_rate"
+    ],
+    "candidate_response_dimension": "facing_price_to_pot",
+    "strategy_promotion_authorized": false
+  }
+}

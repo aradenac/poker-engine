@@ -1,0 +1,503 @@
+{
+  "schema": "sequential-v83-model-b-v3-pathologies/v1",
+  "validation": [
+    {
+      "ev_final_bb": 31.040860784313807,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261785147671",
+      "hand_strength": "pair",
+      "hero_position": "LJ",
+      "label": "all-in effectif",
+      "profile": "2",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 745,
+      "scenario_id": "5ba3c982834d28bc591eb19f",
+      "size_ratio": 14.807058823529413,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 21.565509160859207,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261785147671",
+      "hand_strength": "pair",
+      "hero_position": "LJ",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 54,
+      "scenario_id": "5dfbeba34cf25831af804d82",
+      "size_ratio": 12.529616724738677,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 19.482,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261778630609",
+      "hand_strength": "pair",
+      "hero_position": "LJ",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 745,
+      "scenario_id": "df04d524c4ef85f8bd0be1f6",
+      "size_ratio": 9.28,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 29.76752962962967,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261782962430",
+      "hand_strength": "pair",
+      "hero_position": "CO",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 55,
+      "scenario_id": "b810f2c7869b306e697cb2ac",
+      "size_ratio": 8.097037037037037,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 29.76752962962967,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261782962430",
+      "hand_strength": "pair",
+      "hero_position": "CO",
+      "label": "all-in effectif",
+      "profile": "2",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 55,
+      "scenario_id": "5eb5d0c19c1ca50e8296bd41",
+      "size_ratio": 8.097037037037037,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 16.907624999999975,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261781337105",
+      "hand_strength": "pair",
+      "hero_position": "LJ",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 745,
+      "scenario_id": "634f55d5638fbb8e988a504a",
+      "size_ratio": 7.03,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 16.907624999999975,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261781337105",
+      "hand_strength": "pair",
+      "hero_position": "LJ",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 745,
+      "scenario_id": "a6f6e5887e8f992f49fb668f",
+      "size_ratio": 7.03,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 25.701440384615417,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "262015331149",
+      "hand_strength": "pair",
+      "hero_position": "BB",
+      "label": "all-in effectif",
+      "profile": "1",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 704,
+      "scenario_id": "9685db8f579f9b6d8473fd29",
+      "size_ratio": 5.518846153846154,
+      "street": "turn"
+    },
+    {
+      "ev_final_bb": 40.491145833333015,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261916306876",
+      "hand_strength": "flush",
+      "hero_position": "CO",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 597,
+      "scenario_id": "4c4935ddab1df0b681352aa7",
+      "size_ratio": 4.798333333333333,
+      "street": "river"
+    },
+    {
+      "ev_final_bb": 22.5775,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261528129474",
+      "hand_strength": "two_pair",
+      "hero_position": "BTN",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 745,
+      "scenario_id": "a9fc9a8f38debdcdb35da870",
+      "size_ratio": 3.6,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 22.5775,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261528129474",
+      "hand_strength": "two_pair",
+      "hero_position": "BTN",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 745,
+      "scenario_id": "131e449b94c3ba5ee156747a",
+      "size_ratio": 3.6,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 22.78175579710167,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261673053521",
+      "hand_strength": "trips",
+      "hero_position": "BTN",
+      "label": "all-in effectif",
+      "profile": "1",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 745,
+      "scenario_id": "52d51c57902cc9158dd1fd5e",
+      "size_ratio": 2.742608695652174,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 22.78175579710167,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261673053521",
+      "hand_strength": "trips",
+      "hero_position": "BTN",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 745,
+      "scenario_id": "3e2db6a7678e4b4ddffbea4f",
+      "size_ratio": 2.742608695652174,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 21.68250000000008,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261778073785",
+      "hand_strength": "pair",
+      "hero_position": "SB",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 658,
+      "scenario_id": "2cb1e052ffc5b16fa9549776",
+      "size_ratio": 2.275,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 21.68250000000008,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261778073785",
+      "hand_strength": "pair",
+      "hero_position": "SB",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 658,
+      "scenario_id": "cf3ec655e591ea703194fd47",
+      "size_ratio": 2.275,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 10.025239420927438,
+      "family": "RAISE",
+      "hand_id": "261495039668",
+      "hand_strength": "pair",
+      "hero_position": "BB",
+      "label": "min-raise",
+      "profile": "1",
+      "reasons": [
+        "response_observation_floor_below_10"
+      ],
+      "rep": 0,
+      "response_observation_floor": 9,
+      "scenario_id": "832c6d6ba18874eddee095e4",
+      "size_ratio": 0.38709677419354843,
+      "street": "river"
+    }
+  ],
+  "test": [
+    {
+      "ev_final_bb": 16.43123333333348,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261675371648",
+      "hand_strength": "trips",
+      "hero_position": "BB",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 289,
+      "scenario_id": "ce2323de9d769683fac83b78",
+      "size_ratio": 23.216,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 16.43123333333348,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261675371648",
+      "hand_strength": "trips",
+      "hero_position": "BB",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 289,
+      "scenario_id": "621e8abb570f8866dde771d6",
+      "size_ratio": 23.216,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 13.15115833333335,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261975918249",
+      "hand_strength": "trips",
+      "hero_position": "BB",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 289,
+      "scenario_id": "d95c3b1f9559206d3c576b55",
+      "size_ratio": 17.604,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 13.15115833333335,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261975918249",
+      "hand_strength": "trips",
+      "hero_position": "BB",
+      "label": "all-in effectif",
+      "profile": "1",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 289,
+      "scenario_id": "51adf1ee9d1e45f5a132549e",
+      "size_ratio": 17.604,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 27.667355072463828,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261820409076",
+      "hand_strength": "pair",
+      "hero_position": "BTN",
+      "label": "all-in effectif",
+      "profile": "2",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 745,
+      "scenario_id": "05ec53ace680ea7828652115",
+      "size_ratio": 15.214782608695652,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 27.667355072463828,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261820409076",
+      "hand_strength": "pair",
+      "hero_position": "BTN",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 745,
+      "scenario_id": "c1c87bfac45fa29b41707db0",
+      "size_ratio": 15.214782608695652,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 28.478198717948704,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261439322148",
+      "hand_strength": "pair",
+      "hero_position": "SB",
+      "label": "all-in effectif",
+      "profile": "1",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 658,
+      "scenario_id": "4325e21f75a472be1d221584",
+      "size_ratio": 7.833846153846154,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 28.478198717948704,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261439322148",
+      "hand_strength": "pair",
+      "hero_position": "SB",
+      "label": "all-in effectif",
+      "profile": "1",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 658,
+      "scenario_id": "f7141b73bff296ff60ec1498",
+      "size_ratio": 7.833846153846154,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 24.315266666666687,
+      "family": "JAM",
+      "hand_id": "261461399988",
+      "hand_strength": "pair",
+      "hero_position": "CO",
+      "label": "jam",
+      "profile": "0",
+      "reasons": [
+        "true_jam",
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 37,
+      "scenario_id": "3f6a74ee34e07d423d81b5ce",
+      "size_ratio": 6.23,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 13.860694444444444,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261438355204",
+      "hand_strength": "pair",
+      "hero_position": "SB",
+      "label": "all-in effectif",
+      "profile": "1",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 75,
+      "scenario_id": "439f8469cce4db75155536e0",
+      "size_ratio": 3.5555555555555554,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 13.860694444444444,
+      "family": "EFFECTIVE_ALLIN",
+      "hand_id": "261438355204",
+      "hand_strength": "pair",
+      "hero_position": "SB",
+      "label": "all-in effectif",
+      "profile": "0",
+      "reasons": [
+        "sizing_above_2x_pot"
+      ],
+      "rep": 1,
+      "response_observation_floor": 75,
+      "scenario_id": "f37c175b81f50b2dcee11890",
+      "size_ratio": 3.5555555555555554,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 24.936424850042634,
+      "family": "JAM",
+      "hand_id": "261461399988",
+      "hand_strength": "pair",
+      "hero_position": "CO",
+      "label": "jam",
+      "profile": "2",
+      "reasons": [
+        "true_jam",
+        "sizing_above_2x_pot"
+      ],
+      "rep": 0,
+      "response_observation_floor": 13,
+      "scenario_id": "f2db6e228a9f39b3390a746e",
+      "size_ratio": 3.2030848329048847,
+      "street": "flop"
+    },
+    {
+      "ev_final_bb": 37.155,
+      "family": "JAM",
+      "hand_id": "262054619352",
+      "hand_strength": "full_house",
+      "hero_position": "BB",
+      "label": "jam",
+      "profile": "0",
+      "reasons": [
+        "true_jam"
+      ],
+      "rep": 1,
+      "response_observation_floor": 76,
+      "scenario_id": "4e053465ba42185a7660579f",
+      "size_ratio": 1.3285714285714285,
+      "street": "river"
+    }
+  ],
+  "rule": "Diagnostic fixtures only; TEST states are not strategy-selection targets."
+}
