@@ -1,0 +1,24 @@
+/* poker-deployment-meta/v1
+commit: unknown
+branch: local
+build_id: local
+generated_at: unavailable
+
+This tracked fallback is replaced in the Cloudflare build workspace by
+`python3 tools/write_deployment_metadata.py` before Wrangler uploads `site/`.
+*/
+body::before{
+  content:"déploiement local · métadonnées de build indisponibles";
+  display:block;
+  max-width:1220px;
+  margin:6px auto -18px;
+  padding:0 26px;
+  text-align:right;
+  color:var(--muted,#9aa7c2);
+  font:500 9px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;
+  letter-spacing:.01em;
+  opacity:.68;
+  pointer-events:none;
+}
+body.trainer-view-open::before{max-width:1580px;margin-bottom:-8px;padding:0 18px}
+@media(max-width:760px){body::before{margin:4px auto -10px;padding:0 10px;font-size:8px}}

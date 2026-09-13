@@ -1,26 +1,32 @@
 name: Validate interactive trainer
 
-# Validates the same static HTTP deployment shape used by Cloudflare Pages.
+# Validates the same static HTTP deployment shape used by Cloudflare Workers assets.
 on:
   push:
     paths:
       - 'site/index.html'
       - 'site/trainer.js'
       - 'site/trainer.css'
+      - 'site/deployment-meta.css'
       - 'site/assets/trainer/**'
       - 'tests/trainer/**'
       - 'tests/regression/**'
       - 'tools/patches/apply_trainer_mvp.py'
+      - 'tools/write_deployment_metadata.py'
+      - 'wrangler.jsonc'
       - '.github/workflows/trainer-smoke.yml'
   pull_request:
     paths:
       - 'site/index.html'
       - 'site/trainer.js'
       - 'site/trainer.css'
+      - 'site/deployment-meta.css'
       - 'site/assets/trainer/**'
       - 'tests/trainer/**'
       - 'tests/regression/**'
       - 'tools/patches/apply_trainer_mvp.py'
+      - 'tools/write_deployment_metadata.py'
+      - 'wrangler.jsonc'
       - '.github/workflows/trainer-smoke.yml'
 
 permissions:

@@ -1,3 +1,5 @@
+@import url("./deployment-meta.css");
+
 /* Player training view — reuses the replayer table/seat/card primitives from index.html. */
 .trainer-page{width:100%;min-height:100vh;padding:14px 18px 30px}
 .trainer-shell{width:min(1580px,calc(100vw - 36px));margin:0 auto}
