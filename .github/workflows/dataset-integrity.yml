@@ -122,6 +122,47 @@ jobs:
           assert overlay['summary']['train_population_rows']==29736, overlay['summary']
           print(json.dumps({'summary':summary,'train_population_rows':dict(counts)}, indent=2))
           PY
+      - name: Rebuild the 2026-09-12 preflop full-weight candidate
+        run: |
+          python3 tools/training/rebuild_preflop_increment_candidate.py \
+            --baseline training/models/preflop_population_model_v5.json \
+            --overlay /tmp/model-a-0912-overlay.json \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --date 2026-09-12 \
+            --source-label selected_100_200.zip \
+            --lineage-fingerprint 9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b \
+            --out /tmp/model-a-0912-preflop-candidate.json
+          python3 - <<'PY'
+          import hashlib, json
+          base=json.load(open('training/models/preflop_population_model_v5.json'))
+          obj=json.load(open('/tmp/model-a-0912-preflop-candidate.json'))
+          inc=obj['incremental_update']
+          assert inc['train_population_rows_applied']==9047, inc
+          assert inc['train_population_rows_skipped_no_exact_node']==4727, inc
+          assert inc['touched_nodes']==108, inc
+          assert inc['alpha_exact']==40, inc
+          assert obj.get('response_models')==base.get('response_models')
+          assert obj.get('revealed_policy_models')==base.get('revealed_policy_models')
+          assert obj.get('hand_grid')==base.get('hand_grid')
+          key=lambda n:n.get('canonical_key') or n.get('id')
+          bm={key(n):n for n in base['nodes']}; cm={key(n):n for n in obj['nodes']}
+          assert set(bm)==set(cm)
+          for k,b in bm.items():
+              c=cm[k]
+              assert c.get('context')==b.get('context'), k
+              assert c.get('continuous_population')==b.get('continuous_population'), k
+              for field in ('policy169_q_b64','response_model_key','continuous_adjustment','legal_actions'):
+                  assert (c.get('population_model') or {}).get(field)==(b.get('population_model') or {}).get(field), (k,field)
+          semantic={
+              'nodes':obj['nodes'],'coverage':obj['coverage'],'hand_grid':obj.get('hand_grid'),
+              'response_models':obj.get('response_models'),'revealed_policy_models':obj.get('revealed_policy_models'),
+          }
+          print(json.dumps({
+              'status':'REBUILT','byte_sha256':hashlib.sha256(open('/tmp/model-a-0912-preflop-candidate.json','rb').read()).hexdigest(),
+              'semantic_sha256':hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
+              'expected_historical_local_sha256':'e75ac77f34362b6026ed631fcfaafbabe382a64dbc83dfd523452d45f67e8845',
+              'incremental_update':inc},indent=2))
+          PY
       - name: Rebuild the 2026-09-12 postflop full-weight candidate
         run: |
           python3 tools/training/rebuild_postflop_increment_candidate.py \
@@ -151,21 +192,4 @@ jobs:
           semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()
           byte_sha=hashlib.sha256(open(p,'rb').read()).hexdigest()
           print(json.dumps({'status':'REBUILT','byte_sha256':byte_sha,'semantic_sha256':semantic_sha,'expected_historical_local_sha256':'45366a58e64999a65728b343c811c0b23ae1c7713bab885c2287db99b5df1d4d','incremental_update':inc},indent=2))
-          PY
-      - name: Inspect 2026-09-12 preflop candidate inputs
-        run: |
-          python3 - <<'PY'
-          import json
-          base=json.load(open('training/models/preflop_population_model_v5.json'))
-          overlay=json.load(open('/tmp/model-a-0912-overlay.json'))
-          print('TOP_LEVEL', sorted(base.keys()))
-          print('OVERLAY_PREFLOP_NODES', len(overlay.get('preflop_nodes',[])))
-          print('BASE_NODES', len(base.get('nodes',[])))
-          print('TRAINING', json.dumps(base.get('training',{}),sort_keys=True)[:3000])
-          if base.get('nodes'):
-              n=base['nodes'][0]
-              print('NODE_KEYS', sorted(n.keys()))
-              print('NODE_SAMPLE', json.dumps(n,sort_keys=True)[:5000])
-          if overlay.get('preflop_nodes'):
-              print('OVERLAY_SAMPLE', json.dumps(overlay['preflop_nodes'][0],sort_keys=True)[:5000])
           PY
