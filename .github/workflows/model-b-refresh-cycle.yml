@@ -52,7 +52,7 @@ jobs:
           assert 'model-A' in d['independence_contract']
           PY
 
-      - name: Select K on VALIDATION only
+      - name: Select K on VALIDATION only with structural gates
         run: |
           python3 -m tools.training.independent_profiles.select_profile_count \
             --features "$RUN_DIR/features/player_features.json" \
@@ -62,17 +62,19 @@ jobs:
             --stake 100/200 --exclude-player RoiDePiqueNique \
             --k 3 --k 4 --k 5 --k 6 --k 7 --k 8 \
             --action-alpha 1 --range-prior-strength 50 \
+            --min-profile-weight 0.05 --min-weighted-stability 0.55 \
             --output "$RUN_DIR/evaluation/profile_count_selection.json"
           python3 - <<'PY'
           import json, os
           d=json.load(open(os.environ['RUN_DIR']+'/evaluation/profile_count_selection.json'))
           assert d['selection_split']=='VALIDATION' and d['test_used_for_selection'] is False
           assert d['selected_k']==3, d['selected_k']
-          selected=next(x for x in d['candidates'] if x['k']==3)
-          assert min(selected['profile_weights'])>=0.05, selected['profile_weights']
+          assert d['feasible_k']==[3], d['feasible_k']
+          assert d['selected_candidate']['minimum_profile_weight']>=0.05
+          assert d['selected_candidate']['profile_stability_weighted']>=0.55
           PY
 
-      - name: Build refreshed K3 candidate
+      - name: Build refreshed selected K3 candidate
         run: |
           python3 -m tools.training.independent_profiles.build_model_b \
             --features "$RUN_DIR/features/player_features.json" \
