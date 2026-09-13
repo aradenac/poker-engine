@@ -1,0 +1,1128 @@
+{
+  "baseline": {
+    "exact_nodes": 4554,
+    "model_version": "preflop_v5_incremental_exact_marginals",
+    "path": "training/models/preflop_population_model_v5.json",
+    "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+  },
+  "coverage": {
+    "seen_exact_nodes_touched": 108,
+    "seen_rows": 9047,
+    "total_preflop_population_rows": 13774,
+    "unseen_exact_nodes": 1017,
+    "unseen_row_fraction": 0.3431828081893422,
+    "unseen_rows": 4727
+  },
+  "interpretation_contract": {
+    "candidate_rule": "A future topology candidate may materialize only pre-specified unseen contexts with TRAIN support >= 20; all lower-support contexts must continue to use the existing fallback hierarchy. Hyperparameters and the materialization threshold must be selected on VALIDATION only, with locked TEST reserved for final confirmation.",
+    "diagnostic_only": true,
+    "minimum_support_for_structural_candidate": 20,
+    "production_effect": "NONE",
+    "test_used": false
+  },
+  "overlay": {
+    "path": "/tmp/model-a-0912-overlay.json",
+    "preflop_nodes_train": 1125,
+    "sha256": "d4c8e3f39c1e3325b95c82b1571f909d1c05eeb1b5369167ca39bdb55eea27f1",
+    "train_population_rows": 29736
+  },
+  "schema": "poker-preflop-unseen-context-audit/v1",
+  "support": {
+    "node_buckets": {
+      "1": 595,
+      "100_plus": 4,
+      "10_19": 48,
+      "20_49": 36,
+      "2_4": 232,
+      "50_99": 11,
+      "5_9": 91
+    },
+    "nodes_ge_20": 51,
+    "nodes_ge_50": 15,
+    "row_buckets": {
+      "1": 595,
+      "100_plus": 533,
+      "10_19": 660,
+      "20_49": 1076,
+      "2_4": 598,
+      "50_99": 691,
+      "5_9": 574
+    },
+    "rows_ge_20": 2300,
+    "rows_ge_50": 1224,
+    "singleton_rows": 595,
+    "sparse_rows_n_le_4": 1193,
+    "top_10_row_share": 0.19906917706790778,
+    "top_25_row_share": 0.3370002115506664,
+    "top_50_row_share": 0.4821239686905014
+  },
+  "top_contexts": [
+    {
+      "actions": {
+        "FOLD": 100,
+        "JAM": 1,
+        "LIMP": 68,
+        "RAISE": 14
+      },
+      "canonical_key": "6|CO|family=VS_LIMPERS|rl=0|free=0|live=LJ,HJ,CO,BTN,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP",
+      "context": {
+        "actor_position": "CO",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 6,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 183
+    },
+    {
+      "actions": {
+        "FOLD": 65,
+        "JAM": 2,
+        "LIMP": 49,
+        "RAISE": 13
+      },
+      "canonical_key": "6|BTN|family=VS_LIMPERS|rl=0|free=0|live=HJ,CO,BTN,SB,BB|allin=|hist=HJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 129
+    },
+    {
+      "actions": {
+        "FOLD": 66,
+        "JAM": 2,
+        "LIMP": 42,
+        "RAISE": 11
+      },
+      "canonical_key": "6|BTN|family=VS_LIMPERS|rl=0|free=0|live=LJ,HJ,BTN,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 121
+    },
+    {
+      "actions": {
+        "FOLD": 57,
+        "JAM": 1,
+        "LIMP": 36,
+        "RAISE": 6
+      },
+      "canonical_key": "6|BTN|family=VS_LIMPERS|rl=0|free=0|live=LJ,CO,BTN,SB,BB|allin=|hist=LJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 100
+    },
+    {
+      "actions": {
+        "FOLD": 25,
+        "JAM": 1,
+        "LIMP": 39,
+        "RAISE": 12
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=HJ,CO,SB,BB|allin=|hist=HJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 77
+    },
+    {
+      "actions": {
+        "FOLD": 28,
+        "JAM": 2,
+        "LIMP": 39,
+        "RAISE": 4
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=LJ,BTN,SB,BB|allin=|hist=LJ:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 73
+    },
+    {
+      "actions": {
+        "FOLD": 29,
+        "LIMP": 37,
+        "RAISE": 3
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=HJ,BTN,SB,BB|allin=|hist=HJ:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 69
+    },
+    {
+      "actions": {
+        "FOLD": 21,
+        "LIMP": 44,
+        "RAISE": 3
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=CO,BTN,SB,BB|allin=|hist=CO:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 68
+    },
+    {
+      "actions": {
+        "CALL": 21,
+        "FOLD": 40
+      },
+      "canonical_key": "6|CO|family=VS_RFI_CALLERS|rl=1|free=0|live=LJ,HJ,CO,BTN,SB,BB|allin=|hist=LJ:RAISE>HJ:CALL",
+      "context": {
+        "actor_position": "CO",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 6,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 61
+    },
+    {
+      "actions": {
+        "CHECK": 57,
+        "JAM": 1,
+        "RAISE": 2
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=CO,SB,BB|allin=|hist=CO:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 60
+    },
+    {
+      "actions": {
+        "CHECK": 52,
+        "JAM": 1,
+        "RAISE": 6
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,SB,BB|allin=|hist=LJ:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 59
+    },
+    {
+      "actions": {
+        "FOLD": 22,
+        "JAM": 1,
+        "LIMP": 33,
+        "RAISE": 3
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=LJ,CO,SB,BB|allin=|hist=LJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 59
+    },
+    {
+      "actions": {
+        "FOLD": 16,
+        "JAM": 1,
+        "LIMP": 36,
+        "RAISE": 5
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=LJ,HJ,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 58
+    },
+    {
+      "actions": {
+        "CHECK": 52,
+        "RAISE": 5
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=HJ,SB,BB|allin=|hist=HJ:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 57
+    },
+    {
+      "actions": {
+        "FOLD": 33,
+        "JAM": 1,
+        "LIMP": 14,
+        "RAISE": 2
+      },
+      "canonical_key": "6|BTN|family=VS_LIMPERS|rl=0|free=0|live=LJ,HJ,CO,BTN,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 6,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 50
+    },
+    {
+      "actions": {
+        "CHECK": 43,
+        "JAM": 1,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=BTN,SB,BB|allin=|hist=BTN:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 45
+    },
+    {
+      "actions": {
+        "FOLD": 17,
+        "JAM": 1,
+        "LIMP": 20,
+        "RAISE": 1
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=LJ,HJ,CO,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 39
+    },
+    {
+      "actions": {
+        "CALL": 8,
+        "FOLD": 28,
+        "JAM": 1,
+        "RAISE": 1
+      },
+      "canonical_key": "6|CO|family=VS_ISO|rl=1|free=0|live=LJ,HJ,CO,BTN,SB,BB|allin=|hist=LJ:LIMP>HJ:RAISE",
+      "context": {
+        "actor_position": "CO",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 6,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 38
+    },
+    {
+      "actions": {
+        "CALL": 13,
+        "FOLD": 23,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BTN|family=VS_RFI_CALLERS|rl=1|free=0|live=LJ,HJ,BTN,SB,BB|allin=|hist=LJ:RAISE>HJ:CALL",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 37
+    },
+    {
+      "actions": {
+        "FOLD": 17,
+        "LIMP": 17,
+        "RAISE": 2
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=HJ,CO,BTN,SB,BB|allin=|hist=HJ:LIMP>CO:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 36
+    },
+    {
+      "actions": {
+        "CHECK": 34,
+        "JAM": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,BTN,BB|allin=|hist=LJ:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 35
+    },
+    {
+      "actions": {
+        "CHECK": 33,
+        "JAM": 1,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,BTN,SB,BB|allin=|hist=LJ:LIMP>BTN:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 35
+    },
+    {
+      "actions": {
+        "CALL": 7,
+        "FOLD": 27,
+        "JAM": 1
+      },
+      "canonical_key": "6|BTN|family=VS_RFI_CALLERS|rl=1|free=0|live=LJ,CO,BTN,SB,BB|allin=|hist=LJ:RAISE>CO:CALL",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 35
+    },
+    {
+      "actions": {
+        "FOLD": 14,
+        "LIMP": 19,
+        "RAISE": 2
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=LJ,HJ,BTN,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 35
+    },
+    {
+      "actions": {
+        "CHECK": 30,
+        "RAISE": 4
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=HJ,BTN,SB,BB|allin=|hist=HJ:LIMP>BTN:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 34
+    },
+    {
+      "actions": {
+        "CHECK": 30,
+        "JAM": 1,
+        "RAISE": 2
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=HJ,CO,BB|allin=|hist=HJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 33
+    },
+    {
+      "actions": {
+        "CHECK": 32,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=HJ,CO,SB,BB|allin=|hist=HJ:LIMP>CO:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 33
+    },
+    {
+      "actions": {
+        "CALL": 14,
+        "FOLD": 16,
+        "JAM": 1,
+        "RAISE": 2
+      },
+      "canonical_key": "6|SB|family=VS_RFI_CALLERS|rl=1|free=0|live=LJ,CO,SB,BB|allin=|hist=LJ:RAISE>CO:CALL",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 33
+    },
+    {
+      "actions": {
+        "CHECK": 31,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=CO,BTN,SB,BB|allin=|hist=CO:LIMP>BTN:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 32
+    },
+    {
+      "actions": {
+        "CALL": 9,
+        "FOLD": 23
+      },
+      "canonical_key": "6|BTN|family=VS_ISO|rl=1|free=0|live=HJ,CO,BTN,SB,BB|allin=|hist=HJ:LIMP>CO:RAISE",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 32
+    },
+    {
+      "actions": {
+        "CHECK": 29,
+        "RAISE": 2
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=HJ,BTN,BB|allin=|hist=HJ:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 31
+    },
+    {
+      "actions": {
+        "CALL": 9,
+        "FOLD": 20,
+        "JAM": 1,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BTN|family=VS_ISO|rl=1|free=0|live=LJ,HJ,BTN,SB,BB|allin=|hist=LJ:LIMP>HJ:RAISE",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 31
+    },
+    {
+      "actions": {
+        "CALL": 7,
+        "FOLD": 24
+      },
+      "canonical_key": "6|BTN|family=VS_RFI_CALLERS|rl=1|free=0|live=HJ,CO,BTN,SB,BB|allin=|hist=HJ:RAISE>CO:CALL",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 31
+    },
+    {
+      "actions": {
+        "CALL": 8,
+        "FOLD": 21,
+        "JAM": 1,
+        "RAISE": 1
+      },
+      "canonical_key": "6|SB|family=VS_ISO|rl=1|free=0|live=LJ,BTN,SB,BB|allin=|hist=LJ:LIMP>BTN:RAISE",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 31
+    },
+    {
+      "actions": {
+        "CHECK": 25,
+        "RAISE": 3
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,HJ,BB|allin=|hist=LJ:LIMP>HJ:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 28
+    },
+    {
+      "actions": {
+        "CALL": 6,
+        "FOLD": 20,
+        "RAISE": 1
+      },
+      "canonical_key": "6|SB|family=VS_RFI_CALLERS|rl=1|free=0|live=LJ,BTN,SB,BB|allin=|hist=LJ:RAISE>BTN:CALL",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 27
+    },
+    {
+      "actions": {
+        "CHECK": 25,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=CO,BTN,BB|allin=|hist=CO:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 26
+    },
+    {
+      "actions": {
+        "CHECK": 25,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,CO,SB,BB|allin=|hist=LJ:LIMP>CO:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 26
+    },
+    {
+      "actions": {
+        "CHECK": 21,
+        "RAISE": 5
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,HJ,SB,BB|allin=|hist=LJ:LIMP>HJ:LIMP>SB:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 26
+    },
+    {
+      "actions": {
+        "CALL": 6,
+        "FOLD": 17,
+        "RAISE": 3
+      },
+      "canonical_key": "6|BTN|family=VS_ISO|rl=1|free=0|live=LJ,CO,BTN,SB,BB|allin=|hist=LJ:LIMP>CO:RAISE",
+      "context": {
+        "actor_position": "BTN",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 5,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 26
+    },
+    {
+      "actions": {
+        "FOLD": 8,
+        "LIMP": 16,
+        "RAISE": 2
+      },
+      "canonical_key": "6|SB|family=VS_LIMPERS|rl=0|free=0|live=LJ,CO,BTN,SB,BB|allin=|hist=LJ:LIMP>CO:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": false,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 5,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 26
+    },
+    {
+      "actions": {
+        "CALL": 9,
+        "FOLD": 16,
+        "RAISE": 1
+      },
+      "canonical_key": "6|SB|family=VS_RFI_CALLERS|rl=1|free=0|live=HJ,CO,SB,BB|allin=|hist=HJ:RAISE>CO:CALL",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 26
+    },
+    {
+      "actions": {
+        "CALL": 6,
+        "FOLD": 18,
+        "RAISE": 1
+      },
+      "canonical_key": "6|BB|family=VS_ISO|rl=1|free=0|live=LJ,BTN,BB|allin=|hist=LJ:LIMP>BTN:RAISE",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 25
+    },
+    {
+      "actions": {
+        "CALL": 12,
+        "FOLD": 13
+      },
+      "canonical_key": "6|SB|family=VS_RFI_CALLERS|rl=1|free=0|live=CO,BTN,SB,BB|allin=|hist=CO:RAISE>BTN:CALL",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 25
+    },
+    {
+      "actions": {
+        "CHECK": 21,
+        "RAISE": 3
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=LJ,CO,BB|allin=|hist=LJ:LIMP>CO:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP",
+        "history_depth": 2,
+        "live_player_count": 3,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 24
+    },
+    {
+      "actions": {
+        "CALL": 6,
+        "FOLD": 18
+      },
+      "canonical_key": "6|SB|family=VS_ISO|rl=1|free=0|live=HJ,BTN,SB,BB|allin=|hist=HJ:LIMP>BTN:RAISE",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 24
+    },
+    {
+      "actions": {
+        "CALL": 13,
+        "FOLD": 10
+      },
+      "canonical_key": "6|SB|family=VS_ISO|rl=1|free=0|live=HJ,CO,SB,BB|allin=|hist=HJ:LIMP>CO:RAISE",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 23
+    },
+    {
+      "actions": {
+        "CALL": 8,
+        "FOLD": 13,
+        "RAISE": 2
+      },
+      "canonical_key": "6|SB|family=VS_RFI_CALLERS|rl=1|free=0|live=LJ,HJ,SB,BB|allin=|hist=LJ:RAISE>HJ:CALL",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_RFI_CALLERS",
+        "free_check": false,
+        "history_actions": "RAISE>CALL",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 23
+    },
+    {
+      "actions": {
+        "CHECK": 22
+      },
+      "canonical_key": "6|BB|family=VS_LIMPERS|rl=0|free=1|live=HJ,CO,BTN,BB|allin=|hist=HJ:LIMP>CO:LIMP>BTN:LIMP",
+      "context": {
+        "actor_position": "BB",
+        "allin_player_count": 0,
+        "family": "VS_LIMPERS",
+        "free_check": true,
+        "history_actions": "LIMP>LIMP>LIMP",
+        "history_depth": 3,
+        "live_player_count": 4,
+        "raise_level": 0,
+        "table_size": 6
+      },
+      "n_delta": 22
+    },
+    {
+      "actions": {
+        "CALL": 6,
+        "FOLD": 16
+      },
+      "canonical_key": "6|SB|family=VS_ISO|rl=1|free=0|live=LJ,HJ,SB,BB|allin=|hist=LJ:LIMP>HJ:RAISE",
+      "context": {
+        "actor_position": "SB",
+        "allin_player_count": 0,
+        "family": "VS_ISO",
+        "free_check": false,
+        "history_actions": "LIMP>RAISE",
+        "history_depth": 2,
+        "live_player_count": 4,
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "n_delta": 22
+    }
+  ],
+  "weighted_distribution": {
+    "action": {
+      "CALL": 1230,
+      "CHECK": 744,
+      "FOLD": 1889,
+      "JAM": 59,
+      "LIMP": 588,
+      "RAISE": 217
+    },
+    "actor_position": {
+      "BB": 1508,
+      "BTN": 869,
+      "CO": 524,
+      "HJ": 302,
+      "LJ": 324,
+      "SB": 1200
+    },
+    "family": {
+      "AGGRESSOR_VS_4BET": 24,
+      "CALLER_VS_4BET": 20,
+      "CALLER_VS_SQUEEZE_OR_3BET": 100,
+      "COLD_VS_3BET": 120,
+      "COLD_VS_4BET": 3,
+      "LIMPER_VS_ISO": 402,
+      "LIMPER_VS_ISO_CALLERS": 434,
+      "OPENER_OR_ISO_VS_3BET": 81,
+      "VS_5BET": 10,
+      "VS_ISO": 668,
+      "VS_ISO_CALLERS": 145,
+      "VS_LIMPERS": 2054,
+      "VS_RFI": 5,
+      "VS_RFI_CALLERS": 661
+    },
+    "free_check": {
+      "False": 3924,
+      "True": 803
+    },
+    "history_depth": {
+      "1": 28,
+      "10": 2,
+      "11": 1,
+      "12": 1,
+      "2": 2682,
+      "3": 1286,
+      "4": 464,
+      "5": 162,
+      "6": 66,
+      "7": 21,
+      "8": 11,
+      "9": 3
+    },
+    "live_player_count": {
+      "1": 83,
+      "2": 317,
+      "3": 1221,
+      "4": 1562,
+      "5": 1101,
+      "6": 443
+    },
+    "raise_level": {
+      "0": 2054,
+      "1": 2315,
+      "2": 301,
+      "3": 47,
+      "4": 10
+    },
+    "table_size": {
+      "3": 2,
+      "4": 53,
+      "5": 242,
+      "6": 4430
+    }
+  }
+}
