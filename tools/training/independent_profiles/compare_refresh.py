@@ -67,7 +67,8 @@ def main() -> None:
     assert selection["test_used_for_selection"] is False
     selected_k = int(selection["selected_k"])
     selected = next(row for row in selection["candidates"] if int(row["k"]) == selected_k)
-    weights = [float(x) for x in selected["profile_weights"]]
+    raw_weights = selected["profile_weights"]
+    weights = [float(x) for x in (raw_weights.values() if isinstance(raw_weights, dict) else raw_weights)]
     no_micro = min(weights) >= 0.05
 
     splits = {}
