@@ -74,10 +74,20 @@ async def main() -> None:
                   state.replayIndex = saved.replayIndex;
                 }
 
+                const weakJam = {
+                  label:'jam',
+                  kind:'jam',
+                  costBB:40,
+                  tree:{
+                    evBB:999,
+                    evStdErrBB:0,
+                    responseMeta:[{observations:3}]
+                  }
+                };
                 const summary = sizingOptimizationSummary([
                   {label:'action réelle', kind:'actual', costBB:1, tree:{evBB:1, evStdErrBB:0}},
                   {label:'125% pot', kind:'candidate', costBB:2, tree:{evBB:2, evStdErrBB:0}},
-                  {label:'jam', kind:'jam', costBB:40, tree:{evBB:999, evStdErrBB:0, sanityInvalid:true, sanityReason:'regression sentinel'}}
+                  weakJam
                 ], {evBB:1, evStdErrBB:0}, 4);
 
                 const rankingProbe = [
@@ -91,6 +101,8 @@ async def main() -> None:
                   decisions,
                   sanityBest:summary?.best?.label || null,
                   sanityBestInvalid:!!summary?.best?.tree?.sanityInvalid,
+                  weakJamInvalid:!!weakJam.tree.sanityInvalid,
+                  weakJamReason:String(weakJam.tree.sanityReason || ''),
                   finalEvBest:rankingProbe[0]?.label || null,
                   interactiveUsesFinalEV:String(postflopDecisionAlternativeSummary).includes('finalDecisionEV'),
                   backgroundUsesFinalEV:String(reviewBatchRegret).includes('finalDecisionEV')
@@ -105,6 +117,8 @@ async def main() -> None:
             kinds = {str(c["kind"]) for c in decision["candidates"]}
             assert "jam" not in kinds, decision
             assert "effective_allin" in kinds, decision
+        assert result["weakJamInvalid"], result
+        assert "observations" in result["weakJamReason"], result
         assert result["sanityBest"] == "125% pot", result
         assert not result["sanityBestInvalid"], result
         assert result["finalEvBest"] == "CALL", result
