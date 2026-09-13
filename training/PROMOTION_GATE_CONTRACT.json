@@ -1,0 +1,93 @@
+{
+  "schema": "poker-promotion-gate-contract/v1",
+  "contract_version": "2026-09-13.1",
+  "purpose": "Pre-specified promotion and non-regression contract for data, opponent models, engine strategy and site release. Missing required evidence is BLOCKED, not PASS.",
+  "statuses": ["PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"],
+  "holdout_policy": {
+    "model_selection_split": "VALIDATION",
+    "final_confirmation_split": "TEST",
+    "test_may_be_used_for_selection": false,
+    "strategy_cluster_unit": "base_hand_id",
+    "confidence_level": 0.95,
+    "rule": "A TEST result may confirm or reject a frozen finalist but must never be used to retune or select another candidate in the same cycle."
+  },
+  "data_integrity": {
+    "require_verified_source": true,
+    "require_exact_deduplication": true,
+    "require_disjoint_splits": true,
+    "require_dataset_fingerprints": true,
+    "max_parse_errors": 0
+  },
+  "model_a": {
+    "primary_metric": "multiclass_log_loss",
+    "direction": "lower_is_better",
+    "selection_split": "VALIDATION",
+    "max_validation_delta_candidate_minus_baseline": 0.0,
+    "promotion_requires_paired_ci95_upper_at_most": 0.0,
+    "paired_confidence_required_for_promotion": true,
+    "rejected_candidate_must_be_persisted": true,
+    "preflop_and_postflop_decisions_are_independent": true
+  },
+  "model_b": {
+    "selection_split": "VALIDATION",
+    "candidate_vs_incumbent": {
+      "action_log_loss_delta_candidate_minus_incumbent_ci95_upper_at_most": 0.0,
+      "range_log_loss_delta_candidate_minus_incumbent_ci95_upper_at_most": 0.0,
+      "paired_confidence_required_for_promotion": true
+    },
+    "absolute_guardrails": {
+      "max_action_ece": 0.05,
+      "min_known_player_coverage": 0.95,
+      "min_weighted_profile_stability": 0.55,
+      "max_state_anomaly_rate": 0.001
+    },
+    "rejected_candidate_must_be_persisted": true,
+    "must_remain_independent_from_model_a": true
+  },
+  "strategy": {
+    "metric": "conditional_postflop_utility_bb",
+    "interpretation": "Future utility measured from the generated flop state; preflop contributions are sunk and this is not an overall cash-game win rate.",
+    "selection_split": "VALIDATION",
+    "final_split": "TEST",
+    "paired_delta": "candidate_minus_promoted_engine",
+    "promotion_requires_validation_ci95_lower_at_least": 0.0,
+    "promotion_requires_test_ci95_lower_at_least": 0.0,
+    "cluster_unit": "base_hand_id",
+    "require_environment_validity": true,
+    "current_arena_supported_scope": {
+      "heads_up_postflop": true,
+      "preflop": false,
+      "multiway": false
+    },
+    "unsupported_context_rule": "A strategy change affecting preflop or multiway decisions cannot be promoted solely from the current heads-up postflop arena."
+  },
+  "regressions": {
+    "require_pathological_engine_suite": true,
+    "require_trainer_contract_suite": true,
+    "require_sequential_arena_contract_suite": true,
+    "failed_required_regression_blocks_engine_promotion": true
+  },
+  "provenance": {
+    "require_code_commit": true,
+    "require_dataset_fingerprints": true,
+    "require_model_hashes": true,
+    "require_seed_or_scenario_manifest": true,
+    "require_candidate_artifacts_for_any_explicit_candidate_decision": true
+  },
+  "release_identity": {
+    "require_distinct_engine_release_and_assembled_site_identities": true,
+    "engine_identity_fields": ["artifact", "sha256"],
+    "assembled_site_identity_fields": ["entrypoint", "git_blob_sha", "assets_tree_git_sha", "assembled_from_commit"]
+  },
+  "registry_transition": {
+    "registry_must_remain_unchanged_before_explicit_promotion": true,
+    "promotion_requires_gate_status": "PASS",
+    "rejected_or_blocked_candidates_must_not_advance_promoted_pointers": true
+  },
+  "deployment": {
+    "is_post_promotion_verification": true,
+    "must_be_reported_for_site_release": true,
+    "successful_build_alone_does_not_prove_public_release": true,
+    "required_release_verification": ["production_build_success", "public_url_verified", "deployed_commit_verified", "application_smoke_verified"]
+  }
+}
