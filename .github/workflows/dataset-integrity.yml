@@ -53,6 +53,12 @@ jobs:
             --provenance-out /tmp/model-a-0909-overlay-provenance.json
           cmp /tmp/model-a-0909-overlay.json \
             training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json
+      - name: Characterize the persisted 2026-09-09 rejected postflop transform
+        run: |
+          python3 tools/training/inspect_model_delta.py \
+            --baseline training/models/postflop_population_model_v5.json \
+            --candidate training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json \
+            --max-samples 3
       - name: Rebuild the 2026-09-12 Model A normalized increment
         run: |
           python3 tools/training/build_incremental_decisions_v2.py \
