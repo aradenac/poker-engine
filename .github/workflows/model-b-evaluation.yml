@@ -30,7 +30,9 @@ jobs:
           fetch-depth: 0
 
       - name: Unit tests
-        run: python3 tests/independent_profiles/test_evaluate_model_b.py
+        run: |
+          python3 tests/independent_profiles/test_evaluate_model_b.py
+          python3 tests/independent_profiles/test_french_button_position.py
 
       - name: Evaluate deterministic holdout
         run: |
@@ -125,6 +127,7 @@ jobs:
         run: |
           python3 tests/independent_profiles/test_build_player_features.py
           python3 tests/independent_profiles/test_build_model_b.py
+          python3 tests/independent_profiles/test_french_button_position.py
           python3 tests/independent_profiles/test_evaluate_model_b.py
           python3 tests/independent_profiles/test_compare_model_b_paired.py
 
@@ -182,7 +185,6 @@ jobs:
       - name: Score candidate and incumbent on identical enlarged holdout
         run: |
           CYCLE='training/runs/20260912_population_increment_cycle/model_b'
-          COMMON="--archive training/datasets/NLHE_100-200/source/NLHE\ 100-200.zip"
           python3 -m tools.training.independent_profiles.evaluate_model_b \
             --features "$CYCLE/features/player_features.json" \
             --model-dir "$CYCLE/model" \
