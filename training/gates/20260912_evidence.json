@@ -22,7 +22,7 @@
       "decision": "RETAIN_BASELINE",
       "validation_delta_candidate_minus_baseline": 0.0005327713449049666,
       "paired_validation_delta_ci95": [0.0000645316977, 0.000994719224],
-      "reason": "VALIDATION selects zero incremental weight. The rejected candidate is now deterministically rebuildable from persisted repo inputs; its historical local-only byte hash is retained as provenance without falsely claiming byte identity."
+      "reason": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs; its historical local-only byte hash is retained as provenance without falsely claiming byte identity."
     },
     "postflop": {
       "selection_split": "VALIDATION",
@@ -33,7 +33,7 @@
       "candidate_semantic_sha256": "8f29abdd96fcd8e07ba2a827a3577070b0d6195517e86a2f547dade15bc55cce",
       "decision": "RETAIN_BASELINE",
       "validation_delta_candidate_minus_baseline": 0.0009980602757282,
-      "reason": "VALIDATION selects zero incremental weight. The rejected candidate is now deterministically rebuildable from persisted repo inputs and the 2026-09-09 historical rejection is reproduced semantically within 1e-9."
+      "reason": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs and the 2026-09-09 historical rejection is reproduced semantically within 1e-9."
     },
     "evidence": "training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json"
   },
