@@ -19,6 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  V2_MODEL: training/runs/20260912_independent_profiles_v2/model
   V3_MODEL: training/runs/20260913_model_b_response_v3/selected_candidate/model
   VALIDATION_FP: e96bdd997c5166c1f911ec1640f535f91385b71bd24c4880128dbd5e41fbaa3e
   TEST_FP: 1ff3c3a5ed32edb6f909fac9cc57bdb720349ade2ca49ac8e88df326a67719b2
@@ -46,17 +47,24 @@ jobs:
           python3 tools/patch_v83_to_v84.py site/index.html /tmp/v84.html
           test "$(sha256sum site/index.html | cut -d' ' -f1)" != "$(sha256sum /tmp/v84.html | cut -d' ' -f1)"
           grep -q 'evtree-v84-overbet-grid' /tmp/v84.html
-      - name: Freeze VALIDATION scenarios in selected v3 environment
+      - name: Freeze VALIDATION scenarios and retarget to selected v3 environment
         run: |
-          python3 -m tools.simulation.sequential_postflop_conditioned \
-            --generate-only --model-b-dir "$V3_MODEL" \
-            --n 32 --reps 2 --seed 20260912 --split VALIDATION \
-            --scenario-out /tmp/validation.json --out /tmp/gen.json
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 32 --reps 2 --seed 20260912 --split VALIDATION \
+            --scenario-out /tmp/validation-v2.json --out /tmp/gen.json
+          python3 tools/simulation/retarget_scenario_manifest.py \
+            --manifest /tmp/validation-v2.json \
+            --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
+            --out /tmp/validation.json
           python3 - <<'PY'
           import json, os
+          a=json.load(open('/tmp/validation-v2.json'))
           d=json.load(open('/tmp/validation.json'))
           assert d['scenario_fingerprint_sha256']==os.environ['VALIDATION_FP'], d['scenario_fingerprint_sha256']
+          assert a['scenario_fingerprint_sha256']==d['scenario_fingerprint_sha256']
+          assert a['scenarios']==d['scenarios']
           assert len(d['scenarios'])==64 and len({x['hand_id'] for x in d['scenarios']})==32
+          assert d['scenario_materialization_provenance']['scenario_fingerprint_unchanged'] is True
           PY
       - name: Install Playwright Chromium
         run: |
@@ -117,17 +125,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Rebuild frozen v84 finalist
         run: python3 tools/patch_v83_to_v84.py site/index.html /tmp/v84.html
-      - name: Freeze protected TEST scenarios
+      - name: Freeze protected TEST scenarios and retarget to selected v3 environment
         run: |
-          python3 -m tools.simulation.sequential_postflop_conditioned \
-            --generate-only --model-b-dir "$V3_MODEL" \
-            --n 32 --reps 2 --seed 20260912 --split TEST \
-            --scenario-out /tmp/test.json --out /tmp/gen.json
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 32 --reps 2 --seed 20260912 --split TEST \
+            --scenario-out /tmp/test-v2.json --out /tmp/gen.json
+          python3 tools/simulation/retarget_scenario_manifest.py \
+            --manifest /tmp/test-v2.json \
+            --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
+            --out /tmp/test.json
           python3 - <<'PY'
           import json, os
+          a=json.load(open('/tmp/test-v2.json'))
           d=json.load(open('/tmp/test.json'))
           assert d['scenario_fingerprint_sha256']==os.environ['TEST_FP'], d['scenario_fingerprint_sha256']
+          assert a['scenario_fingerprint_sha256']==d['scenario_fingerprint_sha256']
+          assert a['scenarios']==d['scenarios']
           assert len(d['scenarios'])==64 and len({x['hand_id'] for x in d['scenarios']})==32
+          assert d['scenario_materialization_provenance']['scenario_fingerprint_unchanged'] is True
           PY
       - name: Install Playwright Chromium
         run: |
@@ -177,7 +192,7 @@ jobs:
           cp /tmp/validation/v84.html "$OUT/engine_v84.html"
           if [ "$ADVANCE" = true ]; then cp /tmp/test/test_gate.json "$OUT/test_gate.json"; fi
           python3 - <<'PY'
-          import json, os
+          import json
           from pathlib import Path
           out=Path('training/evaluations/20260913_v84_strategy_candidate')
           v=json.load(open(out/'validation_gate.json'))
