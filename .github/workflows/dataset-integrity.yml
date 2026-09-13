@@ -53,21 +53,22 @@ jobs:
             --provenance-out /tmp/model-a-0909-overlay-provenance.json
           cmp /tmp/model-a-0909-overlay.json \
             training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json
-      - name: Characterize the persisted 2026-09-09 rejected postflop transform
+      - name: Rebuild the persisted 2026-09-09 rejected postflop candidate
         run: |
+          python3 tools/training/rebuild_postflop_increment_candidate.py \
+            --baseline training/models/postflop_population_model_v5.json \
+            --overlay /tmp/model-a-0909-overlay.json \
+            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \
+            --date 2026-09-09 \
+            --source-label RoiDePiqueNique_training2.zip \
+            --lineage-fingerprint 809862c9090110dfecf6382492158fa585a905c3c5e1991daeb5199937643814 \
+            --out /tmp/postflop-v6-rebuilt.json
           python3 tools/training/inspect_model_delta.py \
-            --baseline training/models/postflop_population_model_v5.json \
+            --baseline /tmp/postflop-v6-rebuilt.json \
             --candidate training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json \
-            --max-samples 3
-          python3 tools/training/inspect_increment_formula.py \
-            --baseline training/models/postflop_population_model_v5.json \
-            --candidate training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json \
-            --overlay training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json \
-            --limit 6
-          python3 tools/training/inspect_coverage_formula.py \
-            --model training/models/postflop_population_model_v5.json
-          python3 tools/training/inspect_coverage_formula.py \
-            --model training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json
+            --max-samples 4
+          cmp /tmp/postflop-v6-rebuilt.json \
+            training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json
       - name: Rebuild the 2026-09-12 Model A normalized increment
         run: |
           python3 tools/training/build_incremental_decisions_v2.py \
