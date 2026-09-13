@@ -1,0 +1,89 @@
+name: Audit unseen preflop exact contexts
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-61-unseen-preflop-analysis
+    paths:
+      - 'tools/training/analyze_unseen_preflop_contexts.py'
+      - 'tests/training/test_analyze_unseen_preflop_contexts.py'
+      - '.github/workflows/unseen-preflop-context-audit.yml'
+
+permissions:
+  contents: write
+
+env:
+  SOURCE: training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip
+  BASELINE: training/models/preflop_population_model_v5.json
+  OUT: training/runs/20260912_population_increment_cycle/evaluation/preflop_unseen_context_audit.json
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Test audit logic
+        run: |
+          python3 -m py_compile tools/training/analyze_unseen_preflop_contexts.py tests/training/test_analyze_unseen_preflop_contexts.py
+          python3 tests/training/test_analyze_unseen_preflop_contexts.py
+
+      - name: Rebuild immutable 2026-09-12 TRAIN overlay
+        run: |
+          python3 tools/training/build_incremental_decisions_v2.py \
+            --source "$SOURCE" \
+            --out /tmp/model-a-0912-decisions.jsonl \
+            --summary /tmp/model-a-0912-summary.json
+          python3 tools/training/build_population_increment_overlay_v2.py \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --out /tmp/model-a-0912-overlay.json \
+            --provenance-out /tmp/model-a-0912-overlay-provenance.json
+
+      - name: Characterize exact contexts absent from v5
+        run: |
+          mkdir -p "$(dirname "$OUT")"
+          python3 tools/training/analyze_unseen_preflop_contexts.py \
+            --baseline "$BASELINE" \
+            --overlay /tmp/model-a-0912-overlay.json \
+            --out "$OUT"
+          python3 - <<'PY'
+          import json
+          p='training/runs/20260912_population_increment_cycle/evaluation/preflop_unseen_context_audit.json'
+          d=json.load(open(p))
+          c=d['coverage']
+          assert c['seen_rows']==9047, c
+          assert c['unseen_rows']==4727, c
+          assert c['total_preflop_population_rows']==13774, c
+          assert d['interpretation_contract']['diagnostic_only'] is True
+          assert d['interpretation_contract']['production_effect']=='NONE'
+          assert d['interpretation_contract']['test_used'] is False
+          PY
+
+      - name: Persist audit report on analysis branch
+        run: |
+          git config user.name 'poker-engine training bot'
+          git config user.email 'training-bot@users.noreply.github.com'
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            echo 'Audit report already current.'
+          else
+            git commit -m 'Persist unseen preflop context audit'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unseen-preflop-context-audit
+          path: |
+            /tmp/model-a-0912-summary.json
+            /tmp/model-a-0912-overlay-provenance.json
+            training/runs/20260912_population_increment_cycle/evaluation/preflop_unseen_context_audit.json
+          if-no-files-found: ignore
