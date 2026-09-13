@@ -1,0 +1,88 @@
+name: Model B response-conditioned v3
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/training/independent_profiles/conditioned_response_candidate.py'
+      - 'tools/training/independent_profiles/audit_response_conditioning.py'
+      - 'tests/independent_profiles/test_conditioned_response_candidate.py'
+      - '.github/workflows/model-b-response-v3.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-response-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile and unit test
+        run: |
+          python3 -m py_compile tools/training/independent_profiles/conditioned_response_candidate.py
+          python3 tests/independent_profiles/test_conditioned_response_candidate.py
+
+      - name: Build and select response-conditioned representation
+        run: |
+          rm -rf training/runs/20260913_model_b_response_v3
+          python3 -m tools.training.independent_profiles.conditioned_response_candidate \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip' \
+            --archive 'training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip' \
+            --stake '100/200' \
+            --exclude-player 'RoiDePiqueNique' \
+            --incumbent-model-dir 'training/runs/20260912_independent_profiles_v2/model' \
+            --output-dir 'training/runs/20260913_model_b_response_v3'
+
+      - name: Validate selection protocol
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('training/runs/20260913_model_b_response_v3/selection.json')
+          d = json.loads(p.read_text())
+          assert d['dataset']['unique_scoped_hands'] == 31003
+          assert d['dataset']['split_counts'] == {'TRAIN': 24755, 'VALIDATION': 3073, 'TEST': 3175}
+          assert d['train_hands'] == 24755
+          assert d['selection_policy']['model_selection_split'] == 'VALIDATION'
+          assert d['selection_policy']['test_used_for_selection'] is False
+          assert d['production_effect'] == 'NONE'
+          assert 'no Model A outputs' in d['independence_contract']
+          assert d['strength_conditioning']['status'] == 'withheld_revealed_selection_bias'
+          if d['selected_variant'] is None:
+              assert d['test_locked_confirmation'] is None
+              assert d['decision'] == 'RETAIN_INCUMBENT'
+          else:
+              assert d['selected_variant'] in d['variants']
+              assert d['variants'][d['selected_variant']]['gate']['pass'] is True
+              assert d['test_locked_confirmation'] is not None
+              model = Path('training/runs/20260913_model_b_response_v3/selected_candidate/model')
+              assert (model / 'postflop_actions.json').exists()
+              assert (model / 'sizing.json').exists()
+          PY
+
+      - name: Persist deterministic v3 evidence
+        if: github.event_name == 'push'
+        run: |
+          if [ -z "$(git status --porcelain -- training/runs/20260913_model_b_response_v3)" ]; then
+            echo 'Response-v3 evidence already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add training/runs/20260913_model_b_response_v3
+          git commit -m 'Persist Model B v3 response-conditioning evidence'
+          git fetch origin "${GITHUB_REF_NAME}"
+          git rebase "origin/${GITHUB_REF_NAME}"
+          git push origin HEAD:${GITHUB_REF_NAME}
