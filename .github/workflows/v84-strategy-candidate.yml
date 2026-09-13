@@ -1,0 +1,211 @@
+name: Evaluate v84 strategy candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-40-v84-strategy-20260913
+    paths:
+      - 'tools/patch_v83_to_v84.py'
+      - 'tools/simulation/strategy_candidate_report.py'
+      - 'tests/simulation/test_strategy_candidate_report.py'
+      - '.github/workflows/v84-strategy-candidate.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v84-strategy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  V3_MODEL: training/runs/20260913_model_b_response_v3/selected_candidate/model
+  VALIDATION_FP: e96bdd997c5166c1f911ec1640f535f91385b71bd24c4880128dbd5e41fbaa3e
+  TEST_FP: 1ff3c3a5ed32edb6f909fac9cc57bdb720349ade2ca49ac8e88df326a67719b2
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit contracts
+        run: |
+          python3 -m py_compile tools/simulation/strategy_candidate_report.py tools/patch_v83_to_v84.py
+          python3 tests/simulation/test_strategy_candidate_report.py
+
+  validation:
+    needs: contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      advance: ${{ steps.gate.outputs.advance }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build deterministic v84 candidate
+        run: |
+          python3 tools/patch_v83_to_v84.py site/index.html /tmp/v84.html
+          test "$(sha256sum site/index.html | cut -d' ' -f1)" != "$(sha256sum /tmp/v84.html | cut -d' ' -f1)"
+          grep -q 'evtree-v84-overbet-grid' /tmp/v84.html
+      - name: Freeze VALIDATION scenarios in selected v3 environment
+        run: |
+          python3 -m tools.simulation.sequential_postflop_conditioned \
+            --generate-only --model-b-dir "$V3_MODEL" \
+            --n 32 --reps 2 --seed 20260912 --split VALIDATION \
+            --scenario-out /tmp/validation.json --out /tmp/gen.json
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/validation.json'))
+          assert d['scenario_fingerprint_sha256']==os.environ['VALIDATION_FP'], d['scenario_fingerprint_sha256']
+          assert len(d['scenarios'])==64 and len({x['hand_id'] for x in d['scenarios']})==32
+          PY
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Run matched v83 and v84 VALIDATION arenas
+        run: |
+          python3 -m tools.simulation.conditioned_baseline_runner \
+            --scenario-manifest /tmp/validation.json --model-b-dir "$V3_MODEL" \
+            --engine site/index.html --trials 1200 --policies current --out /tmp/v83.json
+          python3 -m tools.simulation.conditioned_baseline_runner \
+            --scenario-manifest /tmp/validation.json --model-b-dir "$V3_MODEL" \
+            --engine /tmp/v84.html --trials 1200 --policies current --out /tmp/v84.json
+      - name: Apply pre-specified strategy VALIDATION gate
+        id: gate
+        run: |
+          python3 -m tools.simulation.strategy_candidate_report \
+            --baseline-arena /tmp/v83.json --candidate-arena /tmp/v84.json \
+            --phase VALIDATION --out /tmp/validation_gate.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          d=json.load(open('/tmp/validation_gate.json'))
+          print('advance=' + ('true' if d['decision']=='ADVANCE_TO_TEST' else 'false'))
+          PY
+      - name: Persist candidate reconstruction manifest for artifact
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+          d={
+            'schema':'v84-strategy-candidate-artifact/v1',
+            'base_engine':'site/index.html',
+            'base_engine_sha256':sha('site/index.html'),
+            'generator':'tools/patch_v83_to_v84.py',
+            'generator_sha256':sha('tools/patch_v83_to_v84.py'),
+            'candidate_sha256':sha('/tmp/v84.html'),
+            'candidate_version':'v84',
+            'change_scope':'postflop sizing candidate grid only',
+            'production_effect':'NONE'
+          }
+          Path('/tmp/candidate_manifest.json').write_text(json.dumps(d,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v84-validation
+          path: |
+            /tmp/validation_gate.json
+            /tmp/candidate_manifest.json
+            /tmp/v84.html
+
+  test:
+    needs: validation
+    if: needs.validation.outputs.advance == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild frozen v84 finalist
+        run: python3 tools/patch_v83_to_v84.py site/index.html /tmp/v84.html
+      - name: Freeze protected TEST scenarios
+        run: |
+          python3 -m tools.simulation.sequential_postflop_conditioned \
+            --generate-only --model-b-dir "$V3_MODEL" \
+            --n 32 --reps 2 --seed 20260912 --split TEST \
+            --scenario-out /tmp/test.json --out /tmp/gen.json
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/test.json'))
+          assert d['scenario_fingerprint_sha256']==os.environ['TEST_FP'], d['scenario_fingerprint_sha256']
+          assert len(d['scenarios'])==64 and len({x['hand_id'] for x in d['scenarios']})==32
+          PY
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Run frozen finalist on TEST
+        run: |
+          python3 -m tools.simulation.conditioned_baseline_runner \
+            --scenario-manifest /tmp/test.json --model-b-dir "$V3_MODEL" \
+            --engine site/index.html --trials 1200 --policies current --out /tmp/v83.json
+          python3 -m tools.simulation.conditioned_baseline_runner \
+            --scenario-manifest /tmp/test.json --model-b-dir "$V3_MODEL" \
+            --engine /tmp/v84.html --trials 1200 --policies current --out /tmp/v84.json
+          python3 -m tools.simulation.strategy_candidate_report \
+            --baseline-arena /tmp/v83.json --candidate-arena /tmp/v84.json \
+            --phase TEST --out /tmp/test_gate.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v84-test
+          path: /tmp/test_gate.json
+
+  persist:
+    needs: [validation, test]
+    if: always() && needs.validation.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: v84-validation
+          path: /tmp/validation
+      - uses: actions/download-artifact@v4
+        if: needs.validation.outputs.advance == 'true'
+        with:
+          name: v84-test
+          path: /tmp/test
+      - name: Persist explicit promote/reject evidence
+        env:
+          ADVANCE: ${{ needs.validation.outputs.advance }}
+        run: |
+          OUT=training/evaluations/20260913_v84_strategy_candidate
+          mkdir -p "$OUT"
+          cp /tmp/validation/validation_gate.json "$OUT/validation_gate.json"
+          cp /tmp/validation/candidate_manifest.json "$OUT/candidate_manifest.json"
+          cp /tmp/validation/v84.html "$OUT/engine_v84.html"
+          if [ "$ADVANCE" = true ]; then cp /tmp/test/test_gate.json "$OUT/test_gate.json"; fi
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out=Path('training/evaluations/20260913_v84_strategy_candidate')
+          v=json.load(open(out/'validation_gate.json'))
+          t=json.load(open(out/'test_gate.json')) if (out/'test_gate.json').exists() else None
+          final=(t['decision'] if t else 'RETAIN_V83')
+          d={
+            'schema':'v84-strategy-selection/v1',
+            'candidate':'v84',
+            'validation_decision':v['decision'],
+            'test_executed':t is not None,
+            'test_decision':t['decision'] if t else None,
+            'final_decision':final,
+            'production_effect':'NONE',
+            'test_used_for_selection':False,
+            'validation':{k:v[k] for k in ('mean_delta_candidate_minus_v83_bb','delta_ci95_cluster_bootstrap','paired_scenarios','paired_base_hands')},
+            'test':({k:t[k] for k in ('mean_delta_candidate_minus_v83_bb','delta_ci95_cluster_bootstrap','paired_scenarios','paired_base_hands')} if t else None),
+            'reason':('Candidate failed the pre-specified VALIDATION lower-CI gate; protected TEST was not opened.' if not t else 'Frozen finalist was evaluated once on protected TEST.'),
+          }
+          (out/'selection.json').write_text(json.dumps(d,indent=2)+'\n')
+          (out/'README.md').write_text(
+            '# v84 strategy candidate\n\n'
+            f"VALIDATION decision: {v['decision']}; delta={v['mean_delta_candidate_minus_v83_bb']:.6f} BB; CI95={v['delta_ci95_cluster_bootstrap']}.\n\n"
+            + (f"TEST decision: {t['decision']}; delta={t['mean_delta_candidate_minus_v83_bb']:.6f} BB; CI95={t['delta_ci95_cluster_bootstrap']}.\n\n" if t else 'TEST was not opened because VALIDATION did not pass.\n\n')
+            + 'Model A and the response-conditioned Model B v3 environment are fixed. No production pointer changes in this candidate evaluation.\n'
+          )
+          PY
+          git config user.name 'poker-engine strategy bot'
+          git config user.email 'strategy-bot@users.noreply.github.com'
+          git add "$OUT"
+          git commit -m 'Persist explicit v84 strategy decision'
+          git push origin HEAD:${GITHUB_REF_NAME}
