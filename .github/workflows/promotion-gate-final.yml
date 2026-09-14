@@ -1,0 +1,53 @@
+name: Final unified promotion gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-41-unified-promotion-gate-final
+    paths:
+      - 'training/gates/20260912_evidence.json'
+      - 'training/PROMOTION_GATE_CONTRACT.json'
+      - 'tools/evaluate_promotion_gates.py'
+      - 'tests/test_promotion_gates.py'
+      - '.github/workflows/promotion-gate-final.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run evaluator regression tests
+        run: |
+          python3 -m py_compile tools/evaluate_promotion_gates.py tests/test_promotion_gates.py
+          python3 tests/test_promotion_gates.py
+
+      - name: Require final promotion readiness
+        run: |
+          python3 tools/evaluate_promotion_gates.py \
+            --evidence training/gates/20260912_evidence.json \
+            --contract training/PROMOTION_GATE_CONTRACT.json \
+            --out training/gates/20260912_report.json \
+            --require-ready
+
+      - name: Persist final gate report
+        run: |
+          git config user.name 'poker-engine gate bot'
+          git config user.email 'gate-bot@users.noreply.github.com'
+          git add training/gates/20260912_report.json
+          if git diff --cached --quiet; then
+            echo 'Gate report already current.'
+            exit 0
+          fi
+          git commit -m 'Persist final 2026-09-12 promotion gate report'
+          git push origin HEAD:${GITHUB_REF_NAME}

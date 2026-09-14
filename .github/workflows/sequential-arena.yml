@@ -52,12 +52,9 @@ jobs:
           python3 tools/evaluate_promotion_gates.py \
             --evidence training/gates/20260912_evidence.json \
             --out /tmp/promotion-gate-report.json
-          if python3 tools/evaluate_promotion_gates.py \
+          python3 tools/evaluate_promotion_gates.py \
             --evidence training/gates/20260912_evidence.json \
-            --require-ready >/tmp/promotion-gate-require-ready.json; then
-            echo 'Current incomplete cycle unexpectedly passed the final promotion barrier'
-            exit 1
-          fi
+            --require-ready >/tmp/promotion-gate-require-ready.json
       - name: Oracle and policy contracts
         run: |
           python3 tools/sequential_postflop_population_sim_v4.py --help

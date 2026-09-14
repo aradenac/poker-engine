@@ -1,0 +1,435 @@
+{
+  "candidate_decisions": {
+    "model_a_postflop": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    "model_a_preflop": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    "model_b": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    "strategy": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false,
+      "status": "PASS"
+    }
+  },
+  "components": [
+    {
+      "checks": [
+        {
+          "id": "data.source_verified",
+          "observed": true,
+          "reason": "canonical source identity must be verified",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "data.exact_deduplication",
+          "observed": true,
+          "reason": "exact hand-ID deduplication must be complete",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "data.split_disjoint",
+          "observed": true,
+          "reason": "TRAIN/VALIDATION/TEST must be disjoint",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "data.fingerprints_recorded",
+          "observed": true,
+          "reason": "dataset fingerprints must be persisted",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "data.parse_errors",
+          "observed": 0,
+          "reason": "parse errors must not exceed the contract maximum",
+          "status": "PASS",
+          "threshold": 0
+        }
+      ],
+      "name": "data_integrity",
+      "status": "PASS"
+    },
+    {
+      "candidate_quality_status": "FAIL",
+      "checks": [
+        {
+          "id": "model_a_preflop.selection_split",
+          "observed": "VALIDATION",
+          "reason": "candidate selection must use VALIDATION",
+          "status": "PASS",
+          "threshold": "VALIDATION"
+        },
+        {
+          "id": "model_a_preflop.test_not_used_for_selection",
+          "observed": false,
+          "reason": "TEST must not participate in candidate selection",
+          "status": "PASS",
+          "threshold": false
+        },
+        {
+          "id": "model_a_preflop.comparison_complete",
+          "observed": true,
+          "reason": "candidate-versus-baseline comparison must be complete",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_a_preflop.candidate_persisted",
+          "observed": true,
+          "reason": "accepted or rejected candidate artifact must be persisted",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_a_preflop.decision_reason",
+          "observed": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs; its historical local-only byte hash is retained as provenance without falsely claiming byte identity.",
+          "reason": "reason must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "model_a_preflop.validation_non_regression",
+          "observed": 0.0005327713449049666,
+          "reason": "candidate validation log-loss delta must not exceed baseline",
+          "status": "FAIL",
+          "threshold": 0.0
+        }
+      ],
+      "decision": "RETAIN_BASELINE",
+      "name": "model_a_preflop",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    {
+      "candidate_quality_status": "FAIL",
+      "checks": [
+        {
+          "id": "model_a_postflop.selection_split",
+          "observed": "VALIDATION",
+          "reason": "candidate selection must use VALIDATION",
+          "status": "PASS",
+          "threshold": "VALIDATION"
+        },
+        {
+          "id": "model_a_postflop.test_not_used_for_selection",
+          "observed": false,
+          "reason": "TEST must not participate in candidate selection",
+          "status": "PASS",
+          "threshold": false
+        },
+        {
+          "id": "model_a_postflop.comparison_complete",
+          "observed": true,
+          "reason": "candidate-versus-baseline comparison must be complete",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_a_postflop.candidate_persisted",
+          "observed": true,
+          "reason": "accepted or rejected candidate artifact must be persisted",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_a_postflop.decision_reason",
+          "observed": "VALIDATION selects zero incremental weight. The rejected candidate is deterministically rebuildable from persisted repo inputs and the 2026-09-09 historical rejection is reproduced semantically within 1e-9.",
+          "reason": "reason must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "model_a_postflop.validation_non_regression",
+          "observed": 0.0009980602757282,
+          "reason": "candidate validation log-loss delta must not exceed baseline",
+          "status": "FAIL",
+          "threshold": 0.0
+        }
+      ],
+      "decision": "RETAIN_BASELINE",
+      "name": "model_a_postflop",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    {
+      "candidate_quality_status": "BLOCKED",
+      "checks": [
+        {
+          "id": "model_b.selection_split",
+          "observed": "VALIDATION",
+          "reason": "profile/model selection must use VALIDATION",
+          "status": "PASS",
+          "threshold": "VALIDATION"
+        },
+        {
+          "id": "model_b.test_not_used_for_selection",
+          "observed": false,
+          "reason": "TEST must not participate in Model B selection",
+          "status": "PASS",
+          "threshold": false
+        },
+        {
+          "id": "model_b.comparison_complete",
+          "observed": true,
+          "reason": "candidate and incumbent must be compared on the same holdout",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_b.candidate_persisted",
+          "observed": true,
+          "reason": "candidate Model B and its features must be persisted",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_b.independence",
+          "observed": true,
+          "reason": "Model B must remain independent from Model A outputs",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "model_b.decision_reason",
+          "observed": "The corrected same-structure refreshed K=3 candidate improves range likelihood but does not establish the required VALIDATION action-log-loss non-regression at paired 95% confidence. The pre-specified gate therefore retains promoted Model B v2; locked TEST confirmation was not used for selection. Response-conditioned Model B v3 remains an external heads-up postflop strategy-evaluation environment only.",
+          "reason": "reason must be a non-empty string",
+          "status": "PASS"
+        }
+      ],
+      "decision": "RETAIN_BASELINE",
+      "name": "model_b",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    {
+      "candidate_quality_status": "BLOCKED",
+      "checks": [
+        {
+          "id": "strategy.baseline_persisted",
+          "observed": true,
+          "reason": "promoted-engine baseline must be frozen before candidate selection",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "strategy.comparison_complete",
+          "observed": true,
+          "reason": "paired candidate comparison must be complete",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "strategy.candidate_persisted",
+          "observed": true,
+          "reason": "strategy candidate and parameters must be persisted",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "strategy.selection_split",
+          "observed": "VALIDATION",
+          "reason": "strategy selection must use VALIDATION",
+          "status": "PASS",
+          "threshold": "VALIDATION"
+        },
+        {
+          "id": "strategy.test_not_used_for_tuning",
+          "observed": false,
+          "reason": "TEST must remain untouched during strategy tuning",
+          "status": "PASS",
+          "threshold": false
+        },
+        {
+          "id": "strategy.environment_validity",
+          "observed": true,
+          "reason": "environment realism/sensitivity gate must pass for promotion-oriented sizing conclusions",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "strategy.scenario_manifest",
+          "observed": true,
+          "reason": "scenario/seed manifest must be persisted",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "strategy.decision_reason",
+          "observed": "The protected 96-base-hand / 192-scenario VALIDATION comparison completed against corrected response-conditioned Model B v3. cap_3 mean delta was +1.0132 BB with CI95 [-2.8303, +5.1571]; cap_4 mean delta was +1.2982 BB with CI95 [-2.4935, +5.2771]. Neither candidate established the pre-specified non-regression lower bound >= 0, so v83 is retained. No finalist was frozen and protected TEST was not consumed.",
+          "reason": "reason must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "strategy.unsupported_contexts",
+          "observed": [
+            "heads_up_postflop"
+          ],
+          "reason": "declared strategy change is within the current arena scope",
+          "status": "PASS"
+        }
+      ],
+      "decision": "RETAIN_BASELINE",
+      "metric": "conditional_postflop_utility_bb",
+      "name": "strategy",
+      "promotion_allowed": false,
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "id": "regression.pathological",
+          "observed": true,
+          "reason": "permanent pathological-engine suite must pass",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "regression.trainer",
+          "observed": true,
+          "reason": "trainer contract/browser suite must pass",
+          "status": "PASS",
+          "threshold": true
+        },
+        {
+          "id": "regression.sequential_arena",
+          "observed": true,
+          "reason": "determinism/trial-budget/betting legality contracts must pass",
+          "status": "PASS",
+          "threshold": true
+        }
+      ],
+      "name": "regressions",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "id": "provenance.code_commit",
+          "observed": "1ddfb715eb3f6e94847019539fd8ae7eaa395ace",
+          "reason": "code_commit must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "provenance.dataset_fingerprints",
+          "observed": [
+            "source_sha256:374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+            "selected_ids_sha256:9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b"
+          ],
+          "reason": "dataset_fingerprints must contain at least one persisted identity",
+          "status": "PASS"
+        },
+        {
+          "id": "provenance.model_hashes",
+          "observed": [
+            "preflop_sha256:ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+            "postflop_sha256:6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+            "promoted_model_b_profiles_sha256:adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+            "promoted_model_b_postflop_actions_sha256:60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+            "strategy_environment_v3_postflop_actions_sha256:eeeeaf210b658a77ceae502859cad0f93fc599ccb11200693ac5adfcc5c8ba12"
+          ],
+          "reason": "model_hashes must contain at least one persisted identity",
+          "status": "PASS"
+        },
+        {
+          "id": "provenance.seed_or_scenario_manifest",
+          "observed": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json",
+          "reason": "seed_or_scenario_manifest must be a non-empty string",
+          "status": "PASS"
+        }
+      ],
+      "name": "provenance",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "id": "release.engine_artifact",
+          "observed": "user/releases/poker_range_equity_offline_multiway_v83.html",
+          "reason": "engine_release_artifact must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "release.engine_sha256",
+          "observed": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+          "reason": "engine_release_sha256 must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "release.site_entrypoint",
+          "observed": "site/index.html",
+          "reason": "assembled_site_entrypoint must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "release.site_blob_sha",
+          "observed": "8b2a63722562f913fb95871f24be664e9c210c68",
+          "reason": "assembled_site_git_blob_sha must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "release.assets_tree_sha",
+          "observed": "ae29267d9bb7191f44eeff1071e780699e90ae13",
+          "reason": "assets_tree_git_sha must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "release.assembled_commit",
+          "observed": "c4555d3e18c3be90a72c42964c18f963442736f7",
+          "reason": "assembled_from_commit must be a non-empty string",
+          "status": "PASS"
+        },
+        {
+          "id": "release.distinct_identities",
+          "observed": true,
+          "reason": "engine release artifact and assembled site entrypoint must be distinct identities",
+          "status": "PASS",
+          "threshold": true
+        }
+      ],
+      "name": "release_identity",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "id": "registry.pre_promotion_unchanged",
+          "observed": true,
+          "reason": "promoted registry pointers must remain unchanged before explicit promotion",
+          "status": "PASS",
+          "threshold": true
+        }
+      ],
+      "name": "registry_transition",
+      "status": "PASS"
+    }
+  ],
+  "contract_version": "2026-09-13.1",
+  "cycle": "2026-09-12",
+  "deployment_verification": {
+    "checks": [],
+    "name": "deployment_verification",
+    "post_promotion": true,
+    "status": "NOT_APPLICABLE"
+  },
+  "promotion_ready": true,
+  "rules": {
+    "blocked_is_not_pass": true,
+    "registry_update_allowed": true,
+    "rejected_candidate_can_complete_cycle": true,
+    "test_may_select_or_retune": false
+  },
+  "schema": "poker-promotion-gate-report/v1",
+  "status": "PASS"
+}

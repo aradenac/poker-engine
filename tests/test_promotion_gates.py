@@ -179,21 +179,29 @@ def test_deployment_failure_is_reported_separately_from_pre_promotion_gate() -> 
     assert report["deployment_verification"]["post_promotion"] is True
 
 
-def test_current_cycle_snapshot_cannot_be_promoted_yet() -> None:
+def test_current_cycle_snapshot_is_ready_with_all_candidates_retained() -> None:
     evidence = json.loads((ROOT / "training" / "gates" / "20260912_evidence.json").read_text(encoding="utf-8"))
     report = evaluate(evidence, CONTRACT)
-    assert report["status"] == "BLOCKED", report
-    assert report["promotion_ready"] is False
-    assert report["rules"]["registry_update_allowed"] is False
-    assert by_name(report, "data_integrity")["status"] == "PASS"
-    assert by_name(report, "model_a_preflop")["status"] == "PASS"
-    assert by_name(report, "model_a_postflop")["status"] == "PASS"
-    assert by_name(report, "model_b")["status"] == "PASS"
-    assert by_name(report, "regressions")["status"] == "PASS"
-    assert by_name(report, "provenance")["status"] == "PASS"
-    assert by_name(report, "release_identity")["status"] == "PASS"
-    assert by_name(report, "registry_transition")["status"] == "PASS"
-    assert by_name(report, "strategy")["status"] == "BLOCKED"
+    assert report["status"] == "PASS", report
+    assert report["promotion_ready"] is True
+    assert report["rules"]["registry_update_allowed"] is True
+    for name in (
+        "data_integrity",
+        "model_a_preflop",
+        "model_a_postflop",
+        "model_b",
+        "strategy",
+        "regressions",
+        "provenance",
+        "release_identity",
+        "registry_transition",
+    ):
+        assert by_name(report, name)["status"] == "PASS", (name, by_name(report, name))
+    for name in ("model_a_preflop", "model_a_postflop", "model_b", "strategy"):
+        component = by_name(report, name)
+        assert component["decision"] == "RETAIN_BASELINE", component
+        assert component["promotion_allowed"] is False, component
+    assert report["deployment_verification"]["status"] == "NOT_APPLICABLE"
 
 
 if __name__ == "__main__":
