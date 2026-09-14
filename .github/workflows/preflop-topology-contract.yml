@@ -5,15 +5,27 @@ on:
     paths:
       - 'tools/training/evaluate_preflop_topology_candidate.py'
       - 'tools/training/audit_preflop_runtime_topology_overlap.py'
+      - 'tools/training/audit_preflop_key_runtime_parity.py'
+      - 'tools/training/explain_preflop_key_runtime_mismatches.py'
+      - 'tools/training/evaluate_preflop_free_check_matcher.py'
       - 'tests/training/test_preflop_topology_candidate.py'
+      - 'tests/training/test_preflop_key_runtime_parity.py'
+      - 'tests/training/test_preflop_free_check_matcher.py'
       - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
+      - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json'
       - '.github/workflows/preflop-topology-contract.yml'
   pull_request:
     paths:
       - 'tools/training/evaluate_preflop_topology_candidate.py'
       - 'tools/training/audit_preflop_runtime_topology_overlap.py'
+      - 'tools/training/audit_preflop_key_runtime_parity.py'
+      - 'tools/training/explain_preflop_key_runtime_mismatches.py'
+      - 'tools/training/evaluate_preflop_free_check_matcher.py'
       - 'tests/training/test_preflop_topology_candidate.py'
+      - 'tests/training/test_preflop_key_runtime_parity.py'
+      - 'tests/training/test_preflop_free_check_matcher.py'
       - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
+      - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json'
       - '.github/workflows/preflop-topology-contract.yml'
   workflow_dispatch:
 
@@ -26,8 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Runtime matcher parity and holdout tests
-        run: python3 tests/training/test_preflop_topology_candidate.py
-      - name: Verify persisted #61 decision remains fail-closed
+        run: |
+          python3 tests/training/test_preflop_topology_candidate.py
+          python3 tests/training/test_preflop_key_runtime_parity.py
+          python3 tests/training/test_preflop_free_check_matcher.py
+      - name: Verify persisted #61 and #88 decisions remain fail-closed
         run: |
           python3 - <<'PY'
           import json
@@ -48,5 +63,29 @@ jobs:
           assert r['validation']['target_rows']==287
           assert r['validation']['all_alpha_candidates']['affected_rows']==0
           assert r['validation']['paired_bootstrap']['ci95']==[0.0,0.0]
-          print(json.dumps({'status':'PASS','outcome':r['outcome'],'runtime_overlap':r['runtime_overlap']}, indent=2))
+
+          q='training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json'
+          x=json.load(open(q, encoding='utf-8'))
+          assert x['schema']=='poker-preflop-canonical-runtime-parity-decision/v1'
+          assert x['selection_split']=='VALIDATION'
+          assert x['test_used'] is False
+          assert x['test_authorized'] is False
+          assert x['production_effect']=='NONE'
+          assert x['decision']=='RETAIN_CURRENT_MATCHER'
+          assert x['canonical_key_audit']['mismatch_nodes']==4279
+          assert x['canonical_key_audit']['explanation_distribution']=={'LEGACY_COMMA_DELIMITER_ONLY':4279}
+          assert x['canonical_key_audit']['all_mismatches_explained'] is True
+          assert x['runtime_equivalence_audit']['collision_classes']==18
+          assert x['runtime_equivalence_audit']['class_cause_distribution']=={'free_check':18}
+          assert x['runtime_equivalence_audit']['all_collisions_free_check_only'] is True
+          assert x['strict_free_check_validation']['rows']==1676
+          assert x['strict_free_check_validation']['changed_probability_rows']==2
+          assert x['strict_free_check_validation']['paired_bootstrap']['ci95'][1]==0.0
+          print(json.dumps({
+            'status':'PASS',
+            'topology_outcome':r['outcome'],
+            'matcher_decision':x['decision'],
+            'key_mismatches_explained':x['canonical_key_audit']['all_mismatches_explained'],
+            'runtime_collision_classes':x['runtime_equivalence_audit']['collision_classes']
+          }, indent=2))
           PY
