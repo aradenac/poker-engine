@@ -1,7 +1,7 @@
 {
   "schema": "independent-model-b-paired-comparison/v1",
   "cycle": "2026-09-12",
-  "code_commit": "5785f8cfd63928a6a354a2570394a8486dd60341",
+  "code_commit": "694c31095b05339e8834fcc05fe43a814a96e053",
   "contract": {
     "path": "training/PROMOTION_GATE_CONTRACT.json",
     "sha256": "941b42901833ee9772fb3d9291808a2dbcb6553088fdbef9d6c0ce3eaec6879a",
@@ -21,8 +21,8 @@
     "dir": "training/runs/20260912_population_increment_cycle/model_b/model",
     "summary_sha256": "d275b7e998b5704b9549b519d4f520270a896bbf1b933174eca99e31b66ee6eb",
     "profiles_sha256": "31bcd339d522de4041c798fa330bccf24e0959330823f72e29491be45e37a7f0",
-    "ranges_sha256": "599cfef065b47d8a09b67fde7aca70fcd094a17b75d61c05551d6756c9de17d7",
-    "actions_sha256": "5fb3eae1bf56f5059197740b066022bddb87df04f817497f83a3d02f27cbdbe8",
+    "ranges_sha256": "63a4283935e3d33ef561481fbd3a09cf33ea8ce281171c530d50b66a4bb9b8cc",
+    "actions_sha256": "7b716d20146b8294629850e80bd2970d125d5c12f87c8faf4f8468197a61e980",
     "sizing_sha256": "9817bb5ff4747aa02676cd9c49e1a7f569dd965baf5a048380355b86d34cb0b3"
   },
   "incumbent": {
@@ -40,21 +40,21 @@
       "bootstrap_samples": 5000,
       "seed": 20260913,
       "action_log_loss_delta_candidate_minus_incumbent": {
-        "observed": 0.0001792467696841508,
+        "observed": 0.0002113481333896446,
         "ci95": [
-          -0.0010721814574275925,
-          0.001402833163900634
+          -0.001067131027649346,
+          0.0014404101951866828
         ],
-        "probability_candidate_better": 0.388,
+        "probability_candidate_better": 0.3708,
         "decisions": 18540
       },
       "range_log_loss_delta_candidate_minus_incumbent": {
-        "observed": -0.016222562695234963,
+        "observed": -0.022445620143515463,
         "ci95": [
-          -0.030823961560193295,
-          -0.0016142643175274295
+          -0.038664408155126305,
+          -0.006900194458280549
         ],
-        "probability_candidate_better": 0.9848,
+        "probability_candidate_better": 0.9972,
         "revealed_hands": 2970
       }
     },
@@ -64,21 +64,21 @@
       "bootstrap_samples": 5000,
       "seed": 21260916,
       "action_log_loss_delta_candidate_minus_incumbent": {
-        "observed": -0.0015138432652364686,
+        "observed": -0.0014183037921918472,
         "ci95": [
-          -0.0027609193999785504,
-          -0.0003144317584348304
+          -0.002666452541666477,
+          -0.00019960225237739085
         ],
-        "probability_candidate_better": 0.9932,
+        "probability_candidate_better": 0.9888,
         "decisions": 19276
       },
       "range_log_loss_delta_candidate_minus_incumbent": {
-        "observed": -0.023998598556303062,
+        "observed": -0.027966671565039944,
         "ci95": [
-          -0.03972046072088407,
-          -0.008065644755457327
+          -0.04401998203647001,
+          -0.011408490967579342
         ],
-        "probability_candidate_better": 0.9988,
+        "probability_candidate_better": 0.9996,
         "revealed_hands": 3118
       }
     }
@@ -95,7 +95,7 @@
       },
       "pass": true,
       "observed": {
-        "action_ece": 0.008140579241861531,
+        "action_ece": 0.0076206026534253735,
         "known_player_coverage": 0.9812837108953614,
         "weighted_profile_stability": 0.7194192377495463,
         "state_anomaly_rate": 0.0007011866235167206,
@@ -114,7 +114,7 @@
       },
       "pass": true,
       "observed": {
-        "action_ece": 0.008256416131162474,
+        "action_ece": 0.007646041751158962,
         "known_player_coverage": 0.9857854326623781,
         "weighted_profile_stability": 0.7538461538461538,
         "state_anomaly_rate": 0.0004150238638721727,

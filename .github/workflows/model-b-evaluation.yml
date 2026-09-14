@@ -30,7 +30,9 @@ jobs:
           fetch-depth: 0
 
       - name: Unit tests
-        run: python3 tests/independent_profiles/test_evaluate_model_b.py
+        run: |
+          python3 tests/independent_profiles/test_evaluate_model_b.py
+          python3 tests/independent_profiles/test_french_button_position.py
 
       - name: Evaluate deterministic holdout
         run: |
@@ -111,20 +113,31 @@ jobs:
           git add training/runs/20260912_independent_profiles_v2/evaluation
           git add training/runs/20260912_independent_profiles_v2/model/prediction_contract.json
           git commit -m 'Evaluate final independent Model B K3 holdout'
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo 'Unable to persist Model B evaluation after three race-safe retries.' >&2
+          exit 1
 
   compare-cycle-refresh:
+    needs: evaluate
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout latest branch head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.ref_name }}
 
       - name: Paired comparison unit tests
         run: |
           python3 tests/independent_profiles/test_build_player_features.py
           python3 tests/independent_profiles/test_build_model_b.py
+          python3 tests/independent_profiles/test_french_button_position.py
           python3 tests/independent_profiles/test_evaluate_model_b.py
           python3 tests/independent_profiles/test_compare_model_b_paired.py
 
@@ -182,7 +195,6 @@ jobs:
       - name: Score candidate and incumbent on identical enlarged holdout
         run: |
           CYCLE='training/runs/20260912_population_increment_cycle/model_b'
-          COMMON="--archive training/datasets/NLHE_100-200/source/NLHE\ 100-200.zip"
           python3 -m tools.training.independent_profiles.evaluate_model_b \
             --features "$CYCLE/features/player_features.json" \
             --model-dir "$CYCLE/model" \
@@ -243,4 +255,12 @@ jobs:
           git config user.email 'training-bot@users.noreply.github.com'
           git add "$CYCLE"
           git commit -m 'Persist refreshed Model B K3 candidate and paired gate'
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo 'Unable to persist refreshed Model B evidence after three race-safe retries.' >&2
+          exit 1
