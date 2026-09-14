@@ -3924,6 +3924,18 @@ function replayActionBannerHtml(step){
   </div>`;
 }
 
+function replayHandClass(cards){
+  if(!Array.isArray(cards)||cards.length!==2||cards.some(c=>typeof c!=="string"||c.length<2)) return "";
+  const ranks="23456789TJQKA";
+  const a=String(cards[0]),b=String(cards[1]);
+  const ar=a[0].toUpperCase(),br=b[0].toUpperCase();
+  const ai=ranks.indexOf(ar),bi=ranks.indexOf(br);
+  if(ai<0||bi<0)return "";
+  if(ar===br)return ar+br;
+  const hi=ai>bi?ar:br,lo=ai>bi?br:ar;
+  return hi+lo+(a.slice(1).toLowerCase()===b.slice(1).toLowerCase()?"s":"o");
+}
+
 function replaySeatHtml(player,step,hand){
   const st=(step?.state||{})[player.name]||{
     folded:false,cards:null,lastAction:"",lastActionType:"",
@@ -3940,12 +3952,14 @@ function replaySeatHtml(player,step,hand){
 
   let cards=st.cards;
   if(!cards && player.knownCards?.length===2 && step?.label==="Showdown") cards=player.knownCards;
+  const handClass=replayHandClass(cards);
   const cardsHtml=(cards&&cards.length===2?cards:[null,null]).map(c=>`<div class="hole-card${c===null?" empty":""}">${c===null?"🂠":cardHtml(c)}</div>`).join("");
   const knownHandText=replayKnownHandText(player,hand);
   const knownHandHtml=replayKnownHandHtml(player,hand,{small:true});
   const badges=[
     player.name===hand.heroName?'<span class="seat-badge hero">Hero</span>':'',
-    st.folded?'<span class="seat-badge folded">Fold</span>':''
+    st.folded?'<span class="seat-badge folded">Fold</span>':'',
+    handClass?`<span class="seat-badge known hand-class" data-hand-class="${escapeHtml(handClass)}" title="Classe de main visible">${escapeHtml(handClass)}</span>`:''
   ].join("");
 
   const eqState=state.seatEquities||{};
