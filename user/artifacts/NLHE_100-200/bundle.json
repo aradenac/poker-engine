@@ -1,0 +1,15 @@
+{
+  "schema": "poker-user-artifact-bundle-config/v1",
+  "bundle_id": "nlhe-100-200-2026.09.14.1",
+  "bundle_version": "2026.09.14.1",
+  "release_tag": "user-artifacts-nlhe-100-200-v2026.09.14.1",
+  "population": "NLHE 100-200",
+  "training_state": "training/runs/20260912_population_increment_cycle/FINAL_STATE.json",
+  "custom_ranges": {
+    "source": "user/artifacts/NLHE_100-200/custom.json.gz.b64",
+    "encoding": "base64+gzip",
+    "compressed_sha256": "61cbed40f5c807df2a9439d2369e5a75da02e0887af1e64f099e7d501662594d",
+    "sha256": "1248258112562757e49df545e97f9e54b2dde163fdc755adf0029e89e580e8cb",
+    "filename": "custom.json"
+  }
+}
