@@ -1,188 +1,149 @@
 # Project Plan
 
-## Current focus — Reproducible evidence before strategy promotion
+## Operating model
 
-The project operates as a continuous-learning system with three separate layers:
+The project is a continuous-learning poker analyser/trainer with deliberately separated layers:
 
-1. **Opponent model A — integrated population model** used by the analyzer itself.
-2. **Opponent model B — independent profile-based model** used as an external simulation/evaluation environment and not as the analyzer's own EV model.
-3. **Engine strategy** evaluated against model B before a new application version is promoted.
+1. **Model A** — integrated population model used by the analyser to compute Hero recommendations/EV.
+2. **Model B** — independent opponent model used to simulate/evaluate strategy and generate trainer opponents; it must not feed its own conclusions back into Model A EV.
+3. **Engine strategy** — Hero action/sizing policy evaluated against an independent Model B environment before any engine promotion.
+4. **Static product** — analyser/replayer/trainer assembled under `site/` and released independently from model-training decisions.
 
-Keeping model B independent is essential: strategy evaluation must not simply confirm the same assumptions already embedded in the analyzer.
+Every training cycle must preserve deterministic TRAIN / VALIDATION / TEST assignment, immutable evidence, explicit retain/promote decisions, exact artifact identities and a rollback path. A valid cycle may end with no production change.
 
-### Current milestone — audit 2026-09-12
+## Current milestone
 
-Historical audit base: main `caaff599707006fab3daa0f39b90b67c37fdaac1`; PR #44 head `899015dd4d29ffcdb9130ddb10d74347b856a0c1`. User-facing assessment: `user/reports/etat-des-lieux-2026-09-12.md`.
+The 2026-09-12 `NLHE 100-200` cycle is complete and reproducible.
 
-Model B v2 (#8) and the ingestion foundation (#6) are complete. The trainer feature and performance/Guided/custom-range corrections are merged. Current promoted recommendations still use engine v83 and Model A preflop/postflop v5.
+- 3,268 unseen hands were materialized from the verified September 12 snapshot;
+- resulting scoped union: 31,003 hands;
+- Model A preflop/postflop candidates: rejected / v5 retained;
+- refreshed same-structure Model B candidate: rejected / promoted v2 retained;
+- strategy candidates `cap_3` / `cap_4`: inconclusive under the pre-specified paired CI gate / v83 retained;
+- protected strategy TEST: not consumed;
+- unified gate: `PASS`, `promotion_ready=true`;
+- final production transition: `NO_OP_RETAIN_ALL`;
+- authoritative closure: `training/runs/20260912_population_increment_cycle/FINAL_STATE.json`.
 
-#35 was delivered by PR #48: exact source, materialized increment and mandatory integrity gate. The remaining P0 blocker is #45 (intermittent Cloudflare builds and unverified public deployment). The #36/#37 candidate rejection decisions remain closed; reconstruction debt is tracked under #7. The #38 candidate has a branch report but needs full artifacts and a paired incumbent comparison.
+The completed cycle is now the reference implementation for automation under #13.
 
-### Ordered execution backlog
+## Execution order
 
-Delivery 2026-09-13: #35 and #9 are complete (PR #48/#44). PR #49 wires all six trainer contracts; PR #50 eliminates derived ZIP timestamp churn. All relevant CI gates passed and these changes are merged. Cloudflare remains intermittent and public deployment identity remains unverified (#45).
+### Lane A — user-facing deliverables
 
-P0: unblock source/reproducibility/publication. P1: validate models, environment and benchmark. P2: select/promote/automate after the prerequisites. P3: historical cleanup. Epics #2 and #43 coordinate these tasks; they are not additional deliveries.
+**1. #74 — publish a coherent `NLHE 100-200` user artifact bundle.**
 
-| Rank | Priority | Issue | Next deliverable |
-|---:|:---:|---|---|
-| 3 | P0 | #45 | Restore a verified deployment of the intended site. Main and PR #44 Cloudflare builds fail; current public application availability was not checked. |
-| 4 | P1 | #12 | Specify promotion criteria before strategy selection; wire missing regression checks now. The complete gate can become green only after model/baseline evidence exists. |
-| 5 | P1 | #7 | Finish repo-native Model A reconstruction and persist rejected-candidate evidence. Keep #36/#37 closed as rejection decisions; track their remaining reproducibility debt here instead of retraining blindly. |
-| 6 | P1 | #10 | Freeze a scoped v83 + promoted Model B v2 diagnostic baseline after #9. It can run without waiting for #35/#38. Report the heads-up postflop scope and Model B limitations. |
-| 7 | P1 | #38 | After #35, persist the refreshed candidate and features, then compare incumbent and candidate on exactly the same enlarged holdout. The inspected branch contains a selection report and export workflow, not the full new candidate. |
-| 8 | P1 | #46 | Validate response realism and sensitivity before using the independent environment as the sole sizing-strategy promotion gate. |
-| 9 | P1 | #39 | Build the refreshed baseline after the Model B decision and the old-environment reference. Separate changed data/environment from changed Hero policy. |
-| 10 | P2 | #11 | Evaluate policy candidates only once the baseline and promotion criteria are ready. Coordinate the current-cycle execution with #40; do not count the same benchmark twice. |
-| 11 | P2 | #40 | Current-cycle strategy search, executed jointly with the #11 capability work after #39 and environment-validity/gate prerequisites. |
-| 12 | P2 | #41 | Run the complete pre-specified gate across data, models, strategy, replay and trainer; this is the execution of the contract defined under #12. |
-| 13 | P2 | #42 | Record independent promotion/rejection decisions and complete immutable cycle evidence after #41. Verify site assets, release provenance and rollback pointers together. |
-| 14 | P2 | #13 | Automate the chain after one end-to-end cycle is reproducible and its gates are meaningful; validate rejection leaves promoted pointers unchanged. |
-| 15 | P3 | #1 | Historical bootstrap cleanup. Current v83, production models and the two older raw archives are present; the documented remaining gap is historical v78. This does not block current engine work. |
+Build the first immutable package directly from the verified final state. The bundle must include:
 
-### Dependency and validation rules
+- the user's source-semantics `custom.json` (source SHA-256 `1248258112562757e49df545e97f9e54b2dde163fdc755adf0029e89e580e8cb`);
+- promoted `preflop_population_model_v5.json`;
+- promoted `postflop_population_model_v5.json`;
+- `MANIFEST.json` with bundle ID, population, source commit/final-state identity, exact artifact hashes/roles/schema versions and engine compatibility;
+- README and checksums.
 
-- #35 unlocks new-data reconstruction and #38. It does not block #9 or an old-corpus reference under #10.
-- #9 is delivered: CI checks full fresh-browser reproduction, actual worker seeds/budgets and betting fixtures. #10/#39 must now supply statistical benchmark evidence beyond smoke coverage.
-- Start #12 gate specification/wiring before policy selection; final PASS still requires the completed model and benchmark evidence.
-- #10 freezes v83 + Model B v2 as a scoped HU postflop reference. #38 produces an independent retain/promote decision; #46 addresses response realism before promotion-grade sizing conclusions.
-- #39 holds v83/Model A fixed to measure environment drift, then #11/#40 hold that selected environment fixed to compare engine candidates. #11 and #40 share one cycle deliverable.
-- Use strategy VALIDATION scenarios for tuning and a protected final TEST set. Record effective worker trial budgets and seeds, code/model/data hashes, paired uncertainty and context coverage.
-- #41 executes the pre-specified #12 gates; #42 records independent outcomes and verifies assembled site/model identities; #13 automates the already reproducible cycle.
-- The arena only generates HU postflop states. Its utility is conditional from the flop, not an overall session win rate. Current marginal Model B alone is insufficient evidence of sizing optimality; see #46.
+Generate the package reproducibly in GitHub Actions. Prefer an immutable GitHub Release asset or versioned package. Publication must fail if the registry/final-state identities do not match or if a rejected/experimental artifact is substituted.
 
-## Phase 1 — Reproducible independent arena
+**2. #73 — display player hand classes in the replayer.**
 
-Completed Model B foundation:
+Add canonical 169-class notation next to visible/known hole cards only:
 
-- deterministic TRAIN-only player-feature pipeline;
-- deterministic profile clustering and prevalence weights;
-- profile-conditioned preflop ranges;
-- hierarchical postflop action tables;
-- empirical postflop sizing distributions;
-- prediction contract and holdout evaluation;
-- validation-only K selection (K=3 selected from K=3..8);
-- promotion record and registry pointer.
+- pair: `77`;
+- suited: `AKs`;
+- offsuit: `QJo`;
+- never infer/reveal hidden opponent cards before the history reveals them.
 
-Remaining #9 work:
+Implement on the mutable application/release path, not by silently rewriting immutable v83. Preserve exact card rendering and all ACTION / sizing / EV replay behavior. Add deterministic browser regression coverage.
 
-- persist/refactor arena code under `tools/simulation/`;
-- remove all `/mnt/data` and untracked-pickle dependencies;
-- make the simulator consume `training/registry.json` and the promoted Model B JSON artifacts;
-- consume the promoted analyzer release from repository paths;
-- define and persist a deterministic simulation seed/scenario contract;
-- add regression tests proving identical scenarios/results are reproducible from a clean checkout;
-- preserve exact effective-stack/pot accounting and sequential postflop state transitions.
+### Lane B — continuous-learning automation
 
-## Phase 2 — Dual opponent-model contract
+**3. #13 — automate the completed cycle.**
 
-### Model A — integrated analyzer population model
+Turn the proven manual/repo-native sequence into an orchestrated workflow:
 
-Maintain the current preflop/postflop lineage:
+1. ingest/persist raw source;
+2. exact hand-ID audit/deduplication;
+3. deterministic split assignment;
+4. materialize normalized increment;
+5. train/rebuild Model A candidate(s);
+6. train/rebuild independent Model B candidate(s);
+7. run VALIDATION-only selection gates;
+8. evaluate strategy only against an explicitly valid independent environment;
+9. reserve TEST for frozen finalists according to each contract;
+10. execute unified gate;
+11. atomically promote only authorized artifacts, otherwise retain pointers unchanged;
+12. generate immutable final state and user bundle candidate.
 
-- structural/contextual population nodes;
-- hierarchical backoff;
-- continuous context adjustment;
-- revealed-hand/action-composition information where allowed;
-- explicit TRAIN / VALIDATION / TEST separation.
+Automation must prove the retain-all case as strongly as a promotion case: rejected candidates must not alter registry, model assets, engine release or site.
 
-This model is allowed to drive analyzer EV calculations.
+### Lane C — next statistical improvement
 
-### Model B — independent profile model
+**4. #61 — targeted preflop topology experiment.**
 
-Promoted alias: `independent_model_b_v2`.
+Use the TRAIN-only audit of the 4,727 unseen rows to define a bounded candidate rather than expanding all 1,017 missing contexts. The initial candidate boundary should focus on pre-specified high-support contexts (notably the 51 contexts with n>=20) and dominant structural families such as `VS_LIMPERS`, `VS_ISO` and `VS_RFI_CALLERS`.
 
-Maintain a separate opponent representation based on behavioral profiles:
+Choose any support threshold/backoff/topology hyperparameter on VALIDATION only. TEST remains reserved until one frozen candidate exists. Promotion requires non-regression against current Model A v5 and the unified gate contract.
 
-- player/profile assignment learned from TRAIN only;
-- profile-conditioned preflop ranges;
-- marginal action probabilities by street/context;
-- empirical bet/raise sizing distributions;
-- profile prevalence weights;
-- explicit cold-start and hierarchical-backoff prediction contract.
+### Lane D — publication verification
 
-This model is **not** used by the analyzer to choose its recommendation. It is the external environment used to test whether analyzer recommendations remain coherent and profitable under independently learned behavior.
+**5. #45 — verify actual production deployment.**
 
-## Phase 3 — Continuous hand-history ingestion
+Cloudflare preview/build success is not equivalent to a verified production deployment. Close #45 only after recording:
 
-Whenever new hand histories are pushed:
+- canonical production public URL;
+- exact deployed Git commit/build/version identity;
+- successful live smoke of analyser, trainer and required static model assets;
+- agreement between deployment metadata and repository release identity.
 
-1. Audit the archive and preserve it as an immutable snapshot.
-2. Deduplicate by PokerStars hand ID against known historical data; do not rely only on timestamps.
-3. Assign every new hand with the deterministic split contract already used by the population lineage.
-4. Materialize a versioned run containing the exact delta and provenance.
-5. Update candidate model A from historical approved evidence + the new TRAIN delta.
-6. Update candidate model B from the same approved TRAIN evidence, independently of model A.
-7. Never overwrite an existing promoted model or completed run.
+This lane is independent of retain-all training-cycle closure unless a future cycle actually changes the site/application artifact.
 
-## Phase 4 — Opponent-model evaluation and promotion
+## Promotion rules
 
-Evaluate model A and model B independently. Preserve at least:
+### Data
 
-- marginal-action log-loss / cross-entropy;
-- calibration error by action and probability bucket;
-- results by street, mode, position, pot type and sample-confidence bucket;
-- range prediction metrics where known cards exist;
-- profile stability;
-- performance on VALIDATION and untouched TEST;
-- sizing-distribution coverage/tail diagnostics;
-- exact dataset/model fingerprints and promotion/rejection record.
+- Exact hand-ID deduplication is mandatory.
+- Source archives and generated increments remain immutable.
+- TRAIN / VALIDATION / TEST must remain disjoint and reproducible.
+- Parser/language fixes require revalidation of evidence materially affected by the parser defect.
 
-A candidate may be rejected while its evidence is retained for later runs.
+### Model A
 
-## Phase 5 — Independent strategy arena
+- Model A is the only population model allowed to drive analyser Hero EV.
+- Candidate topology/weights are selected on VALIDATION only.
+- A rejected candidate remains persisted/rebuildable as evidence and cannot leak into `training/models/` or trainer Model A assets.
 
-For every meaningful engine candidate:
+### Model B
 
-- replay/simulate a deterministic scenario set against promoted Model B;
-- sample opponents according to learned profile prevalence and also report each profile separately;
-- simulate sequential postflop behavior rather than only one-step decisions;
-- use the analyzer only for Hero's decisions;
-- compute actual effective all-in amounts and stack/pot evolution exactly;
-- compare current promoted engine and candidate on the exact same random seeds/scenarios.
+- Production Model B remains independent from Model A outputs.
+- Same-structure production refreshes require paired holdout evidence and their own explicit decision.
+- Richer response-conditioned candidates may be used as strategy-evaluation environments only when their validity/scope has been proven; this does not implicitly promote them to production Model B.
 
-Primary strategy metrics:
+### Strategy
 
-- simulated EV / hand and EV / decision;
-- regret versus independently evaluated alternatives where available;
-- frequency of large-regret recommendations;
-- action distribution: fold/check/call/bet/raise/jam;
-- sizing distribution and extreme overbet/jam rate;
-- results by opponent profile;
-- results by street, SPR, pot type, relative position and hand-strength/equity buckets.
+- Strategy comparisons must use matched deterministic scenarios/seeds and the same independent environment.
+- Tune/select on VALIDATION; protected TEST is used only for a frozen finalist when the contract authorizes it.
+- Positive mean EV alone is insufficient. The pre-specified uncertainty/non-regression gate controls promotion.
+- Keep implementation/parser fixes separate from deliberate strategy changes.
+- Scope claims must match the benchmark: current promotion evidence is heads-up postflop, not overall cash-game win rate or multiway/preflop strategy.
 
-Population frequencies are diagnostics, not imitation targets.
+### Product/release
 
-## Phase 6 — Non-regression gates for engine promotion
+- `user/releases/` engine identity and `site/index.html` assembled-product identity are distinct.
+- Do not modify the site merely because a training run completed.
+- A rejected/retain-all cycle must leave production pointers and site assets unchanged.
+- User-facing bundles must be derived from an accepted/final production state and versioned immutably.
 
-A new analyzer release may be promoted only when all applicable gates pass:
+## Current source-of-truth files
 
-1. **Permanent pathological-hand suite** — previously fixed recommendation bugs stay fixed.
-2. **Integrated-model consistency** — recommendation, sizing and displayed final EV are the same decision tuple everywhere.
-3. **Independent-arena benchmark** — no material degradation in aggregate EV/regret and no unexplained profile-specific collapse.
-4. **Behavior/style benchmark** — no structural resurgence of unsupported jams, overbets or other pathological action frequencies.
-5. **Predictive-model gates** — promoted opponent-model candidates pass their own VALIDATION/TEST criteria.
-6. **Reproducibility** — exact datasets, models, code version, seeds and metrics are persisted in the run.
+- registry: `training/registry.json`;
+- final cycle state: `training/runs/20260912_population_increment_cycle/FINAL_STATE.json`;
+- unified promotion contract: `training/PROMOTION_GATE_CONTRACT.json`;
+- final gate evidence/report: `training/gates/20260912_evidence.json`, `training/gates/20260912_report.json`;
+- promoted Model A: `training/models/preflop_population_model_v5.json`, `training/models/postflop_population_model_v5.json`;
+- promoted Model B v2: `training/runs/20260912_independent_profiles_v2/model/`;
+- promoted engine: `user/releases/poker_range_equity_offline_multiway_v83.html`;
+- assembled application: `site/index.html`;
+- final-state verifier: `tools/finalize_training_cycle.py`.
 
-Opponent-model promotion and application/strategy promotion are separate decisions.
+## Lower-priority historical work
 
-## Phase 7 — Release and deployment
-
-- Promoted user build: `user/releases/poker_range_equity_offline_multiway_vNN.html`.
-- Deployed static build: `site/index.html`.
-- `site/index.html` changes only when an application version is explicitly promoted.
-- Training/model commits do not imply a new promoted application.
-
-## GitHub execution backlog
-
-The ranked list is at the start of this plan and in the issue priority/rank blocks. Capability epic: #2. Current cycle umbrella: #43. Completed capabilities #6/#8 and trainer issues are outside the active queue.
-
-Distinguish capability work (#7/#9/#10/#11/#12/#13) from cycle execution (#35–#42); one implementation/benchmark may satisfy both linked tickets. Historical v78 import (#1) remains P3.
-
-## Working rules
-
-- GitHub is the durable source of truth.
-- New evidence accumulates; historical approved data is not silently replaced.
-- Completed runs and promotion records are immutable.
-- A surprising recommendation is diagnosed before calibration is changed: data scarcity, extrapolation, implementation bug, model mismatch or genuine exploitative EV must be distinguished.
-- The independent arena must remain genuinely independent of the analyzer's own population-EV implementation.
+Historical bootstrap cleanup (#1 and related archival debt) is non-blocking. Preserve it for provenance work, but do not destabilize the verified v83 / Model A v5 / Model B v2 production state to reconstruct obsolete artifacts unless a concrete regression or reproducibility requirement depends on them.
