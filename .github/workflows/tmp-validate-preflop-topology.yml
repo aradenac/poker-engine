@@ -1,0 +1,64 @@
+name: Temporary validate targeted preflop topology
+
+on:
+  push:
+    branches:
+      - issue-61-preflop-targeted-topology
+    paths:
+      - 'tools/training/evaluate_preflop_topology_candidate.py'
+      - 'tests/training/test_preflop_topology_candidate.py'
+      - '.github/workflows/tmp-validate-preflop-topology.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit matcher and holdout contract
+        run: python3 tests/training/test_preflop_topology_candidate.py
+      - name: Rebuild normalized 2026-09-12 increment
+        run: |
+          python3 tools/training/build_incremental_decisions_v2.py \
+            --source training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip \
+            --out /tmp/model-a-0912-decisions.jsonl \
+            --summary /tmp/model-a-0912-summary.json
+          python3 tools/training/build_population_increment_overlay_v2.py \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --out /tmp/model-a-0912-overlay.json
+      - name: Select targeted topology on VALIDATION only
+        run: |
+          python3 tools/training/evaluate_preflop_topology_candidate.py \
+            --phase validation \
+            --baseline training/models/preflop_population_model_v5.json \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --overlay /tmp/model-a-0912-overlay.json \
+            --out /tmp/preflop61-validation.json
+      - name: Run locked TEST only if VALIDATION authorizes it
+        run: |
+          if python3 - <<'PY'
+          import json,sys
+          r=json.load(open('/tmp/preflop61-validation.json'))
+          print(json.dumps({
+            'outcome':r['outcome'],
+            'test_authorized':r['test_authorized'],
+            'runtime_overlap':r['runtime_overlap'],
+            'validation':r['validation']
+          },indent=2))
+          sys.exit(0 if r['test_authorized'] else 1)
+          PY
+          then
+            python3 tools/training/evaluate_preflop_topology_candidate.py \
+              --phase test \
+              --baseline training/models/preflop_population_model_v5.json \
+              --decisions /tmp/model-a-0912-decisions.jsonl \
+              --overlay /tmp/model-a-0912-overlay.json \
+              --validation-selection /tmp/preflop61-validation.json \
+              --out /tmp/preflop61-test.json
+          else
+            echo 'VALIDATION did not authorize TEST; protected holdout remains unconsumed.'
+            test ! -e /tmp/preflop61-test.json
+          fi
