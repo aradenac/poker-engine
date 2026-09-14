@@ -1,0 +1,70 @@
+{
+  "candidates": [
+    {
+      "ci95": [
+        -2.830310332031251,
+        5.157091080729167
+      ],
+      "ci95_lower_gate_pass": false,
+      "contract_order": 0,
+      "eligible": false,
+      "mean_delta_utility_bb": 1.0131835937499998,
+      "paired_base_hands": 96,
+      "paired_scenarios": 192,
+      "policy": "cap_3",
+      "reference": "current",
+      "sample_gate_pass": true,
+      "win_tie_loss": {
+        "loss": 6,
+        "tie": 178,
+        "win": 8
+      }
+    },
+    {
+      "ci95": [
+        -2.4935024023437506,
+        5.277130598958333
+      ],
+      "ci95_lower_gate_pass": false,
+      "contract_order": 1,
+      "eligible": false,
+      "mean_delta_utility_bb": 1.298215364583333,
+      "paired_base_hands": 96,
+      "paired_scenarios": 192,
+      "policy": "cap_4",
+      "reference": "current",
+      "sample_gate_pass": true,
+      "win_tie_loss": {
+        "loss": 4,
+        "tie": 181,
+        "win": 7
+      }
+    }
+  ],
+  "contract_version": "2026-09-13.1",
+  "environment": {
+    "benchmark_reference": "training/evaluations/20260913_v83_model_b_v3_baseline/benchmark_reference.json",
+    "production_effect": "NONE",
+    "response_variant": "price",
+    "supported_scope": [
+      "heads_up_postflop"
+    ]
+  },
+  "frozen_finalist": null,
+  "minimum_paired_base_hands": 96,
+  "outcome": "RETAIN_BASELINE",
+  "phase": "VALIDATION",
+  "reason": "No candidate clears the pre-specified VALIDATION paired-CI and sample gates; retain v83 and do not consume TEST for candidate selection.",
+  "reference_policy": "current",
+  "required_ci95_lower_bound_bb": 0.0,
+  "sample": {
+    "base_hands": 96,
+    "required_base_hands": 96,
+    "scenarios": 192
+  },
+  "schema": "poker-strategy-candidate-gate/v1",
+  "selection_split": "VALIDATION",
+  "status": "PASS",
+  "test_authorized": false,
+  "test_used_for_selection": false
+}

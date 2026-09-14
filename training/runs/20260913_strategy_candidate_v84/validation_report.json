@@ -1,0 +1,5351 @@
+{
+  "diagnostic_policy_set_regret": {
+    "ci95_cluster_bootstrap": [
+      0.4588743815104167,
+      6.533486796874999
+    ],
+    "definition": "Diagnostic regret of current versus the best realized utility among only the explicitly evaluated policy variants; not exhaustive action-level counterfactual regret.",
+    "mean_regret_bb": 2.951467447916667,
+    "paired_scenarios": 192,
+    "policy_set": [
+      "cap_3",
+      "cap_4",
+      "current"
+    ]
+  },
+  "environment_limitations": [
+    "Model B v3 candidate adds facing price-to-pot conditioning with explicit sparse-context backoff.",
+    "The selected candidate does not add SPR or board-texture conditioning because richer variants were worse on VALIDATION.",
+    "Revealed-card strength is not used for FACING response training because revealed samples omit folds by construction.",
+    "The benchmark remains heads-up postflop only and does not validate preflop or multiway strategy."
+  ],
+  "environment_variant": "independent_model_b_v3_response_conditioned_candidate",
+  "hand_strength_buckets": [
+    "high_card",
+    "pair",
+    "two_pair",
+    "trips",
+    "straight",
+    "flush",
+    "full_house",
+    "quads",
+    "straight_flush"
+  ],
+  "paired_policy_comparisons_vs_current": {
+    "cap_3": {
+      "delta_ci95_cluster_bootstrap": [
+        -2.830310332031251,
+        5.157091080729167
+      ],
+      "mean_delta_utility_bb": 1.0131835937499998,
+      "paired_base_hands": 96,
+      "paired_scenarios": 192,
+      "reference": "current",
+      "win_tie_loss": {
+        "loss": 6,
+        "tie": 178,
+        "win": 8
+      }
+    },
+    "cap_4": {
+      "delta_ci95_cluster_bootstrap": [
+        -2.4935024023437506,
+        5.277130598958333
+      ],
+      "mean_delta_utility_bb": 1.298215364583333,
+      "paired_base_hands": 96,
+      "paired_scenarios": 192,
+      "reference": "current",
+      "win_tie_loss": {
+        "loss": 4,
+        "tie": 181,
+        "win": 7
+      }
+    }
+  },
+  "policies": {
+    "cap_3": {
+      "decision_breakdowns": {
+        "hand_strength": {
+          "flush": {
+            "aggressive_decisions": 2,
+            "decisions": 2,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.5,
+            "family_counts": {
+              "BET": 1,
+              "EFFECTIVE_ALLIN": 1
+            },
+            "label_counts": {
+              "125% pot": 1,
+              "all-in effectif": 1
+            },
+            "overbet_count": 2,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 2,
+              "p50": 2.1158376963350785,
+              "p90": 2.808507853403141,
+              "p99": 2.9643586387434553
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "full_house": {
+            "aggressive_decisions": 2,
+            "decisions": 2,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "BET": 1,
+              "JAM": 1
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "jam": 1
+            },
+            "overbet_count": 1,
+            "overbet_rate_of_aggression": 0.5,
+            "size_ratio": {
+              "max": 1.9465670379247142,
+              "n": 2,
+              "p50": 1.473283518962357,
+              "p90": 1.851910334132243,
+              "p99": 1.9371013675454671
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.5
+          },
+          "high_card": {
+            "aggressive_decisions": 98,
+            "decisions": 155,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.0064516129032258064,
+            "family_counts": {
+              "BET": 97,
+              "CALL": 10,
+              "CHECK": 35,
+              "EFFECTIVE_ALLIN": 1,
+              "FOLD": 12
+            },
+            "label_counts": {
+              "100% pot": 6,
+              "125% pot": 12,
+              "25% pot": 23,
+              "33% pot": 7,
+              "50% pot": 15,
+              "66% pot": 14,
+              "75% pot": 20,
+              "CALL": 10,
+              "CHECK": 35,
+              "FOLD": 12,
+              "all-in effectif": 1
+            },
+            "overbet_count": 12,
+            "overbet_rate_of_aggression": 0.12244897959183673,
+            "size_ratio": {
+              "max": 1.25,
+              "n": 98,
+              "p50": 0.66,
+              "p90": 1.25,
+              "p99": 1.25
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "pair": {
+            "aggressive_decisions": 123,
+            "decisions": 167,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.041916167664670656,
+            "family_counts": {
+              "BET": 110,
+              "CALL": 17,
+              "CHECK": 18,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 9,
+              "RAISE": 6
+            },
+            "label_counts": {
+              "100% pot": 22,
+              "125% pot": 48,
+              "2,5× mise": 2,
+              "25% pot": 3,
+              "33% pot": 4,
+              "4× mise": 2,
+              "50% pot": 10,
+              "66% pot": 10,
+              "75% pot": 13,
+              "CALL": 17,
+              "CHECK": 18,
+              "FOLD": 9,
+              "all-in effectif": 7,
+              "min-raise": 2
+            },
+            "overbet_count": 56,
+            "overbet_rate_of_aggression": 0.45528455284552843,
+            "size_ratio": {
+              "max": 2.882857142857143,
+              "n": 123,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 2.275
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "straight": {
+            "aggressive_decisions": 3,
+            "decisions": 3,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.3333333333333333,
+            "family_counts": {
+              "BET": 2,
+              "EFFECTIVE_ALLIN": 1
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "125% pot": 1,
+              "all-in effectif": 1
+            },
+            "overbet_count": 2,
+            "overbet_rate_of_aggression": 0.6666666666666666,
+            "size_ratio": {
+              "max": 1.2878125,
+              "n": 3,
+              "p50": 1.25,
+              "p90": 1.28025,
+              "p99": 1.28705625
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "trips": {
+            "aggressive_decisions": 9,
+            "decisions": 9,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.2222222222222222,
+            "family_counts": {
+              "BET": 6,
+              "EFFECTIVE_ALLIN": 2,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "125% pot": 6,
+              "2,5× mise": 1,
+              "all-in effectif": 2
+            },
+            "overbet_count": 9,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 2.742608695652174,
+              "n": 9,
+              "p50": 1.25,
+              "p90": 2.742608695652174,
+              "p99": 2.742608695652174
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "two_pair": {
+            "aggressive_decisions": 28,
+            "decisions": 33,
+            "effective_allin_count": 5,
+            "effective_allin_rate": 0.15151515151515152,
+            "family_counts": {
+              "BET": 23,
+              "CALL": 2,
+              "CHECK": 2,
+              "EFFECTIVE_ALLIN": 5,
+              "FOLD": 1
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "125% pot": 19,
+              "25% pot": 2,
+              "50% pot": 1,
+              "CALL": 2,
+              "CHECK": 2,
+              "FOLD": 1,
+              "all-in effectif": 5
+            },
+            "overbet_count": 24,
+            "overbet_rate_of_aggression": 0.8571428571428571,
+            "size_ratio": {
+              "max": 2.880454545454546,
+              "n": 28,
+              "p50": 1.25,
+              "p90": 1.9149222222222226,
+              "p99": 2.7784818181818185
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "hero_position": {
+          "BB": {
+            "aggressive_decisions": 92,
+            "decisions": 133,
+            "effective_allin_count": 6,
+            "effective_allin_rate": 0.045112781954887216,
+            "family_counts": {
+              "BET": 85,
+              "CALL": 13,
+              "CHECK": 21,
+              "EFFECTIVE_ALLIN": 6,
+              "FOLD": 7,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 13,
+              "125% pot": 24,
+              "25% pot": 18,
+              "33% pot": 2,
+              "50% pot": 12,
+              "66% pot": 7,
+              "75% pot": 9,
+              "CALL": 13,
+              "CHECK": 21,
+              "FOLD": 7,
+              "all-in effectif": 6,
+              "min-raise": 1
+            },
+            "overbet_count": 29,
+            "overbet_rate_of_aggression": 0.31521739130434784,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 92,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.889564421703951
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "BTN": {
+            "aggressive_decisions": 45,
+            "decisions": 57,
+            "effective_allin_count": 3,
+            "effective_allin_rate": 0.05263157894736842,
+            "family_counts": {
+              "BET": 40,
+              "CALL": 4,
+              "CHECK": 2,
+              "EFFECTIVE_ALLIN": 3,
+              "FOLD": 6,
+              "JAM": 1,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 14,
+              "25% pot": 3,
+              "33% pot": 3,
+              "4× mise": 1,
+              "50% pot": 2,
+              "66% pot": 7,
+              "75% pot": 7,
+              "CALL": 4,
+              "CHECK": 2,
+              "FOLD": 6,
+              "all-in effectif": 3,
+              "jam": 1
+            },
+            "overbet_count": 18,
+            "overbet_rate_of_aggression": 0.4,
+            "size_ratio": {
+              "max": 2.882857142857143,
+              "n": 45,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.821147826086957
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.017543859649122806
+          },
+          "CO": {
+            "aggressive_decisions": 35,
+            "decisions": 45,
+            "effective_allin_count": 3,
+            "effective_allin_rate": 0.06666666666666667,
+            "family_counts": {
+              "BET": 32,
+              "CALL": 2,
+              "CHECK": 5,
+              "EFFECTIVE_ALLIN": 3,
+              "FOLD": 3
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 12,
+              "25% pot": 2,
+              "33% pot": 4,
+              "50% pot": 3,
+              "66% pot": 6,
+              "75% pot": 1,
+              "CALL": 2,
+              "CHECK": 5,
+              "FOLD": 3,
+              "all-in effectif": 3
+            },
+            "overbet_count": 15,
+            "overbet_rate_of_aggression": 0.42857142857142855,
+            "size_ratio": {
+              "max": 1.9562962962962964,
+              "n": 35,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 1.8871753452896303
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "HJ": {
+            "aggressive_decisions": 27,
+            "decisions": 31,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "BET": 26,
+              "CALL": 1,
+              "CHECK": 3,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 14,
+              "2,5× mise": 1,
+              "25% pot": 1,
+              "50% pot": 2,
+              "66% pot": 3,
+              "75% pot": 4,
+              "CALL": 1,
+              "CHECK": 3
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.5185185185185185,
+            "size_ratio": {
+              "max": 1.25,
+              "n": 27,
+              "p50": 1.25,
+              "p90": 1.25,
+              "p99": 1.25
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "LJ": {
+            "aggressive_decisions": 27,
+            "decisions": 51,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.0392156862745098,
+            "family_counts": {
+              "BET": 23,
+              "CALL": 6,
+              "CHECK": 13,
+              "EFFECTIVE_ALLIN": 2,
+              "FOLD": 5,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 14,
+              "25% pot": 1,
+              "4× mise": 1,
+              "50% pot": 3,
+              "75% pot": 1,
+              "CALL": 6,
+              "CHECK": 13,
+              "FOLD": 5,
+              "all-in effectif": 2,
+              "min-raise": 1
+            },
+            "overbet_count": 16,
+            "overbet_rate_of_aggression": 0.5925925925925926,
+            "size_ratio": {
+              "max": 1.6514285714285715,
+              "n": 27,
+              "p50": 1.25,
+              "p90": 1.25,
+              "p99": 1.6241127170118128
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "SB": {
+            "aggressive_decisions": 37,
+            "decisions": 49,
+            "effective_allin_count": 3,
+            "effective_allin_rate": 0.061224489795918366,
+            "family_counts": {
+              "BET": 32,
+              "CALL": 1,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 3,
+              "FOLD": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 9,
+              "2,5× mise": 2,
+              "25% pot": 3,
+              "33% pot": 2,
+              "50% pot": 4,
+              "66% pot": 1,
+              "75% pot": 11,
+              "CALL": 1,
+              "CHECK": 10,
+              "FOLD": 1,
+              "all-in effectif": 3
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.3783783783783784,
+            "size_ratio": {
+              "max": 2.275,
+              "n": 37,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.275
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "SB_BTN": {
+            "aggressive_decisions": 2,
+            "decisions": 5,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "BET": 2,
+              "CALL": 2,
+              "CHECK": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "CALL": 2,
+              "CHECK": 1
+            },
+            "overbet_count": 0,
+            "overbet_rate_of_aggression": 0.0,
+            "size_ratio": {
+              "max": 1.0,
+              "n": 2,
+              "p50": 0.948339483394834,
+              "p90": 0.9896678966789668,
+              "p99": 0.9989667896678966
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "initial_spr_bucket": {
+          "16+": {
+            "aggressive_decisions": 118,
+            "decisions": 162,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.012345679012345678,
+            "family_counts": {
+              "BET": 115,
+              "CALL": 8,
+              "CHECK": 23,
+              "EFFECTIVE_ALLIN": 2,
+              "FOLD": 13,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 21,
+              "125% pot": 37,
+              "2,5× mise": 1,
+              "25% pot": 17,
+              "33% pot": 2,
+              "50% pot": 14,
+              "66% pot": 11,
+              "75% pot": 13,
+              "CALL": 8,
+              "CHECK": 23,
+              "FOLD": 13,
+              "all-in effectif": 2
+            },
+            "overbet_count": 40,
+            "overbet_rate_of_aggression": 0.3389830508474576,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 118,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 1.5927768253968246
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "2-4": {
+            "aggressive_decisions": 21,
+            "decisions": 37,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.1891891891891892,
+            "family_counts": {
+              "BET": 14,
+              "CALL": 5,
+              "CHECK": 9,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 2
+            },
+            "label_counts": {
+              "100% pot": 3,
+              "125% pot": 8,
+              "33% pot": 3,
+              "CALL": 5,
+              "CHECK": 9,
+              "FOLD": 2,
+              "all-in effectif": 7
+            },
+            "overbet_count": 15,
+            "overbet_rate_of_aggression": 0.7142857142857143,
+            "size_ratio": {
+              "max": 2.880454545454546,
+              "n": 21,
+              "p50": 1.25,
+              "p90": 2.742608695652174,
+              "p99": 2.8528853754940715
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "4-8": {
+            "aggressive_decisions": 52,
+            "decisions": 74,
+            "effective_allin_count": 4,
+            "effective_allin_rate": 0.05405405405405406,
+            "family_counts": {
+              "BET": 46,
+              "CALL": 6,
+              "CHECK": 15,
+              "EFFECTIVE_ALLIN": 4,
+              "FOLD": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 20,
+              "2,5× mise": 1,
+              "25% pot": 4,
+              "33% pot": 2,
+              "50% pot": 6,
+              "66% pot": 5,
+              "75% pot": 7,
+              "CALL": 6,
+              "CHECK": 15,
+              "FOLD": 1,
+              "all-in effectif": 4,
+              "min-raise": 1
+            },
+            "overbet_count": 24,
+            "overbet_rate_of_aggression": 0.46153846153846156,
+            "size_ratio": {
+              "max": 1.75299938157081,
+              "n": 52,
+              "p50": 0.875,
+              "p90": 1.25,
+              "p99": 1.7011982683982687
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "8-16": {
+            "aggressive_decisions": 71,
+            "decisions": 94,
+            "effective_allin_count": 3,
+            "effective_allin_rate": 0.031914893617021274,
+            "family_counts": {
+              "BET": 63,
+              "CALL": 10,
+              "CHECK": 7,
+              "EFFECTIVE_ALLIN": 3,
+              "FOLD": 6,
+              "JAM": 1,
+              "RAISE": 4
+            },
+            "label_counts": {
+              "100% pot": 5,
+              "125% pot": 22,
+              "2,5× mise": 1,
+              "25% pot": 7,
+              "33% pot": 4,
+              "4× mise": 2,
+              "50% pot": 4,
+              "66% pot": 8,
+              "75% pot": 13,
+              "CALL": 10,
+              "CHECK": 7,
+              "FOLD": 6,
+              "all-in effectif": 3,
+              "jam": 1,
+              "min-raise": 1
+            },
+            "overbet_count": 27,
+            "overbet_rate_of_aggression": 0.38028169014084506,
+            "size_ratio": {
+              "max": 2.882857142857143,
+              "n": 71,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.2342645502645477
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.010638297872340425
+          },
+          "<2": {
+            "aggressive_decisions": 3,
+            "decisions": 4,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.25,
+            "family_counts": {
+              "BET": 2,
+              "CHECK": 1,
+              "EFFECTIVE_ALLIN": 1
+            },
+            "label_counts": {
+              "50% pot": 2,
+              "CHECK": 1,
+              "all-in effectif": 1
+            },
+            "overbet_count": 0,
+            "overbet_rate_of_aggression": 0.0,
+            "size_ratio": {
+              "max": 0.5,
+              "n": 3,
+              "p50": 0.5,
+              "p90": 0.5,
+              "p99": 0.5
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "profile": {
+          "0": {
+            "aggressive_decisions": 141,
+            "decisions": 210,
+            "effective_allin_count": 11,
+            "effective_allin_rate": 0.05238095238095238,
+            "family_counts": {
+              "BET": 124,
+              "CALL": 15,
+              "CHECK": 40,
+              "EFFECTIVE_ALLIN": 11,
+              "FOLD": 14,
+              "JAM": 1,
+              "RAISE": 5
+            },
+            "label_counts": {
+              "100% pot": 15,
+              "125% pot": 47,
+              "2,5× mise": 2,
+              "25% pot": 16,
+              "33% pot": 9,
+              "4× mise": 2,
+              "50% pot": 10,
+              "66% pot": 12,
+              "75% pot": 15,
+              "CALL": 15,
+              "CHECK": 40,
+              "FOLD": 14,
+              "all-in effectif": 11,
+              "jam": 1,
+              "min-raise": 1
+            },
+            "overbet_count": 59,
+            "overbet_rate_of_aggression": 0.41843971631205673,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 141,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 2.8253162055335963
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.004761904761904762
+          },
+          "1": {
+            "aggressive_decisions": 46,
+            "decisions": 64,
+            "effective_allin_count": 4,
+            "effective_allin_rate": 0.0625,
+            "family_counts": {
+              "BET": 41,
+              "CALL": 8,
+              "CHECK": 5,
+              "EFFECTIVE_ALLIN": 4,
+              "FOLD": 5,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 12,
+              "25% pot": 5,
+              "33% pot": 1,
+              "50% pot": 7,
+              "66% pot": 3,
+              "75% pot": 9,
+              "CALL": 8,
+              "CHECK": 5,
+              "FOLD": 5,
+              "all-in effectif": 4,
+              "min-raise": 1
+            },
+            "overbet_count": 16,
+            "overbet_rate_of_aggression": 0.34782608695652173,
+            "size_ratio": {
+              "max": 2.882857142857143,
+              "n": 46,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.8197453416149063
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "2": {
+            "aggressive_decisions": 78,
+            "decisions": 97,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.020618556701030927,
+            "family_counts": {
+              "BET": 75,
+              "CALL": 6,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 2,
+              "FOLD": 3,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 12,
+              "125% pot": 28,
+              "2,5× mise": 1,
+              "25% pot": 7,
+              "33% pot": 1,
+              "50% pot": 9,
+              "66% pot": 9,
+              "75% pot": 9,
+              "CALL": 6,
+              "CHECK": 10,
+              "FOLD": 3,
+              "all-in effectif": 2
+            },
+            "overbet_count": 31,
+            "overbet_rate_of_aggression": 0.3974358974358974,
+            "size_ratio": {
+              "max": 2.5027777777777778,
+              "n": 78,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 1.9254484126984155
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "street": {
+          "flop": {
+            "aggressive_decisions": 174,
+            "decisions": 210,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.03333333333333333,
+            "family_counts": {
+              "BET": 166,
+              "CALL": 17,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 9,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 18,
+              "125% pot": 58,
+              "25% pot": 23,
+              "33% pot": 6,
+              "50% pot": 20,
+              "66% pot": 14,
+              "75% pot": 27,
+              "CALL": 17,
+              "CHECK": 10,
+              "FOLD": 9,
+              "all-in effectif": 7,
+              "min-raise": 1
+            },
+            "overbet_count": 65,
+            "overbet_rate_of_aggression": 0.3735632183908046,
+            "size_ratio": {
+              "max": 2.880454545454546,
+              "n": 174,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.742608695652174
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "river": {
+            "aggressive_decisions": 33,
+            "decisions": 59,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.03389830508474576,
+            "family_counts": {
+              "BET": 28,
+              "CALL": 5,
+              "CHECK": 14,
+              "EFFECTIVE_ALLIN": 2,
+              "FOLD": 7,
+              "JAM": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 5,
+              "125% pot": 6,
+              "2,5× mise": 1,
+              "25% pot": 4,
+              "33% pot": 4,
+              "50% pot": 2,
+              "66% pot": 7,
+              "CALL": 5,
+              "CHECK": 14,
+              "FOLD": 7,
+              "all-in effectif": 2,
+              "jam": 1,
+              "min-raise": 1
+            },
+            "overbet_count": 9,
+            "overbet_rate_of_aggression": 0.2727272727272727,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 33,
+              "p50": 0.66,
+              "p90": 1.25,
+              "p99": 2.6504407191516153
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.01694915254237288
+          },
+          "turn": {
+            "aggressive_decisions": 58,
+            "decisions": 102,
+            "effective_allin_count": 8,
+            "effective_allin_rate": 0.0784313725490196,
+            "family_counts": {
+              "BET": 46,
+              "CALL": 7,
+              "CHECK": 31,
+              "EFFECTIVE_ALLIN": 8,
+              "FOLD": 6,
+              "RAISE": 4
+            },
+            "label_counts": {
+              "100% pot": 8,
+              "125% pot": 23,
+              "2,5× mise": 2,
+              "25% pot": 1,
+              "33% pot": 1,
+              "4× mise": 2,
+              "50% pot": 4,
+              "66% pot": 3,
+              "75% pot": 6,
+              "CALL": 7,
+              "CHECK": 31,
+              "FOLD": 6,
+              "all-in effectif": 8
+            },
+            "overbet_count": 32,
+            "overbet_rate_of_aggression": 0.5517241379310345,
+            "size_ratio": {
+              "max": 2.882857142857143,
+              "n": 58,
+              "p50": 1.25,
+              "p90": 1.3174687500000004,
+              "p99": 2.35471746031746
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        }
+      },
+      "decisions": {
+        "aggressive_decisions": 265,
+        "decisions": 371,
+        "effective_allin_count": 17,
+        "effective_allin_rate": 0.04582210242587601,
+        "family_counts": {
+          "BET": 240,
+          "CALL": 29,
+          "CHECK": 55,
+          "EFFECTIVE_ALLIN": 17,
+          "FOLD": 22,
+          "JAM": 1,
+          "RAISE": 7
+        },
+        "label_counts": {
+          "100% pot": 31,
+          "125% pot": 87,
+          "2,5× mise": 3,
+          "25% pot": 28,
+          "33% pot": 11,
+          "4× mise": 2,
+          "50% pot": 26,
+          "66% pot": 24,
+          "75% pot": 33,
+          "CALL": 29,
+          "CHECK": 55,
+          "FOLD": 22,
+          "all-in effectif": 17,
+          "jam": 1,
+          "min-raise": 2
+        },
+        "overbet_count": 106,
+        "overbet_rate_of_aggression": 0.4,
+        "size_ratio": {
+          "max": 2.981675392670157,
+          "n": 265,
+          "p50": 1.0,
+          "p90": 1.25,
+          "p99": 2.7922332015810296
+        },
+        "true_jam_count": 1,
+        "true_jam_rate": 0.0026954177897574125
+      },
+      "overall": {
+        "base_hands": 96,
+        "mean_utility_bb": 12.225756901041676,
+        "median_utility_bb": 7.56,
+        "p10_utility_bb": -3.244999999999999,
+        "p90_utility_bb": 29.328065000000006,
+        "realized_utility_per_hero_decision_bb": 6.327076347708899,
+        "rollouts": 192,
+        "utility_ci95_cluster_bootstrap": [
+          7.237076145833329,
+          19.272694524739585
+        ],
+        "utility_per_decision_ci95_cluster_bootstrap": [
+          3.6790090234755475,
+          9.807836814986217
+        ]
+      },
+      "rollout_breakdowns": {
+        "hero_position": {
+          "BB": {
+            "base_hands": 33,
+            "mean_utility_bb": 7.181254166666667,
+            "median_utility_bb": 4.7034375,
+            "p10_utility_bb": -1.1600000000000001,
+            "p90_utility_bb": 24.83365,
+            "realized_utility_per_hero_decision_bb": 3.5636298872180454,
+            "rollouts": 66,
+            "utility_ci95_cluster_bootstrap": [
+              3.5047469034090915,
+              10.971421960227271
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.7317998190887882,
+              5.707247120244481
+            ]
+          },
+          "BTN": {
+            "base_hands": 18,
+            "mean_utility_bb": 8.2344375,
+            "median_utility_bb": 8.450625000000002,
+            "p10_utility_bb": -3.0625,
+            "p90_utility_bb": 19.257625,
+            "realized_utility_per_hero_decision_bb": 5.200697368421053,
+            "rollouts": 36,
+            "utility_ci95_cluster_bootstrap": [
+              1.5307693055555562,
+              14.65696920138889
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.776052297658863,
+              10.27227406310445
+            ]
+          },
+          "CO": {
+            "base_hands": 12,
+            "mean_utility_bb": 16.497231249999995,
+            "median_utility_bb": 9.9225,
+            "p10_utility_bb": -4.177499999999999,
+            "p90_utility_bb": 39.30653999999996,
+            "realized_utility_per_hero_decision_bb": 8.798523333333332,
+            "rollouts": 24,
+            "utility_ci95_cluster_bootstrap": [
+              5.9140921354166665,
+              30.130620052083323
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              3.0082192385444735,
+              15.762059999999995
+            ]
+          },
+          "HJ": {
+            "base_hands": 9,
+            "mean_utility_bb": 9.636997222222226,
+            "median_utility_bb": 8.268749999999999,
+            "p10_utility_bb": 2.2763250000000013,
+            "p90_utility_bb": 18.136145000000006,
+            "realized_utility_per_hero_decision_bb": 5.595675806451615,
+            "rollouts": 18,
+            "utility_ci95_cluster_bootstrap": [
+              5.396397569444445,
+              13.633511458333327
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.7245571428571433,
+              8.142116071428573
+            ]
+          },
+          "LJ": {
+            "base_hands": 12,
+            "mean_utility_bb": 2.4134145833333336,
+            "median_utility_bb": 5.67,
+            "p10_utility_bb": -15.487499999999997,
+            "p90_utility_bb": 15.432384999999996,
+            "realized_utility_per_hero_decision_bb": 1.1357245098039217,
+            "rollouts": 24,
+            "utility_ci95_cluster_bootstrap": [
+              -5.499460885416666,
+              9.277390104166665
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              -2.3680609976272646,
+              4.935255049019591
+            ]
+          },
+          "SB": {
+            "base_hands": 11,
+            "mean_utility_bb": 41.579647727272736,
+            "median_utility_bb": 8.505,
+            "p10_utility_bb": 3.4695,
+            "p90_utility_bb": 95.1566000000001,
+            "realized_utility_per_hero_decision_bb": 18.668413265306125,
+            "rollouts": 22,
+            "utility_ci95_cluster_bootstrap": [
+              9.883136079545455,
+              91.64280852272725
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              4.635416347222222,
+              39.780238265625
+            ]
+          },
+          "SB_BTN": {
+            "base_hands": 1,
+            "mean_utility_bb": 17.434549999999994,
+            "median_utility_bb": 17.434549999999994,
+            "p10_utility_bb": 12.01267,
+            "p90_utility_bb": 22.856429999999992,
+            "realized_utility_per_hero_decision_bb": 6.973819999999998,
+            "rollouts": 2,
+            "utility_ci95_cluster_bootstrap": null,
+            "utility_per_decision_ci95_cluster_bootstrap": null
+          }
+        },
+        "initial_spr_bucket": {
+          "16+": {
+            "base_hands": 41,
+            "mean_utility_bb": 8.566040548780489,
+            "median_utility_bb": 3.795,
+            "p10_utility_bb": -4.91,
+            "p90_utility_bb": 10.964245000000007,
+            "realized_utility_per_hero_decision_bb": 4.335897067901235,
+            "rollouts": 82,
+            "utility_ci95_cluster_bootstrap": [
+              0.23614126524390258,
+              23.09204235518292
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.1796170732118758,
+              11.931825981167782
+            ]
+          },
+          "2-4": {
+            "base_hands": 10,
+            "mean_utility_bb": 14.071335,
+            "median_utility_bb": 10.76235,
+            "p10_utility_bb": -14.799,
+            "p90_utility_bb": 47.516,
+            "realized_utility_per_hero_decision_bb": 7.606127027027027,
+            "rollouts": 20,
+            "utility_ci95_cluster_bootstrap": [
+              1.8368173749999992,
+              25.622757124999975
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.9245714983042638,
+              18.22197202777777
+            ]
+          },
+          "4-8": {
+            "base_hands": 18,
+            "mean_utility_bb": 10.982761111111111,
+            "median_utility_bb": 10.395,
+            "p10_utility_bb": 5.003225,
+            "p90_utility_bb": 23.978849999999994,
+            "realized_utility_per_hero_decision_bb": 5.342964864864865,
+            "rollouts": 36,
+            "utility_ci95_cluster_bootstrap": [
+              4.338081319444443,
+              17.554948576388885
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.2040322736950544,
+              8.626779246323524
+            ]
+          },
+          "8-16": {
+            "base_hands": 26,
+            "mean_utility_bb": 17.347985576923072,
+            "median_utility_bb": 11.301875,
+            "p10_utility_bb": 0.23625000000000124,
+            "p90_utility_bb": 32.62212,
+            "realized_utility_per_hero_decision_bb": 9.596757978723403,
+            "rollouts": 52,
+            "utility_ci95_cluster_bootstrap": [
+              10.978913317307692,
+              25.44193310096153
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              6.356882079343365,
+              13.55286894230769
+            ]
+          },
+          "<2": {
+            "base_hands": 1,
+            "mean_utility_bb": 33.014325,
+            "median_utility_bb": 33.014325,
+            "p10_utility_bb": 24.368865,
+            "p90_utility_bb": 41.65978500000001,
+            "realized_utility_per_hero_decision_bb": 16.5071625,
+            "rollouts": 2,
+            "utility_ci95_cluster_bootstrap": null,
+            "utility_per_decision_ci95_cluster_bootstrap": null
+          }
+        },
+        "pot_type": {
+          "3BP": {
+            "base_hands": 3,
+            "mean_utility_bb": 28.73584999999999,
+            "median_utility_bb": 30.7125,
+            "p10_utility_bb": -22.2725,
+            "p90_utility_bb": 77.76754999999997,
+            "realized_utility_per_hero_decision_bb": 10.775943749999996,
+            "rollouts": 6,
+            "utility_ci95_cluster_bootstrap": [
+              -22.272499999999997,
+              77.76754999999997
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              -4.9494444444444445,
+              31.107019999999988
+            ]
+          },
+          "LIMPED": {
+            "base_hands": 20,
+            "mean_utility_bb": 2.94380375,
+            "median_utility_bb": 2.3625,
+            "p10_utility_bb": -1.0,
+            "p90_utility_bb": 5.634060000000001,
+            "realized_utility_per_hero_decision_bb": 1.6130431506849314,
+            "rollouts": 40,
+            "utility_ci95_cluster_bootstrap": [
+              1.9219482187499997,
+              4.0061534375
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.053824431818182,
+              2.169140531442242
+            ]
+          },
+          "SRP": {
+            "base_hands": 73,
+            "mean_utility_bb": 14.090260787671232,
+            "median_utility_bb": 8.9775,
+            "p10_utility_bb": -3.9375,
+            "p90_utility_bb": 30.563650000000003,
+            "realized_utility_per_hero_decision_bb": 7.294957712765957,
+            "rollouts": 146,
+            "utility_ci95_cluster_bootstrap": [
+              8.188000273972602,
+              22.9915439469178
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              4.14998587276327,
+              11.790190745761683
+            ]
+          }
+        },
+        "profile": {
+          "0": {
+            "base_hands": 78,
+            "mean_utility_bb": 10.532468160377352,
+            "median_utility_bb": 7.046250000000001,
+            "p10_utility_bb": -4.15,
+            "p90_utility_bb": 28.2023,
+            "realized_utility_per_hero_decision_bb": 5.316388690476187,
+            "rollouts": 106,
+            "utility_ci95_cluster_bootstrap": [
+              5.21727765421294,
+              17.48984966312344
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.492956118345046,
+              8.908520966996
+            ]
+          },
+          "1": {
+            "base_hands": 34,
+            "mean_utility_bb": 20.91007714285714,
+            "median_utility_bb": 7.56,
+            "p10_utility_bb": -0.8009999999999995,
+            "p90_utility_bb": 43.38000000000001,
+            "realized_utility_per_hero_decision_bb": 11.435198437499999,
+            "rollouts": 35,
+            "utility_ci95_cluster_bootstrap": [
+              9.609323075980395,
+              39.22689133942767
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              5.5669477022058835,
+              20.60321637395214
+            ]
+          },
+          "2": {
+            "base_hands": 46,
+            "mean_utility_bb": 9.7853137254902,
+            "median_utility_bb": 8.0325,
+            "p10_utility_bb": 1.89,
+            "p90_utility_bb": 17.48875,
+            "realized_utility_per_hero_decision_bb": 5.144855670103095,
+            "rollouts": 51,
+            "utility_ci95_cluster_bootstrap": [
+              4.530208342857142,
+              15.960711249999981
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.3990860658248025,
+              8.306376174242422
+            ]
+          }
+        }
+      },
+      "suspicious_decisions": [
+        {
+          "ev_final_bb": 15.953186627399413,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261994218942",
+          "hand_strength": "flush",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 407,
+          "scenario_id": "4eddfa64d2257ee0cfcec1f5",
+          "size_ratio": 2.981675392670157,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 21.974230952380914,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261780111556",
+          "hand_strength": "pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 654,
+          "scenario_id": "a76ed5258ca3b0338a8b6a70",
+          "size_ratio": 2.882857142857143,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 20.87882954545467,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261916174720",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 54,
+          "scenario_id": "2a3b9ba0c1a208e0dbd2c79d",
+          "size_ratio": 2.880454545454546,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 23.32687246376835,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261673053521",
+          "hand_strength": "trips",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "52d51c57902cc9158dd1fd5e",
+          "size_ratio": 2.742608695652174,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 23.32687246376835,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261673053521",
+          "hand_strength": "trips",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "3e2db6a7678e4b4ddffbea4f",
+          "size_ratio": 2.742608695652174,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.094388888888894,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261977869185",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "33808facd5fd1a1fd7de5e82",
+          "size_ratio": 2.5027777777777778,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.094388888888894,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261977869185",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "27f7e7b9269e18060efedb26",
+          "size_ratio": 2.5027777777777778,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 22.646833333333433,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778073785",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 658,
+          "scenario_id": "2cb1e052ffc5b16fa9549776",
+          "size_ratio": 2.275,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 22.646833333333433,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778073785",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 658,
+          "scenario_id": "cf3ec655e591ea703194fd47",
+          "size_ratio": 2.275,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 49.867099999999134,
+          "family": "JAM",
+          "hand_id": "262003305136",
+          "hand_strength": "full_house",
+          "hero_position": "BTN",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam"
+          ],
+          "rep": 0,
+          "response_observation_floor": 13,
+          "scenario_id": "d6ddd42749116054e8bb99b7",
+          "size_ratio": 1.9465670379247142,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 1.862313380873618,
+          "family": "RAISE",
+          "hand_id": "261494756769",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "2,5× mise",
+          "profile": "2",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 1,
+          "response_observation_floor": 7,
+          "scenario_id": "7b25535b6d61eeded278f8b7",
+          "size_ratio": 1.0526315789473684,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 335.69208421421115,
+          "family": "RAISE",
+          "hand_id": "261781483147",
+          "hand_strength": "trips",
+          "hero_position": "SB",
+          "label": "2,5× mise",
+          "profile": "0",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 0,
+          "response_observation_floor": 7,
+          "scenario_id": "0be4a0dfb26eee864aa1804c",
+          "size_ratio": 1.0526315789473684,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 8.500989420927448,
+          "family": "RAISE",
+          "hand_id": "261495039668",
+          "hand_strength": "pair",
+          "hero_position": "BB",
+          "label": "min-raise",
+          "profile": "1",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 0,
+          "response_observation_floor": 9,
+          "scenario_id": "832c6d6ba18874eddee095e4",
+          "size_ratio": 0.38709677419354843,
+          "street": "river"
+        }
+      ]
+    },
+    "cap_4": {
+      "decision_breakdowns": {
+        "hand_strength": {
+          "flush": {
+            "aggressive_decisions": 2,
+            "decisions": 2,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.5,
+            "family_counts": {
+              "BET": 1,
+              "EFFECTIVE_ALLIN": 1
+            },
+            "label_counts": {
+              "125% pot": 1,
+              "all-in effectif": 1
+            },
+            "overbet_count": 2,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 2,
+              "p50": 2.1158376963350785,
+              "p90": 2.808507853403141,
+              "p99": 2.9643586387434553
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "full_house": {
+            "aggressive_decisions": 1,
+            "decisions": 1,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "JAM": 1
+            },
+            "label_counts": {
+              "jam": 1
+            },
+            "overbet_count": 1,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 1.9465670379247142,
+              "n": 1,
+              "p50": 1.9465670379247142,
+              "p90": 1.9465670379247142,
+              "p99": 1.9465670379247142
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 1.0
+          },
+          "high_card": {
+            "aggressive_decisions": 98,
+            "decisions": 155,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.0064516129032258064,
+            "family_counts": {
+              "BET": 97,
+              "CALL": 10,
+              "CHECK": 35,
+              "EFFECTIVE_ALLIN": 1,
+              "FOLD": 12
+            },
+            "label_counts": {
+              "100% pot": 6,
+              "125% pot": 12,
+              "25% pot": 23,
+              "33% pot": 7,
+              "50% pot": 15,
+              "66% pot": 14,
+              "75% pot": 20,
+              "CALL": 10,
+              "CHECK": 35,
+              "FOLD": 12,
+              "all-in effectif": 1
+            },
+            "overbet_count": 12,
+            "overbet_rate_of_aggression": 0.12244897959183673,
+            "size_ratio": {
+              "max": 1.25,
+              "n": 98,
+              "p50": 0.66,
+              "p90": 1.25,
+              "p99": 1.25
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "pair": {
+            "aggressive_decisions": 124,
+            "decisions": 166,
+            "effective_allin_count": 10,
+            "effective_allin_rate": 0.060240963855421686,
+            "family_counts": {
+              "BET": 108,
+              "CALL": 16,
+              "CHECK": 17,
+              "EFFECTIVE_ALLIN": 10,
+              "FOLD": 9,
+              "RAISE": 6
+            },
+            "label_counts": {
+              "100% pot": 22,
+              "125% pot": 46,
+              "2,5× mise": 2,
+              "25% pot": 3,
+              "33% pot": 4,
+              "4× mise": 2,
+              "50% pot": 10,
+              "66% pot": 10,
+              "75% pot": 13,
+              "CALL": 16,
+              "CHECK": 17,
+              "FOLD": 9,
+              "all-in effectif": 10,
+              "min-raise": 2
+            },
+            "overbet_count": 57,
+            "overbet_rate_of_aggression": 0.4596774193548387,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 124,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 3.7499145286335978
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "straight": {
+            "aggressive_decisions": 3,
+            "decisions": 3,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.6666666666666666,
+            "family_counts": {
+              "BET": 1,
+              "EFFECTIVE_ALLIN": 2
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "all-in effectif": 2
+            },
+            "overbet_count": 2,
+            "overbet_rate_of_aggression": 0.6666666666666666,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 3,
+              "p50": 1.2878125,
+              "p90": 3.415784722222223,
+              "p99": 3.8945784722222228
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "trips": {
+            "aggressive_decisions": 9,
+            "decisions": 9,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.2222222222222222,
+            "family_counts": {
+              "BET": 6,
+              "EFFECTIVE_ALLIN": 2,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "125% pot": 6,
+              "2,5× mise": 1,
+              "all-in effectif": 2
+            },
+            "overbet_count": 9,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 2.742608695652174,
+              "n": 9,
+              "p50": 1.25,
+              "p90": 2.742608695652174,
+              "p99": 2.742608695652174
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "two_pair": {
+            "aggressive_decisions": 27,
+            "decisions": 31,
+            "effective_allin_count": 8,
+            "effective_allin_rate": 0.25806451612903225,
+            "family_counts": {
+              "BET": 18,
+              "CALL": 1,
+              "CHECK": 2,
+              "EFFECTIVE_ALLIN": 8,
+              "FOLD": 1,
+              "JAM": 1
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "125% pot": 14,
+              "25% pot": 2,
+              "50% pot": 1,
+              "CALL": 1,
+              "CHECK": 2,
+              "FOLD": 1,
+              "all-in effectif": 8,
+              "jam": 1
+            },
+            "overbet_count": 23,
+            "overbet_rate_of_aggression": 0.8518518518518519,
+            "size_ratio": {
+              "max": 3.6,
+              "n": 27,
+              "p50": 1.25,
+              "p90": 3.2056614035087723,
+              "p99": 3.6
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.03225806451612903
+          }
+        },
+        "hero_position": {
+          "BB": {
+            "aggressive_decisions": 91,
+            "decisions": 131,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.05343511450381679,
+            "family_counts": {
+              "BET": 82,
+              "CALL": 12,
+              "CHECK": 21,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 7,
+              "JAM": 1,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 13,
+              "125% pot": 21,
+              "25% pot": 18,
+              "33% pot": 2,
+              "50% pot": 12,
+              "66% pot": 7,
+              "75% pot": 9,
+              "CALL": 12,
+              "CHECK": 21,
+              "FOLD": 7,
+              "all-in effectif": 7,
+              "jam": 1,
+              "min-raise": 1
+            },
+            "overbet_count": 28,
+            "overbet_rate_of_aggression": 0.3076923076923077,
+            "size_ratio": {
+              "max": 3.26140350877193,
+              "n": 91,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 3.177790350877193
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.007633587786259542
+          },
+          "BTN": {
+            "aggressive_decisions": 44,
+            "decisions": 56,
+            "effective_allin_count": 5,
+            "effective_allin_rate": 0.08928571428571429,
+            "family_counts": {
+              "BET": 37,
+              "CALL": 4,
+              "CHECK": 2,
+              "EFFECTIVE_ALLIN": 5,
+              "FOLD": 6,
+              "JAM": 1,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 3,
+              "125% pot": 12,
+              "25% pot": 3,
+              "33% pot": 3,
+              "4× mise": 1,
+              "50% pot": 2,
+              "66% pot": 7,
+              "75% pot": 7,
+              "CALL": 4,
+              "CHECK": 2,
+              "FOLD": 6,
+              "all-in effectif": 5,
+              "jam": 1
+            },
+            "overbet_count": 18,
+            "overbet_rate_of_aggression": 0.4090909090909091,
+            "size_ratio": {
+              "max": 3.6,
+              "n": 44,
+              "p50": 0.75,
+              "p90": 2.503796198333938,
+              "p99": 3.5999999999999996
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.017857142857142856
+          },
+          "CO": {
+            "aggressive_decisions": 35,
+            "decisions": 45,
+            "effective_allin_count": 3,
+            "effective_allin_rate": 0.06666666666666667,
+            "family_counts": {
+              "BET": 32,
+              "CALL": 2,
+              "CHECK": 5,
+              "EFFECTIVE_ALLIN": 3,
+              "FOLD": 3
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 12,
+              "25% pot": 2,
+              "33% pot": 4,
+              "50% pot": 3,
+              "66% pot": 6,
+              "75% pot": 1,
+              "CALL": 2,
+              "CHECK": 5,
+              "FOLD": 3,
+              "all-in effectif": 3
+            },
+            "overbet_count": 15,
+            "overbet_rate_of_aggression": 0.42857142857142855,
+            "size_ratio": {
+              "max": 1.9562962962962964,
+              "n": 35,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 1.8871753452896303
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "HJ": {
+            "aggressive_decisions": 27,
+            "decisions": 31,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "BET": 26,
+              "CALL": 1,
+              "CHECK": 3,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 14,
+              "2,5× mise": 1,
+              "25% pot": 1,
+              "50% pot": 2,
+              "66% pot": 3,
+              "75% pot": 4,
+              "CALL": 1,
+              "CHECK": 3
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.5185185185185185,
+            "size_ratio": {
+              "max": 1.25,
+              "n": 27,
+              "p50": 1.25,
+              "p90": 1.25,
+              "p99": 1.25
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "LJ": {
+            "aggressive_decisions": 28,
+            "decisions": 50,
+            "effective_allin_count": 4,
+            "effective_allin_rate": 0.08,
+            "family_counts": {
+              "BET": 22,
+              "CALL": 5,
+              "CHECK": 12,
+              "EFFECTIVE_ALLIN": 4,
+              "FOLD": 5,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 13,
+              "25% pot": 1,
+              "4× mise": 1,
+              "50% pot": 3,
+              "75% pot": 1,
+              "CALL": 5,
+              "CHECK": 12,
+              "FOLD": 5,
+              "all-in effectif": 4,
+              "min-raise": 1
+            },
+            "overbet_count": 17,
+            "overbet_rate_of_aggression": 0.6071428571428571,
+            "size_ratio": {
+              "max": 3.8734453781512608,
+              "n": 28,
+              "p50": 1.25,
+              "p90": 1.5778858864603758,
+              "p99": 3.728430902630528
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "SB": {
+            "aggressive_decisions": 37,
+            "decisions": 49,
+            "effective_allin_count": 5,
+            "effective_allin_rate": 0.10204081632653061,
+            "family_counts": {
+              "BET": 30,
+              "CALL": 1,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 5,
+              "FOLD": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 7,
+              "2,5× mise": 2,
+              "25% pot": 3,
+              "33% pot": 2,
+              "50% pot": 4,
+              "66% pot": 1,
+              "75% pot": 11,
+              "CALL": 1,
+              "CHECK": 10,
+              "FOLD": 1,
+              "all-in effectif": 5
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.3783783783783784,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 37,
+              "p50": 0.75,
+              "p90": 1.9077904761904754,
+              "p99": 3.9477777777777776
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "SB_BTN": {
+            "aggressive_decisions": 2,
+            "decisions": 5,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "BET": 2,
+              "CALL": 2,
+              "CHECK": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "CALL": 2,
+              "CHECK": 1
+            },
+            "overbet_count": 0,
+            "overbet_rate_of_aggression": 0.0,
+            "size_ratio": {
+              "max": 1.0,
+              "n": 2,
+              "p50": 0.948339483394834,
+              "p90": 0.9896678966789668,
+              "p99": 0.9989667896678966
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "initial_spr_bucket": {
+          "16+": {
+            "aggressive_decisions": 118,
+            "decisions": 162,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.012345679012345678,
+            "family_counts": {
+              "BET": 115,
+              "CALL": 8,
+              "CHECK": 23,
+              "EFFECTIVE_ALLIN": 2,
+              "FOLD": 13,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 21,
+              "125% pot": 37,
+              "2,5× mise": 1,
+              "25% pot": 17,
+              "33% pot": 2,
+              "50% pot": 14,
+              "66% pot": 11,
+              "75% pot": 13,
+              "CALL": 8,
+              "CHECK": 23,
+              "FOLD": 13,
+              "all-in effectif": 2
+            },
+            "overbet_count": 40,
+            "overbet_rate_of_aggression": 0.3389830508474576,
+            "size_ratio": {
+              "max": 2.981675392670157,
+              "n": 118,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 1.5927768253968246
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "2-4": {
+            "aggressive_decisions": 19,
+            "decisions": 34,
+            "effective_allin_count": 10,
+            "effective_allin_rate": 0.29411764705882354,
+            "family_counts": {
+              "BET": 9,
+              "CALL": 4,
+              "CHECK": 9,
+              "EFFECTIVE_ALLIN": 10,
+              "FOLD": 2
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 4,
+              "33% pot": 3,
+              "CALL": 4,
+              "CHECK": 9,
+              "FOLD": 2,
+              "all-in effectif": 10
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.7368421052631579,
+            "size_ratio": {
+              "max": 3.6,
+              "n": 19,
+              "p50": 2.275,
+              "p90": 3.2548,
+              "p99": 3.6000000000000005
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "4-8": {
+            "aggressive_decisions": 53,
+            "decisions": 73,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.0958904109589041,
+            "family_counts": {
+              "BET": 44,
+              "CALL": 5,
+              "CHECK": 14,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 18,
+              "2,5× mise": 1,
+              "25% pot": 4,
+              "33% pot": 2,
+              "50% pot": 6,
+              "66% pot": 5,
+              "75% pot": 7,
+              "CALL": 5,
+              "CHECK": 14,
+              "FOLD": 1,
+              "all-in effectif": 7,
+              "min-raise": 1
+            },
+            "overbet_count": 25,
+            "overbet_rate_of_aggression": 0.4716981132075472,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 53,
+              "p50": 1.0,
+              "p90": 1.3668958333333339,
+              "p99": 3.9477777777777785
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "8-16": {
+            "aggressive_decisions": 71,
+            "decisions": 94,
+            "effective_allin_count": 4,
+            "effective_allin_rate": 0.0425531914893617,
+            "family_counts": {
+              "BET": 61,
+              "CALL": 10,
+              "CHECK": 7,
+              "EFFECTIVE_ALLIN": 4,
+              "FOLD": 6,
+              "JAM": 2,
+              "RAISE": 4
+            },
+            "label_counts": {
+              "100% pot": 5,
+              "125% pot": 20,
+              "2,5× mise": 1,
+              "25% pot": 7,
+              "33% pot": 4,
+              "4× mise": 2,
+              "50% pot": 4,
+              "66% pot": 8,
+              "75% pot": 13,
+              "CALL": 10,
+              "CHECK": 7,
+              "FOLD": 6,
+              "all-in effectif": 4,
+              "jam": 2,
+              "min-raise": 1
+            },
+            "overbet_count": 27,
+            "overbet_rate_of_aggression": 0.38028169014084506,
+            "size_ratio": {
+              "max": 3.8734453781512608,
+              "n": 71,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 3.4450160695857273
+            },
+            "true_jam_count": 2,
+            "true_jam_rate": 0.02127659574468085
+          },
+          "<2": {
+            "aggressive_decisions": 3,
+            "decisions": 4,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.25,
+            "family_counts": {
+              "BET": 2,
+              "CHECK": 1,
+              "EFFECTIVE_ALLIN": 1
+            },
+            "label_counts": {
+              "50% pot": 2,
+              "CHECK": 1,
+              "all-in effectif": 1
+            },
+            "overbet_count": 0,
+            "overbet_rate_of_aggression": 0.0,
+            "size_ratio": {
+              "max": 0.5,
+              "n": 3,
+              "p50": 0.5,
+              "p90": 0.5,
+              "p99": 0.5
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "profile": {
+          "0": {
+            "aggressive_decisions": 140,
+            "decisions": 206,
+            "effective_allin_count": 16,
+            "effective_allin_rate": 0.07766990291262135,
+            "family_counts": {
+              "BET": 117,
+              "CALL": 13,
+              "CHECK": 39,
+              "EFFECTIVE_ALLIN": 16,
+              "FOLD": 14,
+              "JAM": 2,
+              "RAISE": 5
+            },
+            "label_counts": {
+              "100% pot": 14,
+              "125% pot": 41,
+              "2,5× mise": 2,
+              "25% pot": 16,
+              "33% pot": 9,
+              "4× mise": 2,
+              "50% pot": 10,
+              "66% pot": 12,
+              "75% pot": 15,
+              "CALL": 13,
+              "CHECK": 39,
+              "FOLD": 14,
+              "all-in effectif": 16,
+              "jam": 2,
+              "min-raise": 1
+            },
+            "overbet_count": 59,
+            "overbet_rate_of_aggression": 0.42142857142857143,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 140,
+              "p50": 1.0,
+              "p90": 1.6809424180781882,
+              "p99": 3.6
+            },
+            "true_jam_count": 2,
+            "true_jam_rate": 0.009708737864077669
+          },
+          "1": {
+            "aggressive_decisions": 46,
+            "decisions": 64,
+            "effective_allin_count": 4,
+            "effective_allin_rate": 0.0625,
+            "family_counts": {
+              "BET": 41,
+              "CALL": 8,
+              "CHECK": 5,
+              "EFFECTIVE_ALLIN": 4,
+              "FOLD": 5,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 12,
+              "25% pot": 5,
+              "33% pot": 1,
+              "50% pot": 7,
+              "66% pot": 3,
+              "75% pot": 9,
+              "CALL": 8,
+              "CHECK": 5,
+              "FOLD": 5,
+              "all-in effectif": 4,
+              "min-raise": 1
+            },
+            "overbet_count": 16,
+            "overbet_rate_of_aggression": 0.34782608695652173,
+            "size_ratio": {
+              "max": 2.882857142857143,
+              "n": 46,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 2.8197453416149063
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "2": {
+            "aggressive_decisions": 78,
+            "decisions": 97,
+            "effective_allin_count": 4,
+            "effective_allin_rate": 0.041237113402061855,
+            "family_counts": {
+              "BET": 73,
+              "CALL": 6,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 4,
+              "FOLD": 3,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 12,
+              "125% pot": 26,
+              "2,5× mise": 1,
+              "25% pot": 7,
+              "33% pot": 1,
+              "50% pot": 9,
+              "66% pot": 9,
+              "75% pot": 9,
+              "CALL": 6,
+              "CHECK": 10,
+              "FOLD": 3,
+              "all-in effectif": 4
+            },
+            "overbet_count": 31,
+            "overbet_rate_of_aggression": 0.3974358974358974,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 78,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 3.8905418300653603
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "street": {
+          "flop": {
+            "aggressive_decisions": 174,
+            "decisions": 209,
+            "effective_allin_count": 10,
+            "effective_allin_rate": 0.04784688995215311,
+            "family_counts": {
+              "BET": 163,
+              "CALL": 16,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 10,
+              "FOLD": 9,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 18,
+              "125% pot": 55,
+              "25% pot": 23,
+              "33% pot": 6,
+              "50% pot": 20,
+              "66% pot": 14,
+              "75% pot": 27,
+              "CALL": 16,
+              "CHECK": 10,
+              "FOLD": 9,
+              "all-in effectif": 10,
+              "min-raise": 1
+            },
+            "overbet_count": 65,
+            "overbet_rate_of_aggression": 0.3735632183908046,
+            "size_ratio": {
+              "max": 3.6,
+              "n": 174,
+              "p50": 0.75,
+              "p90": 1.25,
+              "p99": 3.285005000000005
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "river": {
+            "aggressive_decisions": 34,
+            "decisions": 58,
+            "effective_allin_count": 5,
+            "effective_allin_rate": 0.08620689655172414,
+            "family_counts": {
+              "BET": 26,
+              "CALL": 4,
+              "CHECK": 13,
+              "EFFECTIVE_ALLIN": 5,
+              "FOLD": 7,
+              "JAM": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 5,
+              "125% pot": 4,
+              "2,5× mise": 1,
+              "25% pot": 4,
+              "33% pot": 4,
+              "50% pot": 2,
+              "66% pot": 7,
+              "CALL": 4,
+              "CHECK": 13,
+              "FOLD": 7,
+              "all-in effectif": 5,
+              "jam": 1,
+              "min-raise": 1
+            },
+            "overbet_count": 10,
+            "overbet_rate_of_aggression": 0.29411764705882354,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 34,
+              "p50": 0.66,
+              "p90": 2.6711428862465234,
+              "p99": 3.9477777777777776
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.017241379310344827
+          },
+          "turn": {
+            "aggressive_decisions": 56,
+            "decisions": 100,
+            "effective_allin_count": 9,
+            "effective_allin_rate": 0.09,
+            "family_counts": {
+              "BET": 42,
+              "CALL": 7,
+              "CHECK": 31,
+              "EFFECTIVE_ALLIN": 9,
+              "FOLD": 6,
+              "JAM": 1,
+              "RAISE": 4
+            },
+            "label_counts": {
+              "100% pot": 7,
+              "125% pot": 20,
+              "2,5× mise": 2,
+              "25% pot": 1,
+              "33% pot": 1,
+              "4× mise": 2,
+              "50% pot": 4,
+              "66% pot": 3,
+              "75% pot": 6,
+              "CALL": 7,
+              "CHECK": 31,
+              "FOLD": 6,
+              "all-in effectif": 9,
+              "jam": 1
+            },
+            "overbet_count": 31,
+            "overbet_rate_of_aggression": 0.5535714285714286,
+            "size_ratio": {
+              "max": 3.8734453781512608,
+              "n": 56,
+              "p50": 1.25,
+              "p90": 1.5988980821655745,
+              "p99": 3.5368223499926303
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.01
+          }
+        }
+      },
+      "decisions": {
+        "aggressive_decisions": 264,
+        "decisions": 367,
+        "effective_allin_count": 24,
+        "effective_allin_rate": 0.0653950953678474,
+        "family_counts": {
+          "BET": 231,
+          "CALL": 27,
+          "CHECK": 54,
+          "EFFECTIVE_ALLIN": 24,
+          "FOLD": 22,
+          "JAM": 2,
+          "RAISE": 7
+        },
+        "label_counts": {
+          "100% pot": 30,
+          "125% pot": 79,
+          "2,5× mise": 3,
+          "25% pot": 28,
+          "33% pot": 11,
+          "4× mise": 2,
+          "50% pot": 26,
+          "66% pot": 24,
+          "75% pot": 33,
+          "CALL": 27,
+          "CHECK": 54,
+          "FOLD": 22,
+          "all-in effectif": 24,
+          "jam": 2,
+          "min-raise": 2
+        },
+        "overbet_count": 106,
+        "overbet_rate_of_aggression": 0.4015151515151515,
+        "size_ratio": {
+          "max": 3.947777777777778,
+          "n": 264,
+          "p50": 1.0,
+          "p90": 1.25,
+          "p99": 3.701174789915968
+        },
+        "true_jam_count": 2,
+        "true_jam_rate": 0.005449591280653951
+      },
+      "overall": {
+        "base_hands": 96,
+        "mean_utility_bb": 12.51078867187501,
+        "median_utility_bb": 7.32375,
+        "p10_utility_bb": -3.244999999999999,
+        "p90_utility_bb": 30.583980000000007,
+        "realized_utility_per_hero_decision_bb": 6.545153746594011,
+        "rollouts": 192,
+        "utility_ci95_cluster_bootstrap": [
+          7.516421334635414,
+          19.6857059375
+        ],
+        "utility_per_decision_ci95_cluster_bootstrap": [
+          3.8241559408229153,
+          10.213688337036494
+        ]
+      },
+      "rollout_breakdowns": {
+        "hero_position": {
+          "BB": {
+            "base_hands": 33,
+            "mean_utility_bb": 7.271400378787879,
+            "median_utility_bb": 4.7034375,
+            "p10_utility_bb": -1.1600000000000001,
+            "p90_utility_bb": 24.83365,
+            "realized_utility_per_hero_decision_bb": 3.6634536259541988,
+            "rollouts": 66,
+            "utility_ci95_cluster_bootstrap": [
+              3.5727885984848484,
+              11.06965387310606
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.776344497448236,
+              5.926429934612519
+            ]
+          },
+          "BTN": {
+            "base_hands": 18,
+            "mean_utility_bb": 8.2344375,
+            "median_utility_bb": 8.450625000000002,
+            "p10_utility_bb": -3.0625,
+            "p90_utility_bb": 19.257625,
+            "realized_utility_per_hero_decision_bb": 5.293566964285715,
+            "rollouts": 36,
+            "utility_ci95_cluster_bootstrap": [
+              1.5307693055555562,
+              14.65696920138889
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.7833679850746272,
+              10.666671713636356
+            ]
+          },
+          "CO": {
+            "base_hands": 12,
+            "mean_utility_bb": 16.497231249999995,
+            "median_utility_bb": 9.9225,
+            "p10_utility_bb": -4.177499999999999,
+            "p90_utility_bb": 39.30653999999996,
+            "realized_utility_per_hero_decision_bb": 8.798523333333332,
+            "rollouts": 24,
+            "utility_ci95_cluster_bootstrap": [
+              5.9140921354166665,
+              30.130620052083323
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              3.0082192385444735,
+              15.762059999999995
+            ]
+          },
+          "HJ": {
+            "base_hands": 9,
+            "mean_utility_bb": 9.636997222222226,
+            "median_utility_bb": 8.268749999999999,
+            "p10_utility_bb": 2.2763250000000013,
+            "p90_utility_bb": 18.136145000000006,
+            "realized_utility_per_hero_decision_bb": 5.595675806451615,
+            "rollouts": 18,
+            "utility_ci95_cluster_bootstrap": [
+              5.396397569444445,
+              13.633511458333327
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.7245571428571433,
+              8.142116071428573
+            ]
+          },
+          "LJ": {
+            "base_hands": 12,
+            "mean_utility_bb": 4.862954166666667,
+            "median_utility_bb": 5.67,
+            "p10_utility_bb": -15.487499999999997,
+            "p90_utility_bb": 16.37087500000001,
+            "realized_utility_per_hero_decision_bb": 2.3342180000000003,
+            "rollouts": 24,
+            "utility_ci95_cluster_bootstrap": [
+              -4.863710416666666,
+              14.425186093749984
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              -2.1177239614320307,
+              7.242138391561895
+            ]
+          },
+          "SB": {
+            "base_hands": 11,
+            "mean_utility_bb": 41.124534090909094,
+            "median_utility_bb": 8.0325,
+            "p10_utility_bb": 3.4695,
+            "p90_utility_bb": 95.1566000000001,
+            "realized_utility_per_hero_decision_bb": 18.464076530612246,
+            "rollouts": 22,
+            "utility_ci95_cluster_bootstrap": [
+              9.18380625,
+              91.59038749999999
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              4.265527770969499,
+              39.65676416500443
+            ]
+          },
+          "SB_BTN": {
+            "base_hands": 1,
+            "mean_utility_bb": 17.434549999999994,
+            "median_utility_bb": 17.434549999999994,
+            "p10_utility_bb": 12.01267,
+            "p90_utility_bb": 22.856429999999992,
+            "realized_utility_per_hero_decision_bb": 6.973819999999998,
+            "rollouts": 2,
+            "utility_ci95_cluster_bootstrap": null,
+            "utility_per_decision_ci95_cluster_bootstrap": null
+          }
+        },
+        "initial_spr_bucket": {
+          "16+": {
+            "base_hands": 41,
+            "mean_utility_bb": 8.566040548780489,
+            "median_utility_bb": 3.795,
+            "p10_utility_bb": -4.91,
+            "p90_utility_bb": 10.964245000000007,
+            "realized_utility_per_hero_decision_bb": 4.335897067901235,
+            "rollouts": 82,
+            "utility_ci95_cluster_bootstrap": [
+              0.23614126524390258,
+              23.09204235518292
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.1796170732118758,
+              11.931825981167782
+            ]
+          },
+          "2-4": {
+            "base_hands": 10,
+            "mean_utility_bb": 14.3688175,
+            "median_utility_bb": 10.76235,
+            "p10_utility_bb": -14.799,
+            "p90_utility_bb": 47.516,
+            "realized_utility_per_hero_decision_bb": 8.452245588235295,
+            "rollouts": 20,
+            "utility_ci95_cluster_bootstrap": [
+              2.002160562499999,
+              26.000016375
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.0491292132950736,
+              21.453941990489124
+            ]
+          },
+          "4-8": {
+            "base_hands": 18,
+            "mean_utility_bb": 12.3376625,
+            "median_utility_bb": 9.9225,
+            "p10_utility_bb": 5.003225,
+            "p90_utility_bb": 27.1509,
+            "realized_utility_per_hero_decision_bb": 6.0843267123287665,
+            "rollouts": 36,
+            "utility_ci95_cluster_bootstrap": [
+              5.092681319444445,
+              19.804929479166656
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.541726964285715,
+              9.674711582906529
+            ]
+          },
+          "8-16": {
+            "base_hands": 26,
+            "mean_utility_bb": 17.347985576923076,
+            "median_utility_bb": 11.301875,
+            "p10_utility_bb": 0.23625000000000124,
+            "p90_utility_bb": 32.62212,
+            "realized_utility_per_hero_decision_bb": 9.596757978723405,
+            "rollouts": 52,
+            "utility_ci95_cluster_bootstrap": [
+              10.978913317307692,
+              25.44193310096153
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              6.356882079343365,
+              13.552868942307693
+            ]
+          },
+          "<2": {
+            "base_hands": 1,
+            "mean_utility_bb": 33.014325,
+            "median_utility_bb": 33.014325,
+            "p10_utility_bb": 24.368865,
+            "p90_utility_bb": 41.65978500000001,
+            "realized_utility_per_hero_decision_bb": 16.5071625,
+            "rollouts": 2,
+            "utility_ci95_cluster_bootstrap": null,
+            "utility_per_decision_ci95_cluster_bootstrap": null
+          }
+        },
+        "pot_type": {
+          "3BP": {
+            "base_hands": 3,
+            "mean_utility_bb": 28.73584999999999,
+            "median_utility_bb": 30.7125,
+            "p10_utility_bb": -22.2725,
+            "p90_utility_bb": 77.76754999999997,
+            "realized_utility_per_hero_decision_bb": 10.775943749999996,
+            "rollouts": 6,
+            "utility_ci95_cluster_bootstrap": [
+              -22.272499999999997,
+              77.76754999999997
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              -4.9494444444444445,
+              31.107019999999988
+            ]
+          },
+          "LIMPED": {
+            "base_hands": 20,
+            "mean_utility_bb": 2.94380375,
+            "median_utility_bb": 2.3625,
+            "p10_utility_bb": -1.0,
+            "p90_utility_bb": 5.634060000000001,
+            "realized_utility_per_hero_decision_bb": 1.6130431506849314,
+            "rollouts": 40,
+            "utility_ci95_cluster_bootstrap": [
+              1.9219482187499997,
+              4.0061534375
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.053824431818182,
+              2.169140531442242
+            ]
+          },
+          "SRP": {
+            "base_hands": 73,
+            "mean_utility_bb": 14.4650970890411,
+            "median_utility_bb": 8.9775,
+            "p10_utility_bb": -3.9375,
+            "p90_utility_bb": 35.24197500000001,
+            "realized_utility_per_hero_decision_bb": 7.596777607913671,
+            "rollouts": 146,
+            "utility_ci95_cluster_bootstrap": [
+              8.527548570205477,
+              23.377796044520544
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              4.348902787264187,
+              12.116981185267857
+            ]
+          }
+        },
+        "profile": {
+          "0": {
+            "base_hands": 78,
+            "mean_utility_bb": 11.143209669811316,
+            "median_utility_bb": 7.046250000000001,
+            "p10_utility_bb": -4.15,
+            "p90_utility_bb": 30.0699,
+            "realized_utility_per_hero_decision_bb": 5.733884587378639,
+            "rollouts": 106,
+            "utility_ci95_cluster_bootstrap": [
+              5.638687168452379,
+              18.132211915631544
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.7911140180837566,
+              9.498898722409908
+            ]
+          },
+          "1": {
+            "base_hands": 34,
+            "mean_utility_bb": 20.91007714285714,
+            "median_utility_bb": 7.56,
+            "p10_utility_bb": -0.8009999999999995,
+            "p90_utility_bb": 43.38000000000001,
+            "realized_utility_per_hero_decision_bb": 11.435198437499999,
+            "rollouts": 35,
+            "utility_ci95_cluster_bootstrap": [
+              9.609323075980395,
+              39.22689133942767
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              5.5669477022058835,
+              20.60321637395214
+            ]
+          },
+          "2": {
+            "base_hands": 46,
+            "mean_utility_bb": 9.588990196078434,
+            "median_utility_bb": 8.0325,
+            "p10_utility_bb": 1.89,
+            "p90_utility_bb": 17.488750000000014,
+            "realized_utility_per_hero_decision_bb": 5.041634020618559,
+            "rollouts": 51,
+            "utility_ci95_cluster_bootstrap": [
+              4.319554239795917,
+              15.81091919693876
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.322703560267857,
+              8.209353723932871
+            ]
+          }
+        }
+      },
+      "suspicious_decisions": [
+        {
+          "ev_final_bb": 19.085863888888845,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261464282479",
+          "hand_strength": "straight",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 597,
+          "scenario_id": "0abd12b645d5e5b152708d9c",
+          "size_ratio": 3.947777777777778,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 9.967397222222234,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261464282479",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 597,
+          "scenario_id": "8d049ce886da740cbae311ac",
+          "size_ratio": 3.947777777777778,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 49.45813046218496,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261785147671",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 654,
+          "scenario_id": "5ba3c982834d28bc591eb19f",
+          "size_ratio": 3.8734453781512608,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 21.49625,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261528129474",
+          "hand_strength": "two_pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "a9fc9a8f38debdcdb35da870",
+          "size_ratio": 3.6,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 21.49625,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261528129474",
+          "hand_strength": "two_pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "131e449b94c3ba5ee156747a",
+          "size_ratio": 3.6,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 27.468697860525864,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261415379202",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 235,
+          "scenario_id": "e1e858f9be75c00671a63c20",
+          "size_ratio": 3.336354728074473,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 56.03298464912242,
+          "family": "JAM",
+          "hand_id": "261959978144",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 60,
+          "scenario_id": "99dc5be942bccd671a0bf824",
+          "size_ratio": 3.26140350877193,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 18.795579166666734,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261916174720",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "6c596f8764fb45935f5d48e3",
+          "size_ratio": 3.1685000000000003,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 15.953186627399413,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261994218942",
+          "hand_strength": "flush",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 407,
+          "scenario_id": "4eddfa64d2257ee0cfcec1f5",
+          "size_ratio": 2.981675392670157,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 21.974230952380914,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261780111556",
+          "hand_strength": "pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 654,
+          "scenario_id": "a76ed5258ca3b0338a8b6a70",
+          "size_ratio": 2.882857142857143,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 20.87882954545467,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261916174720",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 54,
+          "scenario_id": "2a3b9ba0c1a208e0dbd2c79d",
+          "size_ratio": 2.880454545454546,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 23.32687246376835,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261673053521",
+          "hand_strength": "trips",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "52d51c57902cc9158dd1fd5e",
+          "size_ratio": 2.742608695652174,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 23.32687246376835,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261673053521",
+          "hand_strength": "trips",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "3e2db6a7678e4b4ddffbea4f",
+          "size_ratio": 2.742608695652174,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.094388888888894,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261977869185",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "33808facd5fd1a1fd7de5e82",
+          "size_ratio": 2.5027777777777778,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.094388888888894,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261977869185",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "27f7e7b9269e18060efedb26",
+          "size_ratio": 2.5027777777777778,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 22.646833333333433,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778073785",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 658,
+          "scenario_id": "2cb1e052ffc5b16fa9549776",
+          "size_ratio": 2.275,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 22.646833333333433,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778073785",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 658,
+          "scenario_id": "cf3ec655e591ea703194fd47",
+          "size_ratio": 2.275,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 49.867099999999134,
+          "family": "JAM",
+          "hand_id": "262003305136",
+          "hand_strength": "full_house",
+          "hero_position": "BTN",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam"
+          ],
+          "rep": 0,
+          "response_observation_floor": 13,
+          "scenario_id": "d6ddd42749116054e8bb99b7",
+          "size_ratio": 1.9465670379247142,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 1.862313380873618,
+          "family": "RAISE",
+          "hand_id": "261494756769",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "2,5× mise",
+          "profile": "2",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 1,
+          "response_observation_floor": 7,
+          "scenario_id": "7b25535b6d61eeded278f8b7",
+          "size_ratio": 1.0526315789473684,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 335.69208421421115,
+          "family": "RAISE",
+          "hand_id": "261781483147",
+          "hand_strength": "trips",
+          "hero_position": "SB",
+          "label": "2,5× mise",
+          "profile": "0",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 0,
+          "response_observation_floor": 7,
+          "scenario_id": "0be4a0dfb26eee864aa1804c",
+          "size_ratio": 1.0526315789473684,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 8.500989420927448,
+          "family": "RAISE",
+          "hand_id": "261495039668",
+          "hand_strength": "pair",
+          "hero_position": "BB",
+          "label": "min-raise",
+          "profile": "1",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 0,
+          "response_observation_floor": 9,
+          "scenario_id": "832c6d6ba18874eddee095e4",
+          "size_ratio": 0.38709677419354843,
+          "street": "river"
+        }
+      ]
+    },
+    "current": {
+      "decision_breakdowns": {
+        "hand_strength": {
+          "flush": {
+            "aggressive_decisions": 2,
+            "decisions": 2,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 1.0,
+            "family_counts": {
+              "EFFECTIVE_ALLIN": 2
+            },
+            "label_counts": {
+              "all-in effectif": 2
+            },
+            "overbet_count": 2,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 4.798333333333333,
+              "n": 2,
+              "p50": 3.890004363001745,
+              "p90": 4.616667539267015,
+              "p99": 4.780166753926701
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "full_house": {
+            "aggressive_decisions": 1,
+            "decisions": 1,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "JAM": 1
+            },
+            "label_counts": {
+              "jam": 1
+            },
+            "overbet_count": 1,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 1.9465670379247142,
+              "n": 1,
+              "p50": 1.9465670379247142,
+              "p90": 1.9465670379247142,
+              "p99": 1.9465670379247142
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 1.0
+          },
+          "high_card": {
+            "aggressive_decisions": 98,
+            "decisions": 155,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.0064516129032258064,
+            "family_counts": {
+              "BET": 97,
+              "CALL": 10,
+              "CHECK": 35,
+              "EFFECTIVE_ALLIN": 1,
+              "FOLD": 12
+            },
+            "label_counts": {
+              "100% pot": 6,
+              "125% pot": 12,
+              "25% pot": 23,
+              "33% pot": 7,
+              "50% pot": 15,
+              "66% pot": 14,
+              "75% pot": 20,
+              "CALL": 10,
+              "CHECK": 35,
+              "FOLD": 12,
+              "all-in effectif": 1
+            },
+            "overbet_count": 12,
+            "overbet_rate_of_aggression": 0.12244897959183673,
+            "size_ratio": {
+              "max": 1.25,
+              "n": 98,
+              "p50": 0.66,
+              "p90": 1.25,
+              "p99": 1.25
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "pair": {
+            "aggressive_decisions": 115,
+            "decisions": 150,
+            "effective_allin_count": 24,
+            "effective_allin_rate": 0.16,
+            "family_counts": {
+              "BET": 82,
+              "CALL": 12,
+              "CHECK": 14,
+              "EFFECTIVE_ALLIN": 24,
+              "FOLD": 9,
+              "JAM": 4,
+              "RAISE": 5
+            },
+            "label_counts": {
+              "100% pot": 17,
+              "125% pot": 26,
+              "2,5× mise": 2,
+              "25% pot": 3,
+              "33% pot": 4,
+              "4× mise": 1,
+              "50% pot": 10,
+              "66% pot": 9,
+              "75% pot": 13,
+              "CALL": 12,
+              "CHECK": 14,
+              "FOLD": 9,
+              "all-in effectif": 24,
+              "jam": 4,
+              "min-raise": 2
+            },
+            "overbet_count": 55,
+            "overbet_rate_of_aggression": 0.4782608695652174,
+            "size_ratio": {
+              "max": 16.64125,
+              "n": 115,
+              "p50": 1.0,
+              "p90": 8.05784126984127,
+              "p99": 16.384463235294117
+            },
+            "true_jam_count": 4,
+            "true_jam_rate": 0.02666666666666667
+          },
+          "straight": {
+            "aggressive_decisions": 3,
+            "decisions": 3,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.6666666666666666,
+            "family_counts": {
+              "BET": 1,
+              "EFFECTIVE_ALLIN": 2
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "all-in effectif": 2
+            },
+            "overbet_count": 2,
+            "overbet_rate_of_aggression": 0.6666666666666666,
+            "size_ratio": {
+              "max": 3.947777777777778,
+              "n": 3,
+              "p50": 1.2878125,
+              "p90": 3.415784722222223,
+              "p99": 3.8945784722222228
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "trips": {
+            "aggressive_decisions": 7,
+            "decisions": 7,
+            "effective_allin_count": 2,
+            "effective_allin_rate": 0.2857142857142857,
+            "family_counts": {
+              "BET": 5,
+              "EFFECTIVE_ALLIN": 2
+            },
+            "label_counts": {
+              "125% pot": 5,
+              "all-in effectif": 2
+            },
+            "overbet_count": 7,
+            "overbet_rate_of_aggression": 1.0,
+            "size_ratio": {
+              "max": 2.742608695652174,
+              "n": 7,
+              "p50": 1.25,
+              "p90": 2.742608695652174,
+              "p99": 2.742608695652174
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "two_pair": {
+            "aggressive_decisions": 25,
+            "decisions": 29,
+            "effective_allin_count": 9,
+            "effective_allin_rate": 0.3103448275862069,
+            "family_counts": {
+              "BET": 14,
+              "CALL": 1,
+              "CHECK": 2,
+              "EFFECTIVE_ALLIN": 9,
+              "FOLD": 1,
+              "JAM": 2
+            },
+            "label_counts": {
+              "100% pot": 1,
+              "125% pot": 10,
+              "25% pot": 2,
+              "50% pot": 1,
+              "CALL": 1,
+              "CHECK": 2,
+              "FOLD": 1,
+              "all-in effectif": 9,
+              "jam": 2
+            },
+            "overbet_count": 21,
+            "overbet_rate_of_aggression": 0.84,
+            "size_ratio": {
+              "max": 10.957142857142857,
+              "n": 25,
+              "p50": 1.25,
+              "p90": 7.0803516908212565,
+              "p99": 10.028298136645956
+            },
+            "true_jam_count": 2,
+            "true_jam_rate": 0.06896551724137931
+          }
+        },
+        "hero_position": {
+          "BB": {
+            "aggressive_decisions": 90,
+            "decisions": 130,
+            "effective_allin_count": 9,
+            "effective_allin_rate": 0.06923076923076923,
+            "family_counts": {
+              "BET": 78,
+              "CALL": 12,
+              "CHECK": 21,
+              "EFFECTIVE_ALLIN": 9,
+              "FOLD": 7,
+              "JAM": 2,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 10,
+              "125% pot": 20,
+              "25% pot": 18,
+              "33% pot": 2,
+              "50% pot": 12,
+              "66% pot": 7,
+              "75% pot": 9,
+              "CALL": 12,
+              "CHECK": 21,
+              "FOLD": 7,
+              "all-in effectif": 9,
+              "jam": 2,
+              "min-raise": 1
+            },
+            "overbet_count": 30,
+            "overbet_rate_of_aggression": 0.3333333333333333,
+            "size_ratio": {
+              "max": 10.957142857142857,
+              "n": 90,
+              "p50": 0.75,
+              "p90": 1.4093090277777882,
+              "p99": 10.803233082706766
+            },
+            "true_jam_count": 2,
+            "true_jam_rate": 0.015384615384615385
+          },
+          "BTN": {
+            "aggressive_decisions": 43,
+            "decisions": 55,
+            "effective_allin_count": 6,
+            "effective_allin_rate": 0.10909090909090909,
+            "family_counts": {
+              "BET": 33,
+              "CALL": 4,
+              "CHECK": 2,
+              "EFFECTIVE_ALLIN": 6,
+              "FOLD": 6,
+              "JAM": 3,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 3,
+              "125% pot": 8,
+              "25% pot": 3,
+              "33% pot": 3,
+              "4× mise": 1,
+              "50% pot": 2,
+              "66% pot": 7,
+              "75% pot": 7,
+              "CALL": 4,
+              "CHECK": 2,
+              "FOLD": 6,
+              "all-in effectif": 6,
+              "jam": 3
+            },
+            "overbet_count": 17,
+            "overbet_rate_of_aggression": 0.3953488372093023,
+            "size_ratio": {
+              "max": 11.340000000000002,
+              "n": 43,
+              "p50": 0.75,
+              "p90": 3.6,
+              "p99": 11.340000000000002
+            },
+            "true_jam_count": 3,
+            "true_jam_rate": 0.05454545454545454
+          },
+          "CO": {
+            "aggressive_decisions": 31,
+            "decisions": 40,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.175,
+            "family_counts": {
+              "BET": 24,
+              "CALL": 1,
+              "CHECK": 5,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 3
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 6,
+              "25% pot": 2,
+              "33% pot": 4,
+              "50% pot": 3,
+              "66% pot": 6,
+              "75% pot": 1,
+              "CALL": 1,
+              "CHECK": 5,
+              "FOLD": 3,
+              "all-in effectif": 7
+            },
+            "overbet_count": 13,
+            "overbet_rate_of_aggression": 0.41935483870967744,
+            "size_ratio": {
+              "max": 8.097037037037037,
+              "n": 31,
+              "p50": 0.75,
+              "p90": 7.9990476190476185,
+              "p99": 8.097037037037037
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "HJ": {
+            "aggressive_decisions": 26,
+            "decisions": 30,
+            "effective_allin_count": 3,
+            "effective_allin_rate": 0.1,
+            "family_counts": {
+              "BET": 20,
+              "CALL": 1,
+              "CHECK": 3,
+              "EFFECTIVE_ALLIN": 3,
+              "JAM": 2,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 9,
+              "2,5× mise": 1,
+              "25% pot": 1,
+              "50% pot": 2,
+              "66% pot": 2,
+              "75% pot": 4,
+              "CALL": 1,
+              "CHECK": 3,
+              "all-in effectif": 3,
+              "jam": 2
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.5384615384615384,
+            "size_ratio": {
+              "max": 7.352190476190477,
+              "n": 26,
+              "p50": 1.25,
+              "p90": 6.3143115942028984,
+              "p99": 7.285881987577641
+            },
+            "true_jam_count": 2,
+            "true_jam_rate": 0.06666666666666667
+          },
+          "LJ": {
+            "aggressive_decisions": 26,
+            "decisions": 43,
+            "effective_allin_count": 8,
+            "effective_allin_rate": 0.18604651162790697,
+            "family_counts": {
+              "BET": 17,
+              "CALL": 3,
+              "CHECK": 9,
+              "EFFECTIVE_ALLIN": 8,
+              "FOLD": 5,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 4,
+              "125% pot": 8,
+              "25% pot": 1,
+              "50% pot": 3,
+              "75% pot": 1,
+              "CALL": 3,
+              "CHECK": 9,
+              "FOLD": 5,
+              "all-in effectif": 8,
+              "min-raise": 1
+            },
+            "overbet_count": 16,
+            "overbet_rate_of_aggression": 0.6153846153846154,
+            "size_ratio": {
+              "max": 14.807058823529413,
+              "n": 26,
+              "p50": 1.25,
+              "p90": 8.155,
+              "p99": 14.237698298831727
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "SB": {
+            "aggressive_decisions": 33,
+            "decisions": 44,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.1590909090909091,
+            "family_counts": {
+              "BET": 25,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 1,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 2,
+              "2,5× mise": 1,
+              "25% pot": 3,
+              "33% pot": 2,
+              "50% pot": 4,
+              "66% pot": 1,
+              "75% pot": 11,
+              "CHECK": 10,
+              "FOLD": 1,
+              "all-in effectif": 7
+            },
+            "overbet_count": 10,
+            "overbet_rate_of_aggression": 0.30303030303030304,
+            "size_ratio": {
+              "max": 16.64125,
+              "n": 33,
+              "p50": 0.75,
+              "p90": 3.947777777777778,
+              "p99": 16.64125
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "SB_BTN": {
+            "aggressive_decisions": 2,
+            "decisions": 5,
+            "effective_allin_count": 0,
+            "effective_allin_rate": 0.0,
+            "family_counts": {
+              "BET": 2,
+              "CALL": 2,
+              "CHECK": 1
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "CALL": 2,
+              "CHECK": 1
+            },
+            "overbet_count": 0,
+            "overbet_rate_of_aggression": 0.0,
+            "size_ratio": {
+              "max": 1.0,
+              "n": 2,
+              "p50": 0.948339483394834,
+              "p90": 0.9896678966789668,
+              "p99": 0.9989667896678966
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "initial_spr_bucket": {
+          "16+": {
+            "aggressive_decisions": 114,
+            "decisions": 157,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.044585987261146494,
+            "family_counts": {
+              "BET": 107,
+              "CALL": 7,
+              "CHECK": 23,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 13
+            },
+            "label_counts": {
+              "100% pot": 20,
+              "125% pot": 31,
+              "25% pot": 17,
+              "33% pot": 2,
+              "50% pot": 14,
+              "66% pot": 10,
+              "75% pot": 13,
+              "CALL": 7,
+              "CHECK": 23,
+              "FOLD": 13,
+              "all-in effectif": 7
+            },
+            "overbet_count": 38,
+            "overbet_rate_of_aggression": 0.3333333333333333,
+            "size_ratio": {
+              "max": 16.64125,
+              "n": 114,
+              "p50": 1.0,
+              "p90": 1.25,
+              "p99": 15.902316071428597
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "2-4": {
+            "aggressive_decisions": 19,
+            "decisions": 34,
+            "effective_allin_count": 10,
+            "effective_allin_rate": 0.29411764705882354,
+            "family_counts": {
+              "BET": 9,
+              "CALL": 4,
+              "CHECK": 9,
+              "EFFECTIVE_ALLIN": 10,
+              "FOLD": 2
+            },
+            "label_counts": {
+              "100% pot": 2,
+              "125% pot": 4,
+              "33% pot": 3,
+              "CALL": 4,
+              "CHECK": 9,
+              "FOLD": 2,
+              "all-in effectif": 10
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.7368421052631579,
+            "size_ratio": {
+              "max": 3.6,
+              "n": 19,
+              "p50": 2.275,
+              "p90": 3.2548,
+              "p99": 3.6000000000000005
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "4-8": {
+            "aggressive_decisions": 49,
+            "decisions": 65,
+            "effective_allin_count": 13,
+            "effective_allin_rate": 0.2,
+            "family_counts": {
+              "BET": 30,
+              "CALL": 4,
+              "CHECK": 11,
+              "EFFECTIVE_ALLIN": 13,
+              "FOLD": 1,
+              "JAM": 4,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "125% pot": 6,
+              "2,5× mise": 1,
+              "25% pot": 4,
+              "33% pot": 2,
+              "50% pot": 6,
+              "66% pot": 5,
+              "75% pot": 7,
+              "CALL": 4,
+              "CHECK": 11,
+              "FOLD": 1,
+              "all-in effectif": 13,
+              "jam": 4,
+              "min-raise": 1
+            },
+            "overbet_count": 23,
+            "overbet_rate_of_aggression": 0.46938775510204084,
+            "size_ratio": {
+              "max": 7.9990476190476185,
+              "n": 49,
+              "p50": 0.75,
+              "p90": 7.03,
+              "p99": 7.9990476190476185
+            },
+            "true_jam_count": 4,
+            "true_jam_rate": 0.06153846153846154
+          },
+          "8-16": {
+            "aggressive_decisions": 66,
+            "decisions": 87,
+            "effective_allin_count": 9,
+            "effective_allin_rate": 0.10344827586206896,
+            "family_counts": {
+              "BET": 51,
+              "CALL": 8,
+              "CHECK": 7,
+              "EFFECTIVE_ALLIN": 9,
+              "FOLD": 6,
+              "JAM": 3,
+              "RAISE": 3
+            },
+            "label_counts": {
+              "100% pot": 3,
+              "125% pot": 12,
+              "2,5× mise": 1,
+              "25% pot": 7,
+              "33% pot": 4,
+              "4× mise": 1,
+              "50% pot": 4,
+              "66% pot": 8,
+              "75% pot": 13,
+              "CALL": 8,
+              "CHECK": 7,
+              "FOLD": 6,
+              "all-in effectif": 9,
+              "jam": 3,
+              "min-raise": 1
+            },
+            "overbet_count": 25,
+            "overbet_rate_of_aggression": 0.3787878787878788,
+            "size_ratio": {
+              "max": 14.807058823529413,
+              "n": 66,
+              "p50": 0.75,
+              "p90": 8.688518518518517,
+              "p99": 13.326721459315422
+            },
+            "true_jam_count": 3,
+            "true_jam_rate": 0.034482758620689655
+          },
+          "<2": {
+            "aggressive_decisions": 3,
+            "decisions": 4,
+            "effective_allin_count": 1,
+            "effective_allin_rate": 0.25,
+            "family_counts": {
+              "BET": 2,
+              "CHECK": 1,
+              "EFFECTIVE_ALLIN": 1
+            },
+            "label_counts": {
+              "50% pot": 2,
+              "CHECK": 1,
+              "all-in effectif": 1
+            },
+            "overbet_count": 0,
+            "overbet_rate_of_aggression": 0.0,
+            "size_ratio": {
+              "max": 0.5,
+              "n": 3,
+              "p50": 0.5,
+              "p90": 0.5,
+              "p99": 0.5
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        },
+        "profile": {
+          "0": {
+            "aggressive_decisions": 133,
+            "decisions": 194,
+            "effective_allin_count": 27,
+            "effective_allin_rate": 0.13917525773195877,
+            "family_counts": {
+              "BET": 99,
+              "CALL": 11,
+              "CHECK": 36,
+              "EFFECTIVE_ALLIN": 27,
+              "FOLD": 14,
+              "JAM": 4,
+              "RAISE": 3
+            },
+            "label_counts": {
+              "100% pot": 12,
+              "125% pot": 26,
+              "2,5× mise": 1,
+              "25% pot": 16,
+              "33% pot": 9,
+              "4× mise": 1,
+              "50% pot": 10,
+              "66% pot": 11,
+              "75% pot": 15,
+              "CALL": 11,
+              "CHECK": 36,
+              "FOLD": 14,
+              "all-in effectif": 27,
+              "jam": 4,
+              "min-raise": 1
+            },
+            "overbet_count": 56,
+            "overbet_rate_of_aggression": 0.42105263157894735,
+            "size_ratio": {
+              "max": 16.64125,
+              "n": 133,
+              "p50": 1.0,
+              "p90": 6.674047619047616,
+              "p99": 12.14893937282231
+            },
+            "true_jam_count": 4,
+            "true_jam_rate": 0.020618556701030927
+          },
+          "1": {
+            "aggressive_decisions": 43,
+            "decisions": 60,
+            "effective_allin_count": 6,
+            "effective_allin_rate": 0.1,
+            "family_counts": {
+              "BET": 36,
+              "CALL": 7,
+              "CHECK": 5,
+              "EFFECTIVE_ALLIN": 6,
+              "FOLD": 5,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 3,
+              "125% pot": 8,
+              "25% pot": 5,
+              "33% pot": 1,
+              "50% pot": 7,
+              "66% pot": 3,
+              "75% pot": 9,
+              "CALL": 7,
+              "CHECK": 5,
+              "FOLD": 5,
+              "all-in effectif": 6,
+              "min-raise": 1
+            },
+            "overbet_count": 14,
+            "overbet_rate_of_aggression": 0.32558139534883723,
+            "size_ratio": {
+              "max": 16.64125,
+              "n": 43,
+              "p50": 0.75,
+              "p90": 2.451649456521745,
+              "p99": 14.414724999999992
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          },
+          "2": {
+            "aggressive_decisions": 75,
+            "decisions": 93,
+            "effective_allin_count": 7,
+            "effective_allin_rate": 0.07526881720430108,
+            "family_counts": {
+              "BET": 64,
+              "CALL": 5,
+              "CHECK": 10,
+              "EFFECTIVE_ALLIN": 7,
+              "FOLD": 3,
+              "JAM": 3,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 10,
+              "125% pot": 19,
+              "2,5× mise": 1,
+              "25% pot": 7,
+              "33% pot": 1,
+              "50% pot": 9,
+              "66% pot": 9,
+              "75% pot": 9,
+              "CALL": 5,
+              "CHECK": 10,
+              "FOLD": 3,
+              "all-in effectif": 7,
+              "jam": 3
+            },
+            "overbet_count": 30,
+            "overbet_rate_of_aggression": 0.4,
+            "size_ratio": {
+              "max": 14.807058823529413,
+              "n": 75,
+              "p50": 1.0,
+              "p90": 4.675111111111121,
+              "p99": 11.830151083591351
+            },
+            "true_jam_count": 3,
+            "true_jam_rate": 0.03225806451612903
+          }
+        },
+        "street": {
+          "flop": {
+            "aggressive_decisions": 177,
+            "decisions": 207,
+            "effective_allin_count": 29,
+            "effective_allin_rate": 0.14009661835748793,
+            "family_counts": {
+              "BET": 141,
+              "CALL": 13,
+              "CHECK": 8,
+              "EFFECTIVE_ALLIN": 29,
+              "FOLD": 9,
+              "JAM": 6,
+              "RAISE": 1
+            },
+            "label_counts": {
+              "100% pot": 14,
+              "125% pot": 37,
+              "25% pot": 23,
+              "33% pot": 6,
+              "50% pot": 20,
+              "66% pot": 14,
+              "75% pot": 27,
+              "CALL": 13,
+              "CHECK": 8,
+              "FOLD": 9,
+              "all-in effectif": 29,
+              "jam": 6,
+              "min-raise": 1
+            },
+            "overbet_count": 72,
+            "overbet_rate_of_aggression": 0.4067796610169492,
+            "size_ratio": {
+              "max": 16.64125,
+              "n": 177,
+              "p50": 0.75,
+              "p90": 6.957142857142857,
+              "p99": 15.24726470588237
+            },
+            "true_jam_count": 6,
+            "true_jam_rate": 0.028985507246376812
+          },
+          "river": {
+            "aggressive_decisions": 32,
+            "decisions": 56,
+            "effective_allin_count": 5,
+            "effective_allin_rate": 0.08928571428571429,
+            "family_counts": {
+              "BET": 24,
+              "CALL": 4,
+              "CHECK": 13,
+              "EFFECTIVE_ALLIN": 5,
+              "FOLD": 7,
+              "JAM": 1,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 5,
+              "125% pot": 3,
+              "2,5× mise": 1,
+              "25% pot": 4,
+              "33% pot": 4,
+              "50% pot": 2,
+              "66% pot": 6,
+              "CALL": 4,
+              "CHECK": 13,
+              "FOLD": 7,
+              "all-in effectif": 5,
+              "jam": 1,
+              "min-raise": 1
+            },
+            "overbet_count": 9,
+            "overbet_rate_of_aggression": 0.28125,
+            "size_ratio": {
+              "max": 7.352190476190477,
+              "n": 32,
+              "p50": 0.66,
+              "p90": 3.851167539267018,
+              "p99": 6.560494761904765
+            },
+            "true_jam_count": 1,
+            "true_jam_rate": 0.017857142857142856
+          },
+          "turn": {
+            "aggressive_decisions": 42,
+            "decisions": 84,
+            "effective_allin_count": 6,
+            "effective_allin_rate": 0.07142857142857142,
+            "family_counts": {
+              "BET": 34,
+              "CALL": 6,
+              "CHECK": 30,
+              "EFFECTIVE_ALLIN": 6,
+              "FOLD": 6,
+              "RAISE": 2
+            },
+            "label_counts": {
+              "100% pot": 6,
+              "125% pot": 13,
+              "2,5× mise": 1,
+              "25% pot": 1,
+              "33% pot": 1,
+              "4× mise": 1,
+              "50% pot": 4,
+              "66% pot": 3,
+              "75% pot": 6,
+              "CALL": 6,
+              "CHECK": 30,
+              "FOLD": 6,
+              "all-in effectif": 6
+            },
+            "overbet_count": 19,
+            "overbet_rate_of_aggression": 0.4523809523809524,
+            "size_ratio": {
+              "max": 10.957142857142857,
+              "n": 42,
+              "p50": 1.0,
+              "p90": 1.28403125,
+              "p99": 9.928147676223137
+            },
+            "true_jam_count": 0,
+            "true_jam_rate": 0.0
+          }
+        }
+      },
+      "decisions": {
+        "aggressive_decisions": 251,
+        "decisions": 347,
+        "effective_allin_count": 40,
+        "effective_allin_rate": 0.11527377521613832,
+        "family_counts": {
+          "BET": 199,
+          "CALL": 23,
+          "CHECK": 51,
+          "EFFECTIVE_ALLIN": 40,
+          "FOLD": 22,
+          "JAM": 7,
+          "RAISE": 5
+        },
+        "label_counts": {
+          "100% pot": 25,
+          "125% pot": 53,
+          "2,5× mise": 2,
+          "25% pot": 28,
+          "33% pot": 11,
+          "4× mise": 1,
+          "50% pot": 26,
+          "66% pot": 23,
+          "75% pot": 33,
+          "CALL": 23,
+          "CHECK": 51,
+          "FOLD": 22,
+          "all-in effectif": 40,
+          "jam": 7,
+          "min-raise": 2
+        },
+        "overbet_count": 100,
+        "overbet_rate_of_aggression": 0.398406374501992,
+        "size_ratio": {
+          "max": 16.64125,
+          "n": 251,
+          "p50": 0.8966789667896681,
+          "p90": 5.182608695652173,
+          "p99": 13.668337774134045
+        },
+        "true_jam_count": 7,
+        "true_jam_rate": 0.020172910662824207
+      },
+      "overall": {
+        "base_hands": 96,
+        "mean_utility_bb": 11.21257330729167,
+        "median_utility_bb": 7.0875,
+        "p10_utility_bb": -4.0874999999999995,
+        "p90_utility_bb": 29.328065000000006,
+        "realized_utility_per_hero_decision_bb": 6.204075144092221,
+        "rollouts": 192,
+        "utility_ci95_cluster_bootstrap": [
+          7.04473794921875,
+          16.340807978515624
+        ],
+        "utility_per_decision_ci95_cluster_bootstrap": [
+          3.744203826300083,
+          9.19609080146377
+        ]
+      },
+      "rollout_breakdowns": {
+        "hero_position": {
+          "BB": {
+            "base_hands": 33,
+            "mean_utility_bb": 8.524817045454546,
+            "median_utility_bb": 4.7034375,
+            "p10_utility_bb": -1.1600000000000001,
+            "p90_utility_bb": 27.706125,
+            "realized_utility_per_hero_decision_bb": 4.327984038461539,
+            "rollouts": 66,
+            "utility_ci95_cluster_bootstrap": [
+              4.087645520833334,
+              13.24882076704545
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.007457150813953,
+              7.226934463629198
+            ]
+          },
+          "BTN": {
+            "base_hands": 18,
+            "mean_utility_bb": 6.692512500000001,
+            "median_utility_bb": 8.0325,
+            "p10_utility_bb": -3.0625,
+            "p90_utility_bb": 16.442375,
+            "realized_utility_per_hero_decision_bb": 4.380553636363637,
+            "rollouts": 36,
+            "utility_ci95_cluster_bootstrap": [
+              0.4086740277777783,
+              12.358849548611108
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.2812032783189037,
+              9.377037668023252
+            ]
+          },
+          "CO": {
+            "base_hands": 12,
+            "mean_utility_bb": 9.108952083333332,
+            "median_utility_bb": 9.45,
+            "p10_utility_bb": -5.2965,
+            "p90_utility_bb": 20.97773999999999,
+            "realized_utility_per_hero_decision_bb": 5.465371249999999,
+            "rollouts": 24,
+            "utility_ci95_cluster_bootstrap": [
+              3.0823254166666656,
+              17.140027187499992
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.6566604005167955,
+              9.897960486111106
+            ]
+          },
+          "HJ": {
+            "base_hands": 9,
+            "mean_utility_bb": 7.8459416666666675,
+            "median_utility_bb": 8.268749999999999,
+            "p10_utility_bb": -1.158749999999998,
+            "p90_utility_bb": 18.136145000000006,
+            "realized_utility_per_hero_decision_bb": 4.707565000000001,
+            "rollouts": 18,
+            "utility_ci95_cluster_bootstrap": [
+              1.5183457638888889,
+              13.116820347222223
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.9533073548387098,
+              7.892158695652174
+            ]
+          },
+          "LJ": {
+            "base_hands": 12,
+            "mean_utility_bb": 13.668387500000003,
+            "median_utility_bb": 5.67,
+            "p10_utility_bb": -15.487499999999997,
+            "p90_utility_bb": 62.30618999999997,
+            "realized_utility_per_hero_decision_bb": 7.628867441860467,
+            "rollouts": 24,
+            "utility_ci95_cluster_bootstrap": [
+              -3.8284588541666658,
+              35.868706770833306
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              -1.5868876041666664,
+              24.104499288865533
+            ]
+          },
+          "SB": {
+            "base_hands": 11,
+            "mean_utility_bb": 28.476977272727275,
+            "median_utility_bb": 8.0325,
+            "p10_utility_bb": 3.4695,
+            "p90_utility_bb": 47.516,
+            "realized_utility_per_hero_decision_bb": 14.238488636363638,
+            "rollouts": 22,
+            "utility_ci95_cluster_bootstrap": [
+              6.860340340909092,
+              55.979005113636305
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              3.6865331596452333,
+              32.42798710317458
+            ]
+          },
+          "SB_BTN": {
+            "base_hands": 1,
+            "mean_utility_bb": 17.434549999999994,
+            "median_utility_bb": 17.434549999999994,
+            "p10_utility_bb": 12.01267,
+            "p90_utility_bb": 22.856429999999992,
+            "realized_utility_per_hero_decision_bb": 6.973819999999998,
+            "rollouts": 2,
+            "utility_ci95_cluster_bootstrap": null,
+            "utility_per_decision_ci95_cluster_bootstrap": null
+          }
+        },
+        "initial_spr_bucket": {
+          "16+": {
+            "base_hands": 41,
+            "mean_utility_bb": 5.335671646341463,
+            "median_utility_bb": 4.35125,
+            "p10_utility_bb": -4.91,
+            "p90_utility_bb": 11.287930000000006,
+            "realized_utility_per_hero_decision_bb": 2.786783917197452,
+            "rollouts": 82,
+            "utility_ci95_cluster_bootstrap": [
+              0.1825740320121958,
+              13.556464329268291
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.1287267745861735,
+              7.474336560611394
+            ]
+          },
+          "2-4": {
+            "base_hands": 10,
+            "mean_utility_bb": 14.3688175,
+            "median_utility_bb": 10.76235,
+            "p10_utility_bb": -14.799,
+            "p90_utility_bb": 47.516,
+            "realized_utility_per_hero_decision_bb": 8.452245588235295,
+            "rollouts": 20,
+            "utility_ci95_cluster_bootstrap": [
+              2.002160562499999,
+              26.000016375
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.0491292132950736,
+              21.453941990489124
+            ]
+          },
+          "4-8": {
+            "base_hands": 18,
+            "mean_utility_bb": 10.4456625,
+            "median_utility_bb": 8.0325,
+            "p10_utility_bb": 0.5182249999999997,
+            "p90_utility_bb": 26.255249999999997,
+            "realized_utility_per_hero_decision_bb": 5.78529,
+            "rollouts": 36,
+            "utility_ci95_cluster_bootstrap": [
+              2.9092009722222216,
+              18.43401149305554
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.699591385654886,
+              10.434405444882497
+            ]
+          },
+          "8-16": {
+            "base_hands": 26,
+            "mean_utility_bb": 18.958464423076922,
+            "median_utility_bb": 10.8675,
+            "p10_utility_bb": -1.2014999999999993,
+            "p90_utility_bb": 44.62717999999998,
+            "realized_utility_per_hero_decision_bb": 11.331495977011494,
+            "rollouts": 52,
+            "utility_ci95_cluster_bootstrap": [
+              10.182451129807696,
+              30.25648653846154
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              6.244556159063627,
+              18.586423687621195
+            ]
+          },
+          "<2": {
+            "base_hands": 1,
+            "mean_utility_bb": 33.014325,
+            "median_utility_bb": 33.014325,
+            "p10_utility_bb": 24.368865,
+            "p90_utility_bb": 41.65978500000001,
+            "realized_utility_per_hero_decision_bb": 16.5071625,
+            "rollouts": 2,
+            "utility_ci95_cluster_bootstrap": null,
+            "utility_per_decision_ci95_cluster_bootstrap": null
+          }
+        },
+        "pot_type": {
+          "3BP": {
+            "base_hands": 3,
+            "mean_utility_bb": 2.935566666666664,
+            "median_utility_bb": 6.543749999999999,
+            "p10_utility_bb": -68.11500000000001,
+            "p90_utility_bb": 70.37795,
+            "realized_utility_per_hero_decision_bb": 1.354876923076922,
+            "rollouts": 6,
+            "utility_ci95_cluster_bootstrap": [
+              -22.272499999999997,
+              30.712499999999995
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              -4.9494444444444445,
+              30.712499999999995
+            ]
+          },
+          "LIMPED": {
+            "base_hands": 20,
+            "mean_utility_bb": 2.94380375,
+            "median_utility_bb": 2.3625,
+            "p10_utility_bb": -1.0,
+            "p90_utility_bb": 5.634060000000001,
+            "realized_utility_per_hero_decision_bb": 1.6130431506849314,
+            "rollouts": 40,
+            "utility_ci95_cluster_bootstrap": [
+              1.9219482187499997,
+              4.0061534375
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              1.0538244318181822,
+              2.169140531442242
+            ]
+          },
+          "SRP": {
+            "base_hands": 73,
+            "mean_utility_bb": 13.818140582191777,
+            "median_utility_bb": 8.686875,
+            "p10_utility_bb": -4.5375,
+            "p90_utility_bb": 35.24197500000001,
+            "realized_utility_per_hero_decision_bb": 7.729687835249041,
+            "rollouts": 146,
+            "utility_ci95_cluster_bootstrap": [
+              8.562126438356165,
+              20.167267829623277
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              4.562752939329886,
+              11.766726392195773
+            ]
+          }
+        },
+        "profile": {
+          "0": {
+            "base_hands": 78,
+            "mean_utility_bb": 10.181800707547167,
+            "median_utility_bb": 7.046250000000001,
+            "p10_utility_bb": -4.9975000000000005,
+            "p90_utility_bb": 30.7125,
+            "realized_utility_per_hero_decision_bb": 5.563251932989689,
+            "rollouts": 106,
+            "utility_ci95_cluster_bootstrap": [
+              5.512047664772726,
+              15.175211876947374
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              2.7879229390711178,
+              8.769591652730034
+            ]
+          },
+          "1": {
+            "base_hands": 34,
+            "mean_utility_bb": 18.60891857142857,
+            "median_utility_bb": 7.56,
+            "p10_utility_bb": -0.8009999999999995,
+            "p90_utility_bb": 33.047620000000016,
+            "realized_utility_per_hero_decision_bb": 10.855202499999999,
+            "rollouts": 35,
+            "utility_ci95_cluster_bootstrap": [
+              7.978860949404765,
+              36.676505735294086
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              4.699713039473686,
+              22.08474422727272
+            ]
+          },
+          "2": {
+            "base_hands": 46,
+            "mean_utility_bb": 8.279040196078437,
+            "median_utility_bb": 7.588749999999997,
+            "p10_utility_bb": -2.375,
+            "p90_utility_bb": 13.7625,
+            "realized_utility_per_hero_decision_bb": 4.540118817204304,
+            "rollouts": 51,
+            "utility_ci95_cluster_bootstrap": [
+              0.16128485000000126,
+              17.04483389150943
+            ],
+            "utility_per_decision_ci95_cluster_bootstrap": [
+              0.029431932532876272,
+              9.300700254990923
+            ]
+          }
+        }
+      },
+      "suspicious_decisions": [
+        {
+          "ev_final_bb": 86.32882499999957,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261781483147",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 658,
+          "scenario_id": "0be4a0dfb26eee864aa1804c",
+          "size_ratio": 16.64125,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 86.32882499999957,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261781483147",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 658,
+          "scenario_id": "88a8612a41b07008bdfff4f5",
+          "size_ratio": 16.64125,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 34.814485784313824,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261785147671",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "5ba3c982834d28bc591eb19f",
+          "size_ratio": 14.807058823529413,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 30.140279994192454,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261785147671",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 54,
+          "scenario_id": "5dfbeba34cf25831af804d82",
+          "size_ratio": 12.529616724738677,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 11.443841666666703,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261780111556",
+          "hand_strength": "pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "a76ed5258ca3b0338a8b6a70",
+          "size_ratio": 11.340000000000002,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 11.443841666666703,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261780111556",
+          "hand_strength": "pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "a5d7342aaa68182b522e3266",
+          "size_ratio": 11.340000000000002,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 32.69907738095238,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261994629150",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 892,
+          "scenario_id": "bb0ff3207c0fd42ab98cfa5b",
+          "size_ratio": 10.957142857142857,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 21.839328947368482,
+          "family": "JAM",
+          "hand_id": "261959978144",
+          "hand_strength": "pair",
+          "hero_position": "BB",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 40,
+          "scenario_id": "99dc5be942bccd671a0bf824",
+          "size_ratio": 10.784210526315789,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 21.839328947368482,
+          "family": "JAM",
+          "hand_id": "261959978144",
+          "hand_strength": "pair",
+          "hero_position": "BB",
+          "label": "jam",
+          "profile": "2",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 40,
+          "scenario_id": "e6dfbcecad2fc25981c9cac8",
+          "size_ratio": 10.784210526315789,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.295541666666665,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778630609",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "df04d524c4ef85f8bd0be1f6",
+          "size_ratio": 9.28,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 20.91363098199006,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "262015331149",
+          "hand_strength": "pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 704,
+          "scenario_id": "9685db8f579f9b6d8473fd29",
+          "size_ratio": 8.447398513436248,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 26.483696296296372,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261782962430",
+          "hand_strength": "pair",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 55,
+          "scenario_id": "b810f2c7869b306e697cb2ac",
+          "size_ratio": 8.097037037037037,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 26.483696296296372,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261782962430",
+          "hand_strength": "pair",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 55,
+          "scenario_id": "5eb5d0c19c1ca50e8296bd41",
+          "size_ratio": 8.097037037037037,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 26.776736904762053,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261946769039",
+          "hand_strength": "pair",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "ecc6eeb3c0568a2aeacbe08a",
+          "size_ratio": 7.9990476190476185,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 26.776736904762053,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261946769039",
+          "hand_strength": "pair",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "d0e8f62b621701faa9eabf3e",
+          "size_ratio": 7.9990476190476185,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 60.649239285714366,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261946216751",
+          "hand_strength": "pair",
+          "hero_position": "HJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 597,
+          "scenario_id": "caf7f7d53e107d8ed0876465",
+          "size_ratio": 7.352190476190477,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 19.98630434782609,
+          "family": "JAM",
+          "hand_id": "261795164673",
+          "hand_strength": "two_pair",
+          "hero_position": "HJ",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 37,
+          "scenario_id": "2301e1105e3b36789b3a54f3",
+          "size_ratio": 7.086956521739131,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 19.98630434782609,
+          "family": "JAM",
+          "hand_id": "261795164673",
+          "hand_strength": "two_pair",
+          "hero_position": "HJ",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 37,
+          "scenario_id": "dfcebcd64bb6ce2d16f94141",
+          "size_ratio": 7.086956521739131,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 37.78170555555547,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778115335",
+          "hand_strength": "two_pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 704,
+          "scenario_id": "e5fd808ab4780e066303dce9",
+          "size_ratio": 7.070444444444445,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 15.749625000000002,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261781337105",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "634f55d5638fbb8e988a504a",
+          "size_ratio": 7.03,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 15.749625000000002,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261781337105",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "a6f6e5887e8f992f49fb668f",
+          "size_ratio": 7.03,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 11.823410714285695,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261415379202",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 152,
+          "scenario_id": "e1e858f9be75c00671a63c20",
+          "size_ratio": 6.957142857142857,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 11.823410714285695,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261415379202",
+          "hand_strength": "pair",
+          "hero_position": "LJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 152,
+          "scenario_id": "ead611895482b4fa7cee068e",
+          "size_ratio": 6.957142857142857,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 9.495416666666667,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261678127064",
+          "hand_strength": "pair",
+          "hero_position": "HJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "3e0ad6431094f074a62000f1",
+          "size_ratio": 5.541666666666667,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 9.495416666666667,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261678127064",
+          "hand_strength": "pair",
+          "hero_position": "HJ",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "365d33e64d937b8d3ebee2ca",
+          "size_ratio": 5.541666666666667,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 12.47590579710146,
+          "family": "JAM",
+          "hand_id": "261504648331",
+          "hand_strength": "pair",
+          "hero_position": "BTN",
+          "label": "jam",
+          "profile": "2",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 37,
+          "scenario_id": "81469833c8308f1306a31781",
+          "size_ratio": 5.182608695652173,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 12.47590579710146,
+          "family": "JAM",
+          "hand_id": "261504648331",
+          "hand_strength": "pair",
+          "hero_position": "BTN",
+          "label": "jam",
+          "profile": "2",
+          "reasons": [
+            "true_jam",
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 37,
+          "scenario_id": "2d09a7e8e4405291f1e3955c",
+          "size_ratio": 5.182608695652173,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 17.20264166666673,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261959960613",
+          "hand_strength": "pair",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "eabac40f526c7dc871692517",
+          "size_ratio": 5.16,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 17.20264166666673,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261959960613",
+          "hand_strength": "pair",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "952a14bc9c86653a5c490c05",
+          "size_ratio": 5.16,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 39.62391666666636,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261916306876",
+          "hand_strength": "flush",
+          "hero_position": "CO",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 597,
+          "scenario_id": "4c4935ddab1df0b681352aa7",
+          "size_ratio": 4.798333333333333,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 19.085863888888845,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261464282479",
+          "hand_strength": "straight",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 597,
+          "scenario_id": "0abd12b645d5e5b152708d9c",
+          "size_ratio": 3.947777777777778,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 9.967397222222234,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261464282479",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 597,
+          "scenario_id": "8d049ce886da740cbae311ac",
+          "size_ratio": 3.947777777777778,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 21.49625,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261528129474",
+          "hand_strength": "two_pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "a9fc9a8f38debdcdb35da870",
+          "size_ratio": 3.6,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 21.49625,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261528129474",
+          "hand_strength": "two_pair",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "131e449b94c3ba5ee156747a",
+          "size_ratio": 3.6,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 18.795579166666734,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261916174720",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "6c596f8764fb45935f5d48e3",
+          "size_ratio": 3.1685000000000003,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 15.953186627399413,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261994218942",
+          "hand_strength": "flush",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 407,
+          "scenario_id": "4eddfa64d2257ee0cfcec1f5",
+          "size_ratio": 2.981675392670157,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 20.87882954545467,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261916174720",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 54,
+          "scenario_id": "2a3b9ba0c1a208e0dbd2c79d",
+          "size_ratio": 2.880454545454546,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 23.32687246376835,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261673053521",
+          "hand_strength": "trips",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "1",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "52d51c57902cc9158dd1fd5e",
+          "size_ratio": 2.742608695652174,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 23.32687246376835,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261673053521",
+          "hand_strength": "trips",
+          "hero_position": "BTN",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "3e2db6a7678e4b4ddffbea4f",
+          "size_ratio": 2.742608695652174,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.094388888888894,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261977869185",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "2",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 745,
+          "scenario_id": "33808facd5fd1a1fd7de5e82",
+          "size_ratio": 2.5027777777777778,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 16.094388888888894,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261977869185",
+          "hand_strength": "two_pair",
+          "hero_position": "BB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 745,
+          "scenario_id": "27f7e7b9269e18060efedb26",
+          "size_ratio": 2.5027777777777778,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 22.646833333333433,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778073785",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 0,
+          "response_observation_floor": 658,
+          "scenario_id": "2cb1e052ffc5b16fa9549776",
+          "size_ratio": 2.275,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 22.646833333333433,
+          "family": "EFFECTIVE_ALLIN",
+          "hand_id": "261778073785",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "all-in effectif",
+          "profile": "0",
+          "reasons": [
+            "sizing_above_2x_pot"
+          ],
+          "rep": 1,
+          "response_observation_floor": 658,
+          "scenario_id": "cf3ec655e591ea703194fd47",
+          "size_ratio": 2.275,
+          "street": "flop"
+        },
+        {
+          "ev_final_bb": 49.867099999999134,
+          "family": "JAM",
+          "hand_id": "262003305136",
+          "hand_strength": "full_house",
+          "hero_position": "BTN",
+          "label": "jam",
+          "profile": "0",
+          "reasons": [
+            "true_jam"
+          ],
+          "rep": 0,
+          "response_observation_floor": 13,
+          "scenario_id": "d6ddd42749116054e8bb99b7",
+          "size_ratio": 1.9465670379247142,
+          "street": "river"
+        },
+        {
+          "ev_final_bb": 1.862313380873618,
+          "family": "RAISE",
+          "hand_id": "261494756769",
+          "hand_strength": "pair",
+          "hero_position": "SB",
+          "label": "2,5× mise",
+          "profile": "2",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 1,
+          "response_observation_floor": 7,
+          "scenario_id": "7b25535b6d61eeded278f8b7",
+          "size_ratio": 1.0526315789473684,
+          "street": "turn"
+        },
+        {
+          "ev_final_bb": 8.500989420927448,
+          "family": "RAISE",
+          "hand_id": "261495039668",
+          "hand_strength": "pair",
+          "hero_position": "BB",
+          "label": "min-raise",
+          "profile": "1",
+          "reasons": [
+            "response_observation_floor_below_10"
+          ],
+          "rep": 0,
+          "response_observation_floor": 9,
+          "scenario_id": "832c6d6ba18874eddee095e4",
+          "size_ratio": 0.38709677419354843,
+          "street": "river"
+        }
+      ]
+    }
+  },
+  "promotion_status": {
+    "hero_strategy_promotion_authorized": false,
+    "model_b_candidate": "predictive_gate_passed",
+    "production_effect": "NONE"
+  },
+  "provenance": {
+    "code_commit": "2de08ebb176e84e3a19391631a6a1b224777c5b9",
+    "engine": {
+      "path": "site/index.html",
+      "sha256": "d17da4b43a8bd6e33513969979f57cac6fc22155047c029ccb92dca8864cb9e0"
+    },
+    "master_seed": 20260912,
+    "model_a": {
+      "postflop": {
+        "path": "training/models/postflop_population_model_v5.json",
+        "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+      },
+      "preflop": {
+        "path": "training/models/preflop_population_model_v5.json",
+        "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+      }
+    },
+    "model_b": {
+      "alias": "candidate",
+      "artifact_sha256": {
+        "postflop_actions.json": "05e273ce954f3b4ea66481f8c26d333973006fe52ea9a80d13865922f2c84452",
+        "prediction_contract.json": "10e527b55bb10447c9471782198838f0dabbef7919e14f3543d5f0f5b5f47335",
+        "preflop_ranges.json": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+        "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+        "sizing.json": "1b80a165d102e86cd80af5779f1564df8e123c9d5ae87d3fea02f741d89f2c1b"
+      }
+    },
+    "observed_monte_carlo_trials": [
+      1200
+    ],
+    "policies": [
+      "current",
+      "cap_3",
+      "cap_4"
+    ],
+    "scenario_fingerprint_sha256": "9a72107fc5cf0145ab43b7c5318021400a068290cad6c2f8455ccea02e61dcbf",
+    "scenario_split": "VALIDATION",
+    "simulation_source_sha256": {
+      "baseline_report.py": "0bd351efaf68fef4283d81c8c3a9f19fce9c0151ae2bf315dab2086916f15bb6",
+      "baseline_runner.py": "dad81697ecd19b7df008a0c67c3c66494e068400753e372c935cba411bd0d64b",
+      "conditioned_baseline_report.py": "4d718997d2798c2f52c8fa86f9964fc94625b950bfc884a0a91d0c372464e236",
+      "conditioned_baseline_runner.py": "d817ead308088bbcee17af7ecc3c308f9113e561cebae8b994ba0bbe6ddcc2ad",
+      "environment_drift_report.py": "1e777b0136a85e17a967767e7a4b3137305cc0d7747f2160e5385661d42ba095",
+      "model_b_conditioned_runtime.py": "ff22e2476524d78489cc0e3f6545e21f0616434000faa75c397f3cae43b1b84e",
+      "model_b_runtime.py": "e0e04c2ae2391dd54f5a9f8a273947f3446e6f217ee91a93bc826c4c23199f8e",
+      "oracle_runtime.js": "68b543b2b30adb0fc3433b3b4d2a4a6ffa81e6c0d8e6bf1ec9c5a52154a537d5",
+      "retarget_scenario_manifest.py": "6c104181abcab6d2cc3981faca9647c313c6e45e43af23a89dafa18c66fa2a13",
+      "scenarios.py": "48df2b9a54b5f34904f35a5624cf8ca7eb081e8a5035fefa2c3dc4627eee8b9e",
+      "sequential_postflop.py": "3798dbfa49c34c42a7c159f686a5509cfd6f5adfdbf64ae334a41098bb907406",
+      "sequential_postflop_conditioned.py": "bbcce2bb78eef12f89fe71eeceec1fde1c61357d92b3220d399f770c869a754f",
+      "strategy_candidate_gate.py": "cf12b6f73c94262742c8eba94f6e5bd41fd6f29fd8d4a94b10bf36452843a644",
+      "v83_hh_compat.py": "3de94c196504bf7442a122ed10770a4d4f9a585e1ecb25c670920774382216ab"
+    },
+    "trials": 1200
+  },
+  "sample": {
+    "base_hands": 96,
+    "eligible_hands": 227,
+    "reps": 2,
+    "requested_hands": 96,
+    "results": 576,
+    "scenarios": 192
+  },
+  "schema": "sequential-v83-baseline-report/v1",
+  "scope": {
+    "heads_up_postflop": true,
+    "multiway_strategy": false,
+    "preflop_strategy": false,
+    "spr_breakdown": "Initial effective flop SPR. Decision-level SPR is not recorded by sequential-independent-arena/v2.",
+    "utility_definition": "Realized future utility from the generated flop state; preflop contributions are sunk. It is not an overall cash-game win rate."
+  },
+  "source_arena_schema": "sequential-independent-arena/v2",
+  "spr_buckets": [
+    "<2",
+    "2-4",
+    "4-8",
+    "8-16",
+    "16+"
+  ],
+  "statistical_contract": {
+    "bootstrap_samples": 5000,
+    "cluster_unit": "base_hand_id",
+    "confidence_level": 0.95,
+    "method": "deterministic nonparametric cluster bootstrap",
+    "rationale": "Multiple runouts/repetitions derived from one historical hand are not counted as independent clusters."
+  }
+}
