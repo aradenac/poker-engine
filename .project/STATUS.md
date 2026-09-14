@@ -69,7 +69,7 @@ Source archives remain immutable:
 
 Do **not** relabel the current promoted Model A v5, Model B v2 or engine v83 as Zoom-only. Their historical data lineage used the broader blind-scoped dataset, which includes the 7,214 regular-table 100/200 hands.
 
-The active legacy dataset pointer remains `NLHE_100-200` until #95 performs an explicit migration. `training/registry.json` records the certified target as `CERTIFIED_SOURCE_SUBSET_NOT_YET_ISOLATED` with `is_active_dataset_pointer=false`.
+The active legacy dataset pointer remains `NLHE_100-200` until #95 performs an explicit migration. **`training/registry.json` remains byte-identical to the closed 2026-09-12 cycle in #94**; the certified population identity lives in the immutable certification report and dataset documentation until #95 can migrate the registry transactionally.
 
 This distinction is critical: #94 certifies source membership; **#95 must create isolated population state and protect each population's dataset/model/strategy pointers from cross-contamination**.
 
