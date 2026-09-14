@@ -16,22 +16,39 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   certify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - name: Classification fixtures
         run: python3 tests/datasets/test_certify_population.py
-      - name: Certify authoritative 31,003-hand lineage
+      - name: Certify authoritative lineage
         run: |
           python3 -m tools.datasets.certify_population \
             --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
             --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
             --output /tmp/population-certification.json \
             | tee /tmp/population-certification-summary.json
+      - name: Persist measured evidence on issue branch
+        if: github.event_name == 'push' && github.ref_name == 'issue-94-certify-100-200-population'
+        run: |
+          set -euo pipefail
+          target='training/datasets/NLHE_100-200/population_certification.json'
+          cp /tmp/population-certification.json "$target"
+          if git diff --quiet -- "$target"; then
+            echo 'Certification evidence already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$target"
+          git commit -m 'Issue #94: persist measured population certification'
+          git push origin HEAD:${{ github.ref_name }}
       - name: Preserve certification evidence
         uses: actions/upload-artifact@v4
         with:
