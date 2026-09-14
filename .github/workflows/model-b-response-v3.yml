@@ -3,6 +3,8 @@ name: Model B response-conditioned v3
 on:
   workflow_dispatch:
   push:
+    branches-ignore:
+      - main
     paths:
       - 'tools/training/independent_profiles/build_model_b.py'
       - 'tools/training/independent_profiles/conditioned_response_candidate.py'
@@ -137,7 +139,7 @@ jobs:
           PY
 
       - name: Persist deterministic v3 evidence
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: |
           if [ -z "$(git status --porcelain -- training/runs/20260913_model_b_response_v3)" ]; then
             echo 'Response-v3 evidence already current.'
