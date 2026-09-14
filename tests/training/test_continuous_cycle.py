@@ -123,6 +123,31 @@ def test_not_ready_gate_fails_without_promotion() -> None:
         assert report["production_before"] == report["production_after"]
 
 
+def test_conditional_stage_skips_when_json_gate_is_false() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        tmp = Path(raw)
+        _, protected = fixture(tmp)
+        write(tmp / "selection.json", json.dumps({"test_authorized": False}) + "\n")
+        cfg = config(tmp, protected, [{
+            "id": "protected-test",
+            "when": {"json": "selection.json", "path": ["test_authorized"], "equals": True},
+            "argv": [sys.executable, "-c", "from pathlib import Path; Path('SHOULD_NOT_EXIST').write_text('bad')"],
+        }])
+        code, report = execute(root=tmp, config_path=cfg, require_ready=True)
+        assert code == 0, report
+        assert report["stages"] == [{
+            "id": "protected-test",
+            "status": "SKIPPED",
+            "when": {
+                "json": "selection.json",
+                "path": ["test_authorized"],
+                "equals": True,
+                "actual": False,
+            },
+        }], report["stages"]
+        assert not (tmp / "SHOULD_NOT_EXIST").exists()
+
+
 def test_v1_rejects_any_promotion_mode() -> None:
     with tempfile.TemporaryDirectory() as raw:
         tmp = Path(raw)

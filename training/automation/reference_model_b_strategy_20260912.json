@@ -1,0 +1,90 @@
+{
+  "schema": "poker-continuous-cycle/v1",
+  "cycle": "2026-09-12",
+  "promotion_mode": "disabled",
+  "gate_report": "training/gates/20260912_report.json",
+  "protected_production_paths": [
+    "training/registry.json",
+    "training/models",
+    "training/runs/20260912_independent_profiles_v2/model",
+    "user/releases",
+    "site"
+  ],
+  "stages": [
+    {
+      "id": "model-b-reference-cycle",
+      "argv": [
+        "python3",
+        "tools/training/run_reference_model_b_cycle.py",
+        "--work-dir",
+        "/tmp/poker-cycle-model-b"
+      ],
+      "required_outputs": [
+        "/tmp/poker-cycle-model-b/paired_comparison.json"
+      ]
+    },
+    {
+      "id": "prepare-strategy-workspace",
+      "argv": [
+        "python3",
+        "-c",
+        "from pathlib import Path; Path('/tmp/poker-cycle-strategy').mkdir(parents=True, exist_ok=True)"
+      ],
+      "required_outputs": [
+        "/tmp/poker-cycle-strategy"
+      ]
+    },
+    {
+      "id": "strategy-validation-selection",
+      "argv": [
+        "python3",
+        "tools/simulation/strategy_candidate_gate.py",
+        "--contract",
+        "training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json",
+        "--report",
+        "training/runs/20260913_strategy_candidate_v84/validation_report.json",
+        "--phase",
+        "validation",
+        "--out",
+        "/tmp/poker-cycle-strategy/validation_selection.json"
+      ],
+      "required_outputs": [
+        "/tmp/poker-cycle-strategy/validation_selection.json"
+      ]
+    },
+    {
+      "id": "strategy-validation-reference-verification",
+      "argv": [
+        "python3",
+        "tools/training/verify_reference_cycle_artifacts.py",
+        "--strategy-selection",
+        "/tmp/poker-cycle-strategy/validation_selection.json"
+      ]
+    },
+    {
+      "id": "strategy-protected-test-confirmation",
+      "when": {
+        "json": "/tmp/poker-cycle-strategy/validation_selection.json",
+        "path": ["test_authorized"],
+        "equals": true
+      },
+      "argv": [
+        "python3",
+        "tools/simulation/strategy_candidate_gate.py",
+        "--contract",
+        "training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json",
+        "--report",
+        "/tmp/poker-cycle-strategy/test_report.json",
+        "--phase",
+        "test",
+        "--validation-selection",
+        "/tmp/poker-cycle-strategy/validation_selection.json",
+        "--out",
+        "/tmp/poker-cycle-strategy/test_confirmation.json"
+      ],
+      "required_outputs": [
+        "/tmp/poker-cycle-strategy/test_confirmation.json"
+      ]
+    }
+  ]
+}
