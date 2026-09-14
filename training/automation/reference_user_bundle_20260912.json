@@ -1,0 +1,35 @@
+{
+  "schema": "poker-continuous-cycle/v1",
+  "cycle": "2026-09-12",
+  "promotion_mode": "disabled",
+  "gate_report": "training/gates/20260912_report.json",
+  "protected_production_paths": [
+    "training/registry.json",
+    "training/models",
+    "training/runs/20260912_independent_profiles_v2/model",
+    "user/releases",
+    "site"
+  ],
+  "stages": [
+    {
+      "id": "build-user-artifact-bundle",
+      "argv": [
+        "python3",
+        "tools/build_user_artifact_bundle.py",
+        "--out-dir",
+        "/tmp/poker-cycle-user-bundle"
+      ],
+      "required_outputs": [
+        "/tmp/poker-cycle-user-bundle/nlhe-100-200-user-artifacts-2026.09.14.1.zip"
+      ]
+    },
+    {
+      "id": "verify-user-artifact-bundle",
+      "argv": [
+        "python3",
+        "tools/training/verify_user_artifact_bundle.py",
+        "/tmp/poker-cycle-user-bundle/nlhe-100-200-user-artifacts-2026.09.14.1.zip"
+      ]
+    }
+  ]
+}
