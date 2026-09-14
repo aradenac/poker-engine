@@ -113,15 +113,25 @@ jobs:
           git add training/runs/20260912_independent_profiles_v2/evaluation
           git add training/runs/20260912_independent_profiles_v2/model/prediction_contract.json
           git commit -m 'Evaluate final independent Model B K3 holdout'
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo 'Unable to persist Model B evaluation after three race-safe retries.' >&2
+          exit 1
 
   compare-cycle-refresh:
+    needs: evaluate
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout latest branch head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.ref_name }}
 
       - name: Paired comparison unit tests
         run: |
@@ -245,4 +255,12 @@ jobs:
           git config user.email 'training-bot@users.noreply.github.com'
           git add "$CYCLE"
           git commit -m 'Persist refreshed Model B K3 candidate and paired gate'
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo 'Unable to persist refreshed Model B evidence after three race-safe retries.' >&2
+          exit 1
