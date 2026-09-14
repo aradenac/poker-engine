@@ -1,0 +1,32 @@
+name: Temporary audit preflop key/runtime parity
+
+on:
+  push:
+    branches:
+      - issue-88-preflop-canonical-runtime-parity
+    paths:
+      - 'tools/training/audit_preflop_key_runtime_parity.py'
+      - 'tests/training/test_preflop_key_runtime_parity.py'
+      - '.github/workflows/tmp-audit-preflop-key-runtime.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit parity contract
+        run: python3 tests/training/test_preflop_key_runtime_parity.py
+      - name: Audit promoted v5
+        run: |
+          python3 tools/training/audit_preflop_key_runtime_parity.py \
+            --model training/models/preflop_population_model_v5.json \
+            --out /tmp/preflop-key-runtime-parity.json \
+            --examples 40
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preflop-key-runtime-parity-${{ github.sha }}
+          path: /tmp/preflop-key-runtime-parity.json
+          if-no-files-found: error
