@@ -7,10 +7,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 LEGACY = "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+CANDIDATE = ROOT / "training/runs/20260913_model_b_response_v3/selected_candidate/model"
 sys.path.insert(0, str(ROOT))
 
 from tools.datasets.build_hand_history_increment import split_for  # noqa: E402
+from tools.simulation.model_b_conditioned_runtime import ConditionedModelBEnvironment  # noqa: E402
 from tools.simulation.model_b_runtime import ModelBEnvironment  # noqa: E402
+from tools.simulation.retarget_scenario_manifest import retarget_manifest  # noqa: E402
 from tools.simulation.scenarios import build_scenario_manifest  # noqa: E402
 
 
@@ -71,6 +74,21 @@ class ScenarioIntegrationTests(unittest.TestCase):
             build_scenario_manifest(
                 population_id=LEGACY, env=wrong, count=1, reps=1, master_seed=1, split="TEST", root=ROOT
             )
+
+    def test_retarget_preserves_population_and_scenario_identity(self):
+        target = ConditionedModelBEnvironment(CANDIDATE, population_id=LEGACY)
+        out = retarget_manifest(self.a, self.env, target)
+        self.assertEqual(out["population_id"], LEGACY)
+        self.assertEqual(out["cache_namespace"], LEGACY)
+        self.assertEqual(out["scenario_fingerprint_sha256"], self.a["scenario_fingerprint_sha256"])
+        self.assertEqual(out["scenarios"], self.a["scenarios"])
+        self.assertEqual(out["scenario_materialization_provenance"]["population_id"], LEGACY)
+        self.assertTrue(out["scenario_materialization_provenance"]["scenario_fingerprint_unchanged"])
+
+    def test_retarget_cross_population_model_is_rejected(self):
+        wrong_target = ConditionedModelBEnvironment(CANDIDATE, population_id="other_population")
+        with self.assertRaisesRegex(ValueError, "target Model B population mismatch"):
+            retarget_manifest(self.a, self.env, wrong_target)
 
     def test_cards_are_unique(self):
         for scenario in self.a["scenarios"]:
