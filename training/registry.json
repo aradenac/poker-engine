@@ -7,30 +7,6 @@
       "baseline_manifest": "training/datasets/NLHE_100-200/source/manifest.json",
       "latest_snapshot_archive": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
       "latest_snapshot_manifest": "training/datasets/NLHE_100-200/snapshots/20260912/manifest.json",
-      "certified_target_population": {
-        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
-        "status": "CERTIFIED_SOURCE_SUBSET_NOT_YET_ISOLATED",
-        "platform": "PokerStars",
-        "variant": "NLHE",
-        "game_kind": "cash",
-        "stake": "100/200",
-        "money": "play",
-        "format": "Zoom",
-        "max_seats": 6,
-        "unique_hands": 23789,
-        "hand_ids_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
-        "split_counts": {
-          "TRAIN": 19016,
-          "VALIDATION": 2324,
-          "TEST": 2449
-        },
-        "blind_scoped_100_200_union_hands": 31003,
-        "excluded_regular_100_200_hands": 7214,
-        "ambiguous_hands": 0,
-        "certification_report": "training/datasets/NLHE_100-200/population_certification.json",
-        "is_active_dataset_pointer": false,
-        "migration_issue": 95
-      },
       "latest_candidate_snapshot": {
         "archive": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
         "snapshot_readme": "training/datasets/NLHE_100-200/snapshots/20260912/README.md",
@@ -87,5 +63,5 @@
       "promotion": "training/runs/20260912_independent_profiles_v2/PROMOTION.json"
     }
   ],
-  "notes": "Legacy active_dataset NLHE_100-200 remains a blind-scoped lineage and is not a Zoom-only pointer. Issue #94 certifies pokerstars_nlhe_100-200_zoom_play_6max_v1 as a 23,789-hand source subset; #95 owns isolation/migration of datasets, models and strategy pointers. Existing Model A v5, Model B v2 and v83 promotion pointers are unchanged."
+  "notes": "All three raw archives are persisted. The 2026-09-12 snapshot contributes exactly 3,268 unseen 100/200 hands to the 27,735-hand prior union (31,003 total). Dataset availability does not imply model promotion: Model A v5 and independent Model B v2 retain their separate existing promotion pointers."
 }
