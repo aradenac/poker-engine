@@ -10,12 +10,15 @@ def require(needle: str) -> None:
 
 
 require('const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};')
-require('const trainerWarmAssets={started:false,promise:null')
+require('const TRAINER_POPULATION_MANIFEST="./assets/trainer/population.json";')
+require('const trainerWarmAssets={started:false,promise:null,population:null')
 require('async function trainerLoadWarmAssets()')
 require('function trainerScheduleWarmup()')
 require('requestIdleCallback')
 require('trainerScheduleWarmup();')
-require('trainerFetchJson(TRAINER_ASSETS.hero.ranges)')
+require('const population=await trainerFetchJson(TRAINER_POPULATION_MANIFEST);')
+require('trainerFetchJson(asset.hero.ranges)')
+require('trainerWarmAssets.population=population')
 require('trainerWarmAssets.heroRanges=heroRanges')
 require('const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB&&trainerWarmAssets.heroRanges),assets=await trainerLoadWarmAssets();')
 require('trainerState.perf.warmHit=alreadyWarm;')
@@ -28,8 +31,8 @@ require('await trainerSleep(TRAINER_DELAYS.opponentSettle);')
 for old in ('trainerSleep(160)', 'trainerSleep(220)', 'trainerSleep(180)'):
     assert old not in JS, f"old artificial delay reintroduced: {old}"
 
-# Warmup may fetch/parse assets, including the static Hero range, but must not
-# eagerly mutate analyser Model A state.
+# Warmup may fetch/parse the population pack and its assets, including the
+# static Hero range, but must not eagerly mutate analyser Model A state.
 warm_start = JS.index('async function trainerLoadWarmAssets()')
 warm_end = JS.index('function trainerScheduleWarmup()', warm_start)
 warm = JS[warm_start:warm_end]
