@@ -22,6 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
   V2_MODEL: training/runs/20260912_independent_profiles_v2/model
   V3_MODEL: training/runs/20260913_model_b_response_v3/selected_candidate/model
   V3_SELECTION: training/runs/20260913_model_b_response_v3/selection.json
@@ -61,30 +62,37 @@ jobs:
         run: |
           mkdir -p /tmp/scenarios
           python3 -m tools.simulation.sequential_postflop \
+            --population "$POPULATION" \
             --generate-only --n 32 --reps 2 --seed 20260912 --split VALIDATION \
             --scenario-out /tmp/scenarios/validation-v2.json --out /tmp/gen-validation.json
           python3 -m tools.simulation.sequential_postflop \
+            --population "$POPULATION" \
             --generate-only --n 32 --reps 2 --seed 20260912 --split TEST \
             --scenario-out /tmp/scenarios/test-v2.json --out /tmp/gen-test.json
       - name: Retarget only after scenario dependencies match exactly
         run: |
           python3 tools/simulation/retarget_scenario_manifest.py \
+            --population "$POPULATION" \
             --manifest /tmp/scenarios/validation-v2.json \
             --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
             --out /tmp/scenarios/validation-v3.json
           python3 tools/simulation/retarget_scenario_manifest.py \
+            --population "$POPULATION" \
             --manifest /tmp/scenarios/test-v2.json \
             --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
             --out /tmp/scenarios/test-v3.json
           python3 - <<'PY'
-          import json
+          import json, os
           for split in ('validation','test'):
               a=json.load(open(f'/tmp/scenarios/{split}-v2.json'))
               b=json.load(open(f'/tmp/scenarios/{split}-v3.json'))
+              assert a['population_id']==os.environ['POPULATION']
+              assert b['population_id']==os.environ['POPULATION']
               assert a['scenario_fingerprint_sha256']==b['scenario_fingerprint_sha256']
               assert a['scenarios']==b['scenarios']
               assert len(a['scenarios'])==64
               assert len({x['hand_id'] for x in a['scenarios']})==32
+              assert b['scenario_materialization_provenance']['population_id']==os.environ['POPULATION']
               assert b['scenario_materialization_provenance']['scenario_fingerprint_unchanged'] is True
           PY
       - uses: actions/upload-artifact@v4
@@ -143,8 +151,9 @@ jobs:
         run: |
           mkdir -p /tmp/out
           EXTRA=()
-          if [ "$MATRIX_ENV" = v3 ]; then EXTRA=(--model-b-dir "$V3_MODEL"); fi
+          if [ "$MATRIX_ENV" = v3 ]; then EXTRA=(--model-b-dir "$V3_MODEL" --model-b-population "$POPULATION"); fi
           python3 -m "$MATRIX_RUNNER" \
+            --population "$POPULATION" \
             --scenario-manifest "/tmp/scenarios/${MATRIX_SPLIT}-${MATRIX_ENV}.json" \
             --trials 1200 --policies "$MATRIX_POLICIES" \
             "${EXTRA[@]}" --out /tmp/out/arena.json
@@ -160,6 +169,7 @@ jobs:
           a=json.load(open('/tmp/out/arena.json'))
           r=json.load(open('/tmp/out/report.json'))
           assert a['schema']=='sequential-independent-arena/v2'
+          assert a['metadata']['population_id']==os.environ['POPULATION']
           assert a['metadata']['scenario_split']==os.environ['MATRIX_SPLIT'].upper()
           assert a['metadata']['observed_monte_carlo_trials']==[1200]
           assert r['sample']['base_hands']==32
@@ -246,8 +256,7 @@ jobs:
           vd=json.load(open(out/'validation_environment_drift.json'))
           td=json.load(open(out/'test_environment_drift.json'))
           sel_path=Path('training/runs/20260913_model_b_response_v3/selection.json')
-          sel=json.load(open(sel_path)
-          )
+          sel=json.load(open(sel_path))
           pathologies={
               'schema':'sequential-v83-model-b-v3-pathologies/v1',
               'validation':val['policies']['current']['suspicious_decisions'],
