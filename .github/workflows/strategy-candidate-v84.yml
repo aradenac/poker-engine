@@ -21,6 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
   CONTRACT: training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json
   V2_MODEL: training/runs/20260912_independent_profiles_v2/model
   V3_MODEL: training/runs/20260913_model_b_response_v3/selected_candidate/model
@@ -66,28 +67,34 @@ jobs:
         run: |
           mkdir -p /tmp/strategy
           python3 -m tools.simulation.sequential_postflop \
+            --population "$POPULATION" \
             --generate-only --n 96 --reps 2 --seed 20260912 --split VALIDATION \
             --scenario-out /tmp/strategy/validation-v2.json --out /tmp/strategy/gen-validation.json
           python3 tools/simulation/retarget_scenario_manifest.py \
+            --population "$POPULATION" \
             --manifest /tmp/strategy/validation-v2.json \
             --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
             --out /tmp/strategy/validation-v3.json
           python3 - <<'PY'
-          import json
+          import json, os
           a=json.load(open('/tmp/strategy/validation-v2.json'))
           b=json.load(open('/tmp/strategy/validation-v3.json'))
+          assert a['population_id']==os.environ['POPULATION']
+          assert b['population_id']==os.environ['POPULATION']
           assert a['scenario_fingerprint_sha256']==b['scenario_fingerprint_sha256']
           assert a['scenarios']==b['scenarios']
           assert len(a['scenarios'])==192
           assert len({x['hand_id'] for x in a['scenarios']})==96
+          assert b['scenario_materialization_provenance']['population_id']==os.environ['POPULATION']
           assert b['scenario_materialization_provenance']['scenario_fingerprint_unchanged'] is True
           PY
 
       - name: Run VALIDATION current versus sizing caps
         run: |
           python3 -m tools.simulation.conditioned_baseline_runner \
+            --population "$POPULATION" \
             --scenario-manifest /tmp/strategy/validation-v3.json \
-            --model-b-dir "$V3_MODEL" \
+            --model-b-dir "$V3_MODEL" --model-b-population "$POPULATION" \
             --trials 1200 --policies current,cap_3,cap_4 \
             --out /tmp/strategy/validation-arena.json
           python3 -m tools.simulation.conditioned_baseline_report \
@@ -114,16 +121,20 @@ jobs:
         if: steps.validation.outputs.test_authorized == 'true'
         run: |
           python3 -m tools.simulation.sequential_postflop \
+            --population "$POPULATION" \
             --generate-only --n 96 --reps 2 --seed 20260912 --split TEST \
             --scenario-out /tmp/strategy/test-v2.json --out /tmp/strategy/gen-test.json
           python3 tools/simulation/retarget_scenario_manifest.py \
+            --population "$POPULATION" \
             --manifest /tmp/strategy/test-v2.json \
             --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
             --out /tmp/strategy/test-v3.json
           python3 - <<'PY'
-          import json
+          import json, os
           a=json.load(open('/tmp/strategy/test-v2.json'))
           b=json.load(open('/tmp/strategy/test-v3.json'))
+          assert a['population_id']==os.environ['POPULATION']
+          assert b['population_id']==os.environ['POPULATION']
           assert a['scenario_fingerprint_sha256']==b['scenario_fingerprint_sha256']
           assert a['scenarios']==b['scenarios']
           assert len(a['scenarios'])==192
@@ -137,8 +148,9 @@ jobs:
         run: |
           test -n "$FINALIST"
           python3 -m tools.simulation.conditioned_baseline_runner \
+            --population "$POPULATION" \
             --scenario-manifest /tmp/strategy/test-v3.json \
-            --model-b-dir "$V3_MODEL" \
+            --model-b-dir "$V3_MODEL" --model-b-population "$POPULATION" \
             --trials 1200 --policies "current,$FINALIST" \
             --out /tmp/strategy/test-arena.json
           python3 -m tools.simulation.conditioned_baseline_report \
@@ -177,6 +189,7 @@ jobs:
           decision={
             'schema':'poker-strategy-candidate-decision/v1',
             'cycle':'2026-09-12',
+            'population_id':__import__('os').environ['POPULATION'],
             'contract':'training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json',
             'contract_sha256':sha('training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'),
             'code_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
@@ -201,6 +214,7 @@ jobs:
           text=[
             '# v84 strategy candidate selection', '',
             'Pre-specified paired evaluation for issues #11/#40 against the response-conditioned Model B v3 environment.', '',
+            f"Population: **{decision['population_id']}**.",
             f"VALIDATION outcome: **{val['outcome']}**.",
             f"Frozen finalist: **{val.get('frozen_finalist') or 'none'}**.",
             f"Protected TEST consumed: **{'yes' if test else 'no'}**.",
