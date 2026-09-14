@@ -1,0 +1,89 @@
+name: Finalize 2026-09-12 training cycle
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-42-final-training-state-20260914
+    paths:
+      - 'tools/finalize_training_cycle.py'
+      - 'training/gates/20260912_*.json'
+      - 'training/registry.json'
+      - 'training/runs/20260912_population_increment_cycle/**'
+      - 'training/runs/20260913_strategy_candidate_v84/**'
+      - 'training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'
+      - '.github/workflows/finalize-training-cycle.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-training-cycle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Reconfirm unified gate
+        run: |
+          python3 tools/evaluate_promotion_gates.py \
+            --evidence training/gates/20260912_evidence.json \
+            --contract training/PROMOTION_GATE_CONTRACT.json \
+            --out /tmp/20260912_gate_report.json \
+            --require-ready
+          cmp /tmp/20260912_gate_report.json training/gates/20260912_report.json
+
+      - name: Generate immutable final state
+        run: |
+          python3 tools/finalize_training_cycle.py \
+            --gate-merge-commit 2b824196b08b3f0e6a345859250c12f0878c8c00 \
+            --expected-registry-blob bbf2ea6f32f7ac8aea5dd92c4ed0f4839c6d7879 \
+            --out training/runs/20260912_population_increment_cycle/FINAL_STATE.json
+
+      - name: Verify deterministic regeneration
+        run: |
+          cp training/runs/20260912_population_increment_cycle/FINAL_STATE.json /tmp/final-state-first.json
+          python3 tools/finalize_training_cycle.py \
+            --gate-merge-commit 2b824196b08b3f0e6a345859250c12f0878c8c00 \
+            --expected-registry-blob bbf2ea6f32f7ac8aea5dd92c4ed0f4839c6d7879 \
+            --out training/runs/20260912_population_increment_cycle/FINAL_STATE.json \
+            --check
+          cmp /tmp/final-state-first.json training/runs/20260912_population_increment_cycle/FINAL_STATE.json
+
+      - name: Assert no production pointer/site transition
+        run: |
+          test "$(git hash-object training/registry.json)" = bbf2ea6f32f7ac8aea5dd92c4ed0f4839c6d7879
+          test "$(git hash-object site/index.html)" = 8b2a63722562f913fb95871f24be664e9c210c68
+          python3 - <<'PY'
+          import json
+          d=json.load(open('training/runs/20260912_population_increment_cycle/FINAL_STATE.json'))
+          assert d['production_transition']['type']=='NO_OP_RETAIN_ALL'
+          assert d['production_transition']['registry_changed'] is False
+          assert d['production_transition']['model_a_changed'] is False
+          assert d['production_transition']['model_b_changed'] is False
+          assert d['production_transition']['engine_changed'] is False
+          assert d['production_transition']['site_changed'] is False
+          assert all(x['decision']=='RETAIN_BASELINE' for x in d['decisions'].values())
+          assert d['holdout_protection']['strategy_test_consumed'] is False
+          PY
+
+      - name: Persist final state
+        run: |
+          git config user.name 'poker-engine finalizer bot'
+          git config user.email 'finalizer-bot@users.noreply.github.com'
+          git add training/runs/20260912_population_increment_cycle/FINAL_STATE.json
+          if git diff --cached --quiet; then
+            echo 'Final state already current.'
+            exit 0
+          fi
+          git commit -m 'Persist immutable 2026-09-12 final training state'
+          git push origin HEAD:${GITHUB_REF_NAME}
