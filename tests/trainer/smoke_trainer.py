@@ -22,6 +22,13 @@ async def main() -> None:
         page.on("pageerror", lambda exc: page_errors.append(str(exc)))
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
+
+        # Replayer hand-class helper runs in the real assembled browser application.
+        hand_classes = await page.evaluate(
+            "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"
+        )
+        assert hand_classes == {"suited": "AKs", "offsuit": "AKo", "pair": "77", "hidden": "", "backs": ""}, hand_classes
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -94,6 +101,7 @@ async def main() -> None:
         assert await page.locator("#trainerPage").is_hidden()
 
         snapshot = {
+            "replayer_hand_classes": hand_classes,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,
