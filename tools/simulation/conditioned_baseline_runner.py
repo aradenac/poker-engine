@@ -21,15 +21,18 @@ async def run(args) -> dict:
     original_env = arena.ModelBEnvironment
     original_rollout = arena.rollout
     original_oracle = arena.AnalyzerOracle
+    original_preflop_prefix = arena.preflop_prefix
     arena.ModelBEnvironment = ConditionedModelBEnvironment
     arena.rollout = conditioned.rollout
     arena.AnalyzerOracle = BaselineAnalyzerOracle
+    arena.preflop_prefix = conditioned.preflop_prefix_for_v83
     try:
         document = await arena.run(args)
     finally:
         arena.ModelBEnvironment = original_env
         arena.rollout = original_rollout
         arena.AnalyzerOracle = original_oracle
+        arena.preflop_prefix = original_preflop_prefix
 
     hashes = sorted(set(BaselineAnalyzerOracle.fallback_hand_hashes))
     document.setdefault("metadata", {})["oracle_reconstruction_fallback"] = {
@@ -43,6 +46,11 @@ async def run(args) -> dict:
     }
     document["metadata"]["environment_role"] = "unpromoted_response_conditioned_candidate"
     document["metadata"]["production_effect"] = "NONE"
+    document["metadata"]["synthetic_history_compatibility"] = {
+        "rule": "French PokerStars source histories are normalized to the equivalent English v83 parser grammar before synthetic postflop actions are appended.",
+        "strategy_effect": "NONE",
+        "cards_amounts_action_chronology_preserved": True,
+    }
     return document
 
 
