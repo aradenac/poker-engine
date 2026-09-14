@@ -10,20 +10,32 @@ on:
     branches-ignore:
       - main
     paths:
+      - 'training/populations/registry.json'
+      - 'tools/populations/**'
       - 'tools/training/plan_snapshot_cycle.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
+      - 'tests/populations/**'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - '.github/workflows/plan-ingested-cycle.yml'
   pull_request:
     paths:
+      - 'training/populations/registry.json'
+      - 'tools/populations/**'
       - 'tools/training/plan_snapshot_cycle.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
+      - 'tests/populations/**'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - '.github/workflows/ingest-artifacts.yml'
       - '.github/workflows/plan-ingested-cycle.yml'
   workflow_dispatch:
+    inputs:
+      population:
+        description: 'Explicit population_id to plan'
+        required: true
+        default: 'legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1'
+        type: string
 
 permissions:
   contents: read
@@ -32,21 +44,36 @@ concurrency:
   group: plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
   cancel-in-progress: false
 
+env:
+  LEGACY_INGESTION_POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
+
 jobs:
   planner-contract:
     if: github.event_name != 'workflow_run'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compile generic planning helpers
+      - name: Compile population planning helpers
         run: |
           python3 -m py_compile \
+            tools/populations/registry.py \
             tools/training/plan_snapshot_cycle.py \
             tools/training/classify_increment.py \
             tools/training/write_increment_gate.py \
+            tests/populations/test_population_registry.py \
             tests/training/test_snapshot_cycle_planner.py
-      - name: Exercise generic planner fixtures
+      - name: Validate population registry contracts
+        run: python3 tests/populations/test_population_registry.py
+      - name: Exercise population-scoped planner fixtures
         run: python3 tests/training/test_snapshot_cycle_planner.py
+      - name: Verify scientific CLI requires explicit population
+        run: |
+          set -euo pipefail
+          if python3 -m tools.training.plan_snapshot_cycle >/tmp/no-pop.out 2>/tmp/no-pop.err; then
+            echo 'planner unexpectedly accepted an implicit population'
+            exit 1
+          fi
+          grep -q -- '--population' /tmp/no-pop.err
 
   plan-and-materialize:
     if: >-
@@ -58,6 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHONDONTWRITEBYTECODE: '1'
+      POPULATION_ID: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
     steps:
       - name: Checkout latest main after ingestion
         uses: actions/checkout@v4
@@ -76,13 +104,15 @@ jobs:
         id: planner
         run: |
           set -euo pipefail
-          python3 tools/training/plan_snapshot_cycle.py > /tmp/snapshot-cycle-plan-output.json
+          python3 -m tools.training.plan_snapshot_cycle --population "$POPULATION_ID" > /tmp/snapshot-cycle-plan-output.json
           cat /tmp/snapshot-cycle-plan-output.json
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           r=json.load(open('/tmp/snapshot-cycle-plan-output.json', encoding='utf-8'))
           print('status='+str(r['status']))
+          print('population_id='+str(r.get('population_id','')))
           print('run_id='+str(r.get('run_id','')))
+          print('plan='+str(r.get('plan','')))
           print('contract='+str(r.get('contract','')))
           PY
 
@@ -90,7 +120,7 @@ jobs:
         if: steps.planner.outputs.status == 'PLANNED'
         env:
           CYCLE_CONFIG: ${{ steps.planner.outputs.contract }}
-          RUN_ID: ${{ steps.planner.outputs.run_id }}
+          PLAN_PATH: ${{ steps.planner.outputs.plan }}
         run: |
           set -euo pipefail
           python3 tools/training/run_continuous_cycle.py \
@@ -103,7 +133,8 @@ jobs:
           assert r['promotion_applied'] is False, r
           gate=r['gate']
           assert gate['status'] in {'PASS','BLOCKED'}, gate
-          run=pathlib.Path('training/runs')/os.environ['RUN_ID']
+          plan=pathlib.Path(os.environ['PLAN_PATH'])
+          run=plan.parent
           run.mkdir(parents=True, exist_ok=True)
           shutil.copyfile('/tmp/continuous-cycle-execution.json', run/'EXECUTION.json')
           print(json.dumps({'cycle_status':r['status'],'gate':gate,'promotion_applied':r['promotion_applied']}, indent=2))
@@ -112,12 +143,13 @@ jobs:
       - name: Verify no production path was changed
         if: steps.planner.outputs.status == 'PLANNED'
         env:
-          RUN_ID: ${{ steps.planner.outputs.run_id }}
+          PLAN_PATH: ${{ steps.planner.outputs.plan }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, os
-          r=json.load(open(f"training/runs/{os.environ['RUN_ID']}/EXECUTION.json", encoding='utf-8'))
+          import json, os, pathlib
+          run=pathlib.Path(os.environ['PLAN_PATH']).parent
+          r=json.load(open(run/'EXECUTION.json', encoding='utf-8'))
           assert r['production_before']==r['production_after'], r
           assert r['production_changed_paths_detected']==[], r
           assert r['production_restoration_verified'] is True, r
@@ -126,17 +158,18 @@ jobs:
       - name: Persist immutable planned cycle
         if: steps.planner.outputs.status == 'PLANNED'
         env:
-          RUN_ID: ${{ steps.planner.outputs.run_id }}
+          PLAN_PATH: ${{ steps.planner.outputs.plan }}
+          CYCLE_CONFIG: ${{ steps.planner.outputs.contract }}
         run: |
           set -euo pipefail
           git config user.name 'poker-engine cycle bot'
           git config user.email 'cycle-bot@users.noreply.github.com'
-          git add "training/runs/$RUN_ID" "training/automation/generated/$RUN_ID.json" training/datasets
+          git add "$(dirname "$PLAN_PATH")" "$CYCLE_CONFIG" training/datasets training/populations
           test -n "$(git status --porcelain)"
-          git commit -m "Plan and materialize continuous cycle $RUN_ID"
+          git commit -m "Plan and materialize population cycle ${{ steps.planner.outputs.population_id }} / ${{ steps.planner.outputs.run_id }}"
           git push origin HEAD:main
 
       - name: Report no pending snapshot
         if: steps.planner.outputs.status != 'PLANNED'
         run: |
-          echo "No new snapshot cycle to materialize: ${{ steps.planner.outputs.status }}"
+          echo "No new snapshot cycle to materialize for $POPULATION_ID: ${{ steps.planner.outputs.status }}"
