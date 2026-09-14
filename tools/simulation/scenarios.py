@@ -232,7 +232,7 @@ def deterministic_runout(hero_cards: list[str], flop: list[str], opponent_cards:
 def materialize_scenario(base: dict, env: ModelBEnvironment, *, master_seed: int, rep: int) -> dict:
     hand_id = base["hand_id"]
     opponent = base["opponent"]
-    profile = env.sample_profile(master_seed, hand_id, rep, "profile")
+    profile = env.sample_profile(base["population_id"], master_seed, hand_id, rep, "profile")
     opponent_cards = env.sample_hole_cards(
         profile,
         base["positions"][opponent],
@@ -240,13 +240,15 @@ def materialize_scenario(base: dict, env: ModelBEnvironment, *, master_seed: int
         base["preflop_roles"][opponent],
         base["hero_cards"],
         base["flop"],
+        base["population_id"],
         master_seed,
         hand_id,
         rep,
         "opponent-cards",
     )
     runout = deterministic_runout(
-        base["hero_cards"], base["flop"], opponent_cards, master_seed, hand_id, rep
+        base["hero_cards"], base["flop"], opponent_cards,
+        base["population_id"], master_seed, hand_id, rep
     )
     scenario_key = {
         "population_id": base["population_id"],
@@ -266,7 +268,7 @@ def materialize_scenario(base: dict, env: ModelBEnvironment, *, master_seed: int
         "profile": int(profile),
         "opponent_cards": opponent_cards,
         "runout": runout,
-        "environment_seed": hseed(master_seed, hand_id, rep, "environment"),
+        "environment_seed": hseed(base["population_id"], master_seed, hand_id, rep, "environment"),
     }
 
 
@@ -283,6 +285,10 @@ def build_scenario_manifest(
     root: Path = ROOT,
 ) -> dict:
     population = resolve_population(root, population_id)
+    if env.population_id != population_id:
+        raise ValueError(
+            f"Model B population mismatch: expected {population_id}, got {env.population_id!r}"
+        )
     base, source_meta = eligible_base_scenarios(
         population_id=population_id,
         root=root,

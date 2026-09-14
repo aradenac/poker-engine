@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+LEGACY = "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
 sys.path.insert(0, str(ROOT))
 
 from tools.simulation.model_b_runtime import (  # noqa: E402
@@ -54,12 +55,17 @@ class CardRuntimeTests(unittest.TestCase):
 class PromotedModelBIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.env = ModelBEnvironment.from_registry(ROOT)
+        cls.env = ModelBEnvironment.from_population(LEGACY, ROOT)
 
     def test_promoted_model_loads(self):
         self.assertEqual(self.env.alias, "independent_model_b_v2")
+        self.assertEqual(self.env.population_id, LEGACY)
         self.assertEqual(len(self.env.profile_ids), 3)
         self.assertAlmostEqual(sum(self.env.profile_weights), 1.0, places=9)
+
+    def test_implicit_global_registry_selection_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "population_id is required"):
+            ModelBEnvironment.from_registry(ROOT)
 
     def test_action_probabilities_are_legal_and_normalized(self):
         free = self.env.action_probabilities(

@@ -18,7 +18,9 @@
         "currency": "PLAY_CHIPS",
         "format": "MIXED_ZOOM_REGULAR",
         "max_seats": 6,
-        "rake": {"policy": "HISTORICAL_OBSERVED_NOT_SEPARATELY_CERTIFIED"}
+        "rake": {
+          "policy": "HISTORICAL_OBSERVED_NOT_SEPARATELY_CERTIFIED"
+        }
       },
       "data": {
         "dataset_id": "NLHE_100-200",
@@ -33,8 +35,10 @@
         "model_a_postflop": "training/models/postflop_population_model_v5.json",
         "model_b": "training/runs/20260912_independent_profiles_v2/model",
         "hero_strategy": "user/releases/poker_range_equity_offline_multiway_v83.html",
-        "engine": "v83",
-        "pack": "user/artifacts/NLHE_100-200/bundle.json"
+        "engine": "user/releases/poker_range_equity_offline_multiway_v83.html",
+        "pack": "user/artifacts/NLHE_100-200/bundle.json",
+        "model_b_alias": "independent_model_b_v2",
+        "engine_version": "v83"
       },
       "storage": {
         "runs_root": "training/populations/legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1/runs",
@@ -45,7 +49,10 @@
         "notes": "Exact promoted v5/v2/v83 state preserved during migration; this population is explicitly mixed-format and must not be relabelled Zoom-only."
       },
       "promotion_history": [
-        {"source": "training/registry.json", "status": "MIGRATION_VIEW_ONLY"}
+        {
+          "source": "training/registry.json",
+          "status": "MIGRATION_VIEW_ONLY"
+        }
       ]
     },
     "pokerstars_nlhe_100-200_zoom_play_6max_v1": {
@@ -59,7 +66,9 @@
         "currency": "PLAY_CHIPS",
         "format": "ZOOM",
         "max_seats": 6,
-        "rake": {"policy": "OBSERVED_FROM_HAND_HISTORY_SUMMARY_ONLY"}
+        "rake": {
+          "policy": "OBSERVED_FROM_HAND_HISTORY_SUMMARY_ONLY"
+        }
       },
       "data": {
         "dataset_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
@@ -99,7 +108,9 @@
         "currency": "PLAY_CHIPS",
         "format": "ZOOM",
         "max_seats": 6,
-        "rake": {"policy": "UNKNOWN_NOT_ASSUMED"}
+        "rake": {
+          "policy": "UNKNOWN_NOT_ASSUMED"
+        }
       },
       "data": {
         "dataset_id": "pokerstars_nlhe_250-500_zoom_play_6max_v1",
@@ -107,9 +118,21 @@
         "snapshots_root": "training/populations/pokerstars_nlhe_250-500_zoom_play_6max_v1/data/snapshots",
         "increments_root": "training/populations/pokerstars_nlhe_250-500_zoom_play_6max_v1/data/increments"
       },
-      "artifacts": {"model_a_preflop": null, "model_a_postflop": null, "model_b": null, "hero_strategy": null, "engine": null, "pack": null},
-      "storage": {"runs_root": "training/populations/pokerstars_nlhe_250-500_zoom_play_6max_v1/runs", "cache_namespace": "pokerstars_nlhe_250-500_zoom_play_6max_v1"},
-      "compatibility": {"legacy_unscoped_artifacts_allowed": false},
+      "artifacts": {
+        "model_a_preflop": null,
+        "model_a_postflop": null,
+        "model_b": null,
+        "hero_strategy": null,
+        "engine": null,
+        "pack": null
+      },
+      "storage": {
+        "runs_root": "training/populations/pokerstars_nlhe_250-500_zoom_play_6max_v1/runs",
+        "cache_namespace": "pokerstars_nlhe_250-500_zoom_play_6max_v1"
+      },
+      "compatibility": {
+        "legacy_unscoped_artifacts_allowed": false
+      },
       "promotion_history": []
     },
     "pokerstars_nlhe_nl5_zoom_real_eur_6max_v1": {
@@ -124,7 +147,9 @@
         "currency": "EUR",
         "format": "ZOOM",
         "max_seats": 6,
-        "rake": {"policy": "UNKNOWN_NOT_ASSUMED"}
+        "rake": {
+          "policy": "UNKNOWN_NOT_ASSUMED"
+        }
       },
       "data": {
         "dataset_id": "pokerstars_nlhe_nl5_zoom_real_eur_6max_v1",
@@ -132,9 +157,21 @@
         "snapshots_root": "training/populations/pokerstars_nlhe_nl5_zoom_real_eur_6max_v1/data/snapshots",
         "increments_root": "training/populations/pokerstars_nlhe_nl5_zoom_real_eur_6max_v1/data/increments"
       },
-      "artifacts": {"model_a_preflop": null, "model_a_postflop": null, "model_b": null, "hero_strategy": null, "engine": null, "pack": null},
-      "storage": {"runs_root": "training/populations/pokerstars_nlhe_nl5_zoom_real_eur_6max_v1/runs", "cache_namespace": "pokerstars_nlhe_nl5_zoom_real_eur_6max_v1"},
-      "compatibility": {"legacy_unscoped_artifacts_allowed": false},
+      "artifacts": {
+        "model_a_preflop": null,
+        "model_a_postflop": null,
+        "model_b": null,
+        "hero_strategy": null,
+        "engine": null,
+        "pack": null
+      },
+      "storage": {
+        "runs_root": "training/populations/pokerstars_nlhe_nl5_zoom_real_eur_6max_v1/runs",
+        "cache_namespace": "pokerstars_nlhe_nl5_zoom_real_eur_6max_v1"
+      },
+      "compatibility": {
+        "legacy_unscoped_artifacts_allowed": false
+      },
       "promotion_history": []
     }
   }
