@@ -3,7 +3,7 @@
   "artifact": "site/index.html",
   "identity": {
     "assembled_site": {
-      "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
+      "assets_tree_git_sha": "78244697f1c01a302dd9a99b3974def339642af5",
       "excluded_build_metadata": [
         "site/RELEASE.json",
         "site/deployment-meta.css"
@@ -16,7 +16,7 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "30eb5e01d4a314d6152aeb1ce4ed10cb0e8856ef"
+          "git_blob_sha": "9ade7f08b7bb47d49fa9aaf6787a109920deba8e"
         }
       }
     },
