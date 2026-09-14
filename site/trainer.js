@@ -10,20 +10,7 @@
     are profile/context conditioned but are not yet conditioned on the hidden combo.
 */
 
-const TRAINER_ASSETS={
-  modelA:{
-    preflop:"./assets/trainer/model_a/preflop_population_model_v5.json",
-    postflop:"./assets/trainer/model_a/postflop_population_model_v5.json"
-  },
-  modelB:{
-    profiles:"./assets/trainer/model_b/profiles.json",
-    ranges:"./assets/trainer/model_b/preflop_ranges.json",
-    actions:"./assets/trainer/model_b/postflop_actions.json",
-    sizing:"./assets/trainer/model_b/sizing.json",
-    contract:"./assets/trainer/model_b/prediction_contract.json"
-  },
-  hero:{ranges:"./assets/trainer/hero/custom_ranges_v1.json"}
-};
+const TRAINER_POPULATION_MANIFEST="./assets/trainer/population.json";
 
 const TRAINER_POSITIONS=["BTN","SB","BB","LJ","HJ","CO"];
 const TRAINER_PREFLOP_ORDER=["LJ","HJ","CO","BTN","SB","BB"];
@@ -31,11 +18,11 @@ const TRAINER_POSTFLOP_ORDER=["SB","BB","LJ","HJ","CO","BTN"];
 const TRAINER_HERO="Hero";
 const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};
 const TRAINER_REVIEW_CACHE_MAX=96;
-const trainerWarmAssets={started:false,promise:null,modelA:null,modelB:null,heroRanges:null,startedAt:0,finishedAt:0,error:null};
+const trainerWarmAssets={started:false,promise:null,population:null,modelA:null,modelB:null,heroRanges:null,startedAt:0,finishedAt:0,error:null};
 const trainerReviewCache={entries:new Map(),preModel:null,postModel:null,hits:0,misses:0,evictions:0};
 
 const trainerState={
-  open:false,mode:"training",loading:false,ready:false,error:"",modelB:null,heroRanges:null,
+  open:false,mode:"training",loading:false,ready:false,error:"",populationId:null,modelB:null,heroRanges:null,
   handNo:0,evalNo:0,hand:null,recommendation:null,feedback:null,
   pauseAfterDecision:false,busy:false,sizingTouched:false,
   perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false,cacheHits:0,cacheMisses:0},
@@ -98,17 +85,20 @@ async function trainerLoadWarmAssets(){
   trainerWarmAssets.started=true;trainerWarmAssets.startedAt=performance.now();
   trainerWarmAssets.promise=(async()=>{
     try{
+      const population=await trainerFetchJson(TRAINER_POPULATION_MANIFEST);
+      if(population?.schema!=="trainer-population-pack/v1"||!population?.population_id||!population?.assets)throw new Error("Pack trainer : manifeste de population invalide.");
+      const asset=population.assets;
       const [profiles,ranges,actions,sizing,contract,preflop,postflop,heroRanges]=await Promise.all([
-        trainerFetchJson(TRAINER_ASSETS.modelB.profiles),trainerFetchJson(TRAINER_ASSETS.modelB.ranges),
-        trainerFetchJson(TRAINER_ASSETS.modelB.actions),trainerFetchJson(TRAINER_ASSETS.modelB.sizing),
-        trainerFetchJson(TRAINER_ASSETS.modelB.contract),trainerFetchText(TRAINER_ASSETS.modelA.preflop),
-        trainerFetchText(TRAINER_ASSETS.modelA.postflop),trainerFetchJson(TRAINER_ASSETS.hero.ranges)
+        trainerFetchJson(asset.modelB.profiles),trainerFetchJson(asset.modelB.ranges),
+        trainerFetchJson(asset.modelB.actions),trainerFetchJson(asset.modelB.sizing),
+        trainerFetchJson(asset.modelB.contract),trainerFetchText(asset.modelA.preflop),
+        trainerFetchText(asset.modelA.postflop),trainerFetchJson(asset.hero.ranges)
       ]);
-      trainerWarmAssets.modelB={profiles,ranges,actions,sizing,contract};
+      trainerWarmAssets.population=population;trainerWarmAssets.modelB={profiles,ranges,actions,sizing,contract};
       trainerWarmAssets.modelA={preflop,postflop};trainerWarmAssets.heroRanges=heroRanges;
       trainerWarmAssets.finishedAt=performance.now();
       trainerState.perf.warmupMs=trainerWarmAssets.finishedAt-trainerWarmAssets.startedAt;
-      return {modelA:trainerWarmAssets.modelA,modelB:trainerWarmAssets.modelB,heroRanges:trainerWarmAssets.heroRanges};
+      return {population,modelA:trainerWarmAssets.modelA,modelB:trainerWarmAssets.modelB,heroRanges:trainerWarmAssets.heroRanges};
     }catch(err){trainerWarmAssets.error=err;trainerWarmAssets.promise=null;throw err;}
   })();
   return trainerWarmAssets.promise;
@@ -131,9 +121,10 @@ async function trainerEnsureModels(){
     const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB&&trainerWarmAssets.heroRanges),assets=await trainerLoadWarmAssets();
     trainerState.perf.warmHit=alreadyWarm;
     const {profiles,ranges,actions,sizing,contract}=assets.modelB;
+    if(!assets.population?.population_id)throw new Error("Pack trainer : population absente.");
     if(profiles.schema!=="independent-opponent-profiles/v2"||ranges.schema!=="independent-preflop-ranges/v2"||actions.schema!=="independent-postflop-actions/v2"||sizing.schema!=="independent-postflop-sizing/v2")throw new Error("Model B : schéma inattendu.");
     if(assets.heroRanges?.schema!=="trainer-hero-preflop-ranges/v1")throw new Error("Ranges Hero : schéma inattendu.");
-    trainerState.modelB=assets.modelB;trainerState.heroRanges=assets.heroRanges;
+    trainerState.populationId=assets.population.population_id;trainerState.modelB=assets.modelB;trainerState.heroRanges=assets.heroRanges;
 
     if(!state.populationModel){
       const content=assets.modelA.preflop;
@@ -147,7 +138,7 @@ async function trainerEnsureModels(){
     }
     trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    trainerRenderStatus(`Trainer prêt · Model A v5 + Model B v2 + ranges Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
+    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2 + ranges Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
