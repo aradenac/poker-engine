@@ -120,8 +120,9 @@ def discover(root: Path, *, snapshot_id: str | None = None) -> dict[str, Any]:
 def contract_for(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
     run_id = plan["run_id"]
     run_dir = f"training/runs/{run_id}"
-    selected_zip = f"{run_dir}/data/selected_{plan['stake'].replace('/', '_')}.zip"
-    inc_manifest = f"{run_dir}/data/increment_manifest.json"
+    increment_dir = f"training/datasets/{plan['dataset']}/increments/{plan['snapshot_id']}"
+    selected_zip = f"{increment_dir}/source/selected_{plan['stake'].replace('/', '_')}.zip"
+    inc_manifest = f"{increment_dir}/manifest.json"
     status_path = f"{run_dir}/data/increment_status.json"
     decisions = f"{run_dir}/data/decisions.jsonl"
     summary = f"{run_dir}/data/decisions_summary.json"
