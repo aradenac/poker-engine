@@ -34,8 +34,13 @@ def price_bucket(x: float | None) -> str:
 class ConditionedModelBEnvironment(ModelBEnvironment):
     """Read-only runtime supporting the selected v3 price-conditioned schema."""
 
-    def __init__(self, model_dir: Path, alias: str = "independent_model_b_v3_response_conditioned_candidate") -> None:
-        super().__init__(model_dir, alias=alias)
+    def __init__(
+        self,
+        model_dir: Path,
+        alias: str = "independent_model_b_v3_response_conditioned_candidate",
+        population_id: str | None = None,
+    ) -> None:
+        super().__init__(model_dir, alias=alias, population_id=population_id)
 
     def _validate(self) -> None:
         if self.profiles.get("schema") != "independent-opponent-profiles/v2":
@@ -123,3 +128,26 @@ class ConditionedModelBEnvironment(ModelBEnvironment):
         if not values:
             raise ValueError(f"no empirical sizing values for {row}")
         return values
+
+    def sample_sizing(
+        self,
+        *,
+        seed_parts: tuple[object, ...],
+        profile: int,
+        street: str,
+        mode: str,
+        action: str,
+        pot_type: str,
+        facing_price_to_pot: float | None = None,
+    ) -> float:
+        from tools.simulation.model_b_runtime import hseed
+
+        values = self.sizing_values(
+            profile=profile,
+            street=street,
+            mode=mode,
+            action=action,
+            pot_type=pot_type,
+            facing_price_to_pot=facing_price_to_pot,
+        )
+        return values[hseed(*seed_parts) % len(values)]
