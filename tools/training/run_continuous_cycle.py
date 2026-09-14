@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Execute a continuous-training cycle without permitting implicit promotion.
+"""Execute a fail-safe continuous-training cycle and optional explicit promotion.
 
-Version 1 is intentionally validation-only. It executes an ordered argv-only
-stage plan, snapshots all declared protected paths before the first stage, and
-restores them byte-for-byte if a stage fails or mutates protected state.
-Promotion will be layered on later behind an explicit atomic promotion plan;
-this runner never treats a green training command as authorization to move a
-pointer.
+Training/evaluation stages always run behind a rollback snapshot of declared
+production paths. A green training command never authorizes promotion by
+itself. `promotion_mode=explicit` additionally requires a versioned promotion
+plan and a PASS/promotion-ready gate, then applies only the exact preconditioned
+file replacements in that plan. Any failure restores the complete protected
+snapshot before returning non-zero.
 """
 from __future__ import annotations
 
@@ -17,13 +17,23 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
+
+from tools.training.atomic_promotion import (  # noqa: E402
+    PromotionError,
+    apply_promotion,
+    load_plan,
+)
+
 CONFIG_SCHEMA = "poker-continuous-cycle/v1"
 REPORT_SCHEMA = "poker-continuous-cycle-execution/v1"
 GATE_SCHEMA = "poker-promotion-gate-report/v1"
+PROMOTION_MODES = {"disabled", "explicit"}
 
 
 def canonical_json(data: dict[str, Any]) -> str:
@@ -172,8 +182,9 @@ def execute(
     config = load_json(config_path)
     if config.get("schema") != CONFIG_SCHEMA:
         raise RuntimeError(f"unexpected cycle config schema: {config.get('schema')!r}")
-    if config.get("promotion_mode", "disabled") != "disabled":
-        raise RuntimeError("v1 orchestrator only supports promotion_mode=disabled")
+    promotion_mode = str(config.get("promotion_mode", "disabled"))
+    if promotion_mode not in PROMOTION_MODES:
+        raise RuntimeError(f"unsupported promotion_mode: {promotion_mode!r}")
 
     cycle = str(config.get("cycle") or "")
     if not cycle:
@@ -184,11 +195,13 @@ def execute(
     stages = config.get("stages")
     if not isinstance(stages, list):
         raise RuntimeError("stages must be a list")
+    if promotion_mode == "explicit" and not isinstance(config.get("promotion_plan"), str):
+        raise RuntimeError("promotion_mode=explicit requires promotion_plan")
 
     report: dict[str, Any] = {
         "schema": REPORT_SCHEMA,
         "cycle": cycle,
-        "promotion_mode": "disabled",
+        "promotion_mode": promotion_mode,
         "status": "RUNNING",
         "stages": [],
         "production_restored": False,
@@ -210,6 +223,7 @@ def execute(
                 "production_changed_paths_detected": changed,
                 "production_after": snapshot.identities(),
                 "production_restoration_verified": not remaining,
+                "promotion_applied": False,
             })
             if remaining:
                 report["restoration_error_paths"] = remaining
@@ -284,12 +298,45 @@ def execute(
             "status": gate.get("status"),
             "promotion_ready": gate.get("promotion_ready"),
         }
-        if require_ready and (gate.get("status") != "PASS" or gate.get("promotion_ready") is not True):
+        ready = gate.get("status") == "PASS" and gate.get("promotion_ready") is True
+        if (require_ready or promotion_mode == "explicit") and not ready:
             return fail("promotion gate is not PASS/promotion_ready")
 
         changed = snapshot.changed()
         if changed:
-            return fail("production changed during validation-only cycle")
+            return fail("production changed before promotion boundary")
+
+        if promotion_mode == "explicit":
+            plan_path = resolve(root, config["promotion_plan"])
+            if not plan_path.is_file():
+                return fail(f"promotion plan missing: {plan_path}")
+            try:
+                promotion = apply_promotion(
+                    root=root,
+                    protected_paths=protected,
+                    plan=load_plan(plan_path),
+                )
+            except (PromotionError, OSError, ValueError, json.JSONDecodeError) as exc:
+                return fail(f"promotion transaction failed: {exc}")
+
+            changed = snapshot.changed()
+            expected_changed = promotion["affected_protected_paths"]
+            if set(changed) != set(expected_changed):
+                return fail(
+                    "promotion changed an unexpected protected-path set: "
+                    f"observed={sorted(changed)} expected={sorted(expected_changed)}"
+                )
+            report.update({
+                "status": "PASS",
+                "reason": "all stages and gates passed; explicit promotion transaction applied and verified",
+                "promotion_applied": True,
+                "promotion": promotion,
+                "production_changed_paths_detected": changed,
+                "production_after": snapshot.identities(),
+                "production_restoration_verified": True,
+            })
+            write_report(report_path, report)
+            return 0, report
 
         report.update({
             "status": "PASS",
