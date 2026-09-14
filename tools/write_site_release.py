@@ -6,10 +6,10 @@ The release metadata deliberately separates:
 - assembled static application identity;
 - live deployment verification, which is tracked separately by issue #45.
 
-The application identity covers the functional files served by the static site:
-site/index.html, site/trainer.js, site/trainer.css and the complete site/assets tree.
-Build-specific deployment-meta.css and RELEASE.json itself are excluded to avoid
-self-reference and deployment-time timestamp churn.
+The application identity covers site/index.html, site/trainer.js, site/trainer.css
+and the complete site/assets tree. Git blob/tree object IDs are content-derived,
+so they identify the exact functional bytes without introducing a self-reference.
+Build-specific deployment-meta.css and RELEASE.json itself are excluded.
 """
 
 from __future__ import annotations
@@ -29,7 +29,6 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "trainer.js",
     ROOT / "site" / "trainer.css",
 )
-ASSETS_PATH = ROOT / "site" / "assets"
 
 
 def sha256_file(path: Path) -> str:
@@ -52,46 +51,30 @@ def git_blob_sha(path: Path) -> str:
 
 def assets_tree_sha() -> str:
     # Cloudflare builds use a clean checkout and do not mutate site/assets.
-    # This Git tree therefore identifies the exact committed asset bytes.
     return git_output("rev-parse", "HEAD:site/assets")
 
 
 def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
-    functional = {
-        str(path.relative_to(ROOT)): {
-            "git_blob_sha": git_blob_sha(path),
-            "sha256": sha256_file(path),
-            "bytes": path.stat().st_size,
-        }
-        for path in FUNCTIONAL_FILES
-    }
-
-    assets = sorted(path for path in ASSETS_PATH.rglob("*") if path.is_file())
-    asset_manifest_lines = []
-    for path in assets:
-        rel = str(path.relative_to(ROOT))
-        asset_manifest_lines.append(f"{sha256_file(path)}  {rel}\n")
-    asset_manifest_sha256 = hashlib.sha256(
-        "".join(asset_manifest_lines).encode("utf-8")
-    ).hexdigest()
-
     release = dict(existing)
+    engine_sha256 = sha256_file(ENGINE_PATH)
+
     release["schema"] = "poker-site-release/v3"
     release["application"] = release.get("application", "Poker Range Equity Offline")
     release["version"] = release.get("version", "v83")
     release["artifact"] = "site/index.html"
     release["release_artifact"] = str(ENGINE_PATH.relative_to(ROOT))
-    release["sha256"] = sha256_file(ENGINE_PATH)
+    release["sha256"] = engine_sha256
     release["identity"] = {
         "engine_release": {
             "artifact": str(ENGINE_PATH.relative_to(ROOT)),
-            "sha256": sha256_file(ENGINE_PATH),
+            "sha256": engine_sha256,
         },
         "assembled_site": {
-            "functional_files": functional,
+            "functional_files": {
+                str(path.relative_to(ROOT)): {"git_blob_sha": git_blob_sha(path)}
+                for path in FUNCTIONAL_FILES
+            },
             "assets_tree_git_sha": assets_tree_sha(),
-            "assets_manifest_sha256": asset_manifest_sha256,
-            "assets_file_count": len(assets),
             "excluded_build_metadata": [
                 "site/RELEASE.json",
                 "site/deployment-meta.css",
@@ -117,7 +100,7 @@ def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
     )
     release["notes"] = (
         "Engine v83 and assembled application identities are distinct. "
-        "The assembled_site identity is derived from functional bytes at build time; "
+        "The assembled_site identity is derived from content-addressed Git objects; "
         "live production verification remains issue #45."
     )
     return release
