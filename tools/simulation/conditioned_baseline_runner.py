@@ -7,6 +7,7 @@ by the frozen v2 strategic baseline. It never changes registry promotion pointer
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 from pathlib import Path
 
@@ -16,15 +17,56 @@ from tools.simulation.baseline_runner import BaselineAnalyzerOracle
 from tools.simulation.model_b_conditioned_runtime import ConditionedModelBEnvironment
 
 
+class ConditionedAnalyzerOracle(BaselineAnalyzerOracle):
+    """Baseline oracle with deterministic diagnostics for parser/plan rejection.
+
+    The diagnostic path does not recover, skip, or alter a state. It only turns the
+    opaque JavaScript null-plan exception into reproducible evidence that identifies
+    whether parsing or review-plan construction rejected the synthetic history.
+    """
+
+    async def decide(self, hand_history: str) -> dict:
+        try:
+            return await super().decide(hand_history)
+        except Exception as exc:
+            text = str(exc)
+            if "Cannot read properties of null (reading 'actions')" not in text:
+                raise
+            diag = await self.page.evaluate(
+                """txt=>{
+                  const h=parsePokerStarsHand(txt,'sim');
+                  if(!h)return {parse_ok:false,plan_ok:false};
+                  const p=buildReviewBatchPlan(h);
+                  return {
+                    parse_ok:true,
+                    plan_ok:!!p,
+                    id:String(h.id??''),
+                    hero:String(h.heroName??''),
+                    action_count:Array.isArray(p?.actions)?p.actions.length:null,
+                    streets:Array.isArray(p?.actions)?[...new Set(p.actions.map(a=>a.street))]:[]
+                  };
+                }""",
+                hand_history,
+            )
+            digest = hashlib.sha256(hand_history.encode("utf-8")).hexdigest()
+            numbered = "\n".join(
+                f"{i + 1:02d}: {line}" for i, line in enumerate(hand_history.splitlines())
+            )
+            raise RuntimeError(
+                "conditioned synthetic history rejected before evaluation; "
+                f"sha256={digest} diag={json.dumps(diag, sort_keys=True)}\n{numbered}"
+            ) from exc
+
+
 async def run(args) -> dict:
-    BaselineAnalyzerOracle.fallback_hand_hashes = []
+    ConditionedAnalyzerOracle.fallback_hand_hashes = []
     original_env = arena.ModelBEnvironment
     original_rollout = arena.rollout
     original_oracle = arena.AnalyzerOracle
     original_preflop_prefix = arena.preflop_prefix
     arena.ModelBEnvironment = ConditionedModelBEnvironment
     arena.rollout = conditioned.rollout
-    arena.AnalyzerOracle = BaselineAnalyzerOracle
+    arena.AnalyzerOracle = ConditionedAnalyzerOracle
     arena.preflop_prefix = conditioned.preflop_prefix_for_v83
     try:
         document = await arena.run(args)
@@ -34,9 +76,9 @@ async def run(args) -> dict:
         arena.AnalyzerOracle = original_oracle
         arena.preflop_prefix = original_preflop_prefix
 
-    hashes = sorted(set(BaselineAnalyzerOracle.fallback_hand_hashes))
+    hashes = sorted(set(ConditionedAnalyzerOracle.fallback_hand_hashes))
     document.setdefault("metadata", {})["oracle_reconstruction_fallback"] = {
-        "count": len(BaselineAnalyzerOracle.fallback_hand_hashes),
+        "count": len(ConditionedAnalyzerOracle.fallback_hand_hashes),
         "unique_states": len(hashes),
         "hand_history_sha256": hashes,
         "rule": (
