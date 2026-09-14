@@ -1,0 +1,26 @@
+{
+  "code_commit": "2de08ebb176e84e3a19391631a6a1b224777c5b9",
+  "contract": "training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json",
+  "contract_sha256": "cc1fec6ffb9868992267287b181b47514dfd6fa74da515ee92ff2767a2f68e26",
+  "cycle": "2026-09-12",
+  "evidence_sha256": {
+    "validation_report.json": "bf5e30e430328132d63ba9dca6b75fdbb01dd048852e720d8da81d53f66f573f",
+    "validation_scenarios.json": "4034996c13baf94508d5cfd73a2147ef8072557405e12fad9ddfad538343311c",
+    "validation_selection.json": "6909402027f29c899992af081cf477f88daf79dfd60765fece5e5d04f06a9424"
+  },
+  "frozen_finalist": null,
+  "production_effect": "NONE",
+  "schema": "poker-strategy-candidate-decision/v1",
+  "scope": [
+    "heads_up_postflop"
+  ],
+  "strategy_decision": "RETAIN_BASELINE",
+  "test_consumed": false,
+  "test_outcome": "NOT_RUN_NO_VALIDATION_FINALIST",
+  "unsupported_scope": [
+    "preflop",
+    "multiway",
+    "overall_cash_game_win_rate"
+  ],
+  "validation_outcome": "RETAIN_BASELINE"
+}

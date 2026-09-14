@@ -1,0 +1,231 @@
+name: Protected v84 strategy candidate selection
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-40-strategy-selection-20260913
+    paths:
+      - 'training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'
+      - 'tools/simulation/strategy_candidate_gate.py'
+      - 'tools/simulation/conditioned_baseline_runner.py'
+      - 'tests/simulation/test_strategy_candidate_gate.py'
+      - 'tests/simulation/test_conditioned_baseline_runner.py'
+      - '.github/workflows/strategy-candidate-v84.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strategy-candidate-v84-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CONTRACT: training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json
+  V2_MODEL: training/runs/20260912_independent_profiles_v2/model
+  V3_MODEL: training/runs/20260913_model_b_response_v3/selected_candidate/model
+  OUT: training/runs/20260913_strategy_candidate_v84
+
+jobs:
+  select-and-confirm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate frozen selection contract
+        run: |
+          python3 -m py_compile tools/simulation/strategy_candidate_gate.py tests/simulation/test_strategy_candidate_gate.py tools/simulation/conditioned_baseline_runner.py tests/simulation/test_conditioned_baseline_runner.py
+          python3 tests/simulation/test_strategy_candidate_gate.py
+          python3 tests/simulation/test_conditioned_baseline_runner.py
+          python3 - <<'PY'
+          import json
+          c=json.load(open('training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'))
+          assert c['schema']=='poker-strategy-candidate-contract/v1'
+          assert c['validation']['split']=='VALIDATION'
+          assert c['validation']['base_hands']==96
+          assert c['validation']['repetitions']==2
+          assert c['validation']['candidates']==['cap_3','cap_4']
+          assert c['test']['confirmation_rule']['test_may_select_alternative'] is False
+          assert c['test']['confirmation_rule']['test_may_retune'] is False
+          assert c['strategy_environment']['production_effect']=='NONE'
+          PY
+
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Materialize paired VALIDATION scenarios
+        run: |
+          mkdir -p /tmp/strategy
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 96 --reps 2 --seed 20260912 --split VALIDATION \
+            --scenario-out /tmp/strategy/validation-v2.json --out /tmp/strategy/gen-validation.json
+          python3 tools/simulation/retarget_scenario_manifest.py \
+            --manifest /tmp/strategy/validation-v2.json \
+            --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
+            --out /tmp/strategy/validation-v3.json
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/strategy/validation-v2.json'))
+          b=json.load(open('/tmp/strategy/validation-v3.json'))
+          assert a['scenario_fingerprint_sha256']==b['scenario_fingerprint_sha256']
+          assert a['scenarios']==b['scenarios']
+          assert len(a['scenarios'])==192
+          assert len({x['hand_id'] for x in a['scenarios']})==96
+          assert b['scenario_materialization_provenance']['scenario_fingerprint_unchanged'] is True
+          PY
+
+      - name: Run VALIDATION current versus sizing caps
+        run: |
+          python3 -m tools.simulation.conditioned_baseline_runner \
+            --scenario-manifest /tmp/strategy/validation-v3.json \
+            --model-b-dir "$V3_MODEL" \
+            --trials 1200 --policies current,cap_3,cap_4 \
+            --out /tmp/strategy/validation-arena.json
+          python3 -m tools.simulation.conditioned_baseline_report \
+            --arena /tmp/strategy/validation-arena.json \
+            --out /tmp/strategy/validation-report.json
+
+      - name: Freeze VALIDATION finalist or retain v83
+        id: validation
+        run: |
+          python3 tools/simulation/strategy_candidate_gate.py \
+            --contract "$CONTRACT" \
+            --report /tmp/strategy/validation-report.json \
+            --phase validation \
+            --out /tmp/strategy/validation-selection.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          d=json.load(open('/tmp/strategy/validation-selection.json'))
+          print('outcome='+d['outcome'])
+          print('finalist='+(d['frozen_finalist'] or ''))
+          print('test_authorized='+('true' if d['test_authorized'] else 'false'))
+          PY
+
+      - name: Materialize protected TEST scenarios
+        if: steps.validation.outputs.test_authorized == 'true'
+        run: |
+          python3 -m tools.simulation.sequential_postflop \
+            --generate-only --n 96 --reps 2 --seed 20260912 --split TEST \
+            --scenario-out /tmp/strategy/test-v2.json --out /tmp/strategy/gen-test.json
+          python3 tools/simulation/retarget_scenario_manifest.py \
+            --manifest /tmp/strategy/test-v2.json \
+            --source-model-dir "$V2_MODEL" --target-model-dir "$V3_MODEL" \
+            --out /tmp/strategy/test-v3.json
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/strategy/test-v2.json'))
+          b=json.load(open('/tmp/strategy/test-v3.json'))
+          assert a['scenario_fingerprint_sha256']==b['scenario_fingerprint_sha256']
+          assert a['scenarios']==b['scenarios']
+          assert len(a['scenarios'])==192
+          assert len({x['hand_id'] for x in a['scenarios']})==96
+          PY
+
+      - name: Confirm frozen finalist on protected TEST
+        if: steps.validation.outputs.test_authorized == 'true'
+        env:
+          FINALIST: ${{ steps.validation.outputs.finalist }}
+        run: |
+          test -n "$FINALIST"
+          python3 -m tools.simulation.conditioned_baseline_runner \
+            --scenario-manifest /tmp/strategy/test-v3.json \
+            --model-b-dir "$V3_MODEL" \
+            --trials 1200 --policies "current,$FINALIST" \
+            --out /tmp/strategy/test-arena.json
+          python3 -m tools.simulation.conditioned_baseline_report \
+            --arena /tmp/strategy/test-arena.json \
+            --out /tmp/strategy/test-report.json
+          python3 tools/simulation/strategy_candidate_gate.py \
+            --contract "$CONTRACT" \
+            --report /tmp/strategy/test-report.json \
+            --phase test \
+            --validation-selection /tmp/strategy/validation-selection.json \
+            --out /tmp/strategy/test-confirmation.json
+
+      - name: Persist immutable strategy decision evidence
+        env:
+          VALIDATION_OUTCOME: ${{ steps.validation.outputs.outcome }}
+          FINALIST: ${{ steps.validation.outputs.finalist }}
+          TEST_AUTHORIZED: ${{ steps.validation.outputs.test_authorized }}
+        run: |
+          mkdir -p "$OUT"
+          cp /tmp/strategy/validation-v3.json "$OUT/validation_scenarios.json"
+          cp /tmp/strategy/validation-report.json "$OUT/validation_report.json"
+          cp /tmp/strategy/validation-selection.json "$OUT/validation_selection.json"
+          if [ "$TEST_AUTHORIZED" = true ]; then
+            cp /tmp/strategy/test-v3.json "$OUT/test_scenarios.json"
+            cp /tmp/strategy/test-report.json "$OUT/test_report.json"
+            cp /tmp/strategy/test-confirmation.json "$OUT/test_confirmation.json"
+          fi
+          python3 - <<'PY'
+          import hashlib, json, subprocess
+          from pathlib import Path
+          out=Path('training/runs/20260913_strategy_candidate_v84')
+          val=json.load(open(out/'validation_selection.json'))
+          test_path=out/'test_confirmation.json'
+          test=json.load(open(test_path)) if test_path.exists() else None
+          def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+          decision={
+            'schema':'poker-strategy-candidate-decision/v1',
+            'cycle':'2026-09-12',
+            'contract':'training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json',
+            'contract_sha256':sha('training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'),
+            'code_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+            'validation_outcome':val['outcome'],
+            'frozen_finalist':val.get('frozen_finalist'),
+            'test_consumed':test is not None,
+            'test_outcome':test.get('outcome') if test else 'NOT_RUN_NO_VALIDATION_FINALIST',
+            'strategy_decision':test.get('strategy_decision') if test else 'RETAIN_BASELINE',
+            'production_effect':'NONE',
+            'scope':['heads_up_postflop'],
+            'unsupported_scope':['preflop','multiway','overall_cash_game_win_rate'],
+            'evidence_sha256':{
+              'validation_scenarios.json':sha(out/'validation_scenarios.json'),
+              'validation_report.json':sha(out/'validation_report.json'),
+              'validation_selection.json':sha(out/'validation_selection.json'),
+            },
+          }
+          if test:
+            for name in ('test_scenarios.json','test_report.json','test_confirmation.json'):
+              decision['evidence_sha256'][name]=sha(out/name)
+          (out/'decision.json').write_text(json.dumps(decision,indent=2,ensure_ascii=False,sort_keys=True)+'\n')
+          text=[
+            '# v84 strategy candidate selection', '',
+            'Pre-specified paired evaluation for issues #11/#40 against the response-conditioned Model B v3 environment.', '',
+            f"VALIDATION outcome: **{val['outcome']}**.",
+            f"Frozen finalist: **{val.get('frozen_finalist') or 'none'}**.",
+            f"Protected TEST consumed: **{'yes' if test else 'no'}**.",
+            f"Final strategy decision: **{decision['strategy_decision']}**.", '',
+            'Scope is heads-up postflop only. No Model A/B, registry, engine release or site pointer is changed by this run.',
+          ]
+          (out/'README.md').write_text('\n'.join(text)+'\n')
+          PY
+          git config user.name 'poker-engine strategy bot'
+          git config user.email 'strategy-bot@users.noreply.github.com'
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            echo 'Strategy evidence already current.'
+          else
+            git commit -m 'Persist protected v84 strategy candidate decision'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: issue40-strategy-candidate-arena
+          path: |
+            /tmp/strategy/validation-arena.json
+            /tmp/strategy/test-arena.json
+            /tmp/strategy/validation-selection.json
+            /tmp/strategy/test-confirmation.json
+          if-no-files-found: ignore
