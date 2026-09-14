@@ -1,0 +1,91 @@
+{
+  "schema": "poker-preflop-canonical-runtime-parity-decision/v1",
+  "issue": 88,
+  "cycle": "2026-09-12-preflop-canonical-runtime-parity-followup",
+  "selection_split": "VALIDATION",
+  "test_used": false,
+  "test_authorized": false,
+  "production_effect": "NONE",
+  "baseline": {
+    "path": "training/models/preflop_population_model_v5.json",
+    "version": "preflop_v5_incremental_exact_marginals",
+    "nodes": 4554,
+    "population_decision_support": 117719
+  },
+  "canonical_key_audit": {
+    "mismatch_nodes": 4279,
+    "mismatch_node_fraction": 0.9396135265700483,
+    "mismatch_support": 42339,
+    "mismatch_support_fraction": 0.35966156695180895,
+    "diff_field_distribution": {
+      "hist": 4279
+    },
+    "explanation_distribution": {
+      "LEGACY_COMMA_DELIMITER_ONLY": 4279
+    },
+    "all_mismatches_explained": true,
+    "duplicated_context_derived_canonical_keys": 0,
+    "interpretation": "Every canonical-key/context mismatch is representation-only: legacy v5 canonical_key.hist separates multiple action tokens with ',' while context.history and the repo-native current key builder use '>'. Parsed position/action sequences are identical. Existing v5 is retained immutable; audits must normalize this legacy delimiter rather than treating these keys as distinct poker states."
+  },
+  "runtime_equivalence_audit": {
+    "equivalence_classes": 4536,
+    "collision_classes": 18,
+    "nodes_in_collision_classes": 36,
+    "distinct_canonical_keys_in_collision_classes": 36,
+    "support_in_collision_classes": 47076,
+    "support_fraction_in_collision_classes": 0.3999014602570528,
+    "action_level_collisions": 54,
+    "shadowed_support_sum_by_action": 2196,
+    "class_cause_distribution": {
+      "free_check": 18
+    },
+    "action_collision_cause_distribution": {
+      "free_check": 54
+    },
+    "all_collisions_free_check_only": true,
+    "interpretation": "All actual runtime-equivalence collisions are pairs that differ only by context.free_check. Production exact matching omits free_check, so overlapping actions select the higher-support exact node."
+  },
+  "strict_free_check_validation": {
+    "rows": 1676,
+    "free_check_rows": {
+      "false": 1525,
+      "true": 151
+    },
+    "current_exact_rows": 1641,
+    "strict_exact_rows": 1641,
+    "changed_selected_node_rows": 2,
+    "changed_probability_rows": 2,
+    "changed_rows_by_free_check": {
+      "false": 0,
+      "true": 2
+    },
+    "current_logloss": 0.8419085133896168,
+    "strict_logloss": 0.8415551480147061,
+    "delta_strict_minus_current": -0.00035336537491068227,
+    "paired_bootstrap": {
+      "hands": 320,
+      "samples": 5000,
+      "seed": 20260914,
+      "mean": -0.0003533653749105673,
+      "ci95": [
+        -0.0009814400733161599,
+        0.0
+      ],
+      "probability_candidate_better": 0.8676
+    }
+  },
+  "decision": "RETAIN_CURRENT_MATCHER",
+  "reason": "Including free_check in the exact predicate changes only 2 of 1,676 VALIDATION rows and has a small favorable point estimate, but the paired bootstrap 95% interval reaches 0. The pre-specified conservative promotion rule therefore does not establish a measurable held-out improvement; no finalist exists and locked TEST remains unconsumed.",
+  "repository_policy": {
+    "legacy_v5_keys": "do not rewrite; normalize ',' and '>' as equivalent history delimiters in diagnostics",
+    "future_repo_native_keys": "keep the current '>' delimiter consistently between canonical_key and context.history",
+    "runtime_matcher": "retain current v83/v5 exact predicate; do not add free_check without a future VALIDATION-qualified candidate",
+    "test_policy": "locked TEST remains unused for this follow-up"
+  },
+  "evidence": {
+    "actions_run": 34897770268,
+    "validation_job": 104156050001,
+    "artifact_id": 10369507467,
+    "full_model_audit_run": 34897388077
+  }
+}
