@@ -40,12 +40,16 @@ jobs:
           assert d['cache_namespace']==d['population_id']
           print(d['scenario_fingerprint_sha256'])
           PY
-      - name: Commit refactor and remove one-shot machinery
+      - name: Commit tested source refactor
         run: |
-          rm tools/patches/issue95_population_isolation_refactor.py .github/workflows/issue95-one-shot-refactor.yml
+          # Workflow files require a stronger GitHub App permission than the job token.
+          # Keep the generated workflow edit local; it will be applied separately through
+          # the authenticated repository connector after this source commit lands.
+          git checkout -- .github/workflows/sequential-arena.yml
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
           git config user.name 'poker-engine refactor bot'
           git config user.email 'refactor-bot@users.noreply.github.com'
-          git add -A
+          git add tools/simulation tests/simulation training/populations
           git status --short
           git commit -m 'Issue #95: bind arena and Model B to explicit populations'
           git push origin HEAD:issue-95-population-isolation-refactor
