@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -202,6 +203,14 @@ def test_current_cycle_snapshot_is_ready_with_all_candidates_retained() -> None:
         assert component["decision"] == "RETAIN_BASELINE", component
         assert component["promotion_allowed"] is False, component
     assert report["deployment_verification"]["status"] == "NOT_APPLICABLE"
+
+
+def test_continuous_cycle_runner_rolls_back_production_mutations() -> None:
+    subprocess.run(
+        [sys.executable, "tests/training/test_continuous_cycle.py"],
+        cwd=ROOT,
+        check=True,
+    )
 
 
 if __name__ == "__main__":
