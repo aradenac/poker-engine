@@ -1,0 +1,45 @@
+name: Certify NLHE 100-200 population
+
+on:
+  push:
+    paths:
+      - 'training/datasets/NLHE_100-200/**'
+      - 'tools/datasets/certify_population.py'
+      - 'tests/datasets/test_certify_population.py'
+      - '.github/workflows/population-certification.yml'
+  pull_request:
+    paths:
+      - 'training/datasets/NLHE_100-200/**'
+      - 'tools/datasets/certify_population.py'
+      - 'tests/datasets/test_certify_population.py'
+      - '.github/workflows/population-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Classification fixtures
+        run: python3 tests/datasets/test_certify_population.py
+      - name: Certify authoritative lineage
+        run: |
+          python3 -m tools.datasets.certify_population \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
+            --output /tmp/population-certification.json \
+            | tee /tmp/population-certification-summary.json
+      - name: Verify persisted certification evidence
+        run: cmp /tmp/population-certification.json training/datasets/NLHE_100-200/population_certification.json
+      - name: Preserve certification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: population-certification-${{ github.sha }}
+          path: |
+            /tmp/population-certification.json
+            /tmp/population-certification-summary.json
+          if-no-files-found: error
+          retention-days: 30

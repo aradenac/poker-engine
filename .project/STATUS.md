@@ -4,97 +4,105 @@ Last update: 2026-09-14
 
 ## Source of truth and active plan
 
-GitHub repository `aradenac/poker-engine` is the durable source of truth. The active delivery plan is **issue #92 — Moteur NLHE 100/200 Zoom : préflop, ranges Hero et entraînement continu**. A future session must follow #92 and the dependency order in `.project/PLAN.md`; it must not revive closed tickets merely because they still appear in historical reports.
+GitHub repository `aradenac/poker-engine` is the durable source of truth. The active delivery plan is **issue #92 — Moteur NLHE 100/200 Zoom : préflop, ranges Hero et entraînement continu**. Follow its dependency order; do not revive closed historical tickets merely because they appear in older reports.
 
-The immediate critical path is:
+Completed on the current critical path:
 
-1. #93 — reconcile handoff documentation and application identity;
-2. #94 — certify the PokerStars NLHE 100/200 Zoom play-money corpus;
-3. #95 — isolate datasets/models/strategies by population;
-4. #96 — unify preflop context/probability contracts;
-5. #97/#98 — deliver Hero range editing and compliance;
-6. #99–#109 — full-hand/multiway modelling, training, evaluation and preflop guidance;
-7. #110/#111/#45 — durable packs, Cloudflare catalogue and verified production;
-8. #112/#113 — new-hand snapshot to decision/release from one prompt.
+- **#93** — handoff documentation and application/release identity reconciled; merged through PR #115.
+- **#94** — target population certification implemented and measured in PR #116; certification evidence is `training/datasets/NLHE_100-200/population_certification.json`.
+
+Next critical path:
+
+1. **#95** — isolate datasets, models and strategies by population;
+2. **#96** — unify preflop context/probability contracts;
+3. **#97/#98** — Hero range editor and compliance;
+4. **#99–#109** — full-hand/multiway modelling, training, evaluation and preflop guidance;
+5. **#110/#111/#45** — durable packs, Cloudflare catalogue and verified live production;
+6. **#112/#113** — new-hand snapshot to decision/release from one prompt.
 
 #114 is consolidation work and #1 is historical provenance; neither blocks the product path.
 
+## Certified target population — #94
+
+The intended target population is now explicitly identified as:
+
+`pokerstars_nlhe_100-200_zoom_play_6max_v1`
+
+Contract:
+
+- PokerStars;
+- NLHE cash;
+- 100/200 play-money chips;
+- Zoom;
+- 6-max.
+
+The authoritative historical baseline plus complete 2026-09-12 inventory contain **31,607 unique raw hand IDs**. Conservative classification gives:
+
+- **23,789 ADMISSIBLE** target hands;
+- **7,818 EXCLUDED**;
+- **0 AMBIGUOUS**.
+
+The exclusions are:
+
+- **7,214** regular/classic 100/200 play-money 6-max hands;
+- **604** Zoom play-money 6-max hands at 100000/200000.
+
+Therefore the previously used **31,003** count is a correct blind-scoped 100/200 union, but **not** a Zoom-only corpus. Of those 31,003 100/200 hands, 23,789 are Zoom and 7,214 are regular-table hands.
+
+Certified target evidence:
+
+- hand-ID fingerprint SHA-256: `4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c`;
+- split: **19,016 TRAIN / 2,324 VALIDATION / 2,449 TEST**;
+- raw-union hand-ID fingerprint SHA-256: `316ae5b58630d852bac54bfc9af0fb53c83c37053677230328f3120ddacd98fb`;
+- no duplicate metadata conflict;
+- no same-language payload conflict;
+- no unparsed PokerStars hand header in the audited archives.
+
+Source archives remain immutable:
+
+- historical baseline SHA-256 `6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6`;
+- 2026-09-12 snapshot SHA-256 `374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb`.
+
+`tools/datasets/certify_population.py` performs the classification. `.github/workflows/population-certification.yml` regenerates the report and compares it byte-for-byte with the persisted evidence.
+
+## Consequence for promoted models
+
+Do **not** relabel the current promoted Model A v5, Model B v2 or engine v83 as Zoom-only. Their historical data lineage used the broader blind-scoped dataset, which includes the 7,214 regular-table 100/200 hands.
+
+The active legacy dataset pointer remains `NLHE_100-200` until #95 performs an explicit migration. **`training/registry.json` remains byte-identical to the closed 2026-09-12 cycle in #94**; the certified population identity lives in the immutable certification report and dataset documentation until #95 can migrate the registry transactionally.
+
+This distinction is critical: #94 certifies source membership; **#95 must create isolated population state and protect each population's dataset/model/strategy pointers from cross-contamination**.
+
 ## Current promoted baseline
 
-The 2026-09-12 training cycle remains a **retain-all / no-op production transition**. No model or engine candidate from that cycle replaced the promoted references.
+The 2026-09-12 training cycle remains a **retain-all / no-op production transition**. No candidate from that cycle replaced the promoted references.
 
-Authoritative baseline:
-
-- population label currently used by legacy assets: `NLHE 100-200`; its Zoom/play-money/table-size certification is the purpose of #94;
 - Model A preflop: `training/models/preflop_population_model_v5.json`, SHA-256 `ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca`;
 - Model A postflop: `training/models/postflop_population_model_v5.json`, SHA-256 `6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae`;
-- independent opponent environment: `independent_model_b_v2`, run `training/runs/20260912_independent_profiles_v2/`;
-- promoted recommendation engine: **v83**;
-- canonical engine artifact: `user/releases/poker_range_equity_offline_multiway_v83.html`, SHA-256 `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`;
-- registry pointer source: `training/registry.json`.
+- Model B: `independent_model_b_v2` under `training/runs/20260912_independent_profiles_v2/`;
+- recommendation engine: **v83**;
+- engine artifact: `user/releases/poker_range_equity_offline_multiway_v83.html`, SHA-256 `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`.
 
-Rejected candidates and experimental environments are immutable evidence only. They must not be substituted for promoted pointers.
+Rejected candidates and experimental environments remain immutable evidence only.
 
-## Closed 2026-09-12 cycle
+## Permanent #88 decision
 
-The verified September 12 snapshot produced a deterministic 3,268-hand unseen increment and a 31,003-hand 100/200 union under the legacy blind-scoped classifier. That count is **not yet a certification that every hand is Zoom/play-money**, hence #94.
-
-Final decisions:
-
-| Component | Decision | Result |
-|---|---|---|
-| Model A preflop | `RETAIN_BASELINE` | v5 retained |
-| Model A postflop | `RETAIN_BASELINE` | v5 retained |
-| Model B refresh | `RETAIN_BASELINE` | v2 retained |
-| Hero strategy | `RETAIN_BASELINE` | v83 retained |
-
-The immutable closure is `training/runs/20260912_population_increment_cycle/FINAL_STATE.json`. The unified gate `PASS` means the evidence/decision process was valid; it does not mean rejected candidates satisfied their quality gates.
-
-## Preflop parity decision — issue #88
-
-#88 is complete and must not be reopened without new evidence. The historical preflop key separators were shown to be semantically equivalent under the current v5 matcher. The current matcher is retained. Do **not** mass-materialize missing nodes merely to eliminate textual key differences.
-
-The targeted topology experiment from #61 was also completed. Its evidence remains useful, but the new generic work is tracked by #96/#99/#101 rather than by reopening #61.
+#88 is closed. Historical preflop key separator variants were shown to be semantically equivalent under the retained v5 matcher. Do not mass-create missing nodes or change the incumbent matcher merely to eliminate textual differences. Any future behavior change is a new candidate and must pass the active gates.
 
 ## Strategy evidence scope
 
-The protected v84-oriented campaign compared `current`, `cap_3` and `cap_4` only in a heads-up postflop response-conditioned environment. Neither candidate established the pre-specified confidence criterion, so v83 was retained and protected strategy TEST was not consumed.
+The protected v84-oriented campaign compared `current`, `cap_3` and `cap_4` only in a heads-up postflop response-conditioned environment. Neither candidate met the pre-specified confidence criterion, so v83 was retained and protected strategy TEST was not consumed.
 
-This is not evidence that v83 is globally optimal, nor a complete preflop/multiway cash-game benchmark. The full-hand benchmark and preflop selection are tracked by #99/#100/#105/#108.
+This is not evidence of global optimality. Full-hand/multiway validation is tracked by #99/#100/#105/#108.
 
-## Application and release identity
+## Application and deployment identity
 
-Engine version, assembled static application and deployed Cloudflare revision are distinct identities.
+Engine release, assembled static application and live Cloudflare deployment remain separate identities.
 
-`site/RELEASE.json` uses `poker-site-release/v3` and identifies:
+`site/RELEASE.json` uses `poker-site-release/v3`; `tools/write_site_release.py --check` guards the assembled functional bytes. `published=true` or a successful build is not live-production proof.
 
-- immutable engine v83 by SHA-256;
-- assembled functional application bytes by content-addressed Git objects for `site/index.html`, `site/trainer.js`, `site/trainer.css` and `site/assets`;
-- live publication separately as `UNVERIFIED_LIVE` until #45 proves the canonical URL and deployed revision.
+#45 remains open for canonical production URL, exact served revision, live analyser/trainer/assets smoke and production-versus-preview policy.
 
-`tools/write_site_release.py --check` is the permanent stale-identity guard. Cloudflare regenerates the repository/build identity during its build; `site/deployment-meta.css` carries deployment-specific build metadata and is intentionally excluded from the functional application identity.
+## Immediate continuation
 
-A successful build, `published=true`, or a repository release identity is **not** proof that a specific production URL is serving those bytes.
-
-## Application/trainer baseline
-
-The static site contains the analyser/replayer and 6-max trainer. Existing delivered work includes the trainer, bounded parallel review, custom-range sampling, coherent user artifact bundle automation, replayer visible-hand-class labels, continuous-cycle orchestration primitives, atomic promotion safeguards and the generic snapshot-cycle planner.
-
-Those earlier tickets are closed accomplishments; do not re-plan them as active work. Their successor requirements are represented by #92 and its child issues.
-
-## Deployment
-
-Cloudflare Workers Git integration has produced both successful and failed builds across recent commits. #45 remains open because the following must be proven together:
-
-- canonical production URL;
-- exact deployed commit/build identity;
-- live analyser/trainer/assets smoke;
-- production-versus-preview trigger policy.
-
-Do not modify Cloudflare configuration speculatively to explain a historical failure that is not reproduced or diagnosed.
-
-## Next executable work after #93
-
-1. **#94 — certify the target corpus.** Classify platform/variant/play-money/Zoom/table-size/rake and quantify ambiguous/excluded hands without rewriting historical sources.
-2. **#45 — production verification lane.** It can proceed independently when Cloudflare endpoint/provider evidence is available.
-3. After #94, execute **#95**, then **#96**. Do not begin scientific promotion claims for later tickets before their declared dependencies/gates are satisfied.
+After #94 merges, start **#95** from the certified population identity above. Migration must preserve the existing legacy production pointers until population-specific state is demonstrably coherent; no scientific result should silently change because a directory was renamed or a subset was introduced.
