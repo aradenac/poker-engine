@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
+LEGACY = "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
 sys.path.insert(0, str(ROOT))
 from tools.simulation.sequential_postflop import AnalyzerOracle, choose_variant, load_or_build_manifest
 
@@ -28,10 +29,36 @@ class OracleContractTests(unittest.TestCase):
     def test_manifest_cannot_silently_change_environment(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'scenarios.json'
-            path.write_text(json.dumps({'model_b': {'artifact_sha256': {'profiles': 'old'}}}))
-            env = SimpleNamespace(artifact_fingerprints=lambda: {'profiles': 'new'})
+            path.write_text(json.dumps({
+                'schema': 'sequential-arena-scenario-manifest/v2',
+                'population_id': LEGACY,
+                'cache_namespace': LEGACY,
+                'model_b': {'artifact_sha256': {'profiles': 'old'}},
+            }))
+            env = SimpleNamespace(
+                population_id=LEGACY,
+                artifact_fingerprints=lambda: {'profiles': 'new'},
+            )
+            args = SimpleNamespace(population=LEGACY, scenario_manifest=str(path))
             with self.assertRaisesRegex(ValueError, 'fingerprints'):
-                load_or_build_manifest(SimpleNamespace(scenario_manifest=str(path)), env)
+                load_or_build_manifest(args, env)
+
+    def test_manifest_population_mismatch_is_rejected_before_reuse(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'scenarios.json'
+            path.write_text(json.dumps({
+                'schema': 'sequential-arena-scenario-manifest/v2',
+                'population_id': 'other-population',
+                'cache_namespace': 'other-population',
+                'model_b': {'artifact_sha256': {'profiles': 'same'}},
+            }))
+            env = SimpleNamespace(
+                population_id=LEGACY,
+                artifact_fingerprints=lambda: {'profiles': 'same'},
+            )
+            args = SimpleNamespace(population=LEGACY, scenario_manifest=str(path))
+            with self.assertRaisesRegex(ValueError, 'population mismatch'):
+                load_or_build_manifest(args, env)
 
 
 if __name__ == '__main__':
