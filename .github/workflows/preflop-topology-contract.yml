@@ -1,0 +1,52 @@
+name: Preflop topology contract
+
+on:
+  push:
+    paths:
+      - 'tools/training/evaluate_preflop_topology_candidate.py'
+      - 'tools/training/audit_preflop_runtime_topology_overlap.py'
+      - 'tests/training/test_preflop_topology_candidate.py'
+      - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
+      - '.github/workflows/preflop-topology-contract.yml'
+  pull_request:
+    paths:
+      - 'tools/training/evaluate_preflop_topology_candidate.py'
+      - 'tools/training/audit_preflop_runtime_topology_overlap.py'
+      - 'tests/training/test_preflop_topology_candidate.py'
+      - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
+      - '.github/workflows/preflop-topology-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Runtime matcher parity and holdout tests
+        run: python3 tests/training/test_preflop_topology_candidate.py
+      - name: Verify persisted #61 decision remains fail-closed
+        run: |
+          python3 - <<'PY'
+          import json
+          p='training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
+          r=json.load(open(p, encoding='utf-8'))
+          assert r['schema']=='poker-preflop-topology-selection/v1'
+          assert r['selection_split']=='VALIDATION'
+          assert r['test_used'] is False
+          assert r['test_authorized'] is False
+          assert r['production_effect']=='NONE'
+          assert r['outcome']=='RETAIN_BASELINE'
+          assert r['candidate_contract']['target_nodes']==51
+          assert r['candidate_contract']['target_train_rows']==2300
+          assert r['runtime_overlap']['conclusion']=='CANONICAL_TOPOLOGY_EXTENSION_IS_RUNTIME_NO_OP'
+          assert r['runtime_overlap']['canonical_diff_distribution_by_action']=={'hist':187}
+          assert r['runtime_overlap']['target_canonical_diff_distribution']=={'hist':51}
+          assert r['validation']['population_preflop_rows']==1676
+          assert r['validation']['target_rows']==287
+          assert r['validation']['all_alpha_candidates']['affected_rows']==0
+          assert r['validation']['paired_bootstrap']['ci95']==[0.0,0.0]
+          print(json.dumps({'status':'PASS','outcome':r['outcome'],'runtime_overlap':r['runtime_overlap']}, indent=2))
+          PY
