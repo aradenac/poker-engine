@@ -7,14 +7,22 @@ on:
     paths:
       - 'tools/training/run_continuous_cycle.py'
       - 'tools/training/atomic_promotion.py'
+      - 'tools/training/plan_snapshot_cycle.py'
+      - 'tools/training/classify_increment.py'
+      - 'tools/training/write_increment_gate.py'
       - 'tests/training/test_continuous_cycle.py'
+      - 'tests/training/test_snapshot_cycle_planner.py'
       - 'training/automation/**'
       - '.github/workflows/continuous-training-cycle.yml'
   pull_request:
     paths:
       - 'tools/training/run_continuous_cycle.py'
       - 'tools/training/atomic_promotion.py'
+      - 'tools/training/plan_snapshot_cycle.py'
+      - 'tools/training/classify_increment.py'
+      - 'tools/training/write_increment_gate.py'
       - 'tests/training/test_continuous_cycle.py'
+      - 'tests/training/test_snapshot_cycle_planner.py'
       - 'training/automation/**'
       - '.github/workflows/continuous-training-cycle.yml'
   workflow_dispatch:
@@ -37,10 +45,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compile transaction modules
-        run: python3 -m py_compile tools/training/atomic_promotion.py tools/training/run_continuous_cycle.py tests/training/test_continuous_cycle.py
+      - name: Compile transaction and planning modules
+        run: |
+          python3 -m py_compile \
+            tools/training/atomic_promotion.py \
+            tools/training/run_continuous_cycle.py \
+            tools/training/plan_snapshot_cycle.py \
+            tools/training/classify_increment.py \
+            tools/training/write_increment_gate.py \
+            tests/training/test_continuous_cycle.py \
+            tests/training/test_snapshot_cycle_planner.py
       - name: Exercise rollback and atomic-promotion contract
         run: python3 tests/training/test_continuous_cycle.py
+      - name: Exercise generic snapshot planner contract
+        run: python3 tests/training/test_snapshot_cycle_planner.py
 
   run-committed-cycle:
     if: github.event_name == 'workflow_dispatch'
