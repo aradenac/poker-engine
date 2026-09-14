@@ -47,17 +47,24 @@ def main() -> None:
     require(js, 'stacks[sb]-=.5;stacks[bb]-=1;', "blind stack accounting")
     assert "if(sb!==pfaSeat&&sb!==callerSeat)stacks[sb]-=.5" not in js
 
+    require(js, 'TRAINER_POPULATION_MANIFEST="./assets/trainer/population.json"', "population pack selector")
+    assert "TRAINER_ASSETS=" not in js, "trainer model paths must come from the population pack"
+    manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+    assert manifest["schema"] == "trainer-population-pack/v1"
+    assert manifest["population_id"] == "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+    assert manifest["population_identity"]["format"] == "MIXED_ZOOM_REGULAR"
     expected_assets = [
-        "assets/trainer/model_a/preflop_population_model_v5.json",
-        "assets/trainer/model_a/postflop_population_model_v5.json",
-        "assets/trainer/model_b/profiles.json",
-        "assets/trainer/model_b/preflop_ranges.json",
-        "assets/trainer/model_b/postflop_actions.json",
-        "assets/trainer/model_b/sizing.json",
-        "assets/trainer/model_b/prediction_contract.json",
+        manifest["assets"]["modelA"]["preflop"],
+        manifest["assets"]["modelA"]["postflop"],
+        manifest["assets"]["modelB"]["profiles"],
+        manifest["assets"]["modelB"]["ranges"],
+        manifest["assets"]["modelB"]["actions"],
+        manifest["assets"]["modelB"]["sizing"],
+        manifest["assets"]["modelB"]["contract"],
+        manifest["assets"]["hero"]["ranges"],
     ]
     for rel in expected_assets:
-        assert (SITE / rel).is_file(), f"missing trainer asset: {rel}"
+        assert (SITE / rel.removeprefix("./")).is_file(), f"missing trainer asset: {rel}"
 
     profiles = json.loads((SITE / "assets/trainer/model_b/profiles.json").read_text(encoding="utf-8"))
     assert profiles["schema"] == "independent-opponent-profiles/v2"

@@ -1,0 +1,32 @@
+{
+  "schema": "trainer-population-pack/v1",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "population_identity": {
+    "platform": "PokerStars",
+    "variant": "NLHE",
+    "stake": "100/200",
+    "money": "play",
+    "format": "MIXED_ZOOM_REGULAR",
+    "max_seats": 6
+  },
+  "engine_version": "v83",
+  "model_a_version": "v5",
+  "model_b_alias": "independent_model_b_v2",
+  "hero_strategy": "custom_ranges_v1",
+  "assets": {
+    "modelA": {
+      "preflop": "./assets/trainer/model_a/preflop_population_model_v5.json",
+      "postflop": "./assets/trainer/model_a/postflop_population_model_v5.json"
+    },
+    "modelB": {
+      "profiles": "./assets/trainer/model_b/profiles.json",
+      "ranges": "./assets/trainer/model_b/preflop_ranges.json",
+      "actions": "./assets/trainer/model_b/postflop_actions.json",
+      "sizing": "./assets/trainer/model_b/sizing.json",
+      "contract": "./assets/trainer/model_b/prediction_contract.json"
+    },
+    "hero": {
+      "ranges": "./assets/trainer/hero/custom_ranges_v1.json"
+    }
+  }
+}

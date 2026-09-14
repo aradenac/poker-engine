@@ -25,6 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from tools.populations.registry import namespace_path, require_artifact_role, resolve_population  # noqa: E402
 from tools.simulation.model_b_runtime import (  # noqa: E402
     ModelBEnvironment,
     best,
@@ -568,22 +569,36 @@ def summarize(results: list[dict]) -> dict:
     return out
 
 
-def default_paths(root: Path) -> dict[str, Path]:
-    registry = json.loads((root / "training/registry.json").read_text(encoding="utf-8"))
+def default_paths(root: Path, population_id: str) -> dict[str, Path | str]:
+    population = resolve_population(root, population_id)
     return {
-        "engine": root / "site/index.html",
-        "preflop": root / registry["promoted_model"]["preflop"],
-        "postflop": root / registry["promoted_model"]["postflop"],
+        "engine": root / require_artifact_role(population, "engine"),
+        "preflop": root / require_artifact_role(population, "model_a_preflop"),
+        "postflop": root / require_artifact_role(population, "model_a_postflop"),
+        "model_b": root / require_artifact_role(population, "model_b"),
+        "cache_namespace": str(population["storage"]["cache_namespace"]),
     }
 
 
 def load_or_build_manifest(args, env: ModelBEnvironment) -> dict:
+    population = resolve_population(ROOT, args.population)
+    if env.population_id != args.population:
+        raise ValueError(
+            f"Model B population mismatch: expected {args.population}, got {env.population_id!r}"
+        )
     if args.scenario_manifest:
         manifest = json.loads(Path(args.scenario_manifest).read_text(encoding="utf-8"))
+        if manifest.get("population_id") != args.population:
+            raise ValueError(
+                f"scenario manifest population mismatch: expected {args.population}, got {manifest.get('population_id')!r}"
+            )
+        if manifest.get("cache_namespace") != population["storage"]["cache_namespace"]:
+            raise ValueError("scenario manifest cache namespace does not match selected population")
         if manifest.get("model_b", {}).get("artifact_sha256") != env.artifact_fingerprints():
             raise ValueError("scenario manifest Model B fingerprints do not match selected environment")
         return manifest
     return build_scenario_manifest(
+        population_id=args.population,
         env=env,
         count=args.n,
         reps=args.reps,
@@ -596,8 +611,19 @@ def load_or_build_manifest(args, env: ModelBEnvironment) -> dict:
 
 
 async def run(args) -> dict:
-    env = (ModelBEnvironment(Path(args.model_b_dir), alias="candidate")
-           if args.model_b_dir else ModelBEnvironment.from_registry(ROOT))
+    defaults = default_paths(ROOT, args.population)
+    if args.model_b_dir:
+        if not args.model_b_population:
+            raise ValueError("--model-b-population is required with --model-b-dir")
+        if args.model_b_population != args.population:
+            raise ValueError(
+                f"explicit Model B population mismatch: arena={args.population} model_b={args.model_b_population}"
+            )
+        env = ModelBEnvironment(
+            Path(args.model_b_dir), alias="candidate", population_id=args.model_b_population
+        )
+    else:
+        env = ModelBEnvironment.from_population(args.population, ROOT)
     manifest = load_or_build_manifest(args, env)
     scenario_out = Path(args.scenario_out) if args.scenario_out else None
     if scenario_out:
@@ -612,7 +638,6 @@ async def run(args) -> dict:
             "results": [],
         }
 
-    defaults = default_paths(ROOT)
     engine = Path(args.engine or defaults["engine"])
     preflop = Path(args.preflop_model or defaults["preflop"])
     postflop = Path(args.postflop_model or defaults["postflop"])
@@ -657,6 +682,8 @@ async def run(args) -> dict:
     except (OSError, subprocess.CalledProcessError):
         code_commit = None
     metadata = {
+        "population_id": args.population,
+        "cache_namespace": defaults["cache_namespace"],
         "engine": {"path": engine.relative_to(ROOT).as_posix() if engine.is_relative_to(ROOT) else engine.as_posix(), "sha256": sha256_file(engine)},
         "model_a": {
             "preflop": {"path": preflop.relative_to(ROOT).as_posix() if preflop.is_relative_to(ROOT) else preflop.as_posix(), "sha256": sha256_file(preflop)},
@@ -683,8 +710,8 @@ async def run(args) -> dict:
 
 
 def parse_args() -> argparse.Namespace:
-    defaults = default_paths(ROOT)
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--population", required=True, help="explicit population id from training/populations/registry.json")
     parser.add_argument("--n", type=int, default=6, help="number of base hands")
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--reps", type=int, default=1)
@@ -693,16 +720,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hero", default="RoiDePiqueNique")
     parser.add_argument("--trials", type=int, default=1200)
     parser.add_argument("--policies", default="current,no_jam,cap_2,cap_3,cap_4")
-    parser.add_argument("--engine", default=defaults["engine"].as_posix())
-    parser.add_argument("--preflop-model", default=defaults["preflop"].as_posix())
-    parser.add_argument("--postflop-model", default=defaults["postflop"].as_posix())
+    parser.add_argument("--engine", default="")
+    parser.add_argument("--preflop-model", default="")
+    parser.add_argument("--postflop-model", default="")
     parser.add_argument("--model-b-dir", default="", help="explicit independent candidate model directory; does not modify promoted pointers")
+    parser.add_argument("--model-b-population", default="", help="population binding for an explicit Model B candidate")
     parser.add_argument("--chromium", default=None, help="optional Chromium executable path")
     parser.add_argument("--scenario-manifest", default="", help="reuse an existing scenario manifest verbatim")
     parser.add_argument("--scenario-out", default="", help="write generated scenario manifest")
     parser.add_argument("--generate-only", action="store_true", help="materialize scenarios without starting the analyser")
-    parser.add_argument("--out", default="artifacts/sequential_arena_v2.json")
-    return parser.parse_args()
+    parser.add_argument("--out", default="")
+    args = parser.parse_args()
+    if not args.out:
+        population = resolve_population(ROOT, args.population)
+        args.out = (namespace_path(ROOT, population, "runs") / "manual" / "sequential_arena_v2.json").as_posix()
+    return args
 
 
 async def main() -> None:

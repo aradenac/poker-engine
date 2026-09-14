@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic scenario generation for the independent sequential arena."""
+"""Deterministic scenario generation for one explicit poker population."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Iterable
 
 from tools.datasets.build_hand_history_increment import split_for
+from tools.populations.registry import namespace_path, resolve_population
 from tools.training.independent_profiles.build_model_b import (
     amount,
     apply_event,
@@ -41,10 +42,10 @@ def blind_from_stake(stake: str | None) -> float:
 
 
 def flop_cards(raw: str) -> list[str]:
-    m = FLOP_RE.search(raw)
-    if not m:
+    match = FLOP_RE.search(raw)
+    if not match:
         return []
-    cards = m.group(1).split()
+    cards = match.group(1).split()
     return cards if len(cards) == 3 else []
 
 
@@ -53,16 +54,16 @@ def seat_stacks(raw: str) -> dict[str, float]:
     for line in raw.replace("\r", "").splitlines():
         if line.startswith("***"):
             break
-        m = SEAT_STACK_RE.match(line.strip())
-        if not m:
+        match = SEAT_STACK_RE.match(line.strip())
+        if not match:
             continue
-        descriptor = m.group(3)
+        descriptor = match.group(3)
         nums = re.findall(r"\d[\d\s.,]*", descriptor)
         if not nums:
             continue
         value = amount(nums[0])
         if value is not None and value > 0:
-            out[m.group(2).strip()] = float(value)
+            out[match.group(2).strip()] = float(value)
     return out
 
 
@@ -81,31 +82,71 @@ def preflop_contributions(hand: dict) -> tuple[dict[str, float], set[str], set[s
     return dict(paid), active, allin, pot
 
 
-def dataset_from_registry(root: Path = ROOT) -> tuple[list[Path], set[str], dict]:
-    registry = json.loads((root / "training/registry.json").read_text(encoding="utf-8"))
-    dataset_name = registry["active_dataset"]
-    dataset = registry["datasets"][dataset_name]
-    archives = [root / dataset["baseline_archive"]]
-    latest = root / dataset["latest_snapshot_archive"]
-    if latest not in archives:
-        archives.append(latest)
-    return archives, {"100/200"}, {"name": dataset_name, "registry": dataset}
+def _one_zip(source_dir: Path) -> Path | None:
+    zips = sorted(source_dir.glob("*.zip"))
+    if not zips:
+        return None
+    if len(zips) != 1:
+        raise RuntimeError(f"expected at most one ZIP in {source_dir}, found {len(zips)}")
+    return zips[0]
+
+
+def dataset_from_population(
+    population_id: str,
+    root: Path = ROOT,
+) -> tuple[list[Path], set[str], dict]:
+    population = resolve_population(root, population_id)
+    data = population["data"]
+    baseline_raw = data.get("baseline_archive")
+    if not baseline_raw:
+        raise RuntimeError(f"population {population_id} has no materialized baseline archive")
+    baseline = root / str(baseline_raw)
+    if not baseline.is_file():
+        raise RuntimeError(f"population baseline archive missing: {baseline}")
+
+    archives = [baseline]
+    snapshots_root = namespace_path(root, population, "snapshots")
+    if snapshots_root.is_dir():
+        candidates = []
+        for directory in sorted(p for p in snapshots_root.iterdir() if p.is_dir()):
+            archive = _one_zip(directory / "source")
+            if archive is not None:
+                candidates.append(archive)
+        if candidates and candidates[-1] not in archives:
+            archives.append(candidates[-1])
+
+    stake = str(population["identity"]["stake"])
+    return archives, {stake}, {
+        "population_id": population_id,
+        "population_status": population["status"],
+        "dataset_id": data["dataset_id"],
+        "identity": population["identity"],
+        "cache_namespace": population["storage"]["cache_namespace"],
+    }
 
 
 def eligible_base_scenarios(
     *,
+    population_id: str,
     root: Path = ROOT,
     hero: str = "RoiDePiqueNique",
     split: str = "TEST",
     stakes: set[str] | None = None,
     archives: Iterable[Path] | None = None,
 ) -> tuple[list[dict], dict]:
+    population = resolve_population(root, population_id)
     if archives is None:
-        archive_paths, default_stakes, dataset_meta = dataset_from_registry(root)
+        archive_paths, default_stakes, dataset_meta = dataset_from_population(population_id, root)
     else:
-        archive_paths = [Path(x) for x in archives]
-        default_stakes = {"100/200"}
-        dataset_meta = {"name": "explicit", "registry": None}
+        archive_paths = [Path(path) for path in archives]
+        default_stakes = {str(population["identity"]["stake"])}
+        dataset_meta = {
+            "population_id": population_id,
+            "population_status": population["status"],
+            "dataset_id": "explicit_archives",
+            "identity": population["identity"],
+            "cache_namespace": population["storage"]["cache_namespace"],
+        }
     stakes = set(stakes or default_stakes)
     records, provenance = merge_archives(archive_paths, stakes)
     out: list[dict] = []
@@ -135,7 +176,7 @@ def eligible_base_scenarios(
         if allin:
             audit["preflop_allin"] += 1
             continue
-        opponent = next(p for p in active if p != hero)
+        opponent = next(player for player in active if player != hero)
         stacks = seat_stacks(record.text)
         if hero not in stacks or opponent not in stacks:
             audit["stack_missing"] += 1
@@ -146,6 +187,7 @@ def eligible_base_scenarios(
             audit["bad_postflop_order"] += 1
             continue
         out.append({
+            "population_id": population_id,
             "hand_id": str(hand_id),
             "source_file": record.source_file,
             "source_language": record.language,
@@ -168,28 +210,29 @@ def eligible_base_scenarios(
         audit["eligible"] += 1
 
     meta = {
-        "schema": "sequential-arena-scenario-source/v1",
+        "schema": "sequential-arena-scenario-source/v2",
+        "population_id": population_id,
         "dataset": dataset_meta,
         "dataset_provenance": provenance,
         "split": split.upper(),
         "hero": hero,
         "audit": dict(sorted(audit.items())),
-        "eligible_hand_ids_sha256": hashlib.sha256("\n".join(x["hand_id"] for x in out).encode()).hexdigest(),
+        "eligible_hand_ids_sha256": hashlib.sha256("\n".join(item["hand_id"] for item in out).encode()).hexdigest(),
     }
     return out, meta
 
 
 def deterministic_runout(hero_cards: list[str], flop: list[str], opponent_cards: list[str], *seed_parts: object) -> list[str]:
-    blocked = {cid(c) for c in hero_cards + flop + opponent_cards}
-    deck = [i for i in range(52) if i not in blocked]
+    blocked = {cid(card) for card in hero_cards + flop + opponent_cards}
+    deck = [index for index in range(52) if index not in blocked]
     deck.sort(key=lambda card: hseed(*seed_parts, "runout-card", card))
     return [ccode(deck[0]), ccode(deck[1])]
 
 
 def materialize_scenario(base: dict, env: ModelBEnvironment, *, master_seed: int, rep: int) -> dict:
-    hid = base["hand_id"]
+    hand_id = base["hand_id"]
     opponent = base["opponent"]
-    profile = env.sample_profile(master_seed, hid, rep, "profile")
+    profile = env.sample_profile(base["population_id"], master_seed, hand_id, rep, "profile")
     opponent_cards = env.sample_hole_cards(
         profile,
         base["positions"][opponent],
@@ -197,16 +240,19 @@ def materialize_scenario(base: dict, env: ModelBEnvironment, *, master_seed: int
         base["preflop_roles"][opponent],
         base["hero_cards"],
         base["flop"],
+        base["population_id"],
         master_seed,
-        hid,
+        hand_id,
         rep,
         "opponent-cards",
     )
     runout = deterministic_runout(
-        base["hero_cards"], base["flop"], opponent_cards, master_seed, hid, rep
+        base["hero_cards"], base["flop"], opponent_cards,
+        base["population_id"], master_seed, hand_id, rep
     )
     scenario_key = {
-        "hand_id": hid,
+        "population_id": base["population_id"],
+        "hand_id": hand_id,
         "rep": int(rep),
         "master_seed": int(master_seed),
         "profile": int(profile),
@@ -222,12 +268,13 @@ def materialize_scenario(base: dict, env: ModelBEnvironment, *, master_seed: int
         "profile": int(profile),
         "opponent_cards": opponent_cards,
         "runout": runout,
-        "environment_seed": hseed(master_seed, hid, rep, "environment"),
+        "environment_seed": hseed(base["population_id"], master_seed, hand_id, rep, "environment"),
     }
 
 
 def build_scenario_manifest(
     *,
+    population_id: str,
     env: ModelBEnvironment,
     count: int,
     reps: int,
@@ -237,23 +284,36 @@ def build_scenario_manifest(
     hero: str = "RoiDePiqueNique",
     root: Path = ROOT,
 ) -> dict:
-    base, source_meta = eligible_base_scenarios(root=root, hero=hero, split=split)
-    ordered = sorted(base, key=lambda x: (hseed(master_seed, "base-hand", x["hand_id"]), x["hand_id"]))
+    population = resolve_population(root, population_id)
+    if env.population_id != population_id:
+        raise ValueError(
+            f"Model B population mismatch: expected {population_id}, got {env.population_id!r}"
+        )
+    base, source_meta = eligible_base_scenarios(
+        population_id=population_id,
+        root=root,
+        hero=hero,
+        split=split,
+    )
+    ordered = sorted(base, key=lambda item: (hseed(master_seed, "base-hand", item["hand_id"]), item["hand_id"]))
     selected = ordered[start : start + count]
     scenarios = [materialize_scenario(hand, env, master_seed=master_seed, rep=rep) for hand in selected for rep in range(reps)]
     compact_fingerprint = [
         {
-            "scenario_id": x["scenario_id"],
-            "hand_id": x["hand_id"],
-            "rep": x["rep"],
-            "profile": x["profile"],
-            "opponent_cards": x["opponent_cards"],
-            "runout": x["runout"],
+            "population_id": item["population_id"],
+            "scenario_id": item["scenario_id"],
+            "hand_id": item["hand_id"],
+            "rep": item["rep"],
+            "profile": item["profile"],
+            "opponent_cards": item["opponent_cards"],
+            "runout": item["runout"],
         }
-        for x in scenarios
+        for item in scenarios
     ]
     return {
-        "schema": "sequential-arena-scenario-manifest/v1",
+        "schema": "sequential-arena-scenario-manifest/v2",
+        "population_id": population_id,
+        "cache_namespace": population["storage"]["cache_namespace"],
         "master_seed": int(master_seed),
         "split": split.upper(),
         "hero": hero,

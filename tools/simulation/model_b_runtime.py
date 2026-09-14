@@ -169,9 +169,10 @@ def select_node(levels: Sequence[dict], row: dict, min_observations: int) -> tup
 class ModelBEnvironment:
     """Read-only promoted Model B runtime."""
 
-    def __init__(self, model_dir: Path, alias: str = "independent_model_b_v2") -> None:
+    def __init__(self, model_dir: Path, alias: str = "independent_model_b_v2", population_id: str | None = None) -> None:
         self.model_dir = Path(model_dir)
         self.alias = alias
+        self.population_id = population_id
         self.profiles = json.loads((self.model_dir / "profiles.json").read_text(encoding="utf-8"))
         self.ranges = json.loads((self.model_dir / "preflop_ranges.json").read_text(encoding="utf-8"))
         self.actions = json.loads((self.model_dir / "postflop_actions.json").read_text(encoding="utf-8"))
@@ -184,14 +185,28 @@ class ModelBEnvironment:
         self.default_profile = int(max(self.profile_rows, key=lambda x: float(x["appearance_weight"]))["profile"])
 
     @classmethod
-    def from_registry(cls, root: Path | None = None, registry_path: Path | None = None) -> "ModelBEnvironment":
+    def from_population(cls, population_id: str, root: Path | None = None) -> "ModelBEnvironment":
+        from tools.populations.registry import require_artifact_role, resolve_population
+
         root = Path(root or ROOT)
-        registry_path = Path(registry_path or (root / "training/registry.json"))
-        registry = json.loads(registry_path.read_text(encoding="utf-8"))
-        pointer = registry.get("promoted_independent_model")
-        if not pointer:
-            raise ValueError("training registry has no promoted_independent_model")
-        return cls(root / pointer["model_dir"], alias=pointer["alias"])
+        population = resolve_population(root, population_id)
+        model_dir = root / require_artifact_role(population, "model_b")
+        alias = str(population["artifacts"].get("model_b_alias") or f"model_b:{population_id}")
+        return cls(model_dir, alias=alias, population_id=population_id)
+
+    @classmethod
+    def from_registry(
+        cls,
+        root: Path | None = None,
+        registry_path: Path | None = None,
+        *,
+        population_id: str | None = None,
+    ) -> "ModelBEnvironment":
+        if registry_path is not None:
+            raise ValueError("legacy registry_path selection is disabled; use from_population(population_id, root)")
+        if not population_id:
+            raise ValueError("population_id is required; implicit training/registry.json Model B selection is disabled")
+        return cls.from_population(population_id, root)
 
     def _validate(self) -> None:
         expected = {

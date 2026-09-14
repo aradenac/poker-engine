@@ -5,8 +5,11 @@ on:
     paths:
       - 'tools/simulation/**'
       - 'tests/simulation/**'
+      - 'tools/populations/**'
+      - 'tests/populations/**'
       - 'tools/sequential_postflop_population_sim_v4.py'
       - 'training/registry.json'
+      - 'training/populations/**'
       - 'training/runs/20260912_independent_profiles_v2/model/**'
       - 'training/datasets/NLHE_100-200/**/*.zip'
       - 'training/PROMOTION_GATE_CONTRACT.json'
@@ -20,8 +23,11 @@ on:
     paths:
       - 'tools/simulation/**'
       - 'tests/simulation/**'
+      - 'tools/populations/**'
+      - 'tests/populations/**'
       - 'tools/sequential_postflop_population_sim_v4.py'
       - 'training/registry.json'
+      - 'training/populations/**'
       - 'training/runs/20260912_independent_profiles_v2/model/**'
       - 'training/datasets/NLHE_100-200/**/*.zip'
       - 'training/PROMOTION_GATE_CONTRACT.json'
@@ -35,6 +41,9 @@ on:
 permissions:
   contents: read
 
+env:
+  LEGACY_POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
+
 concurrency:
   group: sequential-arena-${{ github.ref }}
   cancel-in-progress: true
@@ -45,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Compile simulation and gate modules
-        run: python3 -m py_compile tools/simulation/*.py tools/sequential_postflop_population_sim_v4.py tools/evaluate_promotion_gates.py tests/test_promotion_gates.py
+        run: python3 -m py_compile tools/simulation/*.py tools/populations/*.py tools/sequential_postflop_population_sim_v4.py tools/evaluate_promotion_gates.py tests/populations/*.py tests/test_promotion_gates.py
       - name: Promotion gate contract
         run: |
           python3 tests/test_promotion_gates.py
@@ -61,8 +70,10 @@ jobs:
           python3 tests/simulation/test_oracle_contract.py
           node tests/simulation/test_oracle_workers.cjs
           python3 tests/simulation/test_rollout_accounting.py
-      - name: Model B runtime tests
-        run: python3 tests/simulation/test_model_b_runtime.py
+      - name: Population registry and Model B runtime tests
+        run: |
+          python3 tests/populations/test_population_registry.py
+          python3 tests/simulation/test_model_b_runtime.py
       - name: Scenario generation tests
         run: python3 tests/simulation/test_scenarios.py
       - name: Strategic baseline report tests
@@ -70,16 +81,20 @@ jobs:
       - name: CLI scenario reproducibility
         run: |
           python3 -m tools.simulation.sequential_postflop \
+            --population "$LEGACY_POPULATION" \
             --generate-only --n 2 --reps 2 --seed 20260912 \
             --scenario-out /tmp/scenarios-a.json --out /tmp/generate-a.json
           python3 -m tools.simulation.sequential_postflop \
+            --population "$LEGACY_POPULATION" \
             --generate-only --n 2 --reps 2 --seed 20260912 \
             --scenario-out /tmp/scenarios-b.json --out /tmp/generate-b.json
           cmp /tmp/scenarios-a.json /tmp/scenarios-b.json
           python3 - <<'PY'
-          import json
+          import json, os
           a=json.load(open('/tmp/scenarios-a.json'))
-          assert a['schema']=='sequential-arena-scenario-manifest/v1'
+          assert a['schema']=='sequential-arena-scenario-manifest/v2'
+          assert a['population_id']==os.environ['LEGACY_POPULATION']
+          assert a['cache_namespace']==os.environ['LEGACY_POPULATION']
           assert len(a['scenarios'])==4
           assert a['model_b']['alias']=='independent_model_b_v2'
           print(a['scenario_fingerprint_sha256'])
@@ -97,6 +112,7 @@ jobs:
       - name: Run one deterministic v83 rollout
         run: |
           python3 -m tools.simulation.sequential_postflop \
+            --population "$LEGACY_POPULATION" \
             --n 1 --reps 1 --seed 20260912 --trials 1200 \
             --policies current \
             --scenario-out /tmp/scenario.json \
@@ -104,14 +120,17 @@ jobs:
       - name: Repeat in a fresh browser and verify a different trial budget
         run: |
           python3 tools/sequential_postflop_population_sim_v4.py \
+            --population "$LEGACY_POPULATION" \
             --scenario-manifest /tmp/scenario.json --trials 1200 \
             --policies current --out /tmp/arena-repeat.json
           python3 -m tools.simulation.sequential_postflop \
+            --population "$LEGACY_POPULATION" \
             --scenario-manifest /tmp/scenario.json --trials 2400 \
             --policies current --out /tmp/arena-2400.json
       - name: Exercise recovered review-detail state
         run: |
           python3 -m tools.simulation.baseline_runner \
+            --population "$LEGACY_POPULATION" \
             --n 1 --start 5 --reps 2 --seed 20260912 --split TEST --trials 1200 \
             --policies current \
             --scenario-out /tmp/fallback-regression-scenarios.json \
@@ -130,13 +149,16 @@ jobs:
       - name: Validate smoke result contract
         run: |
           python3 - <<'PY'
-          import json
+          import json, os
           d=json.load(open('/tmp/arena.json'))
           repeat=json.load(open('/tmp/arena-repeat.json'))
           assert d==repeat, 'Fresh-browser full rollout is not reproducible'
+          assert d['metadata']['population_id']==os.environ['LEGACY_POPULATION']
+          assert d['metadata']['cache_namespace']==os.environ['LEGACY_POPULATION']
           assert d['metadata']['observed_monte_carlo_trials']==[1200]
           other=json.load(open('/tmp/arena-2400.json'))
           assert other['metadata']['observed_monte_carlo_trials']==[2400]
+          assert other['metadata']['population_id']==os.environ['LEGACY_POPULATION']
           assert d['schema']=='sequential-independent-arena/v2'
           assert d['metadata']['model_b']['alias']=='independent_model_b_v2'
           assert d['metadata']['master_seed']==20260912
@@ -169,6 +191,7 @@ jobs:
       - name: Run frozen VALIDATION baseline and diagnostic policy set
         run: |
           python3 -m tools.simulation.baseline_runner \
+            --population "$LEGACY_POPULATION" \
             --n 32 --reps 2 --seed 20260912 --split VALIDATION --trials 1200 \
             --policies current,no_jam,cap_2,cap_3,cap_4 \
             --scenario-out /tmp/v83-baseline-validation-scenarios.json \
@@ -183,6 +206,7 @@ jobs:
           raw=json.load(open('/tmp/v83-baseline-validation-arena.json'))
           d=json.load(open('/tmp/v83-baseline-validation-report.json'))
           assert d['schema']=='sequential-v83-baseline-report/v1'
+          assert raw['metadata']['population_id']==os.environ['LEGACY_POPULATION']
           assert d['provenance']['scenario_split']=='VALIDATION'
           assert d['provenance']['model_b']['alias']=='independent_model_b_v2'
           assert d['provenance']['code_commit']==os.environ['GITHUB_SHA']
@@ -214,6 +238,7 @@ jobs:
       - name: Run frozen current-policy TEST reference only
         run: |
           python3 -m tools.simulation.baseline_runner \
+            --population "$LEGACY_POPULATION" \
             --n 32 --reps 2 --seed 20260912 --split TEST --trials 1200 \
             --policies current \
             --scenario-out /tmp/v83-baseline-test-scenarios.json \
@@ -228,6 +253,7 @@ jobs:
           raw=json.load(open('/tmp/v83-baseline-test-arena.json'))
           d=json.load(open('/tmp/v83-baseline-test-report.json'))
           assert d['schema']=='sequential-v83-baseline-report/v1'
+          assert raw['metadata']['population_id']==os.environ['LEGACY_POPULATION']
           assert d['provenance']['scenario_split']=='TEST'
           assert d['provenance']['policies']==['current']
           assert d['provenance']['model_b']['alias']=='independent_model_b_v2'
