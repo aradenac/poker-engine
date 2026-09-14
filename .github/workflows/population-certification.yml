@@ -40,7 +40,7 @@ jobs:
           set -euo pipefail
           target='training/datasets/NLHE_100-200/population_certification.json'
           cp /tmp/population-certification.json "$target"
-          if git diff --quiet -- "$target"; then
+          if [ -z "$(git status --porcelain -- "$target")" ]; then
             echo 'Certification evidence already current.'
             exit 0
           fi
