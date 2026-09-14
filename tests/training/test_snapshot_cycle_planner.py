@@ -6,11 +6,13 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.training.plan_snapshot_cycle import contract_for, discover, write_immutable  # noqa: E402
+from tools.training.run_continuous_cycle import execute  # noqa: E402
 
 
 def write(path: Path, data: bytes | str = b"x") -> None:
@@ -21,7 +23,23 @@ def write(path: Path, data: bytes | str = b"x") -> None:
         path.write_bytes(data)
 
 
-def fixture(root: Path) -> None:
+def en_hand(hand_id: str, date: str = "2026/09/14 12:00:00", stake: str = "100/200") -> str:
+    return (
+        f"PokerStars Hand #{hand_id}: Hold'em No Limit ({stake}) - {date} CET\n"
+        "Table 'CycleFixture' 6-max Seat #1 is the button\n"
+        "Seat 1: Hero (20000 in chips)\n"
+        "*** SUMMARY ***\n"
+    )
+
+
+def make_zip(path: Path, files: dict[str, str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for name, text in files.items():
+            zf.writestr(name, text.encode("utf-8"))
+
+
+def fixture(root: Path, *, new_unique_hand: bool = True) -> None:
     baseline = "training/datasets/NLHE_100-200/source/baseline.zip"
     registry = {
         "schema_version": 2,
@@ -30,14 +48,36 @@ def fixture(root: Path) -> None:
         "promoted_independent_model": {"model_dir": "training/runs/model-b/model"},
     }
     write(root / "training/registry.json", json.dumps(registry))
-    write(root / baseline, b"baseline")
+    make_zip(root / baseline, {"baseline.txt": en_hand("1001", date="2026/09/12 10:00:00")})
+    write(root / "training/models/model.json", "{}")
     write(root / "training/runs/model-b/model/model.json", "{}")
     write(root / "user/releases/v83.html", "v83")
     write(root / "site/index.html", "site")
     write(root / "user/artifacts/readme.txt", "artifact")
-    write(root / "training/datasets/NLHE_100-200/snapshots/old/source/old.zip", b"old")
+    make_zip(
+        root / "training/datasets/NLHE_100-200/snapshots/old/source/old.zip",
+        {"old.txt": en_hand("1002", date="2026/09/13 10:00:00")},
+    )
     write(root / "training/datasets/NLHE_100-200/increments/old/manifest.json", "{}")
-    write(root / "training/datasets/NLHE_100-200/snapshots/new/source/new.zip", b"new snapshot")
+    new_payload = en_hand("1002", date="2026/09/13 10:00:00")
+    if new_unique_hand:
+        new_payload += en_hand("1003", date="2026/09/14 12:00:00")
+    else:
+        new_payload += en_hand("1001", date="2026/09/12 10:00:00")
+    make_zip(
+        root / "training/datasets/NLHE_100-200/snapshots/new/source/new.zip",
+        {"new.txt": new_payload},
+    )
+
+
+def install_repo_tools(root: Path) -> None:
+    (root / "tools").symlink_to(ROOT / "tools", target_is_directory=True)
+
+
+def write_contract(root: Path, contract: dict) -> Path:
+    path = root / "training/automation/generated/test-cycle.json"
+    write(path, json.dumps(contract, indent=2, sort_keys=True) + "\n")
+    return path
 
 
 def test_discovers_one_pending_snapshot_without_hardcoded_date() -> None:
@@ -51,7 +91,8 @@ def test_discovers_one_pending_snapshot_without_hardcoded_date() -> None:
             "training/datasets/NLHE_100-200/source/baseline.zip",
             "training/datasets/NLHE_100-200/snapshots/old/source/old.zip",
         ]
-        expected = hashlib.sha256(b"new snapshot").hexdigest()
+        archive = root / "training/datasets/NLHE_100-200/snapshots/new/source/new.zip"
+        expected = hashlib.sha256(archive.read_bytes()).hexdigest()
         assert plan["candidate_sha256"] == expected
         assert plan["run_id"] == f"new_continuous_{expected[:12]}"
 
@@ -76,6 +117,53 @@ def test_contract_is_validation_only_and_production_protected() -> None:
         assert conditional == {"normalize-decisions", "build-train-overlay"}
 
 
+def test_generated_contract_executes_new_increment_without_production_mutation() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw); fixture(root, new_unique_hand=True); install_repo_tools(root)
+        plan = discover(root)
+        contract = contract_for(root, plan)
+        config = write_contract(root, contract)
+        report_path = root / "execution.json"
+        code, report = execute(root=root, config_path=config, report_path=report_path)
+        assert code == 0, report
+        assert report["status"] == "PASS", report
+        assert report["promotion_applied"] is False
+        assert report["production_before"] == report["production_after"]
+        assert report["production_changed_paths_detected"] == []
+        assert report["gate"]["status"] == "BLOCKED"
+        assert report["gate"]["promotion_ready"] is False
+        increment = root / "training/datasets/NLHE_100-200/increments/new/manifest.json"
+        manifest = json.loads(increment.read_text(encoding="utf-8"))
+        assert manifest["selected_unique_hands"] == 1, manifest
+        run = root / "training/runs" / plan["run_id"]
+        assert (run / "data/decisions.jsonl").is_file()
+        assert (run / "artifacts/population_increment_overlay.json").is_file()
+        gate = json.loads((run / "gate.json").read_text(encoding="utf-8"))
+        assert gate["outcome"] == "CANDIDATE_PIPELINE_REQUIRED"
+
+
+def test_zero_new_hands_executes_as_traceable_noop() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw); fixture(root, new_unique_hand=False); install_repo_tools(root)
+        plan = discover(root)
+        contract = contract_for(root, plan)
+        config = write_contract(root, contract)
+        code, report = execute(root=root, config_path=config)
+        assert code == 0, report
+        assert report["status"] == "PASS"
+        assert report["promotion_applied"] is False
+        assert report["gate"]["status"] == "PASS"
+        assert report["gate"]["promotion_ready"] is True
+        run = root / "training/runs" / plan["run_id"]
+        status = json.loads((run / "data/increment_status.json").read_text(encoding="utf-8"))
+        gate = json.loads((run / "gate.json").read_text(encoding="utf-8"))
+        assert status["selected_unique_hands"] == 0
+        assert status["outcome"] == "NO_OP_NO_NEW_HANDS"
+        assert gate["outcome"] == "NO_OP_NO_NEW_HANDS"
+        assert not (run / "data/decisions.jsonl").exists()
+        assert not (run / "artifacts/population_increment_overlay.json").exists()
+
+
 def test_no_pending_snapshot_is_traceable_noop() -> None:
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw); fixture(root)
@@ -87,7 +175,10 @@ def test_no_pending_snapshot_is_traceable_noop() -> None:
 def test_multiple_pending_snapshots_are_rejected_as_ambiguous() -> None:
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw); fixture(root)
-        write(root / "training/datasets/NLHE_100-200/snapshots/other/source/other.zip", b"other")
+        make_zip(
+            root / "training/datasets/NLHE_100-200/snapshots/other/source/other.zip",
+            {"other.txt": en_hand("1004")},
+        )
         try:
             discover(root)
         except RuntimeError as exc:
