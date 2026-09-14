@@ -6,6 +6,7 @@ on:
       - issue-61-preflop-targeted-topology
     paths:
       - 'tools/training/evaluate_preflop_topology_candidate.py'
+      - 'tools/training/audit_preflop_runtime_topology_overlap.py'
       - 'tests/training/test_preflop_topology_candidate.py'
       - '.github/workflows/tmp-validate-preflop-topology.yml'
 
@@ -29,6 +30,13 @@ jobs:
           python3 tools/training/build_population_increment_overlay_v2.py \
             --decisions /tmp/model-a-0912-decisions.jsonl \
             --out /tmp/model-a-0912-overlay.json
+      - name: Audit canonical versus runtime-exact overlap
+        run: |
+          python3 tools/training/audit_preflop_runtime_topology_overlap.py \
+            --baseline training/models/preflop_population_model_v5.json \
+            --decisions /tmp/model-a-0912-decisions.jsonl \
+            --overlay /tmp/model-a-0912-overlay.json \
+            --out /tmp/preflop61-runtime-overlap.json
       - name: Select targeted topology on VALIDATION only
         run: |
           python3 tools/training/evaluate_preflop_topology_candidate.py \
