@@ -1,0 +1,39 @@
+name: Issue 95 refresh site identity
+
+on:
+  push:
+    branches:
+      - issue-95-population-isolation-refactor
+    paths:
+      - '.github/workflows/issue95-refresh-release.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-95-population-isolation-refactor
+          fetch-depth: 0
+      - name: Regenerate application identity
+        run: |
+          python3 tools/write_site_release.py
+          python3 tools/write_site_release.py --check
+          python3 tests/trainer/test_site_release_identity.py
+          python3 tests/trainer/test_trainer_static.py
+          node --check site/trainer.js
+      - name: Commit generated identity
+        run: |
+          git checkout -- .github/workflows/issue95-refresh-release.yml
+          git config user.name 'poker-engine release bot'
+          git config user.email 'release-bot@users.noreply.github.com'
+          git add site/RELEASE.json
+          if git diff --cached --quiet; then
+            echo 'Release identity already current.'
+          else
+            git commit -m 'Issue #95: refresh trainer population-pack identity'
+            git push origin HEAD:issue-95-population-isolation-refactor
+          fi
