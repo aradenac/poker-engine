@@ -1,7 +1,7 @@
 {
   "schema": "independent-model-b-paired-comparison/v1",
   "cycle": "2026-09-12",
-  "code_commit": "694c31095b05339e8834fcc05fe43a814a96e053",
+  "code_commit": "8bde2b7e70e41aae05048a90c63bce4ea97c3571",
   "contract": {
     "path": "training/PROMOTION_GATE_CONTRACT.json",
     "sha256": "941b42901833ee9772fb3d9291808a2dbcb6553088fdbef9d6c0ce3eaec6879a",
@@ -29,8 +29,8 @@
     "dir": "training/runs/20260912_independent_profiles_v2/model",
     "summary_sha256": "b3f71ba8d36f6768e4f4242518076178916f9e1bc0fafe6ac20ff9a85584943c",
     "profiles_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
-    "ranges_sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
-    "actions_sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+    "ranges_sha256": "8d5b2976d7086abcbe2bf701c55b5c01df38c92bc710a9a95dbb6721aeaa26bf",
+    "actions_sha256": "8f084666c9dddc0d2fda45b7d9ead5455c261cbfbc983b1f88ecd8f5fc34fe80",
     "sizing_sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e"
   },
   "paired": {
@@ -40,21 +40,21 @@
       "bootstrap_samples": 5000,
       "seed": 20260913,
       "action_log_loss_delta_candidate_minus_incumbent": {
-        "observed": 0.0002113481333896446,
+        "observed": 7.515294208018729e-05,
         "ci95": [
-          -0.001067131027649346,
-          0.0014404101951866828
+          -0.0011819355090611976,
+          0.00128141056600178
         ],
-        "probability_candidate_better": 0.3708,
+        "probability_candidate_better": 0.4582,
         "decisions": 18540
       },
       "range_log_loss_delta_candidate_minus_incumbent": {
-        "observed": -0.022445620143515463,
+        "observed": -0.014070025569570075,
         "ci95": [
-          -0.038664408155126305,
-          -0.006900194458280549
+          -0.02892059833440068,
+          0.0006997840867569664
         ],
-        "probability_candidate_better": 0.9972,
+        "probability_candidate_better": 0.9708,
         "revealed_hands": 2970
       }
     },
@@ -64,21 +64,21 @@
       "bootstrap_samples": 5000,
       "seed": 21260916,
       "action_log_loss_delta_candidate_minus_incumbent": {
-        "observed": -0.0014183037921918472,
+        "observed": -0.0015330679107531575,
         "ci95": [
-          -0.002666452541666477,
-          -0.00019960225237739085
+          -0.0027560056545713543,
+          -0.00034165072697478195
         ],
-        "probability_candidate_better": 0.9888,
+        "probability_candidate_better": 0.994,
         "decisions": 19276
       },
       "range_log_loss_delta_candidate_minus_incumbent": {
-        "observed": -0.027966671565039944,
+        "observed": -0.022745171923618236,
         "ci95": [
-          -0.04401998203647001,
-          -0.011408490967579342
+          -0.03840719558972902,
+          -0.007467951205063505
         ],
-        "probability_candidate_better": 0.9996,
+        "probability_candidate_better": 0.998,
         "revealed_hands": 3118
       }
     }
