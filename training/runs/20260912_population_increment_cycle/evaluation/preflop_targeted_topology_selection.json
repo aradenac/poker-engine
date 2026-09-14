@@ -1,0 +1,63 @@
+{
+  "schema": "poker-preflop-topology-selection/v1",
+  "issue": 61,
+  "cycle": "2026-09-12-preflop-topology-followup",
+  "selection_split": "VALIDATION",
+  "test_used": false,
+  "test_authorized": false,
+  "production_effect": "NONE",
+  "baseline": {
+    "path": "training/models/preflop_population_model_v5.json",
+    "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+  },
+  "candidate_contract": {
+    "minimum_train_support": 20,
+    "target_nodes": 51,
+    "target_train_rows": 2300,
+    "alpha_grid": [0.0, 10.0, 20.0, 40.0, 80.0, 160.0, 320.0],
+    "materialization": "TRAIN-only canonical contexts absent from v5, smoothed toward the existing v5 runtime fallback",
+    "runtime_matcher": "site/index.html findClosestPopulationNode parity"
+  },
+  "runtime_overlap": {
+    "all_target_actions_already_runtime_exact": true,
+    "runtime_exact_action_collisions": 187,
+    "canonical_diff_distribution_by_action": {
+      "hist": 187
+    },
+    "target_canonical_diff_distribution": {
+      "hist": 51
+    },
+    "conclusion": "CANONICAL_TOPOLOGY_EXTENSION_IS_RUNTIME_NO_OP",
+    "interpretation": "All 51 canonical keys map to an existing v5 node that the production matcher already treats as exact. The canonical-key difference is confined to hist, while runtime context.history matches under the browser's action/position predicate. Appending duplicate materialized nodes therefore does not change runtime selection because the existing exact node has higher support."
+  },
+  "validation": {
+    "population_preflop_rows": 1676,
+    "target_rows": 287,
+    "baseline_logloss": 0.8419085133896168,
+    "target_baseline_logloss": 0.7449425902929249,
+    "selected_alpha": 0.0,
+    "selected_candidate_nodes_sha256": "9db014ed3584fd99a5ec719e3cadf6ff3ddd4ab1a1036b9525806281ab839c78",
+    "all_alpha_candidates": {
+      "affected_rows": 0,
+      "new_exact_rows": 0,
+      "delta_candidate_minus_baseline": 0.0,
+      "target_delta_candidate_minus_baseline": 0.0
+    },
+    "paired_bootstrap": {
+      "hands": 320,
+      "samples": 5000,
+      "seed": 20260914,
+      "mean": 0.0,
+      "ci95": [0.0, 0.0],
+      "probability_candidate_better": 0.0
+    }
+  },
+  "outcome": "RETAIN_BASELINE",
+  "reason": "The pre-specified 51-node canonical topology extension is a runtime no-op on VALIDATION: it affects zero of 1,676 population preflop decisions. No finalist exists, so protected TEST remains unconsumed.",
+  "evidence": {
+    "actions_run": 34894939787,
+    "validation_job": 104146463405,
+    "previous_repetition_run": 34894606593
+  },
+  "follow_up": "Audit and, if justified on held-out data, reconcile preflop canonical-key history semantics with the runtime exact-match context predicate before attempting any further topology expansion."
+}
