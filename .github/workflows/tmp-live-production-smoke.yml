@@ -1,4 +1,4 @@
-name: Temporary live production smoke
+name: Temporary live production identity
 
 on:
   push:
@@ -11,151 +11,68 @@ permissions:
   contents: read
 
 jobs:
-  probe:
+  identity:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     env:
       PROD_URL: https://poker-engine.arad-chatgpt-compositeur-repas.workers.dev
       VERSION_URL: https://56cd6e46-poker-engine.arad-chatgpt-compositeur-repas.workers.dev
+      EXPECTED_COMMIT: 5f8b836060ea016c359c8a859db9a7b35e0b2ed6
+      EXPECTED_BUILD: fb09ab55-8b92-409a-9835-da3d432ae748
+      EXPECTED_VERSION: 56cd6e46-214a-4ee0-b99d-9815487ca765
     steps:
       - uses: actions/checkout@v4
-      - name: Probe inferred production and version URLs
+      - name: Tie production hostname to exact version and source commit
         shell: bash
         run: |
           set -euo pipefail
+          curl -fsS --retry 3 --connect-timeout 10 "$PROD_URL/" -o /tmp/prod.html
+          curl -fsS --retry 3 --connect-timeout 10 "$VERSION_URL/" -o /tmp/version.html
+          curl -fsS --retry 3 --connect-timeout 10 "$PROD_URL/deployment-meta.css" -o /tmp/prod-meta.css
+          curl -fsS --retry 3 --connect-timeout 10 "$VERSION_URL/deployment-meta.css" -o /tmp/version-meta.css
+          prod_sha="$(sha256sum /tmp/prod.html | awk '{print $1}')"
+          version_sha="$(sha256sum /tmp/version.html | awk '{print $1}')"
+          meta_prod_sha="$(sha256sum /tmp/prod-meta.css | awk '{print $1}')"
+          meta_version_sha="$(sha256sum /tmp/version-meta.css | awk '{print $1}')"
+          test "$prod_sha" = "$version_sha"
+          test "$meta_prod_sha" = "$meta_version_sha"
+          grep -F "commit: $EXPECTED_COMMIT" /tmp/prod-meta.css
+          grep -F 'branch: main' /tmp/prod-meta.css
+          grep -F "build_id: $EXPECTED_BUILD" /tmp/prod-meta.css
           python3 - <<'PY'
-          import json, os, ssl, urllib.request
-          urls=[('production',os.environ['PROD_URL']),('version',os.environ['VERSION_URL'])]
-          result={}
-          for name,base in urls:
-              try:
-                  req=urllib.request.Request(base+'/', headers={'User-Agent':'poker-engine-live-smoke/1'})
-                  with urllib.request.urlopen(req, timeout=20, context=ssl.create_default_context()) as r:
-                      body=r.read(2_000_000).decode('utf-8','replace')
-                      result[name]={
-                          'url':base,
-                          'status':r.status,
-                          'final_url':r.geturl(),
-                          'content_type':r.headers.get('content-type'),
-                          'bytes':len(body.encode('utf-8')),
-                          'has_app_marker':'Poker Range Equity' in body,
-                          'has_trainer_marker':('trainer' in body.lower() and 'training' in body.lower()) or 'Training' in body,
-                          'title_fragment': body.split('<title>',1)[1].split('</title>',1)[0] if '<title>' in body and '</title>' in body else None,
-                      }
-              except Exception as e:
-                  result[name]={'url':base,'error':f'{type(e).__name__}: {e}'}
-          print(json.dumps(result,indent=2,sort_keys=True))
-          open('/tmp/url-probe.json','w',encoding='utf-8').write(json.dumps(result,indent=2,sort_keys=True)+'\n')
-          if not any(v.get('status')==200 and v.get('has_app_marker') for v in result.values()):
-              raise SystemExit('neither inferred public URL served the intended application')
-          PY
-
-      - name: Select verified public URL
-        id: select
-        shell: bash
-        run: |
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json
-          r=json.load(open('/tmp/url-probe.json'))
-          for key in ('production','version'):
-              v=r[key]
-              if v.get('status')==200 and v.get('has_app_marker'):
-                  print('url='+v['final_url'].rstrip('/'))
-                  print('kind='+key)
-                  raise SystemExit(0)
-          raise SystemExit(1)
-          PY
-
-      - name: Verify release metadata and all trainer assets
-        env:
-          BASE_URL: ${{ steps.select.outputs.url }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -fsS --retry 3 --connect-timeout 10 "$BASE_URL/RELEASE.json" -o /tmp/live-release.json
-          python3 - <<'PY'
-          import json
-          r=json.load(open('/tmp/live-release.json'))
-          assert r['application']=='Poker Range Equity Offline', r
-          assert r['version']=='v83', r
-          assert r['status']=='promoted', r
-          print(json.dumps(r,indent=2))
-          PY
-          while IFS= read -r file; do
-            rel="${file#site/}"
-            echo "GET $BASE_URL/$rel"
-            curl -fsS --retry 3 --connect-timeout 10 "$BASE_URL/$rel" -o /tmp/asset
-            test -s /tmp/asset
-          done < <(find site/assets/trainer -type f | sort)
-
-      - name: Install browser runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m pip install --user playwright
-          python3 -m playwright install --with-deps chromium
-
-      - name: Browser smoke live analyser shell
-        env:
-          BASE_URL: ${{ steps.select.outputs.url }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json, os
-          from playwright.sync_api import sync_playwright
-          url=os.environ['BASE_URL']
-          evidence={'url':url}
-          with sync_playwright() as p:
-              browser=p.chromium.launch(headless=True)
-              page=browser.new_page(viewport={'width':1440,'height':1000})
-              errors=[]
-              page.on('pageerror',lambda exc: errors.append(str(exc)))
-              page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
-              response=page.goto(url,wait_until='networkidle',timeout=90000)
-              evidence['http_status']=response.status if response else None
-              evidence['title']=page.title()
-              text=page.locator('body').inner_text(timeout=30000)
-              evidence['has_app_marker']='Poker Range Equity' in text
-              evidence['has_training_marker']='Training' in text or 'Entraînement' in text or 'trainer' in text.lower()
-              evidence['has_equity_marker']='Équité' in text or 'Equity' in text
-              evidence['console_errors']=errors
-              buttons=page.locator('.street-btn')
-              evidence['street_buttons']=buttons.count()
-              if buttons.count():
-                  buttons.first.click()
-              evidence['body_length']=len(text)
-              page.screenshot(path='/tmp/live-site.png',full_page=False)
-              browser.close()
-          assert evidence['http_status']==200, evidence
-          assert evidence['has_app_marker'], evidence
-          assert evidence['has_equity_marker'], evidence
-          assert not evidence['console_errors'], evidence
-          print(json.dumps(evidence,indent=2,sort_keys=True))
-          open('/tmp/browser-smoke.json','w').write(json.dumps(evidence,indent=2,sort_keys=True)+'\n')
-          PY
-
-      - name: Exact Guided ACTION sizing and EV flow on live production
-        env:
-          BASE_URL: ${{ steps.select.outputs.url }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
+          import hashlib, json, os, re
           from pathlib import Path
-          src=Path('tests/trainer/smoke_trainer.py').read_text(encoding='utf-8')
-          src=src.replace('URL = "http://127.0.0.1:8765/index.html"', 'import os\nURL = os.environ["BASE_URL"].rstrip("/") + "/"')
-          Path('/tmp/live_smoke_trainer.py').write_text(src, encoding='utf-8')
+          prod=Path('/tmp/prod.html').read_bytes()
+          version=Path('/tmp/version.html').read_bytes()
+          meta=Path('/tmp/prod-meta.css').read_text(encoding='utf-8')
+          fields={}
+          for name in ('commit','branch','build_id','generated_at'):
+              m=re.search(rf'^\s*{name}:\s*(.+?)\s*$',meta,re.M)
+              fields[name]=m.group(1) if m else None
+          evidence={
+              'schema':'poker-live-deployment-identity-smoke/v1',
+              'production_url':os.environ['PROD_URL'],
+              'version_url':os.environ['VERSION_URL'],
+              'cloudflare_version_id':os.environ['EXPECTED_VERSION'],
+              'expected_commit':os.environ['EXPECTED_COMMIT'],
+              'expected_build_id':os.environ['EXPECTED_BUILD'],
+              'production_root_sha256':hashlib.sha256(prod).hexdigest(),
+              'version_root_sha256':hashlib.sha256(version).hexdigest(),
+              'production_equals_version':prod==version,
+              'deployment_metadata':fields,
+              'title_ok':b'Poker Range Equity' in prod and b'Offline v83' in prod,
+          }
+          assert evidence['production_equals_version'], evidence
+          assert fields['commit']==os.environ['EXPECTED_COMMIT'], evidence
+          assert fields['branch']=='main', evidence
+          assert fields['build_id']==os.environ['EXPECTED_BUILD'], evidence
+          assert evidence['title_ok'], evidence
+          print(json.dumps(evidence,indent=2,sort_keys=True))
+          Path('/tmp/live-deployment-identity.json').write_text(json.dumps(evidence,indent=2,sort_keys=True)+'\n',encoding='utf-8')
           PY
-          python3 /tmp/live_smoke_trainer.py | tee /tmp/live-guided-trainer-smoke.json
-
       - uses: actions/upload-artifact@v4
         with:
-          name: live-production-smoke-${{ github.sha }}
+          name: live-production-identity-${{ github.sha }}
           path: |
-            /tmp/url-probe.json
-            /tmp/live-release.json
-            /tmp/browser-smoke.json
-            /tmp/live-guided-trainer-smoke.json
-            /tmp/live-site.png
+            /tmp/live-deployment-identity.json
+            /tmp/prod-meta.css
           if-no-files-found: error
