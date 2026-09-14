@@ -138,4 +138,5 @@ jobs:
 
       - name: Report no pending snapshot
         if: steps.planner.outputs.status != 'PLANNED'
-        run: echo "No new snapshot cycle to materialize: ${{ steps.planner.outputs.status }}"
+        run: |
+          echo "No new snapshot cycle to materialize: ${{ steps.planner.outputs.status }}"
