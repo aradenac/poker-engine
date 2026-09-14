@@ -16,6 +16,7 @@ from tools.simulation.model_b_conditioned_runtime import (  # noqa: E402
 
 CANDIDATE = ROOT / "training/runs/20260913_model_b_response_v3/selected_candidate/model"
 INCUMBENT = ROOT / "training/runs/20260912_independent_profiles_v2/model"
+LEGACY = "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
 
 
 class PriceBucketTests(unittest.TestCase):
@@ -32,8 +33,10 @@ class PriceBucketTests(unittest.TestCase):
 class ConditionedRuntimeIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.candidate = ConditionedModelBEnvironment(CANDIDATE)
-        cls.incumbent = ConditionedModelBEnvironment(INCUMBENT, alias="independent_model_b_v2")
+        cls.candidate = ConditionedModelBEnvironment(CANDIDATE, population_id=LEGACY)
+        cls.incumbent = ConditionedModelBEnvironment(
+            INCUMBENT, alias="independent_model_b_v2", population_id=LEGACY
+        )
 
     def _context(self):
         return dict(
@@ -46,6 +49,7 @@ class ConditionedRuntimeIntegrationTests(unittest.TestCase):
         )
 
     def test_candidate_loads_v3_contract(self):
+        self.assertEqual(self.candidate.population_id, LEGACY)
         self.assertEqual(self.candidate.actions["schema"], "independent-postflop-actions/v3-conditioned")
         self.assertEqual(self.candidate.sizing["schema"], "independent-postflop-sizing/v3-conditioned")
         self.assertEqual(self.candidate.contract["schema"], "independent-opponent-model-b-prediction-contract/v2")
