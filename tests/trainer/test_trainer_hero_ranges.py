@@ -5,12 +5,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 ASSET = ROOT / "site/assets/trainer/hero/custom_ranges_v1.json"
+PACK = ROOT / "site/assets/trainer/population.json"
 JS = (ROOT / "site/trainer.js").read_text(encoding="utf-8")
 
 data = json.loads(ASSET.read_text(encoding="utf-8"))
 assert data["schema"] == "trainer-hero-preflop-ranges/v1"
 assert data["source"]["folder"] == "Custom"
 assert data["source"]["sha256"] == "1248258112562757e49df545e97f9e54b2dde163fdc755adf0029e89e580e8cb"
+
+pack = json.loads(PACK.read_text(encoding="utf-8"))
+assert pack["schema"] == "trainer-population-pack/v1"
+assert pack["population_id"] == "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+assert pack["assets"]["hero"]["ranges"] == "./assets/trainer/hero/custom_ranges_v1.json"
+assert ROOT / "site" / pack["assets"]["hero"]["ranges"].removeprefix("./") == ASSET
 
 expected_positions = {"BTN", "CO", "HJ", "LJ", "SB"}
 assert set(data["ranges"]["PFA"]) == expected_positions
@@ -37,7 +44,8 @@ assert math.isclose(6 * pfa["BTN"]["33"], 3.6)
 assert math.isclose(4 * pfa["BTN"]["A2s"], 4.0)
 
 required = [
-    'hero:{ranges:"./assets/trainer/hero/custom_ranges_v1.json"}',
+    'TRAINER_POPULATION_MANIFEST="./assets/trainer/population.json"',
+    'trainerFetchJson(asset.hero.ranges)',
     'function trainerHeroRangeMap(role,position)',
     'function trainerHeroRangeAvailable(role,position)',
     'function trainerSampleHeroRangeCards(role,position,blocked=new Set())',
