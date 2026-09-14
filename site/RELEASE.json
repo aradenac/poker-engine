@@ -1,27 +1,44 @@
 {
-  "schema": "poker-site-release/v2",
   "application": "Poker Range Equity Offline",
-  "version": "v83",
   "artifact": "site/index.html",
-  "release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
-  "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
   "identity": {
+    "assembled_site": {
+      "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
+      "excluded_build_metadata": [
+        "site/RELEASE.json",
+        "site/deployment-meta.css"
+      ],
+      "functional_files": {
+        "site/index.html": {
+          "git_blob_sha": "363b6195bd1af7dcde543b9c9c893224c87da196"
+        },
+        "site/trainer.css": {
+          "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
+        },
+        "site/trainer.js": {
+          "git_blob_sha": "30eb5e01d4a314d6152aeb1ce4ed10cb0e8856ef"
+        }
+      }
+    },
     "engine_release": {
       "artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
       "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4"
-    },
-    "assembled_site": {
-      "entrypoint": "site/index.html",
-      "git_blob_sha": "8b2a63722562f913fb95871f24be664e9c210c68",
-      "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
-      "assembled_from_commit": "c4555d3e18c3be90a72c42964c18f963442736f7"
     }
   },
-  "status": "promoted",
-  "published": true,
   "models": {
-    "preflop": "training/models/preflop_population_model_v5.json",
-    "postflop": "training/models/postflop_population_model_v5.json"
+    "postflop": "training/models/postflop_population_model_v5.json",
+    "preflop": "training/models/preflop_population_model_v5.json"
   },
-  "notes": "Legacy artifact/release_artifact/sha256 fields are retained for compatibility. identity.engine_release is the immutable v83 engine artifact; identity.assembled_site identifies the later site assembly that embeds trainer/assets and must not be confused with the canonical v83 engine hash."
+  "notes": "Engine v83 and assembled application identities are distinct. The assembled_site identity is derived from content-addressed Git objects; live production verification remains issue #45.",
+  "publication_verification": {
+    "meaning": "Repository/build identity only. A successful build or published=true does not prove the canonical live Cloudflare URL or deployed revision.",
+    "status": "UNVERIFIED_LIVE",
+    "tracked_by_issue": 45
+  },
+  "published": true,
+  "release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
+  "schema": "poker-site-release/v3",
+  "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+  "status": "promoted",
+  "version": "v83"
 }
