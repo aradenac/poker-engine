@@ -106,7 +106,7 @@ jobs:
           PY
 
       - name: Commit evaluation artifacts
-        if: github.ref != 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
         run: |
           if [ -z "$(git status --porcelain training/runs/20260912_independent_profiles_v2/evaluation training/runs/20260912_independent_profiles_v2/model/prediction_contract.json)" ]; then
             echo 'No evaluation changes.'
@@ -249,7 +249,7 @@ jobs:
           PY
 
       - name: Persist candidate and paired evidence on branch
-        if: github.ref != 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
         run: |
           CYCLE='training/runs/20260912_population_increment_cycle/model_b'
           if [ -z "$(git status --porcelain "$CYCLE")" ]; then
