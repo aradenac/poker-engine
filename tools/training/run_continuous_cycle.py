@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Execute a continuous-training cycle without permitting implicit promotion.
 
-Version 1 is intentionally validation-only.  It executes an ordered argv-only
-stage plan, snapshots all declared production paths before the first stage, and
-restores them byte-for-byte if a stage fails or mutates production.  Promotion
-will be layered on later behind an explicit atomic promotion plan; this runner
-never treats a green training command as authorization to move a pointer.
+Version 1 is intentionally validation-only. It executes an ordered argv-only
+stage plan, snapshots all declared protected paths before the first stage, and
+restores them byte-for-byte if a stage fails or mutates protected state.
+Promotion will be layered on later behind an explicit atomic promotion plan;
+this runner never treats a green training command as authorization to move a
+pointer.
 """
 from __future__ import annotations
 
@@ -125,6 +126,34 @@ def load_json(path: Path) -> dict[str, Any]:
     return data
 
 
+def json_value(data: Any, path: list[Any]) -> Any:
+    value = data
+    for item in path:
+        if isinstance(value, dict) and isinstance(item, str) and item in value:
+            value = value[item]
+        elif isinstance(value, list) and isinstance(item, int) and 0 <= item < len(value):
+            value = value[item]
+        else:
+            raise RuntimeError(f"conditional JSON path not found at {item!r}")
+    return value
+
+
+def evaluate_condition(root: Path, condition: dict[str, Any]) -> tuple[bool, Any]:
+    source = condition.get("json")
+    path = condition.get("path", [])
+    if not isinstance(source, str) or not source:
+        raise RuntimeError("stage when.json must be a non-empty path")
+    if not isinstance(path, list) or not all(isinstance(x, (str, int)) for x in path):
+        raise RuntimeError("stage when.path must be a list of object keys/list indexes")
+    if "equals" not in condition:
+        raise RuntimeError("stage when condition requires equals")
+    source_path = resolve(root, source)
+    if not source_path.is_file():
+        raise RuntimeError(f"conditional JSON source missing: {source}")
+    actual = json_value(load_json(source_path), path)
+    return actual == condition["equals"], actual
+
+
 def write_report(path: Path | None, report: dict[str, Any]) -> None:
     if path is None:
         return
@@ -195,6 +224,28 @@ def execute(
             argv = raw_stage.get("argv")
             if not stage_id or not isinstance(argv, list) or not argv or not all(isinstance(x, str) for x in argv):
                 return fail(f"invalid stage contract: {stage_id or '<unnamed>'}")
+
+            condition = raw_stage.get("when")
+            if condition is not None:
+                if not isinstance(condition, dict):
+                    return fail(f"stage {stage_id} when must be an object")
+                try:
+                    should_run, actual = evaluate_condition(root, condition)
+                except RuntimeError as exc:
+                    return fail(f"stage {stage_id} condition invalid: {exc}")
+                if not should_run:
+                    report["stages"].append({
+                        "id": stage_id,
+                        "status": "SKIPPED",
+                        "when": {
+                            "json": condition["json"],
+                            "path": condition.get("path", []),
+                            "equals": condition["equals"],
+                            "actual": actual,
+                        },
+                    })
+                    continue
+
             try:
                 proc = subprocess.run(argv, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             except OSError as exc:
@@ -209,7 +260,6 @@ def execute(
             }
             report["stages"].append(stage_result)
             if proc.returncode != 0:
-                # Keep the machine report compact; stderr is only included for a failed stage.
                 stage_result["stderr"] = proc.stderr[-4000:]
                 return fail(f"stage {stage_id} failed with exit code {proc.returncode}", code=proc.returncode or 2)
 
@@ -243,7 +293,7 @@ def execute(
 
         report.update({
             "status": "PASS",
-            "reason": "all stages and gate checks passed; validation-only execution left production unchanged",
+            "reason": "all required stages and gate checks passed; validation-only execution left protected state unchanged",
             "production_after": snapshot.identities(),
             "production_changed_paths_detected": [],
             "production_restoration_verified": True,
