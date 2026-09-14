@@ -45,30 +45,37 @@
     "independent_from_model_a": true,
     "decision": "RETAIN_BASELINE",
     "candidate_quality_status": "REJECTED_BY_PRE_SPECIFIED_VALIDATION_GATE",
-    "paired_action_log_loss_delta_ci95": [-0.0010721814574275925, 0.001402833163900634],
-    "paired_range_log_loss_delta_ci95": [-0.030823961560193295, -0.0016142643175274295],
-    "validation_action_ece": 0.008140579241861531,
-    "test_action_ece": 0.008256416131162474,
+    "paired_action_log_loss_delta_ci95": [-0.001067131027649346, 0.0014404101951866828],
+    "paired_range_log_loss_delta_ci95": [-0.038664408155126305, -0.006900194458280549],
+    "validation_action_ece": 0.0076206026534253735,
+    "test_action_ece": 0.007646041751158962,
     "known_player_coverage": 0.9812837108953614,
     "weighted_profile_stability": 0.7194192377495463,
     "state_anomaly_rate": 0.0007011866235167206,
     "evidence": "training/runs/20260912_population_increment_cycle/model_b/evaluation/paired_comparison.json",
-    "reason": "The same-structure refreshed K=3 candidate improves range likelihood but does not establish the required VALIDATION action-log-loss non-regression at paired 95% confidence. The pre-specified gate therefore retains promoted Model B v2; locked TEST confirmation was not used for selection. Response-representation realism is evaluated separately under #46."
+    "reason": "The corrected same-structure refreshed K=3 candidate improves range likelihood but does not establish the required VALIDATION action-log-loss non-regression at paired 95% confidence. The pre-specified gate therefore retains promoted Model B v2; locked TEST confirmation was not used for selection. Response-conditioned Model B v3 remains an external heads-up postflop strategy-evaluation environment only."
   },
   "strategy": {
     "baseline_persisted": true,
+    "comparison_complete": true,
+    "candidate_persisted": true,
     "selection_split": "VALIDATION",
     "test_used_for_tuning": false,
+    "test_consumed": false,
     "environment_validity_pass": true,
     "change_scope": ["heads_up_postflop"],
     "unsupported_contexts_covered": false,
     "scenario_manifest_persisted": true,
+    "decision": "RETAIN_BASELINE",
+    "candidate_quality_status": "NO_CANDIDATE_CLEARED_PRE_SPECIFIED_VALIDATION_CI_GATE",
     "baseline_evidence": "training/evaluations/20260913_v83_model_b_v2_baseline/baseline_reference.json",
     "environment_validity_evidence": "training/evaluations/20260913_v83_model_b_v3_baseline/benchmark_reference.json",
     "environment_candidate_selection": "training/runs/20260913_model_b_response_v3/selection.json",
-    "suspicious_states_evidence": "training/evaluations/20260913_v83_model_b_v3_baseline/suspicious_states.json",
-    "immutable_run": "PR #67 / merge 04f651c11989154e98436abfa9a63c271a42138a",
-    "reason": "#46 establishes that the old marginal Model B v2 sizing environment is not robust and validates a price-conditioned v3 response environment for heads-up postflop strategy evaluation. No Hero strategy candidate has yet completed the paired VALIDATION and protected TEST gate, so #11/#40 remain the intentional blocker before strategy promotion readiness."
+    "strategy_decision_evidence": "training/runs/20260913_strategy_candidate_v84/decision.json",
+    "validation_selection_evidence": "training/runs/20260913_strategy_candidate_v84/validation_selection.json",
+    "scenario_manifest": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json",
+    "immutable_run": "PR #69 / merge 1ddfb715eb3f6e94847019539fd8ae7eaa395ace",
+    "reason": "The protected 96-base-hand / 192-scenario VALIDATION comparison completed against corrected response-conditioned Model B v3. cap_3 mean delta was +1.0132 BB with CI95 [-2.8303, +5.1571]; cap_4 mean delta was +1.2982 BB with CI95 [-2.4935, +5.2771]. Neither candidate established the pre-specified non-regression lower bound >= 0, so v83 is retained. No finalist was frozen and protected TEST was not consumed."
   },
   "regressions": {
     "pathological_engine_suite_pass": true,
@@ -77,11 +84,11 @@
     "evidence": {
       "pathological": "PR #52 / Actions 34745732428",
       "trainer": "PR #49",
-      "sequential_arena": "PR #55 / Actions 34747037677"
+      "sequential_arena": "PR #69 / Actions 34811947207"
     }
   },
   "provenance": {
-    "code_commit": "04f651c11989154e98436abfa9a63c271a42138a",
+    "code_commit": "1ddfb715eb3f6e94847019539fd8ae7eaa395ace",
     "dataset_fingerprints": [
       "source_sha256:374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
       "selected_ids_sha256:9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b"
@@ -93,7 +100,7 @@
       "promoted_model_b_postflop_actions_sha256:60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
       "strategy_environment_v3_postflop_actions_sha256:eeeeaf210b658a77ceae502859cad0f93fc599ccb11200693ac5adfcc5c8ba12"
     ],
-    "seed_or_scenario_manifest": "training/evaluations/20260913_v83_model_b_v2_baseline/baseline_reference.json"
+    "seed_or_scenario_manifest": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json"
   },
   "release_identity": {
     "engine_release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
@@ -108,6 +115,6 @@
   },
   "deployment": {
     "site_release_attempted": false,
-    "note": "Deployment verification remains tracked independently in #45. No new site/engine promotion is attempted by this evidence snapshot."
+    "note": "No site or engine promotion is required because all current-cycle model/strategy candidates are retained/rejected. Production-publication verification remains tracked independently in #45."
   }
 }
