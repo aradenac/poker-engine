@@ -8,5 +8,20 @@
   "rejected_full_weight_candidates": {"evidence": "training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json", "preflop": {"historical_local_sha256_not_persisted": "e75ac77f34362b6026ed631fcfaafbabe382a64dbc83dfd523452d45f67e8845", "semantic_sha256": "44aea7e3f26e001fa8faba00e87fb6e56484a5b9458a575cd0330de1cd7ffaa4", "rebuilder": "tools/training/rebuild_preflop_increment_candidate.py", "status": "REPRODUCIBLE_REJECTED_CANDIDATE", "selection": "VALIDATION monotonically selects zero incremental weight"}, "postflop": {"historical_local_sha256_not_persisted": "45366a58e64999a65728b343c811c0b23ae1c7713bab885c2287db99b5df1d4d", "generated_byte_sha256": "57b29ce2388b95a421eaecb34ae35b65ae30f3c127b644ff124782c052df4f79", "semantic_sha256": "8f29abdd96fcd8e07ba2a827a3577070b0d6195517e86a2f547dade15bc55cce", "rebuilder": "tools/training/rebuild_postflop_increment_candidate.py", "status": "REPRODUCIBLE_REJECTED_CANDIDATE", "selection": "VALIDATION monotonically selects zero incremental weight"}},
   "holdout_contract": {"selection_split": "VALIDATION", "test_used_for_selection": false, "test_role": "diagnostic_after_selection_only"},
   "evaluation": "training/runs/20260912_population_increment_cycle/evaluation/model_a_incremental_selection.json",
-  "notes": ["This manifest preserves the historical RETAIN_BASELINE decisions; reproducibility work does not reselect a candidate using TEST.", "The normalized increment and TRAIN overlay are rebuilt in CI from persisted repo inputs.", "The historical 2026-09-12 candidate files were never committed, so their local byte hashes are preserved only as provenance. Persisted rebuilders, repo inputs and semantic digests are the authoritative reconstruction contract.", "The 4,727 new preflop TRAIN rows on unseen exact contexts remain explicitly tracked for a future structural refinement; they are not silently backfilled into fallback-derived nodes."]
+  "finalization": {
+    "status": "COMPLETE_RETAIN_ALL",
+    "gate_report": "training/gates/20260912_report.json",
+    "final_state": "training/runs/20260912_population_increment_cycle/FINAL_STATE.json",
+    "production_transition": "NO_OP_RETAIN_ALL",
+    "decisions": {
+      "model_a_preflop": "RETAIN_BASELINE",
+      "model_a_postflop": "RETAIN_BASELINE",
+      "model_b": "RETAIN_BASELINE",
+      "strategy": "RETAIN_BASELINE"
+    },
+    "protected_strategy_test_consumed": false,
+    "deployment_required": false,
+    "deployment_verification_issue": "#45"
+  },
+  "notes": ["This manifest preserves the historical RETAIN_BASELINE decisions; reproducibility work does not reselect a candidate using TEST.", "The normalized increment and TRAIN overlay are rebuilt in CI from persisted repo inputs.", "The historical 2026-09-12 candidate files were never committed, so their local byte hashes are preserved only as provenance. Persisted rebuilders, repo inputs and semantic digests are the authoritative reconstruction contract.", "The 4,727 new preflop TRAIN rows on unseen exact contexts remain explicitly tracked for a future structural refinement; they are not silently backfilled into fallback-derived nodes.", "Final unified gate PASS retained every promoted production artifact. Registry, Model A v5, Model B v2, engine v83 and assembled site therefore receive no production transition in this cycle."]
 }

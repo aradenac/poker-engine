@@ -1,0 +1,192 @@
+{
+  "closed_on": "2026-09-14",
+  "cycle": "2026-09-12",
+  "decisions": {
+    "model_a_postflop": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false
+    },
+    "model_a_preflop": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false
+    },
+    "model_b": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false
+    },
+    "strategy": {
+      "decision": "RETAIN_BASELINE",
+      "promotion_allowed": false
+    }
+  },
+  "deployment": {
+    "reason": "No engine/model/site artifact was promoted in this cycle.",
+    "required_by_this_transition": false,
+    "separate_verification_issue": "#45",
+    "site_release_attempted": false
+  },
+  "evidence_artifacts": {
+    "cycle_manifest": {
+      "path": "training/runs/20260912_population_increment_cycle/manifest.json",
+      "sha256": "c6fa2c15d0d5586772e1650116b4355883b395ef1b63f97f0f442df152339eb0"
+    },
+    "gate_evidence": {
+      "path": "training/gates/20260912_evidence.json",
+      "sha256": "c6efa353d7d2594e75ec091140f57c5c9c811eb6bacd4bfeea1f8d87d3e7daed"
+    },
+    "gate_report": {
+      "path": "training/gates/20260912_report.json",
+      "sha256": "f8c0b78750be49f20ed15206043801c1e15102a73f74376c900c858192362406"
+    },
+    "increment_manifest": {
+      "path": "training/datasets/NLHE_100-200/increments/20260912/manifest.json",
+      "sha256": "d8ad4fbfd741dcb20bb1e3b1a64093ee57e1f04d06eca05a130af837e95612ab"
+    },
+    "model_a_rebuild_evidence": {
+      "path": "training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json",
+      "sha256": "5af68cf055eec3e329ab464c6f26ba3a424e921746f794e4fc79db2e7d485213"
+    },
+    "model_b_refresh_decision": {
+      "path": "training/runs/20260912_population_increment_cycle/model_b/evaluation/paired_comparison.json",
+      "sha256": "f5c7f7086a88629cc0d87645e0ebede21d2621d09ad7cf62bf5a548325d0652c"
+    },
+    "snapshot_manifest": {
+      "path": "training/datasets/NLHE_100-200/snapshots/20260912/manifest.json",
+      "sha256": "d4cd9e535914b38fb6f3322cdcd076080755768d9752f0675f313c185e02dc4c"
+    },
+    "strategy_contract": {
+      "path": "training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json",
+      "sha256": "cc1fec6ffb9868992267287b181b47514dfd6fa74da515ee92ff2767a2f68e26"
+    },
+    "strategy_decision": {
+      "path": "training/runs/20260913_strategy_candidate_v84/decision.json",
+      "sha256": "8be6ecb6f42fd10326717f8a51e0b6e868193faff12c6f2e27769cf5fd80534e"
+    },
+    "strategy_validation_scenarios": {
+      "path": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json",
+      "sha256": "4034996c13baf94508d5cfd73a2147ef8072557405e12fad9ddfad538343311c"
+    },
+    "strategy_validation_selection": {
+      "path": "training/runs/20260913_strategy_candidate_v84/validation_selection.json",
+      "sha256": "6909402027f29c899992af081cf477f88daf79dfd60765fece5e5d04f06a9424"
+    }
+  },
+  "finalization_base_commit": "2b824196b08b3f0e6a345859250c12f0878c8c00",
+  "follow_up_not_part_of_closed_cycle": [
+    "#13",
+    "#61",
+    "#73",
+    "#74"
+  ],
+  "gate": {
+    "evidence": {
+      "path": "training/gates/20260912_evidence.json",
+      "sha256": "c6efa353d7d2594e75ec091140f57c5c9c811eb6bacd4bfeea1f8d87d3e7daed"
+    },
+    "promotion_ready": true,
+    "report": {
+      "path": "training/gates/20260912_report.json",
+      "sha256": "f8c0b78750be49f20ed15206043801c1e15102a73f74376c900c858192362406"
+    },
+    "status": "PASS"
+  },
+  "holdout_protection": {
+    "model_a_postflop_test_used_for_selection": false,
+    "model_a_preflop_test_used_for_selection": false,
+    "model_b_test_used_for_selection": false,
+    "strategy_test_consumed": false,
+    "strategy_test_outcome": "NOT_RUN_NO_VALIDATION_FINALIST"
+  },
+  "production_state": {
+    "assembled_site": {
+      "assembled_from_commit": "c4555d3e18c3be90a72c42964c18f963442736f7",
+      "assets_tree_git_sha": "ae29267d9bb7191f44eeff1071e780699e90ae13",
+      "git_blob_sha": "8b2a63722562f913fb95871f24be664e9c210c68",
+      "path": "site/index.html"
+    },
+    "engine": {
+      "path": "user/releases/poker_range_equity_offline_multiway_v83.html",
+      "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4"
+    },
+    "model_a_postflop": {
+      "path": "training/models/postflop_population_model_v5.json",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    },
+    "model_a_preflop": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "model_b": {
+      "alias": "independent_model_b_v2",
+      "artifacts": {
+        "postflop_actions.json": {
+          "path": "training/runs/20260912_independent_profiles_v2/model/postflop_actions.json",
+          "sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb"
+        },
+        "prediction_contract.json": {
+          "path": "training/runs/20260912_independent_profiles_v2/model/prediction_contract.json",
+          "sha256": "e682e1000006b0bd3128c591af2dba9d5668a06d41219669cbf7cb66f9e2bb4e"
+        },
+        "preflop_ranges.json": {
+          "path": "training/runs/20260912_independent_profiles_v2/model/preflop_ranges.json",
+          "sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf"
+        },
+        "profiles.json": {
+          "path": "training/runs/20260912_independent_profiles_v2/model/profiles.json",
+          "sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea"
+        },
+        "sizing.json": {
+          "path": "training/runs/20260912_independent_profiles_v2/model/sizing.json",
+          "sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e"
+        },
+        "summary.json": {
+          "path": "training/runs/20260912_independent_profiles_v2/model/summary.json",
+          "sha256": "b3f71ba8d36f6768e4f4242518076178916f9e1bc0fafe6ac20ff9a85584943c"
+        }
+      },
+      "model_dir": "training/runs/20260912_independent_profiles_v2/model",
+      "run_id": "20260912_independent_profiles_v2"
+    }
+  },
+  "production_transition": {
+    "engine_changed": false,
+    "model_a_changed": false,
+    "model_b_changed": false,
+    "reason": "All four candidate gates completed with RETAIN_BASELINE; no production pointer is authorized to move.",
+    "registry_after_git_blob_sha": "bbf2ea6f32f7ac8aea5dd92c4ed0f4839c6d7879",
+    "registry_before_git_blob_sha": "bbf2ea6f32f7ac8aea5dd92c4ed0f4839c6d7879",
+    "registry_changed": false,
+    "site_changed": false,
+    "type": "NO_OP_RETAIN_ALL"
+  },
+  "rollback": {
+    "promoted_engine_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
+    "promoted_engine_sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+    "promoted_model_a": {
+      "postflop": "training/models/postflop_population_model_v5.json",
+      "preflop": "training/models/preflop_population_model_v5.json"
+    },
+    "promoted_model_b_alias": "independent_model_b_v2",
+    "registry_git_blob_sha": "bbf2ea6f32f7ac8aea5dd92c4ed0f4839c6d7879"
+  },
+  "schema": "poker-training-cycle-final-state/v1",
+  "source_state": {
+    "genuinely_unseen_hands": 3268,
+    "population": "NLHE 100-200",
+    "resulting_union_unique_hands": 31003,
+    "selected_hand_ids_fingerprint_sha256": "9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b",
+    "selected_increment": {
+      "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+      "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed"
+    },
+    "source_snapshot": {
+      "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+      "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb"
+    },
+    "split_counts": {
+      "TEST": 342,
+      "TRAIN": 2606,
+      "VALIDATION": 320
+    }
+  }
+}
