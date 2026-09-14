@@ -4,18 +4,46 @@ This directory contains repository-native orchestration contracts for issue #13.
 
 ## Safety model
 
-`tools/training/run_continuous_cycle.py` is the automation boundary. Version 1 is deliberately **validation-only**:
+`tools/training/run_continuous_cycle.py` is the automation boundary:
 
 - stage commands are explicit argv arrays; no shell command string is evaluated;
-- the contract declares all promoted/production paths that must remain unchanged;
-- those paths are copied to a temporary rollback snapshot before the first stage;
-- after every stage, production identities are compared with the snapshot;
-- a failed stage, a missing output, an unexpected production write, or a non-ready promotion gate causes a non-zero result;
-- if production changed, the runner restores the protected files/directories before returning;
+- the contract declares promoted/production paths protected by a complete rollback snapshot;
+- after every training/evaluation stage, production identities are compared with that snapshot;
+- a failed stage, missing output, unauthorized production write, or non-ready promotion gate returns non-zero;
+- if production changed unexpectedly, the runner restores the protected files/directories before returning;
 - stages may have a declarative JSON `when` condition, used for protected holdout control;
-- v1 rejects every `promotion_mode` except `disabled`.
+- a green candidate build is never promotion authorization by itself.
 
-A candidate build is therefore allowed to write only outside the protected production paths. A green candidate build is not promotion authorization.
+Two promotion modes exist:
+
+- `disabled`: validation-only. Protected production must remain byte-identical throughout the cycle.
+- `explicit`: requires `promotion_plan`, and the machine-readable gate must be `PASS` with `promotion_ready=true` even if the CLI did not request `--require-ready`.
+
+## Explicit promotion transaction
+
+An explicit plan has schema `poker-atomic-promotion/v1` and an ordered `operations` list. Each operation pins:
+
+- an immutable candidate `source` outside every protected production path;
+- a protected `destination`;
+- the exact candidate `source_sha256`;
+- the exact `destination_sha256_before`, or `null` when the destination is intentionally new.
+
+Before the first production write, all operations and preconditions are checked and all candidate bytes are staged and re-hashed. The runner then replaces each destination atomically at file level. If `training/registry.json` is part of the plan it **must be the final operation**, so production pointers cannot lead the artifact transition.
+
+The outer production snapshot makes the multi-file operation transactional: any failed replace, post-write hash mismatch, or unexpected changed protected path restores the entire pre-promotion state. Successful execution verifies that the changed protected-path set is exactly the set named by the plan.
+
+`tests/training/test_continuous_cycle.py` exercises successful model+registry promotion, blocked gates, bad candidate hashes, invalid registry ordering, and an injected failure on the second production write to prove the first write is rolled back.
+
+## GitHub Actions entrypoint
+
+`.github/workflows/continuous-training-cycle.yml` is the repository-native entrypoint.
+
+- branch/PR changes run the promotion/rollback safety contract only;
+- `workflow_dispatch` accepts a **committed JSON contract under `training/automation/`** and executes it with `--require-ready`;
+- arbitrary absolute paths, parent traversal, and configs outside `training/automation/` are refused;
+- the machine-readable execution report is uploaded as a workflow artifact.
+
+Thus a production-changing run requires both a reviewed committed explicit plan and an intentional workflow dispatch. Existing reference contracts remain `promotion_mode=disabled` because the 2026-09-12 cycle retained every incumbent.
 
 ## Reference cycle — Model A / unified gate
 
@@ -43,6 +71,8 @@ For the closed 2026-09-12 cycle, no strategy candidate cleared VALIDATION, so th
 
 The Model B summary contains the CLI feature-source path, so a safe `/tmp` rebuild cannot have the same full-file SHA as the historical candidate. Reference verification therefore ignores only `features.path` in that summary and still requires exact paired metrics/guardrails/decision plus exact hashes for profiles, preflop ranges, postflop actions and sizing artifacts.
 
-The protected set includes `training/registry.json`, all promoted Model A files, promoted Model B v2 model files, `user/releases/`, and the complete assembled `site/` tree.
+## Reference cycle — user bundle
 
-Atomic promotion remains a separate follow-up (#80). Promotion must never be inferred merely from successful training commands.
+`reference_user_bundle_20260912.json` builds the coherent `NLHE 100-200` user bundle under `/tmp`, validates manifest/checksums/custom-range identity, and leaves production unchanged. The bundle itself is generated only from the accepted final training state.
+
+The protected set includes `training/registry.json`, all promoted Model A files, promoted Model B v2 model files, `user/releases/`, and the complete assembled `site/` tree.

@@ -1,0 +1,81 @@
+name: Continuous training cycle
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'tools/training/run_continuous_cycle.py'
+      - 'tools/training/atomic_promotion.py'
+      - 'tests/training/test_continuous_cycle.py'
+      - 'training/automation/**'
+      - '.github/workflows/continuous-training-cycle.yml'
+  pull_request:
+    paths:
+      - 'tools/training/run_continuous_cycle.py'
+      - 'tools/training/atomic_promotion.py'
+      - 'tests/training/test_continuous_cycle.py'
+      - 'training/automation/**'
+      - '.github/workflows/continuous-training-cycle.yml'
+  workflow_dispatch:
+    inputs:
+      contract:
+        description: 'Committed cycle contract under training/automation/'
+        required: true
+        default: 'training/automation/reference_cycle_20260912.json'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: continuous-training-cycle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  safety-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile transaction modules
+        run: python3 -m py_compile tools/training/atomic_promotion.py tools/training/run_continuous_cycle.py tests/training/test_continuous_cycle.py
+      - name: Exercise rollback and atomic-promotion contract
+        run: python3 tests/training/test_continuous_cycle.py
+
+  run-committed-cycle:
+    if: github.event_name == 'workflow_dispatch'
+    needs: safety-contract
+    runs-on: ubuntu-latest
+    env:
+      CYCLE_CONFIG: ${{ inputs.contract }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate committed contract path
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          p=Path(os.environ['CYCLE_CONFIG'])
+          if p.is_absolute() or '..' in p.parts or len(p.parts) < 3:
+              raise SystemExit('contract must be a repository-relative path under training/automation/')
+          if tuple(p.parts[:2]) != ('training','automation') or p.suffix != '.json':
+              raise SystemExit('contract must be a JSON file under training/automation/')
+          if not p.is_file():
+              raise SystemExit(f'committed contract does not exist: {p}')
+          print(p)
+          PY
+      - name: Execute cycle behind promotion gate and rollback boundary
+        run: |
+          python3 tools/training/run_continuous_cycle.py \
+            --config "$CYCLE_CONFIG" \
+            --require-ready \
+            --report /tmp/continuous-cycle-execution.json
+      - name: Show machine-readable result
+        run: cat /tmp/continuous-cycle-execution.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: continuous-cycle-execution-${{ github.run_id }}
+          path: /tmp/continuous-cycle-execution.json
+          if-no-files-found: error
