@@ -1,0 +1,38 @@
+name: Validate preflop policy169 refit
+
+on:
+  pull_request:
+    paths:
+      - 'tools/training/preflop_policy169.py'
+      - 'tools/training/rebuild_preflop_increment_candidate.py'
+      - 'tests/training/test_preflop_policy169.py'
+      - 'tests/training/test_preflop_policy169_rebuild.py'
+      - '.github/workflows/preflop-policy169.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preflop-policy169-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile candidate path
+        run: |
+          python3 -m py_compile \
+            tools/training/preflop_policy169.py \
+            tools/training/rebuild_preflop_increment_candidate.py \
+            tests/training/test_preflop_policy169.py \
+            tests/training/test_preflop_policy169_rebuild.py
+      - name: Policy representation contract
+        run: python3 tests/training/test_preflop_policy169.py
+      - name: Rebuild/runtime consumption contract
+        run: python3 tests/training/test_preflop_policy169_rebuild.py
