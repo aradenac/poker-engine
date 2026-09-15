@@ -51,7 +51,7 @@ async def main() -> None:
         ]
 
         await page.locator("#heroRangeImport").set_input_files(
-            files={"name": "custom.json", "mime_type": "application/json", "buffer": source_bytes}
+            files={"name": "custom.json", "mimeType": "application/json", "buffer": source_bytes}
         )
         await page.wait_for_function("document.querySelector('#sourceBadge')?.textContent.includes('préservée')")
         assert await page.locator("#sourceRangeSelect option").count() > 0
