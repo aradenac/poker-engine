@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import random
+
 from tools.simulation.game_core import NoLimitHoldemState
 from tools.simulation.model_b_card_aware_runtime import CardAwareModelBPolicy
+from tools.simulation.model_b_runtime import best, ccode
 from tools.training.independent_profiles.card_aware_behavior_fit import (
+    _made_category_fast,
     bucket_posterior_from_classes,
     exact_hand_posterior,
     fit_behavior_from_soft_decisions,
@@ -126,6 +130,26 @@ def test_fitted_artifact_is_consumable_by_runtime_without_hard_labels() -> None:
 def test_revealed_cards_are_point_mass_not_a_special_parallel_pipeline() -> None:
     posterior = exact_hand_posterior(["As", "Ac"], ["2s", "7d", "Tc"], "flop")
     assert posterior == {"ONE_PAIR": 1.0}
+
+
+def test_fast_category_matches_canonical_best_evaluator() -> None:
+    # Deterministic random coverage across flop/turn/river card counts, including
+    # wheels, paired boards, flushes and multi-pair/trip configurations by chance.
+    rng = random.Random(20260915)
+    deck = [ccode(card_id) for card_id in range(52)]
+    for count in (5, 6, 7):
+        for _ in range(600):
+            cards = rng.sample(deck, count)
+            assert _made_category_fast(cards) == int(best(cards)[0]), cards
+
+    explicit = [
+        ["As", "2s", "3s", "4s", "5s", "Kd", "Kh"],
+        ["Ah", "Ad", "Ac", "Ks", "Kd", "Kc", "2h"],
+        ["Ah", "Ad", "Ac", "As", "Kd", "Kc", "2h"],
+        ["Ah", "Kh", "Qh", "Jh", "9h", "Tc", "2d"],
+    ]
+    for cards in explicit:
+        assert _made_category_fast(cards) == int(best(cards)[0]), cards
 
 
 def test_latent_169_class_projection_respects_current_public_blockers() -> None:
