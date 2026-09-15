@@ -27,22 +27,14 @@ jobs:
 
           patch = Path('tools/patches/apply_hero_range_compliance.py')
           text = patch.read_text(encoding='utf-8')
-          old = '''  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase(),hand=String(q.get("hand")||"").toUpperCase();
-          if(population)els.population.value=population;
-          if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
-          if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
-          if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
-          if(HeroRanges.HAND_CLASSES.includes(hand))selectedHand=hand;'''
-          new = '''  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase();
-          const handRaw=String(q.get("hand")||"").trim(),hand=HeroRanges.HAND_CLASSES.find(x=>x.toUpperCase()===handRaw.toUpperCase())||"";
-          if(population)els.population.value=population;
-          if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
-          if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
-          if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
-          if(hand)selectedHand=hand;'''
-          if old not in text:
-              raise SystemExit('deep-link patch marker not found')
-          patch.write_text(text.replace(old, new, 1), encoding='utf-8')
+          old_line = '  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase(),hand=String(q.get("hand")||"").toUpperCase();'
+          new_lines = '  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase();\n  const handRaw=String(q.get("hand")||"").trim(),hand=HeroRanges.HAND_CLASSES.find(x=>x.toUpperCase()===handRaw.toUpperCase())||"";'
+          old_assign = '  if(HeroRanges.HAND_CLASSES.includes(hand))selectedHand=hand;'
+          new_assign = '  if(hand)selectedHand=hand;'
+          if text.count(old_line) != 1 or text.count(old_assign) != 1:
+              raise SystemExit(f'deep-link markers not unique: line={text.count(old_line)} assign={text.count(old_assign)}')
+          text = text.replace(old_line, new_lines, 1).replace(old_assign, new_assign, 1)
+          patch.write_text(text, encoding='utf-8')
 
           release_path = Path('site/RELEASE.json')
           release = json.loads(release_path.read_text(encoding='utf-8'))
