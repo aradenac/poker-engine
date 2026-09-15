@@ -7,10 +7,10 @@ The release metadata deliberately separates:
 - live deployment verification, which is tracked separately by issue #45.
 
 The application identity covers the analyser, shared preflop contract, Hero range
-editor, trainer JS/CSS and the complete site/assets tree. Git blob/tree object IDs
-are content-derived, so they identify the exact functional bytes without
-introducing a self-reference. Build-specific deployment-meta.css and RELEASE.json
-itself are excluded.
+editor, trainer, population-pack manager/catalog and the complete site/assets tree.
+Git blob/tree object IDs are content-derived, so they identify the exact functional
+bytes without introducing a self-reference. Build-specific deployment metadata and
+RELEASE.json itself are excluded.
 """
 
 from __future__ import annotations
@@ -34,6 +34,12 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "hero-ranges.css",
     ROOT / "site" / "trainer.js",
     ROOT / "site" / "trainer.css",
+    ROOT / "site" / "packs.html",
+    ROOT / "site" / "packs.css",
+    ROOT / "site" / "packs-app.js",
+    ROOT / "site" / "population-packs.js",
+    ROOT / "site" / "population-pack-sw.js",
+    ROOT / "site" / "packs" / "catalog.json",
 )
 
 
@@ -52,6 +58,8 @@ def git_output(*args: str) -> str:
 
 
 def git_blob_sha(path: Path) -> str:
+    # hash-object accepts generated/untracked build files and therefore gives the
+    # same content-addressed identity before Cloudflare uploads the site tree.
     return git_output("hash-object", str(path.relative_to(ROOT)))
 
 
@@ -63,6 +71,9 @@ def assets_tree_sha() -> str:
 def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
     release = dict(existing)
     engine_sha256 = sha256_file(ENGINE_PATH)
+    missing = [str(path.relative_to(ROOT)) for path in FUNCTIONAL_FILES if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"functional site file(s) missing: {', '.join(missing)}")
 
     release["schema"] = "poker-site-release/v3"
     release["application"] = release.get("application", "Poker Range Equity Offline")
@@ -106,8 +117,9 @@ def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
     )
     release["notes"] = (
         "Engine v83 and assembled application identities are distinct. "
-        "The assembled_site identity is derived from content-addressed Git objects; "
-        "live production verification remains issue #45."
+        "The assembled_site identity is derived from content-addressed Git objects, "
+        "including the generated population-pack catalogue; live production "
+        "verification remains issue #45."
     )
     return release
 
