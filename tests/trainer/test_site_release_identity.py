@@ -24,6 +24,7 @@ def main() -> int:
     assembled = release["identity"]["assembled_site"]
     assert set(assembled["functional_files"]) == {
         "site/index.html",
+        "site/preflop-contract.js",
         "site/trainer.css",
         "site/trainer.js",
     }

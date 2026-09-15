@@ -1,0 +1,46 @@
+name: Validate preflop context contract
+
+on:
+  pull_request:
+    paths:
+      - 'tools/preflop/**'
+      - 'tools/training/increment_decisions.py'
+      - 'tools/training/audit_preflop_key_runtime_parity.py'
+      - 'site/preflop-contract.js'
+      - 'site/index.html'
+      - 'site/RELEASE.json'
+      - 'tools/write_site_release.py'
+      - 'tests/preflop/**'
+      - 'tests/fixtures/preflop_contract_cases.json'
+      - 'tests/training/test_preflop_key_runtime_parity.py'
+      - '.github/workflows/preflop-contract.yml'
+  workflow_dispatch:
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python and JavaScript syntax
+        run: |
+          python3 -m py_compile tools/preflop/context_contract.py tools/preflop/probability_contract.py tools/training/increment_decisions.py tools/training/audit_preflop_key_runtime_parity.py
+          node --check site/preflop-contract.js
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('site/index.html').read_text()
+          a=s.index('<script src="./preflop-contract.js"></script>')
+          b=s.index('<script>',a)
+          c=s.index('</script>',b)
+          Path('/tmp/site-inline.js').write_text(s[b+8:c])
+          PY
+          node --check /tmp/site-inline.js
+      - name: Shared fixture, probability and HH parity
+        run: |
+          python3 tests/preflop/test_context_contract.py
+          python3 tests/preflop/test_probability_contract.py
+          python3 tests/preflop/test_increment_decisions_contract.py
+          python3 tests/preflop/test_site_preflop_contract.py
+      - name: Preserve issue 88 incumbent matcher contract
+        run: python3 tests/training/test_preflop_key_runtime_parity.py
+      - name: Release identity
+        run: python3 tools/write_site_release.py --check

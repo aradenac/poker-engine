@@ -1220,6 +1220,7 @@
   </div>
 </div>
 
+<script src="./preflop-contract.js"></script>
 <script>
 "use strict";
 
@@ -5483,42 +5484,13 @@ rangeAllBtn.addEventListener("click",()=>{
 
 
 function normalizePopulationPosition(pos,tableSize){
-  const p=pos==="UTG"?"LJ":String(pos||"");
-  return tableSize===2&&p==="BTN" ? "SB_BTN" : p;
+  return window.PokerPreflopContract.normalizePosition(pos,tableSize);
 }
 function populationPositionOrder(pos){
   return ["LJ","HJ","CO","BTN","SB","BB","SB_BTN"].indexOf(pos);
 }
 function populationFamilyFromHistory(history,actorPos){
-  if(!history.length) return "UNOPENED";
-  const raises=[];
-  for(let i=0;i<history.length;i++) if(["RAISE","JAM"].includes(history[i].action)) raises.push(i);
-  const limps=history.filter(x=>x.action==="LIMP");
-  if(!raises.length) return "VS_LIMPERS";
-  const first=raises[0];
-  const callersAfter=history.slice(first+1).filter(x=>x.action==="CALL");
-  const actorRaised=history.some(x=>x.position===actorPos&&["RAISE","JAM"].includes(x.action));
-  const actorCalled=history.some(x=>x.position===actorPos&&["CALL","LIMP"].includes(x.action));
-  if(raises.length===1){
-    if(limps.length&&first>0){
-      const actorLimped=history.some(x=>x.position===actorPos&&x.action==="LIMP");
-      if(actorLimped) return callersAfter.length?"LIMPER_VS_ISO_CALLERS":"LIMPER_VS_ISO";
-      return callersAfter.length?"VS_ISO_CALLERS":"VS_ISO";
-    }
-    return callersAfter.length?"VS_RFI_CALLERS":"VS_RFI";
-  }
-  if(raises.length===2){
-    if(actorRaised) return "OPENER_OR_ISO_VS_3BET";
-    if(actorCalled) return "CALLER_VS_SQUEEZE_OR_3BET";
-    return "COLD_VS_3BET";
-  }
-  if(raises.length===3){
-    if(actorRaised) return "AGGRESSOR_VS_4BET";
-    if(actorCalled) return "CALLER_VS_4BET";
-    return "COLD_VS_4BET";
-  }
-  if(raises.length===4) return "VS_5BET";
-  return "VS_6BET_PLUS";
+  return window.PokerPreflopContract.familyFromHistory(history,actorPos);
 }
 function replayPreflopDecisionCount(replayIndex=state.replayIndex){
   if(!state.replaySteps?.length) return 0;
@@ -5534,19 +5506,27 @@ function populationPreflopDecisionTrace(hand=state.selectedHand){
   if(!hand) return [];
   const preflop=(hand.timeline||[]).find(s=>s.key==="preflop");
   if(!preflop) return [];
-  const cacheKey=`${String(hand.id||"")}:${(preflop.actions||[]).length}`;
+  const cacheKey=`${String(hand.id||"")}:${(preflop.actions||[]).length}:pfc1`;
   if(cacheKey&&state.populationTraceCache[cacheKey]) return state.populationTraceCache[cacheKey];
 
+  const contract=window.PokerPreflopContract;
   const tableSize=(hand.players||[]).length;
   const playerByName=new Map((hand.players||[]).map(p=>[p.name,p]));
   const inHand=new Set((hand.players||[]).map(p=>p.name));
   const allIn=new Set();
   const history=[];
-  let raiseLevel=0;
+  const paidByName=Object.create(null);
+  for(const p of (hand.players||[]))paidByName[p.name]=0;
+  let currentPriceBB=0,lastFullRaiseIncrementBB=1,raiseLevel=0;
   const out=[];
 
   for(const a of (preflop.actions||[])){
+    const amountBB=Number.isFinite(a.rawAmount)&&Number.isFinite(hand.bigBlind)&&hand.bigBlind>0?a.rawAmount/hand.bigBlind:0;
     if(a.type==="post"){
+      if(!/ante/i.test(String(a.text||""))){
+        paidByName[a.player]=(paidByName[a.player]||0)+amountBB;
+        currentPriceBB=Math.max(currentPriceBB,paidByName[a.player]);
+      }
       if(a.allIn) allIn.add(a.player);
       continue;
     }
@@ -5560,46 +5540,51 @@ function populationPreflopDecisionTrace(hand=state.selectedHand){
     else if(a.type==="call") action=raiseLevel===0?"LIMP":"CALL";
     else if(a.type==="raise"||a.type==="bet") action=a.allIn?"JAM":"RAISE";
 
-    const livePositions=[...inHand]
-      .filter(name=>!allIn.has(name))
-      .map(name=>normalizePopulationPosition(playerByName.get(name)?.hhPosition,tableSize))
-      .filter(Boolean)
-      .sort((x,y)=>populationPositionOrder(x)-populationPositionOrder(y));
-    const allInPositions=[...allIn]
-      .map(name=>normalizePopulationPosition(playerByName.get(name)?.hhPosition,tableSize))
-      .filter(Boolean)
-      .sort((x,y)=>populationPositionOrder(x)-populationPositionOrder(y));
-    const amountBB=Number.isFinite(a.rawAmount)&&Number.isFinite(hand.bigBlind)&&hand.bigBlind>0?a.rawAmount/hand.bigBlind:0;
+    const livePositions=contract.sortPositions([...inHand].filter(name=>!allIn.has(name)).map(name=>normalizePopulationPosition(playerByName.get(name)?.hhPosition,tableSize)).filter(Boolean),tableSize);
+    const allInPositions=contract.sortPositions([...allIn].map(name=>normalizePopulationPosition(playerByName.get(name)?.hhPosition,tableSize)).filter(Boolean),tableSize);
     const potAfterBB=Number(a.potAfterBB);
-    const potBeforeBB=Number.isFinite(potAfterBB)?Math.max(0,potAfterBB-(a.changesPot?amountBB:0)):NaN;
+    const potBeforeBB=Number.isFinite(potAfterBB)?Math.max(0,potAfterBB-(a.changesPot?amountBB:0)):0;
+    const contributionByPos=Object.create(null),stackByPos=Object.create(null);
+    for(const p of (hand.players||[])){
+      const pos=normalizePopulationPosition(p.hhPosition,tableSize);
+      if(!pos)continue;
+      stackByPos[pos]=historyPlayerStackBB(hand,p.name);
+      if(inHand.has(p.name)||allIn.has(p.name))contributionByPos[pos]=Number(paidByName[p.name])||0;
+    }
+    const ctx=contract.buildContext({
+      table_size:tableSize,actor_position:actorPos,live_positions:livePositions,all_in_positions:allInPositions,
+      history,raise_level:raiseLevel,contribution_bb_by_position:contributionByPos,stack_bb_by_position:stackByPos,
+      pot_before_bb:potBeforeBB,current_price_bb:currentPriceBB,min_raise_to_bb:currentPriceBB+lastFullRaiseIncrementBB
+    });
     const actorStackBB=historyPlayerStackBB(hand,a.player);
-
+    const targetTotalBB=["RAISE","JAM"].includes(action)?ctx.actor_contribution_bb+amountBB:null;
     out.push({
-      ordinal:out.length,
-      player:a.player,
-      actor_position:actorPos,
-      table_size:tableSize,
-      history:history.map(x=>({...x})),
-      live_positions:livePositions,
-      all_in_positions:allInPositions,
-      raise_level:raiseLevel,
-      family:populationFamilyFromHistory(history,actorPos),
-      action,
-      pot_before_bb:potBeforeBB,
-      action_add_bb:amountBB,
-      actor_start_stack_bb:actorStackBB
+      ordinal:out.length,player:a.player,actor_position:ctx.actor_position,table_size:ctx.table_size,
+      history:ctx.history.map(x=>({...x})),live_positions:ctx.live_positions,all_in_positions:ctx.all_in_positions,
+      raise_level:ctx.raise_level,family:ctx.family,free_check:ctx.free_check,to_call_bb:ctx.to_call_bb,
+      current_price_bb:ctx.current_price_bb,legal_actions:[...ctx.legal_actions],remaining_to_act_positions:[...ctx.remaining_to_act_positions],
+      action,pot_before_bb:potBeforeBB,action_add_bb:amountBB,actor_start_stack_bb:actorStackBB,
+      preflop_context_v1:ctx,
+      action_sizing_v1:{incremental_cost_bb:amountBB,target_total_bb:targetTotalBB}
     });
 
     if(action==="FOLD"){
-      inHand.delete(a.player);
-      allIn.delete(a.player);
+      inHand.delete(a.player);allIn.delete(a.player);
     }else{
+      const oldPrice=currentPriceBB;
+      if(["LIMP","CALL","RAISE","JAM"].includes(action)){
+        paidByName[a.player]=(paidByName[a.player]||0)+amountBB;
+        currentPriceBB=Math.max(currentPriceBB,paidByName[a.player]);
+      }
       history.push({position:actorPos,action});
-      if(action==="RAISE"||action==="JAM") raiseLevel++;
+      if(action==="RAISE"||action==="JAM"){
+        const increment=Math.max(0,currentPriceBB-oldPrice);
+        if(increment+1e-9>=lastFullRaiseIncrementBB)lastFullRaiseIncrementBB=increment;
+        raiseLevel++;
+      }
       if(a.allIn) allIn.add(a.player);
     }
   }
-
   if(cacheKey) state.populationTraceCache[cacheKey]=out;
   return out;
 }
@@ -5842,8 +5827,15 @@ function populationPreflopRangeEstimateForPlayer(player,replayIndex=state.replay
       initialized=true;
     }
 
+    let actionSetCompatible=true;
     for(const h of hands){
-      weights[h]=(weights[h]||0)*Math.max(0,Number(policy[h]?.[decision.action])||0);
+      const probabilityResponse=window.PokerPreflopContract.incumbentV5Passthrough({
+        context:decision.preflop_context_v1||decision,raw_probabilities:policy[h]||{},hand_class:h,
+        source:policy.__source||'legacy_reconstructed',backoff_level:match.exact?'exact':'closest',
+        confidence:match.node.population_model?.confidence||'',support:Number(match.node.coverage?.population_decisions)||0
+      });
+      actionSetCompatible=actionSetCompatible&&probabilityResponse.action_set_compatible;
+      weights[h]=(weights[h]||0)*Math.max(0,Number(probabilityResponse.probabilities[decision.action])||0);
     }
     matchedActions++;
     trace.push({
@@ -5857,6 +5849,10 @@ function populationPreflopRangeEstimateForPlayer(player,replayIndex=state.replay
       nodeSource:match.node.population_model?.source||"",
       policySource:policy.__source||"legacy_reconstructed",
       policyMethod:policy.__method||"",
+      probabilityContract:'poker-preflop-action-probabilities/v1',
+      probabilityMode:'incumbent_v5_passthrough',
+      actionSetCompatible,
+      backoffLevel:match.exact?'exact':'closest',
       family:match.node.context?.family||"",
       actorPosition:decision.actor_position
     });

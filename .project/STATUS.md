@@ -1,81 +1,88 @@
 # Project Status
 
-Last update: 2026-09-14
+Last update: 2026-09-15
 
 ## Source of truth and active plan
 
-GitHub repository `aradenac/poker-engine` is the durable source of truth. The active delivery plan is **issue #92 — Moteur NLHE 100/200 Zoom : préflop, ranges Hero et entraînement continu**. Follow its dependency order; do not revive closed historical tickets merely because they appear in older reports.
+GitHub repository `aradenac/poker-engine` is the durable source of truth. The active delivery plan is **issue #92 — Moteur NLHE 100/200 Zoom : préflop, ranges Hero et entraînement continu**.
 
 Completed on the current critical path:
 
 - **#93** — handoff documentation and application/release identity reconciled; merged through PR #115.
-- **#94** — target population certification implemented and measured in PR #116; certification evidence is `training/datasets/NLHE_100-200/population_certification.json`.
+- **#94** — PokerStars NLHE 100/200 Zoom play-money corpus certified; merged through PR #116.
+- **#95** — datasets/models/strategies isolated by explicit population; merged through PR #117 at main commit `a56a3eb5c9ee2d70a39cc498ba8244badf683318`.
 
-Next critical path:
+Current delivery:
 
-1. **#95** — isolate datasets, models and strategies by population;
-2. **#96** — unify preflop context/probability contracts;
-3. **#97/#98** — Hero range editor and compliance;
-4. **#99–#109** — full-hand/multiway modelling, training, evaluation and preflop guidance;
-5. **#110/#111/#45** — durable packs, Cloudflare catalogue and verified live production;
-6. **#112/#113** — new-hand snapshot to decision/release from one prompt.
+- **#96** — canonical preflop context/probability contract is implemented on PR #118 and under final regression validation.
+
+Next after #96:
+
+1. **#97** — Hero range repository/editor;
+2. **#98** — Hero range compliance in the replayer;
+3. **#99–#109** — evaluation gates, full-hand/multiway core, Model A/B refits, strategy generation/selection and preflop guidance;
+4. **#110/#111/#45** — durable packs, Cloudflare catalogue and verified live production;
+5. **#112/#113** — new-hand snapshot to reproducible decision/release.
 
 #114 is consolidation work and #1 is historical provenance; neither blocks the product path.
 
-## Certified target population — #94
+## Population isolation — #94/#95
 
-The intended target population is now explicitly identified as:
+The intended target population is:
 
 `pokerstars_nlhe_100-200_zoom_play_6max_v1`
 
-Contract:
+Certification over the historical baseline plus the complete 2026-09-12 inventory found:
 
-- PokerStars;
-- NLHE cash;
-- 100/200 play-money chips;
-- Zoom;
-- 6-max.
-
-The authoritative historical baseline plus complete 2026-09-12 inventory contain **31,607 unique raw hand IDs**. Conservative classification gives:
-
-- **23,789 ADMISSIBLE** target hands;
-- **7,818 EXCLUDED**;
+- **31,607** unique raw hand IDs;
+- **31,003** unique 100/200 hands across formats;
+- **23,789 ADMISSIBLE** target Zoom/play-money/6-max 100/200 hands;
+- **7,214** regular/classic 100/200 play-money 6-max exclusions;
+- **604** Zoom play-money 6-max hands at 100000/200000 exclusions;
 - **0 AMBIGUOUS**.
 
-The exclusions are:
+Target split: **19,016 TRAIN / 2,324 VALIDATION / 2,449 TEST**.
 
-- **7,214** regular/classic 100/200 play-money 6-max hands;
-- **604** Zoom play-money 6-max hands at 100000/200000.
+Target hand-ID fingerprint SHA-256:
+`4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c`
 
-Therefore the previously used **31,003** count is a correct blind-scoped 100/200 union, but **not** a Zoom-only corpus. Of those 31,003 100/200 hands, 23,789 are Zoom and 7,214 are regular-table hands.
+`training/populations/registry.json` is authoritative for new population-scoped work. It declares:
 
-Certified target evidence:
+- `legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1` — `PROMOTED_LEGACY`, explicitly MIXED_ZOOM_REGULAR;
+- `pokerstars_nlhe_100-200_zoom_play_6max_v1` — `CERTIFIED_DATA_ONLY`, no inherited promoted artifacts;
+- `pokerstars_nlhe_250-500_zoom_play_6max_v1` — `DECLARED_EMPTY`;
+- `pokerstars_nlhe_nl5_zoom_real_eur_6max_v1` — `DECLARED_EMPTY`.
 
-- hand-ID fingerprint SHA-256: `4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c`;
-- split: **19,016 TRAIN / 2,324 VALIDATION / 2,449 TEST**;
-- raw-union hand-ID fingerprint SHA-256: `316ae5b58630d852bac54bfc9af0fb53c83c37053677230328f3120ddacd98fb`;
-- no duplicate metadata conflict;
-- no same-language payload conflict;
-- no unparsed PokerStars hand header in the audited archives.
+`training/registry.json` remains the immutable closed-cycle legacy anchor. Do not relabel existing Model A v5, Model B v2 or engine v83 as Zoom-only and do not silently inherit them into the certified target population.
 
-Source archives remain immutable:
+## Canonical preflop contract — #96
 
-- historical baseline SHA-256 `6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6`;
-- 2026-09-12 snapshot SHA-256 `374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb`.
+PR #118 introduces `poker-preflop-context/v1` in Python and browser JavaScript. The context represents the table **immediately before one voluntary action** and is deliberately card-free. It includes actor/table positions, ordered prior actions, raise level/family, live/all-in/remaining-to-act positions, contributions, current price, to-call, free check, pot, remaining/effective stack, legal actions and min/max raise-to bounds.
 
-`tools/datasets/certify_population.py` performs the classification. `.github/workflows/population-certification.yml` regenerates the report and compares it byte-for-byte with the persisted evidence.
+Sizing semantics are explicit:
 
-## Consequence for promoted models
+- call/bet/raise cost = incremental chips committed now (`incremental_cost_bb`);
+- raise target = total contribution reached (`target_total_bb`);
+- check/fold cost = zero.
 
-Do **not** relabel the current promoted Model A v5, Model B v2 or engine v83 as Zoom-only. Their historical data lineage used the broader blind-scoped dataset, which includes the 7,214 regular-table 100/200 hands.
+The training decision builder preserves closed historical output by default. Rich v1 context is opt-in with `--preflop-contract-v1`; CI proves the default 2026-09-09 JSONL remains byte-identical while opt-in output contains the new contract.
 
-The active legacy dataset pointer remains `NLHE_100-200` until #95 performs an explicit migration. **`training/registry.json` remains byte-identical to the closed 2026-09-12 cycle in #94**; the certified population identity lives in the immutable certification report and dataset documentation until #95 can migrate the registry transactionally.
+`poker-preflop-action-probabilities/v1` has two deliberate modes:
 
-This distinction is critical: #94 certifies source membership; **#95 must create isolated population state and protect each population's dataset/model/strategy pointers from cross-contamination**.
+- `strict_legal_normalized` for future candidates;
+- `incumbent_v5_passthrough` for the promoted v5/v83 behavior, which exposes legal/model action-set compatibility, source, backoff, confidence and support while preserving every incumbent probability without filtering or renormalization.
+
+Shared fixtures cover unopened, 1/2/3+ limpers, iso, open+caller/squeeze, 3-bet, 4-bet, jam and the BB free-check case. Python and JavaScript consume the same fixtures. A synthetic PokerStars HH proves before-action extraction and sizing semantics.
+
+## Permanent #88 decision
+
+#88 remains closed and authoritative. Historical comma versus `>` history separators are representation-only. The promoted exact matcher continues to use actor position, table size, raise level, family, live/all-in arrays and ordered `(position, action)` history. `free_check` and the richer #96 stack/price/sizing metadata are **not** silently added to the incumbent exact predicate.
+
+Any future matcher behavior change is a new candidate and must pass the active validation gate.
 
 ## Current promoted baseline
 
-The 2026-09-12 training cycle remains a **retain-all / no-op production transition**. No candidate from that cycle replaced the promoted references.
+The 2026-09-12 training cycle remains a **retain-all / no-op production transition**.
 
 - Model A preflop: `training/models/preflop_population_model_v5.json`, SHA-256 `ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca`;
 - Model A postflop: `training/models/postflop_population_model_v5.json`, SHA-256 `6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae`;
@@ -83,11 +90,7 @@ The 2026-09-12 training cycle remains a **retain-all / no-op production transiti
 - recommendation engine: **v83**;
 - engine artifact: `user/releases/poker_range_equity_offline_multiway_v83.html`, SHA-256 `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4`.
 
-Rejected candidates and experimental environments remain immutable evidence only.
-
-## Permanent #88 decision
-
-#88 is closed. Historical preflop key separator variants were shown to be semantically equivalent under the retained v5 matcher. Do not mass-create missing nodes or change the incumbent matcher merely to eliminate textual differences. Any future behavior change is a new candidate and must pass the active gates.
+No #95/#96 migration changes those promoted scientific pointers.
 
 ## Strategy evidence scope
 
@@ -99,10 +102,10 @@ This is not evidence of global optimality. Full-hand/multiway validation is trac
 
 Engine release, assembled static application and live Cloudflare deployment remain separate identities.
 
-`site/RELEASE.json` uses `poker-site-release/v3`; `tools/write_site_release.py --check` guards the assembled functional bytes. `published=true` or a successful build is not live-production proof.
+`site/RELEASE.json` uses `poker-site-release/v3`; `tools/write_site_release.py --check` guards the assembled functional bytes. `site/preflop-contract.js` is now part of that functional identity. `published=true` or a successful build is not live-production proof.
 
 #45 remains open for canonical production URL, exact served revision, live analyser/trainer/assets smoke and production-versus-preview policy.
 
 ## Immediate continuation
 
-After #94 merges, start **#95** from the certified population identity above. Migration must preserve the existing legacy production pointers until population-specific state is demonstrably coherent; no scientific result should silently change because a directory was renamed or a subset was introduced.
+Finish PR #118 only when the preflop-contract workflow, persisted historical dataset integrity, trainer browser smoke and arena smoke are green on the same final head. Then merge #96 and start **#97** from the merged main state. Do not use the #96 work as permission to retrain or promote a Zoom-only model; #101+ own those scientific changes.

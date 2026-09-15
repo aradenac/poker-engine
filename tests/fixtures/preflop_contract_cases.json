@@ -1,0 +1,182 @@
+{
+  "schema": "poker-preflop-context-fixtures/v1",
+  "notes": [
+    "All states are immediately BEFORE the named actor's voluntary action.",
+    "Fixtures are deliberately card-free and contain no future action.",
+    "Amounts are in big blinds; target totals and incremental costs are distinct concepts."
+  ],
+  "cases": [
+    {
+      "name": "unopened_6max_lj",
+      "input": {
+        "table_size": 6,
+        "actor_position": "LJ",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "all_in_positions": [],
+        "history": [],
+        "raise_level": 0,
+        "contribution_bb_by_position": {"LJ": 0, "HJ": 0, "CO": 0, "BTN": 0, "SB": 0.5, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 1.5,
+        "current_price_bb": 1,
+        "pending_positions": ["HJ", "CO", "BTN", "SB", "BB"],
+        "min_raise_to_bb": 2
+      },
+      "expected": {"family": "UNOPENED", "raise_level": 0, "to_call_bb": 1, "free_check": false, "legal_actions": ["FOLD", "LIMP", "RAISE", "JAM"], "remaining_to_act_positions": ["HJ", "CO", "BTN", "SB", "BB"]}
+    },
+    {
+      "name": "one_limper_hj",
+      "input": {
+        "table_size": 6,
+        "actor_position": "HJ",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "history": [{"position": "LJ", "action": "LIMP"}],
+        "raise_level": 0,
+        "contribution_bb_by_position": {"LJ": 1, "HJ": 0, "CO": 0, "BTN": 0, "SB": 0.5, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 2.5,
+        "current_price_bb": 1,
+        "pending_positions": ["CO", "BTN", "SB", "BB"],
+        "min_raise_to_bb": 2
+      },
+      "expected": {"family": "VS_LIMPERS", "raise_level": 0, "limper_positions": ["LJ"], "legal_actions": ["FOLD", "LIMP", "RAISE", "JAM"]}
+    },
+    {
+      "name": "two_limpers_co",
+      "input": {
+        "table_size": 6,
+        "actor_position": "CO",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "history": "LJ:LIMP>HJ:LIMP",
+        "raise_level": 0,
+        "contribution_bb_by_position": {"LJ": 1, "HJ": 1, "CO": 0, "BTN": 0, "SB": 0.5, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 3.5,
+        "current_price_bb": 1,
+        "pending_positions": ["BTN", "SB", "BB"],
+        "min_raise_to_bb": 2
+      },
+      "expected": {"family": "VS_LIMPERS", "limper_positions": ["LJ", "HJ"], "legal_actions": ["FOLD", "LIMP", "RAISE", "JAM"]}
+    },
+    {
+      "name": "three_limpers_btn_legacy_delimiter",
+      "input": {
+        "table_size": 6,
+        "actor_position": "BTN",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "history": "LJ:LIMP,HJ:LIMP,CO:LIMP",
+        "raise_level": 0,
+        "contribution_bb_by_position": {"LJ": 1, "HJ": 1, "CO": 1, "BTN": 0, "SB": 0.5, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 4.5,
+        "current_price_bb": 1,
+        "pending_positions": ["SB", "BB"],
+        "min_raise_to_bb": 2
+      },
+      "expected": {"family": "VS_LIMPERS", "limper_positions": ["LJ", "HJ", "CO"], "history_token": "LJ:LIMP>HJ:LIMP>CO:LIMP", "legal_actions": ["FOLD", "LIMP", "RAISE", "JAM"]}
+    },
+    {
+      "name": "iso_after_limp",
+      "input": {
+        "table_size": 6,
+        "actor_position": "CO",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "history": [{"position": "LJ", "action": "LIMP"}, {"position": "HJ", "action": "RAISE"}],
+        "raise_level": 1,
+        "contribution_bb_by_position": {"LJ": 1, "HJ": 4, "CO": 0, "BTN": 0, "SB": 0.5, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 6.5,
+        "current_price_bb": 4,
+        "pending_positions": ["BTN", "SB", "BB", "LJ"],
+        "min_raise_to_bb": 7
+      },
+      "expected": {"family": "VS_ISO", "raise_level": 1, "to_call_bb": 4, "min_raise_to_bb": 7, "legal_actions": ["FOLD", "CALL", "RAISE", "JAM"]}
+    },
+    {
+      "name": "open_callers_squeeze_spot",
+      "input": {
+        "table_size": 6,
+        "actor_position": "CO",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "history": [{"position": "LJ", "action": "RAISE"}, {"position": "HJ", "action": "CALL"}],
+        "raise_level": 1,
+        "contribution_bb_by_position": {"LJ": 2.5, "HJ": 2.5, "CO": 0, "BTN": 0, "SB": 0.5, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 7,
+        "current_price_bb": 2.5,
+        "pending_positions": ["BTN", "SB", "BB"],
+        "min_raise_to_bb": 4
+      },
+      "expected": {"family": "VS_RFI_CALLERS", "caller_positions": ["HJ"], "to_call_bb": 2.5, "legal_actions": ["FOLD", "CALL", "RAISE", "JAM"]}
+    },
+    {
+      "name": "opener_faces_3bet",
+      "input": {
+        "table_size": 6,
+        "actor_position": "LJ",
+        "live_positions": ["LJ", "CO"],
+        "history": [{"position": "LJ", "action": "RAISE"}, {"position": "CO", "action": "RAISE"}],
+        "raise_level": 2,
+        "contribution_bb_by_position": {"LJ": 2.5, "CO": 8.5},
+        "stack_bb_by_position": {"LJ": 100, "CO": 100},
+        "pot_before_bb": 12.5,
+        "current_price_bb": 8.5,
+        "pending_positions": [],
+        "min_raise_to_bb": 14.5
+      },
+      "expected": {"family": "OPENER_OR_ISO_VS_3BET", "raise_level": 2, "to_call_bb": 6, "legal_actions": ["FOLD", "CALL", "RAISE", "JAM"]}
+    },
+    {
+      "name": "threebettor_faces_4bet",
+      "input": {
+        "table_size": 6,
+        "actor_position": "CO",
+        "live_positions": ["LJ", "CO"],
+        "history": [{"position": "LJ", "action": "RAISE"}, {"position": "CO", "action": "RAISE"}, {"position": "LJ", "action": "RAISE"}],
+        "raise_level": 3,
+        "contribution_bb_by_position": {"LJ": 22, "CO": 8.5},
+        "stack_bb_by_position": {"LJ": 100, "CO": 100},
+        "pot_before_bb": 31,
+        "current_price_bb": 22,
+        "pending_positions": [],
+        "min_raise_to_bb": 35.5
+      },
+      "expected": {"family": "AGGRESSOR_VS_4BET", "raise_level": 3, "to_call_bb": 13.5, "legal_actions": ["FOLD", "CALL", "RAISE", "JAM"]}
+    },
+    {
+      "name": "opener_faces_jam",
+      "input": {
+        "table_size": 6,
+        "actor_position": "LJ",
+        "live_positions": ["LJ", "CO"],
+        "all_in_positions": ["CO"],
+        "history": [{"position": "LJ", "action": "RAISE"}, {"position": "CO", "action": "JAM"}],
+        "raise_level": 2,
+        "contribution_bb_by_position": {"LJ": 2.5, "CO": 100},
+        "stack_bb_by_position": {"LJ": 100, "CO": 100},
+        "pot_before_bb": 103,
+        "current_price_bb": 100,
+        "pending_positions": [],
+        "min_raise_to_bb": 191.5
+      },
+      "expected": {"family": "OPENER_OR_ISO_VS_3BET", "to_call_bb": 97.5, "legal_actions": ["FOLD", "CALL"], "max_raise_to_bb": 100}
+    },
+    {
+      "name": "bb_free_check_after_five_limpers",
+      "input": {
+        "table_size": 6,
+        "actor_position": "BB",
+        "live_positions": ["LJ", "HJ", "CO", "BTN", "SB", "BB"],
+        "history": "LJ:LIMP>HJ:LIMP>CO:LIMP>BTN:LIMP>SB:LIMP",
+        "raise_level": 0,
+        "contribution_bb_by_position": {"LJ": 1, "HJ": 1, "CO": 1, "BTN": 1, "SB": 1, "BB": 1},
+        "stack_bb_by_position": {"LJ": 100, "HJ": 100, "CO": 100, "BTN": 100, "SB": 100, "BB": 100},
+        "pot_before_bb": 6,
+        "current_price_bb": 1,
+        "pending_positions": [],
+        "min_raise_to_bb": 2
+      },
+      "expected": {"family": "VS_LIMPERS", "to_call_bb": 0, "free_check": true, "legal_actions": ["CHECK", "RAISE", "JAM"]}
+    }
+  ]
+}
