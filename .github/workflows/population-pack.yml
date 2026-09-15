@@ -1,0 +1,135 @@
+name: Validate and publish population pack
+
+on:
+  pull_request:
+    paths:
+      - 'tools/build_population_pack.py'
+      - 'tools/validate_population_pack.py'
+      - 'tests/packs/**'
+      - 'user/packs/**'
+      - 'user/artifacts/NLHE_100-200/**'
+      - 'training/populations/registry.json'
+      - 'site/RELEASE.json'
+      - '.github/workflows/population-pack.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/build_population_pack.py'
+      - 'tools/validate_population_pack.py'
+      - 'tests/packs/**'
+      - 'user/packs/**'
+      - 'user/artifacts/NLHE_100-200/**'
+      - 'training/populations/registry.json'
+      - 'site/RELEASE.json'
+      - '.github/workflows/population-pack.yml'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish immutable GitHub Release from main after validation'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax and focused tests
+        run: |
+          python3 -m py_compile tools/build_population_pack.py tools/validate_population_pack.py
+          python3 -m unittest -v tests/packs/test_population_pack.py
+      - name: Build twice from identical accepted inputs
+        env:
+          PACK_SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          rm -rf /tmp/pack-a /tmp/pack-b
+          python3 tools/build_population_pack.py --out-dir /tmp/pack-a
+          python3 tools/build_population_pack.py --out-dir /tmp/pack-b
+          A="$(find /tmp/pack-a -maxdepth 1 -name '*.zip' -type f -print -quit)"
+          B="$(find /tmp/pack-b -maxdepth 1 -name '*.zip' -type f -print -quit)"
+          test -n "$A" && test -n "$B"
+          cmp "$A" "$B"
+          python3 tools/validate_population_pack.py "$A"
+          sha256sum "$A"
+      - name: Prove incomplete Zoom-only population cannot be mislabeled as a complete pack
+        env:
+          PACK_SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          if python3 tools/build_population_pack.py --out-dir /tmp/pack-reject --population pokerstars_nlhe_100-200_zoom_play_6max_v1; then
+            echo 'CERTIFIED_DATA_ONLY population was incorrectly accepted' >&2
+            exit 1
+          fi
+      - name: Stage validated release assets
+        run: |
+          mkdir -p dist/population-packs
+          cp /tmp/pack-a/*.zip /tmp/pack-a/*.manifest.json /tmp/pack-a/*.zip.sha256 dist/population-packs/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: population-pack-${{ github.sha }}
+          path: dist/population-packs/*
+          if-no-files-found: error
+
+  publish:
+    needs: validate
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.publish == true))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build release assets from main
+        env:
+          PACK_SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          rm -rf /tmp/release-pack
+          python3 tools/build_population_pack.py --out-dir /tmp/release-pack
+          ZIP="$(find /tmp/release-pack -maxdepth 1 -name '*.zip' -type f -print -quit)"
+          python3 tools/validate_population_pack.py "$ZIP"
+          python3 - "$ZIP" >> "$GITHUB_ENV" <<'PY'
+          import json, pathlib, sys, zipfile
+          z=pathlib.Path(sys.argv[1])
+          with zipfile.ZipFile(z) as f:
+              root=f.namelist()[0].split('/',1)[0]
+              m=json.loads(f.read(root+'/MANIFEST.json'))
+          print('PACK_TAG='+m['release']['tag'])
+          print('PACK_ARCHIVE='+m['release']['archive'])
+          print('PACK_MANIFEST='+m['release']['manifest_asset'])
+          print('PACK_DIR='+str(z.parent))
+          PY
+      - name: Create release or prove existing release is byte-identical
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd "$PACK_DIR"
+          SHA_FILE="$PACK_ARCHIVE.sha256"
+          if gh release view "$PACK_TAG" >/dev/null 2>&1; then
+            rm -rf /tmp/existing-pack && mkdir -p /tmp/existing-pack
+            gh release download "$PACK_TAG" -p "$PACK_ARCHIVE" -p "$PACK_MANIFEST" -p "$SHA_FILE" -D /tmp/existing-pack
+            cmp "$PACK_ARCHIVE" "/tmp/existing-pack/$PACK_ARCHIVE"
+            cmp "$PACK_MANIFEST" "/tmp/existing-pack/$PACK_MANIFEST"
+            cmp "$SHA_FILE" "/tmp/existing-pack/$SHA_FILE"
+            echo "Existing release $PACK_TAG is byte-identical; nothing replaced."
+          else
+            gh release create "$PACK_TAG" "$PACK_ARCHIVE" "$PACK_MANIFEST" "$SHA_FILE" \
+              --target "$GITHUB_SHA" \
+              --title "Poker population pack $PACK_TAG" \
+              --notes "Immutable complete population pack validated by poker-population-pack/v1. Existing versions must never be overwritten."
+          fi
