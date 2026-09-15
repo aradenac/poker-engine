@@ -72,13 +72,14 @@
     ]
   },
   "validation": {
-    "primary_metric": "all_decisions_marginal_action_log_loss_delta_card_aware_minus_public_only",
-    "marginalization": "for an unrevealed evaluation hand, integrate candidate P(action|hand_bucket,public_context) over the frozen TRAIN action-independent hand prior; never infer the hand from its observed action",
+    "primary_action_metric": "all_decisions_marginal_action_log_loss_delta_card_aware_minus_public_only",
+    "primary_sizing_metric": "raise_decisions_absolute_log_sizing_error_delta_card_aware_minus_public_only",
+    "marginalization": "integrate candidate P(action|hand_bucket,public_context) and sizing prediction over the frozen TRAIN action-independent hand prior; never infer the hand from its observed action",
     "cluster_unit": "hand_id",
     "confidence_level": 0.95,
     "bootstrap_samples": 2000,
     "bootstrap_seed": 20260915,
-    "experimental_acceptance_rule": "paired 95% CI upper bound <= 0",
+    "experimental_acceptance_rule": "both paired 95% CI upper bounds (action log loss and sizing absolute-log error) must be <= 0",
     "inconclusive_or_worse": "RETAIN_PUBLIC_ONLY_REFERENCE_FOR_BEHAVIOR_COMPONENT",
     "secondary_metrics": [
       "revealed_hand_conditional_action_log_loss_report_only",
@@ -87,7 +88,7 @@
       "hierarchy_level_usage_and_support",
       "sizing_observation_and_legal-runtime-coverage",
       "metrics_by_street_position_price_opponent_count_and_hand_bucket",
-      "counterfactual_probability_normalization_on_plausible_prices"
+      "counterfactual_fold_probability_monotonicity_over_price"
     ],
     "revealed_only_metric_may_select_candidate": false
   },
