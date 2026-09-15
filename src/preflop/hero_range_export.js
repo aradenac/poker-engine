@@ -112,7 +112,7 @@
     const context=H.normalizeContext(input.context||{});
     const version=requiredString(input.version,'version');
     const provenance=normalizeProvenance(input.provenance);
-    const status=String(input.status||'EXPERIMENTAL').toUpperCase();
+    const status=String(input.status||'EXPERIMENTAL').trim().toUpperCase();
     if(status==='PROMOTED')throw new Error('candidate exporter cannot self-promote a Hero strategy');
     const requireComplete=input.require_complete!==false;
     const rows=normalizeRows(input.rows,{context,requireComplete});
@@ -172,7 +172,11 @@
   function verifyCandidate(candidate,{require_complete=true}={}){
     const {HeroRanges:H,PreflopDecision:D}=dependencies();
     if(!candidate||candidate.schema!==SCHEMA)throw new Error(`expected ${SCHEMA}`);
+    const status=requiredString(candidate.status,'candidate.status').toUpperCase();
+    if(status==='PROMOTED')throw new Error('candidate verifier rejects self-promoted Hero strategy artifacts');
     if(candidate.promotion_authorized!==false)throw new Error('candidate must not authorize its own promotion');
+    if(candidate.layer!=='calculated')throw new Error('candidate layer must be calculated');
+    const version=requiredString(candidate.version,'candidate.version');
     const provenance=normalizeProvenance(candidate.provenance);
     const context=H.normalizeContext(candidate.context||{});
     if(String(candidate.population_id)!==String(context.population_id))throw new Error('candidate population/context mismatch');
@@ -182,10 +186,10 @@
     }
     const node=candidate.repository.contexts?.[H.contextKey(context)];
     if(!node)throw new Error('calculated context missing from repository');
-    if(String(node.layers?.calculated?.version??'')!==String(candidate.version??''))throw new Error('calculated layer version mismatch');
+    if(String(node.layers?.calculated?.version??'')!==version)throw new Error('calculated layer version mismatch');
     const layerProvenance=node.layers?.calculated?.provenance||{};
     if(layerProvenance.schema!==SCHEMA)throw new Error('calculated layer provenance schema mismatch');
-    if(String(layerProvenance.status)!==String(candidate.status))throw new Error('calculated layer provenance status mismatch');
+    if(String(layerProvenance.status)!==status)throw new Error('calculated layer provenance status mismatch');
     if(layerProvenance.source_decision_schema!==D.SCHEMA)throw new Error('calculated layer source decision schema mismatch');
     for(const key of ['code','selection']){
       if(String(layerProvenance[key])!==String(provenance[key]))throw new Error(`calculated layer provenance ${key} mismatch`);
