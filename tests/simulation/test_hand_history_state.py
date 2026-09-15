@@ -37,10 +37,10 @@ Hero: checks
 """
 
 FRENCH_HAND = """PokerStars Partie #1001: Hold'em No Limit (100/200) - 2026/09/15 08:00:00 CET
-Table 'Core FR' 3-max Siège #1 est au bouton
-Siège 1: Hero (20000 en jetons)
-Siège 2: VillainSB (20000 en jetons)
-Siège 3: VillainBB (20000 en jetons)
+Table 'Core FR' 3-max Place #1 est le bouton
+Place 1: Hero (20 000 en jetons)
+Place 2: VillainSB (20 000 en jetons)
+Place 3: VillainBB (20 000 en jetons)
 VillainSB : met la petite blind. 100
 VillainBB : met la grosse blind. 200
 *** CARTES FERMÉES ***
@@ -54,13 +54,13 @@ VillainBB : parole.
 Hero : mise. 400
 VillainSB : se couche.
 VillainBB : suit. 400
-*** TURN *** [2c 3d 4h] [5s]
+*** TOURNANT *** [2c 3d 4h] [5s]
 VillainBB : parole.
 Hero : parole.
-*** RIVER *** [2c 3d 4h 5s] [6c]
+*** RIVIÈRE *** [2c 3d 4h 5s] [6c]
 VillainBB : parole.
 Hero : parole.
-*** ABATTAGE ***
+*** RÉSUMÉ ***
 """
 
 FRENCH_RAISE_HAND = """PokerStars Partie #1002: Hold'em No Limit (100/200) - 2026/09/15 08:01:00 CET
