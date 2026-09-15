@@ -3,12 +3,12 @@
 
 This module is intentionally a *runtime contract*, not a fitted production model.
 It consumes only an independent Model-B behavior artifact plus the simulated
-opponent's own private cards and the public :mod:`game_core` state.  Model A
+opponent's own private cards and the public :mod:`game_core` state. Model A
 outputs are neither accepted nor imported.
 
 The artifact can condition action/sizing tables on public price, stack, sequence
-and player-count features plus a private hand bucket.  Hierarchical backoff keeps
-sparse contexts explicit.  Action probabilities are always re-normalized over
+and player-count features plus a private hand bucket. Hierarchical backoff keeps
+sparse contexts explicit. Action probabilities are always re-normalized over
 the actions currently legal under the shared NLHE rules core.
 """
 from __future__ import annotations
@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from tools.simulation.game_core import EPS, NoLimitHoldemState
-from tools.simulation.model_b_runtime import best, combo_class, hseed, select_node, weighted_choice
+from tools.simulation.model_b_runtime import best, combo_class, select_node, weighted_choice
 
 BEHAVIOR_SCHEMA = "independent-opponent-model-b-behavior/v1"
 DECISION_SCHEMA = "independent-opponent-model-b-decision/v1"
@@ -130,8 +130,7 @@ def _draw_tags(hole_cards: Sequence[str], board: Sequence[str], made_category: i
             hole_ranks.add(1)
         for low in range(1, 11):
             window = set(range(low, low + 5))
-            present = ranks & window
-            if len(present) == 4 and bool(hole_ranks & window):
+            if len(ranks & window) == 4 and bool(hole_ranks & window):
                 tags.append("SD")
                 break
     return tags
@@ -152,12 +151,31 @@ def hand_bucket(hole_cards: Sequence[str], board: Sequence[str], street: str) ->
     label = CATEGORY.get(category)
     if label is None:
         raise ValueError(f"unknown hand category {category}")
-    tags = _draw_tags(hole_cards, board, category)
-    return "+".join([label] + tags)
+    return "+".join([label] + _draw_tags(hole_cards, board, category))
 
 
-def _support_state(n: int, minimum: int) -> str:
-    return "SUPPORTED" if int(n) >= int(minimum) else "BACKOFF_LOW_SUPPORT"
+def _support_state(n: float, minimum: int) -> str:
+    return "SUPPORTED" if float(n) >= float(minimum) else "BACKOFF_LOW_SUPPORT"
+
+
+def _sizing_observations(node: Mapping[str, Any]) -> list[tuple[float, float]]:
+    """Return (ratio, weight), accepting old unweighted and new soft-fit nodes."""
+    if "weighted_values" in node:
+        rows: list[tuple[float, float]] = []
+        for raw in node.get("weighted_values") or []:
+            if not isinstance(raw, Mapping):
+                continue
+            value = float(raw.get("value", 0.0))
+            weight = float(raw.get("weight", 0.0))
+            if math.isfinite(value) and value > 0 and math.isfinite(weight) and weight > 0:
+                rows.append((value, weight))
+        return rows
+    rows = []
+    for raw in node.get("values", []):
+        value = float(raw)
+        if math.isfinite(value) and value > 0:
+            rows.append((value, 1.0))
+    return rows
 
 
 class CardAwareModelBPolicy:
@@ -228,7 +246,7 @@ class CardAwareModelBPolicy:
     @staticmethod
     def _selected(levels: Sequence[dict], row: dict[str, Any], minimum: int) -> tuple[dict, dict[str, Any]]:
         node, level, key = select_node(levels, row, minimum)
-        n = int(node.get("n", 0))
+        n = float(node.get("n", 0.0))
         return node, {
             "level": int(level),
             "key": str(key),
@@ -274,10 +292,7 @@ class CardAwareModelBPolicy:
         min_to = None if view["min_raise_to_bb"] is None else float(view["min_raise_to_bb"])
 
         candidates: list[dict[str, float]] = []
-        for raw in node.get("values", []):
-            ratio = float(raw)
-            if not math.isfinite(ratio) or ratio <= 0:
-                continue
+        for ratio, weight in _sizing_observations(node):
             target = paid + ratio * pot
             if target <= current_price + EPS or target > max_to + EPS:
                 continue
@@ -286,25 +301,35 @@ class CardAwareModelBPolicy:
             candidates.append({
                 "incremental_cost_over_pot": ratio,
                 "target_total_bb": round(min(target, max_to), 9),
+                "weight": weight,
             })
 
         source = "EMPIRICAL"
         if not candidates:
             if max_to <= current_price + EPS:
                 raise ValueError("no legal raise target remains")
-            if min_to is None or min_to > max_to + EPS:
-                target = max_to
-            else:
-                target = min_to
+            target = max_to if min_to is None or min_to > max_to + EPS else min_to
             candidates = [{
                 "incremental_cost_over_pot": (target - paid) / pot,
                 "target_total_bb": round(target, 9),
+                "weight": 1.0,
             }]
             source = "LEGAL_BOUNDARY_FALLBACK"
 
         unique: dict[float, dict[str, float]] = {}
         for candidate in candidates:
-            unique[candidate["target_total_bb"]] = candidate
+            target = candidate["target_total_bb"]
+            if target not in unique:
+                unique[target] = dict(candidate)
+            else:
+                prior_weight = unique[target]["weight"]
+                added_weight = candidate["weight"]
+                total_weight = prior_weight + added_weight
+                unique[target]["incremental_cost_over_pot"] = (
+                    unique[target]["incremental_cost_over_pot"] * prior_weight
+                    + candidate["incremental_cost_over_pot"] * added_weight
+                ) / total_weight
+                unique[target]["weight"] = total_weight
         candidates = [unique[key] for key in sorted(unique)]
         return {
             "candidates": candidates,
@@ -328,7 +353,7 @@ class CardAwareModelBPolicy:
     ) -> tuple[float, dict[str, Any]]:
         result = self.sizing_candidates(state, **context)
         candidates = result["candidates"]
-        selected = candidates[hseed(*seed_parts) % len(candidates)]
+        selected = weighted_choice(candidates, [row["weight"] for row in candidates], *seed_parts)
         return float(selected["target_total_bb"]), result
 
     def decide(
