@@ -9,6 +9,14 @@ const X=require('../../src/preflop/hero_range_export.js');
 
 const POP='pokerstars_nlhe_100-200_zoom_play_6max_v1';
 const CONTEXT={population_id:POP,table_size:6,position:'BTN',effective_stack_bb:100,spot:'UNOPENED'};
+const PROVENANCE={
+  models:{preflop:'fixture-a',postflop:'fixture-b'},
+  code:'fixture-sha',
+  budget:{hands:169,rollouts_per_action:5000},
+  selection:'NOT_PROMOTED'
+};
+
+function buildCandidate(input){return X.buildCandidate({provenance:PROVENANCE,...input});}
 
 function foldDecision(hand){
   return D.buildDecision({
@@ -64,20 +72,26 @@ aks.policy={
   notes:'explicit justified mix fixture'
 };
 
-const candidate=X.buildCandidate({
+const candidate=buildCandidate({
   context:CONTEXT,
   version:'hero-candidate-fixture-1',
   status:'EXPERIMENTAL',
   base_repository:base,
-  rows,
-  provenance:{models:{preflop:'fixture-a',postflop:'fixture-b'},code:'fixture-sha',budget:{hands:169},selection:'NOT_PROMOTED'}
+  rows
 });
 
 assert.equal(X.verifyCandidate(candidate),true);
 assert.equal(candidate.schema,X.SCHEMA);
 assert.equal(candidate.promotion_authorized,false);
 assert.deepEqual(candidate.coverage,{defined_hand_classes:169,required_hand_classes:169,complete:true});
-assert.equal(candidate.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.version,'hero-candidate-fixture-1');
+assert.deepEqual(candidate.provenance,PROVENANCE);
+const calculatedLayer=candidate.repository.contexts[H.contextKey(CONTEXT)].layers.calculated;
+assert.equal(calculatedLayer.version,'hero-candidate-fixture-1');
+assert.equal(calculatedLayer.provenance.schema,X.SCHEMA);
+assert.equal(calculatedLayer.provenance.code,PROVENANCE.code);
+assert.deepEqual(calculatedLayer.provenance.models,PROVENANCE.models);
+assert.deepEqual(calculatedLayer.provenance.budget,PROVENANCE.budget);
+assert.equal(calculatedLayer.provenance.selection,PROVENANCE.selection);
 assert.equal(candidate.repository.contexts[H.contextKey(CONTEXT)].layers.personal.version,'user-1','personal layer must survive calculated generation');
 assert.equal(H.getHandStrategy(candidate.repository,CONTEXT,'AKs',{layer:'personal'}).sizings.OPEN[0].target_total_bb,3);
 assert.equal(H.getHandStrategy(candidate.repository,CONTEXT,'AQs',{layer:'calculated'}).notes.includes('stale'),false,'calculated layer must be replaced rather than merged with stale rows');
@@ -102,11 +116,11 @@ const repositoryOnly=X.repositoryDocument(candidate);
 assert.equal(H.validateRepository(repositoryOnly),true);
 assert.deepEqual(repositoryOnly,candidate.repository);
 
-assert.throws(()=>X.buildCandidate({
+assert.throws(()=>buildCandidate({
   context:CONTEXT,version:'missing-one',rows:rows.slice(0,-1)
 }),/requires all 169 hand classes/);
 
-const partial=X.buildCandidate({
+const partial=buildCandidate({
   context:CONTEXT,version:'partial-diagnostic',rows:rows.slice(0,2),require_complete:false
 });
 assert.equal(partial.coverage.complete,false);
@@ -114,23 +128,44 @@ assert.equal(partial.coverage.defined_hand_classes,2);
 assert.equal(X.verifyCandidate(partial,{require_complete:false}),true);
 assert.throws(()=>X.verifyCandidate(partial),/not complete/);
 
-assert.throws(()=>X.buildCandidate({
+assert.throws(()=>buildCandidate({
   context:CONTEXT,version:'bad-policy',rows:[{hand_class:'AKs',decision:openDecision('AKs'),policy:{actions:{FOLD:1}}}],require_complete:false
 }),/excludes selected decision action/);
 
-assert.throws(()=>X.buildCandidate({
+assert.throws(()=>buildCandidate({
   context:CONTEXT,version:'bad-size',rows:[{hand_class:'AKs',decision:openDecision('AKs'),policy:{actions:{OPEN:1},sizings:{OPEN:[{target_total_bb:3,probability:1}]}}}],require_complete:false
 }),/does not contain selected sizing/);
 
 const wrongPopulation=openDecision('AKs');
 wrongPopulation.population_id='other-population';
-assert.throws(()=>X.buildCandidate({
+assert.throws(()=>buildCandidate({
   context:CONTEXT,version:'bad-pop',rows:[{hand_class:'AKs',decision:wrongPopulation}],require_complete:false
 }),/does not match context population/);
 
-assert.throws(()=>X.buildCandidate({
+assert.throws(()=>buildCandidate({
   context:CONTEXT,version:'self-promote',status:'PROMOTED',rows
 }),/cannot self-promote/);
+
+assert.throws(()=>X.buildCandidate({
+  context:CONTEXT,version:'missing-provenance',rows
+}),/provenance object is required/);
+assert.throws(()=>X.buildCandidate({
+  context:CONTEXT,version:'missing-models',rows,provenance:{code:'sha',budget:{hands:169},selection:'NOT_PROMOTED'}
+}),/provenance.models/);
+assert.throws(()=>X.buildCandidate({
+  context:CONTEXT,version:'missing-budget',rows,provenance:{code:'sha',models:{preflop:'a'},selection:'NOT_PROMOTED'}
+}),/provenance.budget/);
+
+const overrideAttempt=buildCandidate({
+  context:CONTEXT,
+  version:'override-attempt',
+  rows,
+  provenance:{...PROVENANCE,schema:'evil',status:'PROMOTED',source_decision_schema:'evil'}
+});
+const overrideLayer=overrideAttempt.repository.contexts[H.contextKey(CONTEXT)].layers.calculated;
+assert.equal(overrideLayer.provenance.schema,X.SCHEMA,'caller provenance must not override technical schema');
+assert.equal(overrideLayer.provenance.status,'EXPERIMENTAL','caller provenance must not self-promote layer status');
+assert.equal(overrideLayer.provenance.source_decision_schema,D.SCHEMA);
 
 const tampered=JSON.parse(JSON.stringify(candidate));
 tampered.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.hands.AKs.actions={FOLD:1};
@@ -139,5 +174,9 @@ assert.throws(()=>X.verifyCandidate(tampered),/selected action OPEN absent/);
 const tamperedSize=JSON.parse(JSON.stringify(candidate));
 tamperedSize.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.hands.AKs.sizings.OPEN=[{target_total_bb:4,probability:1}];
 assert.throws(()=>X.verifyCandidate(tamperedSize),/selected sizing 2.5 BB absent/);
+
+const tamperedProvenance=JSON.parse(JSON.stringify(candidate));
+tamperedProvenance.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.provenance.code='other-sha';
+assert.throws(()=>X.verifyCandidate(tamperedProvenance),/provenance code mismatch/);
 
 console.log('Calculated Hero range candidate export contract: PASS');
