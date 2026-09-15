@@ -1,0 +1,34 @@
+name: Issue 98 Hero compliance bootstrap
+
+on:
+  push:
+    branches:
+      - issue-98-hero-range-compliance-complete-sol
+    paths:
+      - '.github/workflows/issue-98-bootstrap.yml'
+      - 'tools/patches/patch_hero_compliance_replayer_v1.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-loader:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-98-hero-range-compliance-complete-sol
+          fetch-depth: 0
+      - name: Apply idempotent loader patch
+        run: python3 tools/patches/patch_hero_compliance_replayer_v1.py
+      - name: Persist generated static bundle change
+        run: |
+          git config user.name 'poker-engine issue-98 bot'
+          git config user.email 'issue-98-bot@users.noreply.github.com'
+          git add site/trainer.js
+          if git diff --cached --quiet; then
+            echo 'Loader already synchronized.'
+            exit 0
+          fi
+          git commit -m 'Issue #98: load Hero compliance in replayer'
+          git push origin HEAD:issue-98-hero-range-compliance-complete-sol
