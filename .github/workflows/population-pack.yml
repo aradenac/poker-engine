@@ -120,15 +120,17 @@ jobs:
           set -euo pipefail
           cd "$PACK_DIR"
           SHA_FILE="$PACK_ARCHIVE.sha256"
-          if gh release view "$PACK_TAG" >/dev/null 2>&1; then
+          REPO="$GITHUB_REPOSITORY"
+          if gh release view "$PACK_TAG" --repo "$REPO" >/dev/null 2>&1; then
             rm -rf /tmp/existing-pack && mkdir -p /tmp/existing-pack
-            gh release download "$PACK_TAG" -p "$PACK_ARCHIVE" -p "$PACK_MANIFEST" -p "$SHA_FILE" -D /tmp/existing-pack
+            gh release download "$PACK_TAG" --repo "$REPO" -p "$PACK_ARCHIVE" -p "$PACK_MANIFEST" -p "$SHA_FILE" -D /tmp/existing-pack
             cmp "$PACK_ARCHIVE" "/tmp/existing-pack/$PACK_ARCHIVE"
             cmp "$PACK_MANIFEST" "/tmp/existing-pack/$PACK_MANIFEST"
             cmp "$SHA_FILE" "/tmp/existing-pack/$SHA_FILE"
             echo "Existing release $PACK_TAG is byte-identical; nothing replaced."
           else
             gh release create "$PACK_TAG" "$PACK_ARCHIVE" "$PACK_MANIFEST" "$SHA_FILE" \
+              --repo "$REPO" \
               --target "$GITHUB_SHA" \
               --title "Poker population pack $PACK_TAG" \
               --notes "Immutable complete population pack validated by poker-population-pack/v1. Existing versions must never be overwritten."
