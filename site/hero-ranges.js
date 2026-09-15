@@ -6,6 +6,7 @@
   'use strict';
 
   const SCHEMA='poker-hero-range-repository/v1';
+  const LAYERS=['personal','calculated'];
   const ACTIONS=['FOLD','CHECK','LIMP','OVERLIMP','CALL','OPEN','ISO','3BET','4BET','SHOVE','CALL_SHOVE'];
   const POSITIONS=['LJ','HJ','CO','BTN','SB','BB'];
   const SPOTS=['UNOPENED','VS_LIMPERS','VS_RFI','VS_RFI_CALLERS','VS_3BET','VS_4BET','VS_JAM'];
@@ -50,11 +51,12 @@
     return `${c.population_id}|${c.table_size}|${c.position}|${c.effective_stack_bb}|${c.spot}`;
   }
 
+  function emptyLayer(kind){return {kind,version:null,provenance:null,hands:{}};}
+
   function emptyRepository({populationId='',sourceDocument=null,sourceMeta=null}={}){
     return {
       schema:SCHEMA,
       version:1,
-      provenance:{kind:'personal',label:'Hero personal ranges'},
       source:{
         format:sourceDocument?'range-folder':null,
         preserved_verbatim:!!sourceDocument,
@@ -68,20 +70,14 @@
 
   function importDocument(document,{populationId=''}={}){
     if(!document||typeof document!=='object'||Array.isArray(document))throw new Error('range document must be an object');
-    if(document.schema===SCHEMA){
-      const repo=deepClone(document);validateRepository(repo);return repo;
-    }
-    const repo=emptyRepository({populationId,sourceDocument:document});
-    return repo;
+    if(document.schema===SCHEMA){const repo=deepClone(document);validateRepository(repo);return repo;}
+    return emptyRepository({populationId,sourceDocument:document});
   }
 
   function normalizeSizingList(value){
     if(value==null)return null;
     if(!Array.isArray(value))throw new Error('sizing list must be an array');
-    const rows=value.map(row=>({
-      target_total_bb:Number(row.target_total_bb),
-      probability:Number(row.probability)
-    })).filter(row=>row.probability>EPS);
+    const rows=value.map(row=>({target_total_bb:Number(row.target_total_bb),probability:Number(row.probability)})).filter(row=>row.probability>EPS);
     let total=0;
     for(const row of rows){
       if(!Number.isFinite(row.target_total_bb)||row.target_total_bb<=0)throw new Error('target_total_bb must be positive');
@@ -114,25 +110,54 @@
     return {actions,sizings,notes:String(input.notes||'')};
   }
 
-  function ensureContext(repo,context,{provenance='personal'}={}){
+  function ensureContext(repo,context){
     if(!repo||repo.schema!==SCHEMA)throw new Error('invalid repository schema');
     const c=normalizeContext(context),key=contextKey(c);
-    if(!repo.contexts[key])repo.contexts[key]={context:c,provenance:String(provenance||'personal'),hands:{}};
+    if(!repo.contexts[key])repo.contexts[key]={context:c,layers:{personal:emptyLayer('personal'),calculated:emptyLayer('calculated')}};
+    for(const kind of LAYERS)if(!repo.contexts[key].layers?.[kind])repo.contexts[key].layers[kind]=emptyLayer(kind);
     return repo.contexts[key];
   }
 
-  function setHandStrategy(repo,context,hand,strategy,{provenance='personal'}={}){
+  function setLayerMetadata(repo,context,layer,{version=null,provenance=null}={}){
+    if(!LAYERS.includes(layer))throw new Error(`invalid layer ${layer}`);
+    const node=ensureContext(repo,context),target=node.layers[layer];
+    target.version=version==null?null:String(version);
+    target.provenance=provenance==null?null:deepClone(provenance);
+    return target;
+  }
+
+  function setHandStrategy(repo,context,hand,strategy,{layer='personal'}={}){
+    if(!LAYERS.includes(layer))throw new Error(`invalid layer ${layer}`);
     if(!HAND_SET.has(hand))throw new Error(`unknown hand class ${hand}`);
-    const node=ensureContext(repo,context,{provenance});
-    if(strategy==null)delete node.hands[hand];
-    else node.hands[hand]=normalizeHandStrategy(strategy);
+    const node=ensureContext(repo,context),target=node.layers[layer];
+    if(strategy==null)delete target.hands[hand];
+    else target.hands[hand]=normalizeHandStrategy(strategy);
     return node;
   }
 
-  function getHandStrategy(repo,context,hand){
+  function getHandStrategy(repo,context,hand,{layer='resolved'}={}){
     if(!repo||repo.schema!==SCHEMA||!HAND_SET.has(hand))return null;
-    const node=repo.contexts?.[contextKey(context)];
-    return node?.hands?.[hand]?deepClone(node.hands[hand]):null;
+    const node=repo.contexts?.[contextKey(context)];if(!node)return null;
+    if(layer==='resolved')return deepClone(node.layers?.personal?.hands?.[hand]||node.layers?.calculated?.hands?.[hand]||null);
+    if(!LAYERS.includes(layer))throw new Error(`invalid layer ${layer}`);
+    return deepClone(node.layers?.[layer]?.hands?.[hand]||null);
+  }
+
+  function resolvedLayer(repo,context,hand){
+    const node=repo?.contexts?.[contextKey(context)];
+    if(node?.layers?.personal?.hands?.[hand])return 'personal';
+    if(node?.layers?.calculated?.hands?.[hand])return 'calculated';
+    return null;
+  }
+
+  function validateLayer(layer,kind,key){
+    if(!layer||typeof layer!=='object')throw new Error(`missing ${kind} layer ${key}`);
+    if(layer.kind!==kind)throw new Error(`layer kind mismatch ${key}/${kind}`);
+    if(!layer.hands||typeof layer.hands!=='object'||Array.isArray(layer.hands))throw new Error(`invalid hands map ${key}/${kind}`);
+    for(const [hand,strategy] of Object.entries(layer.hands)){
+      if(!HAND_SET.has(hand))throw new Error(`unknown hand class ${hand}`);
+      normalizeHandStrategy(strategy);
+    }
   }
 
   function validateRepository(repo){
@@ -140,13 +165,8 @@
     if(repo.source?.preserved_verbatim&&!repo.source?.range_folder)throw new Error('preserved_verbatim source is missing range_folder');
     if(!repo.contexts||typeof repo.contexts!=='object'||Array.isArray(repo.contexts))throw new Error('contexts must be an object');
     for(const [key,node] of Object.entries(repo.contexts)){
-      const normalized=normalizeContext(node.context||{});
-      if(key!==contextKey(normalized))throw new Error(`context key mismatch ${key}`);
-      if(!node.hands||typeof node.hands!=='object'||Array.isArray(node.hands))throw new Error(`invalid hands map ${key}`);
-      for(const [hand,strategy] of Object.entries(node.hands)){
-        if(!HAND_SET.has(hand))throw new Error(`unknown hand class ${hand}`);
-        normalizeHandStrategy(strategy);
-      }
+      const normalized=normalizeContext(node.context||{});if(key!==contextKey(normalized))throw new Error(`context key mismatch ${key}`);
+      for(const kind of LAYERS)validateLayer(node.layers?.[kind],kind,key);
     }
     return true;
   }
@@ -154,8 +174,7 @@
   function exportDocument(repo){validateRepository(repo);return deepClone(repo);}
 
   function legacyRanges(source){
-    const root=source?.folder||source;
-    const out=[];
+    const root=source?.folder||source,out=[];
     function walk(folder,path=[]){
       if(!folder||typeof folder!=='object')return;
       const here=[...path,folder.name||'Folder'].filter(Boolean);
@@ -167,12 +186,13 @@
 
   function repositoryStats(repo){
     validateRepository(repo);
-    let definedHands=0,weightedCombos=0;
-    for(const node of Object.values(repo.contexts))for(const hand of Object.keys(node.hands||{})){
-      definedHands++;weightedCombos+=comboMultiplicity(hand);
+    let personal=0,calculated=0,personalCombos=0,calculatedCombos=0;
+    for(const node of Object.values(repo.contexts)){
+      for(const hand of Object.keys(node.layers.personal.hands||{})){personal++;personalCombos+=comboMultiplicity(hand);}
+      for(const hand of Object.keys(node.layers.calculated.hands||{})){calculated++;calculatedCombos+=comboMultiplicity(hand);}
     }
-    return {contexts:Object.keys(repo.contexts).length,defined_hands:definedHands,combo_slots:weightedCombos,legacy_ranges:legacyRanges(repo.source?.range_folder).length};
+    return {contexts:Object.keys(repo.contexts).length,personal_defined_hands:personal,calculated_defined_hands:calculated,personal_combo_slots:personalCombos,calculated_combo_slots:calculatedCombos,legacy_ranges:legacyRanges(repo.source?.range_folder).length};
   }
 
-  return {SCHEMA,ACTIONS,POSITIONS,SPOTS,HAND_CLASSES,comboMultiplicity,normalizeContext,contextKey,emptyRepository,importDocument,normalizeHandStrategy,ensureContext,setHandStrategy,getHandStrategy,validateRepository,exportDocument,legacyRanges,repositoryStats};
+  return {SCHEMA,LAYERS,ACTIONS,POSITIONS,SPOTS,HAND_CLASSES,comboMultiplicity,normalizeContext,contextKey,emptyRepository,importDocument,normalizeHandStrategy,ensureContext,setLayerMetadata,setHandStrategy,getHandStrategy,resolvedLayer,validateRepository,exportDocument,legacyRanges,repositoryStats};
 });
