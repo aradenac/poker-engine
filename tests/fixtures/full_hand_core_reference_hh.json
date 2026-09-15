@@ -1,0 +1,40 @@
+{
+  "schema": "pokerstars-full-hand-reference/v1",
+  "purpose": "Equivalent English/French PokerStars prefixes for deterministic state reconstruction without future information.",
+  "decision_prefix_line_counts": [9, 10, 11, 13, 14, 15],
+  "expected_next_actor": ["BTN", "SB", "BB", "BB", "BTN", "BB"],
+  "english_lines": [
+    "PokerStars Hand #999100: Hold'em No Limit (100/200) - 2026/09/15 08:00:00 CET",
+    "Table 'Synthetic' 3-max Seat #1 is the button",
+    "Seat 1: BTN (20000 in chips)",
+    "Seat 2: SB (20000 in chips)",
+    "Seat 3: BB (20000 in chips)",
+    "SB: posts small blind 100",
+    "BB: posts big blind 200",
+    "*** HOLE CARDS ***",
+    "Dealt to BTN [As Ah]",
+    "BTN: raises 400 to 600",
+    "SB: folds",
+    "BB: calls 400",
+    "*** FLOP *** [2c 3d 7h]",
+    "BB: checks",
+    "BTN: bets 800"
+  ],
+  "french_lines": [
+    "Main PokerStars n°999100 : Hold'em No Limit (100/200) - 15/09/2026 08:00:00 CET",
+    "Table 'Synthetic' 3-max Siège #1 est au bouton.",
+    "Siège 1: BTN (20000 en jetons)",
+    "Siège 2: SB (20000 en jetons)",
+    "Siège 3: BB (20000 en jetons)",
+    "SB: met la petite blind. 100",
+    "BB: met la grosse blind. 200",
+    "*** CARTES FERMÉES ***",
+    "Distribuées à BTN [As Ah]",
+    "BTN: relance. 400 à 600",
+    "SB: se couche.",
+    "BB: suit. 400",
+    "*** FLOP *** [2c 3d 7h]",
+    "BB: parole.",
+    "BTN: mise. 800"
+  ]
+}
