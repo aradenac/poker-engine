@@ -7,10 +7,10 @@ The release metadata deliberately separates:
 - live deployment verification, which is tracked separately by issue #45.
 
 The application identity covers the analyser, shared preflop contract, Hero range
-editor, trainer, population-pack manager/catalog and the complete site/assets tree.
-The pack catalogue is generated on demand so pre-existing CI callers of --check do
-not need special knowledge of #111. The index identity is computed after the same
-idempotent navigation patch used by the Cloudflare build.
+editor/compliance, trainer, population-pack manager/catalog and the complete
+site/assets tree. The pack catalogue is generated on demand so pre-existing CI
+callers of --check do not need special knowledge of #111. The index identity is
+computed after the same idempotent navigation patch used by the Cloudflare build.
 
 The checked-in RELEASE.json is a source anchor. Build-only products such as the
 catalogue and patched navigation are materialized by this script, so --check verifies
@@ -41,6 +41,7 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "hero-ranges.js",
     ROOT / "site" / "hero-ranges-app.js",
     ROOT / "site" / "hero-ranges.css",
+    ROOT / "site" / "hero-compliance.js",
     ROOT / "site" / "trainer.js",
     ROOT / "site" / "trainer.css",
     ROOT / "site" / "packs.html",
