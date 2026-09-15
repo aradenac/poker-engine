@@ -1,0 +1,21 @@
+{
+  "schema": "v84-strategy-selection/v1",
+  "candidate": "v84",
+  "validation_decision": "RETAIN_V83",
+  "test_executed": false,
+  "test_decision": null,
+  "final_decision": "RETAIN_V83",
+  "production_effect": "NONE",
+  "test_used_for_selection": false,
+  "validation": {
+    "mean_delta_candidate_minus_v83_bb": 0.039841406250000266,
+    "delta_ci95_cluster_bootstrap": [
+      -4.440892098500626e-16,
+      0.1195242187500008
+    ],
+    "paired_scenarios": 64,
+    "paired_base_hands": 32
+  },
+  "test": null,
+  "reason": "Candidate failed the pre-specified VALIDATION lower-CI gate; protected TEST was not opened."
+}

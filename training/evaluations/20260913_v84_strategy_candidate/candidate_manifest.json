@@ -1,0 +1,11 @@
+{
+  "schema": "v84-strategy-candidate-artifact/v1",
+  "base_engine": "site/index.html",
+  "base_engine_sha256": "d17da4b43a8bd6e33513969979f57cac6fc22155047c029ccb92dca8864cb9e0",
+  "generator": "tools/patch_v83_to_v84.py",
+  "generator_sha256": "fe14086f38abe30a7d50eb35938948284acb43de6ea1fe643516f100593965b5",
+  "candidate_sha256": "0649784bc2c25504ec3b96828be9e88977db2b295cace0fc388833f880ae5dc7",
+  "candidate_version": "v84",
+  "change_scope": "postflop sizing candidate grid only",
+  "production_effect": "NONE"
+}
