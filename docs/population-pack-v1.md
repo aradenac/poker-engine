@@ -39,11 +39,11 @@ The builder also emits a sidecar manifest and ZIP checksum for publication. CI b
 
 ## Immutable GitHub Release publication
 
-`.github/workflows/population-pack.yml` validates every PR touching the pack contract. After merge to `main`, an authorized user can run the workflow manually with `publish=true`.
+`.github/workflows/population-pack.yml` validates every PR touching the pack contract. A validated push to `main` touching the pack contract automatically runs the publication job. The same job can also be invoked manually on `main` with `publish=true`.
 
 Publication reads the release tag and asset names from the generated manifest. If the tag does not exist, the workflow creates the GitHub Release and uploads the ZIP, sidecar manifest and ZIP checksum. If the tag already exists, the workflow downloads its assets and requires byte-for-byte equality. It never replaces different bytes under an existing pack version.
 
-A new generation therefore requires a new `pack_version` and `release_tag`; existing releases are immutable.
+A new generation therefore requires a new `pack_version` and `release_tag`; existing releases are immutable. A compatibility change that would change pack bytes without a version bump fails publication instead of mutating an existing release.
 
 ## Relationship to the legacy bundle
 
