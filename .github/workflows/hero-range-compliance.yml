@@ -1,3 +1,4 @@
+# Issue #98 validates compliance semantics and exact Hero-range deep links.
 name: Validate Hero range compliance
 
 on:
