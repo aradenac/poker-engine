@@ -52,7 +52,7 @@ jobs:
           PY
 
       - name: Run card-aware runtime tests
-        run: python3 tests/simulation/test_model_b_card_aware_runtime.py
+        run: PYTHONPATH=. python3 tests/simulation/test_model_b_card_aware_runtime.py
 
       - name: Preserve shared game-core regression suite
-        run: python3 tests/simulation/test_game_core.py
+        run: PYTHONPATH=. python3 tests/simulation/test_game_core.py
