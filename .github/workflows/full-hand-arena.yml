@@ -1,0 +1,40 @@
+name: Validate full-hand multiway arena
+
+on:
+  pull_request:
+    paths:
+      - 'tools/simulation/full_hand_scenarios.py'
+      - 'tools/simulation/full_hand_arena.py'
+      - 'tests/simulation/test_full_hand_arena.py'
+      - 'tests/simulation/test_full_hand_arena_seeds.py'
+      - 'tests/simulation/test_full_hand_scenarios_population.py'
+      - 'tools/simulation/game_core.py'
+      - 'tests/simulation/test_game_core.py'
+      - 'tests/simulation/test_game_core_consolidated_regressions.py'
+      - 'docs/full_hand_arena.md'
+      - '.github/workflows/full-hand-arena.yml'
+  workflow_dispatch:
+
+jobs:
+  full-hand-arena:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: |
+          python3 -m py_compile \
+            tools/simulation/full_hand_scenarios.py \
+            tools/simulation/full_hand_arena.py \
+            tests/simulation/test_full_hand_arena.py \
+            tests/simulation/test_full_hand_arena_seeds.py \
+            tests/simulation/test_full_hand_scenarios_population.py
+      - name: Full-hand arena regressions
+        run: |
+          python3 tests/simulation/test_full_hand_arena.py
+          python3 tests/simulation/test_full_hand_arena_seeds.py
+      - name: Population-backed scenario integration
+        run: python3 tests/simulation/test_full_hand_scenarios_population.py
+      - name: Shared game-core regressions
+        run: |
+          python3 tests/simulation/test_game_core.py
+          python3 tests/simulation/test_game_core_consolidated_regressions.py
