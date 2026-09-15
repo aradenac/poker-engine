@@ -1,0 +1,146 @@
+name: Model B card-aware fit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - issue-104-card-aware-model-b-runtime-sol
+    paths:
+      - 'training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json'
+      - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
+      - 'tools/simulation/model_b_card_aware_runtime.py'
+      - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
+      - 'tools/training/independent_profiles/run_card_aware_behavior_cycle.py'
+      - 'tests/simulation/test_model_b_card_aware_runtime.py'
+      - 'tests/training/test_card_aware_behavior_fit.py'
+      - '.github/workflows/model-b-card-aware-fit.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-card-aware-fit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fit-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile and run contract tests
+        run: |
+          python3 -m py_compile \
+            tools/simulation/model_b_card_aware_runtime.py \
+            tools/training/independent_profiles/card_aware_behavior_fit.py \
+            tools/training/independent_profiles/run_card_aware_behavior_cycle.py
+          PYTHONPATH=. python3 tests/simulation/test_model_b_card_aware_runtime.py
+          PYTHONPATH=. python3 tests/training/test_card_aware_behavior_fit.py
+
+      - name: Verify frozen protocol and dependency result
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          protocol = json.loads(Path('training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json').read_text())
+          prior = protocol['hidden_hand_assignment']
+          assert protocol['frozen_before_validation'] is True
+          assert protocol['splits'] == {
+              'fit': 'TRAIN',
+              'selection': 'VALIDATION',
+              'test': 'NOT_CONSUMED_BY_ISSUE_104_SELECTION',
+          }
+          assert prior['prior_context'] == ['profile', 'position']
+          assert any('action being predicted' in x for x in prior['forbidden'])
+          assert protocol['validation']['revealed_only_metric_may_select_candidate'] is False
+          assert protocol['promotion']['production_model_b_change_authorized'] is False
+          dep = json.loads(Path('training/runs/20260915_model_b_reveal_aware_v3/RESULT.json').read_text())
+          assert dep['decision'] == 'RETAIN_BASELINE_RANGE_COMPONENT'
+          assert dep['test_consumed'] is False
+          print('frozen #104 protocol and #103 dependency: OK')
+          PY
+
+      - name: Fit TRAIN behavior and evaluate VALIDATION
+        run: |
+          rm -rf /tmp/model-b-card-aware-v1
+          PYTHONPATH=. python3 -m tools.training.independent_profiles.run_card_aware_behavior_cycle \
+            --incumbent-dir training/runs/20260912_independent_profiles_v2/model \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --protocol training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json \
+            --stake 100/200 \
+            --exclude-player RoiDePiqueNique \
+            --output-dir /tmp/model-b-card-aware-v1 \
+            > /tmp/model-b-card-aware-v1.log
+          tail -n 120 /tmp/model-b-card-aware-v1.log
+
+      - name: Record artifact identities and persist compact evidence
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, shutil
+          from pathlib import Path
+          src = Path('/tmp/model-b-card-aware-v1')
+          result_path = src / 'RESULT.json'
+          result = json.loads(result_path.read_text())
+          artifacts = {}
+          for name in ('hand_prior.json', 'candidate_behavior.json', 'public_reference_behavior.json'):
+              p = src / name
+              artifacts[name] = {
+                  'sha256': hashlib.sha256(p.read_bytes()).hexdigest(),
+                  'size_bytes': p.stat().st_size,
+              }
+          result['candidate_artifacts'] = artifacts
+          result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
+          dst = Path('training/runs/20260915_model_b_card_aware_v1')
+          dst.mkdir(parents=True, exist_ok=True)
+          for name in ('RESULT.json', 'VALIDATION.json', 'TRAIN_AUDIT.json'):
+              shutil.copy2(src / name, dst / name)
+          prior = json.loads((src / 'hand_prior.json').read_text())
+          prior_summary = {
+              'schema': prior['schema'],
+              'source_split': prior['source_split'],
+              'minimum_revealed_labels': prior['minimum_revealed_labels'],
+              'prior_strength': prior['prior_strength'],
+              'audit': prior['audit'],
+              'independence': prior['independence'],
+              'full_artifact_sha256': artifacts['hand_prior.json']['sha256'],
+          }
+          (dst / 'HAND_PRIOR_SUMMARY.json').write_text(
+              json.dumps(prior_summary, ensure_ascii=False, indent=2, sort_keys=True) + '\n'
+          )
+          print(json.dumps(result['gate'], indent=2))
+          print('decision:', result['decision'])
+          PY
+
+      - name: Upload immutable candidate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-b-card-aware-v1-${{ github.sha }}
+          path: /tmp/model-b-card-aware-v1/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Persist compact validation evidence on branch
+        run: |
+          git config user.name 'poker-engine model-b bot'
+          git config user.email 'model-b-bot@users.noreply.github.com'
+          git add \
+            training/runs/20260915_model_b_card_aware_v1/RESULT.json \
+            training/runs/20260915_model_b_card_aware_v1/VALIDATION.json \
+            training/runs/20260915_model_b_card_aware_v1/TRAIN_AUDIT.json \
+            training/runs/20260915_model_b_card_aware_v1/HAND_PRIOR_SUMMARY.json
+          if git diff --cached --quiet; then
+            echo 'Card-aware validation evidence already current.'
+            exit 0
+          fi
+          git commit -m 'Issue #104: persist card-aware Model B validation evidence'
+          git push origin HEAD:${GITHUB_REF_NAME}

@@ -1,0 +1,13 @@
+{
+  "assignment_ACTION_INDEPENDENT_PRIOR": 137986,
+  "assignment_REVEALED_POINT_MASS": 72208,
+  "decisions": 210194,
+  "hands_replayed": 18998,
+  "hands_seen": 19016,
+  "public_replay_skipped": 18,
+  "sizing_observations": 28954,
+  "street_flop": 48089,
+  "street_preflop": 101750,
+  "street_river": 25937,
+  "street_turn": 34418
+}

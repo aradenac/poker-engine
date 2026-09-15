@@ -1,0 +1,100 @@
+{
+  "schema": "independent-model-b-card-aware-protocol/v1",
+  "related_issue": 104,
+  "frozen_before_validation": true,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+  "splits": {
+    "fit": "TRAIN",
+    "selection": "VALIDATION",
+    "test": "NOT_CONSUMED_BY_ISSUE_104_SELECTION"
+  },
+  "independence": {
+    "model_a_outputs": "FORBIDDEN",
+    "hero_policy_outputs": "FORBIDDEN",
+    "future_public_cards": "FORBIDDEN",
+    "private_cards_at_runtime": "ONLY_THE_SIMULATED_OPPONENTS_OWN_DEALT_CARDS",
+    "profiles": "TRAIN_DERIVED_MODEL_B_PROFILES_ONLY"
+  },
+  "hidden_hand_assignment": {
+    "revealed_train_hand": "point_mass_on_actual_hand_bucket",
+    "hidden_train_hand": "soft_posterior_from_action_independent_train_prior",
+    "prior_context": ["profile", "position"],
+    "backoff": [["profile", "position"], ["profile"], []],
+    "minimum_revealed_labels_per_node": 20,
+    "combinatorial_prior_strength": 50.0,
+    "forbidden": [
+      "conditioning the hidden-hand posterior on the action being predicted",
+      "conditioning a preflop posterior on a later preflop action",
+      "fabricating one known hand for a fold",
+      "using VALIDATION or TEST card labels to fit the prior"
+    ],
+    "issue_103_relation": "Issue #103 established that action-signature reveal-aware inference is independent but failed VALIDATION. Its nominal action-conditioned posterior is therefore not used as a target-side explanatory variable here. The no-action-signal sensitivity principle motivates this action-independent prior."
+  },
+  "candidate": {
+    "name": "card_aware_soft_v1",
+    "action_backoff_min_observations": 30,
+    "sizing_backoff_min_observations": 12,
+    "alpha_per_legal_action": 1.0,
+    "action_levels": [
+      ["profile", "street", "mode", "hand_bucket", "relative_position", "pot_type", "preflop_role", "price_bucket", "spr_bucket", "opponents_bucket", "raise_level", "sequence_bucket", "board_texture"],
+      ["profile", "street", "mode", "hand_bucket", "relative_position", "price_bucket", "opponents_bucket"],
+      ["profile", "street", "mode", "hand_bucket", "price_bucket"],
+      ["street", "mode", "hand_bucket", "price_bucket"],
+      ["street", "mode", "hand_bucket"],
+      ["street", "mode"],
+      []
+    ],
+    "sizing_levels": [
+      ["profile", "street", "mode", "hand_bucket", "action", "relative_position", "price_bucket", "spr_bucket", "opponents_bucket"],
+      ["profile", "street", "mode", "hand_bucket", "action", "price_bucket"],
+      ["street", "mode", "hand_bucket", "action"],
+      ["street", "mode", "action"],
+      []
+    ]
+  },
+  "reference": {
+    "name": "public_only_same_data_v1",
+    "purpose": "isolate whether private-card conditioning adds predictive information beyond the same TRAIN public features",
+    "action_levels": [
+      ["profile", "street", "mode", "relative_position", "pot_type", "preflop_role", "price_bucket", "spr_bucket", "opponents_bucket", "raise_level", "sequence_bucket", "board_texture"],
+      ["profile", "street", "mode", "relative_position", "price_bucket", "opponents_bucket"],
+      ["profile", "street", "mode", "price_bucket"],
+      ["street", "mode", "price_bucket"],
+      ["street", "mode"],
+      []
+    ],
+    "sizing_levels": [
+      ["profile", "street", "mode", "action", "relative_position", "price_bucket", "spr_bucket", "opponents_bucket"],
+      ["profile", "street", "mode", "action", "price_bucket"],
+      ["street", "mode", "action"],
+      []
+    ]
+  },
+  "validation": {
+    "primary_action_metric": "all_decisions_marginal_action_log_loss_delta_card_aware_minus_public_only",
+    "primary_sizing_metric": "raise_decisions_absolute_log_sizing_error_delta_card_aware_minus_public_only",
+    "marginalization": "integrate candidate P(action|hand_bucket,public_context) and sizing prediction over the frozen TRAIN action-independent hand prior; never infer the hand from its observed action",
+    "cluster_unit": "hand_id",
+    "confidence_level": 0.95,
+    "bootstrap_samples": 2000,
+    "bootstrap_seed": 20260915,
+    "experimental_acceptance_rule": "both paired 95% CI upper bounds (action log loss and sizing absolute-log error) must be <= 0",
+    "inconclusive_or_worse": "RETAIN_PUBLIC_ONLY_REFERENCE_FOR_BEHAVIOR_COMPONENT",
+    "secondary_metrics": [
+      "revealed_hand_conditional_action_log_loss_report_only",
+      "multiclass_brier",
+      "confidence_ECE",
+      "hierarchy_level_usage_and_support",
+      "sizing_observation_and_legal-runtime-coverage",
+      "metrics_by_street_position_price_opponent_count_and_hand_bucket",
+      "counterfactual_fold_probability_monotonicity_over_price"
+    ],
+    "revealed_only_metric_may_select_candidate": false
+  },
+  "promotion": {
+    "production_model_b_change_authorized": false,
+    "hero_strategy_change_authorized": false,
+    "reason": "Issue #104 may accept an experimental behavior component for the independent simulation environment; production Model B and Hero strategy remain separate decisions under the full-hand protocol."
+  }
+}

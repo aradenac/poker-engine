@@ -1,0 +1,67 @@
+name: Card-aware Model B runtime
+
+on:
+  push:
+    paths:
+      - 'tools/simulation/model_b_card_aware_runtime.py'
+      - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
+      - 'tests/simulation/test_model_b_card_aware_runtime.py'
+      - 'tests/training/test_card_aware_behavior_fit.py'
+      - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
+      - '.github/workflows/model-b-card-aware-runtime.yml'
+  pull_request:
+    paths:
+      - 'tools/simulation/model_b_card_aware_runtime.py'
+      - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
+      - 'tests/simulation/test_model_b_card_aware_runtime.py'
+      - 'tests/training/test_card_aware_behavior_fit.py'
+      - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
+      - '.github/workflows/model-b-card-aware-runtime.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile runtime, fit seam and tests
+        run: |
+          python3 -m py_compile \
+            tools/simulation/model_b_card_aware_runtime.py \
+            tools/training/independent_profiles/card_aware_behavior_fit.py \
+            tests/simulation/test_model_b_card_aware_runtime.py \
+            tests/training/test_card_aware_behavior_fit.py
+
+      - name: Validate runtime contract metadata
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json')
+          doc = json.loads(p.read_text(encoding='utf-8'))
+          assert doc['schema'] == 'independent-opponent-model-b-behavior-contract/v1'
+          assert doc['status'] == 'RUNTIME_CONTRACT_ONLY_NOT_FITTED_NOT_PROMOTED'
+          assert doc['dependency']['issue'] == 103
+          assert doc['independence']['model_a_outputs_allowed'] is False
+          assert doc['independence']['hero_policy_outputs_allowed'] is False
+          assert doc['independence']['future_cards_allowed'] is False
+          assert doc['actions']['canonical_labels'] == ['FOLD', 'CHECK', 'CALL', 'RAISE']
+          assert doc['sizing']['stored_semantics'] == 'incremental_cost_over_pot_before'
+          print('card-aware behavior contract: OK')
+          PY
+
+      - name: Run card-aware runtime tests
+        run: PYTHONPATH=. python3 tests/simulation/test_model_b_card_aware_runtime.py
+
+      - name: Run posterior-weighted fit seam tests
+        run: PYTHONPATH=. python3 tests/training/test_card_aware_behavior_fit.py
+
+      - name: Preserve shared game-core regression suite
+        run: PYTHONPATH=. python3 tests/simulation/test_game_core.py
