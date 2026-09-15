@@ -1,0 +1,132 @@
+{
+  "schema": "poker-model-a-postflop-refit-protocol/v1",
+  "run_id": "20260915_model_a_postflop_refit_v1",
+  "issue": 102,
+  "status": "FROZEN_BEFORE_SCIENTIFIC_EXECUTION",
+  "objective": "Refit the postflop parameters actually consumed by Model A continuation while preserving hidden-hand uncertainty, street-to-street combo coherence, and an independent VALIDATION-only retain/promote decision.",
+  "production_effect": "NONE",
+  "baseline": {
+    "git_commit": "9ceba151d314c8fde0e089ed00bb05882c62d0c2",
+    "postflop_model": {
+      "path": "training/models/postflop_population_model_v5.json",
+      "git_blob_sha": "8012b3c842cbc33b38c795d7feac2ea5f8d26f54"
+    },
+    "preflop_model": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "git_blob_sha": "69a2dc1fd2f714b4397ef3e1854360320159e47e"
+    }
+  },
+  "data": {
+    "source": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+    "source_git_blob_sha": "bd43927a74cf5a1b4db66abdb0796639ed98cdcc",
+    "normalizer": "tools/training/build_incremental_decisions_v2.py",
+    "split_contract": {
+      "fit": ["TRAIN"],
+      "selection": ["VALIDATION"],
+      "test": "FORBIDDEN_UNTIL_AN_INDEPENDENT_PROMOTION_DECISION_IS_FROZEN"
+    },
+    "population_only": true,
+    "hero_rows_excluded": true
+  },
+  "runtime_seams": {
+    "response_models": {
+      "consumed_by": "site/index.html::postflopTargetFrequencies",
+      "parameters": ["response_models.*.numeric_coef"],
+      "public_features": [
+        "price/sizing",
+        "SPR",
+        "pot size",
+        "board texture",
+        "street/context encoded by exact canonical node"
+      ]
+    },
+    "combo_policy_models": {
+      "consumed_by": "site/index.html::postflopComboPolicyResidual",
+      "parameters": ["combo_policy_models.*.coef_std"],
+      "private_features": [
+        "made-hand strength/category",
+        "pair topology/kicker",
+        "flush/straight/combo draws",
+        "overcards/backdoors/blockers",
+        "preflop role/position",
+        "multiway/pot type and interactions"
+      ]
+    }
+  },
+  "stage_a_response_refit": {
+    "tool": "tools/training/refit_postflop_response_models.py",
+    "features": "EXACT_RUNTIME_PARITY",
+    "epochs": 60,
+    "learning_rate": 0.08,
+    "l2_to_parent": 0.25,
+    "seed": 20260915,
+    "paired_hand_bootstrap_iterations": 2000,
+    "unknown_context_policy": "EXCLUDE_AND_COUNT; exact canonical node required",
+    "out_of_support_policy": "MATCH_RUNTIME_CLIPPING; facing_price_pot<=5 and spr<=50; clipped observations counted",
+    "hidden_hand_policy": "ADMISSIBLE because this stage uses public/action context only; no private hand is invented",
+    "frozen": ["nodes", "combo_policy_models", "hand_policy_prior"]
+  },
+  "stage_b_combo_refit": {
+    "selection_unit": "postflop decision with an exact Model A runtime context",
+    "label_policy": {
+      "revealed_private_hand": "POINT_MASS_ON_THE_OBSERVED_EXACT_COMBO_AFTER_BOARD_BLOCKING",
+      "hidden_private_hand": "LATENT_POSTERIOR; never synthesize or guess one exact hand"
+    },
+    "latent_prior": {
+      "source": "Model A preflop exact-combo range reconstructed only from information strictly before the target postflop decision",
+      "initial_support": "1326 exact NLHE combos minus known public/Hero blockers",
+      "conditioning": "preflop actions and earlier postflop actions only; target postflop action is forbidden when constructing its own latent private-hand assignment",
+      "street_transition": "remove newly exposed board blockers, renormalize surviving exact combos, then condition on completed earlier actions",
+      "future_cards": "FORBIDDEN"
+    },
+    "fit_semantics": "Each hidden observation contributes fractional sufficient statistics under its pre-action exact-combo posterior; each revealed observation contributes the corresponding point mass. This avoids showdown-only selection bias and target-action leakage.",
+    "regularization": {
+      "parent": "v5 combo_policy_models coefficients",
+      "principle": "shrink incremental coefficients toward the parent; no unsupported context is materialized",
+      "minimum_effective_weight": 20.0,
+      "coefficient_delta_cap_std": 1.5
+    },
+    "backoff": [
+      "exact street/mode runtime model",
+      "parent v5 combo policy for insufficient effective weight",
+      "no new synthetic node/context"
+    ],
+    "required_audits": [
+      "revealed-vs-hidden effective weights",
+      "posterior entropy / effective combo support",
+      "board-blocker mass removed at each street",
+      "target-action leakage check",
+      "rare-context/backoff counts",
+      "coefficient delta and saturation counts"
+    ]
+  },
+  "evaluation": {
+    "primary_metric": "population postflop action negative log likelihood on VALIDATION",
+    "comparison": "same VALIDATION decisions for baseline and candidate",
+    "uncertainty": "paired bootstrap by hand_id",
+    "secondary_metrics": [
+      "runtime prediction change coverage",
+      "calibration by street/mode",
+      "revealed-combo conditional likelihood where observable",
+      "range posterior coherence/blocker audit",
+      "sizing/SPR support stratification"
+    ],
+    "scientific_decision": {
+      "promote_candidate": "primary VALIDATION delta < 0 and paired 95% CI upper bound < 0, with all coherence/leakage gates passing",
+      "otherwise": "RETAIN_BASELINE",
+      "test_consumed": false
+    }
+  },
+  "continuation_contract": {
+    "candidate_location": "training/runs/20260915_model_a_postflop_refit_v1/candidate/",
+    "production_location_untouched": "training/models/",
+    "preflop_consumer": "may explicitly load the candidate continuation artifact by immutable path/hash; no implicit replacement of Model A production postflop",
+    "required_identity": ["input sha256", "tool sha256", "parameters", "seed", "candidate sha256", "decision artifact sha256"]
+  },
+  "stop_conditions": [
+    "Any use of TEST for tuning or selection invalidates this run.",
+    "Any use of the target postflop action to infer its own hidden private hand invalidates Stage B.",
+    "Any silent nearest-context substitution or synthetic future/private card invalidates the affected observation.",
+    "No production model or pointer may be changed by this run."
+  ]
+}
