@@ -18,6 +18,12 @@
     return n;
   }
 
+  function nonNegativeInteger(value,name){
+    const n=finite(value,name);
+    if(!Number.isInteger(n)||n<0)throw new Error(`${name} must be a non-negative integer`);
+    return n;
+  }
+
   function optionalFinite(value,name,{min=null,max=null}={}){
     if(value==null)return null;
     const n=finite(value,name);
@@ -29,15 +35,18 @@
   function normalizeUncertainty(input={}){
     const monteCarlo=input.monte_carlo||{};
     const model=input.model||{};
+    const lower=optionalFinite(model.lower_bb,'uncertainty.model.lower_bb');
+    const upper=optionalFinite(model.upper_bb,'uncertainty.model.upper_bb');
+    if(lower!=null&&upper!=null&&lower>upper+EPS)throw new Error('uncertainty.model.lower_bb must be <= upper_bb');
     return {
       monte_carlo:{
         standard_error_bb:optionalFinite(monteCarlo.standard_error_bb,'uncertainty.monte_carlo.standard_error_bb',{min:0}),
-        samples:monteCarlo.samples==null?null:Math.trunc(finite(monteCarlo.samples,'uncertainty.monte_carlo.samples')),
+        samples:monteCarlo.samples==null?null:nonNegativeInteger(monteCarlo.samples,'uncertainty.monte_carlo.samples'),
         method:String(monteCarlo.method||'').trim()||null
       },
       model:{
-        lower_bb:optionalFinite(model.lower_bb,'uncertainty.model.lower_bb'),
-        upper_bb:optionalFinite(model.upper_bb,'uncertainty.model.upper_bb'),
+        lower_bb:lower,
+        upper_bb:upper,
         method:String(model.method||'').trim()||null,
         status:String(model.status||'UNKNOWN').toUpperCase()
       }
@@ -45,10 +54,8 @@
   }
 
   function normalizeSupport(input={}){
-    const observations=input.observations==null?null:Math.trunc(finite(input.observations,'support.observations'));
-    if(observations!=null&&observations<0)throw new Error('support.observations must be >= 0');
     return {
-      observations,
+      observations:input.observations==null?null:nonNegativeInteger(input.observations,'support.observations'),
       backoff_level:String(input.backoff_level||'UNKNOWN').toUpperCase(),
       source:String(input.source||'').trim()||null
     };
@@ -71,6 +78,7 @@
     if(ZERO_COST_ACTIONS.has(action)){
       if(Math.abs(incremental_cost_bb)>EPS)throw new Error(`${action} must have zero incremental cost`);
       if(target_total_bb!=null)throw new Error(`${action} must not advertise a target_total_bb`);
+      if(action==='FOLD'&&Math.abs(ev_bb)>EPS)throw new Error('FOLD EV must be 0 under decision_point_incremental_bb reference');
       incremental_cost_bb=0;
       target_total_bb=null;
     }else if(CHIP_ACTIONS.has(action)){
@@ -95,6 +103,7 @@
     const actor_contribution_bb=optionalFinite(input.actor_contribution_bb,'actor_contribution_bb',{min:0});
     if(actor_contribution_bb==null)throw new Error('actor_contribution_bb is required');
     const legal_actions=Array.from(new Set((input.legal_actions||[]).map(a=>String(a).toUpperCase())));
+    if(!legal_actions.length)throw new Error('legal_actions must not be empty');
     for(const action of legal_actions)if(!ACTIONS.includes(action))throw new Error(`unsupported legal action ${action}`);
     const legalSet=new Set(legal_actions);
     if(!Array.isArray(input.alternatives)||!input.alternatives.length)throw new Error('at least one evaluated alternative is required');
@@ -109,10 +118,12 @@
     if(selected.ev_bb<bestEV-EPS)throw new Error(`selected alternative ${selected.id} is not maximal EV (${selected.ev_bb} < ${bestEV})`);
 
     const search=input.search||{};
-    const budget=search.budget==null?null:Math.trunc(finite(search.budget,'search.budget'));
-    if(budget!=null&&budget<0)throw new Error('search.budget must be >= 0');
+    const budget=search.budget==null?null:nonNegativeInteger(search.budget,'search.budget');
     const candidate_ids=Array.isArray(search.candidate_ids)?search.candidate_ids.map(String):alternatives.map(row=>row.id);
+    const candidateSet=new Set(candidate_ids);
+    if(candidateSet.size!==candidate_ids.length)throw new Error('search.candidate_ids contains duplicates');
     for(const id of candidate_ids)if(!ids.has(id))throw new Error(`search references unevaluated alternative ${id}`);
+    if(!candidateSet.has(selected.id))throw new Error('selected alternative must belong to search.candidate_ids');
 
     return {
       schema:SCHEMA,
