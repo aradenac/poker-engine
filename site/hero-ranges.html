@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Éditeur de ranges Hero</title>
+<link rel="stylesheet" href="./hero-ranges.css">
+</head>
+<body>
+<main class="shell">
+  <header class="topbar">
+    <div>
+      <a class="back" href="./index.html">← Analyseur</a>
+      <h1>Ranges Hero</h1>
+      <p>Répertoire personnel préflop · 169 classes · actions, fréquences et sizings.</p>
+    </div>
+    <div class="top-actions">
+      <label class="button secondary" for="heroRangeImport">Importer JSON</label>
+      <input id="heroRangeImport" type="file" accept=".json,application/json">
+      <button id="heroRangeExport" class="button">Exporter</button>
+    </div>
+  </header>
+
+  <section class="panel source-panel">
+    <div class="panel-head"><h2>Source importée</h2><span id="sourceBadge" class="badge">aucune</span></div>
+    <div id="sourceStatus" class="status">Importez un range-folder existant ou un dépôt Hero v1. Le document source est conservé verbatim.</div>
+    <div class="source-browser">
+      <label>Range source<select id="sourceRangeSelect"></select></label>
+      <label>Position source<select id="sourcePositionSelect"></select></label>
+      <div id="sourceHandDetail" class="source-detail">Sélectionnez une case pour voir les actions brutes de la source.</div>
+    </div>
+  </section>
+
+  <section class="panel filters">
+    <h2>Contexte Hero</h2>
+    <div class="filter-grid">
+      <label>Population<input id="populationInput" value="pokerstars_nlhe_100-200_zoom_play_6max_v1"></label>
+      <label>Position<select id="positionSelect"></select></label>
+      <label>Profondeur effective (BB)<input id="stackInput" type="number" min="1" step="1" value="100"></label>
+      <label>Contexte<select id="spotSelect"></select></label>
+    </div>
+    <div id="contextStatus" class="status"></div>
+  </section>
+
+  <section class="editor-layout">
+    <section class="panel grid-panel">
+      <div class="panel-head"><h2>Grille 169</h2><span id="gridSummary" class="badge"></span></div>
+      <div class="legend"><span class="dot defined"></span>défini <span class="dot source"></span>présent dans la source <span class="dot undefined"></span>non défini</div>
+      <div id="heroGrid" class="hand-grid"></div>
+    </section>
+
+    <aside class="panel hand-editor">
+      <div class="panel-head"><h2 id="selectedHandTitle">AA</h2><span id="selectedHandState" class="badge">non défini</span></div>
+      <p class="hint">Une main non définie reste « non couverte » ; elle n’est jamais transformée automatiquement en fold.</p>
+      <label class="quick-label">Édition rapide 100 %
+        <div class="quick-row"><select id="quickAction"></select><button id="quickApply" class="button secondary">Appliquer</button></div>
+      </label>
+      <div id="actionEditor" class="action-editor"></div>
+      <label>Notes<textarea id="handNotes" rows="3" placeholder="Optionnel"></textarea></label>
+      <div class="editor-actions">
+        <button id="saveHand" class="button">Enregistrer</button>
+        <button id="undefineHand" class="button danger">Rendre non définie</button>
+      </div>
+      <div id="handStatus" class="status"></div>
+    </aside>
+  </section>
+
+  <section class="panel repository-panel">
+    <div class="panel-head"><h2>Répertoire</h2><span id="repositoryStats" class="badge"></span></div>
+    <p class="hint">Les ranges personnelles et les futurs résultats calculés ont une provenance distincte. Cette page n’étiquette jamais une range personnelle comme optimale.</p>
+    <pre id="contextList" class="context-list"></pre>
+  </section>
+</main>
+<script src="./hero-ranges.js"></script>
+<script src="./hero-ranges-app.js"></script>
+</body>
+</html>
