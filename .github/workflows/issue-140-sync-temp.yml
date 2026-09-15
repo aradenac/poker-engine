@@ -1,0 +1,46 @@
+name: Temporary materialize issue 140 real-HH compliance
+
+on:
+  push:
+    branches:
+      - issue-140-real-hh-compliance
+    paths:
+      - '.github/workflows/issue-140-sync-temp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-140-real-hh-compliance
+          fetch-depth: 0
+      - name: Apply durable patch and refresh source identity
+        run: |
+          python3 tools/patches/patch_hero_compliance_real_hh_v1.py
+          node --check site/hero-compliance-replayer.js
+          node --check site/hero-ranges-app.js
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+          path=Path('site/RELEASE.json')
+          release=json.loads(path.read_text(encoding='utf-8'))
+          files=release['identity']['assembled_site']['functional_files']
+          for rel in ('site/hero-compliance-replayer.js','site/hero-ranges-app.js'):
+              files[rel]['git_blob_sha']=subprocess.check_output(['git','hash-object',rel],text=True).strip()
+          path.write_text(json.dumps(release,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          PY
+          python3 tools/patches/patch_hero_compliance_real_hh_v1.py --check
+          python3 tools/write_site_release.py --check
+      - name: Commit materialized files and remove temporary workflow
+        run: |
+          rm .github/workflows/issue-140-sync-temp.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/hero-compliance-replayer.js site/hero-ranges-app.js site/RELEASE.json .github/workflows/issue-140-sync-temp.yml
+          git commit -m "Issue #140: materialize real-HH compliance runtime fix"
+          git push origin HEAD:issue-140-real-hh-compliance
