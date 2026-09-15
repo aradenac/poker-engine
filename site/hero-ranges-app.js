@@ -147,4 +147,15 @@ els.export.addEventListener("click",exportFile);els.save.addEventListener("click
 els.sourceRange.addEventListener("change",()=>{renderSourceBrowser();renderGrid();});els.sourcePosition.addEventListener("change",()=>{renderSourceHandDetail();renderGrid();});
 for(const el of [els.population,els.position,els.stack,els.spot])el.addEventListener("change",renderAll);
 
-initOptions();renderAll();
+function applyDeepLink(){
+  const q=new URLSearchParams(window.location.search);
+  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase();
+  const handRaw=String(q.get("hand")||"").trim(),hand=HeroRanges.HAND_CLASSES.find(x=>x.toUpperCase()===handRaw.toUpperCase())||"";
+  if(population)els.population.value=population;
+  if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
+  if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
+  if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
+  if(hand)selectedHand=hand;
+}
+
+initOptions();applyDeepLink();renderAll();
