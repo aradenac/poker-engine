@@ -18,6 +18,7 @@
   function text(value){return value==null?'':String(value).trim();}
   function upper(value){return text(value).toUpperCase();}
   function array(value){return Array.isArray(value)?value:[];}
+  function sameJson(left,right){return JSON.stringify(left)===JSON.stringify(right);}
 
   function normalizeStrategy(input={}){
     const state=upper(input.state||'NO_VERDICT');
@@ -146,6 +147,11 @@
     }
     if(!evidence||typeof evidence!=='object'||Array.isArray(evidence))throw new Error(`${strategy.state} guidance requires evidence_decision`);
     Decision.validateDecision(evidence);
+    const selected=(evidence.alternatives||[]).find(row=>row&&row.id===evidence.selected_id);
+    if(!selected)throw new Error('guidance evidence_decision selected alternative is missing');
+    if(!sameJson(evidence.support,selected.support))throw new Error('guidance support does not match selected alternative');
+    if(evidence.confidence!==selected.confidence)throw new Error('guidance confidence does not match selected alternative');
+    if(!sameJson(evidence.uncertainty,selected.uncertainty))throw new Error('guidance uncertainty does not match selected alternative');
     const snapshot=validatePublicSnapshot(guidance.public_snapshot||{},evidence);
     if(strategy.population_id&&evidence.population_id!=null&&strategy.population_id!==String(evidence.population_id))throw new Error('strategy population_id must match evidence_decision.population_id');
     if(strategy.population_id&&snapshot.population_id&&strategy.population_id!==snapshot.population_id)throw new Error('strategy population_id must match public_snapshot.population_id');
