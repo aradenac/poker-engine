@@ -1,0 +1,87 @@
+{
+  "actions": {
+    "by_street": {
+      "flop": {
+        "candidate_log_loss": 0.6358088636265056,
+        "delta": 0.0005288930990670109,
+        "n": 5849,
+        "reference_log_loss": 0.6352799705274386
+      },
+      "preflop": {
+        "candidate_log_loss": 0.7893083445903599,
+        "delta": 0.007508991097041244,
+        "n": 12415,
+        "reference_log_loss": 0.7817993534933187
+      },
+      "river": {
+        "candidate_log_loss": 0.7061022960581209,
+        "delta": 0.010743002411546614,
+        "n": 3150,
+        "reference_log_loss": 0.6953592936465742
+      },
+      "turn": {
+        "candidate_log_loss": 0.6620476279532841,
+        "delta": 0.005548724955101876,
+        "n": 4159,
+        "reference_log_loss": 0.6564989029981823
+      }
+    },
+    "candidate_brier": 0.4581355353747373,
+    "candidate_confidence_ece": 0.009618410201051945,
+    "candidate_hierarchy_mass": {
+      "0": 4150.041601115601,
+      "1": 9236.489440622938,
+      "2": 9496.930379996576,
+      "3": 2155.791008209056,
+      "4": 368.5618911503307,
+      "5": 165.18567890528755
+    },
+    "candidate_log_loss": 0.7232545050905753,
+    "delta": 0.005992070734392842,
+    "n": 25573,
+    "paired_hand_bootstrap": {
+      "ci95": [
+        0.0035417596980668003,
+        0.008492088431233105
+      ],
+      "hands": 2318,
+      "observations": 25573,
+      "observed": 0.005992070734401725,
+      "probability_candidate_better": 0.0,
+      "samples": 2000,
+      "seed": 20260915
+    },
+    "reference_brier": 0.4516393928395575,
+    "reference_confidence_ece": 0.026499463286536393,
+    "reference_log_loss": 0.7172624343561825
+  },
+  "counterfactual_price_diagnostic": {
+    "contexts": 500,
+    "mean_fold_probability_range": 0.3472506568810356,
+    "monotone_non_decreasing_fold_probability": 0,
+    "monotone_rate": 0.0,
+    "selection_gate": false
+  },
+  "revealed_only_report_not_for_selection": {
+    "candidate_log_loss": 0.7336236954330542,
+    "n": 8747,
+    "reference_log_loss": 0.7777739145004545
+  },
+  "sizing": {
+    "candidate_mean_absolute_log_error": 0.8105946099604587,
+    "n": 3567,
+    "paired_hand_bootstrap": {
+      "ci95": [
+        -0.008441059917007379,
+        0.01037837998156014
+      ],
+      "hands": 1759,
+      "observations": 3567,
+      "observed": 0.0011344897780514427,
+      "probability_candidate_better": 0.418,
+      "samples": 2000,
+      "seed": 20260916
+    },
+    "reference_mean_absolute_log_error": 0.8094601201824099
+  }
+}

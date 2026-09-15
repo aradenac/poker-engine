@@ -1,0 +1,18 @@
+{
+  "audit": {
+    "hidden": 77409,
+    "player_observations": 95080,
+    "revealed": 17671,
+    "train_hands": 19016
+  },
+  "full_artifact_sha256": "491d1dea511cf0a63b2ff86b31b04fba794e7cfd9341fda15eb91ae4bee97f1e",
+  "independence": {
+    "action_target_used": false,
+    "future_public_action_used": false,
+    "model_a_used": false
+  },
+  "minimum_revealed_labels": 20,
+  "prior_strength": 50.0,
+  "schema": "independent-model-b-action-independent-hand-prior/v1",
+  "source_split": "TRAIN"
+}

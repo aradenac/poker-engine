@@ -1,0 +1,207 @@
+{
+  "candidate_artifacts": {
+    "candidate_behavior.json": {
+      "sha256": "dd593c50152a9c33f388ef77c6ffd9016eb96cee751663cf25beec17a6c9b1ac",
+      "size_bytes": 426688210
+    },
+    "hand_prior.json": {
+      "sha256": "491d1dea511cf0a63b2ff86b31b04fba794e7cfd9341fda15eb91ae4bee97f1e",
+      "size_bytes": 82591
+    },
+    "public_reference_behavior.json": {
+      "sha256": "fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca",
+      "size_bytes": 13359986
+    }
+  },
+  "decision": "RETAIN_PUBLIC_ONLY_REFERENCE_FOR_BEHAVIOR_COMPONENT",
+  "fit": {
+    "candidate_audit": {
+      "decisions": 210194,
+      "latent_soft_decisions": 137976,
+      "posterior_mass_error_max": 1.4432899320127035e-15,
+      "revealed_point_mass_decisions": 72218,
+      "sizing_decisions": 28954
+    },
+    "decision_audit": {
+      "assignment_ACTION_INDEPENDENT_PRIOR": 137986,
+      "assignment_REVEALED_POINT_MASS": 72208,
+      "decisions": 210194,
+      "hands_replayed": 18998,
+      "hands_seen": 19016,
+      "public_replay_skipped": 18,
+      "sizing_observations": 28954,
+      "street_flop": 48089,
+      "street_preflop": 101750,
+      "street_river": 25937,
+      "street_turn": 34418
+    },
+    "prior_audit": {
+      "hidden": 77409,
+      "player_observations": 95080,
+      "revealed": 17671,
+      "train_hands": 19016
+    },
+    "reference_audit": {
+      "decisions": 210194,
+      "latent_soft_decisions": 137976,
+      "posterior_mass_error_max": 1.4432899320127035e-15,
+      "revealed_point_mass_decisions": 72218,
+      "sizing_decisions": 28954
+    }
+  },
+  "gate": {
+    "action_ci95_upper_at_most": 0.0,
+    "action_pass": false,
+    "pass": false,
+    "sizing_ci95_upper_at_most": 0.0,
+    "sizing_pass": false
+  },
+  "hero_strategy_effect": "NONE",
+  "issue_103_input_status": "RETAIN_BASELINE_RANGE_COMPONENT; action-conditioned latent posterior not used for issue #104 target-side assignment",
+  "population": {
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "source": {
+      "archives": [
+        {
+          "parsed_hands": 27164,
+          "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+          "scoped_hands": 26560,
+          "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6"
+        },
+        {
+          "parsed_hands": 11896,
+          "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+          "scoped_hands": 11896,
+          "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb"
+        }
+      ],
+      "english_preferred_replacements": 0,
+      "overlap_occurrences": 7453,
+      "overlap_payload_differences": 0,
+      "scope": {
+        "stakes": [
+          "100/200"
+        ]
+      },
+      "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf",
+      "split_counts": {
+        "TEST": 3175,
+        "TRAIN": 24755,
+        "VALIDATION": 3073
+      },
+      "unique_scoped_hands": 31003
+    },
+    "split_counts": {
+      "TEST": 2449,
+      "TRAIN": 19016,
+      "VALIDATION": 2324
+    },
+    "unique_hands": 23789
+  },
+  "production_model_b_effect": "NONE",
+  "protocol": "training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json",
+  "related_issue": 104,
+  "schema": "independent-model-b-card-aware-result/v1",
+  "test_consumed": false,
+  "validation": {
+    "actions": {
+      "by_street": {
+        "flop": {
+          "candidate_log_loss": 0.6358088636265056,
+          "delta": 0.0005288930990670109,
+          "n": 5849,
+          "reference_log_loss": 0.6352799705274386
+        },
+        "preflop": {
+          "candidate_log_loss": 0.7893083445903599,
+          "delta": 0.007508991097041244,
+          "n": 12415,
+          "reference_log_loss": 0.7817993534933187
+        },
+        "river": {
+          "candidate_log_loss": 0.7061022960581209,
+          "delta": 0.010743002411546614,
+          "n": 3150,
+          "reference_log_loss": 0.6953592936465742
+        },
+        "turn": {
+          "candidate_log_loss": 0.6620476279532841,
+          "delta": 0.005548724955101876,
+          "n": 4159,
+          "reference_log_loss": 0.6564989029981823
+        }
+      },
+      "candidate_brier": 0.4581355353747373,
+      "candidate_confidence_ece": 0.009618410201051945,
+      "candidate_hierarchy_mass": {
+        "0": 4150.041601115601,
+        "1": 9236.489440622938,
+        "2": 9496.930379996576,
+        "3": 2155.791008209056,
+        "4": 368.5618911503307,
+        "5": 165.18567890528755
+      },
+      "candidate_log_loss": 0.7232545050905753,
+      "delta": 0.005992070734392842,
+      "n": 25573,
+      "paired_hand_bootstrap": {
+        "ci95": [
+          0.0035417596980668003,
+          0.008492088431233105
+        ],
+        "hands": 2318,
+        "observations": 25573,
+        "observed": 0.005992070734401725,
+        "probability_candidate_better": 0.0,
+        "samples": 2000,
+        "seed": 20260915
+      },
+      "reference_brier": 0.4516393928395575,
+      "reference_confidence_ece": 0.026499463286536393,
+      "reference_log_loss": 0.7172624343561825
+    },
+    "counterfactual_price_diagnostic": {
+      "contexts": 500,
+      "mean_fold_probability_range": 0.3472506568810356,
+      "monotone_non_decreasing_fold_probability": 0,
+      "monotone_rate": 0.0,
+      "selection_gate": false
+    },
+    "revealed_only_report_not_for_selection": {
+      "candidate_log_loss": 0.7336236954330542,
+      "n": 8747,
+      "reference_log_loss": 0.7777739145004545
+    },
+    "sizing": {
+      "candidate_mean_absolute_log_error": 0.8105946099604587,
+      "n": 3567,
+      "paired_hand_bootstrap": {
+        "ci95": [
+          -0.008441059917007379,
+          0.01037837998156014
+        ],
+        "hands": 1759,
+        "observations": 3567,
+        "observed": 0.0011344897780514427,
+        "probability_candidate_better": 0.418,
+        "samples": 2000,
+        "seed": 20260916
+      },
+      "reference_mean_absolute_log_error": 0.8094601201824099
+    }
+  },
+  "validation_audit": {
+    "assignment_ACTION_INDEPENDENT_PRIOR": 25573,
+    "decisions": 25573,
+    "hands_replayed": 2318,
+    "hands_seen": 2324,
+    "public_replay_skipped": 6,
+    "sizing_observations": 3567,
+    "street_flop": 5849,
+    "street_preflop": 12415,
+    "street_river": 3150,
+    "street_turn": 4159
+  }
+}
