@@ -47,6 +47,7 @@ jobs:
           python3 tests/preflop/test_probability_contract.py
           node tests/preflop/test_decision_contract.js
           node tests/preflop/test_guidance_contract.js
+          node tests/preflop/test_guidance_tamper_guard.js
           python3 tests/preflop/test_increment_decisions_contract.py
           python3 tests/preflop/test_site_preflop_contract.py
       - name: Preserve issue 88 incumbent matcher contract
