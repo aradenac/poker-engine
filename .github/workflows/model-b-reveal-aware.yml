@@ -1,0 +1,88 @@
+name: Model B reveal-aware ranges
+
+on:
+  pull_request:
+    paths:
+      - 'tools/training/independent_profiles/reveal_aware_ranges.py'
+      - 'tools/training/independent_profiles/build_reveal_aware_candidate.py'
+      - 'tools/training/independent_profiles/evaluate_reveal_aware_ranges.py'
+      - 'tests/training/test_reveal_aware_ranges.py'
+      - 'training/runs/20260915_model_b_reveal_aware_v3/**'
+      - '.github/workflows/model-b-reveal-aware.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Unit and syntax tests
+        run: |
+          python3 -m py_compile \
+            tools/training/independent_profiles/reveal_aware_ranges.py \
+            tools/training/independent_profiles/build_reveal_aware_candidate.py \
+            tools/training/independent_profiles/evaluate_reveal_aware_ranges.py \
+            tests/training/test_reveal_aware_ranges.py
+          python3 tests/training/test_reveal_aware_ranges.py
+
+      - name: Build certified TRAIN-only candidate
+        run: |
+          rm -rf /tmp/model_b_reveal_aware
+          python3 tools/training/independent_profiles/build_reveal_aware_candidate.py \
+            --incumbent-dir training/runs/20260912_independent_profiles_v2/model \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --exclude-player RoiDePiqueNique \
+            --backoff-min-observations 20 \
+            --prior-strength 50 \
+            --action-prior-strength 20 \
+            --output-dir /tmp/model_b_reveal_aware \
+            | tee /tmp/model_b_reveal_aware_build.json
+
+      - name: Paired VALIDATION only
+        run: |
+          python3 tools/training/independent_profiles/evaluate_reveal_aware_ranges.py \
+            --incumbent-dir training/runs/20260912_independent_profiles_v2/model \
+            --candidate-dir /tmp/model_b_reveal_aware/model \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --exclude-player RoiDePiqueNique \
+            --split VALIDATION \
+            --range-prior-strength 50 \
+            --bootstrap-samples 2000 \
+            --seed 20260915 \
+            --output /tmp/model_b_reveal_aware/VALIDATION.json \
+            | tee /tmp/model_b_reveal_aware_validation.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('/tmp/model_b_reveal_aware/VALIDATION.json').read_text())
+          assert report['split'] == 'VALIDATION'
+          assert report['test_consumed'] is False
+          assert report['frozen_components']['profiles.json']['identical'] is True
+          assert report['frozen_components']['postflop_actions.json']['identical'] is True
+          assert report['frozen_components']['sizing.json']['identical'] is True
+          print('decision:', report['decision'])
+          print('range delta:', report['paired_range_log_loss_delta_candidate_minus_incumbent'])
+          PY
+
+      - name: Preserve candidate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-b-reveal-aware-v3-validation
+          path: |
+            /tmp/model_b_reveal_aware
+            /tmp/model_b_reveal_aware_build.json
+            /tmp/model_b_reveal_aware_validation.json
+          if-no-files-found: error
+          retention-days: 90
