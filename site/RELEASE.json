@@ -9,6 +9,12 @@
         "site/deployment-meta.css"
       ],
       "functional_files": {
+        "site/hero-compliance-replayer.js": {
+          "git_blob_sha": "201176f6149d21981e3654de4b24b2a5dd8b25e4"
+        },
+        "site/hero-compliance.js": {
+          "git_blob_sha": "2ca00cab8b38d94e0b318b35f9db78f5d846e57b"
+        },
         "site/hero-ranges-app.js": {
           "git_blob_sha": "7a62e18a07657b8a946b0f3cd07947e7515ce1af"
         },
@@ -31,7 +37,7 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "9ade7f08b7bb47d49fa9aaf6787a109920deba8e"
+          "git_blob_sha": "6d25fedb1ec93289c7ad7fa130712cb6db752b1c"
         }
       }
     },

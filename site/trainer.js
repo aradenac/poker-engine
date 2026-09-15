@@ -543,3 +543,24 @@ trainerContinueBtn?.addEventListener("click",trainerContinue);
 document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.addEventListener("click",()=>trainerSetMode(b.dataset.trainerMode)));
 trainerScheduleWarmup();
 trainerRenderStatus("Ouvrez une session pour charger les modèles promus.");trainerRender();
+
+/* Hero range compliance replayer bootstrap (#98) */
+(function loadHeroRangeComplianceReplayer(){
+  if(typeof document==='undefined')return;
+  const sources=['./hero-ranges.js','./hero-compliance.js','./hero-compliance-replayer.js'];
+  let index=0;
+  const next=()=>{
+    if(index>=sources.length)return;
+    const src=sources[index++];
+    const existing=[...document.scripts].find(s=>s.getAttribute('src')===src||String(s.src||'').endsWith(src.replace(/^\.\//,'')));
+    if(existing){
+      if((src.endsWith('hero-ranges.js')&&window.PokerHeroRanges)||(src.endsWith('hero-compliance.js')&&window.PokerHeroCompliance)||(src.endsWith('hero-compliance-replayer.js')&&window.PokerHeroComplianceReplayer))next();
+      else existing.addEventListener('load',next,{once:true});
+      return;
+    }
+    const script=document.createElement('script');script.src=src;script.defer=false;script.addEventListener('load',next,{once:true});
+    script.addEventListener('error',()=>console.warn('Hero compliance script failed to load:',src),{once:true});
+    document.head.appendChild(script);
+  };
+  next();
+})();
