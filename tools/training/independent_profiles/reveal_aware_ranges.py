@@ -2,14 +2,20 @@
 """Reveal-aware latent preflop range inference for independent opponent Model B.
 
 Every TRAIN opponent observation is retained. Eventual revealed cards are labels;
-hidden/folded cards remain latent. Public action signatures may redistribute
-latent posterior mass only to the extent that TRAIN revelations identify a
-hand/action association. Signatures with no revealed labels are explicitly
-reported as non-identifiable rather than receiving invented card labels.
+hidden/folded cards remain latent. For a public preflop action signature, hidden
+hands are imputed from P(hand class | signature, context) estimated only from
+TRAIN revelations and a combinatorial/context prior. If a signature has no
+revealed labels (the common case for immediate folds), it is explicitly
+non-identifiable and receives the context prior rather than fabricated cards.
 
-Serialized nodes preserve the legacy ``n``/``counts`` probability-consumer
-surface. ``counts`` are fractional expected latent counts, while
-``revealed_counts`` keeps the actually observed labels auditable.
+This conditional formulation is robust to reveal propensity varying *between*
+action signatures under the stated assumption that, within a signature/context,
+revelation is not additionally hand-dependent. That remaining MNAR assumption is
+not identifiable from HH alone, so 0.0/0.5/1.0 signal sensitivity is exported.
+
+Serialized nodes preserve the legacy ``n``/``counts`` consumer surface.
+``counts`` are fractional expected latent counts; ``revealed_counts`` are actual
+observed card labels and stay separately auditable.
 """
 from __future__ import annotations
 
@@ -56,8 +62,23 @@ def total_variation(left: dict[str, float], right: dict[str, float]) -> float:
     return 0.5 * sum(abs(float(left.get(k, 0.0)) - float(right.get(k, 0.0))) for k in keys)
 
 
+def geometric_interpolate(
+    baseline: dict[str, float], conditioned: dict[str, float], power: float
+) -> dict[str, float]:
+    if power < 0:
+        raise ValueError("decision signal power must be non-negative")
+    if power == 0:
+        return dict(baseline)
+    weights = {}
+    for key in baseline:
+        base = max(float(baseline[key]), 1e-300)
+        cond = max(float(conditioned[key]), 1e-300)
+        # baseline * likelihood-ratio**power. power=1 yields conditioned.
+        weights[key] = base * ((cond / base) ** power)
+    return normalized(weights)
+
+
 def preflop_signature(hand: dict[str, Any], player: str) -> str:
-    """Return the actor's public preflop action sequence; posts are excluded."""
     labels: list[str] = []
     raises = 0
     for event in hand["events"]["preflop"]:
@@ -139,40 +160,9 @@ def collect_observations(
             "revealed": revealed,
             "hidden": total - revealed,
             "reveal_rate": revealed / total if total else None,
-            "card_action_link_identifiable": revealed > 0,
+            "card_distribution_identifiable_from_revelations": revealed > 0,
         }
     return observations, {"counts": dict(sorted(audit.items())), "reveal_by_signature": signature_rows}
-
-
-def _action_likelihoods(
-    observations: list[dict[str, Any]],
-    notations: list[str],
-    action_prior_strength: float,
-) -> tuple[dict[str, dict[str, float]], set[str]]:
-    signatures = sorted({str(o["signature"]) for o in observations})
-    signature_counts = Counter(str(o["signature"]) for o in observations)
-    # All observations inform the action marginal, but only actual revelations
-    # inform differences between hand classes.
-    sig_prior = normalized({s: float(signature_counts[s]) + 1.0 for s in signatures})
-    known_by_hand: dict[str, Counter] = {h: Counter() for h in notations}
-    known_signature_totals = Counter()
-    for observation in observations:
-        hand_class = observation.get("hand_class")
-        if hand_class in known_by_hand:
-            signature = str(observation["signature"])
-            known_by_hand[hand_class][signature] += 1
-            known_signature_totals[signature] += 1
-
-    likelihoods: dict[str, dict[str, float]] = {}
-    for hand_class in notations:
-        counts = known_by_hand[hand_class]
-        n = sum(counts.values())
-        likelihoods[hand_class] = {
-            signature: (float(counts[signature]) + action_prior_strength * sig_prior[signature])
-            / (float(n) + action_prior_strength)
-            for signature in signatures
-        }
-    return likelihoods, {s for s in signatures if known_signature_totals[s] == 0}
 
 
 def fit_latent_node(
@@ -186,7 +176,12 @@ def fit_latent_node(
     max_iterations: int = 100,
     tolerance: float = 1e-10,
 ) -> dict[str, Any]:
-    """Fit expected counts using an E-step aggregated by public action signature."""
+    """Estimate expected class counts with signature-stratified latent imputation.
+
+    ``max_iterations``/``tolerance`` remain accepted for API stability but are not
+    used: conditional imputation has a closed-form single E-step.
+    """
+    del max_iterations, tolerance
     if not observations:
         raise ValueError("latent node requires observations")
     if prior_strength < 0 or action_prior_strength <= 0 or decision_signal_power < 0:
@@ -196,48 +191,46 @@ def fit_latent_node(
     revealed_counts = Counter(
         str(o["hand_class"]) for o in observations if o.get("hand_class") in combo_prior
     )
+    revealed_n = sum(revealed_counts.values())
+    n = len(observations)
     hidden_by_signature = Counter(
         str(o["signature"]) for o in observations if o.get("hand_class") not in combo_prior
     )
-    revealed_n = sum(revealed_counts.values())
-    n = len(observations)
-    likelihoods, nonidentified = _action_likelihoods(observations, notations, action_prior_strength)
+    revealed_by_signature_hand: dict[str, Counter] = defaultdict(Counter)
+    revealed_by_signature = Counter()
+    all_by_signature = Counter(str(o["signature"]) for o in observations)
+    for observation in observations:
+        hand_class = observation.get("hand_class")
+        if hand_class in combo_prior:
+            signature = str(observation["signature"])
+            revealed_by_signature_hand[signature][str(hand_class)] += 1
+            revealed_by_signature[signature] += 1
 
-    current = normalized({
+    # Context distribution is the fallback when a signature has no card labels.
+    context_prior = normalized({
         h: float(revealed_counts[h]) + prior_strength * combo_prior[h] for h in notations
     })
     expected_counts = {h: float(revealed_counts[h]) for h in notations}
-    final_delta = math.inf
-    iterations = 0
+    nonidentified: list[str] = []
 
-    for iterations in range(1, max_iterations + 1):
-        expected_counts = {h: float(revealed_counts[h]) for h in notations}
-        # All hidden observations with the same public signature have the same
-        # posterior. Aggregating them makes the result identical to per-hand EM
-        # while reducing the dominant complexity by orders of magnitude.
-        for signature, hidden_count in hidden_by_signature.items():
-            weights = {
-                h: current[h] * (likelihoods[h][signature] ** decision_signal_power)
+    for signature, hidden_count in hidden_by_signature.items():
+        labelled = int(revealed_by_signature[signature])
+        if labelled == 0:
+            conditioned = dict(context_prior)
+            nonidentified.append(signature)
+        else:
+            signature_counts = revealed_by_signature_hand[signature]
+            conditioned = normalized({
+                h: float(signature_counts[h]) + action_prior_strength * context_prior[h]
                 for h in notations
-            }
-            posterior = normalized(weights)
-            for h, probability in posterior.items():
-                expected_counts[h] += hidden_count * probability
-        updated = normalized({
-            h: expected_counts[h] + prior_strength * combo_prior[h] for h in notations
-        })
-        final_delta = max(abs(updated[h] - current[h]) for h in notations)
-        current = updated
-        if final_delta <= tolerance:
-            break
+            })
+        posterior = geometric_interpolate(context_prior, conditioned, decision_signal_power)
+        for h, probability in posterior.items():
+            expected_counts[h] += hidden_count * probability
 
     if not math.isclose(sum(expected_counts.values()), n, rel_tol=0.0, abs_tol=1e-6):
         raise AssertionError((sum(expected_counts.values()), n))
 
-    revealed_by_signature = Counter(
-        str(o["signature"]) for o in observations if o.get("hand_class") in combo_prior
-    )
-    all_by_signature = Counter(str(o["signature"]) for o in observations)
     return {
         "n": n,
         "counts": {h: round(expected_counts[h], 8) for h in notations if expected_counts[h] > 1e-10},
@@ -253,12 +246,11 @@ def fit_latent_node(
             for signature in sorted(all_by_signature)
         },
         "fit": {
-            "iterations": iterations,
-            "max_probability_delta": final_delta,
+            "method": "signature_conditioned_closed_form_imputation",
             "prior_strength": prior_strength,
-            "action_prior_strength": action_prior_strength,
+            "signature_hand_prior_strength": action_prior_strength,
             "decision_signal_power": decision_signal_power,
-            "e_step": "aggregated_by_public_action_signature",
+            "assumption": "within a public signature/context, eventual revelation is not additionally hand-dependent",
         },
     }
 
@@ -285,9 +277,9 @@ def build_latent_ranges(
         for observation in observations:
             groups[key_for(cols, observation)].append(observation)
         serialized: dict[str, Any] = {}
-        alternate_powers = [power for power in sensitivity_powers if power != 1.0]
-        weighted_tv = {str(power): 0.0 for power in alternate_powers}
-        max_tv = {str(power): 0.0 for power in alternate_powers}
+        alternate = [p for p in sensitivity_powers if p != 1.0]
+        weighted_tv = {str(p): 0.0 for p in alternate}
+        max_tv = {str(p): 0.0 for p in alternate}
         kept_weight = 0
         for key in sorted(groups):
             rows = groups[key]
@@ -301,7 +293,7 @@ def build_latent_ranges(
             )
             nominal_dist = _distribution(nominal, notations)
             node_sensitivity = {}
-            for power in alternate_powers:
+            for power in alternate:
                 variant = fit_latent_node(
                     rows, notations, multiplicity,
                     prior_strength=prior_strength,
@@ -321,7 +313,7 @@ def build_latent_ranges(
             "cols": cols,
             "nodes": len(serialized),
             "weighted_mean_total_variation": {
-                power: weighted_tv[power] / kept_weight if kept_weight else None for power in weighted_tv
+                p: weighted_tv[p] / kept_weight if kept_weight else None for p in weighted_tv
             },
             "max_total_variation": max_tv,
         })
@@ -335,10 +327,10 @@ def build_latent_ranges(
         "backoff_min_observations": backoff_min_observations,
         "fit": {
             "split": "TRAIN",
-            "prior": "combinatorial 1326-combo prior",
+            "prior": "combinatorial 1326-combo prior shrunk by context revelations",
             "prior_strength": prior_strength,
-            "action_likelihood": "revealed TRAIN hand/action association shrunk to all-observation action marginal",
-            "action_prior_strength": action_prior_strength,
+            "signature_conditioning": "P(hand|public preflop signature, context) from revealed TRAIN hands",
+            "signature_hand_prior_strength": action_prior_strength,
             "nominal_decision_signal_power": 1.0,
             "sensitivity_decision_signal_powers": list(sensitivity_powers),
             "missing_cards": "never labelled; fractional posterior mass only",
@@ -347,7 +339,7 @@ def build_latent_ranges(
         "levels": levels_out,
     }, {
         "schema": "independent-preflop-reveal-sensitivity/v1",
-        "interpretation": "Variation across decision-signal powers measures dependence on non-identifiable hand/action extrapolation; it is not a confidence interval.",
+        "interpretation": "Variation across signature-signal powers measures dependence on an untestable missing-card extrapolation; it is not a confidence interval.",
         "levels": sensitivity_summary,
     }
 
@@ -396,8 +388,9 @@ def build_from_records(
         "cold_start_profile": default_profile,
         "observation_audit": audit,
         "identification_limits": [
-            "Preflop folds normally have no revealed hole cards; where a signature has no revealed labels its hand composition is not identified and stays prior-driven.",
-            "Eventual showdown/muck revelations can be selection-biased by postflop survival and strength; sensitivity variants expose dependence on action-signal extrapolation but cannot identify the true missing-card mechanism.",
+            "Preflop folds normally have no revealed hole cards; a signature with zero labels is non-identifiable and stays on the context prior.",
+            "The nominal imputation assumes revelation is not additionally hand-dependent after conditioning on public signature/context; HH alone cannot verify that MNAR assumption.",
+            "Sensitivity powers expose dependence on signature conditioning but are not statistical confidence bounds.",
             "Aggregate TRAIN revelations may fit parameters, but runtime decisions must never receive cards before their actual revelation event.",
         ],
     }
