@@ -9,7 +9,6 @@
   const DEPTH_ABS_TOLERANCE_BB=2;
   const SIZING_ABS_TOLERANCE_BB=.05;
   const SIZING_REL_TOLERANCE=.02;
-  const tokenCache=typeof WeakMap==='function'?new WeakMap():null;
 
   function fnv1a(text){let h=2166136261>>>0;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
   function stableStringify(value){
@@ -19,13 +18,13 @@
   }
   function repositoryVersionToken(repo){
     if(!repo||typeof repo!=='object')return null;
-    if(tokenCache?.has(repo))return tokenCache.get(repo);
     const schema=String(repo.schema||'unknown').replace(/[^a-zA-Z0-9_-]/g,'_');
     // The preserved legacy source is provenance, not the editable strategy.
-    // Tokenize the actual decision-bearing repository state only.
+    // Tokenize the actual decision-bearing repository state only. Do not cache
+    // by object identity: the editor mutates a repository in memory before it
+    // persists the next localStorage snapshot.
     const identity={schema:repo.schema||null,version:repo.version??null,defaults:repo.defaults||null,contexts:repo.contexts||{}};
-    const token=`${schema}-${fnv1a(stableStringify(identity)).toString(16).padStart(8,'0')}`;
-    tokenCache?.set(repo,token);return token;
+    return `${schema}-${fnv1a(stableStringify(identity)).toString(16).padStart(8,'0')}`;
   }
 
   function decisionHistory(decision){return decision?.history||decision?.preflop_context_v1?.history||[];}
