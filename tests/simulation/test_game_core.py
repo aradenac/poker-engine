@@ -54,6 +54,22 @@ class GameCoreTests(unittest.TestCase):
         with self.assertRaises(RuleError):
             s.apply_action("BTN", "RAISE", target_total_bb=10)
 
+    def test_cumulative_short_allins_can_reopen_action(self):
+        s = NoLimitHoldemState(
+            seats=["BTN", "SB", "BB", "UTG", "HJ"], button="BTN",
+            stacks_bb={"BTN": 4, "SB": 5, "BB": 100, "UTG": 100, "HJ": 100},
+        )
+        s.apply_action("UTG", "RAISE", target_total_bb=3)
+        s.apply_action("HJ", "CALL")
+        s.apply_action("BTN", "RAISE", target_total_bb=4)
+        s.apply_action("SB", "RAISE", target_total_bb=5)
+        s.apply_action("BB", "CALL")
+        view = s.legal_view("UTG")
+        self.assertEqual(view["to_call_bb"], 2)
+        self.assertTrue(view["raise_reopened"])
+        self.assertIn("RAISE", view["legal_actions"])
+        self.assertEqual(view["min_raise_to_bb"], 7)
+
     def test_full_raise_after_short_raise_reopens(self):
         s = NoLimitHoldemState(
             seats=["BTN", "SB", "BB", "UTG"], button="BTN",
