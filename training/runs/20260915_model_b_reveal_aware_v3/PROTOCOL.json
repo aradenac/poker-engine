@@ -1,0 +1,55 @@
+{
+  "schema": "independent-model-b-reveal-aware-protocol/v1",
+  "status": "FROZEN_BEFORE_RESULT",
+  "related_issue": 103,
+  "parent_gate_protocol": "training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "population_certification": "training/datasets/NLHE_100-200/population_certification.json",
+  "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+  "inputs": {
+    "archives": [
+      "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+      "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip"
+    ],
+    "incumbent_model_dir": "training/runs/20260912_independent_profiles_v2/model",
+    "excluded_players": ["RoiDePiqueNique"]
+  },
+  "fit": {
+    "split": "TRAIN",
+    "expected_train_hands": 19016,
+    "backoff_min_observations": 20,
+    "combinatorial_prior_strength": 50.0,
+    "action_likelihood_prior_strength": 20.0,
+    "nominal_decision_signal_power": 1.0,
+    "sensitivity_decision_signal_powers": [0.0, 0.5, 1.0],
+    "profiles": "frozen incumbent TRAIN-derived assignments",
+    "cold_start": "incumbent profile with greatest TRAIN appearance weight",
+    "postflop_actions": "byte-identical incumbent",
+    "sizing": "byte-identical incumbent"
+  },
+  "missing_cards_contract": {
+    "hidden_hand_is_never_labelled_known": true,
+    "fold_without_cards": "contributes public action/signature and hidden support; hand composition remains prior-driven when no revealed hand/action association identifies it",
+    "eventual_revelation": "may fit aggregate TRAIN parameters only; never exposed to a runtime decision before its reveal event",
+    "non_identifiability": "report reveal rates, signatures with zero revealed labels, partial-identification width and sensitivity to decision-signal strength"
+  },
+  "validation": {
+    "split": "VALIDATION",
+    "expected_hands": 2324,
+    "metric": "paired revealed-active-hand range log loss, candidate minus incumbent",
+    "cluster_unit": "hand_id",
+    "confidence_level": 0.95,
+    "bootstrap_samples": 2000,
+    "seed": 20260915,
+    "pass_rule": "CI95 upper bound <= 0",
+    "unchanged_action_loss_delta": 0.0,
+    "test_read_for_selection": false
+  },
+  "decision": {
+    "if_validation_passes": "ACCEPT_EXPERIMENTAL_RANGE_COMPONENT",
+    "if_validation_fails": "RETAIN_BASELINE_RANGE_COMPONENT",
+    "production_promotion": "NOT_AUTHORIZED_BY_THIS_RUN",
+    "hero_strategy_promotion": "NOT_AUTHORIZED_BY_THIS_RUN",
+    "test_consumption": "NONE"
+  }
+}

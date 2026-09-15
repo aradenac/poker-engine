@@ -1,0 +1,79 @@
+{
+  "schema": "independent-preflop-reveal-audit/v1",
+  "fit_split": "TRAIN",
+  "train_hands": 19016,
+  "excluded_players": [
+    "RoiDePiqueNique"
+  ],
+  "known_player_profiles": 9132,
+  "cold_start_profile": 0,
+  "observation_audit": {
+    "counts": {
+      "cold_start_profile_observations": 2157,
+      "excluded_player_observations": 19016,
+      "hands_parsed": 19016,
+      "hidden": 77409,
+      "observations": 95080,
+      "revealed": 17671
+    },
+    "reveal_by_signature": {
+      "CALL": {"total": 5810, "revealed": 2308, "hidden": 3502, "reveal_rate": 0.3972461273666093, "card_distribution_identifiable_from_revelations": true},
+      "CALL>CALL": {"total": 211, "revealed": 123, "hidden": 88, "reveal_rate": 0.5829383886255924, "card_distribution_identifiable_from_revelations": true},
+      "CALL>CALL>CALL": {"total": 3, "revealed": 2, "hidden": 1, "reveal_rate": 0.6666666666666666, "card_distribution_identifiable_from_revelations": true},
+      "CALL>CALL>FOLD": {"total": 1, "revealed": 0, "hidden": 1, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "CALL>FOLD": {"total": 169, "revealed": 0, "hidden": 169, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "CALL>RAISE": {"total": 7, "revealed": 6, "hidden": 1, "reveal_rate": 0.8571428571428571, "card_distribution_identifiable_from_revelations": true},
+      "CALL>RAISE>CALL": {"total": 1, "revealed": 1, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "CHECK": {"total": 7685, "revealed": 3134, "hidden": 4551, "reveal_rate": 0.4078074170461939, "card_distribution_identifiable_from_revelations": true},
+      "FOLD": {"total": 49090, "revealed": 0, "hidden": 49090, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "LIMP": {"total": 18266, "revealed": 7521, "hidden": 10745, "reveal_rate": 0.4117486039636483, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>CALL": {"total": 3920, "revealed": 1605, "hidden": 2315, "reveal_rate": 0.4094387755102041, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>CALL>CALL": {"total": 35, "revealed": 25, "hidden": 10, "reveal_rate": 0.7142857142857143, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>CALL>FOLD": {"total": 25, "revealed": 0, "hidden": 25, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "LIMP>FOLD": {"total": 2155, "revealed": 0, "hidden": 2155, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "LIMP>LIMP": {"total": 1, "revealed": 1, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>RAISE": {"total": 140, "revealed": 99, "hidden": 41, "reveal_rate": 0.7071428571428572, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>RAISE>CALL": {"total": 12, "revealed": 12, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>RAISE>FOLD": {"total": 1, "revealed": 0, "hidden": 1, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "LIMP>RAISE>RAISE": {"total": 2, "revealed": 2, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "LIMP>RAISE>RAISE>RAISE>RAISE>RAISE": {"total": 1, "revealed": 1, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "NO_DECISION": {"total": 893, "revealed": 6, "hidden": 887, "reveal_rate": 0.006718924972004479, "card_distribution_identifiable_from_revelations": true},
+      "RAISE": {"total": 5834, "revealed": 2316, "hidden": 3518, "reveal_rate": 0.3969832019197806, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>CALL": {"total": 556, "revealed": 385, "hidden": 171, "reveal_rate": 0.6924460431654677, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>CALL>CALL": {"total": 6, "revealed": 4, "hidden": 2, "reveal_rate": 0.6666666666666666, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>FOLD": {"total": 126, "revealed": 0, "hidden": 126, "reveal_rate": 0.0, "card_distribution_identifiable_from_revelations": false},
+      "RAISE>RAISE": {"total": 107, "revealed": 97, "hidden": 10, "reveal_rate": 0.9065420560747663, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>RAISE>CALL": {"total": 19, "revealed": 19, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>RAISE>RAISE": {"total": 2, "revealed": 2, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>RAISE>RAISE>CALL": {"total": 1, "revealed": 1, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true},
+      "RAISE>RAISE>RAISE>RAISE>RAISE>CALL": {"total": 1, "revealed": 1, "hidden": 0, "reveal_rate": 1.0, "card_distribution_identifiable_from_revelations": true}
+    }
+  },
+  "identification_limits": [
+    "Preflop folds normally have no revealed hole cards; a signature with zero labels is non-identifiable and stays on the context prior.",
+    "The nominal imputation assumes revelation is not additionally hand-dependent after conditioning on public signature/context; HH alone cannot verify that MNAR assumption.",
+    "Sensitivity powers expose dependence on signature conditioning but are not statistical confidence bounds.",
+    "Aggregate TRAIN revelations may fit parameters, but runtime decisions must never receive cards before their actual revelation event."
+  ],
+  "population": {
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "unique_hands": 23789,
+    "split_counts": {"TRAIN": 19016, "VALIDATION": 2324, "TEST": 2449},
+    "source": {
+      "archives": [
+        {"path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip", "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6", "parsed_hands": 27164, "scoped_hands": 26560},
+        {"path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip", "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb", "parsed_hands": 11896, "scoped_hands": 11896}
+      ],
+      "scope": {"stakes": ["100/200"]},
+      "unique_scoped_hands": 31003,
+      "split_counts": {"TEST": 3175, "TRAIN": 24755, "VALIDATION": 3073},
+      "overlap_occurrences": 7453,
+      "overlap_payload_differences": 0,
+      "english_preferred_replacements": 0,
+      "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+    }
+  },
+  "profiles_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea"
+}
