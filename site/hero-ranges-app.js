@@ -14,7 +14,6 @@ const els={
 let repo=restoreRepository();
 let selectedHand="AA";
 
-function emptyRepo(){return HeroRanges.emptyRepository({populationId:els.population?.value||"pokerstars_nlhe_100-200_zoom_play_6max_v1"});}
 function restoreRepository(){
   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return HeroRanges.importDocument(JSON.parse(raw));}catch(_){}
   return HeroRanges.emptyRepository({populationId:"pokerstars_nlhe_100-200_zoom_play_6max_v1"});
@@ -25,7 +24,6 @@ function context(){return HeroRanges.normalizeContext({population_id:els.populat
 function currentNode(){try{return repo.contexts[HeroRanges.contextKey(context())]||null;}catch(_){return null;}}
 function currentPersonal(){return HeroRanges.getHandStrategy(repo,context(),selectedHand,{layer:"personal"});}
 function currentCalculated(){return HeroRanges.getHandStrategy(repo,context(),selectedHand,{layer:"calculated"});}
-function currentResolved(){return HeroRanges.getHandStrategy(repo,context(),selectedHand,{layer:"resolved"});}
 
 function initOptions(){
   els.position.innerHTML=HeroRanges.POSITIONS.map(p=>`<option>${p}</option>`).join("");els.position.value="BTN";
@@ -49,6 +47,7 @@ function sourceFrequency(hand){
   for(const a of (row.actions||[])){const name=String(a?.name||"").toUpperCase(),v=Number(a?.frequency)||0;if(name!=="FOLD"&&v>0)f+=v;}
   return Math.max(0,Math.min(100,f));
 }
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[c]);}
 function renderSourceBrowser(){
   const entries=legacyEntries();
   els.sourceBadge.textContent=repo.source?.preserved_verbatim?"source préservée":"aucune source";
@@ -64,7 +63,6 @@ function renderSourceBrowser(){
 function renderSourceHandDetail(){
   const row=sourceHand(selectedHand);els.sourceHandDetail.textContent=row?`${selectedHand}\n${JSON.stringify(row.actions||[],null,2)}`:`${selectedHand} : absent de la position source sélectionnée.`;
 }
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[c]);}
 
 function renderGrid(){
   let personal=0,calculated=0,source=0;
@@ -136,9 +134,9 @@ function quickApply(){
 }
 
 async function importFile(file){
-  const text=await file.text(),json=JSON.parse(text);repo=HeroRanges.importDocument(json,{populationId:els.population.value});
+  const text=await file.text(),json=JSON.parse(text);repo=HeroRanges.importDocument(json,{populationId:els.population.value,baseRepository:repo});
   if(repo.defaults?.population_id)els.population.value=repo.defaults.population_id;if(repo.defaults?.effective_stack_bb)els.stack.value=repo.defaults.effective_stack_bb;
-  persist();renderAll();setStatus(els.sourceStatus,`${file.name} importé. Source et couches du dépôt conservées.`);
+  persist();renderAll();setStatus(els.sourceStatus,`${file.name} importé. Une mise à jour range-folder conserve les couches personnelles et calculées.`);
 }
 function exportFile(){
   try{const doc=HeroRanges.exportDocument(repo),blob=new Blob([JSON.stringify(doc,null,2)+"\n"],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="hero_ranges_repository_v1.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus(els.sourceStatus,"Dépôt Hero v1 exporté sans conversion destructive de la source.");}catch(err){setStatus(els.sourceStatus,err.message,true);}
