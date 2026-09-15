@@ -3,7 +3,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 HTML = (ROOT / "site/index.html").read_text(encoding="utf-8")
-CONTRACT = (ROOT / "site/preflop-contract.js").read_text(encoding="utf-8")
+SOURCE = (ROOT / "src/preflop/contract.js").read_bytes()
+CONTRACT_BYTES = (ROOT / "site/preflop-contract.js").read_bytes()
+CONTRACT = CONTRACT_BYTES.decode("utf-8")
+
+
+def test_served_contract_is_byte_identical_to_canonical_source():
+    assert CONTRACT_BYTES == SOURCE
 
 
 def test_contract_loads_before_inline_analyser():
