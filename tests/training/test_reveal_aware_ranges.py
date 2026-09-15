@@ -44,7 +44,7 @@ def test_hidden_folds_are_counted_but_never_promoted_to_known_cards() -> None:
     assert math.isclose(sum(node["counts"].values()), 140.0, abs_tol=1e-5)
 
 
-def test_action_signal_recovers_known_synthetic_mixture_better_than_no_signal() -> None:
+def test_signature_conditioning_corrects_action_dependent_reveal_selection() -> None:
     observations = []
     truth = {"AA": 120, "72o": 80}
     cells = {
@@ -53,9 +53,15 @@ def test_action_signal_recovers_known_synthetic_mixture_better_than_no_signal() 
         ("72o", "RAISE"): 10,
         ("72o", "CALL"): 70,
     }
+    # Revelation is deliberately much more common after RAISE than CALL, so the
+    # aggregate revealed cards are badly biased. Within each public signature,
+    # however, revelation does not additionally depend on the hand class: this is
+    # exactly the identifiable assumption of the nominal estimator.
+    reveal_fraction = {"RAISE": 0.80, "CALL": 0.20}
     for (hand_class, signature), n in cells.items():
-        observations.extend(obs(signature, hand_class) for _ in range(n // 2))
-        observations.extend(obs(signature, None) for _ in range(n - n // 2))
+        revealed_n = round(n * reveal_fraction[signature])
+        observations.extend(obs(signature, hand_class) for _ in range(revealed_n))
+        observations.extend(obs(signature, None) for _ in range(n - revealed_n))
 
     nominal = fit_latent_node(
         observations,
@@ -76,7 +82,7 @@ def test_action_signal_recovers_known_synthetic_mixture_better_than_no_signal() 
     nominal_error = abs(nominal["counts"]["AA"] - truth["AA"])
     no_signal_error = abs(no_signal["counts"]["AA"] - truth["AA"])
     assert nominal_error < 5.0, nominal
-    assert nominal_error < no_signal_error
+    assert nominal_error < no_signal_error / 5.0, (nominal, no_signal)
 
 
 def test_sensitivity_is_exported_for_identifiable_hidden_decisions() -> None:
