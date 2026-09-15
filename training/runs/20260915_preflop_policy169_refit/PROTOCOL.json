@@ -1,0 +1,79 @@
+{
+  "schema": "poker-preflop-policy169-experiment/v1",
+  "issue": 101,
+  "status": "FROZEN_BEFORE_EXPERIMENT",
+  "frozen_at": "2026-09-15",
+  "parent_protocol": "training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+  "population": {
+    "id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "unique_hands": 23789,
+    "hand_ids_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "split_counts": {
+      "TRAIN": 19016,
+      "VALIDATION": 2324,
+      "TEST": 2449
+    },
+    "source_archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6"
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb"
+      }
+    ]
+  },
+  "prior": {
+    "path": "training/models/preflop_population_model_v5.json",
+    "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "population_semantics": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+    "role": "STRUCTURAL_AND_POLICY_PRIOR_ONLY",
+    "warning": "v5 is a mixed Zoom/regular historical artifact and is not a promoted incumbent for the certified Zoom population; historical observed counts must not be carried as Zoom evidence"
+  },
+  "candidate": {
+    "id": "preflop_policy169_zoom_refit_v1",
+    "topology": "v5 existing runtime nodes; target TRAIN evidence updates supported exact nodes; unsupported nodes remain explicit prior-only fallbacks",
+    "population_evidence_mode": "REPLACE_WITH_CERTIFIED_TARGET_TRAIN",
+    "hero_training_rows": "EXCLUDED",
+    "future_information": "FORBIDDEN",
+    "policy169_update_weight": 1.0,
+    "policy169_prior_strength": 40.0,
+    "action_prior_strength": 40.0,
+    "revealed_hand_rule": "only actually revealed known_hand_class rows enter hand/action composition residuals; hidden hands are never imputed",
+    "reveal_bias_rule": "within-action revealed composition is shrunk by observed revelation rate and prior strength; no missing-at-random assumption",
+    "hyperparameter_selection": "NONE_ON_VALIDATION_SINGLE_FROZEN_CANDIDATE"
+  },
+  "evaluation": {
+    "selection_split": "VALIDATION",
+    "test_locked_until_validation_authorizes": true,
+    "paired_unit": "hand_id",
+    "bootstrap_samples": 5000,
+    "bootstrap_seed": 20260915,
+    "runtime_matcher": "same v83/v5 structural matcher contract used by tools/training/evaluate_preflop_topology_candidate.py",
+    "primary_all_rows": {
+      "metric": "multiclass_action_log_loss",
+      "probability": "policy169 combo-weighted P(action|context) when policy169 exists; population_model frequency only where policy169 is unavailable",
+      "scope": "all non-Hero certified target preflop decisions"
+    },
+    "required_hand_conditioned": {
+      "metric": "multiclass_action_log_loss",
+      "probability": "exact runtime-consumed policy169 P(action|known_hand_class,context)",
+      "scope": "non-Hero certified target preflop decisions whose hand class was actually revealed",
+      "minimum_validation_rows": 100,
+      "minimum_validation_hands": 50,
+      "selection_bias": "MNAR_DIAGNOSTIC_REQUIRED_NOT_SUFFICIENT_ALONE"
+    },
+    "validation_authorization": "candidate-minus-prior paired 95% CI upper bound <= 0 for BOTH all-row marginal runtime log-loss and revealed-hand conditional runtime log-loss, with positive affected support and minimum revealed support",
+    "inconclusive": "RETAIN_PRIOR",
+    "test_confirmation": "same frozen candidate and dual metrics; no reselection or parameter change"
+  },
+  "publication": {
+    "production_effect": "NONE_IN_THIS_EXPERIMENT",
+    "legacy_v5_mutation": "FORBIDDEN",
+    "target_registry_pointer_mutation": "FORBIDDEN",
+    "successful_result": "scientific candidate may advance to downstream integration/gating only",
+    "rejected_or_blocked_result": "persist evidence and retain all production pointers"
+  }
+}
