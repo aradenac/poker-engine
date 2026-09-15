@@ -4,6 +4,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HTML = (ROOT / "site/index.html").read_text(encoding="utf-8")
 CONTRACT = (ROOT / "site/preflop-contract.js").read_text(encoding="utf-8")
+SHARED_CONTRACT = (ROOT / "src/preflop/contract.js").read_text(encoding="utf-8")
+
+
+def test_static_browser_artifact_is_exact_shared_source():
+    # The browser still loads from site/, while Node/tool consumers import the
+    # canonical source. Keeping the generated artifact byte-identical makes
+    # this extraction behavior-neutral and prevents two implementations from
+    # drifting apart.
+    assert CONTRACT == SHARED_CONTRACT
 
 
 def test_contract_loads_before_inline_analyser():
