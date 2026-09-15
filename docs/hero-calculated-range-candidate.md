@@ -12,6 +12,7 @@ A candidate contains:
 - a versioned `calculated` layer in a valid `poker-hero-range-repository/v1` document;
 - one normalized `poker-preflop-decision/v1` evidence object for every exported hand class;
 - the policy origin for every hand (`EXPLICIT_POLICY` or `SELECTED_DECISION_ONE_HOT`);
+- the repository action used for every hand when the repository taxonomy is coarser than the canonical decision taxonomy;
 - coverage metadata over the 169 canonical hand classes;
 - caller-supplied provenance for model identities, code identity, search budget and selection state;
 - `promotion_authorized: false` unconditionally.
@@ -40,13 +41,26 @@ If no explicit policy is supplied, the exporter creates a one-hot projection of 
 
 This distinction prevents search alternatives from being misrepresented as a mixed Hero strategy.
 
+### SQUEEZE representation
+
+`poker-preflop-decision/v1` distinguishes the canonical action `SQUEEZE`, while `poker-hero-range-repository/v1` intentionally keeps the coarser action key `3BET`. The exporter resolves that taxonomy mismatch narrowly:
+
+- canonical decision evidence remains `SQUEEZE`, including its exact `target_total_bb`, incremental cost and EV;
+- only in the exact repository spot `VS_RFI_CALLERS`, the calculated range layer represents canonical `SQUEEZE` as repository action `3BET`;
+- an explicit policy containing `SQUEEZE` is projected to the same `3BET` key without changing probability or sizing distribution;
+- supplying both `SQUEEZE` and `3BET` in one explicit policy is rejected as ambiguous instead of merging probabilities;
+- `SQUEEZE` in any repository spot other than `VS_RFI_CALLERS` fails closed.
+
+The candidate records the resulting repository action per hand in `repository_actions`, and the calculated-layer provenance records the projection semantics. Therefore the range repository round-trips with its stable taxonomy while the decision evidence retains the exact poker semantics needed by #106/#108.
+
 ## Parity and evidence
 
 `verifyCandidate()` revalidates every #106 decision and the complete #97 repository. For each hand it checks that:
 
-- the repository contains the selected action;
+- the repository contains the selected action or its documented context-specific projection;
 - the selected sizing is present when applicable;
 - one-hot projections have not gained extra actions or sizing probability;
+- the recorded repository action matches the deterministic decision/context projection;
 - decision evidence and repository hand coverage are identical;
 - layer version and population/context remain consistent.
 
@@ -67,6 +81,7 @@ node --check src/preflop/hero_range_export.js
 node tests/preflop/test_decision_contract.js
 node tests/hero_ranges/test_hero_range_repository.mjs
 node tests/hero_ranges/test_calculated_range_export.mjs
+node tests/hero_ranges/test_squeeze_export.mjs
 ```
 
-The export regression covers 169-class completeness, preservation of an explicit 20/80 mix, exact sizing parity, one-hot fallback without fabricated mixes, preservation of the personal layer, stale-calculated replacement, population mismatch, missing hand coverage, invalid selected-action/sizing policy, self-promotion rejection, and post-build repository tampering.
+The export regressions cover 169-class completeness, preservation of explicit mixes, exact sizing parity, one-hot fallback without fabricated mixes, preservation of the personal layer, stale-calculated replacement, population mismatch, missing hand coverage, invalid selected-action/sizing policy, self-promotion rejection, post-build repository tampering, canonical `SQUEEZE` projection to repository `3BET` in `VS_RFI_CALLERS`, round-trip stability, explicit squeeze mixes and fail-closed incompatible contexts.
