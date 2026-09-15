@@ -8,8 +8,8 @@ loading the dedicated trainer assets.
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-INDEX = ROOT / "site/index.html"
-TRAINER = ROOT / "site/trainer.js"
+INDEX = ROOT / "site" / "index.html"
+TRAINER = ROOT / "site" / "trainer.js"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -38,9 +38,15 @@ def patch_index() -> None:
         "trainer quick-nav link",
     )
 
-    marker = '  <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>\n'
-    addition = marker + '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button></div>\n'
-    text = replace_once(text, marker, addition, "trainer main button")
+    # Other product features may share the action row next to the trainer.
+    # Idempotence therefore keys on trainerOpenBtn itself rather than requiring
+    # the original one-button row to remain byte-identical forever.
+    if 'id="trainerOpenBtn"' not in text:
+        marker = '  <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>\n'
+        addition = marker + '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button></div>\n'
+        if text.count(marker) != 1:
+            raise SystemExit(f"trainer main button: expected one marker, found {text.count(marker)}")
+        text = text.replace(marker, addition, 1)
 
     trainer_markup = '''<div id="trainerPage" class="trainer-page mode-hidden" aria-hidden="true">
   <div class="trainer-shell">
