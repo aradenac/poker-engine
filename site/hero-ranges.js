@@ -9,7 +9,7 @@
   const LAYERS=['personal','calculated'];
   const ACTIONS=['FOLD','CHECK','LIMP','OVERLIMP','CALL','OPEN','ISO','3BET','4BET','SHOVE','CALL_SHOVE'];
   const POSITIONS=['LJ','HJ','CO','BTN','SB','BB'];
-  const SPOTS=['UNOPENED','VS_LIMPERS','VS_RFI','VS_RFI_CALLERS','VS_3BET','VS_4BET','VS_JAM'];
+  const SPOTS=['UNOPENED','VS_LIMPERS','VS_RFI','VS_RFI_CALLERS','VS_ISO','VS_ISO_CALLERS','VS_3BET','VS_4BET','VS_5BET','VS_6BET_PLUS','VS_JAM'];
   const RANKS=['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
   const EPS=1e-9;
 
