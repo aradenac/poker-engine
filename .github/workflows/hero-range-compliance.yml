@@ -5,6 +5,7 @@ on:
     paths:
       - 'site/hero-compliance.js'
       - 'site/hero-compliance-replayer.js'
+      - 'site/hero-ranges-app.js'
       - 'site/trainer.js'
       - 'site/RELEASE.json'
       - 'tests/hero_ranges/test_hero_compliance.mjs'
@@ -12,12 +13,14 @@ on:
       - 'tests/hero_ranges/smoke_hero_compliance_browser.py'
       - 'tools/patches/patch_hero_compliance_replayer_v1.py'
       - 'tools/patches/patch_hero_compliance_release_v1.py'
+      - 'tools/patches/patch_hero_compliance_real_hh_v1.py'
       - 'tools/write_site_release.py'
       - '.github/workflows/hero-range-compliance.yml'
   pull_request:
     paths:
       - 'site/hero-compliance.js'
       - 'site/hero-compliance-replayer.js'
+      - 'site/hero-ranges-app.js'
       - 'site/trainer.js'
       - 'site/RELEASE.json'
       - 'tests/hero_ranges/test_hero_compliance.mjs'
@@ -25,6 +28,7 @@ on:
       - 'tests/hero_ranges/smoke_hero_compliance_browser.py'
       - 'tools/patches/patch_hero_compliance_replayer_v1.py'
       - 'tools/patches/patch_hero_compliance_release_v1.py'
+      - 'tools/patches/patch_hero_compliance_real_hh_v1.py'
       - 'tools/write_site_release.py'
       - '.github/workflows/hero-range-compliance.yml'
 
@@ -47,11 +51,13 @@ jobs:
         run: |
           node --check site/hero-compliance.js
           node --check site/hero-compliance-replayer.js
+          node --check site/hero-ranges-app.js
       - name: Compliance semantics
         run: node tests/hero_ranges/test_hero_compliance.mjs
       - name: Static replayer integration
         run: |
           python3 tools/patches/patch_hero_compliance_replayer_v1.py --check
+          python3 tools/patches/patch_hero_compliance_real_hh_v1.py --check
           python3 tests/hero_ranges/smoke_hero_compliance.py
       - name: Release identity includes compliance assets
         run: |
@@ -78,7 +84,7 @@ jobs:
           done
           cat /tmp/hero-compliance-http.log
           exit 1
-      - name: Exercise compliance loader in browser
+      - name: Exercise compliance on a real PokerStars history
         run: python3 tests/hero_ranges/smoke_hero_compliance_browser.py
       - name: Show server log on failure
         if: failure()
