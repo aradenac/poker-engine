@@ -9,8 +9,20 @@
         "site/deployment-meta.css"
       ],
       "functional_files": {
+        "site/hero-ranges-app.js": {
+          "git_blob_sha": "384d8d0355bcbec36e4d02898f813416a2fc7b5f"
+        },
+        "site/hero-ranges.css": {
+          "git_blob_sha": "5c83d828e3a97acfadd5773464e8040ab3e57903"
+        },
+        "site/hero-ranges.html": {
+          "git_blob_sha": "236dcaa9c223ab1894b545578ad37a061e1276c4"
+        },
+        "site/hero-ranges.js": {
+          "git_blob_sha": "d45343c44b7c187ee3cd63455fd82c5a4b1e4e71"
+        },
         "site/index.html": {
-          "git_blob_sha": "924ab6c13c5fa02b1cb6824029073c69405db56d"
+          "git_blob_sha": "f96a47d15afacd58347b664a9f010ad23e0968ba"
         },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
