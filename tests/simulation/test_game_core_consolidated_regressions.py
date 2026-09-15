@@ -53,7 +53,7 @@ class ConsolidatedGameCoreRegressionTests(unittest.TestCase):
         s.apply_action("BB", "RAISE", target_total_bb=0.4)
         view = s.legal_view("BTN")
         self.assertEqual(view["legal_actions"], ["FOLD", "CALL"])
-        self.assertFalse(view["raise_reopened"] is False and "RAISE" in view["legal_actions"])
+        self.assertNotIn("RAISE", view["legal_actions"])
         with self.assertRaises(RuleError):
             s.apply_action("BTN", "RAISE", target_total_bb=1.0)
 
