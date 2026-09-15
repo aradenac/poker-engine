@@ -1,0 +1,69 @@
+{
+  "schema": "independent-opponent-model-b-behavior-contract/v1",
+  "related_issue": 104,
+  "status": "RUNTIME_CONTRACT_ONLY_NOT_FITTED_NOT_PROMOTED",
+  "dependency": {
+    "issue": 103,
+    "required_before_fit_or_closure": true,
+    "reason": "Private-card-conditioned behavior must be fitted against reveal-aware latent ranges without inventing hidden cards or learning from Model A outputs."
+  },
+  "runtime_schema": "independent-opponent-model-b-behavior/v1",
+  "decision_schema": "independent-opponent-model-b-decision/v1",
+  "independence": {
+    "model_a_outputs_allowed": false,
+    "hero_policy_outputs_allowed": false,
+    "private_information_allowed": "only the simulated opponent's actually dealt hole cards",
+    "public_information_allowed": [
+      "street",
+      "price",
+      "stack",
+      "position",
+      "pot_type",
+      "preflop_role",
+      "public_action_sequence",
+      "live_player_count",
+      "public_board"
+    ],
+    "future_cards_allowed": false
+  },
+  "features": {
+    "private": ["hand_bucket"],
+    "public": [
+      "profile",
+      "street",
+      "mode",
+      "relative_position",
+      "pot_type",
+      "preflop_role",
+      "price_bucket",
+      "spr_bucket",
+      "opponents_bucket",
+      "sequence_bucket",
+      "raise_level",
+      "board_texture"
+    ],
+    "preflop_hand_bucket": "exact 169-class notation prefixed PREFLOP_",
+    "postflop_hand_bucket": "made-hand category plus current-street flush/straight draw tags; current public board only"
+  },
+  "actions": {
+    "canonical_labels": ["FOLD", "CHECK", "CALL", "RAISE"],
+    "legal_action_source": "tools/simulation/game_core.py",
+    "normalization": "after hierarchy selection, add configured smoothing only to actions legal in the current state, then renormalize to 1",
+    "out_of_support": "hierarchical backoff with selected level/key/support exposed in every runtime decision"
+  },
+  "sizing": {
+    "stored_semantics": "incremental_cost_over_pot_before",
+    "runtime_output": "target_total_bb",
+    "legal_bounds_source": "tools/simulation/game_core.py legal_view",
+    "rule": "discard empirical ratios outside current min/max/stack legality; if none remain, use an explicit LEGAL_BOUNDARY_FALLBACK and expose it in the decision"
+  },
+  "fit_requirements_after_issue_103": [
+    "TRAIN only for representation and parameters",
+    "hidden/folded cards remain latent; no fabricated known cards",
+    "same hand remains coherent across all sequential decisions",
+    "action and sizing calibration reported by card/price/context support",
+    "counterfactual response grid covers plausible prices and multiway counts",
+    "VALIDATION selection follows training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+    "production Model B promotion remains a decision separate from Hero strategy promotion"
+  ]
+}
