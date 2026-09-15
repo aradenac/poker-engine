@@ -68,6 +68,9 @@ jobs:
           assert not missing, missing
           assert doc['publication_verification']['tracked_by_issue']==45
           print('release pack files:', sorted(required))
+          print('--- GENERATED RELEASE JSON ---')
+          print(Path('/tmp/RELEASE.json').read_text(), end='')
+          print('--- END GENERATED RELEASE JSON ---')
           PY
 
   browser-smoke:
