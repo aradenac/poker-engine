@@ -1,0 +1,62 @@
+name: Temporary sync Hero compliance deep-link patch
+
+on:
+  push:
+    branches:
+      - issue-98-hero-range-compliance-v3
+    paths:
+      - '.github/workflows/hero-compliance-fixup-temp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-98-hero-range-compliance-v3
+          fetch-depth: 0
+      - name: Synchronize patch and source anchor
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          patch = Path('tools/patches/apply_hero_range_compliance.py')
+          text = patch.read_text(encoding='utf-8')
+          old = '''  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase(),hand=String(q.get("hand")||"").toUpperCase();
+          if(population)els.population.value=population;
+          if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
+          if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
+          if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
+          if(HeroRanges.HAND_CLASSES.includes(hand))selectedHand=hand;'''
+          new = '''  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase();
+          const handRaw=String(q.get("hand")||"").trim(),hand=HeroRanges.HAND_CLASSES.find(x=>x.toUpperCase()===handRaw.toUpperCase())||"";
+          if(population)els.population.value=population;
+          if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
+          if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
+          if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
+          if(hand)selectedHand=hand;'''
+          if old not in text:
+              raise SystemExit('deep-link patch marker not found')
+          patch.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          release_path = Path('site/RELEASE.json')
+          release = json.loads(release_path.read_text(encoding='utf-8'))
+          blob = subprocess.check_output(['git','hash-object','site/hero-ranges-app.js'], text=True).strip()
+          release['identity']['assembled_site']['functional_files']['site/hero-ranges-app.js']['git_blob_sha'] = blob
+          release_path.write_text(json.dumps(release, ensure_ascii=False, indent=2, sort_keys=True)+'\n', encoding='utf-8')
+          PY
+          python3 tools/patches/apply_hero_range_compliance.py
+          python3 tools/write_site_release.py --check
+          node tests/hero_ranges/test_hero_range_compliance.mjs
+      - name: Commit synchronized files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/patches/apply_hero_range_compliance.py site/RELEASE.json
+          git commit -m "Issue #98: synchronize canonical Hero deep-link patch"
+          git push origin HEAD:issue-98-hero-range-compliance-v3
