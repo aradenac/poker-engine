@@ -1,0 +1,107 @@
+name: Validate population pack catalogue
+
+on:
+  pull_request:
+    paths:
+      - 'site/packs.html'
+      - 'site/packs.css'
+      - 'site/packs-app.js'
+      - 'site/population-packs.js'
+      - 'site/population-pack-sw.js'
+      - 'site/assets/trainer/**'
+      - 'tools/write_pack_catalog.py'
+      - 'tools/write_site_release.py'
+      - 'tools/patches/apply_pack_manager_link.py'
+      - 'tests/packs/**'
+      - 'user/packs/**'
+      - 'wrangler.jsonc'
+      - '.github/workflows/population-pack-catalog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: population-pack-catalog-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Patch product navigation idempotently
+        run: |
+          python3 tools/patches/apply_pack_manager_link.py
+          sha256sum site/index.html > /tmp/index-pack-link.sha
+          python3 tools/patches/apply_pack_manager_link.py
+          sha256sum site/index.html | diff -u /tmp/index-pack-link.sha -
+          python3 tools/patches/apply_pack_manager_link.py --check
+      - name: Generate and verify catalogue
+        run: |
+          python3 tools/write_pack_catalog.py
+          cp site/packs/catalog.json /tmp/catalog.json
+          python3 tools/write_pack_catalog.py
+          cmp /tmp/catalog.json site/packs/catalog.json
+          python3 tests/packs/test_pack_catalog_runtime.py
+      - name: JavaScript syntax
+        run: |
+          node --check site/population-packs.js
+          node --check site/population-pack-sw.js
+          node --check site/packs-app.js
+      - name: Release identity covers pack manager
+        run: |
+          python3 tools/write_site_release.py --output /tmp/RELEASE.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path('/tmp/RELEASE.json').read_text())
+          files=doc['identity']['assembled_site']['functional_files']
+          required={
+              'site/packs.html','site/packs.css','site/packs-app.js',
+              'site/population-packs.js','site/population-pack-sw.js','site/packs/catalog.json'
+          }
+          missing=required-set(files)
+          assert not missing, missing
+          assert doc['publication_verification']['tracked_by_issue']==45
+          print('release pack files:', sorted(required))
+          print('--- GENERATED RELEASE JSON ---')
+          print(Path('/tmp/RELEASE.json').read_text(), end='')
+          print('--- END GENERATED RELEASE JSON ---')
+          PY
+
+  browser-smoke:
+    needs: contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assemble static site
+        run: |
+          python3 tools/patches/apply_pack_manager_link.py
+          python3 tools/write_pack_catalog.py
+          python3 tools/write_deployment_metadata.py
+          python3 tools/write_site_release.py
+      - name: Install browser runtime
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Serve static application
+        run: |
+          python3 -m http.server 8765 --directory site >/tmp/population-pack-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/packs.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/population-pack-http.log
+          exit 1
+      - name: Exercise atomic install update rollback and offline ZIP
+        run: python3 tests/packs/smoke_population_packs.py
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/population-pack-http.log || true

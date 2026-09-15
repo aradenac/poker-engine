@@ -3,7 +3,7 @@
   "name": "poker-engine",
   "compatibility_date": "2026-09-13",
   "build": {
-    "command": "python3 tools/write_deployment_metadata.py && python3 tools/write_site_release.py"
+    "command": "python3 tools/patches/apply_pack_manager_link.py && python3 tools/write_pack_catalog.py && python3 tools/write_deployment_metadata.py && python3 tools/write_site_release.py"
   },
   "assets": {
     "directory": "./site"

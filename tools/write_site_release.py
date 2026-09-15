@@ -7,10 +7,15 @@ The release metadata deliberately separates:
 - live deployment verification, which is tracked separately by issue #45.
 
 The application identity covers the analyser, shared preflop contract, Hero range
-editor, trainer JS/CSS and the complete site/assets tree. Git blob/tree object IDs
-are content-derived, so they identify the exact functional bytes without
-introducing a self-reference. Build-specific deployment-meta.css and RELEASE.json
-itself are excluded.
+editor, trainer, population-pack manager/catalog and the complete site/assets tree.
+The pack catalogue is generated on demand so pre-existing CI callers of --check do
+not need special knowledge of #111. The index identity is computed after the same
+idempotent navigation patch used by the Cloudflare build.
+
+The checked-in RELEASE.json is a source anchor. Build-only products such as the
+catalogue and patched navigation are materialized by this script, so --check verifies
+that the checked-in anchor still matches every byte it claims plus the immutable
+engine contract, while a normal invocation writes the exact assembled-site identity.
 """
 
 from __future__ import annotations
@@ -25,8 +30,12 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_PATH = ROOT / "site" / "RELEASE.json"
 ENGINE_PATH = ROOT / "user" / "releases" / "poker_range_equity_offline_multiway_v83.html"
+INDEX_PATH = ROOT / "site" / "index.html"
+CATALOG_PATH = ROOT / "site" / "packs" / "catalog.json"
+NAV_SOURCE = '<a href="./hero-ranges.html">Ranges Hero</a>'
+NAV_TARGET = NAV_SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
 FUNCTIONAL_FILES = (
-    ROOT / "site" / "index.html",
+    INDEX_PATH,
     ROOT / "site" / "preflop-contract.js",
     ROOT / "site" / "hero-ranges.html",
     ROOT / "site" / "hero-ranges.js",
@@ -34,6 +43,12 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "hero-ranges.css",
     ROOT / "site" / "trainer.js",
     ROOT / "site" / "trainer.css",
+    ROOT / "site" / "packs.html",
+    ROOT / "site" / "packs.css",
+    ROOT / "site" / "packs-app.js",
+    ROOT / "site" / "population-packs.js",
+    ROOT / "site" / "population-pack-sw.js",
+    CATALOG_PATH,
 )
 
 
@@ -51,18 +66,51 @@ def git_output(*args: str) -> str:
     ).strip()
 
 
-def git_blob_sha(path: Path) -> str:
+def git_hash_bytes(payload: bytes) -> str:
+    return subprocess.check_output(
+        ["git", "hash-object", "--stdin"], cwd=ROOT, input=payload
+    ).decode().strip()
+
+
+def patched_index_bytes() -> bytes:
+    text = INDEX_PATH.read_text(encoding="utf-8")
+    if '<a href="./packs.html">Packs de population</a>' not in text:
+        if NAV_SOURCE not in text:
+            raise ValueError("hero-ranges navigation anchor not found")
+        text = text.replace(NAV_SOURCE, NAV_TARGET, 1)
+    return text.encode("utf-8")
+
+
+def ensure_pack_catalog() -> None:
+    subprocess.run(
+        ["python3", "tools/write_pack_catalog.py"],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+
+
+def source_blob_sha(path: Path) -> str:
     return git_output("hash-object", str(path.relative_to(ROOT)))
 
 
+def git_blob_sha(path: Path) -> str:
+    if path == INDEX_PATH:
+        return git_hash_bytes(patched_index_bytes())
+    return source_blob_sha(path)
+
+
 def assets_tree_sha() -> str:
-    # Cloudflare builds use a clean checkout and do not mutate site/assets.
     return git_output("rev-parse", "HEAD:site/assets")
 
 
 def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
+    ensure_pack_catalog()
     release = dict(existing)
     engine_sha256 = sha256_file(ENGINE_PATH)
+    missing = [str(path.relative_to(ROOT)) for path in FUNCTIONAL_FILES if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"functional site file(s) missing: {', '.join(missing)}")
 
     release["schema"] = "poker-site-release/v3"
     release["application"] = release.get("application", "Poker Range Equity Offline")
@@ -106,7 +154,8 @@ def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
     )
     release["notes"] = (
         "Engine v83 and assembled application identities are distinct. "
-        "The assembled_site identity is derived from content-addressed Git objects; "
+        "The assembled_site identity is derived from content-addressed Git objects, "
+        "including the generated population-pack catalogue and build-patched index; "
         "live production verification remains issue #45."
     )
     return release
@@ -116,12 +165,70 @@ def canonical_json(value: dict[str, Any]) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def validate_source_anchor(current: dict[str, Any], generated: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    for key in (
+        "schema",
+        "application",
+        "version",
+        "artifact",
+        "release_artifact",
+        "sha256",
+        "models",
+        "status",
+        "published",
+    ):
+        if current.get(key) != generated.get(key):
+            errors.append(f"source release field changed: {key}")
+
+    if current.get("identity", {}).get("engine_release") != generated.get("identity", {}).get("engine_release"):
+        errors.append("engine release identity changed")
+
+    publication = current.get("publication_verification", {})
+    if publication.get("tracked_by_issue") != 45 or publication.get("status") != "UNVERIFIED_LIVE":
+        errors.append("live publication boundary is not anchored to issue #45")
+
+    assembled = current.get("identity", {}).get("assembled_site", {})
+    files = assembled.get("functional_files", {})
+    if not isinstance(files, dict) or not files:
+        errors.append("source release has no functional file identity")
+    else:
+        for rel, descriptor in sorted(files.items()):
+            path = ROOT / rel
+            if not path.is_file():
+                errors.append(f"source release file missing: {rel}")
+                continue
+            actual = source_blob_sha(path)
+            expected = descriptor.get("git_blob_sha") if isinstance(descriptor, dict) else None
+            if actual != expected:
+                errors.append(f"source release file changed: {rel}")
+
+    recorded_assets = assembled.get("assets_tree_git_sha")
+    if recorded_assets and recorded_assets != assets_tree_sha():
+        errors.append("site/assets tree changed without refreshing the source release anchor")
+
+    generated_files = generated.get("identity", {}).get("assembled_site", {}).get("functional_files", {})
+    required = {str(path.relative_to(ROOT)) for path in FUNCTIONAL_FILES}
+    missing = required - set(generated_files)
+    if missing:
+        errors.append("assembled release identity missing: " + ", ".join(sorted(missing)))
+
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--check",
         action="store_true",
-        help="fail if site/RELEASE.json does not match the current functional bytes",
+        help="verify the checked-in source release anchor and assembled release contract",
     )
     parser.add_argument("--output", type=Path, default=RELEASE_PATH)
     args = parser.parse_args()
@@ -130,20 +237,33 @@ def main() -> int:
     if RELEASE_PATH.exists():
         existing = json.loads(RELEASE_PATH.read_text(encoding="utf-8"))
 
-    generated = canonical_json(build_identity(existing))
+    generated_value = build_identity(existing)
+    generated = canonical_json(generated_value)
     output = args.output if args.output.is_absolute() else ROOT / args.output
 
     if args.check:
-        current = output.read_text(encoding="utf-8") if output.exists() else ""
-        if current != generated:
-            print(f"stale release identity: regenerate {output.relative_to(ROOT)}")
+        if not output.exists():
+            print(f"release anchor missing: {display_path(output)}")
             return 1
-        print(f"release identity verified: {output.relative_to(ROOT)}")
+        try:
+            current_value = json.loads(output.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"invalid release anchor {display_path(output)}: {exc}")
+            return 1
+        errors = validate_source_anchor(current_value, generated_value)
+        if errors:
+            for error in errors:
+                print(f"release identity error: {error}")
+            return 1
+        print(
+            f"release source anchor verified: {display_path(output)}; "
+            "assembled identity can be materialized"
+        )
         return 0
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(generated, encoding="utf-8")
-    print(f"wrote {output.relative_to(ROOT)}")
+    print(f"wrote {display_path(output)}")
     return 0
 
 

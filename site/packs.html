@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Packs de population — Poker Range Equity</title>
+<link rel="stylesheet" href="./packs.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Poker Range Equity · gestionnaire de modèles</p>
+      <h1>Packs de population</h1>
+      <p class="lede">Installer, vérifier et activer une génération complète sans mélanger les modèles entre populations.</p>
+    </div>
+    <a class="back" href="./index.html">Retour à l’analyseur</a>
+  </header>
+
+  <section class="panel status-panel">
+    <div>
+      <span class="label">Pack actif</span>
+      <strong id="activePack">Aucun pack navigateur actif — assets statiques par défaut</strong>
+      <span id="activeMeta" class="muted"></span>
+    </div>
+    <div class="status-actions">
+      <button id="rollbackBtn" type="button" disabled>Revenir à la génération précédente</button>
+      <a class="button primary" href="./index.html">Ouvrir l’analyseur</a>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div><span class="label">Catalogue same-origin</span><h2>Versions disponibles</h2></div>
+      <button id="refreshBtn" type="button">Actualiser</button>
+    </div>
+    <div id="catalogStatus" class="notice">Chargement du catalogue…</div>
+    <div id="catalog" class="cards"></div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div><span class="label">Hors ligne</span><h2>Importer / exporter un pack vérifié</h2></div>
+    </div>
+    <p class="muted">L’import ne remplace jamais le pack actif avant validation des tailles, SHA-256, schémas et compatibilité moteur. L’export produit un ZIP autonome du runtime installé.</p>
+    <div class="offline-actions">
+      <label class="button" for="importZip">Importer un ZIP</label>
+      <input id="importZip" type="file" accept=".zip,application/zip">
+      <select id="exportSelect" aria-label="Pack installé à exporter"></select>
+      <button id="exportBtn" type="button" disabled>Exporter le ZIP</button>
+    </div>
+    <div id="offlineStatus" class="notice subtle">Aucune opération en cours.</div>
+  </section>
+
+  <section class="panel details">
+    <h2>Garanties d’activation</h2>
+    <ul>
+      <li>Tous les fichiers sont téléchargés et hashés avant l’écriture du pack installé.</li>
+      <li>L’activation est un basculement unique de l’identité active dans IndexedDB ; une erreur conserve l’ancienne génération.</li>
+      <li>Les caches sont isolés par <code>pack_id + runtime_revision</code> et le rollback conserve la génération précédente.</li>
+      <li>Le Service Worker ne substitue que les URLs d’assets déclarées par le pack actif ; les personnalisations Hero du navigateur restent hors du pack.</li>
+      <li>Un moteur incompatible bloque l’activation et est présenté comme une mise à jour d’application nécessaire.</li>
+    </ul>
+  </section>
+</main>
+<script src="./population-packs.js"></script>
+<script src="./packs-app.js"></script>
+</body>
+</html>
