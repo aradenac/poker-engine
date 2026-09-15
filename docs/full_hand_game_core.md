@@ -14,7 +14,9 @@
 - `min_raise_to_bb` / `max_raise_to_bb`: total-contribution targets, matching the target-versus-increment semantics introduced by #96;
 - `raise_reopened`: whether the actor is still entitled to raise after prior short all-ins.
 
-A short all-in raise does not reopen betting for players who already acted after the last full raise. A later full raise does. A short all-in big blind does not reduce the nominal one-BB preflop bring-in.
+A short all-in raise does not reopen betting for players who already acted after the last full raise. Several short raises may cumulatively reopen betting once the actor faces at least one complete raise more than the price at which they last acted. A later full raise also reopens action. A short all-in big blind does not reduce the nominal one-BB preflop bring-in.
+
+Postflop, an opening all-in smaller than one BB is an incomplete bet. If another live player can still respond, a following player may complete it to one full BB rather than being forced to add a full raise on top of the short wager. Conversely, once every opponent is all-in, the core does not allow extra uncontestable chips to be wagered.
 
 ## Pots, refunds and settlement
 
@@ -24,9 +26,11 @@ Showdown ranks are passed into `settle_showdown()` by the caller; hole cards are
 
 The historical heads-up postflop arena remains a compatibility harness. New full-hand/multiway work (#105 and downstream) should consume this core rather than duplicate its accounting.
 
-## Deterministic snapshots and hand-history replay
+## Deterministic snapshots and trust boundary
 
 `to_snapshot()` / `from_snapshot()` serialize resumable **public** state only. The snapshot schema is `nlhe-game-state/v1`; no hole cards or future board cards are present.
+
+This boundary is intentional. A simulation that pre-samples private cards or a future runout should keep those values in its own trusted scenario/checkpoint envelope and persist the public `NoLimitHoldemState` snapshot alongside them. Decision policies receive only the public snapshot plus the acting player's information supplied explicitly by the caller. This keeps deterministic stop/resume possible without making hidden opponents' cards or future streets reachable through the shared game-state API.
 
 `tools/simulation/hand_history_state.py` replays public PokerStars EN and historical FR action wording into the same core and records a snapshot immediately before each voluntary action. It validates PokerStars raise syntax (`raises X to Y` / `relance X à Y`) correctly: `X` is the raise increment above the prior price, while `Y` is the total target. The parser also derives nominal blind units from the header so an all-in blind posted short does not corrupt BB normalization.
 
@@ -36,8 +40,9 @@ Run the deterministic rule/accounting suite with:
 
 ```sh
 python3 tests/simulation/test_game_core.py
+python3 tests/simulation/test_game_core_consolidated_regressions.py
 python3 tests/simulation/test_hand_history_state.py
 python3 tests/simulation/test_rollout_accounting.py
 ```
 
-Fixtures cover the BB option after limps, short/full raise reopening, all-in calls, multiway side pots, dead folded contributions, uncalled overbets, ties, pluggable rake, four-street order, snapshot/resume, sunk-versus-incremental costs, EN/FR parity and future-card leakage.
+Fixtures cover the BB option after limps, short/full/cumulative raise reopening, incomplete postflop all-in completion, prevention of uncontestable overbetting, all-in calls, multiway side pots, dead folded contributions, uncalled overbets, ties, pluggable rake, four-street order, snapshot/resume, sunk-versus-incremental costs, EN/FR parity and future-card leakage.
