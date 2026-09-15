@@ -1,0 +1,39 @@
+name: Validate preflop grid evaluator
+
+on:
+  pull_request:
+    paths:
+      - 'tools/simulation/preflop_grid_evaluator.py'
+      - 'tools/simulation/game_core.py'
+      - 'src/preflop/decision.js'
+      - 'tests/simulation/test_preflop_grid_evaluator.py'
+      - 'tests/simulation/test_game_core.py'
+      - 'tests/preflop/test_decision_contract.js'
+      - 'docs/preflop-grid-evaluator.md'
+      - '.github/workflows/preflop-grid-evaluator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflop-grid:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          python3 -m py_compile tools/simulation/preflop_grid_evaluator.py tests/simulation/test_preflop_grid_evaluator.py
+          node --check src/preflop/decision.js
+      - name: Preflop grid evaluator contract
+        run: PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py
+      - name: Preserve shared rules core
+        run: PYTHONPATH=. python3 tests/simulation/test_game_core.py
+      - name: Preserve canonical decision contract
+        run: node tests/preflop/test_decision_contract.js
