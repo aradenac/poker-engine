@@ -6,10 +6,10 @@
   'use strict';
 
   const SCHEMA='poker-hero-range-compliance/v1';
-  const DEPTH_REL_TOLERANCE=.20;
   const DEPTH_ABS_TOLERANCE_BB=2;
   const SIZING_ABS_TOLERANCE_BB=.05;
   const SIZING_REL_TOLERANCE=.02;
+  const tokenCache=typeof WeakMap==='function'?new WeakMap():null;
 
   function fnv1a(text){let h=2166136261>>>0;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
   function stableStringify(value){
@@ -19,15 +19,24 @@
   }
   function repositoryVersionToken(repo){
     if(!repo||typeof repo!=='object')return null;
+    if(tokenCache?.has(repo))return tokenCache.get(repo);
     const schema=String(repo.schema||'unknown').replace(/[^a-zA-Z0-9_-]/g,'_');
-    return `${schema}-${fnv1a(stableStringify(repo)).toString(16).padStart(8,'0')}`;
+    // The preserved legacy source is provenance, not the editable strategy.
+    // Tokenize the actual decision-bearing repository state only.
+    const identity={schema:repo.schema||null,version:repo.version??null,defaults:repo.defaults||null,contexts:repo.contexts||{}};
+    const token=`${schema}-${fnv1a(stableStringify(identity)).toString(16).padStart(8,'0')}`;
+    tokenCache?.set(repo,token);return token;
+  }
+
+  function decisionHistory(decision){return decision?.history||decision?.preflop_context_v1?.history||[];}
+  function lastAggressiveAction(history){
+    for(let i=(history||[]).length-1;i>=0;i--){const a=String(history[i]?.action||'').toUpperCase();if(a==='RAISE'||a==='JAM')return a;}
+    return null;
   }
 
   function spotForDecision(decision){
-    const history=decision?.history||decision?.preflop_context_v1?.history||[];
-    const last=history[history.length-1];
-    const toCall=Number(decision?.to_call_bb??decision?.preflop_context_v1?.to_call_bb)||0;
-    if(last?.action==='JAM'&&toCall>1e-9)return 'VS_JAM';
+    const history=decisionHistory(decision),toCall=Number(decision?.to_call_bb??decision?.preflop_context_v1?.to_call_bb)||0;
+    if(lastAggressiveAction(history)==='JAM'&&toCall>1e-9)return 'VS_JAM';
     const family=String(decision?.family||decision?.preflop_context_v1?.family||'').toUpperCase();
     const map={
       UNOPENED:'UNOPENED',VS_LIMPERS:'VS_LIMPERS',
@@ -42,13 +51,11 @@
   }
 
   function plannedActionForDecision(decision){
-    const action=String(decision?.action||'').toUpperCase();
-    const history=decision?.history||decision?.preflop_context_v1?.history||[];
-    const last=history[history.length-1];
+    const action=String(decision?.action||'').toUpperCase(),history=decisionHistory(decision);
     const raiseLevel=Number(decision?.raise_level??decision?.preflop_context_v1?.raise_level)||0;
     if(action==='FOLD'||action==='CHECK')return action;
     if(action==='LIMP')return history.some(x=>x.action==='LIMP')?'OVERLIMP':'LIMP';
-    if(action==='CALL')return last?.action==='JAM'?'CALL_SHOVE':'CALL';
+    if(action==='CALL')return lastAggressiveAction(history)==='JAM'?'CALL_SHOVE':'CALL';
     if(action==='JAM')return 'SHOVE';
     if(action==='RAISE'){
       if(raiseLevel===0)return history.some(x=>x.action==='LIMP')?'ISO':'OPEN';
@@ -79,17 +86,12 @@
   function resolveContext(repo,decision,{populationId=null}={}){
     if(!HeroRanges||!repo||repo.schema!==HeroRanges.SCHEMA)return {status:'NO_REPOSITORY',context:null,node:null};
     const ctx=decision?.preflop_context_v1||decision||{};
-    const position=String(ctx.actor_position||decision?.actor_position||'').toUpperCase();
-    const spot=spotForDecision(decision);
-    const stack=Number(ctx.effective_stack_bb);
-    const population_id=String(populationId||repo.defaults?.population_id||'');
-    const table_size=Number(ctx.table_size||decision?.table_size||6);
+    const position=String(ctx.actor_position||decision?.actor_position||'').toUpperCase(),spot=spotForDecision(decision),stack=Number(ctx.effective_stack_bb);
+    const population_id=String(populationId||repo.defaults?.population_id||''),table_size=Number(ctx.table_size||decision?.table_size||6);
     if(!population_id||!position||!spot||!Number.isFinite(stack)||stack<=0)return {status:'UNSUPPORTED_CONTEXT',context:null,node:null};
-    const base={population_id,table_size,position,effective_stack_bb:stack,spot};
-    const candidates=candidateContexts(repo,base);
+    const base={population_id,table_size,position,effective_stack_bb:stack,spot},candidates=candidateContexts(repo,base);
     if(!candidates.length)return {status:'UNCOVERED_CONTEXT',context:base,node:null};
-    const best=candidates[0];
-    const covered=best.exact||best.abs<=DEPTH_ABS_TOLERANCE_BB||best.rel<=DEPTH_REL_TOLERANCE;
+    const best=candidates[0],covered=best.exact||best.abs<=DEPTH_ABS_TOLERANCE_BB;
     if(!covered)return {status:'UNCOVERED_DEPTH',context:base,node:null,nearest_context:best.context,depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
     return {status:'RESOLVED',context:best.context,node:best.node,depth_match:best.exact?'exact':'nearest',depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
   }
@@ -103,9 +105,8 @@
   }
 
   function sizingCompliance(strategy,plannedAction,decision){
-    const expected=strategy?.sizings?.[plannedAction]||null;
-    if(!expected?.length)return {status:'UNCOVERED',observed_target_total_bb:null,expected:[]};
-    const observed=Number(decision?.action_sizing_v1?.target_total_bb);
+    const expected=strategy?.sizings?.[plannedAction]||null,observed=Number(decision?.action_sizing_v1?.target_total_bb);
+    if(!expected?.length)return {status:'UNCOVERED',observed_target_total_bb:Number.isFinite(observed)?observed:null,expected:[]};
     if(!Number.isFinite(observed))return {status:'UNKNOWN_OBSERVED_SIZE',observed_target_total_bb:null,expected};
     let best=null;
     for(const row of expected){
@@ -126,28 +127,23 @@
 
   function evaluateDecision({repo,decision,handClass,populationId=null}={}){
     const repository_token=repositoryVersionToken(repo);
-    const base={schema:SCHEMA,repository_token,hand_class:String(handClass||''),observed_runtime_action:String(decision?.action||''),planned_action:null,action_probability:null,action_status:null,sizing:{status:'NOT_APPLICABLE',expected:[]},resolved_context:null,context_status:null,layer:null,layer_version:null,provenance:null,ev_deviation_bb:null,ev_status:'NOT_EVALUATED',frequency_calibration_status:'NOT_EVALUATED_PER_SINGLE_DECISION'};
+    const base={schema:SCHEMA,repository_token,hand_class:String(handClass||''),observed_runtime_action:String(decision?.action||''),planned_action:null,action_probability:null,action_status:null,sizing:{status:'NOT_APPLICABLE',expected:[]},resolved_context:null,context_status:null,layer:null,layer_version:null,provenance:null,ev_deviation_bb:null,ev_status:'NOT_EVALUATED',frequency_calibration_status:'SAMPLE_REQUIRED'};
     if(!HeroRanges||!repo||repo.schema!==HeroRanges.SCHEMA)return {...base,context_status:'NO_REPOSITORY',action_status:'NO_VERDICT',editor_href:'./hero-ranges.html'};
     if(!HeroRanges.HAND_CLASSES.includes(base.hand_class))return {...base,context_status:'UNKNOWN_HAND',action_status:'NO_VERDICT',editor_href:'./hero-ranges.html'};
     const resolved=resolveContext(repo,decision,{populationId});
     if(resolved.status!=='RESOLVED')return {...base,context_status:resolved.status,resolved_context:resolved.context||null,nearest_context:resolved.nearest_context||null,depth_delta_bb:resolved.depth_delta_bb??null,action_status:'NO_VERDICT',editor_href:editorHref({...base,resolved_context:resolved.context||null})};
-    const planned=plannedActionForDecision(decision);
-    const layer=layerStrategy(resolved.node,base.hand_class);
+    const planned=plannedActionForDecision(decision),layer=layerStrategy(resolved.node,base.hand_class);
     const common={...base,context_status:'RESOLVED',resolved_context:resolved.context,depth_match:resolved.depth_match,depth_delta_bb:resolved.depth_delta_bb,layer:layer.layer,layer_version:layer.version,provenance:layer.provenance,planned_action:planned};
     if(!layer.strategy)return {...common,action_status:'UNCOVERED_HAND',editor_href:editorHref({...common,hand_class:base.hand_class})};
     if(!planned||!HeroRanges.ACTIONS.includes(planned))return {...common,action_status:'UNKNOWN_ACTION',editor_href:editorHref({...common,hand_class:base.hand_class})};
-    const probability=Number(layer.strategy.actions?.[planned]||0);
-    const actionStatus=probability>1e-12?(probability<1-1e-12?'MIXED_ALLOWED':'COMPLIANT'):'OUT_OF_RANGE';
-    const aggressive=['OPEN','ISO','3BET','4BET','SHOVE'].includes(planned);
-    const sizing=aggressive&&probability>1e-12?sizingCompliance(layer.strategy,planned,decision):{status:'NOT_APPLICABLE',expected:[]};
+    const probability=Number(layer.strategy.actions?.[planned]||0),actionStatus=probability>1e-12?(probability<1-1e-12?'MIXED_ALLOWED':'COMPLIANT'):'OUT_OF_RANGE';
+    const aggressive=['OPEN','ISO','3BET','4BET','SHOVE'].includes(planned),sizing=aggressive&&probability>1e-12?sizingCompliance(layer.strategy,planned,decision):{status:'NOT_APPLICABLE',expected:[]};
     const result={...common,action_probability:probability,action_status:actionStatus,sizing,notes:String(layer.strategy.notes||'')};
-    result.editor_href=editorHref(result);
-    return result;
+    result.editor_href=editorHref(result);return result;
   }
 
   function summarize(results){
-    const rows=(results||[]).filter(Boolean),groups={};
-    let judged=0,allowed=0,out=0,uncovered=0,sizingOut=0;
+    const rows=(results||[]).filter(Boolean),groups={};let judged=0,allowed=0,out=0,uncovered=0,sizingOut=0;
     for(const r of rows){
       if(['COMPLIANT','MIXED_ALLOWED','OUT_OF_RANGE'].includes(r.action_status)){judged++;if(r.action_status==='OUT_OF_RANGE')out++;else allowed++;}else uncovered++;
       if(r.sizing?.status==='OUT_OF_RANGE')sizingOut++;
@@ -155,8 +151,8 @@
       const g=groups[key]||(groups[key]={key,position:c?.position||null,spot:c?.spot||null,decisions:0,judged:0,allowed:0,out_of_range:0,uncovered:0,sizing_out_of_range:0});
       g.decisions++;if(['COMPLIANT','MIXED_ALLOWED','OUT_OF_RANGE'].includes(r.action_status)){g.judged++;if(r.action_status==='OUT_OF_RANGE')g.out_of_range++;else g.allowed++;}else g.uncovered++;if(r.sizing?.status==='OUT_OF_RANGE')g.sizing_out_of_range++;
     }
-    return {schema:'poker-hero-range-compliance-summary/v1',repository_token:rows.find(r=>r.repository_token)?.repository_token||null,decisions:rows.length,judged,allowed,out_of_range:out,uncovered,sizing_out_of_range:sizingOut,frequency_calibration_status:'NOT_EVALUATED_PER_SINGLE_HAND',groups:Object.values(groups)};
+    return {schema:'poker-hero-range-compliance-summary/v1',repository_token:rows.find(r=>r.repository_token)?.repository_token||null,decisions:rows.length,judged,allowed,out_of_range:out,uncovered,sizing_out_of_range:sizingOut,frequency_calibration_status:'SAMPLE_REQUIRED',groups:Object.values(groups)};
   }
 
-  return {SCHEMA,repositoryVersionToken,spotForDecision,plannedActionForDecision,resolveContext,evaluateDecision,summarize,editorHref};
+  return {SCHEMA,DEPTH_ABS_TOLERANCE_BB,repositoryVersionToken,spotForDecision,plannedActionForDecision,resolveContext,evaluateDecision,summarize,editorHref};
 });
