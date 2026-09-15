@@ -1221,6 +1221,8 @@
   </div>
 </div>
 
+<script src="./hero-ranges.js"></script>
+<script src="./hero-compliance.js"></script>
 <script src="./preflop-contract.js"></script>
 <script>
 "use strict";
@@ -3444,7 +3446,7 @@ function foldRangeAnalysisHtml(stepIndex,decisionSummary){
   return `<div class="section"><div class="section-title">Analyse de la range de fold</div><div class="action-section-note">La distribution ci-dessous est reconstruite par Bayes : range avant action × P(FOLD | combo, nœud), puis renormalisation. Les EV de CALL/RAISE utilisent cette range sélectionnée, pas la range générale du joueur.</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Nœud <b>${escapeHtml(fr.nodeId)}</b></span><span class="action-detail-chip">n <b>${Number(fr.observations||0).toLocaleString('fr-FR')}</b></span><span class="action-detail-chip">Fold marginal <b>${escapeHtml(fmtEquityThreshold(fr.targetFold))}</b></span><span class="action-detail-chip">Combos effectifs <b>${stats.effective.toFixed(0)}</b></span><span class="action-detail-chip">Top 10 <b>${(stats.top10*100).toFixed(1).replace('.',',')} %</b></span></div><div class="action-detail-point" style="margin-top:8px">${continuation}</div><div class="action-detail-meta-strip">${top}</div></div>`;
 }
 function actionDetailModalInnerHtml(stepIndex,step){
-  if(step?.actionType==="fold"&&step.street==="Préflop")return foldRangeAnalysisHtml(stepIndex,null);
+  if(step?.actionType==="fold"&&step.street==="Préflop")return heroRangeComplianceDetailHtml(stepIndex,step)+foldRangeAnalysisHtml(stepIndex,null);
   const key=actionEquityKey(stepIndex), cached=key?state.actionEquityCache[key]:null, req=requiredEquityInfo(stepIndex);
   if(!req)return `<div class="action-analysis na">Verdict indisponible pour cette action.</div>`;
   if(!cached||cached.status==="queued"||cached.status==="running") return `<div class="action-analysis pending">Calcul du verdict en cours…</div>`;
@@ -3485,7 +3487,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
       <span class="action-detail-chip">% pot <b>${Number.isFinite(pctPot)?escapeHtml(fmtEquityThreshold(pctPot)):"—"}</b></span>
       <span class="action-detail-chip">Rake <b>${escapeHtml(rakeText)}</b></span>
     </div>`;
-  return `${scoreGrid}${chips}
+  return `${heroRangeComplianceDetailHtml(stepIndex,step)}${scoreGrid}${chips}
     ${actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree})}
     <div class="action-detail-stack">
       ${foldRangeAnalysisHtml(stepIndex,decisionSummary)}
@@ -3516,16 +3518,87 @@ function closeActionDetailModal(){
   actionDetailModal.classList.remove('open');
   actionDetailModal.setAttribute('aria-hidden','true');
 }
+const HERO_RANGE_REPOSITORY_STORAGE_KEY="poker.hero.range.repository.v1";
+let heroRangeRepositoryCache={raw:null,repo:null};
+function heroRangeRepositorySnapshot(){
+  if(!window.PokerHeroRanges)return null;
+  try{
+    const raw=localStorage.getItem(HERO_RANGE_REPOSITORY_STORAGE_KEY);
+    if(!raw)return null;
+    if(heroRangeRepositoryCache.raw===raw)return heroRangeRepositoryCache.repo;
+    const repo=window.PokerHeroRanges.importDocument(JSON.parse(raw));
+    heroRangeRepositoryCache={raw,repo};return repo;
+  }catch(err){console.warn('Hero range repository unavailable',err);return null;}
+}
+function heroRangeComplianceForStep(stepIndex,step){
+  if(!window.PokerHeroCompliance||!state.selectedHand||step?.street!=="Préflop"||step?.activePlayer!==state.selectedHand.heroName)return null;
+  const count=replayPreflopDecisionCount(stepIndex);if(count<=0)return null;
+  const decision=populationPreflopDecisionTrace(state.selectedHand)[count-1];
+  if(!decision||decision.player!==state.selectedHand.heroName)return null;
+  const handClass=cardsToNotation(state.selectedHand.heroCards||[]),repo=heroRangeRepositorySnapshot();
+  return window.PokerHeroCompliance.evaluateDecision({repo,decision,handClass,populationId:repo?.defaults?.population_id||null});
+}
+function heroRangeComplianceMeta(result){
+  if(!result)return null;
+  const map={
+    COMPLIANT:{label:'Plan conforme',cls:'good'},
+    MIXED_ALLOWED:{label:'Mix autorisé',cls:'good'},
+    OUT_OF_RANGE:{label:'Hors range',cls:'bad'},
+    UNCOVERED_HAND:{label:'Main non couverte',cls:'subtle'},
+    UNKNOWN_ACTION:{label:'Action non couverte',cls:'subtle'},
+    NO_VERDICT:{label:'Contexte non couvert',cls:'subtle'}
+  };
+  return map[result.action_status]||{label:'Contexte non couvert',cls:'subtle'};
+}
+function heroRangeSizingShort(result){
+  const s=result?.sizing;if(!s||s.status==='NOT_APPLICABLE')return '';
+  if(s.status==='MATCHED')return ` · sizing ✓ ${formatBB(s.observed_target_total_bb)}`;
+  if(s.status==='OUT_OF_RANGE')return ` · sizing hors plan ${formatBB(s.observed_target_total_bb)}`;
+  if(s.status==='UNKNOWN_OBSERVED_SIZE')return ' · sizing joué inconnu';
+  if(s.status==='UNCOVERED')return ' · sizing non couvert';
+  return '';
+}
+function heroRangeCompliancePillHtml(stepIndex,step){
+  const result=heroRangeComplianceForStep(stepIndex,step);if(!result)return '';
+  const meta=heroRangeComplianceMeta(result),pct=Number.isFinite(result.action_probability)?` · ${(100*result.action_probability).toFixed(result.action_probability>0&&result.action_probability<.1?1:0).replace('.',',')} %`:'';
+  const action=result.planned_action?` · ${escapeHtml(result.planned_action)}`:'';
+  const title=`${meta.label}${action}${pct}${heroRangeSizingShort(result)} · conformité au plan Hero, distincte de la recommandation moteur`;
+  return `<a class="action-mini-pill ${meta.cls} hero-plan-summary" href="${escapeHtml(result.editor_href||'./hero-ranges.html')}" title="${escapeHtml(title)}">Plan ${escapeHtml(meta.label)}${action}${pct}</a>`;
+}
+function heroRangeExpectedSizingText(result){
+  const rows=result?.sizing?.expected||[];if(!rows.length)return 'non couvert';
+  return rows.map(x=>`${Number(x.target_total_bb).toFixed(2).replace('.',',')} BB (${(100*Number(x.probability||0)).toFixed(0)} %)`).join(' · ');
+}
+function heroRangeComplianceDetailHtml(stepIndex,step){
+  const result=heroRangeComplianceForStep(stepIndex,step);if(!result)return '';
+  const meta=heroRangeComplianceMeta(result),c=result.resolved_context,pct=Number.isFinite(result.action_probability)?`${(100*result.action_probability).toFixed(result.action_probability>0&&result.action_probability<.1?1:0).replace('.',',')} %`:'—';
+  const sizing=result.sizing?.status==='MATCHED'?'conforme':result.sizing?.status==='OUT_OF_RANGE'?'hors plan':result.sizing?.status==='UNKNOWN_OBSERVED_SIZE'?'joué inconnu':result.sizing?.status==='UNCOVERED'?'non couvert':'non applicable';
+  const context=c?`${c.position} · ${c.effective_stack_bb} BB · ${c.spot}`:(result.context_status||'non couvert');
+  const layer=result.layer?`${result.layer}${result.layer_version?` · ${result.layer_version}`:''}`:'—';
+  return `<div class="section hero-compliance-detail"><div class="section-title">Conformité au plan Hero</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Verdict <b>${escapeHtml(meta.label)}</b></span><span class="action-detail-chip">Action jouée <b>${escapeHtml(result.planned_action||'—')}</b></span><span class="action-detail-chip">Fréquence prescrite <b>${escapeHtml(pct)}</b></span><span class="action-detail-chip">Sizing <b>${escapeHtml(sizing)}</b></span><span class="action-detail-chip">Couche <b>${escapeHtml(layer)}</b></span></div><div class="action-analysis-meta">Contexte résolu : <b>${escapeHtml(context)}</b> · sizings attendus : <b>${escapeHtml(heroRangeExpectedSizingText(result))}</b> · dépôt <b>${escapeHtml(result.repository_token||'—')}</b>.</div><div class="action-section-note">Ce verdict utilise uniquement l’état préflop <b>avant l’action</b> et la main de Hero. Une action mixée de fréquence positive est autorisée sur cette occurrence ; la calibration de fréquence exige un échantillon adapté. <b>Écart d’EV : non évalué</b> ici — conformité personnelle et recommandation moteur restent deux objets distincts.</div><div class="actions"><a class="secondary" style="display:inline-block;width:auto;text-decoration:none" href="${escapeHtml(result.editor_href||'./hero-ranges.html')}">Ouvrir cette grille Hero</a></div></div>`;
+}
+function heroRangeComplianceSummaryHtml(){
+  if(!state.selectedHand||!window.PokerHeroCompliance)return '';
+  const upto=replayPreflopDecisionCount(state.replayIndex),trace=populationPreflopDecisionTrace(state.selectedHand).slice(0,upto),repo=heroRangeRepositorySnapshot(),handClass=cardsToNotation(state.selectedHand.heroCards||[]);
+  const results=trace.filter(d=>d.player===state.selectedHand.heroName).map(decision=>window.PokerHeroCompliance.evaluateDecision({repo,decision,handClass,populationId:repo?.defaults?.population_id||null}));
+  if(!results.length)return '';
+  const s=window.PokerHeroCompliance.summarize(results),groups=(s.groups||[]).map(g=>`${g.position||'?'} / ${g.spot||'?'} : ${g.allowed}/${g.judged} autorisée(s)${g.uncovered?` · ${g.uncovered} non couverte(s)`:''}`).join(' · ');
+  const href=results[results.length-1]?.editor_href||'./hero-ranges.html';
+  return `<div class="tiny hero-compliance-summary" style="margin:0 0 10px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#0f1729"><b>Plan Hero</b> · ${s.allowed}/${s.judged} décision(s) jugée(s) autorisée(s) · ${s.out_of_range} hors range · ${s.uncovered} non couverte(s)${s.sizing_out_of_range?` · ${s.sizing_out_of_range} sizing hors plan`:''}<br><span>${escapeHtml(groups||'Aucun contexte jugé.')}</span> · <a href="${escapeHtml(href)}">grille</a><br><span>Les fréquences mixtes ne sont pas calibrées sur une occurrence isolée.</span></div>`;
+}
+
 function actionAnalysisHtml(stepIndex,step){
-  if(!isAnyMoneyEvent(step)&&!ctxPostflopCheck(step))return "";
+  const heroPreflopDecision=step?.street==="Préflop"&&step?.activePlayer===state.selectedHand?.heroName&&isAnalyzableDecisionAction(step);
+  if(!isAnyMoneyEvent(step)&&!ctxPostflopCheck(step)&&!heroPreflopDecision)return "";
   if(step.actionType==="post")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Forcée','subtle','primary-summary')}</div></div></div>`;
   if(step.actionType==="return")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Retour jetons','subtle','primary-summary')}</div></div></div>`;
   if(step.actionType==="collect")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Pot gagné','good','primary-summary')}</div></div></div>`;
   if(!isAnalyzableDecisionAction(step))return "";
+  const heroCompliance=heroRangeCompliancePillHtml(stepIndex,step);
   const key=actionEquityKey(stepIndex), cached=key?state.actionEquityCache[key]:null, req=requiredEquityInfo(stepIndex);
-  if(!req)return `<div class="action-analysis na"><div class="action-compact-row">${actionCompactPillHtml('Verdict —','subtle','primary-summary')}</div></div>`;
-  if(!cached||cached.status==="queued"||cached.status==="running") return `<div class="action-analysis pending"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Calcul…','pending','primary-summary')}</div></div></div>`;
-  if(cached.status==="error") return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Verdict indispo','bad','primary-summary')}</div></div></div>`;
+  if(!req)return `<div class="action-analysis na"><div class="action-compact-row">${actionCompactPillHtml('Verdict —','subtle','primary-summary')}${heroCompliance}</div></div>`;
+  if(!cached||cached.status==="queued"||cached.status==="running") return `<div class="action-analysis pending"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Calcul…','pending','primary-summary')}${heroCompliance}</div></div></div>`;
+  if(cached.status==="error") return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Verdict indispo','bad','primary-summary')}${heroCompliance}</div></div></div>`;
   const eq=cached.equities||{}, sources=actionVerdictSourceKeys(stepIndex), trees=cached.postflopTrees||{};
   const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
@@ -3552,6 +3625,7 @@ function actionAnalysisHtml(stepIndex,step){
       row.push(actionCompactPillHtml(`Post <span class="strong">${escapeHtml(formatScore(postMetrics.score))}</span>`,'subtle','best-summary'));
     }
   }
+  if(heroCompliance)row.push(heroCompliance);
   return `<div class="action-analysis"><div class="action-analysis-compact"><div class="action-compact-row">${row.join('')}</div></div></div>`;
 }
 function safeActionAnalysisHtml(stepIndex,step){
@@ -4278,6 +4352,7 @@ function renderVisualReplay(){
   </div>
   <div class="hh-visual-step">${escapeHtml(step?.label||"")} · Pot ${escapeHtml(potText)}</div>
   ${replayActionBannerHtml(step)}
+  ${heroRangeComplianceSummaryHtml()}
   <div class="tiny" style="margin:0 0 10px">${eqCaption}</div>
   ${replayStreetTimelineHtml(step,state.replayIndex)}
   <div class="replay-stage">
