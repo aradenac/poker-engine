@@ -76,6 +76,27 @@ function guidance(state='EXPERIMENTAL'){
 }
 {
   const value=clone(guidance());
+  value.evidence_decision.support.observations=999;
+  assert.throws(()=>Guidance.surfacePayload(value,{allow_experimental:true}),/support/,'surfaced support must remain tied to the selected alternative');
+}
+{
+  const value=clone(guidance());
+  value.evidence_decision.confidence=.99;
+  assert.throws(()=>Guidance.surfacePayload(value,{allow_experimental:true}),/confidence/,'surfaced confidence must remain tied to the selected alternative');
+}
+{
+  const value=clone(guidance());
+  value.evidence_decision.uncertainty.model.status='CERTAIN';
+  assert.throws(()=>Guidance.surfacePayload(value,{allow_experimental:true}),/uncertainty/,'surfaced uncertainty must remain tied to the selected alternative');
+}
+{
+  const value=clone(guidance());
+  const reordered=value.evidence_decision.support;
+  value.evidence_decision.support={source:reordered.source,backoff_level:reordered.backoff_level,observations:reordered.observations};
+  assert.doesNotThrow(()=>Guidance.surfacePayload(value,{allow_experimental:true}),'semantically identical metadata must not depend on object key order');
+}
+{
+  const value=clone(guidance());
   value.future_cards_consumed=true;
   assert.throws(()=>Guidance.surfacePayload(value),/future_cards_consumed/,'future-card attestation cannot be mutated after construction');
 }
