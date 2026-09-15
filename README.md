@@ -4,6 +4,8 @@ Dépôt persistant du projet de moteur d'analyse poker.
 
 ## Déploiement
 
+- [Ouvrir l'application de production](https://poker-engine.arad-chatgpt-compositeur-repas.workers.dev/)
+- [Consulter l'identité et les preuves de déploiement](site/PRODUCTION.md)
 - [Consulter le déploiement Cloudflare de production](https://dash.cloudflare.com/335073663ad947e69fb7590bc22b5e73/workers/services/view/poker-engine/production)
 
 ## Organisation
