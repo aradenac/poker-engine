@@ -1,0 +1,27 @@
+{
+  "schema": "poker-population-pack-config/v1",
+  "pack_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1@2026.09.15.1",
+  "pack_slug": "legacy-pokerstars-nlhe-100-200-play-6max-mixed",
+  "pack_version": "2026.09.15.1",
+  "release_tag": "poker-pack-legacy-100-200-v2026.09.15.1",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "application_release": "site/RELEASE.json",
+  "hero_ranges": {
+    "source_bundle_config": "user/artifacts/NLHE_100-200/bundle.json"
+  },
+  "model_b": {
+    "runtime_files": [
+      "profiles.json",
+      "preflop_ranges.json",
+      "postflop_actions.json",
+      "sizing.json",
+      "prediction_contract.json"
+    ]
+  },
+  "scope_notes": [
+    "This is the currently promoted legacy reference population and is explicitly MIXED_ZOOM_REGULAR.",
+    "It must not be relabelled as the certified Zoom-only target population.",
+    "Hero custom ranges are preserved as the accepted user range-folder source; they are not presented as an optimized strategy.",
+    "Live Cloudflare deployment identity remains independently tracked by issue #45."
+  ]
+}
