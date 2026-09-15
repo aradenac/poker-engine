@@ -168,7 +168,9 @@ assert.equal(overrideLayer.provenance.status,'EXPERIMENTAL','caller provenance m
 assert.equal(overrideLayer.provenance.source_decision_schema,D.SCHEMA);
 
 const tampered=JSON.parse(JSON.stringify(candidate));
-tampered.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.hands.AKs.actions={FOLD:1};
+const tamperedAKs=tampered.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.hands.AKs;
+tamperedAKs.actions={FOLD:1};
+tamperedAKs.sizings={};
 assert.throws(()=>X.verifyCandidate(tampered),/selected action OPEN absent/);
 
 const tamperedSize=JSON.parse(JSON.stringify(candidate));
