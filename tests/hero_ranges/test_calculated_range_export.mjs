@@ -179,4 +179,18 @@ const tamperedProvenance=JSON.parse(JSON.stringify(candidate));
 tamperedProvenance.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.provenance.code='other-sha';
 assert.throws(()=>X.verifyCandidate(tamperedProvenance),/provenance code mismatch/);
 
+const tamperedStatus=JSON.parse(JSON.stringify(candidate));
+tamperedStatus.status='PROMOTED';
+tamperedStatus.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.provenance.status='PROMOTED';
+assert.throws(()=>X.verifyCandidate(tamperedStatus),/rejects self-promoted/);
+
+const tamperedLayer=JSON.parse(JSON.stringify(candidate));
+tamperedLayer.layer='personal';
+assert.throws(()=>X.verifyCandidate(tamperedLayer),/layer must be calculated/);
+
+const tamperedVersion=JSON.parse(JSON.stringify(candidate));
+tamperedVersion.version='';
+tamperedVersion.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.version='';
+assert.throws(()=>X.verifyCandidate(tamperedVersion),/candidate.version is required/);
+
 console.log('Calculated Hero range candidate export contract: PASS');
