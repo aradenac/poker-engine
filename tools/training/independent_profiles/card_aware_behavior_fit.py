@@ -14,11 +14,18 @@ from __future__ import annotations
 
 import itertools
 import math
-from collections import defaultdict
+from collections import Counter, defaultdict
 from functools import lru_cache
 from typing import Any, Iterable, Mapping, Sequence
 
-from tools.simulation.model_b_card_aware_runtime import BEHAVIOR_SCHEMA, SIZING_SEMANTICS, hand_bucket
+from tools.simulation.model_b_card_aware_runtime import (
+    BEHAVIOR_SCHEMA,
+    CATEGORY,
+    RANK_VALUE,
+    SIZING_SEMANTICS,
+    _draw_tags,
+    hand_bucket,
+)
 from tools.simulation.model_b_runtime import ccode, combo_class_ids, key_for
 
 ACTION_LABELS = ("FOLD", "CHECK", "CALL", "RAISE")
@@ -53,6 +60,97 @@ def _class_combo_ids(hand_class: str) -> tuple[tuple[int, int], ...]:
     return tuple(out)
 
 
+def _has_straight(ranks: Iterable[int]) -> bool:
+    values = set(int(rank) for rank in ranks)
+    if 14 in values:
+        values.add(1)
+    return any(all(rank in values for rank in range(low, low + 5)) for low in range(1, 11))
+
+
+def _made_category_fast(cards: Sequence[str]) -> int:
+    """Return the best 5-card category for 5-7 cards without tie-break work.
+
+    ``hand_bucket`` needs only the category.  The canonical ``best`` evaluator
+    also computes complete kickers/tie-breaks by enumerating every 5-card subset;
+    avoiding that work keeps the posterior projection exact while making the full
+    TRAIN/VALIDATION fit tractable.
+    """
+    if not 5 <= len(cards) <= 7:
+        raise ValueError("card-aware category requires 5-7 cards")
+    rank_counts = Counter(RANK_VALUE[str(card)[0].upper()] for card in cards)
+    by_suit: dict[str, list[int]] = defaultdict(list)
+    for card in cards:
+        by_suit[str(card)[1].lower()].append(RANK_VALUE[str(card)[0].upper()])
+
+    if any(len(ranks) >= 5 and _has_straight(ranks) for ranks in by_suit.values()):
+        return 8
+    if any(count >= 4 for count in rank_counts.values()):
+        return 7
+    trips = [rank for rank, count in rank_counts.items() if count >= 3]
+    if trips and any(count >= 2 and rank not in trips[:1] for rank, count in rank_counts.items()):
+        # Equivalent to "one trip plus another pair/trip".  Using rank identity
+        # rather than count arithmetic also handles two distinct trips correctly.
+        primary = trips[0]
+        if any(rank != primary and count >= 2 for rank, count in rank_counts.items()):
+            return 6
+    if any(len(ranks) >= 5 for ranks in by_suit.values()):
+        return 5
+    if _has_straight(rank_counts):
+        return 4
+    if trips:
+        return 3
+    pairs = sum(count >= 2 for count in rank_counts.values())
+    if pairs >= 2:
+        return 2
+    if pairs == 1:
+        return 1
+    return 0
+
+
+def _projected_hand_bucket(hole_cards: Sequence[str], board: Sequence[str], street: str) -> str:
+    """Fast exact equivalent of runtime ``hand_bucket`` for postflop projection."""
+    cards = [str(card) for card in list(hole_cards) + list(board)]
+    if len(cards) != len(set(cards)):
+        raise ValueError("duplicate private/public card in Model B state")
+    street = str(street).lower()
+    if street == "preflop":
+        return hand_bucket(hole_cards, board, street)
+    category = _made_category_fast(cards)
+    return "+".join([CATEGORY[category]] + _draw_tags(hole_cards, board, category))
+
+
+@lru_cache(maxsize=64)
+def _board_class_bucket_frequencies(
+    board_tuple: tuple[str, ...], street: str
+) -> dict[str, tuple[int, tuple[tuple[str, int], ...]]]:
+    """Map each 169 class to exact runtime-bucket frequencies for one board.
+
+    This expensive card evaluation depends on the public board, not on the
+    profile/position prior.  Several actors on the same hand therefore share it.
+    The small LRU intentionally retains only recent boards and bounds memory.
+    """
+    from tools.simulation.model_b_runtime import cid
+
+    blocked = {cid(card) for card in board_tuple}
+    out: dict[str, tuple[int, tuple[tuple[str, int], ...]]] = {}
+    # The 169 classes are exactly those present in the cached combo map once it is
+    # warmed.  Generate names directly from all exact combos here to stay local.
+    classes: dict[str, list[tuple[int, int]]] = defaultdict(list)
+    for a, b in itertools.combinations(range(52), 2):
+        classes[combo_class_ids(a, b)].append((a, b))
+    for hand_class, all_combos in classes.items():
+        counts: Counter[str] = Counter()
+        legal = 0
+        for a, b in all_combos:
+            if a in blocked or b in blocked:
+                continue
+            legal += 1
+            bucket = _projected_hand_bucket([ccode(a), ccode(b)], board_tuple, street)
+            counts[bucket] += 1
+        out[hand_class] = (legal, tuple(sorted(counts.items())))
+    return out
+
+
 def bucket_posterior_from_classes(
     class_posterior: Mapping[str, float],
     *,
@@ -66,24 +164,21 @@ def bucket_posterior_from_classes(
     are blocked before the class mass is distributed. No future board cards are
     accepted or generated.
     """
-    from tools.simulation.model_b_runtime import cid
-
     classes = normalized_posterior(class_posterior)
-    if str(street).lower() == "preflop":
+    street = str(street).lower()
+    if street == "preflop":
         return {f"PREFLOP_{key}": value for key, value in classes.items()}
 
-    blocked = {cid(card) for card in board}
+    frequencies = _board_class_bucket_frequencies(tuple(str(card) for card in board), street)
     bucket_mass: dict[str, float] = defaultdict(float)
     retained_class_mass = 0.0
     for hand_class, class_mass in classes.items():
-        combos = [(a, b) for a, b in _class_combo_ids(hand_class) if a not in blocked and b not in blocked]
-        if not combos:
+        legal, counts = frequencies.get(hand_class, (0, ()))
+        if legal <= 0:
             continue
         retained_class_mass += class_mass
-        combo_mass = class_mass / len(combos)
-        for a, b in combos:
-            bucket = hand_bucket([ccode(a), ccode(b)], board, street)
-            bucket_mass[bucket] += combo_mass
+        for bucket, count in counts:
+            bucket_mass[bucket] += class_mass * float(count) / float(legal)
     if retained_class_mass <= 0:
         raise ValueError("latent range has no legal mass after public-card blocking")
     return normalized_posterior(bucket_mass)
