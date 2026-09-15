@@ -8,9 +8,9 @@ The release metadata deliberately separates:
 
 The application identity covers the analyser, shared preflop contract, Hero range
 editor, trainer, population-pack manager/catalog and the complete site/assets tree.
-Git blob/tree object IDs are content-derived, so they identify the exact functional
-bytes without introducing a self-reference. Build-specific deployment metadata and
-RELEASE.json itself are excluded.
+The pack catalogue is generated on demand so pre-existing CI callers of --check do
+not need special knowledge of #111. The index identity is computed after the same
+idempotent navigation patch used by the Cloudflare build.
 """
 
 from __future__ import annotations
@@ -25,8 +25,12 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_PATH = ROOT / "site" / "RELEASE.json"
 ENGINE_PATH = ROOT / "user" / "releases" / "poker_range_equity_offline_multiway_v83.html"
+INDEX_PATH = ROOT / "site" / "index.html"
+CATALOG_PATH = ROOT / "site" / "packs" / "catalog.json"
+NAV_SOURCE = '<a href="./hero-ranges.html">Ranges Hero</a>'
+NAV_TARGET = NAV_SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
 FUNCTIONAL_FILES = (
-    ROOT / "site" / "index.html",
+    INDEX_PATH,
     ROOT / "site" / "preflop-contract.js",
     ROOT / "site" / "hero-ranges.html",
     ROOT / "site" / "hero-ranges.js",
@@ -39,7 +43,7 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "packs-app.js",
     ROOT / "site" / "population-packs.js",
     ROOT / "site" / "population-pack-sw.js",
-    ROOT / "site" / "packs" / "catalog.json",
+    CATALOG_PATH,
 )
 
 
@@ -57,9 +61,37 @@ def git_output(*args: str) -> str:
     ).strip()
 
 
+def git_hash_bytes(payload: bytes) -> str:
+    return subprocess.check_output(
+        ["git", "hash-object", "--stdin"], cwd=ROOT, input=payload
+    ).decode().strip()
+
+
+def patched_index_bytes() -> bytes:
+    text = INDEX_PATH.read_text(encoding="utf-8")
+    if '<a href="./packs.html">Packs de population</a>' not in text:
+        if NAV_SOURCE not in text:
+            raise ValueError("hero-ranges navigation anchor not found")
+        text = text.replace(NAV_SOURCE, NAV_TARGET, 1)
+    return text.encode("utf-8")
+
+
+def ensure_pack_catalog() -> None:
+    # Existing release checks pre-date #111. Materializing this deterministic,
+    # untracked build product here keeps those callers valid while ensuring the
+    # release identity covers the exact catalogue Cloudflare will serve.
+    subprocess.run(
+        ["python3", "tools/write_pack_catalog.py"],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+
+
 def git_blob_sha(path: Path) -> str:
-    # hash-object accepts generated/untracked build files and therefore gives the
-    # same content-addressed identity before Cloudflare uploads the site tree.
+    if path == INDEX_PATH:
+        return git_hash_bytes(patched_index_bytes())
+    # hash-object also accepts generated/untracked build files such as catalog.json.
     return git_output("hash-object", str(path.relative_to(ROOT)))
 
 
@@ -69,6 +101,7 @@ def assets_tree_sha() -> str:
 
 
 def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
+    ensure_pack_catalog()
     release = dict(existing)
     engine_sha256 = sha256_file(ENGINE_PATH)
     missing = [str(path.relative_to(ROOT)) for path in FUNCTIONAL_FILES if not path.is_file()]
@@ -118,14 +151,21 @@ def build_identity(existing: dict[str, Any]) -> dict[str, Any]:
     release["notes"] = (
         "Engine v83 and assembled application identities are distinct. "
         "The assembled_site identity is derived from content-addressed Git objects, "
-        "including the generated population-pack catalogue; live production "
-        "verification remains issue #45."
+        "including the generated population-pack catalogue and build-patched index; "
+        "live production verification remains issue #45."
     )
     return release
 
 
 def canonical_json(value: dict[str, Any]) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def main() -> int:
@@ -148,14 +188,14 @@ def main() -> int:
     if args.check:
         current = output.read_text(encoding="utf-8") if output.exists() else ""
         if current != generated:
-            print(f"stale release identity: regenerate {output.relative_to(ROOT)}")
+            print(f"stale release identity: regenerate {display_path(output)}")
             return 1
-        print(f"release identity verified: {output.relative_to(ROOT)}")
+        print(f"release identity verified: {display_path(output)}")
         return 0
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(generated, encoding="utf-8")
-    print(f"wrote {output.relative_to(ROOT)}")
+    print(f"wrote {display_path(output)}")
     return 0
 
 
