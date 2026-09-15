@@ -10,10 +10,10 @@
       ],
       "functional_files": {
         "site/index.html": {
-          "git_blob_sha": "c47845b87130877343364f6d5a466f05472bdd2b"
+          "git_blob_sha": "924ab6c13c5fa02b1cb6824029073c69405db56d"
         },
         "site/preflop-contract.js": {
-          "git_blob_sha": "1f846caf2f55342df70cafd020cf958f15d99798"
+          "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
         },
         "site/trainer.css": {
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"

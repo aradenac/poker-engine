@@ -5827,8 +5827,15 @@ function populationPreflopRangeEstimateForPlayer(player,replayIndex=state.replay
       initialized=true;
     }
 
+    let actionSetCompatible=true;
     for(const h of hands){
-      weights[h]=(weights[h]||0)*Math.max(0,Number(policy[h]?.[decision.action])||0);
+      const probabilityResponse=window.PokerPreflopContract.incumbentV5Passthrough({
+        context:decision.preflop_context_v1||decision,raw_probabilities:policy[h]||{},hand_class:h,
+        source:policy.__source||'legacy_reconstructed',backoff_level:match.exact?'exact':'closest',
+        confidence:match.node.population_model?.confidence||'',support:Number(match.node.coverage?.population_decisions)||0
+      });
+      actionSetCompatible=actionSetCompatible&&probabilityResponse.action_set_compatible;
+      weights[h]=(weights[h]||0)*Math.max(0,Number(probabilityResponse.probabilities[decision.action])||0);
     }
     matchedActions++;
     trace.push({
@@ -5842,6 +5849,10 @@ function populationPreflopRangeEstimateForPlayer(player,replayIndex=state.replay
       nodeSource:match.node.population_model?.source||"",
       policySource:policy.__source||"legacy_reconstructed",
       policyMethod:policy.__method||"",
+      probabilityContract:'poker-preflop-action-probabilities/v1',
+      probabilityMode:'incumbent_v5_passthrough',
+      actionSetCompatible,
+      backoffLevel:match.exact?'exact':'closest',
       family:match.node.context?.family||"",
       actorPosition:decision.actor_position
     });
