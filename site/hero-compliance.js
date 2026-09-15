@@ -6,8 +6,6 @@
   'use strict';
 
   const SCHEMA='poker-hero-range-compliance/v1';
-  const DEPTH_REL_TOLERANCE=.20;
-  const DEPTH_ABS_TOLERANCE_BB=2;
   const SIZING_ABS_TOLERANCE_BB=.05;
   const SIZING_REL_TOLERANCE=.02;
 
@@ -69,22 +67,16 @@
   }
 
   function effectiveStackForDecision(decision){
-    const ctx=decision?.preflop_context_v1||decision||{};
-    const candidates=[
-      ctx.effective_stack_bb,
-      decision?.effective_stack_bb,
-      ctx.actor_remaining_bb,
-      decision?.actor_remaining_bb_before,
-      decision?.actor_start_stack_bb
-    ];
-    for(const raw of candidates){
-      const n=Number(raw);
-      if(Number.isFinite(n)&&n>0)return n;
-    }
-    return null;
+    // #96 defines effective_stack_bb on the canonical before-action context. Do
+    // not infer a Hero-range context from remaining/start stacks: #97 keys
+    // ranges by the exact canonical effective stack and owns no bucket policy.
+    const hasCanonical=!!(decision&&decision.preflop_context_v1);
+    const raw=hasCanonical?decision.preflop_context_v1?.effective_stack_bb:decision?.effective_stack_bb;
+    const n=Number(raw);
+    return Number.isFinite(n)&&n>0?n:null;
   }
 
-  function candidateContexts(repo,base){
+  function comparableContexts(repo,base){
     const out=[];
     for(const node of Object.values(repo?.contexts||{})){
       const c=node?.context||{};
@@ -95,7 +87,7 @@
       const stack=Number(c.effective_stack_bb),wanted=Number(base.effective_stack_bb);
       if(!Number.isFinite(stack)||!Number.isFinite(wanted)||wanted<=0)continue;
       const abs=Math.abs(stack-wanted),rel=abs/Math.max(1,wanted);
-      out.push({node,context:c,abs,rel,exact:abs<=1e-9});
+      out.push({node,context:c,abs,rel});
     }
     out.sort((a,b)=>a.abs-b.abs||a.rel-b.rel||String(a.context.effective_stack_bb).localeCompare(String(b.context.effective_stack_bb)));
     return out;
@@ -111,13 +103,24 @@
     const table_size=Number(ctx.table_size||decision?.table_size||6);
     if(!population_id||!position||!spot||!Number.isFinite(stack)||stack<=0)return {status:'UNSUPPORTED_CONTEXT',context:null,node:null};
     if(Array.isArray(HeroRanges.SPOTS)&&!HeroRanges.SPOTS.includes(spot))return {status:'UNSUPPORTED_CONTEXT',context:null,node:null};
-    const base={population_id,table_size,position,effective_stack_bb:stack,spot};
-    const candidates=candidateContexts(repo,base);
+
+    let base,key;
+    try{
+      base=HeroRanges.normalizeContext({population_id,table_size,position,effective_stack_bb:stack,spot});
+      key=HeroRanges.contextKey(base);
+    }catch(_){
+      return {status:'UNSUPPORTED_CONTEXT',context:null,node:null};
+    }
+    const exact=repo.contexts?.[key];
+    if(exact)return {status:'RESOLVED',context:exact.context,node:exact,depth_match:'exact',depth_delta_bb:0,depth_delta_fraction:0};
+
+    // A nearest context is diagnostic only. It must never authorize a
+    // compliance verdict unless a future repository version explicitly owns a
+    // persisted stack-bucket policy.
+    const candidates=comparableContexts(repo,base);
     if(!candidates.length)return {status:'UNCOVERED_CONTEXT',context:base,node:null};
     const best=candidates[0];
-    const covered=best.exact||best.abs<=DEPTH_ABS_TOLERANCE_BB||best.rel<=DEPTH_REL_TOLERANCE;
-    if(!covered)return {status:'UNCOVERED_DEPTH',context:base,node:null,nearest_context:best.context,depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
-    return {status:'RESOLVED',context:best.context,node:best.node,depth_match:best.exact?'exact':'nearest',depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
+    return {status:'UNCOVERED_DEPTH',context:base,node:null,nearest_context:best.context,depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
   }
 
   function layerStrategy(node,hand){

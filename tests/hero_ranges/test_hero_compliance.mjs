@@ -30,6 +30,7 @@ function decision(action='RAISE',extra={}){
 // A 20% action is allowed on an isolated occurrence; this is not a frequency-calibration failure.
 const mixed=C.evaluateDecision({repo,decision:decision('RAISE'),handClass:'AKs'});
 assert.equal(mixed.context_status,'RESOLVED');
+assert.equal(mixed.depth_match,'exact');
 assert.equal(mixed.planned_action,'OPEN');
 assert.equal(mixed.action_probability,.2);
 assert.equal(mixed.action_status,'MIXED_ALLOWED');
@@ -65,14 +66,28 @@ const missingContext=C.evaluateDecision({repo,decision:{action:'RAISE',actor_pos
 assert.equal(missingContext.action_status,'NO_VERDICT');
 assert.equal(missingContext.context_status,'UNSUPPORTED_CONTEXT');
 
-// Effective stack can come from the canonical actor_remaining_bb without inventing a new stack.
-const stackFallback=decision('RAISE');
-delete stackFallback.preflop_context_v1.effective_stack_bb;
-stackFallback.preflop_context_v1.actor_remaining_bb=99;
-const fallback=C.evaluateDecision({repo,decision:stackFallback,handClass:'AKs'});
-assert.equal(fallback.context_status,'RESOLVED');
-assert.equal(fallback.depth_match,'nearest');
-assert.equal(fallback.depth_delta_bb,1);
+// #97 owns exact stack contexts. A nearby context may be shown diagnostically but
+// must never authorize a compliance verdict without an explicit repository bucket policy.
+const depth99=decision('RAISE');
+depth99.preflop_context_v1.effective_stack_bb=99;
+depth99.preflop_context_v1.actor_remaining_bb=99;
+const uncoveredDepth=C.evaluateDecision({repo,decision:depth99,handClass:'AKs'});
+assert.equal(uncoveredDepth.context_status,'UNCOVERED_DEPTH');
+assert.equal(uncoveredDepth.action_status,'NO_VERDICT');
+assert.equal(uncoveredDepth.action_probability,null);
+assert.equal(uncoveredDepth.resolved_context.effective_stack_bb,99);
+assert.equal(uncoveredDepth.nearest_context.effective_stack_bb,100);
+assert.equal(uncoveredDepth.depth_delta_bb,1);
+
+// Missing canonical effective_stack_bb is not repaired from actor remaining/start stack.
+const noCanonicalDepth=decision('RAISE');
+delete noCanonicalDepth.preflop_context_v1.effective_stack_bb;
+noCanonicalDepth.preflop_context_v1.actor_remaining_bb=99;
+noCanonicalDepth.actor_start_stack_bb=100;
+const missingDepth=C.evaluateDecision({repo,decision:noCanonicalDepth,handClass:'AKs'});
+assert.equal(missingDepth.context_status,'UNSUPPORTED_CONTEXT');
+assert.equal(missingDepth.action_status,'NO_VERDICT');
+assert.equal(missingDepth.resolved_context,null);
 
 // ISO-facing families are projected only onto spots that the #97 repository can actually represent.
 const isoFacing=decision('CALL',{family:'VS_ISO',preflop_context_v1:{...decision().preflop_context_v1,family:'VS_ISO',history:[{position:'HJ',action:'LIMP'},{position:'CO',action:'RAISE'}],raise_level:1,to_call_bb:2}});
