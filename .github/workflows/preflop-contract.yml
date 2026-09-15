@@ -3,7 +3,9 @@ name: Validate preflop context contract
 on:
   pull_request:
     paths:
+      - 'src/preflop/**'
       - 'tools/preflop/**'
+      - 'tools/sync_shared_site_assets.py'
       - 'tools/training/increment_decisions.py'
       - 'tools/training/audit_preflop_key_runtime_parity.py'
       - 'site/preflop-contract.js'
@@ -23,8 +25,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Python and JavaScript syntax
         run: |
-          python3 -m py_compile tools/preflop/context_contract.py tools/preflop/probability_contract.py tools/training/increment_decisions.py tools/training/audit_preflop_key_runtime_parity.py
+          python3 -m py_compile tools/preflop/context_contract.py tools/preflop/probability_contract.py tools/sync_shared_site_assets.py tools/training/increment_decisions.py tools/training/audit_preflop_key_runtime_parity.py
+          node --check src/preflop/contract.js
           node --check site/preflop-contract.js
+          python3 tools/sync_shared_site_assets.py --check
           python3 - <<'PY'
           from pathlib import Path
           s=Path('site/index.html').read_text()
