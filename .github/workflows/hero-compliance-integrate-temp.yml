@@ -1,0 +1,34 @@
+name: Temporary integrate Hero compliance
+
+on:
+  push:
+    branches:
+      - issue-98-hero-range-compliance-v2
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-98-hero-range-compliance-v2
+          fetch-depth: 0
+      - name: Apply compliance patch
+        run: |
+          python3 tools/patches/apply_hero_range_compliance.py
+          node tests/hero_ranges/test_hero_range_compliance.mjs
+          python3 tools/write_site_release.py
+      - name: Commit generated integration
+        run: |
+          if git diff --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/index.html site/hero-ranges.js site/hero-ranges-app.js site/RELEASE.json
+          git commit -m "Issue #98: integrate Hero range compliance into replayer"
+          git push origin HEAD:issue-98-hero-range-compliance-v2
