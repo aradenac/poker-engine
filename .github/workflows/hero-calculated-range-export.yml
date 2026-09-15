@@ -9,6 +9,7 @@ on:
       - 'tests/preflop/test_decision_contract.js'
       - 'tests/hero_ranges/test_hero_range_repository.mjs'
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
+      - 'tests/hero_ranges/test_squeeze_export.mjs'
       - 'docs/hero-calculated-range-candidate.md'
       - '.github/workflows/hero-calculated-range-export.yml'
   workflow_dispatch:
@@ -30,9 +31,12 @@ jobs:
           node --check src/preflop/hero_range_export.js
           node --check site/hero-ranges.js
           node --check tests/hero_ranges/test_calculated_range_export.mjs
+          node --check tests/hero_ranges/test_squeeze_export.mjs
       - name: Preserve preflop decision contract
         run: node tests/preflop/test_decision_contract.js
       - name: Preserve Hero repository contract
         run: node tests/hero_ranges/test_hero_range_repository.mjs
       - name: Calculated range export contract
-        run: node tests/hero_ranges/test_calculated_range_export.mjs
+        run: |
+          node tests/hero_ranges/test_calculated_range_export.mjs
+          node tests/hero_ranges/test_squeeze_export.mjs
