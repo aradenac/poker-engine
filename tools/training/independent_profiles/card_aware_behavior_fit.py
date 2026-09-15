@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Posterior-weighted fitting primitives for card-aware independent Model B.
 
-The central rule is that a hidden hand remains hidden.  Each observed decision may
+The central rule is that a hidden hand remains hidden. Each observed decision may
 carry a posterior distribution over private hand buckets; its action and sizing
-then contribute fractionally to every compatible bucket.  A revealed hand is the
+then contribute fractionally to every compatible bucket. A revealed hand is the
 special case of a point-mass posterior.
 
-This module deliberately does not infer those posteriors.  Issue #103 owns the
-reveal-aware latent-range estimator.  The functions here define the stable seam
+This module deliberately does not infer those posteriors. Issue #103 owns the
+reveal-aware latent-range estimator. The functions here define the stable seam
 between latent range inference and issue #104 behavior fitting, without importing
 Model A or Hero policy outputs.
 """
@@ -61,8 +61,8 @@ def bucket_posterior_from_classes(
     """Project a latent 169-class posterior into runtime hand buckets.
 
     Within each class, legal exact combinations are exchangeable unless another
-    independent Model-B component supplies finer information.  Public board cards
-    are blocked before the class mass is distributed.  No future board cards are
+    independent Model-B component supplies finer information. Public board cards
+    are blocked before the class mass is distributed. No future board cards are
     accepted or generated.
     """
     from tools.simulation.model_b_runtime import cid
@@ -132,7 +132,7 @@ def fit_behavior_from_soft_decisions(
       optional sizing: incremental_cost_over_pot (positive finite float)
 
     ``n`` is effective posterior-weighted observation mass and may therefore be
-    fractional.  Every original decision contributes total mass exactly 1.0 to
+    fractional. Every original decision contributes total mass exactly 1.0 to
     each hierarchy level.
     """
     if int(action_backoff_min_observations) <= 0 or int(sizing_backoff_min_observations) <= 0:
@@ -202,7 +202,8 @@ def fit_behavior_from_soft_decisions(
         "fit": {
             "private_hand_assignment": "posterior_weighted; revealed hands are point masses and hidden hands remain latent",
             "source_split": "TRAIN",
-            "model_a_inputs": false if False else False
+            "model_a_inputs": False,
+            "hero_policy_inputs": False,
         },
         "action": {
             "alpha_per_action": float(alpha_per_action),
