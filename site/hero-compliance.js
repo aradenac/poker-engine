@@ -6,8 +6,6 @@
   'use strict';
 
   const SCHEMA='poker-hero-range-compliance/v1';
-  const DEPTH_REL_TOLERANCE=.20;
-  const DEPTH_ABS_TOLERANCE_BB=2;
   const SIZING_ABS_TOLERANCE_BB=.05;
   const SIZING_REL_TOLERANCE=.02;
 
@@ -70,18 +68,8 @@
 
   function effectiveStackForDecision(decision){
     const ctx=decision?.preflop_context_v1||decision||{};
-    const candidates=[
-      ctx.effective_stack_bb,
-      decision?.effective_stack_bb,
-      ctx.actor_remaining_bb,
-      decision?.actor_remaining_bb_before,
-      decision?.actor_start_stack_bb
-    ];
-    for(const raw of candidates){
-      const n=Number(raw);
-      if(Number.isFinite(n)&&n>0)return n;
-    }
-    return null;
+    const n=Number(ctx.effective_stack_bb);
+    return Number.isFinite(n)&&n>0?n:null;
   }
 
   function candidateContexts(repo,base){
@@ -115,9 +103,8 @@
     const candidates=candidateContexts(repo,base);
     if(!candidates.length)return {status:'UNCOVERED_CONTEXT',context:base,node:null};
     const best=candidates[0];
-    const covered=best.exact||best.abs<=DEPTH_ABS_TOLERANCE_BB||best.rel<=DEPTH_REL_TOLERANCE;
-    if(!covered)return {status:'UNCOVERED_DEPTH',context:base,node:null,nearest_context:best.context,depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
-    return {status:'RESOLVED',context:best.context,node:best.node,depth_match:best.exact?'exact':'nearest',depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
+    if(!best.exact)return {status:'UNCOVERED_DEPTH',context:base,node:null,nearest_context:best.context,depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
+    return {status:'RESOLVED',context:best.context,node:best.node,depth_match:'exact',depth_delta_bb:0,depth_delta_fraction:0};
   }
 
   function layerStrategy(node,hand){
