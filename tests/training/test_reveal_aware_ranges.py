@@ -2,8 +2,13 @@
 from __future__ import annotations
 
 import math
+import sys
+from pathlib import Path
 
-from tools.training.independent_profiles.reveal_aware_ranges import (
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from tools.training.independent_profiles.reveal_aware_ranges import (  # noqa: E402
     build_latent_ranges,
     fit_latent_node,
 )
@@ -48,8 +53,6 @@ def test_action_signal_recovers_known_synthetic_mixture_better_than_no_signal() 
         ("72o", "RAISE"): 10,
         ("72o", "CALL"): 70,
     }
-    # Exactly half of every hand/action cell is revealed: missing-at-random
-    # conditional on the observable action.  The other half remains truly latent.
     for (hand_class, signature), n in cells.items():
         observations.extend(obs(signature, hand_class) for _ in range(n // 2))
         observations.extend(obs(signature, None) for _ in range(n - n // 2))
