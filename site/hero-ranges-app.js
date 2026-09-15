@@ -32,6 +32,19 @@ function initOptions(){
   if(repo.defaults?.population_id)els.population.value=repo.defaults.population_id;
   if(repo.defaults?.effective_stack_bb)els.stack.value=repo.defaults.effective_stack_bb;
 }
+function canonicalHandClass(value){
+  const wanted=String(value||'').trim().toUpperCase();
+  if(!wanted)return null;
+  return HeroRanges.HAND_CLASSES.find(hand=>hand.toUpperCase()===wanted)||null;
+}
+function applyDeepLink(){
+  const params=new URLSearchParams(location.search||'');
+  const population=String(params.get('population')||'').trim();if(population)els.population.value=population;
+  const position=String(params.get('position')||'').trim().toUpperCase();if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
+  const spot=String(params.get('spot')||'').trim().toUpperCase();if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
+  const stack=Number(params.get('stack'));if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
+  const hand=canonicalHandClass(params.get('hand'));if(hand)selectedHand=hand;
+}
 
 function legacyEntries(){return HeroRanges.legacyRanges(repo.source?.range_folder);}
 function sourceSelection(){
@@ -40,7 +53,7 @@ function sourceSelection(){
   return {range:r,position:p};
 }
 function sourceHand(hand){
-  const {position}=sourceSelection();return (position?.hands||[]).find(h=>String(h.hand||"").toUpperCase()===hand)||null;
+  const {position}=sourceSelection();return (position?.hands||[]).find(h=>String(h.hand||"").toUpperCase()===hand.toUpperCase())||null;
 }
 function sourceFrequency(hand){
   const row=sourceHand(hand);if(!row)return null;let f=0;
@@ -147,4 +160,4 @@ els.export.addEventListener("click",exportFile);els.save.addEventListener("click
 els.sourceRange.addEventListener("change",()=>{renderSourceBrowser();renderGrid();});els.sourcePosition.addEventListener("change",()=>{renderSourceHandDetail();renderGrid();});
 for(const el of [els.population,els.position,els.stack,els.spot])el.addEventListener("change",renderAll);
 
-initOptions();renderAll();
+initOptions();applyDeepLink();renderAll();
