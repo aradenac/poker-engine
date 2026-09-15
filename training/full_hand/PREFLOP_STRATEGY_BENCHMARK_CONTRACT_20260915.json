@@ -1,0 +1,153 @@
+{
+  "schema": "poker-preflop-strategy-benchmark-contract/v1",
+  "contract_version": "2026-09-15.1",
+  "status": "FROZEN_BEFORE_CANDIDATE_RESULTS",
+  "related_issue": 108,
+  "extends_protocol": "training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+  "change_policy": "This contract defines the #108 selection experiment before candidate benchmark results are inspected. Semantic changes require a new immutable contract version; never edit this file to rescue a losing candidate.",
+  "dependencies": {
+    "full_hand_arena_issue": 105,
+    "hero_candidate_issue": 107,
+    "must_be_complete_before_promotion_eligible_execution": true,
+    "partial_or_pilot_execution_status": "BLOCKED"
+  },
+  "population": {
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "base_protocol_population_must_match": true,
+    "cross_population_generalization_forbidden": true
+  },
+  "reference_policy": {
+    "name": "promoted_engine_v83",
+    "engine_release_artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
+    "preflop_rule": "Execute the exact promoted v83 preflop decision path on every paired scenario. If v83 cannot produce a legal preflop decision for a required scenario, the benchmark is BLOCKED for that context; do not drop the hand, substitute a candidate action, or fabricate a fixed fallback.",
+    "postflop_rule": "Use the promoted incumbent continuation components declared by the run manifest; candidate and incumbent must differ only in the Hero component explicitly under test.",
+    "identity_must_be_frozen_in_run_manifest": true
+  },
+  "candidate_policy": {
+    "source_issue": 107,
+    "artifact_kind": "hero_calculated_range_or_policy",
+    "immutable_artifact_sha256_required": true,
+    "source_commit_required": true,
+    "decision_contract": "poker-preflop-decision/v1",
+    "must_be_frozen_before_validation_rollout": true,
+    "same_cycle_mutation_after_validation_starts_forbidden": true
+  },
+  "scenarios": {
+    "source_issue": 105,
+    "scenario_manifest_required": true,
+    "scenario_manifest_sha256_required": true,
+    "validation_base_hands": "ALL_CERTIFIED_VALIDATION_HANDS",
+    "test_base_hands": "ALL_CERTIFIED_TEST_HANDS",
+    "rollouts_per_base_hand": 2,
+    "paired_across_hero_policies": true,
+    "paired_fields": [
+      "hand_id",
+      "hole_cards_and_deck",
+      "button_and_seats",
+      "starting_stacks",
+      "opponent_profiles",
+      "opponent_random_streams",
+      "rake_semantics"
+    ],
+    "trajectory_divergence_rule": "After a Hero action legitimately changes the game tree, continue each policy on its own legal trajectory while preserving the predeclared random-stream partitioning; never reveal opponent hole cards to Hero.",
+    "rng_streams_must_be_separate": [
+      "scenario_and_deck",
+      "opponent_policy_sampling",
+      "hero_monte_carlo_estimation"
+    ],
+    "required_terminal_coverage": [
+      "preflop_fold",
+      "uncontested_pot",
+      "limped_multiway",
+      "three_bet_or_higher",
+      "preflop_all_in",
+      "postflop_showdown",
+      "side_pot_when_generated"
+    ]
+  },
+  "environment_sensitivity": {
+    "minimum_environments": 3,
+    "required_roles": [
+      "nominal",
+      "plausible_variant_1",
+      "plausible_variant_2"
+    ],
+    "each_environment_requires_model_b_artifact_sha256": true,
+    "environment_identities_frozen_before_validation": true,
+    "same_paired_scenarios_in_every_environment": true,
+    "automatic_promotion_requires_gate_pass_in_every_predeclared_environment": true
+  },
+  "statistics": {
+    "primary_metric": "bb_per_100_full_hands",
+    "paired_delta": "candidate_minus_incumbent",
+    "confidence_level": 0.95,
+    "cluster_unit": "hand_id",
+    "repeated_rollouts_clustered_by": "hand_id",
+    "bootstrap_samples": 5000,
+    "paired_comparison_required": true,
+    "point_estimate_alone_never_authorizes_promotion": true
+  },
+  "validation_selection": {
+    "split": "VALIDATION",
+    "test_data_visible": false,
+    "required_ci95_lower_bound_bb_per_100": 0.0,
+    "minimum_environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "if_no_candidate_passes": "RETAIN_BASELINE",
+    "freeze_at_most_one_finalist": true,
+    "ranking_tie_breakers": [
+      "highest_worst_environment_ci95_lower_bound",
+      "highest_nominal_mean_delta_bb_per_100",
+      "stable_candidate_id"
+    ]
+  },
+  "test_confirmation": {
+    "split": "TEST",
+    "authorized_only_for_frozen_validation_finalist": true,
+    "test_may_select_alternative": false,
+    "test_may_retune_candidate": false,
+    "test_may_change_thresholds": false,
+    "required_ci95_lower_bound_bb_per_100": 0.0,
+    "minimum_environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "failure_or_inconclusive_outcome": "RETAIN_BASELINE",
+    "consumption_must_be_recorded_in": "training/full_hand/TEST_HOLDOUT_LEDGER.json"
+  },
+  "required_breakdowns": [
+    "position",
+    "preflop_family",
+    "limper_count",
+    "caller_count",
+    "stack_depth_bucket",
+    "players_to_flop",
+    "won_without_flop",
+    "all_in_preflop",
+    "jam_frequency",
+    "side_pot_frequency",
+    "out_of_support_decision_rate"
+  ],
+  "run_manifest_requirements": {
+    "required_before_any_promotion_eligible_rollout": [
+      "code_commit_sha",
+      "dataset_population_fingerprint_sha256",
+      "scenario_manifest_sha256",
+      "incumbent_artifact_sha256",
+      "candidate_id",
+      "candidate_artifact_sha256",
+      "candidate_source_commit_sha",
+      "model_b_environments_with_artifact_sha256",
+      "master_seed",
+      "rollouts_per_base_hand",
+      "bootstrap_samples",
+      "validation_thresholds",
+      "test_thresholds"
+    ],
+    "missing_required_identity_status": "BLOCKED",
+    "results_must_be_immutable": true
+  },
+  "interpretation_limits": [
+    "Simulated BB/100 is conditional on the certified population model and the predeclared Model B environments; it is not an observed real-money or real-world win rate.",
+    "Historical outcomes do not reveal the counterfactual EV of unplayed Hero actions.",
+    "A candidate that fails or is inconclusive on VALIDATION remains unpromoted and TEST remains unconsumed.",
+    "A candidate confirmed on TEST may be promoted only through the repository's explicit atomic promotion path; CI success alone is not promotion.",
+    "No jam-frequency cap or stylistic preference may replace evaluation of the corresponding full-hand EV."
+  ]
+}
