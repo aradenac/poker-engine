@@ -1,0 +1,75 @@
+{
+  "schema": "independent-opponent-model-b/v3-reveal-aware-candidate",
+  "model_version": "independent_model_b_v3_reveal_aware_candidate_20260915",
+  "related_issue": 103,
+  "promotion_status": "candidate_not_promoted",
+  "independence_contract": "TRAIN PokerStars HH decisions/revelations plus frozen TRAIN-derived Model-B profiles only; no Model-A EV, policy, recommendation, range or pseudo-label input",
+  "population": {
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "unique_hands": 23789,
+    "split_counts": {
+      "TRAIN": 19016,
+      "VALIDATION": 2324,
+      "TEST": 2449
+    },
+    "source": {
+      "archives": [
+        {
+          "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+          "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+          "parsed_hands": 27164,
+          "scoped_hands": 26560
+        },
+        {
+          "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+          "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+          "parsed_hands": 11896,
+          "scoped_hands": 11896
+        }
+      ],
+      "scope": {
+        "stakes": [
+          "100/200"
+        ]
+      },
+      "unique_scoped_hands": 31003,
+      "split_counts": {
+        "TEST": 3175,
+        "TRAIN": 24755,
+        "VALIDATION": 3073
+      },
+      "overlap_occurrences": 7453,
+      "overlap_payload_differences": 0,
+      "english_preferred_replacements": 0,
+      "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+    }
+  },
+  "fit": {
+    "split": "TRAIN",
+    "backoff_min_observations": 20,
+    "prior_strength": 50.0,
+    "action_prior_strength": 20.0,
+    "excluded_players": [
+      "RoiDePiqueNique"
+    ]
+  },
+  "frozen_incumbent_components": {
+    "profiles.json": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+    "postflop_actions.json": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+    "sizing.json": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e"
+  },
+  "candidate_components": {
+    "preflop_ranges.json": "c3a1ee3dff9aa4cba6311cf6ef826598504b4f15635f420fd4f4f9a8215d1e00",
+    "reveal_sensitivity.json": "bcc1743af9901ac52602e6516fe29211d1920a963dbfdae6a2f50c25f6f6edf1",
+    "reveal_audit.json": "437691f1f2ff7e2ec03d69e3c5c6fc9eeb9e53cc2a1715a0a0a3e19930803389",
+    "prediction_contract.json": "bea2cde94c897ec240b195535f4af048d84acc43b6e842e17688038781abfd31"
+  },
+  "scientific_limits": [
+    "Preflop folds normally have no revealed hole cards; a signature with zero labels is non-identifiable and stays on the context prior.",
+    "The nominal imputation assumes revelation is not additionally hand-dependent after conditioning on public signature/context; HH alone cannot verify that MNAR assumption.",
+    "Sensitivity powers expose dependence on signature conditioning but are not statistical confidence bounds.",
+    "Aggregate TRAIN revelations may fit parameters, but runtime decisions must never receive cards before their actual revelation event."
+  ]
+}

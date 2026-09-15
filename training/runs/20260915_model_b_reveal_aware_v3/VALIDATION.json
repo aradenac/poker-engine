@@ -1,0 +1,95 @@
+{
+  "schema": "independent-preflop-reveal-aware-paired-evaluation/v1",
+  "related_issue": 103,
+  "split": "VALIDATION",
+  "test_consumed": false,
+  "population": {
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "unique_hands": 23789,
+    "split_counts": {
+      "TRAIN": 19016,
+      "VALIDATION": 2324,
+      "TEST": 2449
+    },
+    "source": {
+      "archives": [
+        {
+          "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+          "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+          "parsed_hands": 27164,
+          "scoped_hands": 26560
+        },
+        {
+          "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+          "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+          "parsed_hands": 11896,
+          "scoped_hands": 11896
+        }
+      ],
+      "scope": {
+        "stakes": [
+          "100/200"
+        ]
+      },
+      "unique_scoped_hands": 31003,
+      "split_counts": {
+        "TEST": 3175,
+        "TRAIN": 24755,
+        "VALIDATION": 3073
+      },
+      "overlap_occurrences": 7453,
+      "overlap_payload_differences": 0,
+      "english_preferred_replacements": 0,
+      "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf"
+    }
+  },
+  "candidate": {
+    "summary_sha256": "5933d0638e2bca08db6cb22d4db9c390385413472c34b270f41516159e376fd9",
+    "ranges_sha256": "c3a1ee3dff9aa4cba6311cf6ef826598504b4f15635f420fd4f4f9a8215d1e00"
+  },
+  "incumbent": {
+    "summary_sha256": "b3f71ba8d36f6768e4f4242518076178916f9e1bc0fafe6ac20ff9a85584943c",
+    "ranges_sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf"
+  },
+  "frozen_components": {
+    "profiles.json": {
+      "incumbent_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+      "candidate_sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+      "identical": true
+    },
+    "postflop_actions.json": {
+      "incumbent_sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+      "candidate_sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+      "identical": true
+    },
+    "sizing.json": {
+      "incumbent_sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e",
+      "candidate_sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e",
+      "identical": true
+    }
+  },
+  "paired_range_log_loss_delta_candidate_minus_incumbent": {
+    "cluster_unit": "hand_id",
+    "samples": 2000,
+    "seed": 20260915,
+    "observed": 0.06507354991590313,
+    "ci95": [
+      0.04116976337175821,
+      0.09046903453986573
+    ],
+    "probability_candidate_better": 0.0,
+    "revealed_hands": 2148,
+    "base_hands": 2324
+  },
+  "gate": {
+    "rule": "paired range-log-loss candidate-minus-incumbent 95% CI upper bound <= 0",
+    "threshold": 0.0,
+    "pass": false,
+    "action_log_loss_delta": 0.0,
+    "action_delta_reason": "postflop action table and profiles are byte-identical to incumbent"
+  },
+  "decision": "RETAIN_BASELINE_RANGE_COMPONENT",
+  "promotion_scope": "range component only; this does not promote Model B production or Hero strategy"
+}
