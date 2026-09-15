@@ -1,0 +1,19 @@
+{
+  "schema": "poker-test-holdout-ledger/v1",
+  "policy": "TEST may confirm or reject one frozen VALIDATION finalist. Reading TEST metrics consumes that generation for the scientific question being decided; a later retuned candidate requires a fresh temporal TEST generation.",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "generations": [
+    {
+      "generation_id": "zoom_100-200_play_20260915_g1",
+      "source_population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+      "split": "TEST",
+      "unique_hands": 2449,
+      "status": "UNCONSUMED",
+      "consumed_by_cycle": null,
+      "consumed_by_frozen_finalist": null,
+      "consumed_at_commit": null,
+      "replacement_generation": null,
+      "notes": "Initial protected TEST generation for the certified target population. No full-hand/preflop finalist has inspected these TEST results under issue #99."
+    }
+  ]
+}

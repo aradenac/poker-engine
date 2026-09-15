@@ -1,0 +1,47 @@
+name: Full-hand evaluation protocol
+
+on:
+  pull_request:
+    paths:
+      - 'training/full_hand/**'
+      - 'training/populations/registry.json'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
+      - 'training/PROMOTION_GATE_CONTRACT.json'
+      - 'tools/training/validate_full_hand_protocol.py'
+      - 'tests/training/test_full_hand_protocol.py'
+      - '.github/workflows/full-hand-protocol.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'training/full_hand/**'
+      - 'training/populations/registry.json'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
+      - 'training/PROMOTION_GATE_CONTRACT.json'
+      - 'tools/training/validate_full_hand_protocol.py'
+      - 'tests/training/test_full_hand_protocol.py'
+      - '.github/workflows/full-hand-protocol.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate syntax and frozen protocol invariants
+        run: |
+          python3 -m py_compile tools/training/validate_full_hand_protocol.py tests/training/test_full_hand_protocol.py
+          python3 tools/training/validate_full_hand_protocol.py
+          python3 tests/training/test_full_hand_protocol.py
+
+      - name: Preserve existing unified promotion-gate behavior
+        run: |
+          python3 tests/test_promotion_gates.py
