@@ -4,13 +4,17 @@ on:
   push:
     paths:
       - 'tools/simulation/model_b_card_aware_runtime.py'
+      - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
       - 'tests/simulation/test_model_b_card_aware_runtime.py'
+      - 'tests/training/test_card_aware_behavior_fit.py'
       - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
       - '.github/workflows/model-b-card-aware-runtime.yml'
   pull_request:
     paths:
       - 'tools/simulation/model_b_card_aware_runtime.py'
+      - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
       - 'tests/simulation/test_model_b_card_aware_runtime.py'
+      - 'tests/training/test_card_aware_behavior_fit.py'
       - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
       - '.github/workflows/model-b-card-aware-runtime.yml'
 
@@ -27,11 +31,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Compile runtime and tests
+      - name: Compile runtime, fit seam and tests
         run: |
           python3 -m py_compile \
             tools/simulation/model_b_card_aware_runtime.py \
-            tests/simulation/test_model_b_card_aware_runtime.py
+            tools/training/independent_profiles/card_aware_behavior_fit.py \
+            tests/simulation/test_model_b_card_aware_runtime.py \
+            tests/training/test_card_aware_behavior_fit.py
 
       - name: Validate runtime contract metadata
         run: |
@@ -53,6 +59,9 @@ jobs:
 
       - name: Run card-aware runtime tests
         run: PYTHONPATH=. python3 tests/simulation/test_model_b_card_aware_runtime.py
+
+      - name: Run posterior-weighted fit seam tests
+        run: PYTHONPATH=. python3 tests/training/test_card_aware_behavior_fit.py
 
       - name: Preserve shared game-core regression suite
         run: PYTHONPATH=. python3 tests/simulation/test_game_core.py
