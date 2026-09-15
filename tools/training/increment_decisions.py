@@ -233,11 +233,12 @@ def parse_hand(text, source):
     return {"id": hid, "source": source, "hero": hero, "bb": bb, "players": players, "by": by, "streets": streets, "boards": boards}
 
 
-def decision_rows(h):
+def decision_rows(h, *, include_preflop_context_v1=False):
     rows = []; n = len(h["players"]); by = h["by"]; hero = h["hero"]; bb = h["bb"]; split = split_for(h["id"])
     inhand = set(by); allin = set(); hist = []; rl = 0; pf_paid = collections.defaultdict(float); pf_price = 0.0
     last_full_raise_increment = 1.0
-    stack_by_pos = {norm_pos(p["pos"], n): p["chips"] / bb for p in h["players"]}
+    stack_by_pos = ({norm_pos(p["pos"], n): p["chips"] / bb for p in h["players"]}
+                    if include_preflop_context_v1 else None)
     for a in h["streets"]["preflop"]:
         if a["type"] == "post":
             paidbb = (a.get("raw") or 0) / bb; pf_paid[a["player"]] += paidbb; pf_price = max(pf_price, pf_paid[a["player"]])
@@ -251,30 +252,34 @@ def decision_rows(h):
         key = f"{n}|{actor}|live={','.join(live)}|allin={','.join(ais)}|hist=" + ">".join(f"{x['position']}:{x['action']}" for x in hist)
         actor_paid = pf_paid[a["player"]]; tocall = max(0, pf_price - actor_paid); free_check = tocall <= 1e-9; fam = family(hist, actor)
         pot_before_bb = max(0, (a["pot_after"] - a["raw"]) / bb)
-        contribution_by_pos = {}
-        for name in inhand | allin:
-            if name in by:
-                contribution_by_pos[norm_pos(by[name]["pos"], n)] = pf_paid[name]
-        preflop_context = build_context(
-            table_size=n, actor_position=actor, live_positions=live, all_in_positions=ais,
-            history=hist, raise_level=rl, contribution_bb_by_position=contribution_by_pos,
-            stack_bb_by_position=stack_by_pos, pot_before_bb=pot_before_bb,
-            current_price_bb=pf_price, min_raise_to_bb=pf_price + last_full_raise_increment,
-        )
-        target_total_bb = actor_paid + a["raw"] / bb if act in ("RAISE", "JAM") else None
         row = {
             "hand_id": h["id"], "split": split, "street": "preflop", "player": a["player"], "is_hero": a["player"] == hero,
             "actor_position": actor, "action": act, "table_size": n, "raise_level": rl, "family": fam, "live_positions": live,
             "all_in_positions": ais, "history": hist.copy(), "free_check": free_check,
             "pot_before_bb": pot_before_bb, "to_call_bb": tocall, "current_price_bb": pf_price,
             "action_add_bb": a["raw"] / bb, "actor_start_stack_bb": by[a["player"]]["chips"] / bb,
-            "preflop_context_v1": preflop_context,
-            "action_sizing_v1": {"incremental_cost_bb": a["raw"] / bb, "target_total_bb": target_total_bb},
             "actor_remaining_bb_before": max(0, by[a["player"]]["chips"] / bb - actor_paid),
             "known_hand_class": hand_class(by[a["player"]].get("known")), "known_cards": by[a["player"]].get("known"),
             "structural_key_no_forced": key, "structural_id_no_forced": "PF_" + hashlib.sha1(key.encode()).hexdigest()[:12],
             "v4_canonical_key": f"{n}|{actor}|family={fam}|rl={rl}|free={1 if free_check else 0}|live={','.join(live)}|allin={','.join(ais)}|hist=" + ">".join(f"{x['position']}:{x['action']}" for x in hist),
         }
+        if include_preflop_context_v1:
+            contribution_by_pos = {}
+            for name in inhand | allin:
+                if name in by:
+                    contribution_by_pos[norm_pos(by[name]["pos"], n)] = pf_paid[name]
+            preflop_context = build_context(
+                table_size=n, actor_position=actor, live_positions=live, all_in_positions=ais,
+                history=hist, raise_level=rl, contribution_bb_by_position=contribution_by_pos,
+                stack_bb_by_position=stack_by_pos, pot_before_bb=pot_before_bb,
+                current_price_bb=pf_price, min_raise_to_bb=pf_price + last_full_raise_increment,
+            )
+            target_total_bb = actor_paid + a["raw"] / bb if act in ("RAISE", "JAM") else None
+            row["preflop_context_v1"] = preflop_context
+            row["action_sizing_v1"] = {
+                "incremental_cost_bb": a["raw"] / bb,
+                "target_total_bb": target_total_bb,
+            }
         rows.append(row)
         if act == "FOLD": inhand.discard(a["player"]); allin.discard(a["player"])
         else:
@@ -345,7 +350,7 @@ def git_commit():
         return None
 
 
-def build(source: Path, out: Path, summary_path: Path):
+def build(source: Path, out: Path, summary_path: Path, *, include_preflop_context_v1=False):
     records, source_meta = read_archive(source)
     if source_meta["duplicate_hand_ids"]:
         raise ValueError(f"source increment contains duplicate hand IDs: {source_meta['duplicate_hand_ids']}")
@@ -360,7 +365,7 @@ def build(source: Path, out: Path, summary_path: Path):
         if not h:
             parse_errors.append(f"{record.source_file}#{record.hand_id}"); continue
         sp = split_for(h["id"]); stats["hands"][sp] += 1
-        for r in decision_rows(h):
+        for r in decision_rows(h, include_preflop_context_v1=include_preflop_context_v1):
             allrows.append(r); stats["decisions"][(sp, r["street"], "hero" if r["is_hero"] else "population")] += 1
             if r["is_hero"]: stats["hero_actions"][(sp, r["street"], r["action"])] += 1
             else:
@@ -394,11 +399,15 @@ def parse_args():
     p.add_argument("--source", required=True, type=Path, help="immutable increment ZIP")
     p.add_argument("--out", required=True, type=Path, help="normalized decision JSONL")
     p.add_argument("--summary", required=True, type=Path, help="build/provenance summary JSON")
+    p.add_argument(
+        "--preflop-contract-v1", action="store_true",
+        help="attach poker-preflop-context/v1 and explicit action sizing to preflop rows; default stays byte-compatible with closed historical runs",
+    )
     return p.parse_args()
 
 
 def main():
-    args = parse_args(); build(args.source, args.out, args.summary)
+    args = parse_args(); build(args.source, args.out, args.summary, include_preflop_context_v1=args.preflop_contract_v1)
 
 
 if __name__ == "__main__":

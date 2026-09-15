@@ -43,7 +43,7 @@ Total pot 2600 | Rake 0
 def preflop_rows():
     hand = parse_hand(HH, "contract-fixture.txt")
     assert hand is not None
-    return [r for r in decision_rows(hand) if r["street"] == "preflop"]
+    return [r for r in decision_rows(hand, include_preflop_context_v1=True) if r["street"] == "preflop"]
 
 
 def test_every_preflop_row_has_before_action_contract():
@@ -100,3 +100,12 @@ if __name__ == "__main__":
     for test in tests:
         test()
     print(f"increment decision preflop contract tests: {len(tests)} passed")
+
+
+def test_default_extractor_stays_legacy_for_closed_runs():
+    hand = parse_hand(HH, "contract-fixture.txt")
+    assert hand is not None
+    rows = [r for r in decision_rows(hand) if r["street"] == "preflop"]
+    assert rows
+    assert all("preflop_context_v1" not in r for r in rows)
+    assert all("action_sizing_v1" not in r for r in rows)
