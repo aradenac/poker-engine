@@ -30,24 +30,6 @@
         "site/index.html": {
           "git_blob_sha": "f96a47d15afacd58347b664a9f010ad23e0968ba"
         },
-        "site/packs-app.js": {
-          "git_blob_sha": "9fd1639089e6ef1e9002d9a0e8ca9ba68925a797"
-        },
-        "site/packs.css": {
-          "git_blob_sha": "ee6a9390cc7c9bfcb9351ff8e88d0c935dfd152f"
-        },
-        "site/packs.html": {
-          "git_blob_sha": "244851bc093ddd87eea419edb455e9e2eeced3d7"
-        },
-        "site/packs/catalog.json": {
-          "git_blob_sha": "04409c660c3817e068a3bd7d511f617f8e91b6ea"
-        },
-        "site/population-pack-sw.js": {
-          "git_blob_sha": "104ef754e505bc9be3b7513dbf2ea147a468918d"
-        },
-        "site/population-packs.js": {
-          "git_blob_sha": "318c17baac769a40ce5b93a8aa3fdf8838f9d606"
-        },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
         },
@@ -68,7 +50,7 @@
     "postflop": "training/models/postflop_population_model_v5.json",
     "preflop": "training/models/preflop_population_model_v5.json"
   },
-  "notes": "Engine v83 and assembled application identities are distinct. The assembled_site identity is derived from content-addressed Git objects, including the generated population-pack catalogue and build-patched index; live production verification remains issue #45.",
+  "notes": "Engine v83 and assembled application identities are distinct. The assembled_site identity is derived from content-addressed Git objects; live production verification remains issue #45.",
   "publication_verification": {
     "meaning": "Repository/build identity only. A successful build or published=true does not prove the canonical live Cloudflare URL or deployed revision.",
     "status": "UNVERIFIED_LIVE",
