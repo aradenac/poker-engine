@@ -6,6 +6,7 @@ on:
       - 'tools/simulation/game_core.py'
       - 'tools/simulation/hand_history_state.py'
       - 'tests/simulation/test_game_core.py'
+      - 'tests/simulation/test_game_core_consolidated_regressions.py'
       - 'tests/simulation/test_hand_history_state.py'
       - 'tests/simulation/test_rollout_accounting.py'
       - 'docs/full_hand_game_core.md'
@@ -23,9 +24,12 @@ jobs:
             tools/simulation/game_core.py \
             tools/simulation/hand_history_state.py \
             tests/simulation/test_game_core.py \
+            tests/simulation/test_game_core_consolidated_regressions.py \
             tests/simulation/test_hand_history_state.py
       - name: Full-hand rules and accounting
-        run: python3 tests/simulation/test_game_core.py
+        run: |
+          python3 tests/simulation/test_game_core.py
+          python3 tests/simulation/test_game_core_consolidated_regressions.py
       - name: EN/FR public hand reconstruction
         run: python3 tests/simulation/test_hand_history_state.py
       - name: Preserve legacy heads-up accounting fixtures
