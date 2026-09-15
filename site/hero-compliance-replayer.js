@@ -4,13 +4,23 @@
   const STORAGE_KEY='poker.hero.range.repository.v1';
   const PANEL_ID='heroCompliancePanel';
   const RANKS='23456789TJQKA';
+  const CARD_SUITS='shdc';
   const SUITS={s:'s',h:'h',d:'d',c:'c','♠':'s','♥':'h','♦':'d','♣':'c'};
   let sessionCache={key:null,summary:null};
   let lastMarkup='';
 
   function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
   function cardParts(card){
-    const s=String(card||'').trim();
+    const decodeId=value=>{
+      const id=Number(value);
+      if(!Number.isInteger(id)||id<0||id>=52)return null;
+      return {rank:RANKS[id%13],suit:CARD_SUITS[(id/13)|0]};
+    };
+    if(typeof card==='number')return decodeId(card);
+    const s=String(card??'').trim();
+    if(/^\d+$/.test(s)){
+      const decoded=decodeId(s);if(decoded)return decoded;
+    }
     if(s.length<2)return null;
     const rank=s[0].toUpperCase(),suit=SUITS[s[1].toLowerCase?.()||s[1]]||SUITS[s[1]];
     if(!RANKS.includes(rank)||!suit)return null;
