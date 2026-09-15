@@ -70,7 +70,7 @@ def _has_straight(ranks: Iterable[int]) -> bool:
 def _made_category_fast(cards: Sequence[str]) -> int:
     """Return the best 5-card category for 5-7 cards without tie-break work.
 
-    ``hand_bucket`` needs only the category.  The canonical ``best`` evaluator
+    ``hand_bucket`` needs only the category. The canonical ``best`` evaluator
     also computes complete kickers/tie-breaks by enumerating every 5-card subset;
     avoiding that work keeps the posterior projection exact while making the full
     TRAIN/VALIDATION fit tractable.
@@ -87,9 +87,7 @@ def _made_category_fast(cards: Sequence[str]) -> int:
     if any(count >= 4 for count in rank_counts.values()):
         return 7
     trips = [rank for rank, count in rank_counts.items() if count >= 3]
-    if trips and any(count >= 2 and rank not in trips[:1] for rank, count in rank_counts.items()):
-        # Equivalent to "one trip plus another pair/trip".  Using rank identity
-        # rather than count arithmetic also handles two distinct trips correctly.
+    if trips:
         primary = trips[0]
         if any(rank != primary and count >= 2 for rank, count in rank_counts.items()):
             return 6
@@ -119,6 +117,14 @@ def _projected_hand_bucket(hole_cards: Sequence[str], board: Sequence[str], stre
     return "+".join([CATEGORY[category]] + _draw_tags(hole_cards, board, category))
 
 
+@lru_cache(maxsize=1)
+def _all_class_combos() -> tuple[tuple[str, tuple[tuple[int, int], ...]], ...]:
+    grouped: dict[str, list[tuple[int, int]]] = defaultdict(list)
+    for a, b in itertools.combinations(range(52), 2):
+        grouped[combo_class_ids(a, b)].append((a, b))
+    return tuple((hand_class, tuple(combos)) for hand_class, combos in sorted(grouped.items()))
+
+
 @lru_cache(maxsize=64)
 def _board_class_bucket_frequencies(
     board_tuple: tuple[str, ...], street: str
@@ -126,19 +132,14 @@ def _board_class_bucket_frequencies(
     """Map each 169 class to exact runtime-bucket frequencies for one board.
 
     This expensive card evaluation depends on the public board, not on the
-    profile/position prior.  Several actors on the same hand therefore share it.
+    profile/position prior. Several actors on the same hand therefore share it.
     The small LRU intentionally retains only recent boards and bounds memory.
     """
     from tools.simulation.model_b_runtime import cid
 
     blocked = {cid(card) for card in board_tuple}
     out: dict[str, tuple[int, tuple[tuple[str, int], ...]]] = {}
-    # The 169 classes are exactly those present in the cached combo map once it is
-    # warmed.  Generate names directly from all exact combos here to stay local.
-    classes: dict[str, list[tuple[int, int]]] = defaultdict(list)
-    for a, b in itertools.combinations(range(52), 2):
-        classes[combo_class_ids(a, b)].append((a, b))
-    for hand_class, all_combos in classes.items():
+    for hand_class, all_combos in _all_class_combos():
         counts: Counter[str] = Counter()
         legal = 0
         for a, b in all_combos:
@@ -210,6 +211,15 @@ def _serialize_sizing_node(node: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _key_with_hand(columns: Sequence[str], row: Mapping[str, Any], hand_bucket_value: str) -> str:
+    if not columns:
+        return "ALL"
+    return "|".join(
+        str(hand_bucket_value if column == "hand_bucket" else row.get(column, "NA"))
+        for column in columns
+    )
+
+
 def fit_behavior_from_soft_decisions(
     decisions: Iterable[Mapping[str, Any]],
     *,
@@ -232,7 +242,9 @@ def fit_behavior_from_soft_decisions(
 
     ``n`` is effective posterior-weighted observation mass and may therefore be
     fractional. Every original decision contributes total mass exactly 1.0 to
-    each hierarchy level. Sizing values are keyed by their exact Python float and
+    each hierarchy level. Levels that do not condition on ``hand_bucket`` receive
+    that unit mass in one update instead of one algebraically redundant update per
+    latent bucket. Sizing values are keyed by their exact Python float and
     posterior weights are accumulated rather than duplicating samples.
     """
     if int(action_backoff_min_observations) <= 0 or int(sizing_backoff_min_observations) <= 0:
@@ -256,7 +268,8 @@ def fit_behavior_from_soft_decisions(
         if action not in ACTION_LABELS:
             raise ValueError(f"unsupported canonical action: {action}")
         posterior = normalized_posterior(row.get("hand_posterior") or {})
-        mass_error = abs(sum(posterior.values()) - 1.0)
+        posterior_mass = sum(posterior.values())
+        mass_error = abs(posterior_mass - 1.0)
         audit["posterior_mass_error_max"] = max(audit["posterior_mass_error_max"], mass_error)
         audit["decisions"] += 1
         audit["revealed_point_mass_decisions" if len(posterior) == 1 else "latent_soft_decisions"] += 1
@@ -267,22 +280,34 @@ def fit_behavior_from_soft_decisions(
             if not math.isfinite(sizing) or sizing <= 0:
                 raise ValueError(f"invalid incremental_cost_over_pot: {sizing}")
 
-        for private_bucket, weight in posterior.items():
-            enriched = {**row, "hand_bucket": private_bucket}
-            for level_index, columns in enumerate(action_levels):
-                key = key_for(columns, enriched)
+        for level_index, columns in enumerate(action_levels):
+            if "hand_bucket" not in columns:
+                key = key_for(columns, row)
                 node = action_tables[level_index][key]
+                node["n"] += posterior_mass
+                node["counts"][action] += posterior_mass
+                continue
+            table = action_tables[level_index]
+            for private_bucket, weight in posterior.items():
+                key = _key_with_hand(columns, row, private_bucket)
+                node = table[key]
                 node["n"] += weight
                 node["counts"][action] += weight
 
-            if action == "RAISE" and sizing is not None:
-                sizing_row = {**enriched, "action": action}
-                for level_index, columns in enumerate(sizing_levels):
-                    key = key_for(columns, sizing_row)
+        if action == "RAISE" and sizing is not None:
+            for level_index, columns in enumerate(sizing_levels):
+                if "hand_bucket" not in columns:
+                    key = key_for(columns, row)
                     node = sizing_tables[level_index][key]
+                    node["n"] += posterior_mass
+                    node["value_weights"][sizing] += posterior_mass
+                    continue
+                table = sizing_tables[level_index]
+                for private_bucket, weight in posterior.items():
+                    key = _key_with_hand(columns, row, private_bucket)
+                    node = table[key]
                     node["n"] += weight
                     node["value_weights"][sizing] += weight
-        if action == "RAISE" and sizing is not None:
             audit["sizing_decisions"] += 1
 
     action_serialized = [
