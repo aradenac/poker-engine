@@ -1,0 +1,36 @@
+name: Issue 98 release identity bootstrap
+
+on:
+  push:
+    branches:
+      - issue-98-hero-range-compliance-complete-sol
+    paths:
+      - '.github/workflows/issue-98-release-bootstrap.yml'
+      - 'tools/patches/patch_hero_compliance_release_v1.py'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: issue-98-hero-range-compliance-complete-sol
+          fetch-depth: 0
+      - name: Add compliance assets to release identity
+        run: |
+          python3 tools/patches/patch_hero_compliance_release_v1.py
+          python3 tools/write_site_release.py
+      - name: Persist release identity
+        run: |
+          git config user.name 'poker-engine issue-98 bot'
+          git config user.email 'issue-98-bot@users.noreply.github.com'
+          git add tools/write_site_release.py site/RELEASE.json
+          if git diff --cached --quiet; then
+            echo 'Release identity already synchronized.'
+            exit 0
+          fi
+          git commit -m 'Issue #98: refresh release identity for Hero compliance'
+          git push origin HEAD:issue-98-hero-range-compliance-complete-sol
