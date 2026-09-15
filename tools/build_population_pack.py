@@ -12,11 +12,13 @@ import base64
 import gzip
 import json
 import os
+import sys
 from pathlib import Path, PurePosixPath
 import shutil
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from tools.build_user_artifact_bundle import (  # noqa: E402
     FIXED_ZIP_TIME,
