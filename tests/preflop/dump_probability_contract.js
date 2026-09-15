@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const c=require('../../site/preflop-contract.js');
+const c=require('../../src/preflop/contract.js');
 const ctx=c.buildContext({
   table_size:6,actor_position:'CO',live_positions:['LJ','HJ','CO','BTN','SB','BB'],
   history:[{position:'LJ',action:'RAISE'},{position:'HJ',action:'CALL'}],raise_level:1,

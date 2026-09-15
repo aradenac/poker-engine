@@ -1,0 +1,78 @@
+name: Validate Hero range repository and editor
+
+on:
+  push:
+    paths:
+      - 'site/hero-ranges.html'
+      - 'site/hero-ranges.js'
+      - 'site/hero-ranges-app.js'
+      - 'site/hero-ranges.css'
+      - 'site/index.html'
+      - 'site/RELEASE.json'
+      - 'tests/hero_ranges/**'
+      - 'tools/patches/apply_hero_range_editor.py'
+      - 'tools/write_site_release.py'
+      - '.github/workflows/hero-range-editor.yml'
+  pull_request:
+    paths:
+      - 'site/hero-ranges.html'
+      - 'site/hero-ranges.js'
+      - 'site/hero-ranges-app.js'
+      - 'site/hero-ranges.css'
+      - 'site/index.html'
+      - 'site/RELEASE.json'
+      - 'tests/hero_ranges/**'
+      - 'tools/patches/apply_hero_range_editor.py'
+      - 'tools/write_site_release.py'
+      - '.github/workflows/hero-range-editor.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hero-range-editor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check site/hero-ranges.js
+          node --check site/hero-ranges-app.js
+      - name: Lossless repository contract
+        run: node tests/hero_ranges/test_hero_range_repository.mjs
+      - name: Main application integration is idempotent
+        run: |
+          sha256sum site/index.html > /tmp/index-before.sha
+          python3 tools/patches/apply_hero_range_editor.py
+          sha256sum site/index.html > /tmp/index-after.sha
+          diff -u /tmp/index-before.sha /tmp/index-after.sha
+      - name: Release identity
+        run: python3 tools/write_site_release.py --check
+
+  browser-smoke:
+    needs: contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser runtime
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Serve static application
+        run: |
+          python3 -m http.server 8765 --directory site >/tmp/hero-range-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/hero-ranges.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hero-range-http.log
+          exit 1
+      - name: Exercise Hero range editor
+        run: python3 tests/hero_ranges/smoke_hero_ranges.py
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/hero-range-http.log || true

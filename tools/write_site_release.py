@@ -6,10 +6,11 @@ The release metadata deliberately separates:
 - assembled static application identity;
 - live deployment verification, which is tracked separately by issue #45.
 
-The application identity covers site/index.html, site/preflop-contract.js,
-site/trainer.js, site/trainer.css and the complete site/assets tree. Git blob/tree object IDs are content-derived,
-so they identify the exact functional bytes without introducing a self-reference.
-Build-specific deployment-meta.css and RELEASE.json itself are excluded.
+The application identity covers the analyser, shared preflop contract, Hero range
+editor, trainer JS/CSS and the complete site/assets tree. Git blob/tree object IDs
+are content-derived, so they identify the exact functional bytes without
+introducing a self-reference. Build-specific deployment-meta.css and RELEASE.json
+itself are excluded.
 """
 
 from __future__ import annotations
@@ -27,6 +28,10 @@ ENGINE_PATH = ROOT / "user" / "releases" / "poker_range_equity_offline_multiway_
 FUNCTIONAL_FILES = (
     ROOT / "site" / "index.html",
     ROOT / "site" / "preflop-contract.js",
+    ROOT / "site" / "hero-ranges.html",
+    ROOT / "site" / "hero-ranges.js",
+    ROOT / "site" / "hero-ranges-app.js",
+    ROOT / "site" / "hero-ranges.css",
     ROOT / "site" / "trainer.js",
     ROOT / "site" / "trainer.css",
 )
