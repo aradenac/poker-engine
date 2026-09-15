@@ -5,11 +5,20 @@ from typing import Any
 
 from tools.simulation.game_core import NoLimitHoldemState, RuleError
 
-_AMOUNT_RE = r"([€$£]?\s*[\d.,]+)"
+_AMOUNT_RE = r"([€$£]?\s*\d[\d\s\u00a0\u202f.,]*)"
 
 
 def amount(text: str) -> float:
-    s = str(text).strip().replace(" ", "").replace("€", "").replace("$", "").replace("£", "")
+    s = (
+        str(text)
+        .strip()
+        .replace(" ", "")
+        .replace("\u00a0", "")
+        .replace("\u202f", "")
+        .replace("€", "")
+        .replace("$", "")
+        .replace("£", "")
+    )
     if "," in s and "." in s:
         s = s.replace(",", "")
     elif "," in s:
@@ -46,7 +55,8 @@ def _action_line(line: str) -> dict[str, Any] | None:
             row["target"] = amount(m.group(3))
         return row
     m = re.match(
-        rf"^(?:Uncalled bet|Mise non suivie)\s*\({_AMOUNT_RE}\)\s*(?:returned to|retournée à)\s+(.+?)\.?\s*$",
+        rf"^(?:Uncalled bet|Mise non suivie)\s*\({_AMOUNT_RE}\)\s*"
+        rf"(?:returned to|retournée à|retournee a|rendue à|rendue a)\s+(.+?)\.?\s*$",
         line,
         flags=re.IGNORECASE,
     )
@@ -66,7 +76,7 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
     seats = []
     for line in lines:
         m = re.match(
-            rf"^(?:Seat|Siège)\s+(\d+)\s*:\s*(.+?)\s+\({_AMOUNT_RE}\s+(?:in chips|en jetons)\)\s*$",
+            rf"^(?:Seat|Siège|Siege|Place)\s+(\d+)\s*:\s*(.+?)\s+\({_AMOUNT_RE}\s+(?:in chips|en jetons)\)\s*$",
             line,
             flags=re.IGNORECASE,
         )
@@ -79,7 +89,7 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
     button_seat = None
     for line in lines:
         m = re.search(
-            r"(?:Seat|Siège)\s+#?(\d+)\s+(?:is\s+(?:the\s+)?button|est\s+(?:au\s+)?bouton)",
+            r"(?:Seat|Siège|Siege|Place)\s*#?(\d+)\s+(?:is\s+(?:the\s+)?button|est\s+(?:(?:le|au)\s+)?bouton)",
             line,
             flags=re.IGNORECASE,
         )
@@ -119,7 +129,7 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
     sb_post, bb_post = sb_posts[0], bb_posts[0]
     bb_chips = float(bb_post["amount"])
 
-    amount_token = r"[€$£]?\s*[\d.,]+"
+    amount_token = r"[€$£]?\s*\d[\d\s\u00a0\u202f.,]*"
     for candidate in lines[:3]:
         for group in re.findall(r"\(([^()]*)\)", candidate):
             blind_match = re.search(rf"({amount_token})\s*/\s*({amount_token})", group)
@@ -160,7 +170,7 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
             state.advance_street(groups[0])
             current_street = "flop"
             continue
-        if upper.startswith("*** TURN ***"):
+        if upper.startswith(("*** TURN ***", "*** TOURNANT ***")):
             groups = _cards_from_marker(line)
             if not groups:
                 raise ValueError("invalid turn marker")
@@ -170,7 +180,7 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
             state.advance_street(new_cards)
             current_street = "turn"
             continue
-        if upper.startswith("*** RIVER ***"):
+        if upper.startswith(("*** RIVER ***", "*** RIVIÈRE ***", "*** RIVIERE ***")):
             groups = _cards_from_marker(line)
             if not groups:
                 raise ValueError("invalid river marker")
@@ -180,7 +190,9 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
             state.advance_street(new_cards)
             current_street = "river"
             continue
-        if upper.startswith("*** SHOW DOWN ***") or upper.startswith("*** ABATTAGE ***") or upper.startswith("*** SUMMARY ***"):
+        if upper.startswith(
+            ("*** SHOW DOWN ***", "*** ABATTAGE ***", "*** SUMMARY ***", "*** RÉSUMÉ ***", "*** RESUME ***")
+        ):
             break
 
         action = _action_line(line)
@@ -229,7 +241,11 @@ def replay_public_hand(raw: str) -> dict[str, Any]:
                 )
             state.apply_action(player, "RAISE", target_total_bb=target)
     return {
-        "language": "fr" if re.search(r"\b(?:Siège|Partie|Distribuées|se couche|suit|mise|relance)\b", text, re.I) else "en",
+        "language": "fr" if re.search(
+            r"\b(?:Siège|Siege|Place|Partie|Distribuées|se couche|suit|mise|relance|TOURNANT|RIVIÈRE|RIVIERE)\b",
+            text,
+            re.I,
+        ) else "en",
         "big_blind_chips": bb_chips,
         "trace": trace,
         "final_state": state.to_snapshot(include_log=False),
