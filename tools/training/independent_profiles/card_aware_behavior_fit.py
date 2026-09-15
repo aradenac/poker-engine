@@ -7,15 +7,15 @@ then contribute fractionally to every compatible bucket. A revealed hand is the
 special case of a point-mass posterior.
 
 This module deliberately does not infer those posteriors. Issue #103 owns the
-reveal-aware latent-range estimator. The functions here define the stable seam
-between latent range inference and issue #104 behavior fitting, without importing
-Model A or Hero policy outputs.
+reveal-bias evidence; issue #104 uses an action-independent TRAIN prior at the
+fit seam so the target action cannot leak into its own private-hand assignment.
 """
 from __future__ import annotations
 
 import itertools
 import math
 from collections import defaultdict
+from functools import lru_cache
 from typing import Any, Iterable, Mapping, Sequence
 
 from tools.simulation.model_b_card_aware_runtime import BEHAVIOR_SCHEMA, SIZING_SEMANTICS, hand_bucket
@@ -42,14 +42,15 @@ def exact_hand_posterior(hole_cards: Sequence[str], board: Sequence[str], street
     return {hand_bucket(hole_cards, board, street): 1.0}
 
 
-def _class_combo_ids(hand_class: str) -> list[tuple[int, int]]:
+@lru_cache(maxsize=169)
+def _class_combo_ids(hand_class: str) -> tuple[tuple[int, int], ...]:
     out: list[tuple[int, int]] = []
     for a, b in itertools.combinations(range(52), 2):
         if combo_class_ids(a, b) == hand_class:
             out.append((a, b))
     if not out:
         raise ValueError(f"unknown 169-class notation: {hand_class}")
-    return out
+    return tuple(out)
 
 
 def bucket_posterior_from_classes(
@@ -68,6 +69,9 @@ def bucket_posterior_from_classes(
     from tools.simulation.model_b_runtime import cid
 
     classes = normalized_posterior(class_posterior)
+    if str(street).lower() == "preflop":
+        return {f"PREFLOP_{key}": value for key, value in classes.items()}
+
     blocked = {cid(card) for card in board}
     bucket_mass: dict[str, float] = defaultdict(float)
     retained_class_mass = 0.0
@@ -90,7 +94,7 @@ def _weighted_action_node() -> dict[str, Any]:
 
 
 def _weighted_sizing_node() -> dict[str, Any]:
-    return {"n": 0.0, "weighted_values": []}
+    return {"n": 0.0, "value_weights": defaultdict(float)}
 
 
 def _serialize_action_node(node: dict[str, Any]) -> dict[str, Any]:
@@ -104,9 +108,9 @@ def _serialize_sizing_node(node: dict[str, Any]) -> dict[str, Any]:
     return {
         "n": round(float(node["n"]), 9),
         "weighted_values": [
-            {"value": round(float(row["value"]), 12), "weight": round(float(row["weight"]), 9)}
-            for row in node["weighted_values"]
-            if float(row["weight"]) > 0
+            {"value": float(value), "weight": round(float(weight), 9)}
+            for value, weight in sorted(node["value_weights"].items())
+            if float(weight) > 0
         ],
     }
 
@@ -133,7 +137,8 @@ def fit_behavior_from_soft_decisions(
 
     ``n`` is effective posterior-weighted observation mass and may therefore be
     fractional. Every original decision contributes total mass exactly 1.0 to
-    each hierarchy level.
+    each hierarchy level. Sizing values are keyed by their exact Python float and
+    posterior weights are accumulated rather than duplicating samples.
     """
     if int(action_backoff_min_observations) <= 0 or int(sizing_backoff_min_observations) <= 0:
         raise ValueError("backoff thresholds must be positive")
@@ -161,6 +166,12 @@ def fit_behavior_from_soft_decisions(
         audit["decisions"] += 1
         audit["revealed_point_mass_decisions" if len(posterior) == 1 else "latent_soft_decisions"] += 1
 
+        sizing = row.get("incremental_cost_over_pot")
+        if action == "RAISE" and sizing is not None:
+            sizing = float(sizing)
+            if not math.isfinite(sizing) or sizing <= 0:
+                raise ValueError(f"invalid incremental_cost_over_pot: {sizing}")
+
         for private_bucket, weight in posterior.items():
             enriched = {**row, "hand_bucket": private_bucket}
             for level_index, columns in enumerate(action_levels):
@@ -169,32 +180,30 @@ def fit_behavior_from_soft_decisions(
                 node["n"] += weight
                 node["counts"][action] += weight
 
-            sizing = row.get("incremental_cost_over_pot")
             if action == "RAISE" and sizing is not None:
-                sizing = float(sizing)
-                if not math.isfinite(sizing) or sizing <= 0:
-                    raise ValueError(f"invalid incremental_cost_over_pot: {sizing}")
                 sizing_row = {**enriched, "action": action}
                 for level_index, columns in enumerate(sizing_levels):
                     key = key_for(columns, sizing_row)
                     node = sizing_tables[level_index][key]
                     node["n"] += weight
-                    node["weighted_values"].append({"value": sizing, "weight": weight})
-        if action == "RAISE" and row.get("incremental_cost_over_pot") is not None:
+                    node["value_weights"][sizing] += weight
+        if action == "RAISE" and sizing is not None:
             audit["sizing_decisions"] += 1
 
-    action_serialized = []
-    for columns, table in zip(action_levels, action_tables):
-        action_serialized.append({
+    action_serialized = [
+        {
             "cols": list(columns),
             "data": {key: _serialize_action_node(node) for key, node in sorted(table.items())},
-        })
-    sizing_serialized = []
-    for columns, table in zip(sizing_levels, sizing_tables):
-        sizing_serialized.append({
+        }
+        for columns, table in zip(action_levels, action_tables)
+    ]
+    sizing_serialized = [
+        {
             "cols": list(columns),
             "data": {key: _serialize_sizing_node(node) for key, node in sorted(table.items())},
-        })
+        }
+        for columns, table in zip(sizing_levels, sizing_tables)
+    ]
 
     return {
         "schema": BEHAVIOR_SCHEMA,
