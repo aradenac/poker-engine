@@ -1,4 +1,16 @@
 {
+  "schema": "independent-model-b-card-aware-result/v1",
+  "related_issue": 104,
+  "protocol": "training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json",
+  "tested": {
+    "workflow_run_id": 34993837824,
+    "tested_head_sha": "b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+    "artifact_id": 10407367215,
+    "artifact_name": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+    "artifact_zip_size_bytes": 18764437,
+    "artifact_digest": "sha256:244e9607313054f78317045b903e0e04745ed4c950944289a42eb60522ce7ffc",
+    "artifact_expires_at": "2026-10-15T16:30:34Z"
+  },
   "candidate_artifacts": {
     "candidate_behavior.json": {
       "sha256": "dd593c50152a9c33f388ef77c6ffd9016eb96cee751663cf25beec17a6c9b1ac",
@@ -81,9 +93,7 @@
       "overlap_occurrences": 7453,
       "overlap_payload_differences": 0,
       "scope": {
-        "stakes": [
-          "100/200"
-        ]
+        "stakes": ["100/200"]
       },
       "sorted_hand_ids_sha256": "4d6ec2cdebd9488b69b733a86bb41aba5b022fcd9da49be0c5ea3dbec71c52bf",
       "split_counts": {
@@ -101,37 +111,14 @@
     "unique_hands": 23789
   },
   "production_model_b_effect": "NONE",
-  "protocol": "training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json",
-  "related_issue": 104,
-  "schema": "independent-model-b-card-aware-result/v1",
   "test_consumed": false,
   "validation": {
     "actions": {
       "by_street": {
-        "flop": {
-          "candidate_log_loss": 0.6358088636265056,
-          "delta": 0.0005288930990670109,
-          "n": 5849,
-          "reference_log_loss": 0.6352799705274386
-        },
-        "preflop": {
-          "candidate_log_loss": 0.7893083445903599,
-          "delta": 0.007508991097041244,
-          "n": 12415,
-          "reference_log_loss": 0.7817993534933187
-        },
-        "river": {
-          "candidate_log_loss": 0.7061022960581209,
-          "delta": 0.010743002411546614,
-          "n": 3150,
-          "reference_log_loss": 0.6953592936465742
-        },
-        "turn": {
-          "candidate_log_loss": 0.6620476279532841,
-          "delta": 0.005548724955101876,
-          "n": 4159,
-          "reference_log_loss": 0.6564989029981823
-        }
+        "flop": {"candidate_log_loss": 0.6358088636265056, "delta": 0.0005288930990670109, "n": 5849, "reference_log_loss": 0.6352799705274386},
+        "preflop": {"candidate_log_loss": 0.7893083445903599, "delta": 0.007508991097041244, "n": 12415, "reference_log_loss": 0.7817993534933187},
+        "river": {"candidate_log_loss": 0.7061022960581209, "delta": 0.010743002411546614, "n": 3150, "reference_log_loss": 0.6953592936465742},
+        "turn": {"candidate_log_loss": 0.6620476279532841, "delta": 0.005548724955101876, "n": 4159, "reference_log_loss": 0.6564989029981823}
       },
       "candidate_brier": 0.4581355353747373,
       "candidate_confidence_ece": 0.009618410201051945,
@@ -147,10 +134,7 @@
       "delta": 0.005992070734392842,
       "n": 25573,
       "paired_hand_bootstrap": {
-        "ci95": [
-          0.0035417596980668003,
-          0.008492088431233105
-        ],
+        "ci95": [0.0035417596980668003, 0.008492088431233105],
         "hands": 2318,
         "observations": 25573,
         "observed": 0.005992070734401725,
@@ -178,10 +162,7 @@
       "candidate_mean_absolute_log_error": 0.8105946099604587,
       "n": 3567,
       "paired_hand_bootstrap": {
-        "ci95": [
-          -0.008441059917007379,
-          0.01037837998156014
-        ],
+        "ci95": [-0.008441059917007379, 0.01037837998156014],
         "hands": 1759,
         "observations": 3567,
         "observed": 0.0011344897780514427,
