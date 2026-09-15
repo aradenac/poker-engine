@@ -30,6 +30,7 @@ jobs:
           python3 -m py_compile tools/sync_shared_modules.py tools/preflop/context_contract.py tools/preflop/probability_contract.py tools/training/increment_decisions.py tools/training/audit_preflop_key_runtime_parity.py
           node --check src/preflop/contract.js
           node --check src/preflop/decision.js
+          node --check src/preflop/guidance.js
           node --check site/preflop-contract.js
           python3 - <<'PY'
           from pathlib import Path
@@ -40,11 +41,12 @@ jobs:
           Path('/tmp/site-inline.js').write_text(s[b+8:c])
           PY
           node --check /tmp/site-inline.js
-      - name: Shared fixture, probability, decision and HH parity
+      - name: Shared fixture, probability, decision, guidance and HH parity
         run: |
           python3 tests/preflop/test_context_contract.py
           python3 tests/preflop/test_probability_contract.py
           node tests/preflop/test_decision_contract.js
+          node tests/preflop/test_guidance_contract.js
           python3 tests/preflop/test_increment_decisions_contract.py
           python3 tests/preflop/test_site_preflop_contract.py
       - name: Preserve issue 88 incumbent matcher contract
