@@ -10,6 +10,9 @@
 
   function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
   function cardParts(card){
+    if(Number.isInteger(card)&&card>=0&&card<52){
+      return {rank:RANKS[card%13],suit:String(Math.floor(card/13))};
+    }
     const s=String(card||'').trim();
     if(s.length<2)return null;
     const rank=s[0].toUpperCase(),suit=SUITS[s[1].toLowerCase?.()||s[1]]||SUITS[s[1]];
