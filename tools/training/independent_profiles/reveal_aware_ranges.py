@@ -1,27 +1,18 @@
 #!/usr/bin/env python3
 """Reveal-aware latent preflop range inference for independent opponent Model B.
 
-The historical Model-B range table counted only known cards from players still
-active after preflop.  This module keeps *every* opponent preflop observation,
-while preserving the distinction between observed and latent hole cards.
+Every TRAIN opponent observation is retained. Eventual revealed cards are labels;
+hidden/folded cards remain latent. Public action signatures may redistribute
+latent posterior mass only to the extent that TRAIN revelations identify a
+hand/action association. Signatures with no revealed labels are explicitly
+reported as non-identifiable rather than receiving invented card labels.
 
-Important statistical contract:
-- only TRAIN observations are allowed to fit a candidate;
-- Model A outputs (EV, recommendation, policy, pseudo-labels) are never inputs;
-- a hidden/folded hand is never promoted to a known card label;
-- hidden hands receive fractional posterior mass only when TRAIN revelations
-  identify a hand/action association; otherwise they remain prior-driven;
-- sensitivity to the hand/action signal is reported instead of pretending the
-  missing-card mechanism is identifiable from PokerStars HH alone.
-
-The serialized nodes keep the legacy ``n``/``counts`` surface, so the existing
-Model-B range probability consumer can score a candidate without a second
-prediction implementation.  ``counts`` are expected latent counts, not observed
-card counts; ``revealed_counts`` and identification metadata preserve that fact.
+Serialized nodes preserve the legacy ``n``/``counts`` probability-consumer
+surface. ``counts`` are fractional expected latent counts, while
+``revealed_counts`` keeps the actually observed labels auditable.
 """
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import math
@@ -66,12 +57,7 @@ def total_variation(left: dict[str, float], right: dict[str, float]) -> float:
 
 
 def preflop_signature(hand: dict[str, Any], player: str) -> str:
-    """Return the actor's observable preflop action sequence.
-
-    Posts are excluded.  CALL before any raise is labelled LIMP; later calls are
-    CALL.  The signature is computed from the public action stream and therefore
-    contains no future cards.
-    """
+    """Return the actor's public preflop action sequence; posts are excluded."""
     labels: list[str] = []
     raises = 0
     for event in hand["events"]["preflop"]:
@@ -94,11 +80,7 @@ def preflop_signature(hand: dict[str, Any], player: str) -> str:
 
 
 def terminal_role(base_role: str, signature: str) -> str:
-    # Folds must remain represented in the behavioural population.  Extending the
-    # role value does not change the RANGE_LEVELS context columns.
-    if signature.split(">")[-1:] == ["FOLD"]:
-        return "FOLDER"
-    return base_role
+    return "FOLDER" if signature.split(">")[-1:] == ["FOLD"] else base_role
 
 
 def collect_observations(
@@ -131,18 +113,16 @@ def collect_observations(
                 audit["invalid_known_cards"] += 1
                 hand_class = None
             profile = int(player_profile.get(player, default_profile))
-            role = terminal_role(roles.get(player, "OTHER"), signature)
-            observation = {
+            observations.append({
                 "hand_id": str(record.hand_id),
                 "profile": profile,
                 "position": hand["positions"].get(player, "NA"),
                 "pot_type": pot_type,
-                "preflop_role": role,
+                "preflop_role": terminal_role(roles.get(player, "OTHER"), signature),
                 "signature": signature,
                 "hand_class": hand_class,
                 "profile_source": "TRAIN_KNOWN_PLAYER" if player in player_profile else "TRAIN_COLD_START_PROFILE",
-            }
-            observations.append(observation)
+            })
             audit["observations"] += 1
             audit["revealed"] += int(hand_class is not None)
             audit["hidden"] += int(hand_class is None)
@@ -161,10 +141,7 @@ def collect_observations(
             "reveal_rate": revealed / total if total else None,
             "card_action_link_identifiable": revealed > 0,
         }
-    return observations, {
-        "counts": dict(sorted(audit.items())),
-        "reveal_by_signature": signature_rows,
-    }
+    return observations, {"counts": dict(sorted(audit.items())), "reveal_by_signature": signature_rows}
 
 
 def _action_likelihoods(
@@ -174,13 +151,15 @@ def _action_likelihoods(
 ) -> tuple[dict[str, dict[str, float]], set[str]]:
     signatures = sorted({str(o["signature"]) for o in observations})
     signature_counts = Counter(str(o["signature"]) for o in observations)
+    # All observations inform the action marginal, but only actual revelations
+    # inform differences between hand classes.
     sig_prior = normalized({s: float(signature_counts[s]) + 1.0 for s in signatures})
     known_by_hand: dict[str, Counter] = {h: Counter() for h in notations}
     known_signature_totals = Counter()
-    for obs in observations:
-        hand_class = obs.get("hand_class")
+    for observation in observations:
+        hand_class = observation.get("hand_class")
         if hand_class in known_by_hand:
-            signature = str(obs["signature"])
+            signature = str(observation["signature"])
             known_by_hand[hand_class][signature] += 1
             known_signature_totals[signature] += 1
 
@@ -189,13 +168,11 @@ def _action_likelihoods(
         counts = known_by_hand[hand_class]
         n = sum(counts.values())
         likelihoods[hand_class] = {
-            signature: (
-                float(counts[signature]) + action_prior_strength * sig_prior[signature]
-            ) / (float(n) + action_prior_strength)
+            signature: (float(counts[signature]) + action_prior_strength * sig_prior[signature])
+            / (float(n) + action_prior_strength)
             for signature in signatures
         }
-    nonidentified = {s for s in signatures if known_signature_totals[s] == 0}
-    return likelihoods, nonidentified
+    return likelihoods, {s for s in signatures if known_signature_totals[s] == 0}
 
 
 def fit_latent_node(
@@ -209,7 +186,7 @@ def fit_latent_node(
     max_iterations: int = 100,
     tolerance: float = 1e-10,
 ) -> dict[str, Any]:
-    """Fit expected hand-class counts without inventing labels for hidden hands."""
+    """Fit expected counts using an E-step aggregated by public action signature."""
     if not observations:
         raise ValueError("latent node requires observations")
     if prior_strength < 0 or action_prior_strength <= 0 or decision_signal_power < 0:
@@ -219,44 +196,43 @@ def fit_latent_node(
     revealed_counts = Counter(
         str(o["hand_class"]) for o in observations if o.get("hand_class") in combo_prior
     )
-    hidden = [o for o in observations if o.get("hand_class") not in combo_prior]
+    hidden_by_signature = Counter(
+        str(o["signature"]) for o in observations if o.get("hand_class") not in combo_prior
+    )
     revealed_n = sum(revealed_counts.values())
     n = len(observations)
     likelihoods, nonidentified = _action_likelihoods(observations, notations, action_prior_strength)
 
     current = normalized({
-        h: float(revealed_counts[h]) + prior_strength * combo_prior[h]
-        for h in notations
+        h: float(revealed_counts[h]) + prior_strength * combo_prior[h] for h in notations
     })
-    expected_counts: dict[str, float] = {h: float(revealed_counts[h]) for h in notations}
+    expected_counts = {h: float(revealed_counts[h]) for h in notations}
     final_delta = math.inf
     iterations = 0
 
     for iterations in range(1, max_iterations + 1):
         expected_counts = {h: float(revealed_counts[h]) for h in notations}
-        for obs in hidden:
-            signature = str(obs["signature"])
+        # All hidden observations with the same public signature have the same
+        # posterior. Aggregating them makes the result identical to per-hand EM
+        # while reducing the dominant complexity by orders of magnitude.
+        for signature, hidden_count in hidden_by_signature.items():
             weights = {
                 h: current[h] * (likelihoods[h][signature] ** decision_signal_power)
                 for h in notations
             }
             posterior = normalized(weights)
-            for h, p in posterior.items():
-                expected_counts[h] += p
+            for h, probability in posterior.items():
+                expected_counts[h] += hidden_count * probability
         updated = normalized({
-            h: expected_counts[h] + prior_strength * combo_prior[h]
-            for h in notations
+            h: expected_counts[h] + prior_strength * combo_prior[h] for h in notations
         })
         final_delta = max(abs(updated[h] - current[h]) for h in notations)
         current = updated
         if final_delta <= tolerance:
             break
 
-    # Compatibility counts must sum to the actual observations, not to the
-    # Dirichlet pseudo-counts used for stabilization.
-    count_total = sum(expected_counts.values())
-    if not math.isclose(count_total, n, rel_tol=0.0, abs_tol=1e-6):
-        raise AssertionError((count_total, n))
+    if not math.isclose(sum(expected_counts.values()), n, rel_tol=0.0, abs_tol=1e-6):
+        raise AssertionError((sum(expected_counts.values()), n))
 
     revealed_by_signature = Counter(
         str(o["signature"]) for o in observations if o.get("hand_class") in combo_prior
@@ -269,17 +245,12 @@ def fit_latent_node(
         "hidden_n": n - revealed_n,
         "reveal_rate": revealed_n / n,
         "revealed_counts": dict(sorted(revealed_counts.items())),
-        "identification": (
-            "FULLY_OBSERVED" if revealed_n == n else "NO_CARD_LABELS" if revealed_n == 0 else "PARTIAL_MISSING_NOT_AT_RANDOM"
-        ),
+        "identification": "FULLY_OBSERVED" if revealed_n == n else "NO_CARD_LABELS" if revealed_n == 0 else "PARTIAL_MISSING_NOT_AT_RANDOM",
         "partial_identification_width": (n - revealed_n) / n,
         "nonidentified_signatures": sorted(nonidentified),
         "signature_support": {
-            s: {
-                "n": int(all_by_signature[s]),
-                "revealed_n": int(revealed_by_signature[s]),
-            }
-            for s in sorted(all_by_signature)
+            signature: {"n": int(all_by_signature[signature]), "revealed_n": int(revealed_by_signature[signature])}
+            for signature in sorted(all_by_signature)
         },
         "fit": {
             "iterations": iterations,
@@ -287,11 +258,12 @@ def fit_latent_node(
             "prior_strength": prior_strength,
             "action_prior_strength": action_prior_strength,
             "decision_signal_power": decision_signal_power,
+            "e_step": "aggregated_by_public_action_signature",
         },
     }
 
 
-def _node_distribution(node: dict[str, Any], notations: list[str]) -> dict[str, float]:
+def _distribution(node: dict[str, Any], notations: list[str]) -> dict[str, float]:
     n = float(node["n"])
     return {h: float(node["counts"].get(h, 0.0)) / n for h in notations}
 
@@ -310,38 +282,33 @@ def build_latent_ranges(
 
     for level_index, cols in enumerate(RANGE_LEVELS):
         groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
-        for obs in observations:
-            groups[key_for(cols, obs)].append(obs)
-        serialized = {}
-        weighted_tv = {str(power): 0.0 for power in sensitivity_powers if power != 1.0}
-        max_tv = {str(power): 0.0 for power in sensitivity_powers if power != 1.0}
+        for observation in observations:
+            groups[key_for(cols, observation)].append(observation)
+        serialized: dict[str, Any] = {}
+        alternate_powers = [power for power in sensitivity_powers if power != 1.0]
+        weighted_tv = {str(power): 0.0 for power in alternate_powers}
+        max_tv = {str(power): 0.0 for power in alternate_powers}
         kept_weight = 0
         for key in sorted(groups):
             rows = groups[key]
             if level_index != len(RANGE_LEVELS) - 1 and len(rows) < backoff_min_observations:
                 continue
             nominal = fit_latent_node(
-                rows,
-                notations,
-                multiplicity,
+                rows, notations, multiplicity,
                 prior_strength=prior_strength,
                 action_prior_strength=action_prior_strength,
                 decision_signal_power=1.0,
             )
-            nominal_dist = _node_distribution(nominal, notations)
+            nominal_dist = _distribution(nominal, notations)
             node_sensitivity = {}
-            for power in sensitivity_powers:
-                if power == 1.0:
-                    continue
+            for power in alternate_powers:
                 variant = fit_latent_node(
-                    rows,
-                    notations,
-                    multiplicity,
+                    rows, notations, multiplicity,
                     prior_strength=prior_strength,
                     action_prior_strength=action_prior_strength,
                     decision_signal_power=power,
                 )
-                tv = total_variation(nominal_dist, _node_distribution(variant, notations))
+                tv = total_variation(nominal_dist, _distribution(variant, notations))
                 node_sensitivity[str(power)] = round(tv, 8)
                 weighted_tv[str(power)] += tv * len(rows)
                 max_tv[str(power)] = max(max_tv[str(power)], tv)
@@ -354,12 +321,12 @@ def build_latent_ranges(
             "cols": cols,
             "nodes": len(serialized),
             "weighted_mean_total_variation": {
-                p: (weighted_tv[p] / kept_weight if kept_weight else None) for p in weighted_tv
+                power: weighted_tv[power] / kept_weight if kept_weight else None for power in weighted_tv
             },
             "max_total_variation": max_tv,
         })
 
-    ranges = {
+    return {
         "schema": SCHEMA,
         "semantics": "expected latent hand-class counts from TRAIN public decisions plus eventual revelations; hidden cards remain latent",
         "context_columns": RANGE_LEVELS,
@@ -375,22 +342,18 @@ def build_latent_ranges(
             "nominal_decision_signal_power": 1.0,
             "sensitivity_decision_signal_powers": list(sensitivity_powers),
             "missing_cards": "never labelled; fractional posterior mass only",
-            "future_information_runtime_rule": "eventual revelations are aggregate TRAIN labels only and are never exposed to a runtime decision before revelation",
+            "future_information_runtime_rule": "eventual revelations are aggregate TRAIN labels only and never exposed to a runtime decision before revelation",
         },
         "levels": levels_out,
-    }
-    sensitivity = {
+    }, {
         "schema": "independent-preflop-reveal-sensitivity/v1",
-        "interpretation": "Variation across decision-signal powers measures dependence on the non-identifiable hand/action extrapolation for hidden cards; it is not a frequentist confidence interval.",
+        "interpretation": "Variation across decision-signal powers measures dependence on non-identifiable hand/action extrapolation; it is not a confidence interval.",
         "levels": sensitivity_summary,
     }
-    return ranges, sensitivity
 
 
 def certified_records(
-    archives: list[Path],
-    stakes: set[str],
-    certification_path: Path,
+    archives: list[Path], stakes: set[str], certification_path: Path
 ) -> tuple[list[HandRecord], dict[str, Any]]:
     certification = json.loads(certification_path.read_text(encoding="utf-8"))
     by_id, source_provenance = merge_archives(archives, stakes)
@@ -398,9 +361,7 @@ def certified_records(
     retained = {str(hid): record for hid, record in by_id.items() if str(hid) not in excluded_ids}
     expected = int(certification["status"]["ADMISSIBLE"]["unique_hands"])
     if len(retained) != expected:
-        raise ValueError(
-            f"certified population mismatch: retained {len(retained)} hands, certification expects {expected}; provide all certification archives"
-        )
+        raise ValueError(f"certified population mismatch: retained {len(retained)}, expected {expected}; provide every certification archive")
     split_counts = Counter(split_for(hid) for hid in retained)
     expected_splits = certification["status"]["ADMISSIBLE"]["split_counts"]
     if dict(split_counts) != expected_splits:
@@ -421,14 +382,12 @@ def build_from_records(
     excluded_players: set[str],
     **fit_kwargs: Any,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-    train_records = [r for r in records if split_for(r.hand_id) == "TRAIN"]
+    train_records = [record for record in records if split_for(record.hand_id) == "TRAIN"]
     player_profile = {str(k): int(v) for k, v in profiles["player_profile"].items()}
     default_profile = int(max(profiles["profiles"], key=lambda p: p["appearance_weight"])["profile"])
-    observations, audit = collect_observations(
-        train_records, player_profile, default_profile, excluded_players
-    )
+    observations, audit = collect_observations(train_records, player_profile, default_profile, excluded_players)
     ranges, sensitivity = build_latent_ranges(observations, **fit_kwargs)
-    audit_doc = {
+    return ranges, sensitivity, {
         "schema": AUDIT_SCHEMA,
         "fit_split": "TRAIN",
         "train_hands": len(train_records),
@@ -438,63 +397,7 @@ def build_from_records(
         "observation_audit": audit,
         "identification_limits": [
             "Preflop folds normally have no revealed hole cards; where a signature has no revealed labels its hand composition is not identified and stays prior-driven.",
-            "Eventual showdown/muck revelations can be selection-biased by postflop survival and strength; sensitivity variants quantify dependence on action-signal extrapolation but cannot identify the true missing-card mechanism.",
+            "Eventual showdown/muck revelations can be selection-biased by postflop survival and strength; sensitivity variants expose dependence on action-signal extrapolation but cannot identify the true missing-card mechanism.",
             "Aggregate TRAIN revelations may fit parameters, but runtime decisions must never receive cards before their actual revelation event.",
         ],
     }
-    return ranges, sensitivity, audit_doc
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profiles", type=Path, required=True)
-    parser.add_argument("--archive", type=Path, action="append", required=True)
-    parser.add_argument("--certification", type=Path, required=True)
-    parser.add_argument("--stake", action="append", default=["100/200"])
-    parser.add_argument("--exclude-player", action="append", default=[])
-    parser.add_argument("--backoff-min-observations", type=int, default=20)
-    parser.add_argument("--prior-strength", type=float, default=50.0)
-    parser.add_argument("--action-prior-strength", type=float, default=20.0)
-    parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--sensitivity-output", type=Path, required=True)
-    parser.add_argument("--audit-output", type=Path, required=True)
-    args = parser.parse_args()
-
-    profiles = json.loads(args.profiles.read_text(encoding="utf-8"))
-    records, population = certified_records(args.archive, set(args.stake), args.certification)
-    ranges, sensitivity, audit = build_from_records(
-        records,
-        profiles,
-        set(args.exclude_player),
-        backoff_min_observations=args.backoff_min_observations,
-        prior_strength=args.prior_strength,
-        action_prior_strength=args.action_prior_strength,
-    )
-    for document in (ranges, sensitivity, audit):
-        document["population"] = population
-        document["profiles_sha256"] = sha256_file(args.profiles)
-
-    for path, document in (
-        (args.output, ranges),
-        (args.sensitivity_output, sensitivity),
-        (args.audit_output, audit),
-    ):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    print(json.dumps({
-        "schema": SCHEMA,
-        "population": population,
-        "fit": ranges["fit"],
-        "audit": audit["observation_audit"],
-        "sensitivity": sensitivity["levels"],
-        "outputs": {
-            "ranges": {"path": args.output.as_posix(), "sha256": sha256_file(args.output)},
-            "sensitivity": {"path": args.sensitivity_output.as_posix(), "sha256": sha256_file(args.sensitivity_output)},
-            "audit": {"path": args.audit_output.as_posix(), "sha256": sha256_file(args.audit_output)},
-        },
-    }, ensure_ascii=False, indent=2))
-
-
-if __name__ == "__main__":
-    main()
