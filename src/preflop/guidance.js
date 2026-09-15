@@ -63,9 +63,12 @@
   function decisionPayload(decision){
     return {
       schema:decision.schema,
+      status:decision.status,
       context_id:decision.context_id,
       population_id:decision.population_id,
       ev_reference:decision.ev_reference,
+      actor_contribution_bb:decision.actor_contribution_bb,
+      legal_actions:decision.legal_actions,
       selected_id:decision.selected_id,
       action:decision.action,
       target_total_bb:decision.target_total_bb,
