@@ -2,6 +2,8 @@ name: Persisted dataset integrity
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'training/registry.json'
       - 'training/datasets/**'
@@ -24,6 +26,10 @@ on:
       - 'tests/training/**'
       - '.github/workflows/dataset-integrity.yml'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
