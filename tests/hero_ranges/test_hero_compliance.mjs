@@ -5,6 +5,11 @@ const require=createRequire(import.meta.url);
 const H=require('../../site/hero-ranges.js');
 globalThis.PokerHeroRanges=H;
 const C=require('../../site/hero-compliance.js');
+require('../../site/hero-compliance-replayer.js');
+const R=globalThis.PokerHeroComplianceReplayer;
+
+assert.equal(R.handClass([11,21]),'KTo','numeric replayer card IDs must map to canonical 169 notation');
+assert.equal(R.handClass(['Ks','Th']),'KTo','text card compatibility must be preserved');
 
 const POP='pokerstars_nlhe_100-200_zoom_play_6max_v1';
 const context={population_id:POP,table_size:6,position:'BTN',effective_stack_bb:100,spot:'UNOPENED'};
