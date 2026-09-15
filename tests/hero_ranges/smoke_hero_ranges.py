@@ -58,6 +58,10 @@ async def main() -> None:
         imported = await page.evaluate(f"JSON.parse(localStorage.getItem('{STORAGE_KEY}'))")
         assert imported["source"]["preserved_verbatim"] is True
         assert imported["source"]["range_folder"] == source
+        imported_node = next(iter(imported["contexts"].values()))
+        imported_aa = imported_node["layers"]["personal"]["hands"]["AA"]
+        assert imported_aa["actions"] == aa["actions"], "legacy source refresh must preserve personal customization"
+        assert imported_aa["sizings"] == aa["sizings"]
 
         await page.locator("#quickAction").select_option("OPEN")
         await page.click("#quickApply")
@@ -74,6 +78,7 @@ async def main() -> None:
             "grid_cells": await page.locator("#heroGrid .hand-cell").count(),
             "source_ranges": await page.locator("#sourceRangeSelect option").count(),
             "source_preserved": edited["source"]["preserved_verbatim"],
+            "customization_survived_source_refresh": True,
             "errors": errors,
         }
         print(json.dumps(snapshot, ensure_ascii=False, indent=2))
