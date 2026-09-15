@@ -25,6 +25,10 @@ def main() -> int:
     assert set(assembled["functional_files"]) == {
         "site/index.html",
         "site/preflop-contract.js",
+        "site/hero-ranges.html",
+        "site/hero-ranges.js",
+        "site/hero-ranges-app.js",
+        "site/hero-ranges.css",
         "site/trainer.css",
         "site/trainer.js",
     }
