@@ -10,7 +10,11 @@
 
   function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
   function cardParts(card){
-    const s=String(card||'').trim();
+    const raw=String(card??'').trim(),numeric=Number(card);
+    if((typeof card==='number'||/^\d+$/.test(raw))&&Number.isInteger(numeric)&&numeric>=0&&numeric<52){
+      return {rank:RANKS[numeric%13],suit:'shdc'[(numeric/13)|0]};
+    }
+    const s=raw;
     if(s.length<2)return null;
     const rank=s[0].toUpperCase(),suit=SUITS[s[1].toLowerCase?.()||s[1]]||SUITS[s[1]];
     if(!RANKS.includes(rank)||!suit)return null;
