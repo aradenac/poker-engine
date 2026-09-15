@@ -5,8 +5,10 @@ on:
     paths:
       - 'site/hero-compliance.js'
       - 'site/hero-compliance-replayer.js'
+      - 'site/hero-ranges-app.js'
       - 'site/trainer.js'
       - 'site/RELEASE.json'
+      - 'tests/regression/hand_262024556922.json'
       - 'tests/hero_ranges/test_hero_compliance.mjs'
       - 'tests/hero_ranges/smoke_hero_compliance.py'
       - 'tests/hero_ranges/smoke_hero_compliance_browser.py'
@@ -18,8 +20,10 @@ on:
     paths:
       - 'site/hero-compliance.js'
       - 'site/hero-compliance-replayer.js'
+      - 'site/hero-ranges-app.js'
       - 'site/trainer.js'
       - 'site/RELEASE.json'
+      - 'tests/regression/hand_262024556922.json'
       - 'tests/hero_ranges/test_hero_compliance.mjs'
       - 'tests/hero_ranges/smoke_hero_compliance.py'
       - 'tests/hero_ranges/smoke_hero_compliance_browser.py'
@@ -47,6 +51,7 @@ jobs:
         run: |
           node --check site/hero-compliance.js
           node --check site/hero-compliance-replayer.js
+          node --check site/hero-ranges-app.js
       - name: Compliance semantics
         run: node tests/hero_ranges/test_hero_compliance.mjs
       - name: Static replayer integration
@@ -78,7 +83,7 @@ jobs:
           done
           cat /tmp/hero-compliance-http.log
           exit 1
-      - name: Exercise compliance loader in browser
+      - name: Exercise real-HH compliance and canonical editor deep link
         run: python3 tests/hero_ranges/smoke_hero_compliance_browser.py
       - name: Show server log on failure
         if: failure()
