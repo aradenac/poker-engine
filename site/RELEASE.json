@@ -10,7 +10,7 @@
       ],
       "functional_files": {
         "site/hero-ranges-app.js": {
-          "git_blob_sha": "384d8d0355bcbec36e4d02898f813416a2fc7b5f"
+          "git_blob_sha": "7a62e18a07657b8a946b0f3cd07947e7515ce1af"
         },
         "site/hero-ranges.css": {
           "git_blob_sha": "5c83d828e3a97acfadd5773464e8040ab3e57903"
@@ -19,7 +19,7 @@
           "git_blob_sha": "236dcaa9c223ab1894b545578ad37a061e1276c4"
         },
         "site/hero-ranges.js": {
-          "git_blob_sha": "d45343c44b7c187ee3cd63455fd82c5a4b1e4e71"
+          "git_blob_sha": "f52d40a82b70108f30bf71a64b7f996d86494bf4"
         },
         "site/index.html": {
           "git_blob_sha": "f96a47d15afacd58347b664a9f010ad23e0968ba"
