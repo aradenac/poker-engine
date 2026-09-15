@@ -1,0 +1,26 @@
+{
+  "schema": "independent-opponent-model-b-prediction-contract/v2",
+  "model_schema": "independent-opponent-model-b/v3-reveal-aware-candidate",
+  "context_compatibility": "same Model-B RANGE_LEVELS columns as v2; FOLDER is an explicit preflop_role extension for latent observations",
+  "profile_assignment": {
+    "known_player": "incumbent TRAIN-derived deterministic profile (frozen for issue #103 isolation)",
+    "cold_start": "incumbent profile with largest TRAIN appearance_weight"
+  },
+  "preflop_range": {
+    "selection": "finest hierarchy node with n >= backoff_min_observations, else ALL",
+    "posterior": "existing range_probability consumer over expected latent counts plus the configured combinatorial prior",
+    "count_semantics": "fractional expected hand-class counts; revealed_counts remain separately auditable",
+    "fit_split": "TRAIN",
+    "prior_strength": 50.0,
+    "action_prior_strength": 20.0,
+    "hidden_cards": "never assigned observed labels; posterior mass derives only from aggregate TRAIN action/revelation evidence",
+    "reveal_bias": "missingness is not assumed identifiable; decision-signal powers 0.0/0.5/1.0 are reported as sensitivity variants"
+  },
+  "postflop_action": {
+    "status": "BYTE_IDENTICAL_TO_INCUMBENT_V2"
+  },
+  "sizing": {
+    "status": "BYTE_IDENTICAL_TO_INCUMBENT_V2"
+  },
+  "future_information_rule": "eventual TRAIN revelations may fit aggregate parameters; a runtime decision never receives a card before its actual reveal event"
+}
