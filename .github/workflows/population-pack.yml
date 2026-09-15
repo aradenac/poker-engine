@@ -80,7 +80,10 @@ jobs:
 
   publish:
     needs: validate
-    if: github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.publish == true))
     runs-on: ubuntu-latest
     permissions:
       contents: write
