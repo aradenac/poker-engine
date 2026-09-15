@@ -18,7 +18,14 @@
   function text(value){return value==null?'':String(value).trim();}
   function upper(value){return text(value).toUpperCase();}
   function array(value){return Array.isArray(value)?value:[];}
-  function sameJson(left,right){return JSON.stringify(left)===JSON.stringify(right);}
+  function canonicalJson(value){
+    if(Array.isArray(value))return `[${value.map(canonicalJson).join(',')}]`;
+    if(value&&typeof value==='object'){
+      return `{${Object.keys(value).sort().map(key=>`${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+    }
+    return JSON.stringify(value);
+  }
+  function sameJson(left,right){return canonicalJson(left)===canonicalJson(right);}
 
   function normalizeStrategy(input={}){
     const state=upper(input.state||'NO_VERDICT');
