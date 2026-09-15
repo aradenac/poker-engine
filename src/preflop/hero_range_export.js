@@ -16,17 +16,32 @@
     if(!text)throw new Error(`${name} is required`);
     return text;
   }
-  function finite(value,name){
-    const n=Number(value);
-    if(!Number.isFinite(n))throw new Error(`${name} must be finite`);
-    return n;
-  }
   function sameNumber(a,b,tolerance=1e-6){return Math.abs(Number(a)-Number(b))<=tolerance;}
+  function stableStringify(value){
+    if(value===null||typeof value!=='object')return JSON.stringify(value);
+    if(Array.isArray(value))return '['+value.map(stableStringify).join(',')+']';
+    return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stableStringify(value[key])).join(',')+'}';
+  }
 
   function dependencies(){
     if(!HeroRanges)throw new Error('PokerHeroRanges dependency is required');
     if(!PreflopDecision)throw new Error('PokerPreflopDecision dependency is required');
     return {HeroRanges,PreflopDecision};
+  }
+
+  function normalizeProvenance(input){
+    if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('provenance object is required');
+    const provenance=clone(input);
+    provenance.code=requiredString(provenance.code,'provenance.code');
+    provenance.selection=requiredString(provenance.selection,'provenance.selection');
+    if(!provenance.models||typeof provenance.models!=='object'||Array.isArray(provenance.models)||!Object.keys(provenance.models).length){
+      throw new Error('provenance.models must identify at least one model');
+    }
+    for(const [key,value] of Object.entries(provenance.models))requiredString(value,`provenance.models.${key}`);
+    if(!provenance.budget||typeof provenance.budget!=='object'||Array.isArray(provenance.budget)||!Object.keys(provenance.budget).length){
+      throw new Error('provenance.budget must describe the search/evaluation budget');
+    }
+    return provenance;
   }
 
   function selectedSizingProbability(strategy,decision){
@@ -96,6 +111,7 @@
     const {HeroRanges:H}=dependencies();
     const context=H.normalizeContext(input.context||{});
     const version=requiredString(input.version,'version');
+    const provenance=normalizeProvenance(input.provenance);
     const status=String(input.status||'EXPERIMENTAL').toUpperCase();
     if(status==='PROMOTED')throw new Error('candidate exporter cannot self-promote a Hero strategy');
     const requireComplete=input.require_complete!==false;
@@ -114,11 +130,11 @@
     H.setLayerMetadata(repository,context,'calculated',{
       version,
       provenance:{
+        ...clone(provenance),
         schema:SCHEMA,
         status,
         source_decision_schema:PreflopDecision.SCHEMA,
-        policy_semantics:'explicit policy when supplied; otherwise selected decision projected one-hot; no synthetic mixes',
-        ...(clone(input.provenance)||{})
+        policy_semantics:'explicit policy when supplied; otherwise selected decision projected one-hot; no synthetic mixes'
       }
     });
 
@@ -144,7 +160,7 @@
         required_hand_classes:H.HAND_CLASSES.length,
         complete:rows.length===H.HAND_CLASSES.length
       },
-      provenance:clone(input.provenance)||{},
+      provenance,
       policy_origins,
       decisions,
       repository:H.exportDocument(repository)
@@ -157,6 +173,7 @@
     const {HeroRanges:H,PreflopDecision:D}=dependencies();
     if(!candidate||candidate.schema!==SCHEMA)throw new Error(`expected ${SCHEMA}`);
     if(candidate.promotion_authorized!==false)throw new Error('candidate must not authorize its own promotion');
+    const provenance=normalizeProvenance(candidate.provenance);
     const context=H.normalizeContext(candidate.context||{});
     if(String(candidate.population_id)!==String(context.population_id))throw new Error('candidate population/context mismatch');
     H.validateRepository(candidate.repository);
@@ -166,6 +183,16 @@
     const node=candidate.repository.contexts?.[H.contextKey(context)];
     if(!node)throw new Error('calculated context missing from repository');
     if(String(node.layers?.calculated?.version??'')!==String(candidate.version??''))throw new Error('calculated layer version mismatch');
+    const layerProvenance=node.layers?.calculated?.provenance||{};
+    if(layerProvenance.schema!==SCHEMA)throw new Error('calculated layer provenance schema mismatch');
+    if(String(layerProvenance.status)!==String(candidate.status))throw new Error('calculated layer provenance status mismatch');
+    if(layerProvenance.source_decision_schema!==D.SCHEMA)throw new Error('calculated layer source decision schema mismatch');
+    for(const key of ['code','selection']){
+      if(String(layerProvenance[key])!==String(provenance[key]))throw new Error(`calculated layer provenance ${key} mismatch`);
+    }
+    for(const key of ['models','budget']){
+      if(stableStringify(layerProvenance[key])!==stableStringify(provenance[key]))throw new Error(`calculated layer provenance ${key} mismatch`);
+    }
 
     const decisionHands=Object.keys(candidate.decisions||{});
     const layerHands=Object.keys(node.layers?.calculated?.hands||{});
