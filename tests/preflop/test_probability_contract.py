@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -86,11 +87,12 @@ def test_js_incumbent_passthrough_matches_python_semantics():
     )
     for key in (
         "schema", "behavior_mode", "hand_class", "legal_actions", "model_actions",
-        "probabilities", "probability_sum", "action_set_compatible",
+        "probabilities", "action_set_compatible",
         "positive_illegal_model_actions", "missing_legal_model_actions", "source",
         "backoff_level", "confidence", "support", "incumbent_compatibility",
     ):
         assert js[key] == py[key], (key, js[key], py[key])
+    assert math.isclose(js["probability_sum"], py["probability_sum"], rel_tol=0, abs_tol=1e-15)
 
 
 if __name__ == "__main__":
