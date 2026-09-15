@@ -54,8 +54,11 @@ async def main() -> None:
               const missing=structuredClone(entry);
               missing.runtime_revision='1'.repeat(64);
               missing.assets[missing.assets.length-1].url='./packs/definitely-missing.json';
+              const missingFetch=(url,opts)=>String(url).includes('definitely-missing.json')
+                ? Promise.resolve(new Response('',{status:503,statusText:'simulated interrupted download'}))
+                : fetch(url,opts);
               let missingRejected=false;
-              try{await P.install(missing);}catch(_){missingRejected=true;}
+              try{await P.install(missing,{fetchImpl:missingFetch});}catch(_){missingRejected=true;}
               if(!missingRejected) throw new Error('interrupted/missing asset accepted');
               if((await P.active()).id!==original.id) throw new Error('missing asset changed active pack');
 
