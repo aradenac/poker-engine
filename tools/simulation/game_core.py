@@ -166,7 +166,13 @@ class NoLimitHoldemState:
             q != player and not self.folded[q] and not self.all_in[q] and self.stacks_bb[q] > EPS
             for q in self.seats
         )
-        raise_reopened = player not in self.acted_since_full_raise
+        # A single short all-in does not reopen action, but several short all-ins
+        # can cumulatively do so once the actor faces at least one full raise more
+        # than the price at which they last acted (their current contribution).
+        raise_reopened = (
+            player not in self.acted_since_full_raise
+            or to_call_full + EPS >= self.last_full_raise_bb
+        )
         can_increase = max_to > self.current_bet_bb + EPS
         can_raise = raise_reopened and can_increase and opponents_can_respond
         min_raise_to = None
