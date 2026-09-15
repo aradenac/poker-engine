@@ -36,7 +36,7 @@ jobs:
       - name: Build certified TRAIN-only candidate
         run: |
           rm -rf /tmp/model_b_reveal_aware
-          python3 tools/training/independent_profiles/build_reveal_aware_candidate.py \
+          python3 -m tools.training.independent_profiles.build_reveal_aware_candidate \
             --incumbent-dir training/runs/20260912_independent_profiles_v2/model \
             --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
             --archive training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip \
@@ -50,7 +50,7 @@ jobs:
 
       - name: Paired VALIDATION only
         run: |
-          python3 tools/training/independent_profiles/evaluate_reveal_aware_ranges.py \
+          python3 -m tools.training.independent_profiles.evaluate_reveal_aware_ranges \
             --incumbent-dir training/runs/20260912_independent_profiles_v2/model \
             --candidate-dir /tmp/model_b_reveal_aware/model \
             --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
