@@ -32,6 +32,16 @@ function initOptions(){
   if(repo.defaults?.population_id)els.population.value=repo.defaults.population_id;
   if(repo.defaults?.effective_stack_bb)els.stack.value=repo.defaults.effective_stack_bb;
 }
+function applyDeepLink(){
+  const params=new URLSearchParams(window.location.search||"");
+  const population=String(params.get("population")||"").trim();if(population)els.population.value=population;
+  const position=String(params.get("position")||"").toUpperCase();if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
+  const stack=Number(params.get("stack"));if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
+  const spot=String(params.get("spot")||"").toUpperCase();if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
+  const requested=String(params.get("hand")||"").trim();
+  const canonical=HeroRanges.HAND_CLASSES.find(hand=>hand.toUpperCase()===requested.toUpperCase());
+  if(canonical)selectedHand=canonical;
+}
 
 function legacyEntries(){return HeroRanges.legacyRanges(repo.source?.range_folder);}
 function sourceSelection(){
@@ -147,4 +157,4 @@ els.export.addEventListener("click",exportFile);els.save.addEventListener("click
 els.sourceRange.addEventListener("change",()=>{renderSourceBrowser();renderGrid();});els.sourcePosition.addEventListener("change",()=>{renderSourceHandDetail();renderGrid();});
 for(const el of [els.population,els.position,els.stack,els.spot])el.addEventListener("change",renderAll);
 
-initOptions();renderAll();
+initOptions();applyDeepLink();renderAll();
