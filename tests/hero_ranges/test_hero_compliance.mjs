@@ -30,6 +30,8 @@ function decision(action='RAISE',extra={}){
 // A 20% action is allowed on an isolated occurrence; this is not a frequency-calibration failure.
 const mixed=C.evaluateDecision({repo,decision:decision('RAISE'),handClass:'AKs'});
 assert.equal(mixed.context_status,'RESOLVED');
+assert.equal(mixed.depth_match,'exact');
+assert.equal(mixed.depth_delta_bb,0);
 assert.equal(mixed.planned_action,'OPEN');
 assert.equal(mixed.action_probability,.2);
 assert.equal(mixed.action_status,'MIXED_ALLOWED');
@@ -61,18 +63,37 @@ const unsupportedAction=C.evaluateDecision({repo,decision:decision('BET'),handCl
 assert.equal(unsupportedAction.action_status,'UNKNOWN_ACTION');
 assert.equal(unsupportedAction.action_probability,null);
 
-const missingContext=C.evaluateDecision({repo,decision:{action:'RAISE',actor_position:'BTN',family:'VS_5BET',raise_level:4,actor_start_stack_bb:100},handClass:'AKs'});
+const missingContext=C.evaluateDecision({repo,decision:{action:'RAISE',actor_position:'BTN',family:'VS_5BET',raise_level:4,effective_stack_bb:100},handClass:'AKs'});
 assert.equal(missingContext.action_status,'NO_VERDICT');
 assert.equal(missingContext.context_status,'UNSUPPORTED_CONTEXT');
 
-// Effective stack can come from the canonical actor_remaining_bb without inventing a new stack.
-const stackFallback=decision('RAISE');
-delete stackFallback.preflop_context_v1.effective_stack_bb;
-stackFallback.preflop_context_v1.actor_remaining_bb=99;
-const fallback=C.evaluateDecision({repo,decision:stackFallback,handClass:'AKs'});
-assert.equal(fallback.context_status,'RESOLVED');
-assert.equal(fallback.depth_match,'nearest');
-assert.equal(fallback.depth_delta_bb,1);
+// Depth is part of the exact #97 repository key: 99 BB must not silently reuse 100 BB.
+const nearDepth=decision('RAISE');
+nearDepth.preflop_context_v1.effective_stack_bb=99;
+const near=C.evaluateDecision({repo,decision:nearDepth,handClass:'AKs'});
+assert.equal(near.context_status,'UNCOVERED_DEPTH');
+assert.equal(near.action_status,'NO_VERDICT');
+assert.equal(near.resolved_context.effective_stack_bb,99);
+assert.equal(near.nearest_context.effective_stack_bb,100);
+assert.equal(near.depth_delta_bb,1);
+assert.equal(near.action_probability,null);
+
+// actor_remaining/start-stack are not canonical depth substitutes. Missing effective_stack_bb fails closed.
+const missingCanonicalDepth=decision('RAISE');
+delete missingCanonicalDepth.preflop_context_v1.effective_stack_bb;
+missingCanonicalDepth.preflop_context_v1.actor_remaining_bb=100;
+missingCanonicalDepth.actor_start_stack_bb=100;
+const noDepth=C.evaluateDecision({repo,decision:missingCanonicalDepth,handClass:'AKs'});
+assert.equal(noDepth.context_status,'UNSUPPORTED_CONTEXT');
+assert.equal(noDepth.action_status,'NO_VERDICT');
+assert.equal(noDepth.resolved_context,null);
+assert.equal(C.effectiveStackForDecision(missingCanonicalDepth),null);
+
+// A top-level canonical effective_stack_bb remains valid when no preflop_context_v1 wrapper exists.
+const topLevelCanonical={action:'RAISE',actor_position:'BTN',table_size:6,raise_level:0,family:'UNOPENED',history:[],to_call_bb:1,effective_stack_bb:100,action_sizing_v1:{target_total_bb:2.5}};
+const topLevel=C.evaluateDecision({repo,decision:topLevelCanonical,handClass:'AKs'});
+assert.equal(topLevel.context_status,'RESOLVED');
+assert.equal(topLevel.depth_match,'exact');
 
 // ISO-facing families are projected only onto spots that the #97 repository can actually represent.
 const isoFacing=decision('CALL',{family:'VS_ISO',preflop_context_v1:{...decision().preflop_context_v1,family:'VS_ISO',history:[{position:'HJ',action:'LIMP'},{position:'CO',action:'RAISE'}],raise_level:1,to_call_bb:2}});
@@ -91,11 +112,11 @@ const token1=C.repositoryVersionToken(repo);
 const token2=C.repositoryVersionToken(H.importDocument(JSON.parse(JSON.stringify(repo))));
 assert.equal(token1,token2,'the selected repository version must remain reproducible after reload');
 
-const summary=C.summarize([mixed,out,badSize,unknownSize,missingHand,unsupportedAction,missingContext,personal]);
-assert.equal(summary.judged,5);
-assert.equal(summary.allowed,4);
+const summary=C.summarize([mixed,out,badSize,unknownSize,missingHand,unsupportedAction,missingContext,near,noDepth,topLevel,personal]);
+assert.equal(summary.judged,6);
+assert.equal(summary.allowed,5);
 assert.equal(summary.out_of_range,1);
-assert.equal(summary.uncovered,3);
+assert.equal(summary.uncovered,5);
 assert.equal(summary.sizing_out_of_range,1);
 assert.equal(summary.frequency_calibration_status,'NOT_EVALUATED_PER_SINGLE_HAND');
 
