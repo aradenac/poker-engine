@@ -10,13 +10,13 @@
       ],
       "functional_files": {
         "site/hero-compliance-replayer.js": {
-          "git_blob_sha": "201176f6149d21981e3654de4b24b2a5dd8b25e4"
+          "git_blob_sha": "e998288d3ce13b6b018a58274a01ca8e04c17326"
         },
         "site/hero-compliance.js": {
           "git_blob_sha": "83cc8e3de0e48bb33e793583c08272ef681a173a"
         },
         "site/hero-ranges-app.js": {
-          "git_blob_sha": "7a62e18a07657b8a946b0f3cd07947e7515ce1af"
+          "git_blob_sha": "a275e60e929baecdfdd8181f52a90a0364a19d8e"
         },
         "site/hero-ranges.css": {
           "git_blob_sha": "5c83d828e3a97acfadd5773464e8040ab3e57903"
