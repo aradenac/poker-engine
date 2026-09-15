@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.datasets.build_hand_history_increment import fingerprint, read_archive, sha256_file, split_for  # noqa: E402
+from tools.preflop.context_contract import build_context  # noqa: E402
 
 RANKS = "23456789TJQKA"
 
@@ -235,6 +236,8 @@ def parse_hand(text, source):
 def decision_rows(h):
     rows = []; n = len(h["players"]); by = h["by"]; hero = h["hero"]; bb = h["bb"]; split = split_for(h["id"])
     inhand = set(by); allin = set(); hist = []; rl = 0; pf_paid = collections.defaultdict(float); pf_price = 0.0
+    last_full_raise_increment = 1.0
+    stack_by_pos = {norm_pos(p["pos"], n): p["chips"] / bb for p in h["players"]}
     for a in h["streets"]["preflop"]:
         if a["type"] == "post":
             paidbb = (a.get("raw") or 0) / bb; pf_paid[a["player"]] += paidbb; pf_price = max(pf_price, pf_paid[a["player"]])
@@ -247,12 +250,26 @@ def decision_rows(h):
         ais = sorted([norm_pos(by[x]["pos"], n) for x in allin if x in by], key=pos_order)
         key = f"{n}|{actor}|live={','.join(live)}|allin={','.join(ais)}|hist=" + ">".join(f"{x['position']}:{x['action']}" for x in hist)
         actor_paid = pf_paid[a["player"]]; tocall = max(0, pf_price - actor_paid); free_check = tocall <= 1e-9; fam = family(hist, actor)
+        pot_before_bb = max(0, (a["pot_after"] - a["raw"]) / bb)
+        contribution_by_pos = {}
+        for name in inhand | allin:
+            if name in by:
+                contribution_by_pos[norm_pos(by[name]["pos"], n)] = pf_paid[name]
+        preflop_context = build_context(
+            table_size=n, actor_position=actor, live_positions=live, all_in_positions=ais,
+            history=hist, raise_level=rl, contribution_bb_by_position=contribution_by_pos,
+            stack_bb_by_position=stack_by_pos, pot_before_bb=pot_before_bb,
+            current_price_bb=pf_price, min_raise_to_bb=pf_price + last_full_raise_increment,
+        )
+        target_total_bb = actor_paid + a["raw"] / bb if act in ("RAISE", "JAM") else None
         row = {
             "hand_id": h["id"], "split": split, "street": "preflop", "player": a["player"], "is_hero": a["player"] == hero,
             "actor_position": actor, "action": act, "table_size": n, "raise_level": rl, "family": fam, "live_positions": live,
             "all_in_positions": ais, "history": hist.copy(), "free_check": free_check,
-            "pot_before_bb": max(0, (a["pot_after"] - a["raw"]) / bb), "to_call_bb": tocall, "current_price_bb": pf_price,
+            "pot_before_bb": pot_before_bb, "to_call_bb": tocall, "current_price_bb": pf_price,
             "action_add_bb": a["raw"] / bb, "actor_start_stack_bb": by[a["player"]]["chips"] / bb,
+            "preflop_context_v1": preflop_context,
+            "action_sizing_v1": {"incremental_cost_bb": a["raw"] / bb, "target_total_bb": target_total_bb},
             "actor_remaining_bb_before": max(0, by[a["player"]]["chips"] / bb - actor_paid),
             "known_hand_class": hand_class(by[a["player"]].get("known")), "known_cards": by[a["player"]].get("known"),
             "structural_key_no_forced": key, "structural_id_no_forced": "PF_" + hashlib.sha1(key.encode()).hexdigest()[:12],
@@ -261,9 +278,16 @@ def decision_rows(h):
         rows.append(row)
         if act == "FOLD": inhand.discard(a["player"]); allin.discard(a["player"])
         else:
-            if a["type"] in ("call", "raise", "bet"): pf_paid[a["player"]] += a["raw"] / bb; pf_price = max(pf_price, pf_paid[a["player"]])
+            old_price = pf_price
+            if a["type"] in ("call", "raise", "bet"):
+                pf_paid[a["player"]] += a["raw"] / bb
+                pf_price = max(pf_price, pf_paid[a["player"]])
             hist.append({"position": actor, "action": act})
-            if act in ("RAISE", "JAM"): rl += 1
+            if act in ("RAISE", "JAM"):
+                raise_increment = max(0.0, pf_price - old_price)
+                if raise_increment + 1e-9 >= last_full_raise_increment:
+                    last_full_raise_increment = raise_increment
+                rl += 1
             if a["allin"]: allin.add(a["player"])
     inhand = set(by); allin = set(); totalpaid = collections.defaultdict(float)
     for a in h["streets"]["preflop"]:

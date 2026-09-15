@@ -8,16 +8,18 @@
   const PROBABILITY_SCHEMA='poker-preflop-action-probabilities/v1';
   const STATE_TIMING='BEFORE_ACTION';
   const EPS=1e-9;
-  const ORDER6=['LJ','HJ','CO','BTN','SB','BB'];
-  const ORDERHU=['SB_BTN','BB'];
+  const LEGACY_ORDER=['LJ','HJ','CO','BTN','SB','BB','SB_BTN'];
+  const ACTION_ORDER6=['LJ','HJ','CO','BTN','SB','BB'];
+  const ACTION_ORDERHU=['SB_BTN','BB'];
   const normPos=(position,tableSize)=>{
     let p=String(position||'').toUpperCase();
     if(p==='UTG')p='LJ';
     return Number(tableSize)===2&&p==='BTN'?'SB_BTN':p;
   };
-  const orderFor=tableSize=>Number(tableSize)===2?ORDERHU:ORDER6;
+  const legacyOrder=()=>LEGACY_ORDER;
+  const actionOrder=tableSize=>Number(tableSize)===2?ACTION_ORDERHU:ACTION_ORDER6;
   const sortPositions=(positions,tableSize)=>{
-    const order=orderFor(tableSize),rank=new Map(order.map((p,i)=>[p,i]));
+    const order=legacyOrder(),rank=new Map(order.map((p,i)=>[p,i]));
     const xs=[...new Set((positions||[]).filter(Boolean).map(p=>normPos(p,tableSize)))];
     xs.sort((a,b)=>(rank.get(a)??999)-(rank.get(b)??999)||a.localeCompare(b));
     return xs;
@@ -40,6 +42,15 @@
     });
   };
   const historyToken=history=>normalizeHistory(history).map(x=>`${x.position}:${x.action}`).join('>');
+  const deriveRemainingToAct=({live_positions,all_in_positions=[],history,actor_position,table_size})=>{
+    const actor=normPos(actor_position,table_size),live=new Set((live_positions||[]).map(p=>normPos(p,table_size))),allin=new Set((all_in_positions||[]).map(p=>normPos(p,table_size)));
+    const hist=normalizeHistory(history).map(x=>({position:normPos(x.position,table_size),action:x.action}));
+    let lastRaise=-1;hist.forEach((x,i)=>{if(['RAISE','JAM'].includes(x.action))lastRaise=i;});
+    const acted=new Set();
+    if(lastRaise>=0){acted.add(hist[lastRaise].position);for(const x of hist.slice(lastRaise+1))acted.add(x.position);}
+    else for(const x of hist)acted.add(x.position);
+    return actionOrder(table_size).filter(p=>live.has(p)&&!allin.has(p)&&!acted.has(p)&&p!==actor);
+  };
   const familyFromHistory=(history,actorPosition)=>{
     const hist=normalizeHistory(history),actor=String(actorPosition||'').toUpperCase();
     if(!hist.length)return 'UNOPENED';
@@ -96,7 +107,7 @@
     const actorRemaining=Math.max(0,actorStack-actorPaid),oppStacks=live.filter(p=>p!==actor).map(p=>finiteNonnegative(sin[p]??contrib[p]??0,`stack[${p}]`)),effectiveStack=Math.min(actorStack,oppStacks.length?Math.max(...oppStacks):actorStack),maxRaiseTo=actorStack;
     const rl=args.raise_level==null?hist.filter(x=>['RAISE','JAM'].includes(x.action)).length:Number(args.raise_level);if(rl<0)throw new Error('negative raise level');
     let minRaiseTo=args.min_raise_to_bb==null?price+1:finiteNonnegative(args.min_raise_to_bb,'min_raise_to_bb');
-    let pending;if(args.pending_positions==null){const order=orderFor(n).filter(p=>live.includes(p)&&!allin.includes(p)),i=order.indexOf(actor);pending=i>=0?order.slice(i+1):[];}else pending=args.pending_positions.map(p=>normPos(p,n)).filter(p=>live.includes(p)&&!allin.includes(p)&&p!==actor);
+    let pending;if(args.pending_positions==null)pending=deriveRemainingToAct({live_positions:live,all_in_positions:allin,history:hist,actor_position:actor,table_size:n});else pending=args.pending_positions.map(p=>normPos(p,n)).filter(p=>live.includes(p)&&!allin.includes(p)&&p!==actor);
     const firstRaise=hist.findIndex(x=>['RAISE','JAM'].includes(x.action)),prefix=firstRaise<0?hist:hist.slice(0,firstRaise),limpers=prefix.filter(x=>x.action==='LIMP').map(x=>x.position),callers=firstRaise<0?[]:hist.slice(firstRaise+1).filter(x=>x.action==='CALL').map(x=>x.position);
     const legal=legalActionsForState({to_call_bb:toCall,actor_contribution_bb:actorPaid,actor_remaining_bb:actorRemaining,min_raise_to_bb:minRaiseTo,max_raise_to_bb:maxRaiseTo,raise_reopened:args.raise_reopened!==false,raise_level:rl});
     const result={schema:SCHEMA,state_timing:STATE_TIMING,table_size:n,actor_position:actor,family:familyFromHistory(hist,actor),raise_level:rl,live_positions:live,all_in_positions:allin,remaining_to_act_positions:pending,history:hist,limper_positions:sortPositions(limpers,n),caller_positions:sortPositions(callers,n),contribution_bb_by_position:Object.fromEntries(sortPositions(Object.keys(contrib),n).map(p=>[p,contrib[p]])),actor_contribution_bb:roundBB(actorPaid),current_price_bb:roundBB(price),to_call_bb:roundBB(toCall),free_check:toCall<=EPS,pot_before_bb:roundBB(finiteNonnegative(args.pot_before_bb||0,'pot_before_bb')),actor_remaining_bb:roundBB(actorRemaining),effective_stack_bb:roundBB(effectiveStack),legal_actions:legal,min_raise_to_bb:minRaiseTo<=maxRaiseTo+EPS?roundBB(minRaiseTo):null,max_raise_to_bb:roundBB(maxRaiseTo),raise_reopened:args.raise_reopened!==false,amount_semantics:{call_or_bet_cost:'incremental_cost_bb',raise_cost:'incremental_cost_bb',raise_target:'target_total_bb',check_and_fold_cost_bb:0}};
@@ -106,5 +117,5 @@
   const normalizeActionProbabilities=({context,raw_probabilities,hand_class=null,sizing=null,source,backoff_level,confidence,support})=>{
     const legal=(context.legal_actions||[]).map(x=>String(x).toUpperCase());if(!legal.length)throw new Error('context has no legal actions');const weights={};let total=0;for(const action of legal){const v=Number((raw_probabilities||{})[action]||0);if(!Number.isFinite(v)||v<0)throw new Error(`invalid probability weight for ${action}`);weights[action]=v;total+=v;}if(total<=EPS)throw new Error('zero legal probability mass');const probabilities={};for(const action of legal)probabilities[action]=weights[action]/total;return {schema:PROBABILITY_SCHEMA,context_id:String(context.context_id||contextId(context)),hand_class,legal_actions:legal,probabilities,sizing:sizing==null?null:{...sizing},source:String(source),backoff_level:String(backoff_level),confidence:String(confidence),support:Number(support)||0,incumbent_compatibility:{matcher:'v5/v83',runtime_signature_ignores_free_check:true}};
   };
-  return {SCHEMA,PROBABILITY_SCHEMA,STATE_TIMING,normalizePosition:normPos,sortPositions,normalizeHistory,historyToken,familyFromHistory,legalActionsForState,canonicalKey,contextId,buildContext,v5RuntimeSignature,normalizeActionProbabilities};
+  return {SCHEMA,PROBABILITY_SCHEMA,STATE_TIMING,normalizePosition:normPos,sortPositions,normalizeHistory,historyToken,deriveRemainingToAct,familyFromHistory,legalActionsForState,canonicalKey,contextId,buildContext,v5RuntimeSignature,normalizeActionProbabilities};
 });

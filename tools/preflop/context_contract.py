@@ -25,8 +25,9 @@ PROBABILITY_SCHEMA = "poker-preflop-action-probabilities/v1"
 STATE_TIMING = "BEFORE_ACTION"
 EPS = 1e-9
 
-POSITION_ORDER_6MAX = ("LJ", "HJ", "CO", "BTN", "SB", "BB")
-POSITION_ORDER_HU = ("SB_BTN", "BB")
+LEGACY_POSITION_ORDER = ("LJ", "HJ", "CO", "BTN", "SB", "BB", "SB_BTN")
+ACTION_ORDER_6MAX = ("LJ", "HJ", "CO", "BTN", "SB", "BB")
+ACTION_ORDER_HU = ("SB_BTN", "BB")
 ACTIONS = ("FOLD", "CHECK", "LIMP", "CALL", "RAISE", "JAM")
 
 
@@ -38,7 +39,13 @@ def normalize_position(position: str | None, table_size: int) -> str:
 
 
 def position_order(table_size: int) -> tuple[str, ...]:
-    return POSITION_ORDER_HU if int(table_size) == 2 else POSITION_ORDER_6MAX
+    """Legacy v5 ordering used by persisted live/all-in position arrays."""
+    return LEGACY_POSITION_ORDER
+
+
+def action_order(table_size: int) -> tuple[str, ...]:
+    """Actual preflop action order; HU SB/BTN acts before BB."""
+    return ACTION_ORDER_HU if int(table_size) == 2 else ACTION_ORDER_6MAX
 
 
 def sort_positions(positions: Iterable[str], table_size: int) -> list[str]:
@@ -46,6 +53,36 @@ def sort_positions(positions: Iterable[str], table_size: int) -> list[str]:
     rank = {p: i for i, p in enumerate(order)}
     unique = {normalize_position(p, table_size) for p in positions if p}
     return sorted(unique, key=lambda p: (rank.get(p, 999), p))
+
+
+def derive_remaining_to_act(
+    *,
+    live_positions: Sequence[str],
+    all_in_positions: Sequence[str],
+    history: str | Sequence[Mapping[str, Any]] | None,
+    actor_position: str,
+    table_size: int,
+) -> list[str]:
+    """Players still pending if the actor does not reopen the betting.
+
+    Folds are absent from structural history but also absent from live_positions,
+    so the pending set can be reconstructed from the last aggression cycle.
+    """
+    actor = normalize_position(actor_position, table_size)
+    live = {normalize_position(p, table_size) for p in live_positions}
+    allin = {normalize_position(p, table_size) for p in all_in_positions}
+    hist = [
+        {"position": normalize_position(x["position"], table_size), "action": x["action"]}
+        for x in normalize_history(history)
+    ]
+    last_raise = max((i for i, x in enumerate(hist) if x["action"] in ("RAISE", "JAM")), default=-1)
+    if last_raise >= 0:
+        aggressor = hist[last_raise]["position"]
+        acted = {aggressor} | {x["position"] for x in hist[last_raise + 1 :]}
+    else:
+        acted = {x["position"] for x in hist}
+    pending = live - allin - acted - {actor}
+    return [p for p in action_order(table_size) if p in pending]
 
 
 def normalize_history(history: str | Sequence[Mapping[str, Any]] | None) -> list[dict[str, str]]:
@@ -140,12 +177,10 @@ def legal_actions_for_state(
     if to_call > EPS:
         legal.append("FOLD")
         if remaining > EPS:
-            legal.append("CALL")
+            legal.append("LIMP" if int(raise_level) == 0 else "CALL")
     else:
+        # A free option is CHECK; LIMP/CALL always imply paying positive chips.
         legal.append("CHECK")
-        # A voluntary call with zero price is never represented as CALL.
-        if int(raise_level) == 0 and actor_contribution + EPS < max_to:
-            legal.append("LIMP")
 
     can_increase_price = remaining > to_call + EPS and max_to > actor_contribution + to_call + EPS
     if raise_reopened and can_increase_price:
@@ -253,9 +288,10 @@ def build_context(
         min_raise_to = _finite_nonnegative(min_raise_to_bb, "min_raise_to_bb")
 
     if pending_positions is None:
-        order = [p for p in position_order(n) if p in live and p not in allin]
-        idx = order.index(actor) if actor in order else -1
-        pending = order[idx + 1 :] if idx >= 0 else []
+        pending = derive_remaining_to_act(
+            live_positions=live, all_in_positions=allin, history=hist,
+            actor_position=actor, table_size=n,
+        )
     else:
         pending = [normalize_position(p, n) for p in pending_positions]
         pending = [p for p in pending if p in live and p not in allin and p != actor]
