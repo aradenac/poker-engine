@@ -5,36 +5,112 @@ on:
     paths:
       - 'tools/simulation/full_hand_scenarios.py'
       - 'tools/simulation/full_hand_arena.py'
+      - 'tools/simulation/full_hand_benchmark.py'
+      - 'tools/simulation/model_b_public_reference.py'
       - 'tests/simulation/test_full_hand_arena.py'
       - 'tests/simulation/test_full_hand_arena_seeds.py'
+      - 'tests/simulation/test_full_hand_model_b_contract.py'
+      - 'tests/simulation/test_full_hand_paired_contract.py'
       - 'tests/simulation/test_full_hand_scenarios_population.py'
       - 'tools/simulation/game_core.py'
       - 'tests/simulation/test_game_core.py'
       - 'tests/simulation/test_game_core_consolidated_regressions.py'
       - 'docs/full_hand_arena.md'
+      - 'training/runs/20260915_model_b_card_aware_v1/RESULT.json'
       - '.github/workflows/full-hand-arena.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   full-hand-arena:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Compile
         run: |
           python3 -m py_compile \
             tools/simulation/full_hand_scenarios.py \
             tools/simulation/full_hand_arena.py \
+            tools/simulation/full_hand_benchmark.py \
+            tools/simulation/model_b_public_reference.py \
             tests/simulation/test_full_hand_arena.py \
             tests/simulation/test_full_hand_arena_seeds.py \
+            tests/simulation/test_full_hand_model_b_contract.py \
+            tests/simulation/test_full_hand_paired_contract.py \
             tests/simulation/test_full_hand_scenarios_population.py
       - name: Full-hand arena regressions
         run: |
-          python3 tests/simulation/test_full_hand_arena.py
-          python3 tests/simulation/test_full_hand_arena_seeds.py
+          PYTHONPATH=. python3 tests/simulation/test_full_hand_arena.py
+          PYTHONPATH=. python3 tests/simulation/test_full_hand_arena_seeds.py
+          PYTHONPATH=. python3 tests/simulation/test_full_hand_model_b_contract.py
+          PYTHONPATH=. python3 tests/simulation/test_full_hand_paired_contract.py
       - name: Population-backed scenario integration
-        run: python3 tests/simulation/test_full_hand_scenarios_population.py
+        run: PYTHONPATH=. python3 tests/simulation/test_full_hand_scenarios_population.py
       - name: Shared game-core regressions
         run: |
-          python3 tests/simulation/test_game_core.py
-          python3 tests/simulation/test_game_core_consolidated_regressions.py
+          PYTHONPATH=. python3 tests/simulation/test_game_core.py
+          PYTHONPATH=. python3 tests/simulation/test_game_core_consolidated_regressions.py
+
+  retained-model-b-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download immutable issue 104 fit artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 34993837824 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4 \
+            --dir /tmp/model-b-104
+          test -s /tmp/model-b-104/public_reference_behavior.json
+      - name: Run certified full-hand smoke against retained public-only B
+        run: |
+          PYTHONPATH=. python3 -m tools.simulation.full_hand_benchmark \
+            --population pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+            --profiles training/runs/20260912_independent_profiles_v2/model/profiles.json \
+            --reference-behavior /tmp/model-b-104/public_reference_behavior.json \
+            --issue-104-result training/runs/20260915_model_b_card_aware_v1/RESULT.json \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --split TRAIN \
+            --count 4 \
+            --reps 1 \
+            --seed 20260915 \
+            --output /tmp/full-hand-model-b-smoke.json
+      - name: Validate scientific identity and report contract
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('/tmp/full-hand-model-b-smoke.json').read_text())
+          assert report['schema'] == 'full-hand-model-b-benchmark/v1'
+          assert report['population_id'] == 'pokerstars_nlhe_100-200_zoom_play_6max_v1'
+          assert report['model_b']['selection_decision'] == 'RETAIN_PUBLIC_ONLY_REFERENCE_FOR_BEHAVIOR_COMPONENT'
+          assert report['model_b']['artifact_sha256'] == 'fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca'
+          assert report['model_b']['test_consumed_by_issue_104'] is False
+          assert report['summary']['simulated_hands'] == 4
+          assert report['summary']['independent_hands'] == 4
+          source = report['scenario_manifest']['source']
+          assert source['selection_contract'] == 'certified-predeal-table-geometry-only'
+          assert source['certification']['population_fingerprint_sha256'] == '4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c'
+          assert all(row['population_id'] == report['population_id'] for row in report['results'])
+          assert all('detached public state' in row['trust_contract'] for row in report['results'])
+          print(json.dumps(report['summary'], indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-105-retained-model-b-smoke-${{ github.sha }}
+          path: /tmp/full-hand-model-b-smoke.json
+          if-no-files-found: error
+          retention-days: 30

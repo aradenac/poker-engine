@@ -21,46 +21,81 @@ RESULT_SCHEMA = "full-hand-arena-result/v1"
 REPORT_SCHEMA = "full-hand-arena-report/v1"
 
 
-def _preflop_summary(state: NoLimitHoldemState, actor: str) -> tuple[str, str]:
-    preflop = [event for event in state.action_log if event.get("street") == "preflop"]
+def _preflop_events(state: NoLimitHoldemState) -> list[Mapping[str, Any]]:
+    return [event for event in state.action_log if event.get("street") == "preflop"]
+
+
+def _policy_preflop_context(state: NoLimitHoldemState, actor: str) -> tuple[str, str]:
+    prior = _preflop_events(state)
+    actions = [str(event.get("action", "")).upper() for event in prior]
+    raises = sum(action == "RAISE" for action in actions)
+    calls = sum(action == "CALL" for action in actions)
+    if raises == 0:
+        pot_type = "UNOPENED" if calls == 0 else "LIMPED"
+    elif raises == 1:
+        pot_type = "SINGLE_RAISED"
+    elif raises == 2:
+        pot_type = "THREE_BET"
+    else:
+        pot_type = "FOUR_BET_PLUS"
+
+    actor_actions = [
+        str(event.get("action", "")).upper()
+        for event in prior
+        if str(event.get("player", "")) == actor
+    ]
+    if not actor_actions:
+        role = "NO_PRIOR_ACTION"
+    elif actor_actions[-1] == "RAISE":
+        role = "AGGRESSOR"
+    elif actor_actions[-1] == "CALL":
+        role = "LIMPER" if raises == 0 else "CALLER"
+    elif actor_actions[-1] == "CHECK":
+        role = "CHECKER"
+    else:
+        role = "OTHER"
+    return pot_type, role
+
+
+def _postflop_preflop_context(state: NoLimitHoldemState, actor: str) -> tuple[str, str]:
+    preflop = _preflop_events(state)
     raises = 0
-    raise_seen = False
     last_raiser = None
-    actor_role = "OTHER"
+    actions_by: dict[str, list[str]] = collections.defaultdict(list)
     for event in preflop:
         action = str(event.get("action", "")).upper()
         player = str(event.get("player", ""))
         if action == "RAISE":
             raises += 1
-            raise_seen = True
             last_raiser = player
-        elif player == actor and action == "CALL":
-            actor_role = "CALLER" if raise_seen else "LIMPER"
-        elif player == actor and action == "CHECK":
-            actor_role = "BB_CHECK"
-    if last_raiser == actor:
-        actor_role = "PFA"
+            actions_by[player].append("RAISE")
+        elif action == "CALL":
+            actions_by[player].append("LIMP" if raises == 0 else "CALL")
+        elif action in {"CHECK", "FOLD"}:
+            actions_by[player].append(action)
+
     pot_type = "LIMPED" if raises == 0 else "SRP" if raises == 1 else "3BP" if raises == 2 else "4BP_PLUS"
-    return pot_type, actor_role
+    acts = actions_by.get(actor, [])
+    if actor == last_raiser:
+        role = "PFA"
+    elif "CALL" in acts:
+        role = "CALLER"
+    elif "LIMP" in acts:
+        role = "LIMPER"
+    elif "CHECK" in acts:
+        role = "BB_CHECK"
+    else:
+        role = "OTHER"
+    return pot_type, role
 
 
-def _relative_position(state: NoLimitHoldemState, actor: str, scenario: Mapping) -> str:
+def _policy_context(state: NoLimitHoldemState, actor: str, scenario: Mapping) -> tuple[str, str, str]:
+    position = str(scenario.get("positions", {}).get(actor, "NA"))
     if state.street == "preflop":
-        return str(scenario.get("positions", {}).get(actor, "NA"))
-    start = (state.seats.index(state.button) + 1) % len(state.seats)
-    order = list(state.seats[start:]) + list(state.seats[:start])
-    actionable = [
-        player for player in order
-        if not state.folded[player] and (player == actor or not state.all_in[player])
-    ]
-    if actor not in actionable or len(actionable) <= 1:
-        return "ONLY"
-    index = actionable.index(actor)
-    if index == 0:
-        return "OOP"
-    if index == len(actionable) - 1:
-        return "IP"
-    return "MIDDLE"
+        pot_type, preflop_role = _policy_preflop_context(state, actor)
+    else:
+        pot_type, preflop_role = _postflop_preflop_context(state, actor)
+    return position, pot_type, preflop_role
 
 
 def _invoke_policy(policy, public_state: NoLimitHoldemState, *, seed_parts: Sequence[object], context: dict) -> dict:
@@ -80,8 +115,6 @@ def _normalize_decision(state: NoLimitHoldemState, actor: str, decision: Mapping
     view = state.legal_view(actor)
     legal = list(view["legal_actions"])
     target = decision.get("target_total_bb")
-
-    # Optional convenience labels are normalized to the canonical #100 core API.
     if action == "BET":
         action = "RAISE"
     elif action == "ALL_IN":
@@ -93,7 +126,6 @@ def _normalize_decision(state: NoLimitHoldemState, actor: str, decision: Mapping
             target = None
         else:
             raise RuleError("ALL_IN is not legal in the current public state")
-
     if action not in legal:
         raise RuleError(f"policy returned illegal action {action!r} for {actor}; legal={legal}")
     if action == "RAISE":
@@ -118,8 +150,9 @@ def _validate_scenario(scenario: Mapping) -> None:
         raise ValueError("scenario button must be seated")
     stacks = scenario.get("stacks_bb", {})
     holes = scenario.get("hole_cards", {})
-    if set(stacks) != set(seats) or set(holes) != set(seats):
-        raise ValueError("scenario stacks/hole_cards must cover exactly the seats")
+    positions = scenario.get("positions", {})
+    if set(stacks) != set(seats) or set(holes) != set(seats) or set(positions) != set(seats):
+        raise ValueError("scenario stacks/hole_cards/positions must cover exactly the seats")
     if any(float(stacks[player]) < 0 for player in seats):
         raise ValueError("scenario contains a negative stack")
     if any(len(holes[player]) != 2 for player in seats):
@@ -144,7 +177,6 @@ def run_full_hand(
     net_pot_fn: Callable[[float], float] | None = None,
     max_actions: int = 200,
 ) -> dict:
-    """Run one trusted full-hand scenario through the shared rules core."""
     _validate_scenario(scenario)
     seats = [str(player) for player in scenario["seats"]]
     hero = str(scenario["hero"])
@@ -155,7 +187,6 @@ def run_full_hand(
         button=str(scenario["button"]),
         stacks_bb={player: float(scenario["stacks_bb"][player]) for player in seats},
     )
-
     trace: list[dict] = []
     decision_no = collections.Counter()
     players_to_flop = 0
@@ -165,21 +196,18 @@ def run_full_hand(
         if len(state.live_players) == 1:
             settlement = state.settle_by_fold(net_pot_fn=net_pot_fn)
             break
-
         actor = state.next_actor
         if actor is not None:
             if len(trace) >= int(max_actions):
                 raise RuntimeError("full-hand arena exceeded max_actions")
             before = copy.deepcopy(state.to_snapshot())
-            # Reconstruct a detached public state before every decision. No private
-            # cards or unrevealed board cards can be reached through this object.
             policy_state = NoLimitHoldemState.from_snapshot(copy.deepcopy(before))
-            pot_type, preflop_role = _preflop_summary(policy_state, actor)
+            relative_position, pot_type, preflop_role = _policy_context(policy_state, actor, scenario)
             context = {
                 "actor": actor,
                 "hole_cards": holes[actor],
                 "profile": scenario.get("profiles", {}).get(actor),
-                "relative_position": _relative_position(policy_state, actor, scenario),
+                "relative_position": relative_position,
                 "pot_type": pot_type,
                 "preflop_role": preflop_role,
             }
@@ -187,12 +215,8 @@ def run_full_hand(
             component_seed_key = "hero_policy" if actor == hero else "opponent_actions"
             decision_seed = int(scenario["component_seeds"][component_seed_key])
             seed_parts = (
-                scenario["scenario_id"],
-                decision_seed,
-                seed_namespace,
-                actor,
-                int(decision_no[actor]),
-                policy_state.street,
+                scenario["scenario_id"], decision_seed, seed_namespace, actor,
+                int(decision_no[actor]), policy_state.street,
             )
             policy = hero_policy if actor == hero else opponent_policy
             raw_decision = _invoke_policy(policy, policy_state, seed_parts=seed_parts, context=context)
@@ -200,32 +224,22 @@ def run_full_hand(
             record = state.apply_action(actor, action, target_total_bb=target)
             decision_no[actor] += 1
             trace.append({
-                "index": len(trace),
-                "street": before["street"],
-                "actor": actor,
-                "policy_role": seed_namespace,
-                "decision_seed_namespace": component_seed_key,
+                "index": len(trace), "street": before["street"], "actor": actor,
+                "policy_role": seed_namespace, "decision_seed_namespace": component_seed_key,
                 "public_state_before": before,
                 "context": {
-                    "profile": context["profile"],
-                    "relative_position": context["relative_position"],
-                    "pot_type": context["pot_type"],
-                    "preflop_role": context["preflop_role"],
+                    "profile": context["profile"], "relative_position": context["relative_position"],
+                    "pot_type": context["pot_type"], "preflop_role": context["preflop_role"],
                 },
-                "seed_parts": list(seed_parts),
-                "action": action,
-                "target_total_bb": target,
+                "seed_parts": list(seed_parts), "action": action, "target_total_bb": target,
                 "incremental_cost_bb": record["incremental_cost_bb"],
                 "actor_all_in_after": bool(state.all_in[actor]),
             })
             continue
-
-        # Betting is complete (possibly because all remaining players are all-in).
         if state.street == "river":
             ranks = {player: best(list(holes[player]) + board) for player in state.live_players}
             settlement = state.settle_showdown(ranks, net_pot_fn=net_pot_fn)
             break
-
         if state.street == "preflop":
             players_to_flop = len(state.live_players)
             next_cards = board[:3]
@@ -233,44 +247,34 @@ def run_full_hand(
             next_cards = [board[3]]
         elif state.street == "turn":
             next_cards = [board[4]]
-        else:  # defensive; NoLimitHoldemState constrains streets.
+        else:
             raise RuntimeError(f"cannot advance unknown street {state.street!r}")
         state.advance_street(next_cards)
-    else:  # pragma: no cover - loop guard should make this unreachable.
+    else:
         raise RuntimeError("full-hand arena failed to terminate")
 
     if settlement is None:
         raise RuntimeError("full-hand arena terminated without settlement")
-
     preflop_actions = [row for row in trace if row["street"] == "preflop"]
     preflop_raises = sum(1 for row in preflop_actions if row["action"] == "RAISE")
     preflop_folds = sum(1 for row in preflop_actions if row["action"] == "FOLD")
     side_pot_layers = len(settlement.pots)
     coverage = {
-        "table_players": len(seats),
-        "terminal": settlement.terminal,
-        "terminal_street": state.street,
-        "reached_flop": players_to_flop > 0,
-        "players_to_flop": int(players_to_flop),
-        "multiway_flop": players_to_flop >= 3,
-        "preflop_folds": preflop_folds,
+        "table_players": len(seats), "terminal": settlement.terminal, "terminal_street": state.street,
+        "reached_flop": players_to_flop > 0, "players_to_flop": int(players_to_flop),
+        "multiway_flop": players_to_flop >= 3, "preflop_folds": preflop_folds,
         "preflop_raises": preflop_raises,
         "preflop_raise_bucket": "NONE" if preflop_raises == 0 else "OPEN" if preflop_raises == 1 else "3BET" if preflop_raises == 2 else "4BET_PLUS",
-        "all_in": any(row["actor_all_in_after"] for row in trace),
-        "side_pot": side_pot_layers > 1,
+        "all_in": any(row["actor_all_in_after"] for row in trace), "side_pot": side_pot_layers > 1,
         "pot_layers": side_pot_layers,
         "uncalled_refund": any(float(value) > EPS for value in settlement.refunds_bb.values()),
     }
     return {
-        "schema": RESULT_SCHEMA,
-        "scenario_id": scenario["scenario_id"],
+        "schema": RESULT_SCHEMA, "scenario_id": scenario["scenario_id"],
         "cluster_id": scenario.get("cluster_id", scenario.get("source_hand_id", scenario["scenario_id"])),
-        "population_id": scenario.get("population_id"),
-        "hero": hero,
-        "hero_net_bb": float(settlement.net_results_bb[hero]),
-        "settlement": settlement.as_dict(),
-        "coverage": coverage,
-        "trace": trace,
+        "population_id": scenario.get("population_id"), "hero": hero,
+        "hero_net_bb": float(settlement.net_results_bb[hero]), "settlement": settlement.as_dict(),
+        "coverage": coverage, "trace": trace,
         "trust_contract": "policy receives detached public state plus actor hole cards only",
     }
 
@@ -286,11 +290,8 @@ def _clustered_stats(values_by_cluster: Mapping[str, Sequence[float]]) -> dict[s
     else:
         se = low = high = None
     return {
-        "independent_hands": len(means),
-        "mean_bb_per_hand": mean,
-        "se_bb_per_hand": se,
-        "ci95_low_bb_per_hand": low,
-        "ci95_high_bb_per_hand": high,
+        "independent_hands": len(means), "mean_bb_per_hand": mean, "se_bb_per_hand": se,
+        "ci95_low_bb_per_hand": low, "ci95_high_bb_per_hand": high,
     }
 
 
@@ -314,16 +315,12 @@ def summarize_results(results: Sequence[Mapping]) -> dict:
         contexts[f"players={cov.get('table_players')}"] += 1
         contexts[f"preflop={cov.get('preflop_raise_bucket')}"] += 1
         contexts[f"terminal={cov.get('terminal_street')}:{cov.get('terminal')}"] += 1
-
     clustered = _clustered_stats(clusters)
     mean = statistics.fmean(nets)
     se = clustered["se_bb_per_hand"]
     return {
-        "schema": REPORT_SCHEMA,
-        "hero": hero,
-        "simulated_hands": len(results),
-        "independent_hands": clustered["independent_hands"],
-        "mean_bb_per_hand": mean,
+        "schema": REPORT_SCHEMA, "hero": hero, "simulated_hands": len(results),
+        "independent_hands": clustered["independent_hands"], "mean_bb_per_hand": mean,
         "bb_per_100_simulated_hands": mean * 100.0,
         "clustered_se_bb_per_100": None if se is None else float(se) * 100.0,
         "clustered_ci95_bb_per_100": None if se is None else [
@@ -337,31 +334,47 @@ def summarize_results(results: Sequence[Mapping]) -> dict:
 
 
 def compare_paired(candidate: Sequence[Mapping], baseline: Sequence[Mapping]) -> dict:
-    """Paired candidate-minus-baseline comparison on identical scenario IDs."""
-    base_by_id = {str(row["scenario_id"]): row for row in baseline}
+    """Strict paired candidate-minus-baseline comparison on identical scenarios."""
+    def indexed(rows: Sequence[Mapping], label: str) -> dict[str, Mapping]:
+        out: dict[str, Mapping] = {}
+        for row in rows:
+            sid = str(row["scenario_id"])
+            if sid in out:
+                raise ValueError(f"{label} contains duplicate scenario_id {sid!r}")
+            out[sid] = row
+        return out
+
+    candidate_by_id = indexed(candidate, "candidate")
+    baseline_by_id = indexed(baseline, "baseline")
+    candidate_ids = set(candidate_by_id)
+    baseline_ids = set(baseline_by_id)
+    if candidate_ids != baseline_ids:
+        raise ValueError(
+            "paired comparison requires identical scenario_id sets; "
+            f"missing_from_baseline={sorted(candidate_ids - baseline_ids)[:5]}, "
+            f"missing_from_candidate={sorted(baseline_ids - candidate_ids)[:5]}"
+        )
+    if not candidate_ids:
+        raise ValueError("candidate and baseline contain no scenarios")
+
     deltas_by_cluster: dict[str, list[float]] = collections.defaultdict(list)
-    matched = 0
-    for row in candidate:
-        sid = str(row["scenario_id"])
-        if sid not in base_by_id:
-            continue
-        other = base_by_id[sid]
+    for sid in sorted(candidate_ids):
+        row = candidate_by_id[sid]
+        other = baseline_by_id[sid]
         if str(row["hero"]) != str(other["hero"]):
             raise ValueError(f"hero mismatch for paired scenario {sid}")
         cluster = str(row["cluster_id"])
+        if cluster != str(other["cluster_id"]):
+            raise ValueError(f"cluster_id mismatch for paired scenario {sid}")
         deltas_by_cluster[cluster].append(float(row["hero_net_bb"]) - float(other["hero_net_bb"]))
-        matched += 1
-    if matched == 0:
-        raise ValueError("candidate and baseline have no matching scenario IDs")
+
     stats = _clustered_stats(deltas_by_cluster)
-    means = [value for values in deltas_by_cluster.values() for value in values]
-    mean = statistics.fmean(means)
+    deltas = [value for values in deltas_by_cluster.values() for value in values]
+    mean = statistics.fmean(deltas)
     se = stats["se_bb_per_hand"]
     return {
-        "schema": "full-hand-arena-paired-comparison/v1",
-        "matched_scenarios": matched,
-        "independent_hands": stats["independent_hands"],
-        "mean_delta_bb_per_hand": mean,
+        "schema": "full-hand-arena-paired-comparison/v1", "matched_scenarios": len(candidate_ids),
+        "independent_hands": stats["independent_hands"], "mean_delta_bb_per_hand": mean,
         "delta_bb_per_100": mean * 100.0,
         "clustered_se_bb_per_100": None if se is None else float(se) * 100.0,
         "clustered_ci95_bb_per_100": None if se is None else [
