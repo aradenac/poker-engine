@@ -29,6 +29,7 @@ def main() -> int:
         "site/hero-ranges.js",
         "site/hero-ranges-app.js",
         "site/hero-ranges.css",
+        "site/hero-compliance.js",
         "site/trainer.css",
         "site/trainer.js",
     }
