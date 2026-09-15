@@ -9,6 +9,7 @@
 
   const SCHEMA='poker-hero-calculated-range-candidate/v1';
   const EPS=1e-9;
+  const SQUEEZE_REPOSITORY_SPOT='VS_RFI_CALLERS';
 
   function clone(value){return value==null?value:JSON.parse(JSON.stringify(value));}
   function requiredString(value,name){
@@ -44,9 +45,49 @@
     return provenance;
   }
 
-  function selectedSizingProbability(strategy,decision){
+  function repositoryActionForDecision(decision,context){
+    const action=String(decision?.action||'').toUpperCase();
+    if(action!=='SQUEEZE')return action;
+    const spot=String(context?.spot||'').toUpperCase();
+    if(spot!==SQUEEZE_REPOSITORY_SPOT){
+      throw new Error(`SQUEEZE is only representable in Hero repository spot ${SQUEEZE_REPOSITORY_SPOT}, got ${spot||'<missing>'}`);
+    }
+    return '3BET';
+  }
+
+  function projectPolicyForRepository(policy,context){
+    const source=clone(policy||{});
+    const actions={};
+    const sizings={};
+    const spot=String(context?.spot||'').toUpperCase();
+    const hasSqueeze=Object.keys(source.actions||{}).some(name=>String(name).toUpperCase()==='SQUEEZE')
+      ||Object.keys(source.sizings||{}).some(name=>String(name).toUpperCase()==='SQUEEZE');
+    if(hasSqueeze&&spot!==SQUEEZE_REPOSITORY_SPOT){
+      throw new Error(`explicit SQUEEZE policy is only representable in Hero repository spot ${SQUEEZE_REPOSITORY_SPOT}, got ${spot||'<missing>'}`);
+    }
+
+    for(const [name0,value] of Object.entries(source.actions||{})){
+      const canonical=String(name0).toUpperCase();
+      const projected=canonical==='SQUEEZE'?'3BET':canonical;
+      if(Object.prototype.hasOwnProperty.call(actions,projected)){
+        throw new Error(`ambiguous explicit policy supplies both SQUEEZE and ${projected}`);
+      }
+      actions[projected]=value;
+    }
+    for(const [name0,value] of Object.entries(source.sizings||{})){
+      const canonical=String(name0).toUpperCase();
+      const projected=canonical==='SQUEEZE'?'3BET':canonical;
+      if(Object.prototype.hasOwnProperty.call(sizings,projected)){
+        throw new Error(`ambiguous explicit sizing supplies both SQUEEZE and ${projected}`);
+      }
+      sizings[projected]=clone(value);
+    }
+    return {...source,actions,sizings};
+  }
+
+  function selectedSizingProbability(strategy,decision,repositoryAction=decision?.action){
     if(decision.target_total_bb==null)return null;
-    const rows=strategy.sizings?.[decision.action]||[];
+    const rows=strategy.sizings?.[repositoryAction]||[];
     let probability=0;
     for(const row of rows){
       if(sameNumber(row.target_total_bb,decision.target_total_bb))probability+=Number(row.probability)||0;
@@ -54,32 +95,37 @@
     return probability;
   }
 
-  function strategyForRow(row,decision){
+  function strategyForRow(row,decision,context){
     const H=dependencies().HeroRanges;
+    const repositoryAction=repositoryActionForDecision(decision,context);
     if(row.policy!=null){
-      const strategy=H.normalizeHandStrategy(row.policy);
-      const selectedProbability=Number(strategy.actions?.[decision.action]||0);
+      const strategy=H.normalizeHandStrategy(projectPolicyForRepository(row.policy,context));
+      const selectedProbability=Number(strategy.actions?.[repositoryAction]||0);
       if(selectedProbability<=EPS){
         throw new Error(`${row.hand_class}: explicit policy excludes selected decision action ${decision.action}`);
       }
-      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision)<=EPS){
+      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision,repositoryAction)<=EPS){
         throw new Error(`${row.hand_class}: explicit policy does not contain selected sizing ${decision.target_total_bb} BB for ${decision.action}`);
       }
-      return {strategy,origin:'EXPLICIT_POLICY'};
+      return {strategy,origin:'EXPLICIT_POLICY',repositoryAction};
     }
 
-    const actions={[decision.action]:1};
+    const actions={[repositoryAction]:1};
     const sizings={};
     if(decision.target_total_bb!=null){
-      sizings[decision.action]=[{target_total_bb:decision.target_total_bb,probability:1}];
+      sizings[repositoryAction]=[{target_total_bb:decision.target_total_bb,probability:1}];
     }
+    const projectionNote=repositoryAction===decision.action
+      ?''
+      :` Repository action ${repositoryAction} represents canonical ${decision.action} in ${context.spot}.`;
     return {
       strategy:H.normalizeHandStrategy({
         actions,
         sizings,
-        notes:`Deterministic projection of selected ${PreflopDecision.SCHEMA} alternative ${decision.selected_id}`
+        notes:`Deterministic projection of selected ${PreflopDecision.SCHEMA} alternative ${decision.selected_id}.${projectionNote}`
       }),
-      origin:'SELECTED_DECISION_ONE_HOT'
+      origin:'SELECTED_DECISION_ONE_HOT',
+      repositoryAction
     };
   }
 
@@ -97,8 +143,8 @@
       if(decision.population_id!=null&&String(decision.population_id)!==String(context.population_id)){
         throw new Error(`${hand}: decision population ${decision.population_id} does not match context population ${context.population_id}`);
       }
-      const {strategy,origin}=strategyForRow(input,decision);
-      byHand.set(hand,{hand_class:hand,decision,strategy,policy_origin:origin});
+      const {strategy,origin,repositoryAction}=strategyForRow(input,decision,context);
+      byHand.set(hand,{hand_class:hand,decision,strategy,policy_origin:origin,repository_action:repositoryAction});
     }
     if(requireComplete){
       const missing=H.HAND_CLASSES.filter(hand=>!byHand.has(hand));
@@ -134,16 +180,19 @@
         schema:SCHEMA,
         status,
         source_decision_schema:PreflopDecision.SCHEMA,
-        policy_semantics:'explicit policy when supplied; otherwise selected decision projected one-hot; no synthetic mixes'
+        policy_semantics:'explicit policy when supplied; otherwise selected decision projected one-hot; no synthetic mixes',
+        action_projection_semantics:`canonical SQUEEZE is represented as repository 3BET only in ${SQUEEZE_REPOSITORY_SPOT}; decision evidence remains SQUEEZE`
       }
     });
 
     const decisions={};
     const policy_origins={};
+    const repository_actions={};
     for(const row of rows){
       H.setHandStrategy(repository,context,row.hand_class,row.strategy,{layer:'calculated'});
       decisions[row.hand_class]=row.decision;
       policy_origins[row.hand_class]=row.policy_origin;
+      repository_actions[row.hand_class]=row.repository_action;
     }
     H.validateRepository(repository);
 
@@ -162,6 +211,7 @@
       },
       provenance,
       policy_origins,
+      repository_actions,
       decisions,
       repository:H.exportDocument(repository)
     };
@@ -191,6 +241,9 @@
     if(layerProvenance.schema!==SCHEMA)throw new Error('calculated layer provenance schema mismatch');
     if(String(layerProvenance.status)!==status)throw new Error('calculated layer provenance status mismatch');
     if(layerProvenance.source_decision_schema!==D.SCHEMA)throw new Error('calculated layer source decision schema mismatch');
+    if(layerProvenance.action_projection_semantics!==`canonical SQUEEZE is represented as repository 3BET only in ${SQUEEZE_REPOSITORY_SPOT}; decision evidence remains SQUEEZE`){
+      throw new Error('calculated layer action projection semantics mismatch');
+    }
     for(const key of ['code','selection']){
       if(String(layerProvenance[key])!==String(provenance[key]))throw new Error(`calculated layer provenance ${key} mismatch`);
     }
@@ -212,18 +265,22 @@
       const decision=candidate.decisions[hand];
       D.validateDecision(decision);
       if(decision.population_id!=null&&String(decision.population_id)!==String(context.population_id))throw new Error(`${hand}: decision population mismatch`);
+      const repositoryAction=repositoryActionForDecision(decision,context);
+      if(String(candidate.repository_actions?.[hand]||'')!==repositoryAction){
+        throw new Error(`${hand}: repository action projection mismatch`);
+      }
       const strategy=H.getHandStrategy(candidate.repository,context,hand,{layer:'calculated'});
       if(!strategy)throw new Error(`${hand}: calculated strategy missing`);
-      const actionProbability=Number(strategy.actions?.[decision.action]||0);
-      if(actionProbability<=EPS)throw new Error(`${hand}: selected action ${decision.action} absent from calculated strategy`);
-      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision)<=EPS){
+      const actionProbability=Number(strategy.actions?.[repositoryAction]||0);
+      if(actionProbability<=EPS)throw new Error(`${hand}: selected action ${decision.action} (repository ${repositoryAction}) absent from calculated strategy`);
+      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision,repositoryAction)<=EPS){
         throw new Error(`${hand}: selected sizing ${decision.target_total_bb} BB absent from calculated strategy`);
       }
       const origin=String(candidate.policy_origins?.[hand]||'');
       if(origin==='SELECTED_DECISION_ONE_HOT'){
         if(!sameNumber(actionProbability,1))throw new Error(`${hand}: one-hot projection action probability drifted`);
         if(Object.keys(strategy.actions).length!==1)throw new Error(`${hand}: one-hot projection gained extra actions`);
-        if(decision.target_total_bb!=null&&!sameNumber(selectedSizingProbability(strategy,decision),1))throw new Error(`${hand}: one-hot projection sizing probability drifted`);
+        if(decision.target_total_bb!=null&&!sameNumber(selectedSizingProbability(strategy,decision,repositoryAction),1))throw new Error(`${hand}: one-hot projection sizing probability drifted`);
       }else if(origin!=='EXPLICIT_POLICY'){
         throw new Error(`${hand}: unknown policy origin ${origin}`);
       }
@@ -236,5 +293,5 @@
     return clone(candidate.repository);
   }
 
-  return {SCHEMA,buildCandidate,verifyCandidate,repositoryDocument,selectedSizingProbability};
+  return {SCHEMA,SQUEEZE_REPOSITORY_SPOT,buildCandidate,verifyCandidate,repositoryDocument,repositoryActionForDecision,projectPolicyForRepository,selectedSizingProbability};
 });
