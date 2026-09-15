@@ -40,7 +40,7 @@ function sourceSelection(){
   return {range:r,position:p};
 }
 function sourceHand(hand){
-  const {position}=sourceSelection();return (position?.hands||[]).find(h=>String(h.hand||"").toUpperCase()===hand)||null;
+  const {position}=sourceSelection();return (position?.hands||[]).find(h=>String(h.hand||"").toUpperCase()===hand.toUpperCase())||null;
 }
 function sourceFrequency(hand){
   const row=sourceHand(hand);if(!row)return null;let f=0;
@@ -149,12 +149,13 @@ for(const el of [els.population,els.position,els.stack,els.spot])el.addEventList
 
 function applyDeepLink(){
   const q=new URLSearchParams(window.location.search);
-  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase(),hand=String(q.get("hand")||"").toUpperCase();
+  const population=q.get("population"),position=String(q.get("position")||"").toUpperCase(),stack=Number(q.get("stack")),spot=String(q.get("spot")||"").toUpperCase();
+  const handRaw=String(q.get("hand")||"").trim(),hand=HeroRanges.HAND_CLASSES.find(x=>x.toUpperCase()===handRaw.toUpperCase())||"";
   if(population)els.population.value=population;
   if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
   if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
   if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
-  if(HeroRanges.HAND_CLASSES.includes(hand))selectedHand=hand;
+  if(hand)selectedHand=hand;
 }
 
 initOptions();applyDeepLink();renderAll();
