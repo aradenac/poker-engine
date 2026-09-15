@@ -1,0 +1,67 @@
+{
+  "schema": "poker-continuous-recalculation-contract/v1",
+  "contract_version": "2026-09-15.1",
+  "related_issue": 112,
+  "status": "FROZEN_REQUIREMENTS",
+  "purpose": "A new snapshot must trigger fresh component calculations. Historical reports may be references or baselines, but may not satisfy a required recalculation stage.",
+  "population_scope": "EXACT_SINGLE_POPULATION",
+  "snapshot_identity_required": true,
+  "required_stage_roles": [
+    {
+      "role": "MODEL_A_PREFLOP_FIT",
+      "source_issue": 101,
+      "depends_on": []
+    },
+    {
+      "role": "MODEL_A_POSTFLOP_FIT",
+      "source_issue": 102,
+      "depends_on": []
+    },
+    {
+      "role": "MODEL_B_FIT",
+      "source_issue": 104,
+      "depends_on": []
+    },
+    {
+      "role": "HERO_SEARCH_AND_RANGE_BUILD",
+      "source_issues": [106, 107],
+      "depends_on": [
+        "MODEL_A_PREFLOP_FIT",
+        "MODEL_A_POSTFLOP_FIT",
+        "MODEL_B_FIT"
+      ]
+    },
+    {
+      "role": "FULL_HAND_BENCHMARK",
+      "source_issues": [105, 108],
+      "depends_on": [
+        "MODEL_B_FIT",
+        "HERO_SEARCH_AND_RANGE_BUILD"
+      ]
+    }
+  ],
+  "stage_requirements": {
+    "mode": "RECALCULATE",
+    "source_commit_sha_required": true,
+    "argv_required": true,
+    "snapshot_sha256_must_be_consumed": true,
+    "required_outputs_must_be_new_run_scoped": true,
+    "historical_result_may_satisfy_stage": false,
+    "output_overwrite_forbidden": true
+  },
+  "plan_outcomes": {
+    "all_required_components_bound": "EXECUTABLE",
+    "one_or_more_components_missing": "PREPARED_BLOCKED",
+    "snapshot_already_processed_or_no_pending_snapshot": "NO_OP"
+  },
+  "idempotence": {
+    "same_snapshot_and_same_component_identities_produce_same_fingerprint": true,
+    "component_identity_change_changes_fingerprint": true,
+    "snapshot_identity_change_changes_fingerprint": true
+  },
+  "promotion": {
+    "authorized_by_this_contract": false,
+    "green_recalculation_is_not_promotion": true,
+    "selection_and_test_policy_owned_by_issue": 108
+  }
+}
