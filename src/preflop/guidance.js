@@ -96,6 +96,10 @@
     return parts.map(value=>encodeURIComponent(String(value))).join('|');
   }
 
+  function expectedLabel(state){
+    return state==='PROMOTED'?'PROMOTED_GUIDANCE':state==='EXPERIMENTAL'?'EXPERIMENTAL_NOT_DEFAULT':'NO_VERDICT';
+  }
+
   function buildGuidance(input={}){
     requireDecisionModule();
     const decision=input.decision;
@@ -114,12 +118,38 @@
       public_snapshot:snapshot,
       recommendation_state:strategy.state,
       default_advice:promoted,
-      advisory_label:promoted?'PROMOTED_GUIDANCE':experimental?'EXPERIMENTAL_NOT_DEFAULT':'NO_VERDICT',
+      advisory_label:expectedLabel(strategy.state),
       evidence_decision:evidence,
       cache_key:cacheKey({strategy,snapshot,decision}),
       source_decision_schema:decision.schema,
       future_cards_consumed:false
     };
+  }
+
+  function validateGuidanceEnvelope(guidance){
+    requireDecisionModule();
+    if(!guidance||typeof guidance!=='object'||Array.isArray(guidance)||guidance.schema!==SCHEMA)throw new Error(`expected ${SCHEMA}`);
+    const strategy=normalizeStrategy(guidance.strategy||{});
+    if(guidance.recommendation_state!==strategy.state)throw new Error('guidance recommendation_state must match strategy.state');
+    const expectedDefault=strategy.state==='PROMOTED';
+    if(guidance.default_advice!==expectedDefault)throw new Error('guidance default_advice is inconsistent with strategy.state');
+    if(guidance.advisory_label!==expectedLabel(strategy.state))throw new Error('guidance advisory_label is inconsistent with strategy.state');
+    if(guidance.future_cards_consumed!==false)throw new Error('guidance must attest future_cards_consumed=false');
+
+    const evidence=guidance.evidence_decision;
+    if(strategy.state==='NO_VERDICT'){
+      if(evidence!=null)throw new Error('NO_VERDICT guidance must not carry evidence_decision');
+      return {strategy,evidence:null,snapshot:guidance.public_snapshot};
+    }
+    if(!evidence||typeof evidence!=='object'||Array.isArray(evidence))throw new Error(`${strategy.state} guidance requires evidence_decision`);
+    Decision.validateDecision(evidence);
+    const snapshot=validatePublicSnapshot(guidance.public_snapshot||{},evidence);
+    if(strategy.population_id&&evidence.population_id!=null&&strategy.population_id!==String(evidence.population_id))throw new Error('strategy population_id must match evidence_decision.population_id');
+    if(strategy.population_id&&snapshot.population_id&&strategy.population_id!==snapshot.population_id)throw new Error('strategy population_id must match public_snapshot.population_id');
+    if(guidance.source_decision_schema!==evidence.schema)throw new Error('guidance source_decision_schema must match evidence_decision.schema');
+    const expectedCache=cacheKey({strategy,snapshot,decision:evidence});
+    if(guidance.cache_key!==expectedCache)throw new Error('guidance cache_key is inconsistent with validated strategy/snapshot/decision');
+    return {strategy,evidence,snapshot};
   }
 
   function noVerdictPayload(guidance){
@@ -150,19 +180,19 @@
   }
 
   function surfacePayload(guidance,{allow_experimental=false}={}){
-    if(!guidance||guidance.schema!==SCHEMA)throw new Error(`expected ${SCHEMA}`);
-    const allowed=guidance.recommendation_state==='PROMOTED'||(allow_experimental&&guidance.recommendation_state==='EXPERIMENTAL');
-    if(!allowed||!guidance.evidence_decision)return noVerdictPayload(guidance);
-    const d=guidance.evidence_decision;
+    const validated=validateGuidanceEnvelope(guidance);
+    const allowed=validated.strategy.state==='PROMOTED'||(allow_experimental&&validated.strategy.state==='EXPERIMENTAL');
+    if(!allowed||!validated.evidence)return noVerdictPayload(guidance);
+    const d=validated.evidence;
     return {
       schema:SCHEMA,
-      recommendation_state:guidance.recommendation_state,
+      recommendation_state:validated.strategy.state,
       advisory_label:guidance.advisory_label,
       default_advice:guidance.default_advice,
-      strategy:guidance.strategy,
+      strategy:validated.strategy,
       context_id:d.context_id,
       population_id:d.population_id,
-      hero_hand_class:guidance.public_snapshot.hero_hand_class,
+      hero_hand_class:validated.snapshot.hero_hand_class,
       cache_key:guidance.cache_key,
       action:d.action,
       target_total_bb:d.target_total_bb,
@@ -185,5 +215,5 @@
     return {feed:payload,detail:payload,trainer:payload};
   }
 
-  return {SCHEMA,STRATEGY_STATES,normalizeStrategy,validatePublicSnapshot,buildGuidance,surfacePayload,surfaceBundle,cacheKey};
+  return {SCHEMA,STRATEGY_STATES,normalizeStrategy,validatePublicSnapshot,validateGuidanceEnvelope,buildGuidance,surfacePayload,surfaceBundle,cacheKey};
 });
