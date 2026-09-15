@@ -44,9 +44,34 @@
     return provenance;
   }
 
-  function selectedSizingProbability(strategy,decision){
+  // #106 uses SQUEEZE as a distinct decision/EV family, while the #97 Hero
+  // repository intentionally represents the corresponding range action as
+  // 3BET in the VS_RFI_CALLERS spot. Keep the decision evidence unchanged and
+  // project only at the repository boundary.
+  function rangeActionForDecision(action,context){
+    const name=String(action||'').toUpperCase();
+    if(name==='SQUEEZE'){
+      const spot=String(context?.spot||'').toUpperCase();
+      if(spot!=='VS_RFI_CALLERS')throw new Error(`SQUEEZE requires Hero range context VS_RFI_CALLERS, got ${spot||'<empty>'}`);
+      return '3BET';
+    }
+    return name;
+  }
+
+  function projectPolicyToRange(policy,context){
+    const input=clone(policy||{}),actionKeys=Object.keys(input.actions||{}).map(key=>String(key).toUpperCase()),sizingKeys=Object.keys(input.sizings||{}).map(key=>String(key).toUpperCase());
+    const names=new Set([...actionKeys,...sizingKeys]);
+    if(names.has('SQUEEZE')&&names.has('3BET'))throw new Error('explicit policy must not contain both SQUEEZE and 3BET aliases in one Hero context');
+    const actions={},sizings={};
+    for(const [name,value] of Object.entries(input.actions||{}))actions[rangeActionForDecision(name,context)]=value;
+    for(const [name,value] of Object.entries(input.sizings||{}))sizings[rangeActionForDecision(name,context)]=value;
+    return {actions,sizings,notes:String(input.notes||'')};
+  }
+
+  function selectedSizingProbability(strategy,decision,context){
     if(decision.target_total_bb==null)return null;
-    const rows=strategy.sizings?.[decision.action]||[];
+    const action=rangeActionForDecision(decision.action,context);
+    const rows=strategy.sizings?.[action]||[];
     let probability=0;
     for(const row of rows){
       if(sameNumber(row.target_total_bb,decision.target_total_bb))probability+=Number(row.probability)||0;
@@ -54,24 +79,24 @@
     return probability;
   }
 
-  function strategyForRow(row,decision){
-    const H=dependencies().HeroRanges;
+  function strategyForRow(row,decision,context){
+    const H=dependencies().HeroRanges,rangeAction=rangeActionForDecision(decision.action,context);
     if(row.policy!=null){
-      const strategy=H.normalizeHandStrategy(row.policy);
-      const selectedProbability=Number(strategy.actions?.[decision.action]||0);
+      const strategy=H.normalizeHandStrategy(projectPolicyToRange(row.policy,context));
+      const selectedProbability=Number(strategy.actions?.[rangeAction]||0);
       if(selectedProbability<=EPS){
-        throw new Error(`${row.hand_class}: explicit policy excludes selected decision action ${decision.action}`);
+        throw new Error(`${row.hand_class}: explicit policy excludes selected decision action ${decision.action} (Hero range action ${rangeAction})`);
       }
-      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision)<=EPS){
+      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision,context)<=EPS){
         throw new Error(`${row.hand_class}: explicit policy does not contain selected sizing ${decision.target_total_bb} BB for ${decision.action}`);
       }
       return {strategy,origin:'EXPLICIT_POLICY'};
     }
 
-    const actions={[decision.action]:1};
+    const actions={[rangeAction]:1};
     const sizings={};
     if(decision.target_total_bb!=null){
-      sizings[decision.action]=[{target_total_bb:decision.target_total_bb,probability:1}];
+      sizings[rangeAction]=[{target_total_bb:decision.target_total_bb,probability:1}];
     }
     return {
       strategy:H.normalizeHandStrategy({
@@ -97,7 +122,7 @@
       if(decision.population_id!=null&&String(decision.population_id)!==String(context.population_id)){
         throw new Error(`${hand}: decision population ${decision.population_id} does not match context population ${context.population_id}`);
       }
-      const {strategy,origin}=strategyForRow(input,decision);
+      const {strategy,origin}=strategyForRow(input,decision,context);
       byHand.set(hand,{hand_class:hand,decision,strategy,policy_origin:origin});
     }
     if(requireComplete){
@@ -134,7 +159,7 @@
         schema:SCHEMA,
         status,
         source_decision_schema:PreflopDecision.SCHEMA,
-        policy_semantics:'explicit policy when supplied; otherwise selected decision projected one-hot; no synthetic mixes'
+        policy_semantics:'explicit policy when supplied; otherwise selected decision projected one-hot; SQUEEZE decision projects to Hero range 3BET only in VS_RFI_CALLERS; no synthetic mixes'
       }
     });
 
@@ -214,16 +239,17 @@
       if(decision.population_id!=null&&String(decision.population_id)!==String(context.population_id))throw new Error(`${hand}: decision population mismatch`);
       const strategy=H.getHandStrategy(candidate.repository,context,hand,{layer:'calculated'});
       if(!strategy)throw new Error(`${hand}: calculated strategy missing`);
-      const actionProbability=Number(strategy.actions?.[decision.action]||0);
-      if(actionProbability<=EPS)throw new Error(`${hand}: selected action ${decision.action} absent from calculated strategy`);
-      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision)<=EPS){
+      const rangeAction=rangeActionForDecision(decision.action,context);
+      const actionProbability=Number(strategy.actions?.[rangeAction]||0);
+      if(actionProbability<=EPS)throw new Error(`${hand}: selected action ${decision.action} (Hero range action ${rangeAction}) absent from calculated strategy`);
+      if(decision.target_total_bb!=null&&selectedSizingProbability(strategy,decision,context)<=EPS){
         throw new Error(`${hand}: selected sizing ${decision.target_total_bb} BB absent from calculated strategy`);
       }
       const origin=String(candidate.policy_origins?.[hand]||'');
       if(origin==='SELECTED_DECISION_ONE_HOT'){
         if(!sameNumber(actionProbability,1))throw new Error(`${hand}: one-hot projection action probability drifted`);
         if(Object.keys(strategy.actions).length!==1)throw new Error(`${hand}: one-hot projection gained extra actions`);
-        if(decision.target_total_bb!=null&&!sameNumber(selectedSizingProbability(strategy,decision),1))throw new Error(`${hand}: one-hot projection sizing probability drifted`);
+        if(decision.target_total_bb!=null&&!sameNumber(selectedSizingProbability(strategy,decision,context),1))throw new Error(`${hand}: one-hot projection sizing probability drifted`);
       }else if(origin!=='EXPLICIT_POLICY'){
         throw new Error(`${hand}: unknown policy origin ${origin}`);
       }
@@ -236,5 +262,5 @@
     return clone(candidate.repository);
   }
 
-  return {SCHEMA,buildCandidate,verifyCandidate,repositoryDocument,selectedSizingProbability};
+  return {SCHEMA,buildCandidate,verifyCandidate,repositoryDocument,selectedSizingProbability,rangeActionForDecision};
 });
