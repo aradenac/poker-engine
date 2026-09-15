@@ -24,15 +24,15 @@ jobs:
         run: |
           python3 -m py_compile tools/preflop/context_contract.py tools/training/increment_decisions.py tools/training/audit_preflop_key_runtime_parity.py
           node --check site/preflop-contract.js
-          node --check <(python3 - <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
           s=Path('site/index.html').read_text()
           a=s.index('<script src="./preflop-contract.js"></script>')
           b=s.index('<script>',a)
           c=s.index('</script>',b)
-          print(s[b+8:c])
+          Path('/tmp/site-inline.js').write_text(s[b+8:c])
           PY
-          )
+          node --check /tmp/site-inline.js
           python3 tests/preflop/test_context_contract.py
           python3 tests/training/test_preflop_key_runtime_parity.py
       - name: Refresh and verify release identity
