@@ -8,15 +8,17 @@ Le plan produit et le graphe de dépendances sont pilotés par **l'issue #92 —
 
 ## Déploiement
 
+- [Ouvrir l'application de production](https://poker-engine.arad-chatgpt-compositeur-repas.workers.dev/)
+- [Consulter l'identité et les preuves de déploiement](site/PRODUCTION.md)
 - [Console Cloudflare du service `poker-engine`](https://dash.cloudflare.com/335073663ad947e69fb7590bc22b5e73/workers/services/view/poker-engine/production)
 
-Ce lien de console n'est pas la preuve de l'URL publique canonique ni de la révision effectivement servie. La vérification live de production (URL, commit/build, analyser, trainer et assets) est suivie par l'issue #45.
+L'identité du déploiement live courant est exposée par `/deployment-meta.css` sur l'URL de production. Elle est vérifiée indépendamment de `site/RELEASE.json`, qui décrit la release applicative promue.
 
 ## Identités à ne pas confondre
 
 - **moteur recommandé** : release immuable sous `user/releases/` (actuellement v83) ;
 - **application assemblée** : octets fonctionnels sous `site/`, identifiés par `site/RELEASE.json` ;
-- **déploiement live** : révision réellement servie par Cloudflare, vérifiée indépendamment dans #45.
+- **déploiement live** : révision réellement servie par Cloudflare, vérifiée et documentée dans `site/PRODUCTION.md`.
 
 `tools/write_site_release.py --check` contrôle que l'identité de l'application correspond aux octets fonctionnels committés. `published=true` ou un build réussi ne constituent pas à eux seuls une preuve de production live.
 
