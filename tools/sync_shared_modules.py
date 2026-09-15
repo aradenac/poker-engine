@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = (
     (Path("src/preflop/contract.js"), Path("site/preflop-contract.js")),
+    (Path("src/preflop/decision.js"), Path("site/preflop-decision.js")),
 )
 
 
