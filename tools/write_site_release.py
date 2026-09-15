@@ -7,10 +7,10 @@ The release metadata deliberately separates:
 - live deployment verification, which is tracked separately by issue #45.
 
 The application identity covers the analyser, shared preflop contract, Hero range
-editor, trainer JS/CSS and the complete site/assets tree. Git blob/tree object IDs
-are content-derived, so they identify the exact functional bytes without
-introducing a self-reference. Build-specific deployment-meta.css and RELEASE.json
-itself are excluded.
+repository/editor/compliance modules, trainer JS/CSS and the complete site/assets
+tree. Git blob/tree object IDs are content-derived, so they identify the exact
+functional bytes without introducing a self-reference. Build-specific
+deployment-meta.css and RELEASE.json itself are excluded.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "hero-ranges.js",
     ROOT / "site" / "hero-ranges-app.js",
     ROOT / "site" / "hero-ranges.css",
+    ROOT / "site" / "hero-compliance.js",
     ROOT / "site" / "trainer.js",
     ROOT / "site" / "trainer.css",
 )
