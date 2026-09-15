@@ -68,9 +68,17 @@
     };
   }
 
-  function importDocument(document,{populationId=''}={}){
+  function importDocument(document,{populationId='',baseRepository=null}={}){
     if(!document||typeof document!=='object'||Array.isArray(document))throw new Error('range document must be an object');
     if(document.schema===SCHEMA){const repo=deepClone(document);validateRepository(repo);return repo;}
+    if(baseRepository){
+      validateRepository(baseRepository);
+      const repo=deepClone(baseRepository);
+      repo.source={format:'range-folder',preserved_verbatim:true,meta:null,range_folder:deepClone(document)};
+      if(!repo.defaults?.population_id&&populationId)repo.defaults.population_id=String(populationId);
+      validateRepository(repo);
+      return repo;
+    }
     return emptyRepository({populationId,sourceDocument:document});
   }
 
