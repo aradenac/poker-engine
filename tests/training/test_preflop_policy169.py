@@ -87,6 +87,23 @@ def test_big_endian_contract_round_trips_too():
     assert_close(sum(decoded["72o"].values()), 1.0)
 
 
+def test_symbolic_root_hand_order_matches_browser_contract():
+    node = node_from_policy(baseline_policy())
+    q = node["population_model"]["policy169_q_b64"]
+    q["hand_order"] = "hand_grid.classes"
+    decoded = decode_policy169(node, GRID)
+    assert list(decoded) == GRID
+    encoded, _ = refit_node_policy169(
+        node,
+        {"n_delta": 3, "actions": {"FOLD": 1, "CALL": 1, "RAISE": 1}},
+        root_hand_meta=META,
+        fallback_grid=GRID,
+        prior_strength=40,
+        update_weight=1.0,
+    )
+    assert encoded["hand_order"] == "hand_grid.classes"
+
+
 def test_runtime_zero_quantization_floor_is_mirrored():
     policy = {
         "AA": {"FOLD": 0.0, "CALL": 0.0, "RAISE": 1.0},

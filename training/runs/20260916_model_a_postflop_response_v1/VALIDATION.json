@@ -1,0 +1,112 @@
+{
+  "schema": "poker-model-a-postflop-response-refit/v1",
+  "component": "Model A postflop response_models.numeric_coef",
+  "scientific_decision": "PROMOTE_CANDIDATE_SCIENTIFICALLY",
+  "production_effect": "NONE",
+  "candidate_is_continuation_compatible": true,
+  "selection": {
+    "split": "VALIDATION",
+    "test_consumed": false
+  },
+  "baseline_validation": {
+    "split": "VALIDATION",
+    "log_loss": 0.681562531753465,
+    "rows": 13066,
+    "coverage": {
+      "population_postflop_rows": 13198,
+      "unrevealed_rows": 6865,
+      "usable_rows": 13066,
+      "spr_clipped_by_runtime": 1472,
+      "revealed_rows": 6333,
+      "no_exact_node": 132
+    }
+  },
+  "candidate_validation": {
+    "split": "VALIDATION",
+    "log_loss": 0.6793432283224968,
+    "rows": 13066,
+    "coverage": {
+      "population_postflop_rows": 13198,
+      "unrevealed_rows": 6865,
+      "usable_rows": 13066,
+      "spr_clipped_by_runtime": 1472,
+      "revealed_rows": 6333,
+      "no_exact_node": 132
+    }
+  },
+  "delta_candidate_minus_baseline": -0.0022193034309682114,
+  "paired_hand_bootstrap": {
+    "hands": 1884,
+    "iterations": 2000,
+    "mean_delta_candidate_minus_baseline": -0.0030345776998543,
+    "ci95": [
+      -0.005191550900516246,
+      -0.0006282329131427955
+    ],
+    "probability_candidate_better": 0.993
+  },
+  "fit": {
+    "response_models_changed": 6,
+    "fit": {
+      "flop_FREE": {
+        "examples": 32038,
+        "epochs": 60,
+        "max_parent_coefficient_delta": 0.06316744333563937
+      },
+      "flop_FACING": {
+        "examples": 16015,
+        "epochs": 60,
+        "max_parent_coefficient_delta": 0.05618269032059498
+      },
+      "turn_FREE": {
+        "examples": 23407,
+        "epochs": 60,
+        "max_parent_coefficient_delta": 0.05502889389954343
+      },
+      "turn_FACING": {
+        "examples": 11019,
+        "epochs": 60,
+        "max_parent_coefficient_delta": 0.0803329380760973
+      },
+      "river_FREE": {
+        "examples": 17396,
+        "epochs": 60,
+        "max_parent_coefficient_delta": 0.04609437982754172
+      },
+      "river_FACING": {
+        "examples": 8544,
+        "epochs": 60,
+        "max_parent_coefficient_delta": 0.06496747120015306
+      }
+    },
+    "train_coverage": {
+      "population_postflop_rows": 108580,
+      "unrevealed_rows": 56445,
+      "usable_rows": 108419,
+      "revealed_rows": 52135,
+      "spr_clipped_by_runtime": 12577,
+      "no_exact_node": 161
+    }
+  },
+  "limits": [
+    "combo_policy_models and hand_policy_prior are frozen in this tranche",
+    "unrevealed hands inform public/action response conditioning but not revealed-combo composition",
+    "unseen exact canonical contexts are excluded rather than materialized implicitly",
+    "sizing and SPR beyond runtime support are clipped identically to the browser and counted"
+  ],
+  "provenance": {
+    "baseline": "training/models/postflop_population_model_v5.json",
+    "baseline_sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+    "decisions": "/tmp/certified-decisions.jsonl",
+    "decisions_sha256": "99ea18b24ca0e725000bddc2ee735e42b5b82badf3e3b5991d3809db96bc898d",
+    "tool": "/workspace/scratch/cb7d5570650f/poker-engine/tools/training/refit_postflop_response_models.py",
+    "tool_sha256": "05fc8c0fad945f1052c70997cf22d743aa46f23626c26c27402435fa33f37161",
+    "candidate": "/tmp/postflop-response-candidate.json",
+    "candidate_sha256": "8cde4cf526feea5fa68f62afaa904a799d5faa3a53164c2f4dfb265ff5433733",
+    "seed": 20260915,
+    "bootstrap_iterations": 2000,
+    "epochs": 60,
+    "learning_rate": 0.08,
+    "l2_to_parent": 0.25
+  }
+}

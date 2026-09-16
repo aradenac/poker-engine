@@ -67,7 +67,14 @@ def policy_meta(
 ) -> tuple[list[str], list[str], int, str]:
     q = policy_object(node)
     actions = [str(a).upper() for a in (q.get("actions") or [])]
-    grid = [str(h) for h in (q.get("hand_order") or fallback_grid or [])]
+    hand_order = q.get("hand_order")
+    if isinstance(hand_order, list):
+        grid_source = hand_order
+    elif hand_order in (None, "", "hand_grid.classes"):
+        grid_source = fallback_grid or []
+    else:
+        raise ValueError(f"unsupported policy169 hand_order reference: {hand_order!r}")
+    grid = [str(h) for h in grid_source]
     shape = list(q.get("shape") or [])
     scale = int(q.get("scale") or 0)
     dtype = str(q.get("dtype") or "")
@@ -156,8 +163,10 @@ def encode_policy169(
     })
     # Keep an explicit hand order when the source had one; otherwise runtime
     # deliberately falls back to the model root hand_grid.
-    if template and "hand_order" in template:
+    if template and isinstance(template.get("hand_order"), list):
         q["hand_order"] = list(hand_grid)
+    elif template and template.get("hand_order") == "hand_grid.classes":
+        q["hand_order"] = "hand_grid.classes"
     else:
         q.pop("hand_order", None)
     if method is not None:

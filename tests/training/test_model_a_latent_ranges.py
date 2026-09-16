@@ -107,6 +107,14 @@ def test_quantized_policy_decoder_is_action_major_and_normalized():
     assert math.isclose(sum(policy["72o"].values()), 1.0)
 
 
+def test_quantized_policy_decoder_resolves_symbolic_root_hand_order():
+    m = model()
+    m["nodes"][0]["population_model"]["policy169_q_b64"]["hand_order"] = "hand_grid.classes"
+    policy = mod.decode_policy169(m["nodes"][0], m)
+    assert len(policy) == 169
+    assert math.isclose(policy["AA"]["CALL"], 0.9)
+
+
 def test_quantized_zero_uses_runtime_midpoint_not_hard_impossibility():
     q = encoded_policy()
     raw = bytearray(base64.b64decode(q["data"]))

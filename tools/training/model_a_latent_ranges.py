@@ -51,7 +51,13 @@ def decode_policy169(node: dict, model: dict) -> dict[str, dict[str, float]] | N
     q = ((node.get("population_model") or {}).get("policy169_q_b64"))
     if not q:
         return None
-    hands = list(q.get("hand_order") or ((model.get("hand_grid") or {}).get("classes") or matrix_notations()))
+    hand_order = q.get("hand_order")
+    if isinstance(hand_order, list):
+        hands = list(hand_order)
+    elif hand_order in (None, "", "hand_grid.classes"):
+        hands = list((model.get("hand_grid") or {}).get("classes") or matrix_notations())
+    else:
+        raise LatentRangeError(f"unsupported policy169 hand_order reference: {hand_order!r}")
     actions = list(q.get("actions") or [])
     shape = list(q.get("shape") or [])
     if len(shape) != 2 or int(shape[0]) != len(actions) or int(shape[1]) != len(hands):
