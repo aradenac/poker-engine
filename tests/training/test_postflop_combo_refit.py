@@ -166,17 +166,22 @@ def test_combo_fit_moves_coefficients_toward_observed_signal_with_parent_cap():
         "coef_std": [[0.0], [0.0]],
         "data_scale": 1.0,
     }
+    offsets = [math.log(0.5), math.log(0.5)]
     examples = []
     for _ in range(60):
         examples.append({
             "action": "CALL",
-            "points": [{"z": [1.0], "weight": 0.75}, {"z": [0.4], "weight": 0.25}],
-            "offsets": [math.log(0.5), math.log(0.5)],
+            "points": [
+                {"z": [1.0], "weight": 0.75, "offsets": offsets},
+                {"z": [0.4], "weight": 0.25, "offsets": offsets},
+            ],
         })
         examples.append({
             "action": "FOLD",
-            "points": [{"z": [-1.0], "weight": 0.75}, {"z": [-0.4], "weight": 0.25}],
-            "offsets": [math.log(0.5), math.log(0.5)],
+            "points": [
+                {"z": [-1.0], "weight": 0.75, "offsets": offsets},
+                {"z": [-0.4], "weight": 0.25, "offsets": offsets},
+            ],
         })
     fitted, info = combo.fit_one(
         spec, examples, epochs=50, learning_rate=0.2, l2_to_parent=0.02,
