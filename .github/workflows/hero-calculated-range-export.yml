@@ -64,7 +64,12 @@ jobs:
           import json
           from pathlib import Path
           from tools.training.generate_hero_range_decisions import ContextSpec, build_context_state
-          from tools.simulation.model_a_continuation import ModelAContinuationPolicy, exact_preflop_node
+          from tools.simulation.model_a_continuation import (
+              ModelAContinuationPolicy,
+              _preflop_decision,
+              _semantic_trace,
+              exact_preflop_node,
+          )
 
           pre=Path('training/models/preflop_population_model_v5.json')
           post=Path('training/models/postflop_population_model_v5.json')
@@ -73,7 +78,7 @@ jobs:
           matches=[]
           needles=('size','continuous','target_total','raise_to','quantile','median')
           def summary(v):
-              if isinstance(v,dict): return {'type':'dict','keys':list(v)[:12],'count':len(v)}
+              if isinstance(v,dict): return {'type':'dict','keys':list(v)[:16],'count':len(v)}
               if isinstance(v,list): return {'type':'list','count':len(v),'sample':v[:3]}
               return v
           def walk(v,path=(),depth=0):
@@ -91,13 +96,15 @@ jobs:
           walk(model)
           policy=ModelAContinuationPolicy.from_paths(pre,post,overlay)
           state=build_context_state(ContextSpec(position='BTN',spot='UNOPENED',effective_stack_bb=100.0))
-          node=exact_preflop_node(policy,state,'BTN')
+          _, replay, history, _, _ = _semantic_trace(state)
+          decision=_preflop_decision(replay,'BTN',history)
+          node=exact_preflop_node(policy.preflop_model,decision)
           print(json.dumps({
               'top_level_keys': list(model),
               'sizing_key_paths': matches,
-              'exact_btn_node': summary(node),
-              'exact_btn_population_model': summary(node.get('population_model')),
-              'exact_btn_node_payload': node,
+              'exact_btn_decision': decision,
+              'exact_btn_node_fields': {k:summary(v) for k,v in (node or {}).items()},
+              'exact_btn_population_model': summary((node or {}).get('population_model')),
           },indent=2,sort_keys=True))
           PY
       - name: Real Model A to grid to candidate smoke
