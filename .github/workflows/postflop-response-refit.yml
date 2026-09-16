@@ -1,39 +1,58 @@
-name: Validate Model A postflop response refit
+name: Validate Model A postflop continuation refit
 
 on:
   push:
+    branches: [main]
     paths:
       - 'tools/training/refit_postflop_response_models.py'
+      - 'tools/training/refit_postflop_combo_policy.py'
+      - 'tools/training/sample_postflop_stage_b_decisions.py'
       - 'tools/training/model_a_latent_ranges.py'
+      - 'tools/training/model_a_postflop_runtime.py'
       - 'tools/training/audit_model_a_latent_ranges.py'
+      - 'tools/training/build_certified_population_decisions.py'
       - 'tests/training/test_postflop_response_refit.py'
       - 'tests/training/test_postflop_refit_protocol.py'
       - 'tests/training/test_model_a_latent_ranges.py'
-      - 'training/runs/20260915_model_a_postflop_refit_v1/PROTOCOL.json'
+      - 'tests/training/test_model_a_postflop_runtime.py'
+      - 'tests/training/test_postflop_combo_refit.py'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
       - '.github/workflows/postflop-response-refit.yml'
   pull_request:
     paths:
       - 'tools/training/refit_postflop_response_models.py'
+      - 'tools/training/refit_postflop_combo_policy.py'
+      - 'tools/training/sample_postflop_stage_b_decisions.py'
       - 'tools/training/model_a_latent_ranges.py'
+      - 'tools/training/model_a_postflop_runtime.py'
       - 'tools/training/audit_model_a_latent_ranges.py'
+      - 'tools/training/build_certified_population_decisions.py'
       - 'tests/training/test_postflop_response_refit.py'
       - 'tests/training/test_postflop_refit_protocol.py'
       - 'tests/training/test_model_a_latent_ranges.py'
-      - 'training/runs/20260915_model_a_postflop_refit_v1/PROTOCOL.json'
+      - 'tests/training/test_model_a_postflop_runtime.py'
+      - 'tests/training/test_postflop_combo_refit.py'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
       - '.github/workflows/postflop-response-refit.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: postflop-continuation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   refit:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONPATH: '.'
     steps:
       - uses: actions/checkout@v4
+
       - name: Contract tests
         run: |
           python3 - <<'PY'
@@ -42,67 +61,141 @@ jobs:
               'tests/training/test_postflop_response_refit.py',
               'tests/training/test_postflop_refit_protocol.py',
               'tests/training/test_model_a_latent_ranges.py',
+              'tests/training/test_model_a_postflop_runtime.py',
+              'tests/training/test_postflop_combo_refit.py',
           ):
-              ns=runpy.run_path(path)
-              for name,fn in sorted(ns.items()):
+              ns = runpy.run_path(path)
+              for name, fn in sorted(ns.items()):
                   if name.startswith('test_') and callable(fn):
                       fn()
                       print('PASS', path, name)
           PY
-      - name: Rebuild normalized 2026-09-12 decisions
+
+      - name: Materialize certified Zoom decisions
         run: |
-          python3 tools/training/build_incremental_decisions_v2.py \
-            --source training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip \
-            --out /tmp/model-a-0912-decisions.jsonl \
-            --summary /tmp/model-a-0912-summary.json
-      - name: Audit exact latent-range subset
-        run: |
-          python3 tools/training/audit_model_a_latent_ranges.py \
-            --preflop-model training/models/preflop_population_model_v5.json \
-            --decisions /tmp/model-a-0912-decisions.jsonl \
-            --out /tmp/model-a-latent-range-audit.json
+          python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/certified-decisions.jsonl \
+            --summary /tmp/certified-decisions-summary.json
           python3 - <<'PY'
           import json
-          a=json.load(open('/tmp/model-a-latent-range-audit.json'))
-          assert a['selection']=={'splits_consumed':['TRAIN','VALIDATION'],'test_consumed':False}
-          assert a['counts']['admitted_exact_latent_targets']>0
-          assert a['gates']['target_action_leakage']=='PASS_BY_CONSTRUCTION'
-          assert a['gates']['nearest_context_substitution']=='DISABLED'
+          s = json.load(open('/tmp/certified-decisions-summary.json'))
+          assert s['population_id'] == 'pokerstars_nlhe_100-200_zoom_play_6max_v1'
+          assert s['target_unique_hands'] == 23789
+          assert s['hands_by_split'] == {'TRAIN': 19016, 'VALIDATION': 2324, 'TEST': 2449}
           PY
-      - name: Refit runtime-consumed response coefficients and evaluate VALIDATION
+
+      - name: Rebuild selected Stage A response candidate
         run: |
           python3 tools/training/refit_postflop_response_models.py \
             --baseline training/models/postflop_population_model_v5.json \
-            --decisions /tmp/model-a-0912-decisions.jsonl \
-            --out /tmp/postflop-response-candidate.json \
-            --report /tmp/postflop-response-report.json \
+            --decisions /tmp/certified-decisions.jsonl \
+            --out /tmp/postflop-stage-a.json \
+            --report /tmp/postflop-stage-a-report.json \
             --epochs 60 \
             --learning-rate 0.08 \
             --l2-to-parent 0.25 \
             --seed 20260915 \
             --bootstrap-iterations 2000
-      - name: Verify isolation and print scientific result
+          python3 - <<'PY'
+          import json
+          r = json.load(open('/tmp/postflop-stage-a-report.json'))
+          assert r['selection'] == {'split': 'VALIDATION', 'test_consumed': False}
+          assert r['scientific_decision'] == 'PROMOTE_CANDIDATE_SCIENTIFICALLY'
+          assert r['production_effect'] == 'NONE'
+          assert r['baseline_validation']['rows'] == r['candidate_validation']['rows'] > 0
+          PY
+
+      - name: Freeze deterministic Stage B budget
+        run: |
+          python3 tools/training/sample_postflop_stage_b_decisions.py \
+            --decisions /tmp/certified-decisions.jsonl \
+            --postflop-model /tmp/postflop-stage-a.json \
+            --out /tmp/stage-b-decisions.jsonl \
+            --summary /tmp/stage-b-budget.json \
+            --train-hands-per-model 120 \
+            --validation-revealed-hands-per-model 60
+          python3 - <<'PY'
+          import json
+          s = json.load(open('/tmp/stage-b-budget.json'))
+          assert s['selection_contract']['test_consumed'] is False
+          assert 'TEST' not in s['selected_unique_hands_by_split']
+          assert s['selected_unique_hands_by_split'].get('TRAIN', 0) > 0
+          assert s['selected_unique_hands_by_split'].get('VALIDATION', 0) > 0
+          PY
+
+      - name: Refit Stage B combo policy and evaluate VALIDATION
+        run: |
+          python3 tools/training/refit_postflop_combo_policy.py \
+            --stage-a /tmp/postflop-stage-a.json \
+            --production-baseline training/models/postflop_population_model_v5.json \
+            --preflop-model training/models/preflop_population_model_v5.json \
+            --decisions /tmp/stage-b-decisions.jsonl \
+            --candidate /tmp/postflop-stage-b-candidate.json \
+            --overlay /tmp/postflop-selected-overlay.json \
+            --report /tmp/postflop-stage-b-report.json \
+            --hidden-quadrature-budget 48 \
+            --epochs 50 \
+            --learning-rate 0.05 \
+            --l2-to-parent 0.30 \
+            --minimum-effective-weight 20 \
+            --coefficient-delta-cap-std 1.5 \
+            --validation-revealed-budget 360 \
+            --seed 20260916 \
+            --bootstrap-iterations 2000
+
+      - name: Verify isolation, selection and continuation overlay
         run: |
           python3 - <<'PY'
           import json
-          b=json.load(open('training/models/postflop_population_model_v5.json'))
-          c=json.load(open('/tmp/postflop-response-candidate.json'))
-          r=json.load(open('/tmp/postflop-response-report.json'))
-          assert c['nodes']==b['nodes']
-          assert c.get('combo_policy_models')==b.get('combo_policy_models')
-          assert c.get('hand_policy_prior')==b.get('hand_policy_prior')
-          assert c.get('response_models')!=b.get('response_models')
-          assert r['selection']=={'split':'VALIDATION','test_consumed':False}
-          assert r['production_effect']=='NONE'
-          assert r['fit']['response_models_changed']>0
-          assert r['baseline_validation']['rows']==r['candidate_validation']['rows']>0
-          print(json.dumps(r,indent=2))
+          from tools.training.refit_postflop_combo_policy import apply_overlay
+
+          prod = json.load(open('training/models/postflop_population_model_v5.json'))
+          stage_a = json.load(open('/tmp/postflop-stage-a.json'))
+          stage_b = json.load(open('/tmp/postflop-stage-b-candidate.json'))
+          overlay = json.load(open('/tmp/postflop-selected-overlay.json'))
+          report = json.load(open('/tmp/postflop-stage-b-report.json'))
+
+          assert report['selection'] == {'split': 'VALIDATION', 'test_consumed': False}
+          assert report['production_effect'] == 'NONE'
+          assert report['gates']['target_action_leakage'] == 'PASS_BY_CONSTRUCTION'
+          assert report['gates']['future_board_cards_for_prior_action'] == 'PASS_BY_CHRONOLOGICAL_BLOCKING'
+          assert report['fit']['combo_policy_models_changed'] > 0
+          assert report['validation']['rows'] > 0
+          assert report['validation']['prediction_changed_rows'] > 0
+          assert stage_b['nodes'] == stage_a['nodes']
+          assert stage_b['response_models'] == stage_a['response_models']
+          assert stage_b.get('hand_policy_prior') == stage_a.get('hand_policy_prior')
+
+          selected = apply_overlay(prod, overlay)
+          assert selected['nodes'] == prod['nodes']
+          assert selected.get('hand_policy_prior') == prod.get('hand_policy_prior')
+          for key, spec in stage_a['response_models'].items():
+              assert selected['response_models'][key]['numeric_coef'] == spec['numeric_coef']
+          if report['scientific_decision'] == 'PROMOTE_STAGE_B_SCIENTIFICALLY':
+              expected_combo = stage_b['combo_policy_models']
+          else:
+              expected_combo = stage_a['combo_policy_models']
+          for key, spec in expected_combo.items():
+              assert selected['combo_policy_models'][key]['coef_std'] == spec['coef_std']
+
+          print('STAGE_B_REPORT_BEGIN')
+          print(json.dumps(report, indent=2))
+          print('STAGE_B_REPORT_END')
+          print('STAGE_B_OVERLAY_BEGIN')
+          print(json.dumps(overlay, indent=2))
+          print('STAGE_B_OVERLAY_END')
           PY
+
       - uses: actions/upload-artifact@v4
         with:
-          name: postflop-response-refit-evidence
+          name: model-a-postflop-stage-b-evidence
           path: |
-            /tmp/model-a-latent-range-audit.json
-            /tmp/postflop-response-candidate.json
-            /tmp/postflop-response-report.json
+            /tmp/certified-decisions-summary.json
+            /tmp/postflop-stage-a-report.json
+            /tmp/stage-b-budget.json
+            /tmp/postflop-stage-b-report.json
+            /tmp/postflop-selected-overlay.json
+            /tmp/postflop-stage-a.json
+            /tmp/postflop-stage-b-candidate.json
           retention-days: 14
