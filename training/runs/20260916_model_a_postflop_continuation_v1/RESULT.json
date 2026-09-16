@@ -1,0 +1,89 @@
+{
+  "budget": {
+    "selected_rows_by_split": {
+      "TRAIN": 10796,
+      "VALIDATION": 4744
+    },
+    "selected_unique_hands_by_split": {
+      "TRAIN": 697,
+      "VALIDATION": 303
+    },
+    "selection_contract": {
+      "test_consumed": false,
+      "train_hands_per_runtime_model": 120,
+      "train_label_policy": "selection ignores action outcome and private cards; requires only supported runtime context",
+      "validation_label_policy": "selection may require reveal availability but never reads private-card identity/value for ranking",
+      "validation_revealed_hands_per_runtime_model": 60
+    }
+  },
+  "candidate_sha256": "cba96c01fc97eddc9039a590a2ba3e88982a8b8d8aa5f7b3b4e159214fcff3a9",
+  "date": "2026-09-16",
+  "gates": {
+    "fit_zero_delta_runtime_parity": "PASS_BY_STAGE_A_CONDITIONAL_OFFSETS",
+    "future_board_cards_for_prior_action": "PASS_BY_CHRONOLOGICAL_BLOCKING",
+    "nearest_context_substitution": "DISABLED",
+    "production_mutation": "NONE",
+    "target_action_leakage": "PASS_BY_CONSTRUCTION"
+  },
+  "issue": 102,
+  "limits": [
+    "hidden-hand fractional sufficient statistics use deterministic posterior quadrature with the persisted budget",
+    "fit is a regularized local delta around Stage-A calibrated per-combo action probabilities",
+    "Stage-B selection uses revealed-combo conditional likelihood because runtime IPF deliberately fixes marginal action frequencies",
+    "baseline and candidate each reconstruct their own chronological posterior during VALIDATION",
+    "TEST is not read for fitting or selection"
+  ],
+  "paired_hand_bootstrap": {
+    "ci95": [-0.041338687388360766, -0.008247083641439529],
+    "hands": 201,
+    "iterations": 2000,
+    "mean_delta_candidate_minus_baseline": -0.023331429645581474,
+    "probability_candidate_better": 1.0
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "preflop_model_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+  "production_baseline_sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+  "reproducibility": {
+    "stage_a_tool": "tools/training/refit_postflop_response_models.py",
+    "stage_b_parameters": {
+      "bootstrap_iterations": 2000,
+      "coefficient_delta_cap_std": 1.5,
+      "epochs": 50,
+      "hidden_quadrature_budget": 48,
+      "l2_to_parent": 0.3,
+      "learning_rate": 0.05,
+      "minimum_effective_weight": 20.0,
+      "seed": 20260916,
+      "validation_revealed_budget": 360
+    },
+    "stage_b_sampler": "tools/training/sample_postflop_stage_b_decisions.py",
+    "stage_b_tool": "tools/training/refit_postflop_combo_policy.py",
+    "workflow": ".github/workflows/postflop-response-refit.yml"
+  },
+  "schema": "model-a-postflop-continuation-run/v1",
+  "selected_overlay_sha256": "3d97b488fcb7a2ef34c49161bc4047fe4a3afd13387dc7775044479f74d37080",
+  "selection": {
+    "production_effect": "NONE",
+    "selection_split": "VALIDATION",
+    "stage_a_decision": "PROMOTE_CANDIDATE_SCIENTIFICALLY",
+    "stage_b_decision": "PROMOTE_STAGE_B_SCIENTIFICALLY",
+    "test_consumed": false
+  },
+  "source_commit": "52d0ec295de7e7bc050419f5f5b847ae32695008",
+  "stage_a_sha256": "8cde4cf526feea5fa68f62afaa904a799d5faa3a53164c2f4dfb265ff5433733",
+  "validation": {
+    "baseline_log_loss": 0.7403240964074925,
+    "candidate_log_loss": 0.7186603886753998,
+    "metric": "revealed_combo_conditional_action_log_loss",
+    "prediction_changed_rows": 355,
+    "rows": 355,
+    "split": "VALIDATION"
+  },
+  "workflow_artifact": {
+    "artifact_id": 10446736036,
+    "name": "model-a-postflop-stage-b-evidence",
+    "retention_until": "2026-09-30T12:33:12Z",
+    "zip_sha256": "c5b3270d210f572a29d3bcc58aae3a5d1f27a44764ce07c6d6797f2d7ddc3b18"
+  },
+  "workflow_run_id": 35092998760
+}
