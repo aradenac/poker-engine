@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'tools/simulation/model_a_continuation.py'
+      - 'tools/simulation/model_a_preflop_rollout.py'
       - 'tests/simulation/test_model_a_continuation.py'
+      - 'tests/simulation/test_model_a_preflop_rollout.py'
       - 'tools/simulation/game_core.py'
       - 'tools/training/model_a_latent_ranges.py'
       - 'tools/training/model_a_postflop_runtime.py'
@@ -17,7 +19,9 @@ on:
     branches: [main]
     paths:
       - 'tools/simulation/model_a_continuation.py'
+      - 'tools/simulation/model_a_preflop_rollout.py'
       - 'tests/simulation/test_model_a_continuation.py'
+      - 'tests/simulation/test_model_a_preflop_rollout.py'
       - '.github/workflows/model-a-continuation.yml'
   workflow_dispatch:
 
@@ -36,8 +40,12 @@ jobs:
         run: |
           python3 -m py_compile \
             tools/simulation/model_a_continuation.py \
-            tests/simulation/test_model_a_continuation.py
+            tools/simulation/model_a_preflop_rollout.py \
+            tests/simulation/test_model_a_continuation.py \
+            tests/simulation/test_model_a_preflop_rollout.py
       - name: Model A continuation contracts
         run: PYTHONPATH=. python3 tests/simulation/test_model_a_continuation.py
+      - name: Full-hand preflop rollout contracts
+        run: PYTHONPATH=. python3 tests/simulation/test_model_a_preflop_rollout.py
       - name: Existing preflop grid contracts
         run: PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py
