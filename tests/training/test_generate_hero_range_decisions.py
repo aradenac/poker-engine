@@ -88,7 +88,8 @@ def main() -> None:
     assert targets == [2.0, 2.5, 3.0], targets
     assert support["node_id"] == "fixture-exact"
     assert support["population_decisions"] == 123
-    assert all("target_total_bb" in source for source in support["sources"]), support
+    assert "node.target_total_bb" in support["sources"], support
+    assert "LEGAL_MIN_FALLBACK" not in support["sources"], support
 
     fallback_node = exact_node_for_state(unopened, "BTN", continuous={})
     fallback_policy = ModelAContinuationPolicy({"nodes": [fallback_node]}, {"nodes": []})
