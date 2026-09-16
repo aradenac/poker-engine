@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Refit runtime-consumed Model A postflop combo-policy residuals.
 
-Stage B for issue #102.  The tool starts from an already selected Stage-A
-postflop response candidate, reconstructs each population player's exact-combo
-posterior strictly before the target decision, and refits only
-``combo_policy_models.*.coef_std``.
+Stage B for issue #102. The tool starts from an already selected Stage-A
+response candidate and refits only ``combo_policy_models.*.coef_std``.
+Private-card uncertainty is preserved strictly before every target decision:
+revealed hands become point masses only after the prior is built, while hidden
+hands contribute fractional training weight over a deterministic quadrature of
+their exact-combo posterior.
 
-Hidden hands contribute fractional sufficient statistics under their pre-action
-posterior (compressed by deterministic weighted quadrature for a bounded
-budget). Revealed hands contribute a point mass *after* that prior is built.
-Selection never reads TEST and never mutates production models.
+TEST is never used for fitting or selection and production models are never
+mutated by this tool.
 """
 from __future__ import annotations
 
@@ -48,8 +48,8 @@ def sha256_file(path: Path) -> str:
 
 def load_rows(path: Path) -> list[dict]:
     rows = []
-    with path.open(encoding="utf-8") as f:
-        for line in f:
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
             if line.strip():
                 rows.append(json.loads(line))
     return rows
@@ -85,48 +85,58 @@ def standardized_combo_features(combo: tuple[int, int], row: dict, spec: dict) -
     return out
 
 
-def posterior_quadrature(combos: Iterable[tuple[int, int]], weights: Iterable[float], budget: int) -> list[tuple[tuple[int, int], float]]:
-    """Deterministic inverse-CDF quadrature over an exact-combo posterior."""
-    pairs = [(combo, max(0.0, float(weight))) for combo, weight in zip(combos, weights) if float(weight) > 0]
+def posterior_quadrature(
+    combos: Iterable[tuple[int, int]], weights: Iterable[float], budget: int
+) -> list[tuple[tuple[int, int], float]]:
+    """Deterministic inverse-CDF quadrature of an exact-combo posterior."""
+    pairs = [
+        (combo, max(0.0, float(weight)))
+        for combo, weight in zip(combos, weights)
+        if float(weight) > 0
+    ]
     if not pairs:
         raise ValueError("empty posterior support")
-    total = sum(w for _, w in pairs)
-    pairs = [(c, w / total) for c, w in pairs]
+    total = sum(weight for _, weight in pairs)
+    pairs = [(combo, weight / total) for combo, weight in pairs]
     if budget <= 0 or len(pairs) <= budget:
         return pairs
 
     selected: dict[tuple[int, int], float] = defaultdict(float)
     cumulative = 0.0
-    idx = 0
+    index = 0
     for q in range(budget):
         target = (q + 0.5) / budget
-        while idx < len(pairs) - 1 and cumulative + pairs[idx][1] < target:
-            cumulative += pairs[idx][1]
-            idx += 1
-        selected[pairs[idx][0]] += 1.0 / budget
+        while index < len(pairs) - 1 and cumulative + pairs[index][1] < target:
+            cumulative += pairs[index][1]
+            index += 1
+        selected[pairs[index][0]] += 1.0 / budget
     return list(selected.items())
 
 
-def expected_z(posterior, row: dict, spec: dict, *, hidden_budget: int) -> tuple[list[float], dict]:
+def fractional_feature_points(posterior, row: dict, spec: dict, *, hidden_budget: int) -> tuple[list[dict], dict]:
+    """Return private-feature points with weights summing to one per decision.
+
+    This deliberately does not collapse hidden features to their mean before the
+    nonlinear softmax. Each quadrature point contributes its posterior weight to
+    the gradient, which is the fractional-sufficient-statistic contract frozen
+    for Stage B.
+    """
     known = list(row.get("known_cards") or [])
     if len(known) == 2:
         target = tuple(sorted((cid(known[0]), cid(known[1]))))
         if posterior.probability_of_cards(known) <= 0:
             raise LatentRangeError("revealed combo is outside pre-action posterior support")
-        return standardized_combo_features(target, row, spec), {
+        return [{"z": standardized_combo_features(target, row, spec), "weight": 1.0}], {
             "label_policy": "REVEALED_POINT_MASS",
             "quadrature_points": 1,
             "posterior_support": posterior.support,
         }
 
     quad = posterior_quadrature(posterior.combos, posterior.weights, hidden_budget)
-    nf = len(spec.get("features") or [])
-    out = [0.0] * nf
-    for combo, weight in quad:
-        z = standardized_combo_features(combo, row, spec)
-        for j in range(nf):
-            out[j] += weight * z[j]
-    return out, {
+    return [
+        {"z": standardized_combo_features(combo, row, spec), "weight": float(weight)}
+        for combo, weight in quad
+    ], {
         "label_policy": "HIDDEN_FRACTIONAL_POSTERIOR",
         "quadrature_points": len(quad),
         "posterior_support": posterior.support,
@@ -178,7 +188,9 @@ def build_examples(
                 posterior = posterior_before_postflop_action(
                     hand_rows, idx, preflop_model, postflop_model
                 )
-                z, label_info = expected_z(posterior, row, spec, hidden_budget=hidden_budget)
+                points, label_info = fractional_feature_points(
+                    posterior, row, spec, hidden_budget=hidden_budget
+                )
             except LatentRangeError:
                 counts["excluded_latent_range_error"] += 1
                 continue
@@ -191,13 +203,17 @@ def build_examples(
             else:
                 counts["admitted_hidden_fractional"] += 1
             counts["admitted"] += 1
+            counts["fractional_feature_points"] += len(points)
             quadrature_points.append(label_info["quadrature_points"])
             effective_support.append(posterior.effective_support)
             grouped[key].append({
                 "hand_id": str(row.get("hand_id")),
                 "action": str(row.get("action")),
-                "z": z,
-                "offsets": [math.log(max(EPS, float(target.get(cls) or 0.0))) for cls in classes],
+                "points": points,
+                "offsets": [
+                    math.log(max(EPS, float(target.get(action) or 0.0)))
+                    for action in classes
+                ],
                 "revealed": label_info["label_policy"] == "REVEALED_POINT_MASS",
                 "matched_postflop_actions": posterior.matched_postflop_actions,
             })
@@ -205,7 +221,7 @@ def build_examples(
     counts["models_with_examples"] = len(grouped)
     return grouped, {
         "counts": dict(sorted(counts.items())),
-        "quadrature_points": {
+        "quadrature_points_per_decision": {
             "mean": sum(quadrature_points) / len(quadrature_points) if quadrature_points else None,
             "max": max(quadrature_points) if quadrature_points else None,
         },
@@ -232,9 +248,11 @@ def fit_one(
     coef = copy.deepcopy(parent)
     nf = len(spec.get("features") or [])
     scale = float(spec.get("data_scale") or 0.0)
-    if not classes or not nf or not scale or len(examples) < minimum_effective_weight:
+    effective_decisions = float(len(examples))
+    if not classes or not nf or not scale or effective_decisions < minimum_effective_weight:
         return coef, {
             "examples": len(examples),
+            "fractional_points": sum(len(ex.get("points") or []) for ex in examples),
             "epochs": 0,
             "decision": "BACKOFF_PARENT",
             "reason": "insufficient examples or inactive runtime scale",
@@ -244,26 +262,31 @@ def fit_one(
 
     for _ in range(epochs):
         grad = [[0.0] * nf for _ in classes]
-        used = 0
+        used_weight = 0.0
         for ex in examples:
             action = ex["action"]
             if action not in classes:
                 continue
-            z = ex["z"]
-            logits = [
-                ex["offsets"][ci] + scale * sum(coef[ci][j] * z[j] for j in range(nf))
-                for ci in range(len(classes))
-            ]
-            probs = softmax(logits)
             target_ci = classes.index(action)
-            for ci in range(len(classes)):
-                err = probs[ci] - (1.0 if ci == target_ci else 0.0)
-                for j in range(nf):
-                    grad[ci][j] += err * scale * z[j]
-            used += 1
-        if not used:
+            for point in ex.get("points") or []:
+                point_weight = max(0.0, float(point.get("weight") or 0.0))
+                if point_weight <= 0:
+                    continue
+                z = point["z"]
+                logits = [
+                    ex["offsets"][ci]
+                    + scale * sum(coef[ci][j] * z[j] for j in range(nf))
+                    for ci in range(len(classes))
+                ]
+                probs = softmax(logits)
+                for ci in range(len(classes)):
+                    err = probs[ci] - (1.0 if ci == target_ci else 0.0)
+                    for j in range(nf):
+                        grad[ci][j] += point_weight * err * scale * z[j]
+                used_weight += point_weight
+        if used_weight <= 0:
             break
-        inv = 1.0 / used
+        inv = 1.0 / used_weight
         for ci in range(len(classes)):
             for j in range(nf):
                 g = grad[ci][j] * inv + l2_to_parent * (coef[ci][j] - parent[ci][j])
@@ -272,10 +295,15 @@ def fit_one(
                 hi = parent[ci][j] + coefficient_delta_cap
                 coef[ci][j] = max(lo, min(hi, proposed))
 
-    deltas = [abs(coef[i][j] - parent[i][j]) for i in range(len(classes)) for j in range(nf)]
-    saturated = sum(1 for d in deltas if d >= coefficient_delta_cap - 1e-9)
+    deltas = [
+        abs(coef[i][j] - parent[i][j])
+        for i in range(len(classes))
+        for j in range(nf)
+    ]
+    saturated = sum(1 for delta in deltas if delta >= coefficient_delta_cap - 1e-9)
     return coef, {
         "examples": len(examples),
+        "fractional_points": sum(len(ex.get("points") or []) for ex in examples),
         "epochs": epochs,
         "decision": "REFIT",
         "max_parent_coefficient_delta": max(deltas, default=0.0),
@@ -297,7 +325,11 @@ def refit(
 ) -> tuple[dict, dict]:
     candidate = copy.deepcopy(stage_a_model)
     train, coverage = build_examples(
-        preflop_model, stage_a_model, rows, "TRAIN", hidden_budget=hidden_budget
+        preflop_model,
+        stage_a_model,
+        rows,
+        "TRAIN",
+        hidden_budget=hidden_budget,
     )
     fit_summary = {}
     changed = 0
@@ -323,7 +355,7 @@ def refit(
         "test_consumed": False,
         "production_effect": "NONE",
         "frozen_components": ["nodes", "response_models", "hand_policy_prior"],
-        "hidden_hand_policy": "fractional sufficient statistics from pre-action posterior",
+        "hidden_hand_policy": "fractional weighted feature points from pre-action exact-combo posterior",
         "revealed_hand_policy": "point mass after pre-action posterior construction",
         "parameters": {
             "hidden_quadrature_budget": hidden_budget,
@@ -342,16 +374,11 @@ def refit(
 
 
 def _hash_rank(hand_id: str, index: int) -> str:
-    return hashlib.sha256(f"{hand_id}|{index}".encode()).hexdigest()
+    return hashlib.sha256(f"stage-b-validation-v1|{hand_id}|{index}".encode()).hexdigest()
 
 
-def revealed_validation_examples(
-    preflop_model: dict,
-    model: dict,
-    rows: list[dict],
-    *,
-    budget: int,
-) -> tuple[list[dict], dict]:
+def revealed_validation_targets(model: dict, rows: list[dict], *, budget: int) -> tuple[list[dict], dict]:
+    """Select revealed VALIDATION targets before any private-card likelihood work."""
     eligible = []
     counts = Counter()
     for hand_rows in group_hands(rows):
@@ -363,34 +390,36 @@ def revealed_validation_examples(
             if len(list(row.get("known_cards") or [])) != 2:
                 counts["hidden_not_directly_scored"] += 1
                 continue
-            key = _model_key(row)
-            spec = (model.get("combo_policy_models") or {}).get(key)
+            spec = (model.get("combo_policy_models") or {}).get(_model_key(row))
             if not spec or row.get("action") not in (spec.get("classes") or []):
                 counts["unsupported_combo_model"] += 1
                 continue
             if exact_postflop_node(model, row) is None:
                 counts["missing_exact_postflop_node"] += 1
                 continue
-            try:
-                posterior = posterior_before_postflop_action(hand_rows, idx, preflop_model, model)
-            except LatentRangeError:
-                counts["latent_range_error"] += 1
-                continue
-            if posterior.probability_of_cards(row.get("known_cards")) <= 0:
-                counts["revealed_combo_outside_support"] += 1
-                continue
             eligible.append({
                 "hand_rows": hand_rows,
                 "index": idx,
                 "row": row,
-                "posterior": posterior,
                 "rank": _hash_rank(str(row.get("hand_id")), idx),
             })
-    eligible.sort(key=lambda x: x["rank"])
+    eligible.sort(key=lambda item: item["rank"])
     selected = eligible[:budget] if budget > 0 else eligible
     counts["eligible_revealed"] = len(eligible)
     counts["selected_revealed"] = len(selected)
     return selected, dict(sorted(counts.items()))
+
+
+def _revealed_action_probability(preflop_model: dict, model: dict, hand_rows: list[dict], index: int, row: dict) -> float:
+    posterior = posterior_before_postflop_action(hand_rows, index, preflop_model, model)
+    known = tuple(sorted((cid(row["known_cards"][0]), cid(row["known_cards"][1]))))
+    try:
+        combo_index = list(posterior.combos).index(known)
+    except ValueError as exc:
+        raise LatentRangeError("revealed combo is outside pre-action posterior support") from exc
+    return observed_action_probabilities(
+        posterior.combos, posterior.weights, row, model
+    )[combo_index]
 
 
 def evaluate_revealed(
@@ -401,28 +430,24 @@ def evaluate_revealed(
     *,
     budget: int,
 ) -> tuple[dict, dict[str, list[float]], dict[str, list[float]]]:
-    selected, coverage = revealed_validation_examples(
-        preflop_model, baseline, rows, budget=budget
-    )
+    selected, coverage = revealed_validation_targets(baseline, rows, budget=budget)
     base_by_hand: dict[str, list[float]] = defaultdict(list)
     cand_by_hand: dict[str, list[float]] = defaultdict(list)
-    base_loss = cand_loss = 0.0
+    base_loss = 0.0
+    cand_loss = 0.0
     changed = 0
     by_model = defaultdict(lambda: {"n": 0, "baseline_loss": 0.0, "candidate_loss": 0.0})
 
     for ex in selected:
         row = ex["row"]
-        posterior = ex["posterior"]
-        known = tuple(sorted((cid(row["known_cards"][0]), cid(row["known_cards"][1]))))
         try:
-            combo_index = list(posterior.combos).index(known)
-            bp = observed_action_probabilities(
-                posterior.combos, posterior.weights, row, baseline
-            )[combo_index]
-            cp = observed_action_probabilities(
-                posterior.combos, posterior.weights, row, candidate
-            )[combo_index]
-        except (KeyError, ValueError):
+            bp = _revealed_action_probability(
+                preflop_model, baseline, ex["hand_rows"], ex["index"], row
+            )
+            cp = _revealed_action_probability(
+                preflop_model, candidate, ex["hand_rows"], ex["index"], row
+            )
+        except (LatentRangeError, KeyError, ValueError):
             coverage["runtime_scoring_error"] = coverage.get("runtime_scoring_error", 0) + 1
             continue
         bll = -math.log(max(EPS, bp))
@@ -439,7 +464,7 @@ def evaluate_revealed(
         by_model[key]["baseline_loss"] += bll
         by_model[key]["candidate_loss"] += cll
 
-    n = sum(len(v) for v in base_by_hand.values())
+    n = sum(len(values) for values in base_by_hand.values())
     per_model = {}
     for key, stats in sorted(by_model.items()):
         count = stats["n"]
@@ -470,12 +495,18 @@ def paired_bootstrap(
     ids = sorted(set(base_by_hand) & set(cand_by_hand))
     deltas = []
     for hid in ids:
-        b = base_by_hand[hid]
-        c = cand_by_hand[hid]
-        if b and c:
-            deltas.append(sum(c) / len(c) - sum(b) / len(b))
+        baseline = base_by_hand[hid]
+        candidate = cand_by_hand[hid]
+        if baseline and candidate:
+            deltas.append(sum(candidate) / len(candidate) - sum(baseline) / len(baseline))
     if not deltas:
-        return {"hands": 0, "iterations": 0, "mean_delta_candidate_minus_baseline": None, "ci95": None}
+        return {
+            "hands": 0,
+            "iterations": 0,
+            "mean_delta_candidate_minus_baseline": None,
+            "ci95": None,
+            "probability_candidate_better": None,
+        }
     rng = random.Random(seed)
     samples = []
     for _ in range(iterations):
@@ -488,17 +519,19 @@ def paired_bootstrap(
         "iterations": iterations,
         "mean_delta_candidate_minus_baseline": sum(deltas) / len(deltas),
         "ci95": [lo, hi],
-        "probability_candidate_better": sum(1 for x in samples if x < 0) / len(samples),
+        "probability_candidate_better": sum(1 for value in samples if value < 0) / len(samples),
     }
 
 
 def continuation_overlay(base_model: dict, selected_model: dict, *, base_sha256: str, decision: str) -> dict:
-    response = {}
-    for key, spec in (selected_model.get("response_models") or {}).items():
-        response[key] = {"numeric_coef": spec.get("numeric_coef")}
-    combo = {}
-    for key, spec in (selected_model.get("combo_policy_models") or {}).items():
-        combo[key] = {"coef_std": spec.get("coef_std")}
+    response = {
+        key: {"numeric_coef": spec.get("numeric_coef")}
+        for key, spec in (selected_model.get("response_models") or {}).items()
+    }
+    combo = {
+        key: {"coef_std": spec.get("coef_std")}
+        for key, spec in (selected_model.get("combo_policy_models") or {}).items()
+    }
     return {
         "schema": OVERLAY_SCHEMA,
         "base_postflop_model_sha256": base_sha256,
@@ -544,8 +577,11 @@ def run(
     production_baseline = json.loads(production_baseline_path.read_text(encoding="utf-8"))
     preflop = json.loads(preflop_path.read_text(encoding="utf-8"))
     rows = load_rows(decisions_path)
+
     candidate, fit = refit(
-        stage_a, preflop, rows,
+        stage_a,
+        preflop,
+        rows,
         hidden_budget=hidden_budget,
         epochs=epochs,
         learning_rate=learning_rate,
@@ -556,14 +592,20 @@ def run(
     evaluation, base_hands, cand_hands = evaluate_revealed(
         preflop, stage_a, candidate, rows, budget=validation_revealed_budget
     )
-    boot = paired_bootstrap(base_hands, cand_hands, seed=seed, iterations=bootstrap_iterations)
+    bootstrap = paired_bootstrap(
+        base_hands, cand_hands, seed=seed, iterations=bootstrap_iterations
+    )
     delta = None
     if evaluation["baseline_log_loss"] is not None and evaluation["candidate_log_loss"] is not None:
         delta = evaluation["candidate_log_loss"] - evaluation["baseline_log_loss"]
-    ci = boot.get("ci95")
+    ci = bootstrap.get("ci95")
     decision = (
         "PROMOTE_STAGE_B_SCIENTIFICALLY"
-        if delta is not None and delta < 0 and ci and ci[1] < 0 and evaluation["prediction_changed_rows"] > 0
+        if delta is not None
+        and delta < 0
+        and ci
+        and ci[1] < 0
+        and evaluation["prediction_changed_rows"] > 0
         else "RETAIN_STAGE_A"
     )
     selected = candidate if decision == "PROMOTE_STAGE_B_SCIENTIFICALLY" else stage_a
@@ -571,13 +613,19 @@ def run(
     candidate_path.parent.mkdir(parents=True, exist_ok=True)
     overlay_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    candidate_path.write_text(json.dumps(candidate, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    candidate_path.write_text(
+        json.dumps(candidate, ensure_ascii=False, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
     overlay = continuation_overlay(
-        production_baseline, selected,
+        production_baseline,
+        selected,
         base_sha256=sha256_file(production_baseline_path),
         decision=decision,
     )
-    overlay_path.write_text(json.dumps(overlay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    overlay_path.write_text(
+        json.dumps(overlay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
     report = {
         "schema": SCHEMA,
@@ -588,7 +636,7 @@ def run(
         "fit": fit,
         "validation": evaluation,
         "delta_candidate_minus_stage_a": delta,
-        "paired_hand_bootstrap": boot,
+        "paired_hand_bootstrap": bootstrap,
         "gates": {
             "target_action_leakage": "PASS_BY_CONSTRUCTION",
             "future_board_cards_for_prior_action": "PASS_BY_CHRONOLOGICAL_BLOCKING",
@@ -596,18 +644,26 @@ def run(
             "production_mutation": "NONE",
         },
         "limits": [
-            "hidden-hand sufficient statistics use deterministic posterior quadrature with the persisted budget",
-            "Stage-B selection is based on revealed-combo conditional likelihood because IPF intentionally fixes marginal action frequencies",
+            "hidden-hand fractional sufficient statistics use deterministic posterior quadrature with the persisted budget",
+            "Stage-B selection uses revealed-combo conditional likelihood because runtime IPF deliberately fixes marginal action frequencies",
+            "baseline and candidate each reconstruct their own chronological posterior during VALIDATION",
             "TEST is not read for fitting or selection",
         ],
         "provenance": {
-            "stage_a": str(stage_a_path), "stage_a_sha256": sha256_file(stage_a_path),
-            "production_baseline": str(production_baseline_path), "production_baseline_sha256": sha256_file(production_baseline_path),
-            "preflop_model": str(preflop_path), "preflop_model_sha256": sha256_file(preflop_path),
-            "decisions": str(decisions_path), "decisions_sha256": sha256_file(decisions_path),
-            "tool": str(Path(__file__)), "tool_sha256": sha256_file(Path(__file__)),
-            "candidate": str(candidate_path), "candidate_sha256": sha256_file(candidate_path),
-            "selected_overlay": str(overlay_path), "selected_overlay_sha256": sha256_file(overlay_path),
+            "stage_a": str(stage_a_path),
+            "stage_a_sha256": sha256_file(stage_a_path),
+            "production_baseline": str(production_baseline_path),
+            "production_baseline_sha256": sha256_file(production_baseline_path),
+            "preflop_model": str(preflop_path),
+            "preflop_model_sha256": sha256_file(preflop_path),
+            "decisions": str(decisions_path),
+            "decisions_sha256": sha256_file(decisions_path),
+            "tool": str(Path(__file__)),
+            "tool_sha256": sha256_file(Path(__file__)),
+            "candidate": str(candidate_path),
+            "candidate_sha256": sha256_file(candidate_path),
+            "selected_overlay": str(overlay_path),
+            "selected_overlay_sha256": sha256_file(overlay_path),
             "seed": seed,
             "bootstrap_iterations": bootstrap_iterations,
             "hidden_quadrature_budget": hidden_budget,
@@ -619,46 +675,53 @@ def run(
             "coefficient_delta_cap_std": coefficient_delta_cap,
         },
     }
-    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    report_path.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--stage-a", required=True, type=Path)
-    p.add_argument("--production-baseline", required=True, type=Path)
-    p.add_argument("--preflop-model", required=True, type=Path)
-    p.add_argument("--decisions", required=True, type=Path)
-    p.add_argument("--candidate", required=True, type=Path)
-    p.add_argument("--overlay", required=True, type=Path)
-    p.add_argument("--report", required=True, type=Path)
-    p.add_argument("--hidden-quadrature-budget", type=int, default=48)
-    p.add_argument("--epochs", type=int, default=50)
-    p.add_argument("--learning-rate", type=float, default=0.05)
-    p.add_argument("--l2-to-parent", type=float, default=0.30)
-    p.add_argument("--minimum-effective-weight", type=float, default=20.0)
-    p.add_argument("--coefficient-delta-cap-std", type=float, default=1.5)
-    p.add_argument("--validation-revealed-budget", type=int, default=600)
-    p.add_argument("--seed", type=int, default=20260916)
-    p.add_argument("--bootstrap-iterations", type=int, default=2000)
-    return p.parse_args()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stage-a", required=True, type=Path)
+    parser.add_argument("--production-baseline", required=True, type=Path)
+    parser.add_argument("--preflop-model", required=True, type=Path)
+    parser.add_argument("--decisions", required=True, type=Path)
+    parser.add_argument("--candidate", required=True, type=Path)
+    parser.add_argument("--overlay", required=True, type=Path)
+    parser.add_argument("--report", required=True, type=Path)
+    parser.add_argument("--hidden-quadrature-budget", type=int, default=48)
+    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--learning-rate", type=float, default=0.05)
+    parser.add_argument("--l2-to-parent", type=float, default=0.30)
+    parser.add_argument("--minimum-effective-weight", type=float, default=20.0)
+    parser.add_argument("--coefficient-delta-cap-std", type=float, default=1.5)
+    parser.add_argument("--validation-revealed-budget", type=int, default=600)
+    parser.add_argument("--seed", type=int, default=20260916)
+    parser.add_argument("--bootstrap-iterations", type=int, default=2000)
+    return parser.parse_args()
 
 
 def main() -> None:
-    a = parse_args()
+    args = parse_args()
     run(
-        a.stage_a, a.production_baseline, a.preflop_model, a.decisions,
-        a.candidate, a.overlay, a.report,
-        hidden_budget=a.hidden_quadrature_budget,
-        epochs=a.epochs,
-        learning_rate=a.learning_rate,
-        l2_to_parent=a.l2_to_parent,
-        minimum_effective_weight=a.minimum_effective_weight,
-        coefficient_delta_cap=a.coefficient_delta_cap_std,
-        validation_revealed_budget=a.validation_revealed_budget,
-        seed=a.seed,
-        bootstrap_iterations=a.bootstrap_iterations,
+        args.stage_a,
+        args.production_baseline,
+        args.preflop_model,
+        args.decisions,
+        args.candidate,
+        args.overlay,
+        args.report,
+        hidden_budget=args.hidden_quadrature_budget,
+        epochs=args.epochs,
+        learning_rate=args.learning_rate,
+        l2_to_parent=args.l2_to_parent,
+        minimum_effective_weight=args.minimum_effective_weight,
+        coefficient_delta_cap=args.coefficient_delta_cap_std,
+        validation_revealed_budget=args.validation_revealed_budget,
+        seed=args.seed,
+        bootstrap_iterations=args.bootstrap_iterations,
     )
 
 
