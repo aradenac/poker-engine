@@ -171,7 +171,7 @@ const tampered=JSON.parse(JSON.stringify(candidate));
 const tamperedAKs=tampered.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.hands.AKs;
 tamperedAKs.actions={FOLD:1};
 tamperedAKs.sizings={};
-assert.throws(()=>X.verifyCandidate(tampered),/selected action OPEN absent/);
+assert.throws(()=>X.verifyCandidate(tampered),/selected action OPEN .*absent from calculated strategy/);
 
 const tamperedSize=JSON.parse(JSON.stringify(candidate));
 tamperedSize.repository.contexts[H.contextKey(CONTEXT)].layers.calculated.hands.AKs.sizings.OPEN=[{target_total_bb:4,probability:1}];

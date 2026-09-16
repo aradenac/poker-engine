@@ -6,10 +6,23 @@ on:
       - 'src/preflop/decision.js'
       - 'src/preflop/hero_range_export.js'
       - 'site/hero-ranges.js'
+      - 'tools/training/generate_hero_range_decisions.py'
+      - 'tools/training/generate_certified_hero_range_decisions.py'
+      - 'tools/training/export_calculated_hero_candidate.mjs'
+      - 'tools/training/build_certified_population_decisions.py'
+      - 'tools/simulation/preflop_grid_evaluator.py'
+      - 'tools/simulation/model_a_continuation.py'
+      - 'tools/simulation/model_a_preflop_rollout.py'
       - 'tests/preflop/test_decision_contract.js'
       - 'tests/hero_ranges/test_hero_range_repository.mjs'
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
       - 'tests/hero_ranges/test_squeeze_range_export.mjs'
+      - 'tests/training/test_generate_hero_range_decisions.py'
+      - 'tests/training/test_certified_preflop_sizing_evidence.py'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
+      - 'training/models/preflop_population_model_v5.json'
+      - 'training/models/postflop_population_model_v5.json'
+      - 'training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json'
       - 'docs/hero-calculated-range-candidate.md'
       - '.github/workflows/hero-calculated-range-export.yml'
   workflow_dispatch:
@@ -20,18 +33,28 @@ permissions:
 jobs:
   calculated-range-contract:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Syntax
         run: |
           node --check src/preflop/decision.js
           node --check src/preflop/hero_range_export.js
           node --check site/hero-ranges.js
+          node --check tools/training/export_calculated_hero_candidate.mjs
           node --check tests/hero_ranges/test_calculated_range_export.mjs
           node --check tests/hero_ranges/test_squeeze_range_export.mjs
+          python3 -m py_compile \
+            tools/training/generate_hero_range_decisions.py \
+            tools/training/generate_certified_hero_range_decisions.py \
+            tests/training/test_generate_hero_range_decisions.py \
+            tests/training/test_certified_preflop_sizing_evidence.py
       - name: Preserve preflop decision contract
         run: node tests/preflop/test_decision_contract.js
       - name: Preserve Hero repository contract
@@ -40,3 +63,57 @@ jobs:
         run: node tests/hero_ranges/test_calculated_range_export.mjs
       - name: SQUEEZE projection contract
         run: node tests/hero_ranges/test_squeeze_range_export.mjs
+      - name: Hero decision generation contracts
+        run: PYTHONPATH=. python3 tests/training/test_generate_hero_range_decisions.py
+      - name: Certified TRAIN sizing evidence contract
+        run: PYTHONPATH=. python3 tests/training/test_certified_preflop_sizing_evidence.py
+      - name: Materialize certified population decisions
+        run: |
+          PYTHONPATH=. python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/issue-107-certified-decisions.jsonl \
+            --summary /tmp/issue-107-certified-summary.json
+      - name: Real Model A to grid to candidate smoke
+        run: |
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+            --position BTN --spot UNOPENED --stack-bb 100 \
+            --hand-class AA --samples 1 --seed 20260916 \
+            --version issue-107-ci-aa-smoke \
+            --code-sha "$GITHUB_SHA" \
+            --sizing-decisions /tmp/issue-107-certified-decisions.jsonl \
+            --rows-out /tmp/issue-107-aa-run.json \
+            --candidate-out /tmp/issue-107-aa-candidate.json
+          python3 - <<'PY'
+          import json
+          run=json.load(open('/tmp/issue-107-aa-run.json'))
+          candidate=json.load(open('/tmp/issue-107-aa-candidate.json'))
+          assert run['coverage']=={'requested':1,'completed':1,'complete_169':False}, run['coverage']
+          assert run['unsupported']==[]
+          assert run['rows'][0]['hand_class']=='AA'
+          assert run['rows'][0]['decision']['schema']=='poker-preflop-decision/v1'
+          assert run['provenance']['hero_future_continuation']['claim']=='NOT_OPTIMAL_HERO_STRATEGY'
+          sizing=run['provenance']['sizing_support']
+          assert sizing['contract']=='CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1'
+          assert sizing['filters']['split']=='TRAIN'
+          assert sizing['filters']['is_hero'] is False
+          assert sizing['observed_nonjam_raises'] > 0
+          assert candidate['schema']=='poker-hero-calculated-range-candidate/v1'
+          assert candidate['promotion_authorized'] is False
+          assert candidate['coverage']['defined_hand_classes']==1
+          print(json.dumps({
+            'run':run['coverage'],
+            'decision':run['rows'][0]['decision']['action'],
+            'size':run['rows'][0]['decision']['bet_to_bb'],
+            'sizing':sizing['legal_grid_targets_bb'],
+            'sizing_support':sizing['observed_nonjam_raises'],
+          },indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-real-generation-smoke-${{ github.sha }}
+          path: |
+            /tmp/issue-107-aa-run.json
+            /tmp/issue-107-aa-candidate.json
+            /tmp/issue-107-certified-summary.json
+          if-no-files-found: error
+          retention-days: 14
