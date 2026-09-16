@@ -1,0 +1,43 @@
+name: Validate Model A multiway continuation
+
+on:
+  pull_request:
+    paths:
+      - 'tools/simulation/model_a_continuation.py'
+      - 'tests/simulation/test_model_a_continuation.py'
+      - 'tools/simulation/game_core.py'
+      - 'tools/training/model_a_latent_ranges.py'
+      - 'tools/training/model_a_postflop_runtime.py'
+      - 'tools/training/refit_postflop_combo_policy.py'
+      - 'training/models/preflop_population_model_v5.json'
+      - 'training/models/postflop_population_model_v5.json'
+      - 'training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json'
+      - '.github/workflows/model-a-continuation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/simulation/model_a_continuation.py'
+      - 'tests/simulation/test_model_a_continuation.py'
+      - '.github/workflows/model-a-continuation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile
+        run: |
+          python3 -m py_compile \
+            tools/simulation/model_a_continuation.py \
+            tests/simulation/test_model_a_continuation.py
+      - name: Model A continuation contracts
+        run: PYTHONPATH=. python3 tests/simulation/test_model_a_continuation.py
+      - name: Existing preflop grid contracts
+        run: PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py
