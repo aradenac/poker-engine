@@ -60,26 +60,45 @@ jobs:
         run: PYTHONPATH=. python3 tests/training/test_generate_hero_range_decisions.py
       - name: Inspect retained preflop sizing contract
         run: |
-          python3 - <<'PY'
+          PYTHONPATH=. python3 - <<'PY'
           import json
           from pathlib import Path
+          from tools.training.generate_hero_range_decisions import ContextSpec, build_context_state
+          from tools.simulation.model_a_continuation import ModelAContinuationPolicy, exact_preflop_node
 
-          model=json.loads(Path('training/models/preflop_population_model_v5.json').read_text())
-          out={}
-          for name in ('continuous_population','continuous_conditional_exact'):
-              value=model.get(name)
-              entry={'type':type(value).__name__}
-              if isinstance(value,dict):
-                  entry['count']=len(value)
-                  entry['keys']=list(value)[:8]
-                  entry['samples']={k:value[k] for k in list(value)[:2]}
-              elif isinstance(value,list):
-                  entry['count']=len(value)
-                  entry['samples']=value[:2]
-              else:
-                  entry['value']=value
-              out[name]=entry
-          print(json.dumps(out,indent=2,sort_keys=True))
+          pre=Path('training/models/preflop_population_model_v5.json')
+          post=Path('training/models/postflop_population_model_v5.json')
+          overlay=Path('training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json')
+          model=json.loads(pre.read_text())
+          matches=[]
+          needles=('size','continuous','target_total','raise_to','quantile','median')
+          def summary(v):
+              if isinstance(v,dict): return {'type':'dict','keys':list(v)[:12],'count':len(v)}
+              if isinstance(v,list): return {'type':'list','count':len(v),'sample':v[:3]}
+              return v
+          def walk(v,path=(),depth=0):
+              if len(matches)>=50 or depth>5: return
+              if isinstance(v,dict):
+                  for k,child in v.items():
+                      p=path+(str(k),)
+                      if any(n in str(k).lower() for n in needles):
+                          matches.append({'path':'.'.join(p),'value':summary(child)})
+                          if len(matches)>=50: return
+                      walk(child,p,depth+1)
+              elif isinstance(v,list):
+                  for i,child in enumerate(v[:8]):
+                      walk(child,path+(str(i),),depth+1)
+          walk(model)
+          policy=ModelAContinuationPolicy.from_paths(pre,post,overlay)
+          state=build_context_state(ContextSpec(position='BTN',spot='UNOPENED',effective_stack_bb=100.0))
+          node=exact_preflop_node(policy,state,'BTN')
+          print(json.dumps({
+              'top_level_keys': list(model),
+              'sizing_key_paths': matches,
+              'exact_btn_node': summary(node),
+              'exact_btn_population_model': summary(node.get('population_model')),
+              'exact_btn_node_payload': node,
+          },indent=2,sort_keys=True))
           PY
       - name: Real Model A to grid to candidate smoke
         run: |
