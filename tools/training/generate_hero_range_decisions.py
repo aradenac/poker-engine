@@ -255,7 +255,6 @@ def observed_raise_targets(
             return
         if minimum is not None and value + EPS < float(minimum):
             return
-        # Jam is represented separately by the grid evaluator.
         if abs(value - maximum) <= EPS:
             return
         values.append((round(float(value), 6), source))
@@ -276,12 +275,16 @@ def observed_raise_targets(
                 if pot > EPS:
                     add(paid + value * pot, f"{container_name}.{field}")
 
+    observed_count = len(values)
     empirical, empirical_source = _empirical_raise_target(node, state, actor)
-    add(empirical, empirical_source)
+    if empirical_source != "LEGAL_MIN_FALLBACK":
+        add(empirical, empirical_source)
+    if observed_count == 0 and empirical_source == "LEGAL_MIN_FALLBACK":
+        raise ModelAUnsupportedContext("exact preflop node exposes no observed legal raise sizing")
     unique = sorted({value for value, _ in values})
     sources = sorted({source for _, source in values})
     if not unique:
-        raise ModelAUnsupportedContext("exact preflop node exposes no observed legal raise sizing")
+        raise ModelAUnsupportedContext("observed raise sizings exist but none are legal in this stack context")
     return unique, {
         "node_id": node.get("node_id") or node.get("id"),
         "population_decisions": int((node.get("coverage") or {}).get("population_decisions") or 0),
@@ -297,7 +300,6 @@ def semantic_grid_labels(state: NoLimitHoldemState) -> tuple[str, str]:
     limps = [row for row in history if row["action"] == "LIMP"]
     if not raises:
         return ("OVERLIMP" if limps else "LIMP", "ISO" if limps else "OPEN")
-    callers_after_last_raise = False
     last_raise_index = max(i for i, row in enumerate(history) if row["action"] in {"RAISE", "JAM"})
     callers_after_last_raise = any(row["action"] == "CALL" for row in history[last_raise_index + 1 :])
     if len(raises) == 1:
@@ -305,14 +307,6 @@ def semantic_grid_labels(state: NoLimitHoldemState) -> tuple[str, str]:
     if len(raises) == 2:
         return "CALL", "4BET"
     return "CALL", f"{len(raises) + 2}BET"
-
-
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def generate_run(
@@ -416,6 +410,7 @@ def generate_run(
 
 
 def export_candidate(run: Mapping[str, Any], *, run_path: Path, output_path: Path) -> None:
+    del run
     cmd = [
         "node",
         str(ROOT / "tools/training/export_calculated_hero_candidate.mjs"),
@@ -491,6 +486,7 @@ def main() -> int:
         print(json.dumps({"coverage": run["coverage"], "unsupported": run["unsupported"][:10]}, indent=2))
         return 2
     if args.candidate_out:
+        args.candidate_out.parent.mkdir(parents=True, exist_ok=True)
         export_candidate(run, run_path=args.rows_out, output_path=args.candidate_out)
     print(json.dumps({"context_id": run["context_id"], "coverage": run["coverage"], "budget": run["provenance"]["budget"]}, indent=2))
     return 0
