@@ -1,0 +1,78 @@
+{
+  "archives": [
+    {
+      "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+      "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+      "unique_hands": 27164
+    },
+    {
+      "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+      "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+      "unique_hands": 11896
+    }
+  ],
+  "certification": {
+    "path": "training/datasets/NLHE_100-200/population_certification.json",
+    "sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6"
+  },
+  "decision_counts": {
+    "TEST|flop|hero": 792,
+    "TEST|flop|population": 6259,
+    "TEST|preflop|hero": 2508,
+    "TEST|preflop|population": 13140,
+    "TEST|river|hero": 417,
+    "TEST|river|population": 3347,
+    "TEST|turn|hero": 560,
+    "TEST|turn|population": 4393,
+    "TRAIN|flop|hero": 5784,
+    "TRAIN|flop|population": 48154,
+    "TRAIN|preflop|hero": 19412,
+    "TRAIN|preflop|population": 101848,
+    "TRAIN|river|hero": 3006,
+    "TRAIN|river|population": 25966,
+    "TRAIN|turn|hero": 4086,
+    "TRAIN|turn|population": 34460,
+    "VALIDATION|flop|hero": 719,
+    "VALIDATION|flop|population": 5865,
+    "VALIDATION|preflop|hero": 2375,
+    "VALIDATION|preflop|population": 12445,
+    "VALIDATION|river|hero": 359,
+    "VALIDATION|river|population": 3160,
+    "VALIDATION|turn|hero": 500,
+    "VALIDATION|turn|population": 4173
+  },
+  "duplicate_archive_occurrences": 7453,
+  "excluded_unique_hands": 7818,
+  "hands_by_split": {
+    "TEST": 2449,
+    "TRAIN": 19016,
+    "VALIDATION": 2324
+  },
+  "hero_training_policy": "rows are materialized for audit/evaluation but downstream population fitting must exclude is_hero=true",
+  "known_population_preflop": {
+    "TEST|preflop|CALL": 608,
+    "TEST|preflop|CHECK": 394,
+    "TEST|preflop|JAM": 90,
+    "TEST|preflop|LIMP": 1199,
+    "TEST|preflop|RAISE": 321,
+    "TRAIN|preflop|CALL": 4652,
+    "TRAIN|preflop|CHECK": 3134,
+    "TRAIN|preflop|JAM": 691,
+    "TRAIN|preflop|LIMP": 9270,
+    "TRAIN|preflop|RAISE": 2388,
+    "VALIDATION|preflop|CALL": 587,
+    "VALIDATION|preflop|CHECK": 370,
+    "VALIDATION|preflop|JAM": 93,
+    "VALIDATION|preflop|LIMP": 1078,
+    "VALIDATION|preflop|RAISE": 306
+  },
+  "output": "/tmp/certified-decisions.jsonl",
+  "output_sha256": "99ea18b24ca0e725000bddc2ee735e42b5b82badf3e3b5991d3809db96bc898d",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "preflop_context_contract": true,
+  "rows_total": 303728,
+  "schema": "poker-certified-population-decisions/v1",
+  "source_union_unique_hands": 31607,
+  "target_hand_ids_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+  "target_unique_hands": 23789
+}

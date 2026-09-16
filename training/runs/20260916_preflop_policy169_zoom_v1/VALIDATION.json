@@ -1,0 +1,86 @@
+{
+  "gate": {
+    "affected_support_ok": true,
+    "dual_ci95_upper_le_zero": false,
+    "minimum_revealed_hands": 50,
+    "minimum_revealed_rows": 100,
+    "support_ok": true
+  },
+  "inputs": {
+    "candidate": {
+      "path": "/tmp/preflop-policy169-candidate.json",
+      "sha256": "9ca954a8653fd7bff0e0597b9af47a2b9a852926d62c177f86957a9856dfcc31"
+    },
+    "decisions": {
+      "path": "/tmp/certified-decisions.jsonl",
+      "sha256": "99ea18b24ca0e725000bddc2ee735e42b5b82badf3e3b5991d3809db96bc898d"
+    },
+    "prior": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    }
+  },
+  "issue": 101,
+  "metrics": {
+    "all_rows": {
+      "affected_rows": 8379,
+      "candidate_exact_matches": 12430,
+      "candidate_logloss": 0.8372406964434727,
+      "candidate_policy169_rows": 12445,
+      "delta_candidate_minus_prior": -0.0010129835853823223,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0018528919967566995,
+          -0.00015099219517107957
+        ],
+        "hands": 2324,
+        "mean": -0.0010129835854069628,
+        "probability_candidate_better": 0.9908,
+        "samples": 5000,
+        "seed": 20260915
+      },
+      "prior_exact_matches": 12430,
+      "prior_logloss": 0.838253680028855,
+      "rows": 12445
+    },
+    "revealed_hand_rows": {
+      "affected_rows": 1527,
+      "candidate_logloss": 0.9099925605682956,
+      "delta_candidate_minus_prior": 0.045982836740318445,
+      "hands": 1053,
+      "paired_bootstrap": {
+        "ci95": [
+          0.03151857780343452,
+          0.05980471962995397
+        ],
+        "hands": 1053,
+        "mean": 0.04598283674031749,
+        "probability_candidate_better": 0.0,
+        "samples": 5000,
+        "seed": 20261915
+      },
+      "prior_logloss": 0.8640097238279771,
+      "rows": 2434
+    }
+  },
+  "outcome": "RETAIN_PRIOR",
+  "phase": "VALIDATION",
+  "production_effect": "NONE",
+  "protocol": {
+    "path": "training/runs/20260915_preflop_policy169_refit/PROTOCOL.json",
+    "sha256": "894ac3144360dbec4881826c25a0b9d182569c0cff6fa9fc46fc863dd3d6bed0"
+  },
+  "reason": "frozen dual gate not established; retain prior and keep protected TEST locked",
+  "runtime_contract": {
+    "all_rows_probability": "combo-weighted population_model.policy169_q_b64 P(action|context), marginal fallback only when policy169 unavailable",
+    "future_information": "FORBIDDEN",
+    "hero_rows": "EXCLUDED",
+    "matcher": "tools/training/evaluate_preflop_topology_candidate.py v83/v5 parity",
+    "revealed_probability": "exact runtime policy169 P(action|known_hand_class,context)"
+  },
+  "schema": "poker-preflop-policy169-evaluation/v1",
+  "selection_split": "VALIDATION",
+  "test_authorized": false,
+  "test_used": false,
+  "test_used_for_selection": false
+}

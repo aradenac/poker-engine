@@ -1,0 +1,127 @@
+{
+  "schema": "poker-model-a-latent-range-audit/v1",
+  "selection": {
+    "splits_consumed": [
+      "TRAIN",
+      "VALIDATION"
+    ],
+    "test_consumed": false
+  },
+  "current_scope": "first postflop decision per population player only; later decisions fail closed until postflop IPF parity",
+  "counts": {
+    "admitted_exact_latent_targets": 44734,
+    "admitted_hidden_targets": 26484,
+    "admitted_revealed_targets": 18250,
+    "excluded_missing_exact_preflop_node": 60,
+    "excluded_prior_postflop_history": 76984,
+    "population_postflop_targets": 121778,
+    "test_or_other_rows_not_consumed": 31416
+  },
+  "coverage": {
+    "admitted_fraction": 0.3673405705464041,
+    "by_split": {
+      "TRAIN": {
+        "admitted": 39888,
+        "excluded_missing_exact_preflop_node": 56,
+        "excluded_prior_postflop_history": 68636,
+        "hidden": 23607,
+        "revealed": 16281,
+        "targets": 108580
+      },
+      "VALIDATION": {
+        "admitted": 4846,
+        "excluded_missing_exact_preflop_node": 4,
+        "excluded_prior_postflop_history": 8348,
+        "hidden": 2877,
+        "revealed": 1969,
+        "targets": 13198
+      }
+    },
+    "by_street": {
+      "flop": {
+        "admitted": 44734,
+        "excluded_missing_exact_preflop_node": 60,
+        "excluded_prior_postflop_history": 9225,
+        "targets": 54019
+      },
+      "river": {
+        "excluded_prior_postflop_history": 29126,
+        "targets": 29126
+      },
+      "turn": {
+        "excluded_prior_postflop_history": 38633,
+        "targets": 38633
+      }
+    }
+  },
+  "posterior_entropy_nats": {
+    "TRAIN": {
+      "n": 39888,
+      "mean": 6.731342369346135,
+      "min": 5.547878764744847,
+      "max": 6.9815534636800285
+    },
+    "VALIDATION": {
+      "n": 4846,
+      "mean": 6.726091598104335,
+      "min": 5.767249324195556,
+      "max": 6.981735831476013
+    }
+  },
+  "effective_combo_support": {
+    "TRAIN": {
+      "n": 39888,
+      "mean": 782.0653821958483,
+      "min": 171.3837088554245,
+      "max": 1073.551217373117
+    },
+    "VALIDATION": {
+      "n": 4846,
+      "mean": 777.1237069789696,
+      "min": 199.53568985599225,
+      "max": 1073.8899892561778
+    }
+  },
+  "revealed_combo_probability": {
+    "TRAIN": {
+      "n": 16281,
+      "mean": 0.0014177632780902863,
+      "min": 1.914709577195197e-06,
+      "max": 0.012787534534097585
+    },
+    "VALIDATION": {
+      "n": 1969,
+      "mean": 0.001475466531157656,
+      "min": 3.5064116218710143e-06,
+      "max": 0.014210612310652815
+    }
+  },
+  "revealed_combo_negative_log_probability": {
+    "TRAIN": {
+      "n": 16281,
+      "mean": 6.762172051859486,
+      "min": 4.359284447094347,
+      "max": 13.165944603649852
+    },
+    "VALIDATION": {
+      "n": 1969,
+      "mean": 6.730727022656172,
+      "min": 4.253766247678129,
+      "max": 12.560917373373481
+    }
+  },
+  "gates": {
+    "target_action_leakage": "PASS_BY_CONSTRUCTION",
+    "future_cards": "PASS_BY_CONSTRUCTION_TARGET_BOARD_ONLY",
+    "nearest_context_substitution": "DISABLED",
+    "later_postflop_without_ipf": "FAIL_CLOSED"
+  },
+  "provenance": {
+    "preflop_model": "training/models/preflop_population_model_v5.json",
+    "preflop_model_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "decisions": "/tmp/certified-decisions.jsonl",
+    "decisions_sha256": "99ea18b24ca0e725000bddc2ee735e42b5b82badf3e3b5991d3809db96bc898d",
+    "tool": "/workspace/scratch/cb7d5570650f/poker-engine/tools/training/audit_model_a_latent_ranges.py",
+    "tool_sha256": "4551ca99fff7b6ac2715386b73c1a5dd83f3ae4a7af37e04c64c147a70cda64f"
+  }
+}

@@ -15,6 +15,7 @@ from tools.simulation.retarget_scenario_manifest import retarget_manifest
 class FakeEnv:
     def __init__(self, alias: str, actions: str, sizing: str):
         self.alias = alias
+        self.population_id = "pokerstars_nlhe_100-200_zoom_play_6max_v1"
         self.model_dir = Path(f"/tmp/{alias}")
         self._fp = {
             "profiles.json": "profiles",
@@ -86,7 +87,8 @@ def test_retarget_keeps_scenario_identity_only_when_dependencies_match():
     src = FakeEnv("v2", "a2", "s2")
     dst = FakeEnv("v3", "a3", "s3")
     manifest = {
-        "schema": "sequential-arena-scenario-manifest/v1",
+        "schema": "sequential-arena-scenario-manifest/v2",
+        "population_id": src.population_id,
         "scenario_fingerprint_sha256": "fingerprint",
         "model_b": {"artifact_sha256": src.artifact_fingerprints()},
         "scenarios": [{"scenario_id": "x"}],
