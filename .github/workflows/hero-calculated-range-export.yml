@@ -7,7 +7,9 @@ on:
       - 'src/preflop/hero_range_export.js'
       - 'site/hero-ranges.js'
       - 'tools/training/generate_hero_range_decisions.py'
+      - 'tools/training/generate_certified_hero_range_decisions.py'
       - 'tools/training/export_calculated_hero_candidate.mjs'
+      - 'tools/training/build_certified_population_decisions.py'
       - 'tools/simulation/preflop_grid_evaluator.py'
       - 'tools/simulation/model_a_continuation.py'
       - 'tools/simulation/model_a_preflop_rollout.py'
@@ -16,6 +18,8 @@ on:
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
       - 'tests/hero_ranges/test_squeeze_range_export.mjs'
       - 'tests/training/test_generate_hero_range_decisions.py'
+      - 'tests/training/test_certified_preflop_sizing_evidence.py'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
       - 'training/models/preflop_population_model_v5.json'
       - 'training/models/postflop_population_model_v5.json'
       - 'training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json'
@@ -29,6 +33,7 @@ permissions:
 jobs:
   calculated-range-contract:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,7 +52,9 @@ jobs:
           node --check tests/hero_ranges/test_squeeze_range_export.mjs
           python3 -m py_compile \
             tools/training/generate_hero_range_decisions.py \
-            tests/training/test_generate_hero_range_decisions.py
+            tools/training/generate_certified_hero_range_decisions.py \
+            tests/training/test_generate_hero_range_decisions.py \
+            tests/training/test_certified_preflop_sizing_evidence.py
       - name: Preserve preflop decision contract
         run: node tests/preflop/test_decision_contract.js
       - name: Preserve Hero repository contract
@@ -58,66 +65,24 @@ jobs:
         run: node tests/hero_ranges/test_squeeze_range_export.mjs
       - name: Hero decision generation contracts
         run: PYTHONPATH=. python3 tests/training/test_generate_hero_range_decisions.py
-      - name: Inspect retained preflop sizing contract
+      - name: Certified TRAIN sizing evidence contract
+        run: PYTHONPATH=. python3 tests/training/test_certified_preflop_sizing_evidence.py
+      - name: Materialize certified population decisions
         run: |
-          PYTHONPATH=. python3 - <<'PY'
-          import json
-          from pathlib import Path
-          from tools.training.generate_hero_range_decisions import ContextSpec, build_context_state
-          from tools.simulation.model_a_continuation import (
-              ModelAContinuationPolicy,
-              _preflop_decision,
-              _semantic_trace,
-              exact_preflop_node,
-          )
-
-          pre=Path('training/models/preflop_population_model_v5.json')
-          post=Path('training/models/postflop_population_model_v5.json')
-          overlay=Path('training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json')
-          model=json.loads(pre.read_text())
-          matches=[]
-          needles=('size','continuous','target_total','raise_to','quantile','median')
-          def summary(v):
-              if isinstance(v,dict): return {'type':'dict','keys':list(v)[:16],'count':len(v)}
-              if isinstance(v,list): return {'type':'list','count':len(v),'sample':v[:3]}
-              return v
-          def walk(v,path=(),depth=0):
-              if len(matches)>=50 or depth>5: return
-              if isinstance(v,dict):
-                  for k,child in v.items():
-                      p=path+(str(k),)
-                      if any(n in str(k).lower() for n in needles):
-                          matches.append({'path':'.'.join(p),'value':summary(child)})
-                          if len(matches)>=50: return
-                      walk(child,p,depth+1)
-              elif isinstance(v,list):
-                  for i,child in enumerate(v[:8]):
-                      walk(child,path+(str(i),),depth+1)
-          walk(model)
-          policy=ModelAContinuationPolicy.from_paths(pre,post,overlay)
-          state=build_context_state(ContextSpec(position='BTN',spot='UNOPENED',effective_stack_bb=100.0))
-          _, replay, history, _, _ = _semantic_trace(state)
-          decision=_preflop_decision(replay,'BTN',history)
-          node=exact_preflop_node(policy.preflop_model,decision)
-          print(json.dumps({
-              'top_level_keys': list(model),
-              'sizing_key_paths': matches,
-              'exact_btn_decision': decision,
-              'exact_btn_node_fields': {k:summary(v) for k,v in (node or {}).items()},
-              'exact_btn_population_model': summary((node or {}).get('population_model')),
-          },indent=2,sort_keys=True))
-          PY
+          PYTHONPATH=. python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/issue-107-certified-decisions.jsonl \
+            --summary /tmp/issue-107-certified-summary.json
       - name: Real Model A to grid to candidate smoke
         run: |
-          PYTHONPATH=. python3 tools/training/generate_hero_range_decisions.py \
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
             --position BTN --spot UNOPENED --stack-bb 100 \
             --hand-class AA --samples 1 --seed 20260916 \
             --version issue-107-ci-aa-smoke \
             --code-sha "$GITHUB_SHA" \
-            --rows-out /tmp/issue-107-aa-run.json
-          node tools/training/export_calculated_hero_candidate.mjs \
-            --input /tmp/issue-107-aa-run.json \
-            --output /tmp/issue-107-aa-candidate.json
+            --sizing-decisions /tmp/issue-107-certified-decisions.jsonl \
+            --rows-out /tmp/issue-107-aa-run.json \
+            --candidate-out /tmp/issue-107-aa-candidate.json
           python3 - <<'PY'
           import json
           run=json.load(open('/tmp/issue-107-aa-run.json'))
@@ -127,10 +92,21 @@ jobs:
           assert run['rows'][0]['hand_class']=='AA'
           assert run['rows'][0]['decision']['schema']=='poker-preflop-decision/v1'
           assert run['provenance']['hero_future_continuation']['claim']=='NOT_OPTIMAL_HERO_STRATEGY'
+          sizing=run['provenance']['sizing_support']
+          assert sizing['contract']=='CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1'
+          assert sizing['filters']['split']=='TRAIN'
+          assert sizing['filters']['is_hero'] is False
+          assert sizing['observed_nonjam_raises'] > 0
           assert candidate['schema']=='poker-hero-calculated-range-candidate/v1'
           assert candidate['promotion_authorized'] is False
           assert candidate['coverage']['defined_hand_classes']==1
-          print(json.dumps({'run':run['coverage'],'decision':run['rows'][0]['decision']['action'],'size':run['rows'][0]['decision']['bet_to_bb']},indent=2))
+          print(json.dumps({
+            'run':run['coverage'],
+            'decision':run['rows'][0]['decision']['action'],
+            'size':run['rows'][0]['decision']['bet_to_bb'],
+            'sizing':sizing['legal_grid_targets_bb'],
+            'sizing_support':sizing['observed_nonjam_raises'],
+          },indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -138,5 +114,6 @@ jobs:
           path: |
             /tmp/issue-107-aa-run.json
             /tmp/issue-107-aa-candidate.json
+            /tmp/issue-107-certified-summary.json
           if-no-files-found: error
           retention-days: 14
