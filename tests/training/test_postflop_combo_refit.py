@@ -167,14 +167,23 @@ def test_combo_fit_moves_coefficients_toward_observed_signal_with_parent_cap():
         "data_scale": 1.0,
     }
     examples = []
-    for i in range(60):
-        examples.append({"action": "CALL", "z": [1.0], "offsets": [math.log(0.5), math.log(0.5)]})
-        examples.append({"action": "FOLD", "z": [-1.0], "offsets": [math.log(0.5), math.log(0.5)]})
+    for _ in range(60):
+        examples.append({
+            "action": "CALL",
+            "points": [{"z": [1.0], "weight": 0.75}, {"z": [0.4], "weight": 0.25}],
+            "offsets": [math.log(0.5), math.log(0.5)],
+        })
+        examples.append({
+            "action": "FOLD",
+            "points": [{"z": [-1.0], "weight": 0.75}, {"z": [-0.4], "weight": 0.25}],
+            "offsets": [math.log(0.5), math.log(0.5)],
+        })
     fitted, info = combo.fit_one(
         spec, examples, epochs=50, learning_rate=0.2, l2_to_parent=0.02,
         coefficient_delta_cap=0.7, minimum_effective_weight=20,
     )
     assert info["decision"] == "REFIT"
+    assert info["fractional_points"] == 240
     assert fitted != spec["coef_std"]
     assert fitted[1][0] > fitted[0][0]
     assert info["max_parent_coefficient_delta"] <= 0.7 + 1e-9
@@ -210,8 +219,12 @@ def test_stage_b_budget_is_deterministic_stratified_and_never_selects_test():
                 **post_row("flop", ["2c", "7d", "Jh"], "CALL", "flop-node", split=split, known=known),
                 "hand_id": hid,
             })
-    ids1, info1 = sample.select_hand_ids(rows, model, train_hands_per_model=4, validation_revealed_hands_per_model=3)
-    ids2, info2 = sample.select_hand_ids(rows, model, train_hands_per_model=4, validation_revealed_hands_per_model=3)
+    ids1, info1 = sample.select_hand_ids(
+        rows, model, train_hands_per_model=4, validation_revealed_hands_per_model=3
+    )
+    ids2, info2 = sample.select_hand_ids(
+        rows, model, train_hands_per_model=4, validation_revealed_hands_per_model=3
+    )
     assert ids1 == ids2
     assert info1 == info2
     assert sum(h.startswith("TRAIN-") for h in ids1) == 4
