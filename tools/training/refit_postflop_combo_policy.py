@@ -8,6 +8,11 @@ revealed hands become point masses only after the prior is built, while hidden
 hands contribute fractional training weight over a deterministic quadrature of
 their exact-combo posterior.
 
+The fit is local to the exact Stage-A runtime: Stage-A calibrated per-combo
+action probabilities are used as offsets and Stage B learns only coefficient
+deltas around the parent. This preserves the theory + IPF baseline at delta=0;
+the independent VALIDATION gate then evaluates the complete runtime again.
+
 TEST is never used for fitting or selection and production models are never
 mutated by this tool.
 """
@@ -27,6 +32,7 @@ from tools.simulation.model_b_runtime import cid
 from tools.training.audit_model_a_latent_ranges import group_hands
 from tools.training.model_a_latent_ranges import LatentRangeError, posterior_before_postflop_action
 from tools.training.model_a_postflop_runtime import (
+    calibrated_action_matrix,
     exact_postflop_node,
     learned_combo_feature_map,
     observed_action_probabilities,
@@ -113,20 +119,20 @@ def posterior_quadrature(
     return list(selected.items())
 
 
-def fractional_feature_points(posterior, row: dict, spec: dict, *, hidden_budget: int) -> tuple[list[dict], dict]:
-    """Return private-feature points with weights summing to one per decision.
-
-    This deliberately does not collapse hidden features to their mean before the
-    nonlinear softmax. Each quadrature point contributes its posterior weight to
-    the gradient, which is the fractional-sufficient-statistic contract frozen
-    for Stage B.
-    """
+def fractional_feature_points(
+    posterior, row: dict, spec: dict, *, hidden_budget: int
+) -> tuple[list[dict], dict]:
+    """Return private-feature points with weights summing to one per decision."""
     known = list(row.get("known_cards") or [])
     if len(known) == 2:
         target = tuple(sorted((cid(known[0]), cid(known[1]))))
         if posterior.probability_of_cards(known) <= 0:
             raise LatentRangeError("revealed combo is outside pre-action posterior support")
-        return [{"z": standardized_combo_features(target, row, spec), "weight": 1.0}], {
+        return [{
+            "combo": target,
+            "z": standardized_combo_features(target, row, spec),
+            "weight": 1.0,
+        }], {
             "label_policy": "REVEALED_POINT_MASS",
             "quadrature_points": 1,
             "posterior_support": posterior.support,
@@ -134,7 +140,11 @@ def fractional_feature_points(posterior, row: dict, spec: dict, *, hidden_budget
 
     quad = posterior_quadrature(posterior.combos, posterior.weights, hidden_budget)
     return [
-        {"z": standardized_combo_features(combo, row, spec), "weight": float(weight)}
+        {
+            "combo": combo,
+            "z": standardized_combo_features(combo, row, spec),
+            "weight": float(weight),
+        }
         for combo, weight in quad
     ], {
         "label_policy": "HIDDEN_FRACTIONAL_POSTERIOR",
@@ -145,6 +155,25 @@ def fractional_feature_points(posterior, row: dict, spec: dict, *, hidden_budget
 
 def _model_key(row: dict) -> str:
     return f"{row.get('street')}_{row.get('mode')}"
+
+
+def _attach_stage_a_offsets(points: list[dict], posterior, row: dict, target: dict, model: dict, classes: list[str]) -> None:
+    actions, matrix = calibrated_action_matrix(
+        posterior.combos, posterior.weights, row, target, model
+    )
+    action_index = {action: idx for idx, action in enumerate(actions)}
+    if any(action not in action_index for action in classes):
+        missing = [action for action in classes if action not in action_index]
+        raise KeyError(f"combo-policy classes outside runtime action support: {missing}")
+    combo_index = {combo: idx for idx, combo in enumerate(posterior.combos)}
+    for point in points:
+        idx = combo_index.get(tuple(point["combo"]))
+        if idx is None:
+            raise LatentRangeError("fractional combo is outside posterior support")
+        point["offsets"] = [
+            math.log(max(EPS, float(matrix[idx][action_index[action]])))
+            for action in classes
+        ]
 
 
 def build_examples(
@@ -191,6 +220,9 @@ def build_examples(
                 points, label_info = fractional_feature_points(
                     posterior, row, spec, hidden_budget=hidden_budget
                 )
+                _attach_stage_a_offsets(
+                    points, posterior, row, target, postflop_model, classes
+                )
             except LatentRangeError:
                 counts["excluded_latent_range_error"] += 1
                 continue
@@ -210,10 +242,6 @@ def build_examples(
                 "hand_id": str(row.get("hand_id")),
                 "action": str(row.get("action")),
                 "points": points,
-                "offsets": [
-                    math.log(max(EPS, float(target.get(action) or 0.0)))
-                    for action in classes
-                ],
                 "revealed": label_info["label_policy"] == "REVEALED_POINT_MASS",
                 "matched_postflop_actions": posterior.matched_postflop_actions,
             })
@@ -245,12 +273,11 @@ def fit_one(
 ) -> tuple[list[list[float]], dict]:
     classes = list(spec.get("classes") or [])
     parent = normalized_coef(spec)
-    coef = copy.deepcopy(parent)
     nf = len(spec.get("features") or [])
     scale = float(spec.get("data_scale") or 0.0)
     effective_decisions = float(len(examples))
     if not classes or not nf or not scale or effective_decisions < minimum_effective_weight:
-        return coef, {
+        return copy.deepcopy(parent), {
             "examples": len(examples),
             "fractional_points": sum(len(ex.get("points") or []) for ex in examples),
             "epochs": 0,
@@ -260,6 +287,7 @@ def fit_one(
             "saturated_coefficients": 0,
         }
 
+    delta = [[0.0] * nf for _ in classes]
     for _ in range(epochs):
         grad = [[0.0] * nf for _ in classes]
         used_weight = 0.0
@@ -273,9 +301,12 @@ def fit_one(
                 if point_weight <= 0:
                     continue
                 z = point["z"]
+                offsets = point.get("offsets") or []
+                if len(offsets) != len(classes):
+                    raise ValueError("fractional point lacks Stage-A runtime offsets")
                 logits = [
-                    ex["offsets"][ci]
-                    + scale * sum(coef[ci][j] * z[j] for j in range(nf))
+                    float(offsets[ci])
+                    + scale * sum(delta[ci][j] * z[j] for j in range(nf))
                     for ci in range(len(classes))
                 ]
                 probs = softmax(logits)
@@ -289,23 +320,25 @@ def fit_one(
         inv = 1.0 / used_weight
         for ci in range(len(classes)):
             for j in range(nf):
-                g = grad[ci][j] * inv + l2_to_parent * (coef[ci][j] - parent[ci][j])
-                proposed = coef[ci][j] - learning_rate * g
-                lo = parent[ci][j] - coefficient_delta_cap
-                hi = parent[ci][j] + coefficient_delta_cap
-                coef[ci][j] = max(lo, min(hi, proposed))
+                g = grad[ci][j] * inv + l2_to_parent * delta[ci][j]
+                proposed = delta[ci][j] - learning_rate * g
+                delta[ci][j] = max(
+                    -coefficient_delta_cap,
+                    min(coefficient_delta_cap, proposed),
+                )
 
-    deltas = [
-        abs(coef[i][j] - parent[i][j])
-        for i in range(len(classes))
-        for j in range(nf)
+    fitted = [
+        [parent[ci][j] + delta[ci][j] for j in range(nf)]
+        for ci in range(len(classes))
     ]
-    saturated = sum(1 for delta in deltas if delta >= coefficient_delta_cap - 1e-9)
-    return coef, {
+    deltas = [abs(value) for row in delta for value in row]
+    saturated = sum(1 for value in deltas if value >= coefficient_delta_cap - 1e-9)
+    return fitted, {
         "examples": len(examples),
         "fractional_points": sum(len(ex.get("points") or []) for ex in examples),
         "epochs": epochs,
         "decision": "REFIT",
+        "fit_reference": "Stage-A calibrated per-combo action probabilities; optimize coefficient delta only",
         "max_parent_coefficient_delta": max(deltas, default=0.0),
         "saturated_coefficients": saturated,
     }
@@ -357,6 +390,7 @@ def refit(
         "frozen_components": ["nodes", "response_models", "hand_policy_prior"],
         "hidden_hand_policy": "fractional weighted feature points from pre-action exact-combo posterior",
         "revealed_hand_policy": "point mass after pre-action posterior construction",
+        "fit_reference": "Stage-A calibrated conditional action probabilities; coefficient deltas only",
         "parameters": {
             "hidden_quadrature_budget": hidden_budget,
             "epochs": epochs,
@@ -377,8 +411,10 @@ def _hash_rank(hand_id: str, index: int) -> str:
     return hashlib.sha256(f"stage-b-validation-v1|{hand_id}|{index}".encode()).hexdigest()
 
 
-def revealed_validation_targets(model: dict, rows: list[dict], *, budget: int) -> tuple[list[dict], dict]:
-    """Select revealed VALIDATION targets before any private-card likelihood work."""
+def revealed_validation_targets(
+    model: dict, rows: list[dict], *, budget: int
+) -> tuple[list[dict], dict]:
+    """Select revealed VALIDATION targets before private-card likelihood work."""
     eligible = []
     counts = Counter()
     for hand_rows in group_hands(rows):
@@ -410,13 +446,23 @@ def revealed_validation_targets(model: dict, rows: list[dict], *, budget: int) -
     return selected, dict(sorted(counts.items()))
 
 
-def _revealed_action_probability(preflop_model: dict, model: dict, hand_rows: list[dict], index: int, row: dict) -> float:
-    posterior = posterior_before_postflop_action(hand_rows, index, preflop_model, model)
+def _revealed_action_probability(
+    preflop_model: dict,
+    model: dict,
+    hand_rows: list[dict],
+    index: int,
+    row: dict,
+) -> float:
+    posterior = posterior_before_postflop_action(
+        hand_rows, index, preflop_model, model
+    )
     known = tuple(sorted((cid(row["known_cards"][0]), cid(row["known_cards"][1]))))
     try:
         combo_index = list(posterior.combos).index(known)
     except ValueError as exc:
-        raise LatentRangeError("revealed combo is outside pre-action posterior support") from exc
+        raise LatentRangeError(
+            "revealed combo is outside pre-action posterior support"
+        ) from exc
     return observed_action_probabilities(
         posterior.combos, posterior.weights, row, model
     )[combo_index]
@@ -430,25 +476,39 @@ def evaluate_revealed(
     *,
     budget: int,
 ) -> tuple[dict, dict[str, list[float]], dict[str, list[float]]]:
-    selected, coverage = revealed_validation_targets(baseline, rows, budget=budget)
+    selected, coverage = revealed_validation_targets(
+        baseline, rows, budget=budget
+    )
     base_by_hand: dict[str, list[float]] = defaultdict(list)
     cand_by_hand: dict[str, list[float]] = defaultdict(list)
     base_loss = 0.0
     cand_loss = 0.0
     changed = 0
-    by_model = defaultdict(lambda: {"n": 0, "baseline_loss": 0.0, "candidate_loss": 0.0})
+    by_model = defaultdict(
+        lambda: {"n": 0, "baseline_loss": 0.0, "candidate_loss": 0.0}
+    )
 
     for ex in selected:
         row = ex["row"]
         try:
             bp = _revealed_action_probability(
-                preflop_model, baseline, ex["hand_rows"], ex["index"], row
+                preflop_model,
+                baseline,
+                ex["hand_rows"],
+                ex["index"],
+                row,
             )
             cp = _revealed_action_probability(
-                preflop_model, candidate, ex["hand_rows"], ex["index"], row
+                preflop_model,
+                candidate,
+                ex["hand_rows"],
+                ex["index"],
+                row,
             )
         except (LatentRangeError, KeyError, ValueError):
-            coverage["runtime_scoring_error"] = coverage.get("runtime_scoring_error", 0) + 1
+            coverage["runtime_scoring_error"] = (
+                coverage.get("runtime_scoring_error", 0) + 1
+            )
             continue
         bll = -math.log(max(EPS, bp))
         cll = -math.log(max(EPS, cp))
@@ -498,7 +558,9 @@ def paired_bootstrap(
         baseline = base_by_hand[hid]
         candidate = cand_by_hand[hid]
         if baseline and candidate:
-            deltas.append(sum(candidate) / len(candidate) - sum(baseline) / len(baseline))
+            deltas.append(
+                sum(candidate) / len(candidate) - sum(baseline) / len(baseline)
+            )
     if not deltas:
         return {
             "hands": 0,
@@ -510,7 +572,9 @@ def paired_bootstrap(
     rng = random.Random(seed)
     samples = []
     for _ in range(iterations):
-        samples.append(sum(deltas[rng.randrange(len(deltas))] for _ in deltas) / len(deltas))
+        samples.append(
+            sum(deltas[rng.randrange(len(deltas))] for _ in deltas) / len(deltas)
+        )
     samples.sort()
     lo = samples[max(0, int(0.025 * len(samples)) - 1)]
     hi = samples[min(len(samples) - 1, int(0.975 * len(samples)))]
@@ -519,11 +583,19 @@ def paired_bootstrap(
         "iterations": iterations,
         "mean_delta_candidate_minus_baseline": sum(deltas) / len(deltas),
         "ci95": [lo, hi],
-        "probability_candidate_better": sum(1 for value in samples if value < 0) / len(samples),
+        "probability_candidate_better": (
+            sum(1 for value in samples if value < 0) / len(samples)
+        ),
     }
 
 
-def continuation_overlay(base_model: dict, selected_model: dict, *, base_sha256: str, decision: str) -> dict:
+def continuation_overlay(
+    base_model: dict,
+    selected_model: dict,
+    *,
+    base_sha256: str,
+    decision: str,
+) -> dict:
     response = {
         key: {"numeric_coef": spec.get("numeric_coef")}
         for key, spec in (selected_model.get("response_models") or {}).items()
@@ -574,7 +646,9 @@ def run(
     bootstrap_iterations: int,
 ) -> dict:
     stage_a = json.loads(stage_a_path.read_text(encoding="utf-8"))
-    production_baseline = json.loads(production_baseline_path.read_text(encoding="utf-8"))
+    production_baseline = json.loads(
+        production_baseline_path.read_text(encoding="utf-8")
+    )
     preflop = json.loads(preflop_path.read_text(encoding="utf-8"))
     rows = load_rows(decisions_path)
 
@@ -590,14 +664,27 @@ def run(
         coefficient_delta_cap=coefficient_delta_cap,
     )
     evaluation, base_hands, cand_hands = evaluate_revealed(
-        preflop, stage_a, candidate, rows, budget=validation_revealed_budget
+        preflop,
+        stage_a,
+        candidate,
+        rows,
+        budget=validation_revealed_budget,
     )
     bootstrap = paired_bootstrap(
-        base_hands, cand_hands, seed=seed, iterations=bootstrap_iterations
+        base_hands,
+        cand_hands,
+        seed=seed,
+        iterations=bootstrap_iterations,
     )
     delta = None
-    if evaluation["baseline_log_loss"] is not None and evaluation["candidate_log_loss"] is not None:
-        delta = evaluation["candidate_log_loss"] - evaluation["baseline_log_loss"]
+    if (
+        evaluation["baseline_log_loss"] is not None
+        and evaluation["candidate_log_loss"] is not None
+    ):
+        delta = (
+            evaluation["candidate_log_loss"]
+            - evaluation["baseline_log_loss"]
+        )
     ci = bootstrap.get("ci95")
     decision = (
         "PROMOTE_STAGE_B_SCIENTIFICALLY"
@@ -608,7 +695,9 @@ def run(
         and evaluation["prediction_changed_rows"] > 0
         else "RETAIN_STAGE_A"
     )
-    selected = candidate if decision == "PROMOTE_STAGE_B_SCIENTIFICALLY" else stage_a
+    selected = (
+        candidate if decision == "PROMOTE_STAGE_B_SCIENTIFICALLY" else stage_a
+    )
 
     candidate_path.parent.mkdir(parents=True, exist_ok=True)
     overlay_path.parent.mkdir(parents=True, exist_ok=True)
@@ -624,7 +713,8 @@ def run(
         decision=decision,
     )
     overlay_path.write_text(
-        json.dumps(overlay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(overlay, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
 
     report = {
@@ -642,9 +732,11 @@ def run(
             "future_board_cards_for_prior_action": "PASS_BY_CHRONOLOGICAL_BLOCKING",
             "nearest_context_substitution": "DISABLED",
             "production_mutation": "NONE",
+            "fit_zero_delta_runtime_parity": "PASS_BY_STAGE_A_CONDITIONAL_OFFSETS",
         },
         "limits": [
             "hidden-hand fractional sufficient statistics use deterministic posterior quadrature with the persisted budget",
+            "fit is a regularized local delta around Stage-A calibrated per-combo action probabilities",
             "Stage-B selection uses revealed-combo conditional likelihood because runtime IPF deliberately fixes marginal action frequencies",
             "baseline and candidate each reconstruct their own chronological posterior during VALIDATION",
             "TEST is not read for fitting or selection",
@@ -676,7 +768,8 @@ def run(
         },
     }
     report_path.write_text(
-        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
