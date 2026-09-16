@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Generate #107 Hero decision evidence with sizing from certified TRAIN rows.
+"""Generate #107 Hero decision evidence with certified TRAIN sizing support.
 
-The selected Model A intentionally excludes the actor's chosen raise size from
-its continuous features to avoid target leakage.  Therefore this generator gets
-its candidate raise grid from the immutable normalized decision corpus instead:
-TRAIN-only, non-Hero population RAISE rows on the exact v4 structural node.
-The actual action/size alternatives are still evaluated by the existing #106
-``evaluate_preflop_grid`` engine and remain EXPERIMENTAL until an independent
-benchmark authorizes promotion.
+Model A v5 intentionally excludes the actor's chosen raise size from continuous
+features to prevent target leakage. Candidate non-jam sizings therefore come
+from certified TRAIN-only population RAISE rows on the exact structural node,
+either read directly from the normalized corpus or from a compact frozen
+manifest built from that corpus. The actual alternatives are still evaluated by
+the existing #106 ``evaluate_preflop_grid`` engine.
 """
 from __future__ import annotations
 
@@ -37,6 +36,7 @@ from tools.training import generate_hero_range_decisions as base
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = base.SCHEMA
+SIZING_EVIDENCE_SCHEMA = "poker-hero-preflop-sizing-evidence/v1"
 
 
 def sha256_file(path: Path) -> str:
@@ -53,6 +53,26 @@ def _nearest_rank(values: Sequence[float], q: float) -> float:
     ordered = sorted(float(v) for v in values)
     index = max(0, min(len(ordered) - 1, math.ceil(q * len(ordered)) - 1))
     return ordered[index]
+
+
+def _legalize_targets(
+    targets: Sequence[float], state: NoLimitHoldemState, actor: str
+) -> list[float]:
+    view = state.legal_view(actor)
+    current = float(view["current_price_bb"])
+    minimum = view["min_raise_to_bb"]
+    maximum = float(view["max_raise_to_bb"])
+    legal: list[float] = []
+    for raw in targets:
+        target = float(raw)
+        if not math.isfinite(target):
+            continue
+        if target <= current + EPS or target >= maximum - EPS:
+            continue
+        if minimum is not None and target + EPS < float(minimum):
+            continue
+        legal.append(round(target, 6))
+    return sorted(set(legal))
 
 
 def empirical_raise_targets(
@@ -97,23 +117,12 @@ def empirical_raise_targets(
             "exact preflop node has no certified TRAIN population RAISE sizing evidence"
         )
 
-    view = state.legal_view(actor)
-    current = float(view["current_price_bb"])
-    minimum = view["min_raise_to_bb"]
-    maximum = float(view["max_raise_to_bb"])
     quantiles = {
         "p25": _nearest_rank(observed, 0.25),
         "p50": _nearest_rank(observed, 0.50),
         "p75": _nearest_rank(observed, 0.75),
     }
-    legal: list[float] = []
-    for target in quantiles.values():
-        if target <= current + EPS or target >= maximum - EPS:
-            continue
-        if minimum is not None and target + EPS < float(minimum):
-            continue
-        legal.append(round(target, 6))
-    targets = sorted(set(legal))
+    targets = _legalize_targets(list(quantiles.values()), state, actor)
     if not targets:
         raise ModelAUnsupportedContext(
             "certified TRAIN sizing observations exist but empirical quantiles are illegal at this stack"
@@ -139,20 +148,29 @@ def empirical_raise_targets(
     }
 
 
+def _exact_node(
+    policy: ModelAContinuationPolicy,
+    state: NoLimitHoldemState,
+    actor: str,
+) -> Mapping[str, Any]:
+    _, replay, history, _, _ = _semantic_trace(state)
+    decision = _preflop_decision(replay, actor, history)
+    node = exact_preflop_node(policy.preflop_model, decision)
+    if node is None:
+        raise ModelAUnsupportedContext(f"no exact preflop Model-A node for {decision!r}")
+    if not str(node.get("canonical_key") or ""):
+        raise ModelAUnsupportedContext("exact preflop Model-A node has no canonical_key")
+    return node
+
+
 def observed_raise_targets(
     policy: ModelAContinuationPolicy,
     state: NoLimitHoldemState,
     actor: str,
     decisions_path: Path,
 ) -> tuple[list[float], dict[str, Any]]:
-    _, replay, history, _, _ = _semantic_trace(state)
-    decision = _preflop_decision(replay, actor, history)
-    node = exact_preflop_node(policy.preflop_model, decision)
-    if node is None:
-        raise ModelAUnsupportedContext(f"no exact preflop Model-A node for {decision!r}")
-    canonical_key = str(node.get("canonical_key") or "")
-    if not canonical_key:
-        raise ModelAUnsupportedContext("exact preflop Model-A node has no canonical_key")
+    node = _exact_node(policy, state, actor)
+    canonical_key = str(node["canonical_key"])
     targets, support = empirical_raise_targets(
         decisions_path,
         canonical_key=canonical_key,
@@ -166,11 +184,61 @@ def observed_raise_targets(
     return targets, support
 
 
+def frozen_raise_targets(
+    policy: ModelAContinuationPolicy,
+    state: NoLimitHoldemState,
+    actor: str,
+    evidence_path: Path,
+    *,
+    expected_context_id: str,
+) -> tuple[list[float], dict[str, Any]]:
+    """Validate and reuse a compact sizing manifest without reopening selection."""
+    evidence_path = Path(evidence_path)
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    if evidence.get("schema") != SIZING_EVIDENCE_SCHEMA:
+        raise ValueError(f"unexpected sizing evidence schema: {evidence.get('schema')!r}")
+    if evidence.get("context_id") != expected_context_id:
+        raise ValueError("sizing evidence context_id does not match requested context")
+    if evidence.get("population_id") != base.POPULATION_ID:
+        raise ValueError("sizing evidence population mismatch")
+    if evidence.get("selection") != "TRAIN_ONLY_NO_VALIDATION_NO_TEST":
+        raise ValueError("sizing evidence must be frozen from TRAIN only")
+    models = evidence.get("models") or {}
+    for key in (
+        "preflop_sha256",
+        "postflop_baseline_sha256",
+        "continuation_overlay_sha256",
+        "stage_b_decision",
+    ):
+        if models.get(key) != policy.identity.get(key):
+            raise ValueError(f"sizing evidence model identity mismatch for {key}")
+    node = _exact_node(policy, state, actor)
+    support = dict(evidence.get("sizing_support") or {})
+    if support.get("contract") != "CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1":
+        raise ValueError("invalid sizing-support contract")
+    if support.get("canonical_key") != node.get("canonical_key"):
+        raise ValueError("sizing evidence canonical key differs from exact runtime node")
+    filters = support.get("filters") or {}
+    if filters.get("split") != "TRAIN" or filters.get("is_hero") is not False:
+        raise ValueError("sizing evidence is not TRAIN-only population evidence")
+    targets = _legalize_targets(evidence.get("legal_grid_targets_bb") or [], state, actor)
+    if targets != sorted(set(float(x) for x in evidence.get("legal_grid_targets_bb") or [])):
+        raise ValueError("frozen sizing targets are no longer legal in requested context")
+    if not targets:
+        raise ModelAUnsupportedContext("frozen sizing evidence exposes no legal non-jam target")
+    support["evidence_sha256"] = sha256_file(evidence_path)
+    support["evidence_schema"] = SIZING_EVIDENCE_SCHEMA
+    support["model_node_id"] = node.get("id") or node.get("node_id")
+    support["model_population_decisions"] = int((node.get("coverage") or {}).get("population_decisions") or 0)
+    return targets, support
+
+
 def generate_run(
     *,
     spec: base.ContextSpec,
     policy: ModelAContinuationPolicy,
-    sizing_decisions: Path,
+    sizing_decisions: Path | None,
+    sizing_evidence: Path | None,
     hand_classes: Sequence[str],
     samples_per_candidate: int,
     master_seed: int,
@@ -180,9 +248,16 @@ def generate_run(
     state = base.build_context_state(spec)
     if state.next_actor != spec.position:
         raise AssertionError(f"context actor mismatch: {state.next_actor!r} != {spec.position!r}")
-    raise_targets, sizing_support = observed_raise_targets(
-        policy, state, spec.position, sizing_decisions
-    )
+    if (sizing_decisions is None) == (sizing_evidence is None):
+        raise ValueError("provide exactly one of sizing_decisions or sizing_evidence")
+    if sizing_evidence is not None:
+        raise_targets, sizing_support = frozen_raise_targets(
+            policy, state, spec.position, sizing_evidence, expected_context_id=spec.context_id
+        )
+    else:
+        raise_targets, sizing_support = observed_raise_targets(
+            policy, state, spec.position, Path(sizing_decisions)
+        )
     call_action, raise_action = base.semantic_grid_labels(state)
     hero_continuation = base.FixedPopulationDerivedHeroContinuation(policy)
     rows: list[dict[str, Any]] = []
@@ -282,8 +357,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--preflop-model", type=Path, default=base.DEFAULT_PREFLOP)
     parser.add_argument("--postflop-model", type=Path, default=base.DEFAULT_POSTFLOP)
     parser.add_argument("--continuation-overlay", type=Path, default=base.DEFAULT_OVERLAY)
-    parser.add_argument("--sizing-decisions", type=Path, required=True)
+    sizing = parser.add_mutually_exclusive_group(required=True)
+    sizing.add_argument("--sizing-decisions", type=Path)
+    sizing.add_argument("--sizing-evidence", type=Path)
     parser.add_argument("--hand-class", action="append", dest="hand_classes")
+    parser.add_argument("--shard-index", type=int)
+    parser.add_argument("--shard-count", type=int)
     parser.add_argument("--rows-out", type=Path, required=True)
     parser.add_argument("--candidate-out", type=Path)
     parser.add_argument("--allow-partial", action="store_true")
@@ -296,12 +375,27 @@ def main() -> int:
         raise SystemExit("--samples must be >= 1")
     if not str(args.code_sha).strip():
         raise SystemExit("--code-sha (or GITHUB_SHA) is required")
-    hands = args.hand_classes or list(base.HAND_CLASSES)
+    sharded = args.shard_index is not None or args.shard_count is not None
+    if sharded:
+        if args.shard_index is None or args.shard_count is None:
+            raise SystemExit("--shard-index and --shard-count must be supplied together")
+        if args.hand_classes:
+            raise SystemExit("--hand-class cannot be combined with deterministic sharding")
+        if args.shard_count < 1 or args.shard_count > len(base.HAND_CLASSES):
+            raise SystemExit("--shard-count must be between 1 and 169")
+        if args.shard_index < 0 or args.shard_index >= args.shard_count:
+            raise SystemExit("--shard-index must satisfy 0 <= index < count")
+        hands = [
+            hand for index, hand in enumerate(base.HAND_CLASSES)
+            if index % args.shard_count == args.shard_index
+        ]
+    else:
+        hands = args.hand_classes or list(base.HAND_CLASSES)
     unknown = sorted(set(hands) - set(base.HAND_CLASSES))
     if unknown:
         raise SystemExit(f"unknown hand classes: {unknown}")
     if len(hands) != len(set(hands)):
-        raise SystemExit("duplicate --hand-class values are not allowed")
+        raise SystemExit("duplicate hand classes are not allowed")
     spec = base.ContextSpec(
         position=args.position,
         effective_stack_bb=args.stack_bb,
@@ -318,12 +412,19 @@ def main() -> int:
         spec=spec,
         policy=policy,
         sizing_decisions=args.sizing_decisions,
+        sizing_evidence=args.sizing_evidence,
         hand_classes=hands,
         samples_per_candidate=args.samples,
         master_seed=args.seed,
         code_sha=str(args.code_sha),
         version=args.version,
     )
+    if sharded:
+        run["provenance"]["shard"] = {
+            "index": args.shard_index,
+            "count": args.shard_count,
+            "partition": "canonical_hand_index_modulo_shard_count",
+        }
     args.rows_out.parent.mkdir(parents=True, exist_ok=True)
     args.rows_out.write_text(json.dumps(run, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if run["unsupported"] and not args.allow_partial:
@@ -335,6 +436,7 @@ def main() -> int:
     print(json.dumps({
         "context_id": run["context_id"],
         "coverage": run["coverage"],
+        "shard": run["provenance"].get("shard"),
         "sizing_support": run["provenance"]["sizing_support"],
         "budget": run["provenance"]["budget"],
     }, indent=2))
