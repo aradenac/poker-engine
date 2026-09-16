@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Training-side exact-combo posterior helpers for Model A.
 
-The module intentionally starts with the part that can be made exactly equivalent
-to the browser without circularity: preflop action conditioning plus public-card
-blocking.  A target postflop decision is only admitted while it has no earlier
-postflop action by the same player.  Later decisions fail closed until the
-postflop action-likelihood/IPF runtime has an explicit Python parity port.
+The helpers reconstruct a player's private-card posterior from information that
+was available strictly before a target decision.  Preflop actions are
+conditioned with the embedded 169-class policy.  Earlier postflop actions are
+conditioned with the same calibrated combo/action matrix consumed by the
+runtime; newly exposed board cards are removed only when they become public.
 
-This makes the first Stage-B dataset scientifically usable instead of silently
-pretending a turn/river range is still the flop prior.
+The target action is never used to build its own prior.  This is the contract
+needed by the Stage-B postflop combo-policy refit in issue #102.
 """
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ def decode_policy169(node: dict, model: dict) -> dict[str, dict[str, float]] | N
         row = {}
         total = 0.0
         for ai, action in enumerate(actions):
-            qv = values[ai * hand_count + hi]  # v3 action-major layout
+            qv = values[ai * hand_count + hi]
             value = (0.25 / scale) if qv == 0 else (qv / scale)
             row[action] = value
             total += value
@@ -137,6 +137,7 @@ class ComboPosterior:
     weights: tuple[float, ...]
     matched_preflop_actions: int
     blocked_cards: tuple[str, ...]
+    matched_postflop_actions: int = 0
 
     @property
     def support(self) -> int:
@@ -191,36 +192,15 @@ def _target_player_prior_postflop_rows(hand_rows: Sequence[dict], target_index: 
     ]
 
 
-def posterior_before_first_postflop_action(
-    hand_rows: Sequence[dict], target_index: int, preflop_model: dict
-) -> ComboPosterior:
-    """Reconstruct the target player's exact-combo posterior without leakage.
-
-    The target action is never read for conditioning.  Public board cards at the
-    target step and Hero's hole cards are legitimate blockers.  A player with an
-    earlier postflop decision fails closed until postflop IPF parity is ported.
-    """
-    if not 0 <= target_index < len(hand_rows):
-        raise IndexError(target_index)
-    target = hand_rows[target_index]
-    if target.get("street") not in {"flop", "turn", "river"}:
-        raise LatentRangeError("target is not postflop")
-    player = str(target.get("player") or "")
-    prior_post = _target_player_prior_postflop_rows(hand_rows, target_index, player)
-    if prior_post:
-        raise UnsupportedPostflopHistory(
-            "target player has earlier postflop action(s); refusing an unconditioned latent range"
-        )
-
-    hero = _hero_blockers(hand_rows)
-    board = list(target.get("board") or [])
-    blockers = hero + board
-    combos = legal_combos(hero, board)
-    weights = [1.0] * len(combos)
+def _condition_preflop(
+    combos: list[tuple[int, int]],
+    weights: list[float],
+    hand_rows: Sequence[dict],
+    target_index: int,
+    player: str,
+    preflop_model: dict,
+) -> int:
     matched = 0
-
-    # Decision rows are emitted in chronological order by increment_decisions.py.
-    # Only this player's *earlier preflop* actions condition their private range.
     for row in hand_rows[:target_index]:
         if row.get("street") != "preflop" or row.get("player") != player:
             continue
@@ -234,13 +214,104 @@ def posterior_before_first_postflop_action(
         for i, (a, b) in enumerate(combos):
             hand = combo_class_ids(a, b)
             weights[i] *= max(EPS, float((policy.get(hand) or {}).get(action) or 0.0))
-        weights = _normalize(weights)
+        weights[:] = _normalize(weights)
         matched += 1
-
     if not matched:
         raise LatentRangeError("no matched preflop action for target player")
-    weights = _normalize(weights)
-    return ComboPosterior(tuple(combos), tuple(weights), matched, tuple(blockers))
+    return matched
+
+
+def _remove_public_blockers(
+    combos: list[tuple[int, int]], weights: list[float], board: Sequence[str]
+) -> tuple[list[tuple[int, int]], list[float]]:
+    blocked = {cid(card) for card in board}
+    kept_combos = []
+    kept_weights = []
+    for combo, weight in zip(combos, weights):
+        if combo[0] in blocked or combo[1] in blocked:
+            continue
+        kept_combos.append(combo)
+        kept_weights.append(weight)
+    if not kept_combos:
+        raise LatentRangeError("public-card blocking removed all combos")
+    return kept_combos, _normalize(kept_weights)
+
+
+def posterior_before_postflop_action(
+    hand_rows: Sequence[dict],
+    target_index: int,
+    preflop_model: dict,
+    postflop_model: dict,
+) -> ComboPosterior:
+    """Reconstruct the exact-combo posterior immediately before a postflop action.
+
+    Earlier actions by the target player are applied chronologically.  The
+    calibrated postflop likelihood is evaluated with only the board public at
+    that earlier decision; turn/river blockers are removed only after those
+    cards become public.  The target action itself is never inspected for
+    conditioning.
+    """
+    if not 0 <= target_index < len(hand_rows):
+        raise IndexError(target_index)
+    target = hand_rows[target_index]
+    if target.get("street") not in {"flop", "turn", "river"}:
+        raise LatentRangeError("target is not postflop")
+    player = str(target.get("player") or "")
+    prior_post = _target_player_prior_postflop_rows(hand_rows, target_index, player)
+    hero = _hero_blockers(hand_rows)
+
+    initial_board = list((prior_post[0] if prior_post else target).get("board") or [])
+    combos = list(legal_combos(hero, initial_board))
+    weights = [1.0] * len(combos)
+    matched_pre = _condition_preflop(combos, weights, hand_rows, target_index, player, preflop_model)
+
+    current_board = list(initial_board)
+    matched_post = 0
+    if prior_post:
+        from tools.training.model_a_postflop_runtime import observed_action_probabilities
+
+        for row in prior_post:
+            row_board = list(row.get("board") or [])
+            if row_board != current_board:
+                combos, weights = _remove_public_blockers(combos, weights, row_board)
+                current_board = row_board
+            try:
+                likelihood = observed_action_probabilities(combos, weights, row, postflop_model)
+            except (KeyError, ValueError) as exc:
+                raise LatentRangeError(f"missing exact postflop runtime support: {exc}") from exc
+            if len(likelihood) != len(weights):
+                raise LatentRangeError("postflop likelihood length mismatch")
+            weights = _normalize([w * max(EPS, float(p)) for w, p in zip(weights, likelihood)])
+            matched_post += 1
+
+    target_board = list(target.get("board") or [])
+    if target_board != current_board:
+        combos, weights = _remove_public_blockers(combos, weights, target_board)
+
+    return ComboPosterior(
+        tuple(combos), tuple(weights), matched_pre, tuple(hero + target_board), matched_post
+    )
+
+
+def posterior_before_first_postflop_action(
+    hand_rows: Sequence[dict], target_index: int, preflop_model: dict
+) -> ComboPosterior:
+    """Compatibility helper for the original fail-closed first-action subset."""
+    if not 0 <= target_index < len(hand_rows):
+        raise IndexError(target_index)
+    target = hand_rows[target_index]
+    player = str(target.get("player") or "")
+    prior_post = _target_player_prior_postflop_rows(hand_rows, target_index, player)
+    if prior_post:
+        raise UnsupportedPostflopHistory(
+            "target player has earlier postflop action(s); use posterior_before_postflop_action with runtime parity"
+        )
+    hero = _hero_blockers(hand_rows)
+    board = list(target.get("board") or [])
+    combos = list(legal_combos(hero, board))
+    weights = [1.0] * len(combos)
+    matched = _condition_preflop(combos, weights, hand_rows, target_index, player, preflop_model)
+    return ComboPosterior(tuple(combos), tuple(weights), matched, tuple(hero + board), 0)
 
 
 def revealed_label_audit(posterior: ComboPosterior, known_cards: Sequence[str] | None) -> dict:
@@ -268,6 +339,7 @@ def posterior_audit(posterior: ComboPosterior) -> dict:
         "effective_combo_support": posterior.effective_support,
         "entropy_nats": posterior.entropy_nats,
         "matched_preflop_actions": posterior.matched_preflop_actions,
+        "matched_postflop_actions": posterior.matched_postflop_actions,
         "blocked_cards": list(posterior.blocked_cards),
         "probability_mass": sum(posterior.weights),
     }
