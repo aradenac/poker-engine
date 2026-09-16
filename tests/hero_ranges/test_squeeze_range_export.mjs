@@ -53,7 +53,7 @@ assert.equal(X.rangeActionForDecision('OPEN',{...CONTEXT,spot:'UNOPENED'}),'OPEN
 const oneHot=build({hand_class:'AKs',decision});
 assert.equal(X.verifyCandidate(oneHot,{require_complete:false}),true);
 const oneHotStrategy=H.getHandStrategy(oneHot.repository,CONTEXT,'AKs',{layer:'calculated'});
-assert.deepEqual(oneHotStrategy.actions,{3BET:1});
+assert.deepEqual(oneHotStrategy.actions,{'3BET':1});
 assert.deepEqual(oneHotStrategy.sizings['3BET'],[{target_total_bb:11,probability:1}]);
 assert.equal(oneHot.decisions.AKs.action,'SQUEEZE','canonical decision family must remain SQUEEZE');
 assert.equal(oneHot.decisions.AKs.target_total_bb,11);
