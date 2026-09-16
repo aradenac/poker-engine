@@ -58,6 +58,29 @@ jobs:
         run: node tests/hero_ranges/test_squeeze_range_export.mjs
       - name: Hero decision generation contracts
         run: PYTHONPATH=. python3 tests/training/test_generate_hero_range_decisions.py
+      - name: Inspect retained preflop sizing contract
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          model=json.loads(Path('training/models/preflop_population_model_v5.json').read_text())
+          out={}
+          for name in ('continuous_population','continuous_conditional_exact'):
+              value=model.get(name)
+              entry={'type':type(value).__name__}
+              if isinstance(value,dict):
+                  entry['count']=len(value)
+                  entry['keys']=list(value)[:8]
+                  entry['samples']={k:value[k] for k in list(value)[:2]}
+              elif isinstance(value,list):
+                  entry['count']=len(value)
+                  entry['samples']=value[:2]
+              else:
+                  entry['value']=value
+              out[name]=entry
+          print(json.dumps(out,indent=2,sort_keys=True))
+          PY
       - name: Real Model A to grid to candidate smoke
         run: |
           PYTHONPATH=. python3 tools/training/generate_hero_range_decisions.py \
