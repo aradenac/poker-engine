@@ -1,0 +1,96 @@
+name: Generate full 169 Hero candidate evidence
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/hero-full-169-evidence.yml'
+      - 'tools/training/generate_certified_hero_range_decisions.py'
+      - 'tools/training/build_certified_population_decisions.py'
+      - 'tools/simulation/preflop_grid_evaluator.py'
+      - 'tools/simulation/model_a_continuation.py'
+      - 'tools/simulation/model_a_preflop_rollout.py'
+      - 'training/datasets/NLHE_100-200/population_certification.json'
+      - 'training/models/preflop_population_model_v5.json'
+      - 'training/models/postflop_population_model_v5.json'
+      - 'training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json'
+      - 'training/runs/20260917_hero_preflop_169_btn_unopened_v1/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-169-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Materialize certified TRAIN sizing corpus
+        run: |
+          PYTHONPATH=. python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/issue-107-certified-decisions.jsonl \
+            --summary /tmp/issue-107-certified-summary.json
+      - name: Generate or load frozen BTN unopened 100bb 169 candidate
+        run: |
+          set -euo pipefail
+          RUN_DIR=training/runs/20260917_hero_preflop_169_btn_unopened_v1
+          if [[ -f "$RUN_DIR/RUN.json" && -f "$RUN_DIR/CANDIDATE.json" ]]; then
+            cp "$RUN_DIR/RUN.json" /tmp/issue-107-full-run.json
+            cp "$RUN_DIR/CANDIDATE.json" /tmp/issue-107-full-candidate.json
+            echo 'Using persisted immutable evidence.'
+          else
+            PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+              --position BTN --spot UNOPENED --stack-bb 100 \
+              --samples 16 --seed 20260916 \
+              --version hero-btn-unopened-100bb-169-v1 \
+              --code-sha "$GITHUB_SHA" \
+              --sizing-decisions /tmp/issue-107-certified-decisions.jsonl \
+              --rows-out /tmp/issue-107-full-run.json \
+              --candidate-out /tmp/issue-107-full-candidate.json
+          fi
+      - name: Verify complete immutable candidate contract
+        run: |
+          python3 - <<'PY'
+          import json
+          from collections import Counter
+          run=json.load(open('/tmp/issue-107-full-run.json'))
+          candidate=json.load(open('/tmp/issue-107-full-candidate.json'))
+          assert run['schema']=='poker-hero-range-decision-run/v1', run.get('schema')
+          assert run['coverage']=={'requested':169,'completed':169,'complete_169':True}, run['coverage']
+          assert run['unsupported']==[], run['unsupported']
+          assert len(run['rows'])==169
+          assert len({row['hand_class'] for row in run['rows']})==169
+          assert all(row['decision']['schema']=='poker-preflop-decision/v1' for row in run['rows'])
+          assert run['provenance']['hero_future_continuation']['claim']=='NOT_OPTIMAL_HERO_STRATEGY'
+          sizing=run['provenance']['sizing_support']
+          assert sizing['contract']=='CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1'
+          assert sizing['filters']['split']=='TRAIN'
+          assert sizing['filters']['is_hero'] is False
+          assert sizing['observed_nonjam_raises'] > 0
+          assert candidate['schema']=='poker-hero-calculated-range-candidate/v1'
+          assert candidate['promotion_authorized'] is False
+          assert candidate['coverage']['defined_hand_classes']==169, candidate['coverage']
+          actions=Counter(row['decision']['action'] for row in run['rows'])
+          print(json.dumps({
+            'coverage':run['coverage'],
+            'actions':dict(sorted(actions.items())),
+            'sizing_targets_bb':sizing['legal_grid_targets_bb'],
+            'sizing_observations':sizing['observed_nonjam_raises'],
+            'samples_per_candidate':run['budget']['samples_per_candidate'],
+            'seed':run['provenance']['seed'],
+            'promotion_authorized':candidate['promotion_authorized'],
+          },indent=2,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-full-169-${{ github.sha }}
+          path: |
+            /tmp/issue-107-full-run.json
+            /tmp/issue-107-full-candidate.json
+            /tmp/issue-107-certified-summary.json
+          if-no-files-found: error
+          retention-days: 14
