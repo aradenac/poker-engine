@@ -1,0 +1,109 @@
+{
+  "schema": "poker-release-handoff-contract/v1",
+  "version": "2026-09-17.1",
+  "related_issue": 113,
+  "status": "ACTIVE_CONTRACT",
+  "purpose": "Bind one immutable scientific cycle decision to the exact Git, pack, deployment, rollback and live-verification identities required before the result may be described as delivered to production.",
+  "outcomes": ["PROMOTE", "RETAIN", "NO_OP", "BLOCKED"],
+  "states": [
+    "PREPARED",
+    "VERIFIED_NO_PUBLICATION",
+    "PUBLISHED_UNVERIFIED",
+    "VERIFIED_LIVE",
+    "ROLLED_BACK"
+  ],
+  "common_identity": {
+    "required": [
+      "population_id",
+      "cycle_run_id",
+      "snapshot_sha256",
+      "source_commit_sha",
+      "cycle_decision.path",
+      "cycle_decision.sha256",
+      "production_before.site_release.path",
+      "production_before.site_release.sha256",
+      "production_before.population_registry.path",
+      "production_before.population_registry.sha256"
+    ],
+    "snapshot_sha256": "64 lowercase hexadecimal characters",
+    "source_commit_sha": "40 lowercase hexadecimal characters",
+    "cycle_decision": "Must be an immutable repository artifact from the completed cycle; a CI success without a persisted decision is insufficient."
+  },
+  "no_publication_outcomes": {
+    "outcomes": ["RETAIN", "NO_OP", "BLOCKED"],
+    "required_state": "VERIFIED_NO_PUBLICATION",
+    "publication_authorized": false,
+    "deployment_attempted": false,
+    "production_after_must_equal_before": true,
+    "reason_required": true
+  },
+  "promote_preconditions": {
+    "outcome": "PROMOTE",
+    "prepared_state": "PREPARED",
+    "publication_authorized": true,
+    "required": [
+      "promotion.plan.path",
+      "promotion.plan.sha256",
+      "promotion.candidate_pack.path",
+      "promotion.candidate_pack.sha256",
+      "promotion.candidate_site_release.path",
+      "promotion.candidate_site_release.sha256",
+      "promotion.expected_release_commit_sha",
+      "rollback.site_release_sha256",
+      "rollback.population_registry_sha256",
+      "deployment.provider",
+      "deployment.static_root",
+      "deployment.wrangler_config.path",
+      "deployment.wrangler_config.sha256",
+      "deployment.production_url"
+    ],
+    "provider": "CLOUDFLARE_WORKERS",
+    "static_root": "site",
+    "production_url_rule": "Must be the canonical production URL; commit and branch preview URLs are forbidden as production evidence.",
+    "registry_last_operation": true,
+    "hash_preconditions_required": true
+  },
+  "post_publication_verification": {
+    "verified_state": "VERIFIED_LIVE",
+    "required": [
+      "deployment.deployed_commit_sha",
+      "deployment.provider_build_id",
+      "deployment.provider_version_id",
+      "live_verification.production_url",
+      "live_verification.observed_commit_sha",
+      "live_verification.observed_site_release_sha256",
+      "live_verification.checked_at",
+      "live_verification.probes"
+    ],
+    "deployed_commit_must_equal_expected_release_commit": true,
+    "observed_commit_must_equal_deployed_commit": true,
+    "observed_site_release_sha256_must_equal_candidate": true,
+    "required_probe_ids": [
+      "release_identity",
+      "index",
+      "replayer",
+      "trainer",
+      "hero_ranges",
+      "required_assets"
+    ],
+    "all_required_probes_must_pass": true
+  },
+  "rollback": {
+    "failed_publication_terminal_state": "ROLLED_BACK",
+    "required_on_failure": [
+      "rollback.performed",
+      "rollback.site_release_sha256_after",
+      "rollback.population_registry_sha256_after"
+    ],
+    "rollback_hashes_must_match_production_before": true,
+    "failed_or_unverified_publication_is_not_success": true
+  },
+  "invariants": [
+    "A successful build, preview deployment or CI workflow is never equivalent to production verification.",
+    "RETAIN, NO_OP and BLOCKED never authorize publication and must preserve production identities.",
+    "PROMOTE is not delivered until the canonical production URL serves the exact expected commit and site-release identity and all required live probes pass.",
+    "A failed or unverified publication either remains PUBLISHED_UNVERIFIED or is proven ROLLED_BACK; neither state is a successful release.",
+    "No closed cycle, pack or release evidence is overwritten in place.",
+    "Population registry mutation, when authorized, is the last promotion operation and remains hash-preconditioned."
+  ]
+}

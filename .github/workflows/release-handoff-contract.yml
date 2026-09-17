@@ -1,0 +1,44 @@
+name: Validate release handoff contract
+
+on:
+  pull_request:
+    paths:
+      - 'training/automation/RELEASE_HANDOFF_CONTRACT.json'
+      - 'tools/validate_release_handoff.py'
+      - 'tests/test_release_handoff.py'
+      - '.github/workflows/release-handoff-contract.yml'
+  push:
+    branches:
+      - 'issue-113-release-handoff-contract-sol'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-handoff-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile handoff validator
+        run: python3 -m py_compile tools/validate_release_handoff.py tests/test_release_handoff.py
+      - name: Exercise release state machine
+        run: PYTHONPATH=. python3 tests/test_release_handoff.py
+      - name: Prove contract workflow has no publication side effect
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('.github/workflows/release-handoff-contract.yml').read_text()
+          marker='      - name: Prove contract workflow has no publication side effect'
+          before=text.split(marker,1)[0]
+          forbidden=['wrangler deploy','git push','gh release create','cloudflare']
+          found=[token for token in forbidden if token.lower() in before.lower()]
+          assert not found, found
+          print('release-handoff contract CI is publication-free')
+          PY
