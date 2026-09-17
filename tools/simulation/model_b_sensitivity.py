@@ -201,13 +201,13 @@ class ModelBSensitivityPolicy:
         view = state.legal_view(actor)
         action_info = self.action_probabilities(state, **context)
         probabilities = action_info["probabilities"]
-        env_id = str(self.spec["environment_id"])
+        # Keep common random numbers across all sensitivity environments.  The
+        # probability transform, not the random stream, is the treatment.
         action = str(
             weighted_choice(
                 list(probabilities),
                 list(probabilities.values()),
                 *seed_parts,
-                env_id,
                 "action",
             )
         )
@@ -220,7 +220,6 @@ class ModelBSensitivityPolicy:
                 candidates,
                 [float(row["weight"]) for row in candidates],
                 *seed_parts,
-                env_id,
                 "sizing",
             )
             target = float(selected["target_total_bb"])
