@@ -1,0 +1,105 @@
+{
+  "schema": "poker-preflop-strategy-validation-execution-result/v1",
+  "issue": 108,
+  "contract_version": "2026-09-17.2",
+  "phase": "VALIDATION",
+  "decision": "BLOCKED_ZERO_CANDIDATE_EXPOSURE",
+  "workflow": {
+    "run_id": 35208144319,
+    "workflow_name": "Execute preflop strategy support-closed VALIDATION",
+    "head_branch": "issue-108-validation-run-v2-sol",
+    "head_sha": "462bc46e9bc6ae9558787e6336c6bb670c268e3d",
+    "conclusion": "cancelled",
+    "prepare_job": "success",
+    "selection_job": "skipped"
+  },
+  "population": {
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "certified_validation_hands": 2324,
+    "simulatable_validation_hands": 2324,
+    "rollouts_per_base_hand": 2,
+    "scenarios_per_policy_environment": 4648
+  },
+  "candidate": {
+    "candidate_id": "20260917_hero_preflop_169_btn_unopened_pfc_v1",
+    "artifact_sha256": "a0a373f55c11638ba092f862eca1c354c6065d50b5012fb3158e07cd426831cd",
+    "source_commit_sha": "d738727d466398551156d6bdef95737c4e9af85b",
+    "known_scope": {
+      "hero_position": "BTN",
+      "family": "UNOPENED",
+      "effective_stack_bb": 100.0,
+      "preflop_context_id": "PFC_0e01f7d1a1da491b",
+      "supported_hand_classes": 40,
+      "explicitly_unsupported_hand_classes": 129
+    }
+  },
+  "frozen_run_identity": {
+    "scenario_manifest_sha256": "23c325579f861a09aa6bb3bbfbc27a7aedf245c6c5cc9ea446f251b4198535ee",
+    "reference_descriptor_sha256": "9e55bf86bef43bdde64f0749a5da8969caf2dee69f582abc5e9e73ba0884f6fe",
+    "model_b_base_artifact_sha256": "fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca",
+    "model_b_sensitivity_descriptor_sha256": "e97c74636621da3d109717b4b2883f15d6d38f06bada457840618975959e8bd0",
+    "master_seed": 20260917,
+    "bootstrap_samples": 5000,
+    "validation_ci95_lower_threshold_bb_per_100": 0.0
+  },
+  "completed_environments": {
+    "model-b-public-reference-nominal-v1": {
+      "job_conclusion": "success",
+      "report_sha256": "a38f0c69d1d17db1a74522eb4a1527dd1be98f01000cf74c82d5bc494c27c5a5",
+      "artifact_id": 10503865478,
+      "artifact_zip_sha256": "b70e24577b9826f59d4cbc66d2c30abd1a93bc8438da05f402fa12865859acd8",
+      "hero_preflop_decisions": 4993,
+      "supported_decisions": 0,
+      "out_of_support_decisions": 4993,
+      "supported_decision_rate": 0.0,
+      "observed_delta_bb_per_100": 0.0,
+      "ci95_bb_per_100": [0.0, 0.0],
+      "legacy_numeric_gate_pass": true,
+      "candidate_exposure_valid": false
+    },
+    "model-b-public-reference-higher-aggression-v1": {
+      "job_conclusion": "success",
+      "report_sha256": "51df654ec1d68a65ad9f60eaffca31c865cdc2f5a7e58878ca916c1ca89a95ab",
+      "artifact_id": 10503539358,
+      "artifact_zip_sha256": "e403d0764233f0bd0e22eaa0b114a410fe1c21ef99a7c8abb04adb1da7356738",
+      "hero_preflop_decisions": 5051,
+      "supported_decisions": 0,
+      "out_of_support_decisions": 5051,
+      "supported_decision_rate": 0.0,
+      "observed_delta_bb_per_100": 0.0,
+      "ci95_bb_per_100": [0.0, 0.0],
+      "legacy_numeric_gate_pass": true,
+      "candidate_exposure_valid": false
+    }
+  },
+  "missing_or_cancelled_environments": [
+    "model-b-public-reference-lower-aggression-v1"
+  ],
+  "validity_gate": {
+    "rule": "EACH_COMPLETED_ENVIRONMENT_MUST_EXECUTE_AT_LEAST_ONE_CANDIDATE_DECISION",
+    "status": "FAIL",
+    "reason": "The candidate overlay was never selected in either completed VALIDATION environment. Candidate and reference therefore followed the same fallback policy, making delta=0 and CI95=[0,0] non-informative about candidate performance.",
+    "performance_threshold_changed": false,
+    "lower_aggression_rerun_required_for_this_decision": false
+  },
+  "selection_boundary": {
+    "performance_gate_interpretable": false,
+    "frozen_finalist": null,
+    "test_authorized": false,
+    "test_used_for_selection": false,
+    "test_consumed": false,
+    "promotion_authorized": false,
+    "active_strategy_pointer_changed": false
+  },
+  "next_dependency": {
+    "issue": 107,
+    "required_work": "Produce benchmarkable calculated Hero coverage across the preflop contexts, positions and stack depths encountered by the frozen population without nearest-context substitution or fabricated EV certainty; freeze the replacement candidate before any new VALIDATION performance read."
+  },
+  "interpretation_limits": [
+    "The completed environments are evidence about candidate exposure validity, not evidence that the candidate wins, loses, or ties the reference.",
+    "The numerical zero deltas arise because no candidate decision was executed.",
+    "The frozen EV/CI performance threshold remains unchanged.",
+    "TEST remains untouched."
+  ]
+}
