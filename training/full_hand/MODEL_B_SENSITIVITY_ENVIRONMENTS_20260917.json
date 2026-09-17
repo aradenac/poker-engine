@@ -17,7 +17,7 @@
   "perturbation_contract": {
     "action": "Multiply only legal RAISE probability mass by raise_odds_multiplier, leave all other legal action masses unchanged, then renormalize.",
     "sizing": "Multiply the selected empirical RAISE incremental-cost-over-pot ratio by raise_sizing_multiplier and clamp only to the shared NLHE legal min/max boundary.",
-    "seed_pairing": "All environments consume the same scenario and opponent-action seed namespaces; an environment identifier is appended only to the final deterministic draw.",
+    "seed_pairing": "All environments consume the exact same scenario and opponent-action random stream. The environment changes only the probability/sizing transform; no environment identifier enters the random draw seed.",
     "purpose": "Robustness stress envelope only. The variants are not fitted candidates, confidence bounds, or production models. Parameters are frozen before any #108 VALIDATION strategy result is inspected."
   },
   "environments": [
