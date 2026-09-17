@@ -1,0 +1,37 @@
+name: Validate Hero range PFC context binding
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'site/hero-ranges.js'
+      - 'tools/preflop/context_contract.py'
+      - 'tools/training/generate_hero_range_decisions.py'
+      - 'tools/training/enrich_hero_range_context.py'
+      - 'tests/hero_ranges/test_hero_range_repository.mjs'
+      - 'tests/training/test_enrich_hero_range_context.py'
+      - '.github/workflows/hero-range-pfc-context.yml'
+  push:
+    branches:
+      - 'issue-107-canonical-pfc-generator-sol'
+
+concurrency:
+  group: hero-range-pfc-context-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile context enrichment
+        run: python3 -m py_compile tools/training/enrich_hero_range_context.py
+      - name: Validate canonical context contract
+        run: PYTHONPATH=. python3 tests/preflop/test_context_contract.py
+      - name: Validate Hero repository PFC identity
+        run: node tests/hero_ranges/test_hero_range_repository.mjs
+      - name: Validate identity-only run enrichment
+        run: PYTHONPATH=. python3 tests/training/test_enrich_hero_range_context.py
