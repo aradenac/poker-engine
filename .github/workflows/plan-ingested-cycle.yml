@@ -12,9 +12,12 @@ on:
     paths:
       - 'training/populations/registry.json'
       - 'tools/populations/**'
+      - 'tools/datasets/build_population_increment.py'
+      - 'tools/datasets/certify_population.py'
       - 'tools/training/plan_snapshot_cycle.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
+      - 'tests/datasets/test_build_population_increment.py'
       - 'tests/populations/**'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - '.github/workflows/plan-ingested-cycle.yml'
@@ -22,9 +25,12 @@ on:
     paths:
       - 'training/populations/registry.json'
       - 'tools/populations/**'
+      - 'tools/datasets/build_population_increment.py'
+      - 'tools/datasets/certify_population.py'
       - 'tools/training/plan_snapshot_cycle.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
+      - 'tests/datasets/test_build_population_increment.py'
       - 'tests/populations/**'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - '.github/workflows/ingest-artifacts.yml'
@@ -46,6 +52,7 @@ concurrency:
 
 env:
   LEGACY_INGESTION_POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
+  PYTHONDONTWRITEBYTECODE: '1'
 
 jobs:
   planner-contract:
@@ -57,13 +64,18 @@ jobs:
         run: |
           python3 -m py_compile \
             tools/populations/registry.py \
+            tools/datasets/build_population_increment.py \
+            tools/datasets/certify_population.py \
             tools/training/plan_snapshot_cycle.py \
             tools/training/classify_increment.py \
             tools/training/write_increment_gate.py \
+            tests/datasets/test_build_population_increment.py \
             tests/populations/test_population_registry.py \
             tests/training/test_snapshot_cycle_planner.py
       - name: Validate population registry contracts
         run: python3 tests/populations/test_population_registry.py
+      - name: Exercise exact population admission boundary
+        run: python3 tests/datasets/test_build_population_increment.py
       - name: Exercise population-scoped planner fixtures
         run: python3 tests/training/test_snapshot_cycle_planner.py
       - name: Verify scientific CLI requires explicit population
@@ -84,7 +96,6 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     env:
-      PYTHONDONTWRITEBYTECODE: '1'
       POPULATION_ID: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
     steps:
       - name: Checkout latest main after ingestion
