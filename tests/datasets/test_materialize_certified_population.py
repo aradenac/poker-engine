@@ -5,7 +5,6 @@ import hashlib
 import json
 import sys
 import tempfile
-from collections import Counter
 from pathlib import Path
 import zipfile
 
@@ -16,6 +15,17 @@ from tools.datasets.build_hand_history_increment import fingerprint, split_for  
 from tools.datasets.materialize_certified_population import materialize  # noqa: E402
 
 POP = "fixture_zoom_100_200"
+
+
+def split_fixture_ids() -> tuple[list[str], str]:
+    by_split: dict[str, str] = {}
+    candidate = 1000
+    while len(by_split) < 3:
+        hand_id = str(candidate)
+        by_split.setdefault(split_for(hand_id), hand_id)
+        candidate += 1
+    excluded = str(candidate)
+    return [by_split["TRAIN"], by_split["VALIDATION"], by_split["TEST"]], excluded
 
 
 def hand(hand_id: str, *, hour: int) -> str:
@@ -44,11 +54,11 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def fixture(root: Path, *, ambiguous: int = 0) -> tuple[Path, Path]:
+def fixture(root: Path, *, ambiguous: int = 0) -> tuple[Path, Path, list[str]]:
+    admissible_ids, excluded_id = split_fixture_ids()
     source = root / "sources/source.zip"
-    write_zip(source, [hand("1001", hour=1), hand("1002", hour=2), hand("1003", hour=3)])
-    admissible_ids = ["1001", "1002"]
-    split_counts = Counter(split_for(value) for value in admissible_ids)
+    all_ids = admissible_ids + [excluded_id]
+    write_zip(source, [hand(value, hour=index + 1) for index, value in enumerate(all_ids)])
     cert = {
         "schema": "poker-population-certification/v1",
         "target": {
@@ -63,15 +73,11 @@ def fixture(root: Path, *, ambiguous: int = 0) -> tuple[Path, Path]:
         "archives": [{"path": "sources/source.zip", "sha256": sha256(source)}],
         "status": {
             "ADMISSIBLE": {
-                "unique_hands": 2,
+                "unique_hands": 3,
                 "fingerprint_sha256": fingerprint(admissible_ids),
-                "split_counts": {
-                    "TRAIN": split_counts.get("TRAIN", 0),
-                    "VALIDATION": split_counts.get("VALIDATION", 0),
-                    "TEST": split_counts.get("TEST", 0),
-                },
+                "split_counts": {"TRAIN": 1, "VALIDATION": 1, "TEST": 1},
             },
-            "EXCLUDED": {"unique_hands": 1, "hand_ids": ["1003"]},
+            "EXCLUDED": {"unique_hands": 1, "hand_ids": [excluded_id]},
             "AMBIGUOUS": {"unique_hands": ambiguous, "hand_ids": ["9999"] if ambiguous else []},
         },
     }
@@ -99,7 +105,7 @@ def fixture(root: Path, *, ambiguous: int = 0) -> tuple[Path, Path]:
                     "root": "pop/data",
                     "source_certification": "certification.json",
                     "source_hand_ids_sha256": fingerprint(admissible_ids),
-                    "source_unique_hands": 2,
+                    "source_unique_hands": 3,
                     "snapshots_root": "pop/data/snapshots",
                     "increments_root": "pop/data/increments",
                 },
@@ -119,13 +125,13 @@ def fixture(root: Path, *, ambiguous: int = 0) -> tuple[Path, Path]:
     }
     registry_path = root / "registry.json"
     registry_path.write_text(json.dumps(registry, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return registry_path, source
+    return registry_path, source, admissible_ids
 
 
 def test_materializes_exact_admissible_set_and_binds_registry() -> None:
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
-        registry_path, _ = fixture(root)
+        registry_path, _, admissible_ids = fixture(root)
         result = materialize(
             root=root,
             registry_path=registry_path,
@@ -133,8 +139,9 @@ def test_materializes_exact_admissible_set_and_binds_registry() -> None:
             bind_registry=True,
         )
         assert result["status"] == "PASS"
-        assert result["baseline"]["unique_hands"] == 2
-        assert result["baseline"]["hand_ids_fingerprint_sha256"] == fingerprint(["1001", "1002"])
+        assert result["baseline"]["unique_hands"] == 3
+        assert result["baseline"]["hand_ids_fingerprint_sha256"] == fingerprint(admissible_ids)
+        assert result["baseline"]["split_counts"] == {"TRAIN": 1, "VALIDATION": 1, "TEST": 1}
         baseline = root / "pop/data/baseline/certified_population.zip"
         manifest = json.loads((root / "pop/data/baseline/manifest.json").read_text())
         assert baseline.is_file()
@@ -145,7 +152,7 @@ def test_materializes_exact_admissible_set_and_binds_registry() -> None:
         assert data["baseline_archive"] == "pop/data/baseline/certified_population.zip"
         assert data["baseline_manifest"] == "pop/data/baseline/manifest.json"
         assert data["baseline_archive_sha256"] == sha256(baseline)
-        assert data["baseline_hand_ids_sha256"] == fingerprint(["1001", "1002"])
+        assert data["baseline_hand_ids_sha256"] == fingerprint(admissible_ids)
 
 
 def test_rebuild_is_byte_deterministic_and_idempotent() -> None:
@@ -153,7 +160,7 @@ def test_rebuild_is_byte_deterministic_and_idempotent() -> None:
     for _ in range(2):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
-            registry_path, _ = fixture(root)
+            registry_path, _, _ = fixture(root)
             first = materialize(root=root, registry_path=registry_path, population_id=POP, bind_registry=True)
             second = materialize(root=root, registry_path=registry_path, population_id=POP, bind_registry=True)
             assert second["writes"] == {
@@ -172,7 +179,7 @@ def test_rebuild_is_byte_deterministic_and_idempotent() -> None:
 def test_source_archive_hash_drift_fails_before_materialization() -> None:
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
-        registry_path, source = fixture(root)
+        registry_path, source, _ = fixture(root)
         source.write_bytes(source.read_bytes() + b"tamper")
         try:
             materialize(root=root, registry_path=registry_path, population_id=POP)
@@ -186,7 +193,7 @@ def test_source_archive_hash_drift_fails_before_materialization() -> None:
 def test_ambiguous_certification_cannot_be_materialized() -> None:
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
-        registry_path, _ = fixture(root, ambiguous=1)
+        registry_path, _, _ = fixture(root, ambiguous=1)
         try:
             materialize(root=root, registry_path=registry_path, population_id=POP)
         except ValueError as exc:
@@ -198,7 +205,7 @@ def test_ambiguous_certification_cannot_be_materialized() -> None:
 def test_existing_different_baseline_is_never_overwritten() -> None:
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
-        registry_path, _ = fixture(root)
+        registry_path, _, _ = fixture(root)
         baseline = root / "pop/data/baseline/certified_population.zip"
         baseline.parent.mkdir(parents=True, exist_ok=True)
         baseline.write_bytes(b"historical baseline")
