@@ -10,18 +10,22 @@ on:
       - 'tools/simulation/hero_preflop_overlay.py'
       - 'tools/training/generate_hero_range_decisions.py'
       - 'tools/training/enrich_hero_range_context.py'
+      - 'tools/training/materialize_hero_pfc_source.py'
+      - 'tools/training/merge_hero_policy_context_sources.py'
       - 'tests/hero_ranges/test_hero_range_repository.mjs'
       - 'tests/preflop/test_context_contract.py'
       - 'tests/simulation/test_preflop_policy_context.py'
       - 'tests/simulation/test_hero_preflop_overlay.py'
       - 'tests/training/test_enrich_hero_range_context.py'
       - 'tests/training/test_persisted_hero_pfc_binding.py'
+      - 'tests/training/test_hero_policy_context_sources.py'
       - 'training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/**'
       - '.github/workflows/hero-range-pfc-context.yml'
   push:
     branches:
       - 'issue-107-canonical-pfc-generator-sol'
       - 'issue-107-policy-context-sol'
+      - 'issue-107-unopened-multiposition-sol'
 
 concurrency:
   group: hero-range-pfc-context-${{ github.ref }}
@@ -35,18 +39,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Compile context and overlay contracts
+      - name: Compile context, overlay and source-merge contracts
         run: |
           python3 -m py_compile \
             tools/preflop/policy_context.py \
             tools/simulation/hero_preflop_overlay.py \
-            tools/training/enrich_hero_range_context.py
+            tools/training/enrich_hero_range_context.py \
+            tools/training/materialize_hero_pfc_source.py \
+            tools/training/merge_hero_policy_context_sources.py
       - name: Validate canonical exact context contract
         run: PYTHONPATH=. python3 tests/preflop/test_context_contract.py
       - name: Validate bucketed policy context and overlay binding
         run: |
           PYTHONPATH=. python3 tests/simulation/test_preflop_policy_context.py
           PYTHONPATH=. python3 tests/simulation/test_hero_preflop_overlay.py
+      - name: Validate PFC source materialization and PFPC merge
+        run: PYTHONPATH=. python3 tests/training/test_hero_policy_context_sources.py
       - name: Validate Hero repository PFC identity
         run: node tests/hero_ranges/test_hero_range_repository.mjs
       - name: Validate identity-only run enrichment
