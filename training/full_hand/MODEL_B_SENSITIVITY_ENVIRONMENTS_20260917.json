@@ -1,0 +1,45 @@
+{
+  "schema": "poker-model-b-sensitivity-set/v1",
+  "version": "2026-09-17.1",
+  "status": "FROZEN_BEFORE_STRATEGY_RESULTS",
+  "related_issue": 108,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "base_reference": {
+    "source_issue": 104,
+    "selection_decision": "RETAIN_PUBLIC_ONLY_REFERENCE_FOR_BEHAVIOR_COMPONENT",
+    "rebuild_tool": "tools.training.independent_profiles.run_card_aware_behavior_cycle",
+    "rebuild_protocol": "training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json",
+    "selection_evidence": "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
+    "artifact_name": "public_reference_behavior.json",
+    "artifact_sha256": "fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca",
+    "test_consumed_by_issue_104": false
+  },
+  "perturbation_contract": {
+    "action": "Multiply only legal RAISE probability mass by raise_odds_multiplier, leave all other legal action masses unchanged, then renormalize.",
+    "sizing": "Multiply the selected empirical RAISE incremental-cost-over-pot ratio by raise_sizing_multiplier and clamp only to the shared NLHE legal min/max boundary.",
+    "seed_pairing": "All environments consume the same scenario and opponent-action seed namespaces; an environment identifier is appended only to the final deterministic draw.",
+    "purpose": "Robustness stress envelope only. The variants are not fitted candidates, confidence bounds, or production models. Parameters are frozen before any #108 VALIDATION strategy result is inspected."
+  },
+  "environments": [
+    {
+      "role": "nominal",
+      "environment_id": "model-b-public-reference-nominal-v1",
+      "raise_odds_multiplier": 1.0,
+      "raise_sizing_multiplier": 1.0
+    },
+    {
+      "role": "lower_aggression",
+      "environment_id": "model-b-public-reference-lower-aggression-v1",
+      "raise_odds_multiplier": 0.8695652173913043,
+      "raise_sizing_multiplier": 0.9090909090909091
+    },
+    {
+      "role": "higher_aggression",
+      "environment_id": "model-b-public-reference-higher-aggression-v1",
+      "raise_odds_multiplier": 1.15,
+      "raise_sizing_multiplier": 1.1
+    }
+  ],
+  "symmetry_note": "The lower variants are exact reciprocals of +15% RAISE odds and +10% RAISE sizing. This is a predeclared modest stress envelope around the retained public-only reference, not a post-result tuning range.",
+  "promotion_rule": "The same frozen Hero candidate must satisfy the #108 confidence gate in all three environments. No environment may be removed or retuned after VALIDATION results are inspected."
+}
