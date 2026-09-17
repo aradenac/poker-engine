@@ -59,8 +59,10 @@ jobs:
           row=json.loads(path.read_text())
           assert row['decision']=='BLOCKED_ZERO_CANDIDATE_EXPOSURE'
           assert row['contract_version']=='2026-09-17.2'
-          assert row['test_consumed'] is False
-          assert row['promotion_authorized'] is False
+          boundary=row['selection_boundary']
+          assert boundary['test_consumed'] is False
+          assert boundary['promotion_authorized'] is False
+          assert boundary['performance_gate_interpretable'] is False
           assert row['completed_environments']['model-b-public-reference-nominal-v1']['supported_decisions']==0
           assert row['completed_environments']['model-b-public-reference-higher-aggression-v1']['supported_decisions']==0
           assert row['missing_or_cancelled_environments']==['model-b-public-reference-lower-aggression-v1']
