@@ -18,6 +18,9 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
 concurrency:
   group: materialize-certified-population-${{ github.ref }}
   cancel-in-progress: true
