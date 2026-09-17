@@ -1,0 +1,364 @@
+name: Generate multi-position unopened Hero PFPC evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'issue-107-unopened-multiposition-evidence-sol'
+
+concurrency:
+  group: hero-unopened-multiposition-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  EVIDENCE_DIR: training/runs/20260917_hero_preflop_unopened_multiposition_pfpc_v1
+  RUN_ID: 20260917_hero_preflop_unopened_multiposition_pfpc_v1
+
+jobs:
+  detect-persisted:
+    runs-on: ubuntu-24.04
+    outputs:
+      persisted: ${{ steps.detect.outputs.persisted }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: detect
+        name: Detect immutable persisted multi-context evidence
+        run: |
+          if [[ -f "$EVIDENCE_DIR/RESULT.json" \
+             && -f "$EVIDENCE_DIR/HERO_RANGE_REPOSITORY_PFPC.json" \
+             && -f "$EVIDENCE_DIR/POLICY_CONTEXT_BINDING.json" ]]; then
+            echo 'persisted=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'persisted=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  verify-persisted:
+    needs: detect-persisted
+    if: ${{ needs.detect-persisted.outputs.persisted == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify persisted scientific result and hashes
+        run: |
+          PYTHONPATH=. python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root=Path('training/runs/20260917_hero_preflop_unopened_multiposition_pfpc_v1')
+          result=json.loads((root/'RESULT.json').read_text())
+          repo=root/'HERO_RANGE_REPOSITORY_PFPC.json'
+          binding=root/'POLICY_CONTEXT_BINDING.json'
+          assert result['schema']=='poker-hero-unopened-multiposition-generation-result/v1'
+          assert result['decision']=='ACCEPT_PARTIAL_UNOPENED_MULTIPOSITION_PFPC_FOR_VALIDATION_RETRY'
+          assert result['status']=='EXPERIMENTAL'
+          assert result['promotion_authorized'] is False
+          assert result['selection_boundary']=={'validation_consumed':False,'test_consumed':False}
+          assert result['positions']==['LJ','HJ','CO','BTN','SB']
+          assert result['policy_contexts']==5
+          assert result['representative_stack_bb']==100.0
+          assert result['policy_stack_bucket']=='GT75_LE125'
+          assert result['budget']['new_context_samples_per_nonfold_candidate']==16
+          assert result['budget']['new_context_master_seed']==20260917
+          assert hashlib.sha256(repo.read_bytes()).hexdigest()==result['artifacts']['hero_range_repository_pfpc_sha256']
+          assert hashlib.sha256(binding.read_bytes()).hexdigest()==result['artifacts']['policy_context_binding_sha256']
+          policy=json.loads(binding.read_text())
+          assert policy['repository_sha256']==result['artifacts']['hero_range_repository_pfpc_sha256']
+          assert policy['nearest_context_substitution'] is False
+          assert len(policy['bindings'])==5
+          assert all(row['supported_hand_classes']>0 for row in policy['bindings'].values())
+          print(json.dumps({'coverage':result['coverage'],'artifacts':result['artifacts']},indent=2,sort_keys=True))
+          PY
+      - name: Validate persisted repository with editor contract
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          const H=require('./site/hero-ranges.js');
+          const repo=JSON.parse(fs.readFileSync('training/runs/20260917_hero_preflop_unopened_multiposition_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json','utf8'));
+          H.validateRepository(repo);
+          const stats=H.repositoryStats(repo);
+          if(stats.contexts!==5||stats.personal_defined_hands!==0||stats.calculated_defined_hands<=0)throw new Error(JSON.stringify(stats));
+          console.log(stats);
+          JS
+
+  generate-shards:
+    needs: detect-persisted
+    if: ${{ needs.detect-persisted.outputs.persisted == 'false' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        position: [LJ, HJ, CO, SB]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Materialize certified TRAIN sizing corpus
+        run: |
+          PYTHONPATH=. python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/issue-107-certified-decisions.jsonl \
+            --summary /tmp/issue-107-certified-summary.json
+      - name: Generate deterministic position/hand shard
+        env:
+          POSITION: ${{ matrix.position }}
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: '13'
+        run: |
+          set -euo pipefail
+          mapfile -t HAND_ARGS < <(PYTHONPATH=. python3 - <<'PY'
+          import os
+          from tools.training.generate_hero_range_decisions import HAND_CLASSES
+          index=int(os.environ['SHARD_INDEX']); count=int(os.environ['SHARD_COUNT'])
+          hands=list(HAND_CLASSES)[index::count]
+          assert hands
+          for hand in hands:
+              print('--hand-class')
+              print(hand)
+          PY
+          )
+          VERSION="hero-${POSITION,,}-unopened-100bb-169-pfpc-v1"
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+            --position "$POSITION" --spot UNOPENED --stack-bb 100 \
+            --samples 16 --seed 20260917 \
+            --version "$VERSION" \
+            --code-sha "$GITHUB_SHA" \
+            --sizing-decisions /tmp/issue-107-certified-decisions.jsonl \
+            --rows-out "/tmp/${POSITION}-shard-${SHARD_INDEX}.json" \
+            --allow-partial \
+            "${HAND_ARGS[@]}"
+      - name: Verify shard accounting and holdout boundary
+        env:
+          POSITION: ${{ matrix.position }}
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          p=f"/tmp/{os.environ['POSITION']}-shard-{os.environ['SHARD_INDEX']}.json"
+          run=json.load(open(p))
+          requested=int(run['coverage']['requested'])
+          rows=run.get('rows') or []
+          unsupported=run.get('unsupported') or []
+          accounted=[r['hand_class'] for r in rows]+[r['hand_class'] for r in unsupported]
+          assert requested==len(accounted)==len(set(accounted))
+          assert run['context']['position']==os.environ['POSITION']
+          assert run['context']['spot']=='UNOPENED'
+          assert run['context']['effective_stack_bb']==100.0
+          support=run['provenance']['sizing_support']
+          assert support['filters']['split']=='TRAIN'
+          assert support['filters']['is_hero'] is False
+          assert run['promotion_authorized'] is False
+          print({'position':os.environ['POSITION'],'requested':requested,'completed':len(rows),'unsupported':len(unsupported)})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-unopened-${{ matrix.position }}-shard-${{ matrix.shard }}-${{ github.sha }}
+          path: /tmp/${{ matrix.position }}-shard-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: 3
+
+  merge-candidate:
+    needs: [detect-persisted, generate-shards]
+    if: ${{ needs.detect-persisted.outputs.persisted == 'false' && needs.generate-shards.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-107-unopened-*-shard-*-${{ github.sha }}
+          path: /tmp/issue107-shards
+          merge-multiple: true
+      - name: Merge, enrich and materialize each new position
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/contexts /tmp/final
+          for POSITION in LJ HJ CO SB; do
+            shopt -s nullglob
+            FILES=(/tmp/issue107-shards/${POSITION}-shard-*.json)
+            [[ ${#FILES[@]} -eq 13 ]]
+            INPUT_ARGS=()
+            for file in "${FILES[@]}"; do INPUT_ARGS+=(--input "$file"); done
+            PYTHONPATH=. python3 tools/training/merge_hero_range_decision_runs.py \
+              "${INPUT_ARGS[@]}" --allow-partial \
+              --rows-out "/tmp/contexts/${POSITION}-run.json" \
+              --candidate-out "/tmp/contexts/${POSITION}-candidate.json"
+            PYTHONPATH=. python3 tools/training/enrich_hero_range_context.py \
+              --input "/tmp/contexts/${POSITION}-run.json" \
+              --output "/tmp/contexts/${POSITION}-enriched-run.json" \
+              --candidate-out "/tmp/contexts/${POSITION}-candidate-pfc.json" \
+              --position "$POSITION" --spot UNOPENED --stack-bb 100
+            PYTHONPATH=. python3 tools/training/materialize_hero_pfc_source.py \
+              --run "/tmp/contexts/${POSITION}-enriched-run.json" \
+              --candidate "/tmp/contexts/${POSITION}-candidate-pfc.json" \
+              --repository-out "/tmp/contexts/${POSITION}-repository-pfc.json" \
+              --binding-out "/tmp/contexts/${POSITION}-pfc-binding.json" \
+              --run-id "${RUN_ID}-${POSITION,,}"
+          done
+      - name: Merge existing BTN plus four new exact-PFC sources into PFPC candidate
+        run: |
+          PYTHONPATH=. python3 tools/training/merge_hero_policy_context_sources.py \
+            --source-repository training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json \
+            --source-binding training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/PFC_BINDING.json \
+            --source-repository /tmp/contexts/LJ-repository-pfc.json \
+            --source-binding /tmp/contexts/LJ-pfc-binding.json \
+            --source-repository /tmp/contexts/HJ-repository-pfc.json \
+            --source-binding /tmp/contexts/HJ-pfc-binding.json \
+            --source-repository /tmp/contexts/CO-repository-pfc.json \
+            --source-binding /tmp/contexts/CO-pfc-binding.json \
+            --source-repository /tmp/contexts/SB-repository-pfc.json \
+            --source-binding /tmp/contexts/SB-pfc-binding.json \
+            --repository-out /tmp/final/HERO_RANGE_REPOSITORY_PFPC.json \
+            --policy-binding-out /tmp/final/POLICY_CONTEXT_BINDING.json \
+            --summary-out /tmp/final/MERGE_SUMMARY.json \
+            --run-id "$RUN_ID"
+      - name: Validate editor and PFPC runtime contracts before reading any holdout result
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          const H=require('./site/hero-ranges.js');
+          const repo=JSON.parse(fs.readFileSync('/tmp/final/HERO_RANGE_REPOSITORY_PFPC.json','utf8'));
+          H.validateRepository(repo);
+          const stats=H.repositoryStats(repo);
+          if(stats.contexts!==5||stats.personal_defined_hands!==0||stats.calculated_defined_hands<=0)throw new Error(JSON.stringify(stats));
+          console.log(stats);
+          JS
+          PYTHONPATH=. python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from tools.simulation.hero_preflop_overlay import ExactHeroPreflopOverlayPolicy
+          class Dummy:
+              identity={'fixture':'reference'}
+              def decide(self,*args,**kwargs): return {'action':'FOLD'}
+          repo=Path('/tmp/final/HERO_RANGE_REPOSITORY_PFPC.json')
+          binding=Path('/tmp/final/POLICY_CONTEXT_BINDING.json')
+          policy=ExactHeroPreflopOverlayPolicy.from_path(repo,reference_policy=Dummy(),candidate_id='issue-107-multiposition',policy_binding_path=binding)
+          identity=policy.identity()
+          assert identity['matching']=='EXACT_POLICY_CONTEXT_AND_169_HAND_CLASS_ONLY'
+          assert identity['nearest_context_substitution'] is False
+          assert len(identity['policy_contexts'])==5
+          doc=json.loads(binding.read_text())
+          assert {row['actor_position'] for row in doc['bindings'].values()}=={'LJ','HJ','CO','BTN','SB'}
+          assert {row['family'] for row in doc['bindings'].values()}=={'UNOPENED'}
+          assert {row['effective_stack_bucket'] for row in doc['bindings'].values()}=={'GT75_LE125'}
+          assert all(row['supported_hand_classes']>0 for row in doc['bindings'].values())
+          print(json.dumps(identity,indent=2,sort_keys=True,default=str))
+          PY
+      - name: Persist scientific generation result manifest
+        run: |
+          GITHUB_SHA="$GITHUB_SHA" PYTHONPATH=. python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          final=Path('/tmp/final'); contexts=Path('/tmp/contexts')
+          binding=json.loads((final/'POLICY_CONTEXT_BINDING.json').read_text())
+          merge=json.loads((final/'MERGE_SUMMARY.json').read_text())
+          per_position={}
+          total_rollouts=0
+          for position in ['LJ','HJ','CO','SB']:
+              run=json.loads((contexts/f'{position}-enriched-run.json').read_text())
+              cov=run['coverage']
+              assert cov['requested']==169 and cov['accounted']==169
+              assert cov['completed']>0
+              assert run['provenance']['sizing_support']['filters']['split']=='TRAIN'
+              assert run['provenance']['sizing_support']['filters']['is_hero'] is False
+              budget=run['provenance']['budget']
+              assert budget['samples_per_nonfold_candidate']==16
+              total_rollouts+=int(budget['rollout_samples_consumed'])
+              per_position[position]={
+                  'supported':int(cov['completed']),
+                  'unsupported':int(cov['unsupported']),
+                  'rollout_samples_consumed':int(budget['rollout_samples_consumed']),
+                  'pfc_id':run['context_id'],
+                  'decision_run_sha256':hashlib.sha256((contexts/f'{position}-enriched-run.json').read_bytes()).hexdigest(),
+                  'pfc_binding_sha256':hashlib.sha256((contexts/f'{position}-pfc-binding.json').read_bytes()).hexdigest(),
+              }
+          btn_source=next(row for row in merge['sources'] if row['actor_position']=='BTN')
+          per_position['BTN']={
+              'supported':int(btn_source['supported_hand_classes']),
+              'unsupported':int(btn_source['unsupported_hand_classes']),
+              'pfc_id':btn_source['preflop_context_id'],
+              'source_run_id':btn_source['source_run_id'],
+              'reused_immutable_source':True,
+          }
+          repo=final/'HERO_RANGE_REPOSITORY_PFPC.json'; policy=final/'POLICY_CONTEXT_BINDING.json'
+          result={
+              'schema':'poker-hero-unopened-multiposition-generation-result/v1',
+              'issue':107,
+              'run_id':os.environ['RUN_ID'],
+              'status':'EXPERIMENTAL',
+              'decision':'ACCEPT_PARTIAL_UNOPENED_MULTIPOSITION_PFPC_FOR_VALIDATION_RETRY',
+              'promotion_authorized':False,
+              'population_id':'pokerstars_nlhe_100-200_zoom_play_6max_v1',
+              'positions':['LJ','HJ','CO','BTN','SB'],
+              'spot':'UNOPENED',
+              'representative_stack_bb':100.0,
+              'policy_stack_bucket':'GT75_LE125',
+              'policy_contexts':len(binding['bindings']),
+              'matching':'EXACT_PFPC_AND_169_HAND_CLASS_ONLY',
+              'nearest_context_substitution':False,
+              'code_sha':os.environ['GITHUB_SHA'],
+              'budget':{
+                  'new_context_master_seed':20260917,
+                  'new_context_samples_per_nonfold_candidate':16,
+                  'new_context_positions':['LJ','HJ','CO','SB'],
+                  'new_context_rollout_samples_consumed':total_rollouts,
+                  'btn_source':'REUSED_IMMUTABLE_20260917_hero_preflop_169_btn_unopened_pfc_v1',
+              },
+              'coverage':per_position,
+              'artifacts':{
+                  'hero_range_repository_pfpc_sha256':hashlib.sha256(repo.read_bytes()).hexdigest(),
+                  'policy_context_binding_sha256':hashlib.sha256(policy.read_bytes()).hexdigest(),
+                  'merge_summary_sha256':hashlib.sha256((final/'MERGE_SUMMARY.json').read_bytes()).hexdigest(),
+              },
+              'selection_boundary':{'validation_consumed':False,'test_consumed':False},
+              'handoff_to_issue_108':{
+                  'authorized':'VALIDATION_RETRY_ONLY_AFTER_THIS_CANDIDATE_IS_PERSISTED_AND_FROZEN',
+                  'test_authorized':False,
+                  'production_authorized':False,
+              },
+              'interpretation_limits':[
+                  'This candidate covers only UNOPENED states in the GT75_LE125 stack bucket and falls back explicitly elsewhere.',
+                  'Partial per-hand Model-A support remains visible; no unsupported hand is fabricated.',
+                  'No VALIDATION or TEST performance result was used to choose these actions or sizings.'
+              ],
+          }
+          (final/'RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-unopened-multiposition-pfpc-${{ github.sha }}
+          path: |
+            /tmp/final/HERO_RANGE_REPOSITORY_PFPC.json
+            /tmp/final/POLICY_CONTEXT_BINDING.json
+            /tmp/final/MERGE_SUMMARY.json
+            /tmp/final/RESULT.json
+            /tmp/contexts/LJ-enriched-run.json
+            /tmp/contexts/LJ-pfc-binding.json
+            /tmp/contexts/HJ-enriched-run.json
+            /tmp/contexts/HJ-pfc-binding.json
+            /tmp/contexts/CO-enriched-run.json
+            /tmp/contexts/CO-pfc-binding.json
+            /tmp/contexts/SB-enriched-run.json
+            /tmp/contexts/SB-pfc-binding.json
+          if-no-files-found: error
+          retention-days: 30
