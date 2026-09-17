@@ -62,6 +62,8 @@ with sync_playwright() as p:
           const stepIndex = state.replaySteps.findIndex(s => s.activePlayer === hand.heroName && s.street === 'Préflop' && s.actionType === 'raise');
           if (stepIndex < 0) throw new Error('Hero replay decision missing');
           state.replayIndex = stepIndex;
+          state.appView = 'replayer';
+          if (typeof updateAppView === 'function') updateAppView();
           R.invalidate();
           const evaluated = R.currentEvaluation(hand, repo).result;
           return {
