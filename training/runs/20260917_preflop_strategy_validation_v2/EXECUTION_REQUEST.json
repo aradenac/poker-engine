@@ -1,0 +1,14 @@
+{
+  "schema": "poker-preflop-strategy-validation-execution-request/v1",
+  "issue": 108,
+  "phase": "VALIDATION",
+  "contract": "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json",
+  "contract_version": "2026-09-17.1",
+  "candidate_binding": "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/PFC_BINDING.json",
+  "workflow": ".github/workflows/preflop-strategy-validation-v2.yml",
+  "master_seed": 20260917,
+  "test_authorized": false,
+  "test_consumed": false,
+  "promotion_authorized": false,
+  "purpose": "Trigger the already-frozen #108 VALIDATION execution. This request changes no experiment threshold, model, scenario rule, candidate strategy, or promotion rule."
+}
