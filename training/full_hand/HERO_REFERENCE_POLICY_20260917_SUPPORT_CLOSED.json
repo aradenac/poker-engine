@@ -1,0 +1,66 @@
+{
+  "schema": "poker-hero-reference-policy/v1",
+  "version": "2026-09-17.2",
+  "status": "FROZEN_BEFORE_REPLACEMENT_VALIDATION_RESULTS",
+  "related_issue": 108,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "purpose": "Replacement full-hand comparison baseline after immutable v2 execution proved that exact Model A alone does not cover every postflop arena state. Model A remains authoritative wherever an exact node exists; unsupported Hero nodes use one shared deterministic legality-only closure in both benchmark arms.",
+  "supersedes_for_future_execution": "training/full_hand/HERO_REFERENCE_POLICY_20260917.json",
+  "supersession_evidence": "training/runs/20260917_preflop_strategy_validation_v2_blocked/RESULT.json",
+  "runtime": {
+    "module": "tools.simulation.reference_support_closure",
+    "class": "SupportClosedModelAReferencePolicy",
+    "delegate_module": "tools.simulation.model_a_continuation",
+    "delegate_class": "ModelAContinuationPolicy",
+    "decision_schema": "model-a-continuation-decision/v1 when exact; legality-only benchmark closure otherwise",
+    "exact_context_policy": "USE_EXACT_MODEL_A_WHEN_AVAILABLE",
+    "unsupported_context_policy": "CHECK_THEN_CALL_THEN_FOLD_V1",
+    "nearest_context_substitution": false,
+    "action_sampling": "unchanged deterministic Model-A weighted sampling on exact nodes; deterministic closure only on unsupported exact nodes",
+    "sizing": "unchanged exact-node empirical sizing when Model A supports the decision; support closure never raises"
+  },
+  "support_closure": {
+    "trigger": "ModelAUnsupportedContext only",
+    "action_priority": ["CHECK", "CALL", "FOLD"],
+    "shared_by_reference_and_candidate": true,
+    "count_every_use": true,
+    "report_by_street": true,
+    "optimization_claim": "NONE",
+    "nearest_context_substitution": false,
+    "rationale": "The comparison targets the preflop policy difference. A common deterministic continuation closure prevents unequal missing-node treatment while retaining Model A on every exact supported node."
+  },
+  "artifacts": {
+    "preflop_model": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "postflop_baseline": {
+      "path": "training/models/postflop_population_model_v5.json",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    },
+    "postflop_selected_overlay": {
+      "path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+      "sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d"
+    },
+    "selection_evidence": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json"
+  },
+  "selection_provenance": {
+    "preflop_model": "Issue #101 retained the v5 production preflop model after the candidate failed its scientific gate.",
+    "postflop_continuation": "Issue #102 selected the persisted continuation overlay on VALIDATION with TEST unconsumed.",
+    "support_closure": "Added only after the first frozen #108 v2 execution failed on a missing exact postflop Model-A node before any environment report or strategy selection existed.",
+    "test_consumed_for_reference_selection": false
+  },
+  "candidate_comparison": {
+    "candidate_source_issue": 107,
+    "candidate_change_under_test": "Hero preflop action/sizing policy only",
+    "candidate_exact_context_rule": "Use a #107 calculated decision only when its canonical preflop context and hand class match exactly.",
+    "candidate_out_of_support_rule": "Fall back to this frozen support-closed reference policy and record the decision as out-of-support; never invent or nearest-neighbor a calculated Hero range.",
+    "postflop_rule": "Reference and candidate use separate instances of this identical support-closed continuation after the preflop street, so missing exact nodes receive the same deterministic treatment contract."
+  },
+  "interpretation_limits": [
+    "This is a benchmark reference, not the promoted v83 production preflop strategy and not an optimal Hero strategy.",
+    "Support-closure decisions are not learned poker recommendations; their frequency must be reported with every environment result.",
+    "The candidate-minus-reference result is conditional on this explicit continuation closure and the certified Zoom population.",
+    "A high closure rate weakens external validity and must be disclosed rather than hidden or replaced by nearest-context matching."
+  ]
+}
