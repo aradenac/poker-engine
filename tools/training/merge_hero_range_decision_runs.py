@@ -2,8 +2,9 @@
 """Merge deterministic #107 partial decision runs into one immutable 169 run.
 
 Each shard must come from the same context, models, seed, sizing evidence and
-selection contract. Only the per-shard budget/coverage may differ. Duplicate or
-missing hand classes fail closed.
+selection contract. Only the per-shard budget/coverage may differ. Every one of
+the 169 hand classes must be represented exactly once, either by a completed
+decision row or by an explicit unsupported record. No silent hole is allowed.
 """
 from __future__ import annotations
 
@@ -48,48 +49,77 @@ def merge_runs(runs: Sequence[dict[str, Any]], *, require_complete: bool = True)
             raise ValueError(f"shard {index}: run identity/provenance mismatch")
 
     rows_by_hand: dict[str, dict[str, Any]] = {}
-    unsupported: list[dict[str, Any]] = []
+    unsupported_by_hand: dict[str, dict[str, Any]] = {}
     requested = 0
     total_rollouts = 0
     samples: set[int] = set()
     for index, run in enumerate(runs):
         coverage = run.get("coverage") or {}
-        requested += int(coverage.get("requested") or 0)
-        unsupported.extend(copy.deepcopy(run.get("unsupported") or []))
+        shard_requested = int(coverage.get("requested") or 0)
+        shard_rows = list(run.get("rows") or [])
+        shard_unsupported = list(run.get("unsupported") or [])
+        if shard_requested != len(shard_rows) + len(shard_unsupported):
+            raise ValueError(
+                f"shard {index}: requested={shard_requested} but "
+                f"completed+unsupported={len(shard_rows) + len(shard_unsupported)}"
+            )
+        requested += shard_requested
         budget = (run.get("provenance") or {}).get("budget") or {}
         samples.add(int(budget.get("samples_per_nonfold_candidate") or 0))
         total_rollouts += int(budget.get("rollout_samples_consumed") or 0)
-        for row in run.get("rows") or []:
+
+        for row in shard_rows:
             hand = str(row.get("hand_class") or "")
             if hand not in HAND_CLASSES:
                 raise ValueError(f"shard {index}: unknown hand class {hand!r}")
-            if hand in rows_by_hand:
+            if hand in rows_by_hand or hand in unsupported_by_hand:
                 raise ValueError(f"duplicate hand class across shards: {hand}")
             rows_by_hand[hand] = copy.deepcopy(row)
+
+        for item in shard_unsupported:
+            hand = str(item.get("hand_class") or "")
+            reason = str(item.get("reason") or "").strip()
+            if hand not in HAND_CLASSES:
+                raise ValueError(f"shard {index}: unknown unsupported hand class {hand!r}")
+            if not reason:
+                raise ValueError(f"shard {index}: unsupported {hand} has no reason")
+            if hand in rows_by_hand or hand in unsupported_by_hand:
+                raise ValueError(f"duplicate hand class across shards: {hand}")
+            unsupported_by_hand[hand] = {"hand_class": hand, "reason": reason}
 
     if samples == {0} or len(samples) != 1:
         raise ValueError(f"shards disagree on samples_per_nonfold_candidate: {sorted(samples)}")
     if requested != len(HAND_CLASSES):
         raise ValueError(f"shard request coverage must partition exactly 169 classes, got {requested}")
 
-    missing = [hand for hand in HAND_CLASSES if hand not in rows_by_hand]
-    if require_complete and (missing or unsupported):
+    accounted = set(rows_by_hand) | set(unsupported_by_hand)
+    missing = [hand for hand in HAND_CLASSES if hand not in accounted]
+    if missing:
+        raise ValueError(f"169 merge has silent missing classes: {missing[:12]}")
+    if len(accounted) != len(HAND_CLASSES):
+        raise AssertionError("accounted Hero hand classes must total exactly 169")
+    if require_complete and unsupported_by_hand:
+        examples = [unsupported_by_hand[hand] for hand in HAND_CLASSES if hand in unsupported_by_hand][:3]
         raise ValueError(
-            f"incomplete 169 merge: missing={len(missing)} unsupported={len(unsupported)} "
-            f"examples={missing[:8] or unsupported[:3]}"
+            f"incomplete 169 merge: unsupported={len(unsupported_by_hand)} examples={examples}"
         )
 
     merged = copy.deepcopy(runs[0])
     merged["rows"] = [rows_by_hand[hand] for hand in HAND_CLASSES if hand in rows_by_hand]
-    merged["unsupported"] = unsupported
+    merged["unsupported"] = [
+        unsupported_by_hand[hand] for hand in HAND_CLASSES if hand in unsupported_by_hand
+    ]
     merged["coverage"] = {
         "requested": len(HAND_CLASSES),
         "completed": len(merged["rows"]),
-        "complete_169": len(merged["rows"]) == len(HAND_CLASSES) and not unsupported,
+        "unsupported": len(merged["unsupported"]),
+        "accounted": len(merged["rows"]) + len(merged["unsupported"]),
+        "complete_169": len(merged["rows"]) == len(HAND_CLASSES) and not merged["unsupported"],
     }
     merged["provenance"]["budget"] = {
         "requested_hand_classes": len(HAND_CLASSES),
         "completed_hand_classes": len(merged["rows"]),
+        "unsupported_hand_classes": len(merged["unsupported"]),
         "samples_per_nonfold_candidate": samples.pop(),
         "rollout_samples_consumed": total_rollouts,
         "execution": "deterministic hand-class shards merged without changing per-hand seeds",
