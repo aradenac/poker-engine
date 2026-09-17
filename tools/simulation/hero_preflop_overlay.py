@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Exact #107 Hero preflop overlay for the frozen #108 full-hand benchmark.
+"""Calculated Hero preflop overlay for the frozen full-hand benchmark.
 
-The candidate is deliberately narrow: a calculated Hero strategy is used only
-when both the canonical card-free PFC context and the 169 hand class match an
-entry in the immutable #107 repository. Every other Hero decision delegates to
-the frozen Model-A reference. No nearest-context or stack/position backoff is
-permitted.
+Two matching modes are supported:
+
+* legacy/existing exact PFC + 169 hand class;
+* explicit PFPC binding + 169 hand class, where PFPC is the versioned bucketed
+  public-state policy contract from :mod:`tools.preflop.policy_context`.
+
+PFPC matching is not nearest-context substitution. A live state either maps to
+one exact frozen PFPC binding or falls back to the reference policy. The editor
+repository remains ``poker-hero-range-repository/v1`` and keeps its exact source
+PFC provenance; the separate binding records which source range is authorized
+for each PFPC policy state.
 """
 from __future__ import annotations
 
@@ -18,6 +24,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from tools.preflop.context_contract import build_context
+from tools.preflop.policy_context import SCHEMA as POLICY_CONTEXT_SCHEMA, build_policy_context
 from tools.simulation.game_core import EPS, NoLimitHoldemState, RuleError
 from tools.simulation.model_a_continuation import (
     ModelAContinuationPolicy,
@@ -30,6 +37,7 @@ from tools.simulation.model_b_runtime import combo_class, weighted_choice
 ROOT = Path(__file__).resolve().parents[2]
 REPOSITORY_SCHEMA = "poker-hero-range-repository/v1"
 PFC_SCHEMA = "poker-preflop-context/v1"
+POLICY_BINDING_SCHEMA = "poker-hero-policy-context-binding/v1"
 
 
 def sha256_file(path: Path) -> str:
@@ -108,7 +116,7 @@ def _candidate_index(repository: Mapping[str, Any]) -> dict[str, dict[str, Any]]
         context = dict(node.get("context") or {})
         pfc_id = str(context.get("preflop_context_id") or "")
         if not pfc_id:
-            raise ValueError("#108 candidate repository requires preflop_context_id on every context")
+            raise ValueError("benchmark candidate repository requires preflop_context_id on every context")
         if pfc_id in index:
             raise ValueError(f"duplicate candidate canonical context {pfc_id}")
         calculated = ((node.get("layers") or {}).get("calculated") or {})
@@ -117,6 +125,52 @@ def _candidate_index(repository: Mapping[str, Any]) -> dict[str, dict[str, Any]]
             raise ValueError(f"candidate context {pfc_id} has invalid calculated hand map")
         index[pfc_id] = {"context": context, "hands": dict(hands)}
     return index
+
+
+def _binding_index(
+    binding: Mapping[str, Any] | None,
+    *,
+    repository_sha256: str,
+    candidate_index: Mapping[str, Any],
+) -> dict[str, dict[str, Any]] | None:
+    if binding is None:
+        return None
+    if binding.get("schema") != POLICY_BINDING_SCHEMA:
+        raise ValueError(f"expected {POLICY_BINDING_SCHEMA}, got {binding.get('schema')!r}")
+    if binding.get("policy_context_schema") != POLICY_CONTEXT_SCHEMA:
+        raise ValueError("Hero policy binding references an unsupported policy-context schema")
+    bound_sha = str(binding.get("repository_sha256") or "")
+    if bound_sha and bound_sha != repository_sha256:
+        raise ValueError("Hero policy binding repository SHA-256 mismatch")
+    raw = binding.get("bindings")
+    if not isinstance(raw, Mapping) or not raw:
+        raise ValueError("Hero policy binding contains no bindings")
+    out: dict[str, dict[str, Any]] = {}
+    for policy_context_id, row0 in raw.items():
+        policy_context_id = str(policy_context_id)
+        if not policy_context_id.startswith("PFPC_"):
+            raise ValueError(f"invalid policy context id {policy_context_id!r}")
+        row = dict(row0 or {})
+        source_pfc = str(row.get("preflop_context_id") or "")
+        if source_pfc not in candidate_index:
+            raise ValueError(
+                f"policy context {policy_context_id} binds missing repository context {source_pfc!r}"
+            )
+        if policy_context_id in out:
+            raise ValueError(f"duplicate policy context binding {policy_context_id}")
+        row["preflop_context_id"] = source_pfc
+        out[policy_context_id] = row
+    return out
+
+
+def _load_binding(path: Path | None) -> tuple[dict[str, Any] | None, str | None]:
+    if path is None:
+        return None, None
+    source = Path(path)
+    document = json.loads(source.read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        raise ValueError("Hero policy binding must be a JSON object")
+    return document, sha256_file(source)
 
 
 def _choose_weighted(mapping: Mapping[str, Any], *seed_parts: object) -> str:
@@ -145,7 +199,7 @@ def _choose_sizing(rows: Sequence[Mapping[str, Any]], *seed_parts: object) -> fl
 
 
 class ExactHeroPreflopOverlayPolicy:
-    """Exact PFC+hand candidate overlay with frozen-reference fallback."""
+    """Exact PFC/PFPC + hand candidate overlay with frozen-reference fallback."""
 
     def __init__(
         self,
@@ -154,12 +208,21 @@ class ExactHeroPreflopOverlayPolicy:
         repository_sha256: str,
         reference_policy,
         candidate_id: str,
+        policy_binding: Mapping[str, Any] | None = None,
+        policy_binding_sha256: str | None = None,
     ) -> None:
         self.repository = copy.deepcopy(dict(repository))
         self.repository_sha256 = str(repository_sha256)
         self.reference_policy = reference_policy
         self.candidate_id = str(candidate_id)
         self.index = _candidate_index(self.repository)
+        self.policy_binding = None if policy_binding is None else copy.deepcopy(dict(policy_binding))
+        self.policy_binding_sha256 = None if policy_binding_sha256 is None else str(policy_binding_sha256)
+        self.binding_index = _binding_index(
+            self.policy_binding,
+            repository_sha256=self.repository_sha256,
+            candidate_index=self.index,
+        )
         self.policy_id = f"hero-pfc-overlay:{self.candidate_id}"
         self._audit: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
 
@@ -170,24 +233,37 @@ class ExactHeroPreflopOverlayPolicy:
         *,
         reference_policy,
         candidate_id: str,
+        policy_binding_path: Path | None = None,
     ) -> "ExactHeroPreflopOverlayPolicy":
         path = Path(repository_path)
+        repository_sha = sha256_file(path)
+        binding, binding_sha = _load_binding(policy_binding_path)
         return cls(
             _load_repository(path),
-            repository_sha256=sha256_file(path),
+            repository_sha256=repository_sha,
             reference_policy=reference_policy,
             candidate_id=candidate_id,
+            policy_binding=binding,
+            policy_binding_sha256=binding_sha,
         )
 
     def identity(self) -> dict[str, Any]:
+        bound = self.binding_index is not None
         return {
             "schema": "poker-hero-pfc-overlay-policy/v1",
             "candidate_id": self.candidate_id,
             "candidate_repository_sha256": self.repository_sha256,
-            "matching": "EXACT_PFC_AND_169_HAND_CLASS_ONLY",
+            "matching": (
+                "EXACT_POLICY_CONTEXT_AND_169_HAND_CLASS_ONLY"
+                if bound
+                else "EXACT_PFC_AND_169_HAND_CLASS_ONLY"
+            ),
             "out_of_support": "FROZEN_REFERENCE_FALLBACK",
             "nearest_context_substitution": False,
             "candidate_contexts": sorted(self.index),
+            "policy_context_schema": POLICY_CONTEXT_SCHEMA if bound else None,
+            "policy_context_binding_sha256": self.policy_binding_sha256,
+            "policy_contexts": sorted(self.binding_index) if bound else [],
             "reference": getattr(self.reference_policy, "identity", None),
         }
 
@@ -226,6 +302,30 @@ class ExactHeroPreflopOverlayPolicy:
         }
         return decision
 
+    def _resolve_candidate_node(
+        self,
+        pfc: Mapping[str, Any],
+    ) -> tuple[dict[str, Any] | None, dict[str, Any], str | None]:
+        live_pfc_id = str(pfc["context_id"])
+        if self.binding_index is None:
+            node = self.index.get(live_pfc_id)
+            if node is None:
+                return None, {}, f"PFC_OUT_OF_SUPPORT:{live_pfc_id}"
+            return node, {"preflop_context_id": live_pfc_id}, None
+
+        policy_context = build_policy_context(pfc)
+        policy_context_id = str(policy_context["policy_context_id"])
+        binding = self.binding_index.get(policy_context_id)
+        if binding is None:
+            return None, {}, f"PFPC_OUT_OF_SUPPORT:{policy_context_id}"
+        source_pfc = str(binding["preflop_context_id"])
+        node = self.index[source_pfc]
+        return node, {
+            "policy_context_id": policy_context_id,
+            "source_preflop_context_id": source_pfc,
+            "live_preflop_context_id": live_pfc_id,
+        }, None
+
     def decide(
         self,
         state: NoLimitHoldemState,
@@ -241,13 +341,13 @@ class ExactHeroPreflopOverlayPolicy:
         self._record(scenario_id, "hero_preflop_decisions")
         actor = str(context["actor"])
         pfc = canonical_preflop_context(state, actor)
-        candidate_node = self.index.get(str(pfc["context_id"]))
+        candidate_node, match_evidence, miss_reason = self._resolve_candidate_node(pfc)
         if candidate_node is None:
             return self._fallback(
                 state,
                 scenario_id=scenario_id,
                 seed_parts=seed_parts,
-                reason=f"PFC_OUT_OF_SUPPORT:{pfc['context_id']}",
+                reason=str(miss_reason),
                 **context,
             )
 
@@ -289,16 +389,24 @@ class ExactHeroPreflopOverlayPolicy:
             raise RuleError(
                 f"exact candidate action {action}/{core_action} is illegal in {pfc['context_id']}; legal={sorted(legal)}"
             )
+        if target is not None and core_action == "RAISE":
+            minimum = view["min_raise_to_bb"]
+            maximum = float(view["max_raise_to_bb"])
+            if target > maximum + 1e-6:
+                raise RuleError(f"candidate target {target} exceeds legal all-in {maximum}")
+            if minimum is not None and target + 1e-6 < float(minimum) and abs(target - maximum) > 1e-6:
+                raise RuleError(f"candidate target {target} below legal minimum {minimum}")
         self._record(scenario_id, "candidate_supported_decisions")
+        evidence = {
+            "candidate_id": self.candidate_id,
+            "supported": True,
+            "hand_class": hand,
+            "repository_action": action,
+            **match_evidence,
+        }
         return {
             "schema": "poker-hero-pfc-overlay-decision/v1",
             "action": core_action,
             "target_total_bb": target,
-            "benchmark_candidate": {
-                "candidate_id": self.candidate_id,
-                "supported": True,
-                "preflop_context_id": pfc["context_id"],
-                "hand_class": hand,
-                "repository_action": action,
-            },
+            "benchmark_candidate": evidence,
         }
