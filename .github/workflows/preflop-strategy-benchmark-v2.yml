@@ -8,8 +8,12 @@ on:
       - 'training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json'
       - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json'
       - 'tools/simulation/model_b_sensitivity.py'
+      - 'tools/simulation/hero_preflop_overlay.py'
+      - 'tools/simulation/preflop_strategy_benchmark_v2.py'
       - 'tools/training/validate_preflop_strategy_benchmark_v2.py'
       - 'tests/simulation/test_model_b_sensitivity.py'
+      - 'tests/simulation/test_hero_preflop_overlay.py'
+      - 'tests/simulation/test_preflop_strategy_benchmark_v2_execution.py'
       - 'tests/training/test_preflop_strategy_benchmark_v2.py'
       - '.github/workflows/preflop-strategy-benchmark-v2.yml'
   push:
@@ -20,8 +24,12 @@ on:
       - 'training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json'
       - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json'
       - 'tools/simulation/model_b_sensitivity.py'
+      - 'tools/simulation/hero_preflop_overlay.py'
+      - 'tools/simulation/preflop_strategy_benchmark_v2.py'
       - 'tools/training/validate_preflop_strategy_benchmark_v2.py'
       - 'tests/simulation/test_model_b_sensitivity.py'
+      - 'tests/simulation/test_hero_preflop_overlay.py'
+      - 'tests/simulation/test_preflop_strategy_benchmark_v2_execution.py'
       - 'tests/training/test_preflop_strategy_benchmark_v2.py'
       - '.github/workflows/preflop-strategy-benchmark-v2.yml'
 
@@ -41,6 +49,8 @@ jobs:
         run: |
           python3 -m py_compile \
             tools/simulation/model_b_sensitivity.py \
+            tools/simulation/hero_preflop_overlay.py \
+            tools/simulation/preflop_strategy_benchmark_v2.py \
             tools/training/validate_preflop_strategy_benchmark_v2.py
       - name: Verify frozen reference artifact hashes
         run: |
@@ -60,9 +70,11 @@ jobs:
           PY
       - name: Validate frozen v2 experiment design
         run: PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_v2.py
-      - name: Run v2 contract tests
+      - name: Run v2 contract and execution tests
         run: |
           PYTHONPATH=. python3 tests/simulation/test_model_b_sensitivity.py
+          PYTHONPATH=. python3 tests/simulation/test_hero_preflop_overlay.py
+          PYTHONPATH=. python3 tests/simulation/test_preflop_strategy_benchmark_v2_execution.py
           PYTHONPATH=. python3 tests/training/test_preflop_strategy_benchmark_v2.py
       - name: Prove this workflow cannot consume strategy holdouts
         run: |
