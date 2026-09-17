@@ -1,0 +1,48 @@
+{
+  "schema": "poker-hero-reference-policy/v1",
+  "version": "2026-09-17.1",
+  "status": "FROZEN_BEFORE_STRATEGY_RESULTS",
+  "related_issue": 108,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "purpose": "Reproducible population-derived Hero comparison baseline for the preflop strategy benchmark. This is not the promoted v83 production strategy and must not be described as one.",
+  "runtime": {
+    "module": "tools.simulation.model_a_continuation",
+    "class": "ModelAContinuationPolicy",
+    "decision_schema": "model-a-continuation-decision/v1",
+    "exact_context_policy": "FAIL_CLOSED_ON_MISSING_EXACT_NODE",
+    "action_sampling": "deterministic weighted sampling from exact-node probabilities under the scenario Hero RNG stream",
+    "sizing": "exact-node empirical sizing; JAM uses the legal all-in boundary"
+  },
+  "artifacts": {
+    "preflop_model": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "postflop_baseline": {
+      "path": "training/models/postflop_population_model_v5.json",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    },
+    "postflop_selected_overlay": {
+      "path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+      "sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d"
+    },
+    "selection_evidence": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json"
+  },
+  "selection_provenance": {
+    "preflop_model": "Issue #101 retained the v5 production preflop model after the candidate failed its scientific gate.",
+    "postflop_continuation": "Issue #102 selected the persisted continuation overlay on VALIDATION with TEST unconsumed.",
+    "test_consumed_for_reference_selection": false
+  },
+  "candidate_comparison": {
+    "candidate_source_issue": 107,
+    "candidate_change_under_test": "Hero preflop action/sizing policy only",
+    "candidate_exact_context_rule": "Use a #107 calculated decision only when its canonical preflop context and hand class match exactly.",
+    "candidate_out_of_support_rule": "Fall back to this frozen reference policy and record the decision as out-of-support; never invent or nearest-neighbor a calculated Hero range.",
+    "postflop_rule": "Reference and candidate use this same selected Model A continuation after the preflop street, so the paired comparison isolates the preflop policy change."
+  },
+  "interpretation_limits": [
+    "The reference samples a population-derived Model A policy and is not claimed to be an optimal Hero strategy.",
+    "The reference is not the promoted v83 preflop strategy: v83 has no validated autonomous preflop EV tree for the full OPEN/CALL/3BET/4BET/JAM action set.",
+    "A candidate beating this reference in simulation establishes only a conditional benchmark result under the frozen population and Model B sensitivity environments."
+  ]
+}

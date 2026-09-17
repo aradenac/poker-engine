@@ -1,0 +1,141 @@
+{
+  "schema": "poker-preflop-strategy-benchmark-contract/v2",
+  "contract_version": "2026-09-17.1",
+  "status": "FROZEN_BEFORE_CANDIDATE_RESULTS",
+  "related_issue": 108,
+  "extends_protocol": "training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+  "supersedes_for_future_execution": "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260915.json",
+  "supersession_reason": "The v1 contract requires an autonomous promoted-v83 preflop policy, but frozen v83 explicitly lacks a validated EV tree for the complete CALL/3BET/4BET/JAM preflop action set. Fabricating a v83 fallback is forbidden by v1. No #108 VALIDATION or TEST strategy result was consumed before this revision.",
+  "change_policy": "Never edit this contract after candidate strategy results are inspected. Any semantic change requires a new immutable version/file committed before the affected experiment.",
+  "population": {
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "cross_population_generalization_forbidden": true
+  },
+  "reference_policy": {
+    "kind": "POPULATION_DERIVED_REFERENCE_NOT_PRODUCTION_INCUMBENT",
+    "descriptor": "training/full_hand/HERO_REFERENCE_POLICY_20260917.json",
+    "runtime": "tools.simulation.model_a_continuation.ModelAContinuationPolicy",
+    "exact_context_missing": "BLOCKED_FOR_REFERENCE_DECISION",
+    "postflop_shared_with_candidate": true,
+    "v83_autonomous_preflop_claim": false
+  },
+  "candidate_policy": {
+    "source_issue": 107,
+    "artifact_kind": "poker-hero-calculated-range-candidate/v1",
+    "immutable_artifact_sha256_required": true,
+    "source_commit_required": true,
+    "decision_contract": "poker-preflop-decision/v1",
+    "canonical_context_contract": "poker-preflop-context/v1",
+    "exact_context_and_hand_match_required": true,
+    "out_of_support_behavior": "FALL_BACK_TO_FROZEN_REFERENCE_AND_COUNT_OUT_OF_SUPPORT",
+    "nearest_context_substitution_forbidden": true,
+    "must_be_frozen_before_validation_rollout": true,
+    "same_cycle_mutation_after_validation_starts_forbidden": true
+  },
+  "scenarios": {
+    "source_issue": 105,
+    "scenario_manifest_required": true,
+    "validation_base_hands": "ALL_CERTIFIED_VALIDATION_HANDS",
+    "test_base_hands": "ALL_CERTIFIED_TEST_HANDS",
+    "rollouts_per_base_hand": 2,
+    "paired_across_hero_policies": true,
+    "same_scenarios_across_model_b_environments": true,
+    "paired_fields": [
+      "hand_id",
+      "hole_cards_and_deck",
+      "button_and_seats",
+      "starting_stacks",
+      "opponent_profiles",
+      "opponent_random_streams",
+      "rake_semantics"
+    ],
+    "rng_streams_must_be_separate": [
+      "scenario_and_deck",
+      "opponent_policy_sampling",
+      "hero_policy",
+      "hero_monte_carlo_estimation"
+    ]
+  },
+  "environment_sensitivity": {
+    "descriptor": "training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json",
+    "minimum_environments": 3,
+    "required_roles": ["nominal", "lower_aggression", "higher_aggression"],
+    "base_model_b_source_issue": 104,
+    "base_artifact_sha256": "fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca",
+    "environment_identities_frozen_before_validation": true,
+    "automatic_promotion_requires_gate_pass_in_every_predeclared_environment": true
+  },
+  "statistics": {
+    "primary_metric": "bb_per_100_full_hands",
+    "paired_delta": "candidate_minus_reference",
+    "confidence_level": 0.95,
+    "cluster_unit": "hand_id",
+    "repeated_rollouts_clustered_by": "hand_id",
+    "bootstrap_samples": 5000,
+    "paired_comparison_required": true,
+    "point_estimate_alone_never_authorizes_promotion": true
+  },
+  "validation_selection": {
+    "split": "VALIDATION",
+    "test_data_visible": false,
+    "required_ci95_lower_bound_bb_per_100": 0.0,
+    "minimum_environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "if_no_candidate_passes": "RETAIN_REFERENCE",
+    "freeze_at_most_one_finalist": true,
+    "candidate_coverage_must_be_reported": true
+  },
+  "test_confirmation": {
+    "split": "TEST",
+    "authorized_only_for_frozen_validation_finalist": true,
+    "test_may_select_alternative": false,
+    "test_may_retune_candidate": false,
+    "test_may_change_thresholds": false,
+    "required_ci95_lower_bound_bb_per_100": 0.0,
+    "minimum_environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "failure_or_inconclusive_outcome": "RETAIN_REFERENCE",
+    "consumption_must_be_recorded_in": "training/full_hand/TEST_HOLDOUT_LEDGER.json"
+  },
+  "required_breakdowns": [
+    "position",
+    "preflop_family",
+    "limper_count",
+    "caller_count",
+    "stack_depth_bucket",
+    "players_to_flop",
+    "won_without_flop",
+    "all_in_preflop",
+    "jam_frequency",
+    "side_pot_frequency",
+    "out_of_support_decision_rate"
+  ],
+  "run_manifest_requirements": {
+    "required_before_any_promotion_eligible_rollout": [
+      "code_commit_sha",
+      "dataset_population_fingerprint_sha256",
+      "scenario_manifest_sha256",
+      "reference_descriptor_sha256",
+      "candidate_id",
+      "candidate_artifact_sha256",
+      "candidate_source_commit_sha",
+      "model_b_sensitivity_descriptor_sha256",
+      "model_b_base_artifact_sha256",
+      "model_b_environment_ids",
+      "master_seed",
+      "rollouts_per_base_hand",
+      "bootstrap_samples",
+      "validation_thresholds",
+      "test_thresholds"
+    ],
+    "missing_required_identity_status": "BLOCKED",
+    "results_must_be_immutable": true
+  },
+  "interpretation_limits": [
+    "The comparison baseline is a frozen population-derived Model A policy, not the v83 production preflop strategy and not an optimal Hero strategy.",
+    "Candidate-minus-reference BB/100 is conditional on the certified Zoom population, frozen full-hand simulator, and predeclared Model B sensitivity envelope.",
+    "Out-of-support candidate decisions fall back to the reference and must be reported; this dilutes measured candidate impact rather than inventing coverage.",
+    "Historical outcomes do not reveal counterfactual EV of unplayed Hero actions.",
+    "A favorable point estimate without the required clustered confidence bound in every environment does not authorize promotion.",
+    "TEST remains untouched unless VALIDATION freezes exactly one finalist."
+  ]
+}

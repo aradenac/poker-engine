@@ -1,0 +1,78 @@
+name: Validate preflop strategy benchmark v2
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'training/full_hand/HERO_REFERENCE_POLICY_20260917.json'
+      - 'training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json'
+      - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json'
+      - 'tools/simulation/model_b_sensitivity.py'
+      - 'tools/training/validate_preflop_strategy_benchmark_v2.py'
+      - 'tests/simulation/test_model_b_sensitivity.py'
+      - 'tests/training/test_preflop_strategy_benchmark_v2.py'
+      - '.github/workflows/preflop-strategy-benchmark-v2.yml'
+  push:
+    branches:
+      - 'issue-108-reference-baseline-v2-sol'
+    paths:
+      - 'training/full_hand/HERO_REFERENCE_POLICY_20260917.json'
+      - 'training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json'
+      - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json'
+      - 'tools/simulation/model_b_sensitivity.py'
+      - 'tools/training/validate_preflop_strategy_benchmark_v2.py'
+      - 'tests/simulation/test_model_b_sensitivity.py'
+      - 'tests/training/test_preflop_strategy_benchmark_v2.py'
+      - '.github/workflows/preflop-strategy-benchmark-v2.yml'
+
+concurrency:
+  group: preflop-strategy-benchmark-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile v2 runtime and validator
+        run: |
+          python3 -m py_compile \
+            tools/simulation/model_b_sensitivity.py \
+            tools/training/validate_preflop_strategy_benchmark_v2.py
+      - name: Verify frozen reference artifact hashes
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          descriptor=json.loads(Path('training/full_hand/HERO_REFERENCE_POLICY_20260917.json').read_text())
+          for key in ('preflop_model','postflop_baseline','postflop_selected_overlay'):
+              row=descriptor['artifacts'][key]
+              actual=hashlib.sha256(Path(row['path']).read_bytes()).hexdigest()
+              assert actual==row['sha256'], (key, actual, row['sha256'])
+          result=json.loads(Path('training/runs/20260915_model_b_card_aware_v1/RESULT.json').read_text())
+          expected=json.loads(Path('training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json').read_text())['base_reference']['artifact_sha256']
+          assert result['decision']=='RETAIN_PUBLIC_ONLY_REFERENCE_FOR_BEHAVIOR_COMPONENT'
+          assert result['test_consumed'] is False
+          assert result['candidate_artifacts']['public_reference_behavior.json']['sha256']==expected
+          PY
+      - name: Validate frozen v2 experiment design
+        run: PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_v2.py
+      - name: Run v2 contract tests
+        run: |
+          PYTHONPATH=. python3 tests/simulation/test_model_b_sensitivity.py
+          PYTHONPATH=. python3 tests/training/test_preflop_strategy_benchmark_v2.py
+      - name: Prove this workflow cannot consume strategy holdouts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('.github/workflows/preflop-strategy-benchmark-v2.yml').read_text()
+          marker='      - name: Prove this workflow cannot consume strategy holdouts'
+          contract_steps=text.split(marker,1)[0]
+          forbidden=['--split VALIDATION','--split TEST','run_full_hand(', 'build_manifest_from_archives(']
+          found=[token for token in forbidden if token in contract_steps]
+          assert not found, found
+          print('contract-only workflow: no #108 strategy holdout execution')
+          PY
