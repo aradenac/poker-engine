@@ -69,7 +69,10 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           text=Path('.github/workflows/preflop-strategy-benchmark-v2.yml').read_text()
+          marker='      - name: Prove this workflow cannot consume strategy holdouts'
+          contract_steps=text.split(marker,1)[0]
           forbidden=['--split VALIDATION','--split TEST','run_full_hand(', 'build_manifest_from_archives(']
-          assert not any(token in text for token in forbidden), forbidden
+          found=[token for token in forbidden if token in contract_steps]
+          assert not found, found
           print('contract-only workflow: no #108 strategy holdout execution')
           PY
