@@ -12,6 +12,7 @@
   const SPOTS=['UNOPENED','VS_LIMPERS','VS_RFI','VS_RFI_CALLERS','VS_3BET','VS_4BET','VS_JAM'];
   const RANKS=['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
   const EPS=1e-9;
+  const PREFLOP_CONTEXT_ID=/^PFC_[0-9a-f]{16}$/i;
 
   function deepClone(value){return value==null?value:JSON.parse(JSON.stringify(value));}
   function handClasses(){
@@ -38,17 +39,22 @@
     const spot=String(input.spot||'').toUpperCase();
     const effective_stack_bb=Number(input.effective_stack_bb);
     const table_size=Number(input.table_size??6);
+    const preflop_context_id=input.preflop_context_id==null?'':String(input.preflop_context_id).trim();
     if(!population_id)throw new Error('population_id is required');
     if(!POSITIONS.includes(position))throw new Error(`invalid position ${position}`);
     if(!SPOTS.includes(spot))throw new Error(`invalid spot ${spot}`);
     if(!Number.isFinite(effective_stack_bb)||effective_stack_bb<=0)throw new Error('effective_stack_bb must be positive');
     if(!Number.isInteger(table_size)||table_size<2||table_size>10)throw new Error('table_size must be 2..10');
-    return {population_id,table_size,position,effective_stack_bb:Number(effective_stack_bb.toFixed(3)),spot};
+    if(preflop_context_id&&!PREFLOP_CONTEXT_ID.test(preflop_context_id))throw new Error(`invalid preflop_context_id ${preflop_context_id}`);
+    const out={population_id,table_size,position,effective_stack_bb:Number(effective_stack_bb.toFixed(3)),spot};
+    if(preflop_context_id)out.preflop_context_id=preflop_context_id;
+    return out;
   }
 
   function contextKey(input){
     const c=normalizeContext(input);
-    return `${c.population_id}|${c.table_size}|${c.position}|${c.effective_stack_bb}|${c.spot}`;
+    const legacy=`${c.population_id}|${c.table_size}|${c.position}|${c.effective_stack_bb}|${c.spot}`;
+    return c.preflop_context_id?`${legacy}|${c.preflop_context_id}`:legacy;
   }
 
   function emptyLayer(kind){return {kind,version:null,provenance:null,hands:{}};}

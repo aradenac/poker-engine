@@ -25,6 +25,10 @@ with sync_playwright() as p:
         "!!window.PokerHeroCompliance && !!window.PokerHeroComplianceReplayer",
         timeout=15_000,
     )
+    # The application restores models/ranges asynchronously after DOMContentLoaded.
+    # Manipulating the global state before those fetches settle can be overwritten by
+    # the final initialization render and spuriously hide the compliance panel.
+    page.wait_for_load_state("networkidle", timeout=20_000)
 
     setup = page.evaluate(
         """({raw, population, storageKey}) => {
@@ -62,6 +66,8 @@ with sync_playwright() as p:
           const stepIndex = state.replaySteps.findIndex(s => s.activePlayer === hand.heroName && s.street === 'Préflop' && s.actionType === 'raise');
           if (stepIndex < 0) throw new Error('Hero replay decision missing');
           state.replayIndex = stepIndex;
+          state.appView = 'replayer';
+          if (typeof updateAppView === 'function') updateAppView();
           R.invalidate();
           const evaluated = R.currentEvaluation(hand, repo).result;
           return {
