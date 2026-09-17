@@ -37,11 +37,14 @@ class FakeBase:
     def sizing_candidates(self, state, **context):
         actor = context["actor"]
         view = state.legal_view(actor)
+        pot = float(view["pot_before_bb"])
+        paid = float(view["actor_street_contribution_bb"])
+        target = 3.0
         return {
             "candidates": [
                 {
-                    "incremental_cost_over_pot": 1.0,
-                    "target_total_bb": 3.0,
+                    "incremental_cost_over_pot": (target - paid) / pot,
+                    "target_total_bb": target,
                     "weight": 2.0,
                 }
             ],
@@ -103,6 +106,9 @@ def test_nominal_preserves_action_probabilities_and_sizing() -> None:
     sizing = p.sizing_candidates(state, **ctx)
     assert len(sizing["candidates"]) == 1
     assert sizing["candidates"][0]["target_total_bb"] == 3.0
+    view = state.legal_view("BTN")
+    expected_ratio = (3.0 - float(view["actor_street_contribution_bb"])) / float(view["pot_before_bb"])
+    assert sizing["candidates"][0]["incremental_cost_over_pot"] == expected_ratio
 
 
 def test_aggression_variants_move_raise_mass_in_opposite_directions() -> None:
