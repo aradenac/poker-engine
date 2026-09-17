@@ -191,6 +191,7 @@ def contract_for(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
                 "id": "build-population-admitted-increment",
                 "argv": [
                     "python3", "tools/datasets/build_population_increment.py",
+                    "--root", ".",
                     "--registry", registry_path,
                     "--population", plan["population_id"],
                     *known_args,
