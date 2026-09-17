@@ -148,6 +148,23 @@ class ModelBSensitivityPolicy:
 
     def sizing_candidates(self, state: NoLimitHoldemState, **context: Any) -> dict[str, Any]:
         info = self.base_policy.sizing_candidates(state, **context)
+        multiplier = float(self.spec["raise_sizing_multiplier"])
+        sensitivity = {
+            "environment_id": self.spec["environment_id"],
+            "role": self.spec["role"],
+            "raise_sizing_multiplier": multiplier,
+        }
+        # The nominal environment is the identity treatment.  Preserve the
+        # retained reference candidates byte-for-byte rather than rebuilding
+        # target totals from a derived ratio (which could introduce rounding or
+        # expose an inconsistent fixture/model payload).
+        if abs(multiplier - 1.0) <= EPS:
+            return {
+                **info,
+                "candidates": [dict(row) for row in info["candidates"]],
+                "sensitivity": sensitivity,
+            }
+
         actor = str(context["actor"])
         view = state.legal_view(actor)
         pot = float(view["pot_before_bb"])
@@ -155,7 +172,6 @@ class ModelBSensitivityPolicy:
         current = float(view["current_price_bb"])
         maximum = float(view["max_raise_to_bb"])
         minimum = None if view["min_raise_to_bb"] is None else float(view["min_raise_to_bb"])
-        multiplier = float(self.spec["raise_sizing_multiplier"])
         transformed: dict[float, dict[str, float]] = {}
         for row in info["candidates"]:
             ratio = float(row["incremental_cost_over_pot"]) * multiplier
@@ -183,11 +199,7 @@ class ModelBSensitivityPolicy:
         return {
             **info,
             "candidates": [transformed[key] for key in sorted(transformed)],
-            "sensitivity": {
-                "environment_id": self.spec["environment_id"],
-                "role": self.spec["role"],
-                "raise_sizing_multiplier": multiplier,
-            },
+            "sensitivity": sensitivity,
         }
 
     def decide(
