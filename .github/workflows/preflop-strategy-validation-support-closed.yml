@@ -139,9 +139,9 @@ jobs:
           pattern: issue-108-support-closed-environment-*-${{ github.sha }}
           path: /tmp/issue108/reports
           merge-multiple: true
-      - name: Apply unchanged frozen all-environment VALIDATION gate
+      - name: Validate candidate exposure then apply unchanged frozen performance gate
         run: |
-          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_benchmark_support_closed select-validation \
+          PYTHONPATH=. python3 tools/training/select_preflop_strategy_validation.py \
             --run-manifest /tmp/issue108/RUN_MANIFEST_VALIDATION.json \
             --report /tmp/issue108/reports/model-b-public-reference-nominal-v1.json \
             --report /tmp/issue108/reports/model-b-public-reference-lower-aggression-v1.json \
@@ -168,6 +168,7 @@ jobs:
           assert selection['test_consumed'] is False
           assert selection['promotion_authorized'] is False
           assert selection['contract_version']=='2026-09-17.2'
+          assert selection['candidate_exposure_validity']['status']=='PASS'
           print(json.dumps(selection, indent=2, sort_keys=True))
           PY
       - uses: actions/upload-artifact@v4
