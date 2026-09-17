@@ -35,7 +35,7 @@ from tools.datasets.build_hand_history_increment import (  # noqa: E402
 from tools.datasets.certify_population import certify  # noqa: E402
 from tools.populations.registry import DEFAULT_REGISTRY, resolve_population  # noqa: E402
 
-SCHEMA = "poker-population-hand-history-increment/v1"
+ADMISSION_SCHEMA = "poker-population-admission/v1"
 
 
 def target_from_population(population: dict[str, Any]) -> dict[str, Any]:
@@ -96,13 +96,11 @@ def build_population_increment(
         )
 
     admitted = admission["status"]["ADMISSIBLE"]
-    admitted_ids = set(str(value) for value in admitted.get("hand_ids", []))
-    if not admitted_ids:
-        records, _ = read_increment_archive(candidate)
-        all_ids = {record.hand_id for record in records}
-        excluded_ids = set(str(value) for value in admission["status"]["EXCLUDED"].get("hand_ids", []))
-        ambiguous_ids = set(str(value) for value in ambiguous.get("hand_ids", []))
-        admitted_ids = all_ids - excluded_ids - ambiguous_ids
+    records, _ = read_increment_archive(candidate)
+    all_ids = {record.hand_id for record in records}
+    excluded_ids = set(str(value) for value in admission["status"]["EXCLUDED"].get("hand_ids", []))
+    ambiguous_ids = set(str(value) for value in ambiguous.get("hand_ids", []))
+    admitted_ids = all_ids - excluded_ids - ambiguous_ids
     if len(admitted_ids) != int(admitted["unique_hands"]):
         raise ValueError("admitted hand-id reconstruction differs from population certification count")
 
@@ -112,9 +110,11 @@ def build_population_increment(
         write_selected_zip(filtered, admitted_records)
         base_manifest, selected = build_increment(known, filtered, stakes=None)
 
+    # Preserve the historical increment-v3 surface because downstream
+    # normalization/classification consumes it. Population admission is an
+    # additive, versioned extension rather than a schema fork.
     _, raw_candidate_meta = read_increment_archive(candidate)
     base_manifest["candidate_archive"] = raw_candidate_meta
-    base_manifest["schema"] = SCHEMA
     base_manifest["population_id"] = population_id
     base_manifest["population_target"] = target
     base_manifest["selection_rule"] = (
@@ -122,6 +122,7 @@ def build_population_increment(
         "is absent from the union of known archive hand IDs"
     )
     base_manifest["population_admission"] = {
+        "schema": ADMISSION_SCHEMA,
         "classifier_schema": admission["schema"],
         "unknown_target_property": admission["classification_contract"]["unknown_target_property"],
         "candidate_raw_sha256": sha256_file(candidate),
