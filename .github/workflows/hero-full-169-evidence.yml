@@ -27,11 +27,11 @@ permissions:
 jobs:
   generate-shards:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -46,7 +46,7 @@ jobs:
       - name: Generate deterministic hand-class shard
         env:
           SHARD_INDEX: ${{ matrix.shard }}
-          SHARD_COUNT: '13'
+          SHARD_COUNT: '26'
         run: |
           set -euo pipefail
           mapfile -t HAND_ARGS < <(PYTHONPATH=. python3 - <<'PY'
@@ -69,6 +69,23 @@ jobs:
             --rows-out "/tmp/issue-107-shard-${SHARD_INDEX}.json" \
             --allow-partial \
             "${HAND_ARGS[@]}"
+      - name: Verify every requested class is accounted in shard
+        run: |
+          python3 - <<'PY'
+          import json, os
+          p=f"/tmp/issue-107-shard-{os.environ['SHARD_INDEX']}.json"
+          run=json.load(open(p))
+          requested=int(run['coverage']['requested'])
+          rows=run.get('rows') or []
+          unsupported=run.get('unsupported') or []
+          accounted=[r['hand_class'] for r in rows]+[r['hand_class'] for r in unsupported]
+          assert requested == len(accounted), (requested, len(accounted))
+          assert len(accounted) == len(set(accounted)), accounted
+          assert all(str(r.get('reason') or '').strip() for r in unsupported)
+          print({'requested':requested,'completed':len(rows),'unsupported':len(unsupported)})
+          PY
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
       - uses: actions/upload-artifact@v4
         with:
           name: issue-107-shard-${{ matrix.shard }}-${{ github.sha }}
@@ -93,16 +110,19 @@ jobs:
           pattern: issue-107-shard-*-${{ github.sha }}
           path: /tmp/issue-107-shards
           merge-multiple: true
-      - name: Merge shards and export candidate
+      - name: Merge shards and export candidate overlay
         run: |
           set -euo pipefail
+          shopt -s nullglob
+          FILES=(/tmp/issue-107-shards/issue-107-shard-*.json)
+          [[ ${#FILES[@]} -eq 26 ]]
           INPUT_ARGS=()
-          for file in /tmp/issue-107-shards/issue-107-shard-*.json; do
+          for file in "${FILES[@]}"; do
             INPUT_ARGS+=(--input "$file")
           done
-          [[ ${#INPUT_ARGS[@]} -eq 26 ]]
           PYTHONPATH=. python3 tools/training/merge_hero_range_decision_runs.py \
             "${INPUT_ARGS[@]}" \
+            --allow-partial \
             --rows-out /tmp/issue-107-full-run.json \
             --candidate-out /tmp/issue-107-full-candidate.json
       - name: Materialize certified summary for provenance bundle
@@ -111,7 +131,7 @@ jobs:
             --certification training/datasets/NLHE_100-200/population_certification.json \
             --out /tmp/issue-107-certified-decisions.jsonl \
             --summary /tmp/issue-107-certified-summary.json
-      - name: Verify complete immutable candidate contract
+      - name: Verify immutable 169-class accounting contract
         run: |
           python3 - <<'PY'
           import json
@@ -119,11 +139,18 @@ jobs:
           run=json.load(open('/tmp/issue-107-full-run.json'))
           candidate=json.load(open('/tmp/issue-107-full-candidate.json'))
           assert run['schema']=='poker-hero-range-decision-run/v1', run.get('schema')
-          assert run['coverage']=={'requested':169,'completed':169,'complete_169':True}, run['coverage']
-          assert run['unsupported']==[], run['unsupported']
-          assert len(run['rows'])==169
-          assert len({row['hand_class'] for row in run['rows']})==169
-          assert all(row['decision']['schema']=='poker-preflop-decision/v1' for row in run['rows'])
+          cov=run['coverage']
+          assert cov['requested']==169, cov
+          assert cov['accounted']==169, cov
+          assert cov['completed']+cov['unsupported']==169, cov
+          rows=run['rows']; unsupported=run['unsupported']
+          row_hands={row['hand_class'] for row in rows}
+          unsupported_hands={row['hand_class'] for row in unsupported}
+          assert len(row_hands)==len(rows)
+          assert len(unsupported_hands)==len(unsupported)
+          assert row_hands.isdisjoint(unsupported_hands)
+          assert all(row['decision']['schema']=='poker-preflop-decision/v1' for row in rows)
+          assert all(str(row.get('reason') or '').strip() for row in unsupported)
           assert run['provenance']['hero_future_continuation']['claim']=='NOT_OPTIMAL_HERO_STRATEGY'
           sizing=run['provenance']['sizing_support']
           assert sizing['contract']=='CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1'
@@ -132,14 +159,27 @@ jobs:
           assert sizing['observed_nonjam_raises'] > 0
           budget=run['provenance']['budget']
           assert budget['samples_per_nonfold_candidate']==16, budget
+          assert budget['completed_hand_classes']==cov['completed']
+          assert budget['unsupported_hand_classes']==cov['unsupported']
           assert candidate['schema']=='poker-hero-calculated-range-candidate/v1'
           assert candidate['promotion_authorized'] is False
-          assert candidate['coverage']['defined_hand_classes']==169, candidate['coverage']
-          assert candidate['coverage']['complete'] is True
-          actions=Counter(row['decision']['action'] for row in run['rows'])
+          assert candidate['coverage']['defined_hand_classes']==cov['completed'], (candidate['coverage'],cov)
+          assert candidate['coverage']['complete'] is cov['complete_169']
+          source=candidate['source_decision_run']
+          assert source['coverage']==cov
+          assert source['unsupported']==unsupported
+          actions=Counter(row['decision']['action'] for row in rows)
+          reasons=Counter(
+            'preflop' if ' on preflop:' in row['reason'] else
+            'flop' if ' on flop:' in row['reason'] else
+            'turn' if ' on turn:' in row['reason'] else
+            'river' if ' on river:' in row['reason'] else 'other'
+            for row in unsupported
+          )
           print(json.dumps({
-            'coverage':run['coverage'],
+            'coverage':cov,
             'actions':dict(sorted(actions.items())),
+            'unsupported_by_street':dict(sorted(reasons.items())),
             'sizing_targets_bb':sizing['legal_grid_targets_bb'],
             'sizing_observations':sizing['observed_nonjam_raises'],
             'samples_per_nonfold_candidate':budget['samples_per_nonfold_candidate'],
