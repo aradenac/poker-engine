@@ -24,7 +24,7 @@
     },
     "postflop_selected_overlay": {
       "path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
-      "sha256": "3d97b488fcb7a2ef34c49161bc4047fe4a3afd13387dc7775044479f74d37080"
+      "sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d"
     },
     "selection_evidence": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json"
   },
