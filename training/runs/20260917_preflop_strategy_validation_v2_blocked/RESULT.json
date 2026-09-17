@@ -1,0 +1,46 @@
+{
+  "schema": "poker-preflop-strategy-validation-blocked/v1",
+  "related_issue": 108,
+  "contract": "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json",
+  "contract_version": "2026-09-17.1",
+  "status": "BLOCKED",
+  "decision": "NO_SELECTION_RUNTIME_REFERENCE_SUPPORT_GAP",
+  "workflow": {
+    "run_id": 35205414283,
+    "head_sha": "2c12da5c1c0c859016a07a82b22f33b37b30e403",
+    "head_branch": "issue-108-validation-run-v1-sol",
+    "prepare_job": "success",
+    "environment_jobs": "failed_before_environment_report",
+    "selection_job": "skipped"
+  },
+  "frozen_prepare_artifact": {
+    "artifact_id": 10489667640,
+    "name": "issue-108-validation-scenarios-2c12da5c1c0c859016a07a82b22f33b37b30e403",
+    "size_bytes": 1023094,
+    "artifact_digest": "sha256:1bee2caed6bc570a2c26a0b01455bd3dfe90e555cc68b76672b39b61d546f26d",
+    "expires_at": "2026-10-17T09:35:35Z"
+  },
+  "failure": {
+    "exception": "tools.simulation.model_a_continuation.ModelAUnsupportedContext",
+    "message": "missing exact postflop Model-A node",
+    "location": "reference Hero continuation during full-hand VALIDATION rollout",
+    "affected_environments": [
+      "model-b-public-reference-nominal-v1",
+      "model-b-public-reference-lower-aggression-v1",
+      "model-b-public-reference-higher-aggression-v1"
+    ],
+    "interpretation": "The frozen v2 reference policy explicitly requires BLOCKED_FOR_REFERENCE_DECISION when an exact Model-A context is missing. No environment report or VALIDATION selection was produced."
+  },
+  "selection_boundary": {
+    "validation_scenarios_materialized": true,
+    "validation_policy_rollout_started": true,
+    "validation_result_inspected": false,
+    "environment_report_persisted": false,
+    "selection_performed": false,
+    "test_data_read": false,
+    "test_consumed": false,
+    "promotion_authorized": false
+  },
+  "active_strategy_effect": "NONE",
+  "resolution_rule": "Do not weaken or rewrite v2. Any support-closure semantics require a new frozen contract/reference descriptor before the replacement VALIDATION execution."
+}
