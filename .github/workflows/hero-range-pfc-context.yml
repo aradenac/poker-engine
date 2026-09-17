@@ -10,6 +10,8 @@ on:
       - 'tools/training/enrich_hero_range_context.py'
       - 'tests/hero_ranges/test_hero_range_repository.mjs'
       - 'tests/training/test_enrich_hero_range_context.py'
+      - 'tests/training/test_persisted_hero_pfc_binding.py'
+      - 'training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/**'
       - '.github/workflows/hero-range-pfc-context.yml'
   push:
     branches:
@@ -35,3 +37,21 @@ jobs:
         run: node tests/hero_ranges/test_hero_range_repository.mjs
       - name: Validate identity-only run enrichment
         run: PYTHONPATH=. python3 tests/training/test_enrich_hero_range_context.py
+      - name: Validate persisted #107 PFC handoff
+        run: PYTHONPATH=. python3 tests/training/test_persisted_hero_pfc_binding.py
+      - name: Validate persisted PFC-keyed Hero repository
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          const H=require('./site/hero-ranges.js');
+          const path='training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json';
+          const repo=JSON.parse(fs.readFileSync(path,'utf8'));
+          H.validateRepository(repo);
+          const stats=H.repositoryStats(repo);
+          if(stats.contexts!==1||stats.calculated_defined_hands!==40||stats.personal_defined_hands!==0){
+            throw new Error(JSON.stringify(stats));
+          }
+          const key=Object.keys(repo.contexts)[0];
+          if(!key.endsWith('|PFC_0e01f7d1a1da491b'))throw new Error(key);
+          console.log(stats);
+          JS
