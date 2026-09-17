@@ -1,0 +1,13 @@
+{
+  "schema": "poker-preflop-strategy-validation-trigger/v1",
+  "related_issue": 108,
+  "contract_version": "2026-09-17.2",
+  "contract": "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917_SUPPORT_CLOSED.json",
+  "candidate": "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json",
+  "phase": "VALIDATION",
+  "master_seed": 20260917,
+  "test_data_read": false,
+  "test_consumed": false,
+  "promotion_authorized": false,
+  "purpose": "Trigger the immutable support-closed replacement VALIDATION workflow after contract merge. This file contains no strategy result."
+}
