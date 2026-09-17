@@ -1,0 +1,123 @@
+name: Materialize certified population baseline
+
+on:
+  push:
+    branches:
+      - 'issue-112-materialize-certified-population-sol'
+    paths:
+      - 'tools/datasets/materialize_certified_population.py'
+      - 'tests/datasets/test_materialize_certified_population.py'
+      - '.github/workflows/materialize-certified-population.yml'
+  pull_request:
+    paths:
+      - 'tools/datasets/materialize_certified_population.py'
+      - 'tests/datasets/test_materialize_certified_population.py'
+      - '.github/workflows/materialize-certified-population.yml'
+      - 'training/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/data/baseline/**'
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: materialize-certified-population-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile materializer
+        run: python3 -m py_compile tools/datasets/materialize_certified_population.py tests/datasets/test_materialize_certified_population.py
+      - name: Exercise deterministic certification boundary
+        run: PYTHONPATH=. python3 tests/datasets/test_materialize_certified_population.py
+
+  materialize-zoom-baseline:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/issue-112-materialize-certified-population-sol'
+    needs: contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Materialize exact certified Zoom baseline and bind registry
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/datasets/materialize_certified_population.py \
+            --population pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+            --bind-registry \
+            > /tmp/materialization-result.json
+          cat /tmp/materialization-result.json
+      - name: Rebuild a second time and prove byte idempotence
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/datasets/materialize_certified_population.py \
+            --population pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+            --bind-registry \
+            > /tmp/materialization-replay.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/materialization-replay.json'))
+          assert r['status']=='PASS'
+          assert r['writes']=={
+              'baseline_zip':'UNCHANGED',
+              'manifest':'UNCHANGED',
+              'registry':'UNCHANGED',
+          }, r['writes']
+          assert r['baseline']['unique_hands']==23789
+          assert r['baseline']['hand_ids_fingerprint_sha256']=='4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c'
+          assert r['baseline']['split_counts']=={'TRAIN':19016,'VALIDATION':2324,'TEST':2449}
+          print(json.dumps(r, indent=2, sort_keys=True))
+          PY
+      - name: Prove target snapshot planner is unblocked by the baseline binding
+        run: |
+          PYTHONPATH=. python3 tools/training/plan_snapshot_cycle.py \
+            --population pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+            > /tmp/zoom-plan.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/zoom-plan.json'))
+          assert p['status']=='NO_PENDING_SNAPSHOT', p
+          assert p['population_id']=='pokerstars_nlhe_100-200_zoom_play_6max_v1'
+          print(json.dumps(p, indent=2, sort_keys=True))
+          PY
+      - name: Verify only population-scoped baseline and registry were generated
+        run: |
+          python3 - <<'PY'
+          import subprocess
+          allowed={
+              'training/populations/registry.json',
+              'training/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/data/baseline/certified_population.zip',
+              'training/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/data/baseline/manifest.json',
+          }
+          rows=subprocess.check_output(['git','status','--porcelain=v1','--untracked-files=all'], text=True).splitlines()
+          changed=set()
+          for row in rows:
+              path=row[3:]
+              if ' -> ' in path:
+                  path=path.split(' -> ',1)[1]
+              changed.add(path.strip().strip('"'))
+          assert changed==allowed, (changed, allowed)
+          print('\n'.join(sorted(changed)))
+          PY
+      - name: Commit immutable materialization evidence to the branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add training/populations/registry.json \
+            training/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/data/baseline/certified_population.zip \
+            training/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/data/baseline/manifest.json
+          git commit -m 'Materialize certified Zoom baseline for #112'
+          git push origin "HEAD:${BRANCH}"
