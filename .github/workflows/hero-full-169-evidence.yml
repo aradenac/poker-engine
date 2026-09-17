@@ -17,6 +17,10 @@ on:
       - 'training/runs/20260917_hero_preflop_169_btn_unopened_v1/**'
   workflow_dispatch:
 
+concurrency:
+  group: hero-full-169-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
