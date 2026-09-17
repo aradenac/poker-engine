@@ -1,0 +1,185 @@
+name: Execute preflop strategy support-closed VALIDATION
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'issue-108-validation-run-v2-sol'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: preflop-strategy-validation-support-closed-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate frozen replacement contract before any policy rollout
+        run: PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_support_closed.py
+      - name: Freeze candidate source commit
+        id: candidate
+        run: |
+          sha=$(git log -1 --format=%H -- training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/PFC_BINDING.json)
+          test -n "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: Prepare immutable certified VALIDATION scenarios and replacement run identity
+        run: |
+          mkdir -p /tmp/issue108
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_benchmark_support_closed prepare-validation \
+            --population pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+            --profiles training/runs/20260912_independent_profiles_v2/model/profiles.json \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --seed 20260917 \
+            --code-sha "$GITHUB_SHA" \
+            --candidate-source-commit '${{ steps.candidate.outputs.sha }}' \
+            --scenarios-out /tmp/issue108/SCENARIOS_VALIDATION.json \
+            --run-manifest-out /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+      - name: Revalidate frozen replacement run manifest before policy rollout
+        run: |
+          PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_support_closed.py \
+            --run-manifest /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          run=json.loads(Path('/tmp/issue108/RUN_MANIFEST_VALIDATION.json').read_text())
+          scenarios=Path('/tmp/issue108/SCENARIOS_VALIDATION.json')
+          assert run['contract_version']=='2026-09-17.2'
+          assert run['phase']=='VALIDATION'
+          assert run['test_data_read'] is False
+          assert run['results_inspected'] is False
+          assert hashlib.sha256(scenarios.read_bytes()).hexdigest()==run['identities']['scenario_manifest_sha256']
+          assert run['budgets']['rollouts_per_base_hand']==2
+          print(json.dumps(run['budgets'], indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-support-closed-validation-scenarios-${{ github.sha }}
+          path: |
+            /tmp/issue108/SCENARIOS_VALIDATION.json
+            /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+          if-no-files-found: error
+          retention-days: 30
+
+  environment:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        environment_id:
+          - model-b-public-reference-nominal-v1
+          - model-b-public-reference-lower-aggression-v1
+          - model-b-public-reference-higher-aggression-v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-support-closed-validation-scenarios-${{ github.sha }}
+          path: /tmp/issue108
+      - name: Download immutable issue 104 retained public Model B
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/model-b-104
+          gh run download 34993837824 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4 \
+            --dir /tmp/model-b-104
+          test -s /tmp/model-b-104/public_reference_behavior.json
+          echo 'fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca  /tmp/model-b-104/public_reference_behavior.json' | sha256sum -c -
+      - name: Run paired replacement VALIDATION environment
+        run: |
+          mkdir -p /tmp/issue108/report
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_benchmark_support_closed run-environment \
+            --scenarios /tmp/issue108/SCENARIOS_VALIDATION.json \
+            --run-manifest /tmp/issue108/RUN_MANIFEST_VALIDATION.json \
+            --environment-id '${{ matrix.environment_id }}' \
+            --reference-behavior /tmp/model-b-104/public_reference_behavior.json \
+            --issue-104-result training/runs/20260915_model_b_card_aware_v1/RESULT.json \
+            --output '/tmp/issue108/report/${{ matrix.environment_id }}.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-support-closed-environment-${{ matrix.environment_id }}-${{ github.sha }}
+          path: '/tmp/issue108/report/${{ matrix.environment_id }}.json'
+          if-no-files-found: error
+          retention-days: 30
+
+  select:
+    needs: environment
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-support-closed-validation-scenarios-${{ github.sha }}
+          path: /tmp/issue108
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-108-support-closed-environment-*-${{ github.sha }}
+          path: /tmp/issue108/reports
+          merge-multiple: true
+      - name: Apply unchanged frozen all-environment VALIDATION gate
+        run: |
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_benchmark_support_closed select-validation \
+            --run-manifest /tmp/issue108/RUN_MANIFEST_VALIDATION.json \
+            --report /tmp/issue108/reports/model-b-public-reference-nominal-v1.json \
+            --report /tmp/issue108/reports/model-b-public-reference-lower-aggression-v1.json \
+            --report /tmp/issue108/reports/model-b-public-reference-higher-aggression-v1.json \
+            --output /tmp/issue108/VALIDATION_SELECTION.json
+      - name: Persist replacement validation evidence bundle
+        run: |
+          cp /tmp/issue108/reports/*.json /tmp/issue108/
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root=Path('/tmp/issue108')
+          files=[
+              'SCENARIOS_VALIDATION.json',
+              'RUN_MANIFEST_VALIDATION.json',
+              'model-b-public-reference-nominal-v1.json',
+              'model-b-public-reference-lower-aggression-v1.json',
+              'model-b-public-reference-higher-aggression-v1.json',
+              'VALIDATION_SELECTION.json',
+          ]
+          manifest={name:{'sha256':hashlib.sha256((root/name).read_bytes()).hexdigest(),'size_bytes':(root/name).stat().st_size} for name in files}
+          (root/'ARTIFACT_MANIFEST.json').write_text(json.dumps(manifest, indent=2, sort_keys=True)+'\n')
+          selection=json.loads((root/'VALIDATION_SELECTION.json').read_text())
+          assert selection['test_consumed'] is False
+          assert selection['promotion_authorized'] is False
+          assert selection['contract_version']=='2026-09-17.2'
+          print(json.dumps(selection, indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-support-closed-validation-result-${{ github.sha }}
+          path: |
+            /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+            /tmp/issue108/SCENARIOS_VALIDATION.json
+            /tmp/issue108/model-b-public-reference-nominal-v1.json
+            /tmp/issue108/model-b-public-reference-lower-aggression-v1.json
+            /tmp/issue108/model-b-public-reference-higher-aggression-v1.json
+            /tmp/issue108/VALIDATION_SELECTION.json
+            /tmp/issue108/ARTIFACT_MANIFEST.json
+          if-no-files-found: error
+          retention-days: 30
