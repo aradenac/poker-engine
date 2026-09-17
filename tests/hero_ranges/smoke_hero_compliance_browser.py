@@ -25,6 +25,10 @@ with sync_playwright() as p:
         "!!window.PokerHeroCompliance && !!window.PokerHeroComplianceReplayer",
         timeout=15_000,
     )
+    # The application restores models/ranges asynchronously after DOMContentLoaded.
+    # Manipulating the global state before those fetches settle can be overwritten by
+    # the final initialization render and spuriously hide the compliance panel.
+    page.wait_for_load_state("networkidle", timeout=20_000)
 
     setup = page.evaluate(
         """({raw, population, storageKey}) => {
