@@ -6,15 +6,20 @@ on:
       - 'training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json'
       - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917_SUPPORT_CLOSED.json'
       - 'training/runs/20260917_preflop_strategy_validation_v2_blocked/RESULT.json'
+      - 'training/runs/20260917_preflop_strategy_validation_support_closed_zero_exposure/RESULT.json'
       - 'tools/simulation/reference_support_closure.py'
       - 'tools/simulation/preflop_strategy_benchmark_support_closed.py'
+      - 'tools/training/select_preflop_strategy_validation.py'
       - 'tools/training/validate_preflop_strategy_benchmark_support_closed.py'
       - 'tests/simulation/test_reference_support_closure.py'
       - 'tests/simulation/test_preflop_strategy_support_closed.py'
+      - 'tests/simulation/test_preflop_strategy_exposure_guard.py'
       - '.github/workflows/preflop-strategy-support-closed.yml'
+      - '.github/workflows/preflop-strategy-validation-support-closed.yml'
   push:
     branches:
       - 'issue-108-support-closure-sol'
+      - 'issue-108-candidate-exposure-gate-sol'
 
 concurrency:
   group: preflop-strategy-support-closed-${{ github.ref }}
@@ -33,13 +38,34 @@ jobs:
           python3 -m py_compile \
             tools/simulation/reference_support_closure.py \
             tools/simulation/preflop_strategy_benchmark_support_closed.py \
+            tools/training/select_preflop_strategy_validation.py \
             tools/training/validate_preflop_strategy_benchmark_support_closed.py
       - name: Validate immutable replacement design
         run: PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_support_closed.py
-      - name: Run support-closure tests
+      - name: Run support-closure and exposure-validity tests
         run: |
           PYTHONPATH=. python3 tests/simulation/test_reference_support_closure.py
           PYTHONPATH=. python3 tests/simulation/test_preflop_strategy_support_closed.py
+          PYTHONPATH=. python3 tests/simulation/test_preflop_strategy_exposure_guard.py
+      - name: Validate persisted zero-exposure evidence when present
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('training/runs/20260917_preflop_strategy_validation_support_closed_zero_exposure/RESULT.json')
+          if not path.exists():
+              print('zero-exposure evidence not persisted in this revision')
+              raise SystemExit(0)
+          row=json.loads(path.read_text())
+          assert row['decision']=='BLOCKED_ZERO_CANDIDATE_EXPOSURE'
+          assert row['contract_version']=='2026-09-17.2'
+          assert row['test_consumed'] is False
+          assert row['promotion_authorized'] is False
+          assert row['completed_environments']['model-b-public-reference-nominal-v1']['supported_decisions']==0
+          assert row['completed_environments']['model-b-public-reference-higher-aggression-v1']['supported_decisions']==0
+          assert row['missing_or_cancelled_environments']==['model-b-public-reference-lower-aggression-v1']
+          print('persisted zero-exposure evidence: PASS')
+          PY
       - name: Prove contract CI cannot execute strategy holdouts
         run: |
           python3 - <<'PY'
