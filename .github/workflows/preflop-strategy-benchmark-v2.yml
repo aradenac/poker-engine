@@ -8,8 +8,10 @@ on:
       - 'training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json'
       - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json'
       - 'tools/simulation/model_b_sensitivity.py'
+      - 'tools/simulation/hero_preflop_overlay.py'
       - 'tools/training/validate_preflop_strategy_benchmark_v2.py'
       - 'tests/simulation/test_model_b_sensitivity.py'
+      - 'tests/simulation/test_hero_preflop_overlay.py'
       - 'tests/training/test_preflop_strategy_benchmark_v2.py'
       - '.github/workflows/preflop-strategy-benchmark-v2.yml'
   push:
@@ -20,8 +22,10 @@ on:
       - 'training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json'
       - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json'
       - 'tools/simulation/model_b_sensitivity.py'
+      - 'tools/simulation/hero_preflop_overlay.py'
       - 'tools/training/validate_preflop_strategy_benchmark_v2.py'
       - 'tests/simulation/test_model_b_sensitivity.py'
+      - 'tests/simulation/test_hero_preflop_overlay.py'
       - 'tests/training/test_preflop_strategy_benchmark_v2.py'
       - '.github/workflows/preflop-strategy-benchmark-v2.yml'
 
@@ -41,6 +45,7 @@ jobs:
         run: |
           python3 -m py_compile \
             tools/simulation/model_b_sensitivity.py \
+            tools/simulation/hero_preflop_overlay.py \
             tools/training/validate_preflop_strategy_benchmark_v2.py
       - name: Verify frozen reference artifact hashes
         run: |
@@ -63,6 +68,7 @@ jobs:
       - name: Run v2 contract tests
         run: |
           PYTHONPATH=. python3 tests/simulation/test_model_b_sensitivity.py
+          PYTHONPATH=. python3 tests/simulation/test_hero_preflop_overlay.py
           PYTHONPATH=. python3 tests/training/test_preflop_strategy_benchmark_v2.py
       - name: Prove this workflow cannot consume strategy holdouts
         run: |
