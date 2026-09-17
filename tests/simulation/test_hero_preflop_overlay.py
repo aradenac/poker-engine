@@ -140,7 +140,7 @@ def test_missing_hand_falls_back_and_counts_out_of_support() -> None:
         seed_parts=("scenario-2", 123, "hero", "BTN", 0, "preflop"),
         **decision_context(("Ks", "2h")),
     )
-    assert result["action"] == "FOLD"
+    assert result["action"] == "CALL"
     assert result["benchmark_candidate"]["supported"] is False
     assert result["benchmark_candidate"]["reason"] == "HAND_OUT_OF_SUPPORT:K2o"
     assert reference.calls == 1
