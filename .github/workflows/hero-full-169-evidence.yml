@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/hero-full-169-evidence.yml'
       - 'tools/training/generate_certified_hero_range_decisions.py'
+      - 'tools/training/merge_hero_range_decision_runs.py'
       - 'tools/training/build_certified_population_decisions.py'
       - 'tools/simulation/preflop_grid_evaluator.py'
       - 'tools/simulation/model_a_continuation.py'
@@ -20,9 +21,13 @@ permissions:
   contents: read
 
 jobs:
-  full-169-evidence:
+  generate-shards:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,24 +39,74 @@ jobs:
             --certification training/datasets/NLHE_100-200/population_certification.json \
             --out /tmp/issue-107-certified-decisions.jsonl \
             --summary /tmp/issue-107-certified-summary.json
-      - name: Generate or load frozen BTN unopened 100bb 169 candidate
+      - name: Generate deterministic hand-class shard
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: '13'
         run: |
           set -euo pipefail
-          RUN_DIR=training/runs/20260917_hero_preflop_169_btn_unopened_v1
-          if [[ -f "$RUN_DIR/RUN.json" && -f "$RUN_DIR/CANDIDATE.json" ]]; then
-            cp "$RUN_DIR/RUN.json" /tmp/issue-107-full-run.json
-            cp "$RUN_DIR/CANDIDATE.json" /tmp/issue-107-full-candidate.json
-            echo 'Using persisted immutable evidence.'
-          else
-            PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
-              --position BTN --spot UNOPENED --stack-bb 100 \
-              --samples 16 --seed 20260916 \
-              --version hero-btn-unopened-100bb-169-v1 \
-              --code-sha "$GITHUB_SHA" \
-              --sizing-decisions /tmp/issue-107-certified-decisions.jsonl \
-              --rows-out /tmp/issue-107-full-run.json \
-              --candidate-out /tmp/issue-107-full-candidate.json
-          fi
+          mapfile -t HAND_ARGS < <(PYTHONPATH=. python3 - <<'PY'
+          import os
+          from tools.training.generate_hero_range_decisions import HAND_CLASSES
+          index=int(os.environ['SHARD_INDEX']); count=int(os.environ['SHARD_COUNT'])
+          hands=list(HAND_CLASSES)[index::count]
+          assert hands
+          for hand in hands:
+              print('--hand-class')
+              print(hand)
+          PY
+          )
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+            --position BTN --spot UNOPENED --stack-bb 100 \
+            --samples 16 --seed 20260916 \
+            --version hero-btn-unopened-100bb-169-v1 \
+            --code-sha "$GITHUB_SHA" \
+            --sizing-decisions /tmp/issue-107-certified-decisions.jsonl \
+            --rows-out "/tmp/issue-107-shard-${SHARD_INDEX}.json" \
+            --allow-partial \
+            "${HAND_ARGS[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-shard-${{ matrix.shard }}-${{ github.sha }}
+          path: /tmp/issue-107-shard-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: 2
+
+  merge-full-169:
+    needs: generate-shards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-107-shard-*-${{ github.sha }}
+          path: /tmp/issue-107-shards
+          merge-multiple: true
+      - name: Merge shards and export candidate
+        run: |
+          set -euo pipefail
+          INPUT_ARGS=()
+          for file in /tmp/issue-107-shards/issue-107-shard-*.json; do
+            INPUT_ARGS+=(--input "$file")
+          done
+          [[ ${#INPUT_ARGS[@]} -eq 26 ]]
+          PYTHONPATH=. python3 tools/training/merge_hero_range_decision_runs.py \
+            "${INPUT_ARGS[@]}" \
+            --rows-out /tmp/issue-107-full-run.json \
+            --candidate-out /tmp/issue-107-full-candidate.json
+      - name: Materialize certified summary for provenance bundle
+        run: |
+          PYTHONPATH=. python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/issue-107-certified-decisions.jsonl \
+            --summary /tmp/issue-107-certified-summary.json
       - name: Verify complete immutable candidate contract
         run: |
           python3 - <<'PY'
@@ -71,17 +126,21 @@ jobs:
           assert sizing['filters']['split']=='TRAIN'
           assert sizing['filters']['is_hero'] is False
           assert sizing['observed_nonjam_raises'] > 0
+          budget=run['provenance']['budget']
+          assert budget['samples_per_nonfold_candidate']==16, budget
           assert candidate['schema']=='poker-hero-calculated-range-candidate/v1'
           assert candidate['promotion_authorized'] is False
           assert candidate['coverage']['defined_hand_classes']==169, candidate['coverage']
+          assert candidate['coverage']['complete'] is True
           actions=Counter(row['decision']['action'] for row in run['rows'])
           print(json.dumps({
             'coverage':run['coverage'],
             'actions':dict(sorted(actions.items())),
             'sizing_targets_bb':sizing['legal_grid_targets_bb'],
             'sizing_observations':sizing['observed_nonjam_raises'],
-            'samples_per_candidate':run['budget']['samples_per_candidate'],
-            'seed':run['provenance']['seed'],
+            'samples_per_nonfold_candidate':budget['samples_per_nonfold_candidate'],
+            'rollout_samples_consumed':budget['rollout_samples_consumed'],
+            'master_seed':run['provenance']['master_seed'],
             'promotion_authorized':candidate['promotion_authorized'],
           },indent=2,sort_keys=True))
           PY
