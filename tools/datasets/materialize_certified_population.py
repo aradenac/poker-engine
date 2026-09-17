@@ -229,6 +229,10 @@ def materialize(
         if summary.get(field) != expected:
             raise ValueError(f"certified record reconstruction mismatch for {field}: {summary.get(field)!r} != {expected!r}")
 
+    source_provenance = copy.deepcopy(provenance["source"])
+    for row in source_provenance.get("archives", []):
+        row["path"] = _relative(root, Path(str(row["path"])))
+
     data_root = root / str(data["root"])
     output_zip = (output_zip if output_zip is not None else data_root / "baseline/certified_population.zip")
     manifest_path = (manifest_path if manifest_path is not None else data_root / "baseline/manifest.json")
@@ -263,7 +267,7 @@ def materialize(
             "unique_hands": int(admissible["unique_hands"]),
             "split_counts": dict(admissible["split_counts"]),
         },
-        "sources": provenance["source"],
+        "sources": source_provenance,
         "baseline": {
             "path": _relative(root, output_zip),
             "sha256": zip_sha,
