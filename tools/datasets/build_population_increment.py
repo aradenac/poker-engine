@@ -154,7 +154,7 @@ def build_population_increment(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--root", type=Path, default=Path.cwd(), help="executing checkout root; defaults to current working directory")
     parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
     parser.add_argument("--population", required=True)
     parser.add_argument("--known", type=Path, action="append", required=True)
