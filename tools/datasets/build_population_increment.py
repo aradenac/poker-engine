@@ -17,11 +17,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from tools.datasets.build_hand_history_increment import (  # noqa: E402
     build_increment,
@@ -55,8 +58,6 @@ def _representatives(candidate: Path, admitted_ids: set[str]) -> list[Any]:
         if record.hand_id not in admitted_ids:
             continue
         current = selected.get(record.hand_id)
-        # Match the certified-model materializers: prefer an English occurrence
-        # for a cross-language duplicate when both are population-compatible.
         if current is None or (getattr(current, "language", "") != "en" and record.language == "en"):
             selected[record.hand_id] = record
     missing = admitted_ids - set(selected)
@@ -96,9 +97,6 @@ def build_population_increment(
 
     admitted = admission["status"]["ADMISSIBLE"]
     admitted_ids = set(str(value) for value in admitted.get("hand_ids", []))
-    # certify() intentionally keeps the full admitted set compact and does not
-    # persist hand_ids for ADMISSIBLE. Reconstruct it from all ids minus the two
-    # explicitly enumerated non-admitted classes.
     if not admitted_ids:
         records, _ = read_increment_archive(candidate)
         all_ids = {record.hand_id for record in records}
@@ -114,8 +112,6 @@ def build_population_increment(
         write_selected_zip(filtered, admitted_records)
         base_manifest, selected = build_increment(known, filtered, stakes=None)
 
-    # Replace ephemeral filtered-candidate provenance with immutable raw input
-    # identity plus the explicit admission evidence that produced the filter.
     _, raw_candidate_meta = read_increment_archive(candidate)
     base_manifest["candidate_archive"] = raw_candidate_meta
     base_manifest["schema"] = SCHEMA
