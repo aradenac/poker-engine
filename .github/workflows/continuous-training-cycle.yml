@@ -9,11 +9,13 @@ on:
       - 'tools/training/atomic_promotion.py'
       - 'tools/training/plan_snapshot_cycle.py'
       - 'tools/training/recalculation_plan.py'
+      - 'tools/training/execute_recalculation_plan.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
       - 'tests/training/test_continuous_cycle.py'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - 'tests/training/test_recalculation_plan.py'
+      - 'tests/training/test_execute_recalculation_plan.py'
       - 'training/automation/**'
       - '.github/workflows/continuous-training-cycle.yml'
   pull_request:
@@ -22,11 +24,13 @@ on:
       - 'tools/training/atomic_promotion.py'
       - 'tools/training/plan_snapshot_cycle.py'
       - 'tools/training/recalculation_plan.py'
+      - 'tools/training/execute_recalculation_plan.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
       - 'tests/training/test_continuous_cycle.py'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - 'tests/training/test_recalculation_plan.py'
+      - 'tests/training/test_execute_recalculation_plan.py'
       - 'training/automation/**'
       - '.github/workflows/continuous-training-cycle.yml'
   workflow_dispatch:
@@ -56,17 +60,21 @@ jobs:
             tools/training/run_continuous_cycle.py \
             tools/training/plan_snapshot_cycle.py \
             tools/training/recalculation_plan.py \
+            tools/training/execute_recalculation_plan.py \
             tools/training/classify_increment.py \
             tools/training/write_increment_gate.py \
             tests/training/test_continuous_cycle.py \
             tests/training/test_snapshot_cycle_planner.py \
-            tests/training/test_recalculation_plan.py
+            tests/training/test_recalculation_plan.py \
+            tests/training/test_execute_recalculation_plan.py
       - name: Exercise rollback and atomic-promotion contract
         run: python3 tests/training/test_continuous_cycle.py
       - name: Exercise generic snapshot planner contract
         run: python3 tests/training/test_snapshot_cycle_planner.py
-      - name: Exercise fresh recalculation and idempotence contract
+      - name: Exercise fresh recalculation plan contract
         run: python3 tests/training/test_recalculation_plan.py
+      - name: Exercise fresh recalculation execution, failure persistence and idempotence
+        run: python3 tests/training/test_execute_recalculation_plan.py
 
   run-committed-cycle:
     if: github.event_name == 'workflow_dispatch'
