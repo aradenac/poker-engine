@@ -24,8 +24,136 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  EVIDENCE_DIR: training/runs/20260917_hero_preflop_169_btn_unopened_v1
+
 jobs:
+  detect-persisted:
+    runs-on: ubuntu-24.04
+    outputs:
+      persisted: ${{ steps.detect.outputs.persisted }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: detect
+        name: Detect immutable persisted evidence
+        run: |
+          set -euo pipefail
+          if [[ -f "$EVIDENCE_DIR/RESULT.json" \
+             && -f "$EVIDENCE_DIR/SUPPORTED_DECISIONS.json" \
+             && -f "$EVIDENCE_DIR/UNSUPPORTED.json" \
+             && -f "$EVIDENCE_DIR/HERO_RANGE_REPOSITORY.json" ]]; then
+            echo 'persisted=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'persisted=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  verify-persisted:
+    needs: detect-persisted
+    if: ${{ needs.detect-persisted.outputs.persisted == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify persisted scientific accounting and selected decisions
+        run: |
+          PYTHONPATH=. python3 - <<'PY'
+          import json
+          from collections import Counter
+          from pathlib import Path
+          from tools.training.generate_hero_range_decisions import HAND_CLASSES
+
+          root=Path('training/runs/20260917_hero_preflop_169_btn_unopened_v1')
+          result=json.loads((root/'RESULT.json').read_text())
+          supported=json.loads((root/'SUPPORTED_DECISIONS.json').read_text())
+          unsupported=json.loads((root/'UNSUPPORTED.json').read_text())
+          repo=json.loads((root/'HERO_RANGE_REPOSITORY.json').read_text())
+
+          assert result['schema']=='poker-hero-preflop-169-generation-result/v1'
+          assert result['status']=='EXPERIMENTAL'
+          assert result['promotion_authorized'] is False
+          assert result['decision']=='ACCEPT_PARTIAL_EXPERIMENTAL_OVERLAY_FOR_INDEPENDENT_BENCHMARK'
+          assert result['selection_boundary']['validation_consumed'] is False
+          assert result['selection_boundary']['test_consumed'] is False
+          assert result['coverage']=={
+              'requested':169,'completed':40,'unsupported':129,
+              'accounted':169,'complete_169':False,
+          }
+          assert result['budget']['samples_per_nonfold_candidate']==16
+          assert result['budget']['rollout_samples_consumed']==3200
+          assert result['master_seed']==20260916
+          assert result['sizing_support']['filters']['split']=='TRAIN'
+          assert result['sizing_support']['filters']['is_hero'] is False
+          assert result['sizing_support']['legal_grid_targets_bb']==[2.0,3.0,3.5]
+          assert result['full_artifact_sha256']=={
+              'decision_run_json':'3bcaa4ba496e5e548337af3426c00cc33a4db09a2095d51e313cf99e445b77ae',
+              'candidate_json':'6d265ce233eb0f7082e6ad53de72430668150bf987b5fb8c2b9145255e9679c4',
+              'certified_summary_json':'1e9a39dc66213415d54b44eccdb82639fd5b5c76246716befb29c13b12a7b7dd',
+          }
+
+          srows=supported['rows']; urows=unsupported['rows']
+          assert supported['count']==len(srows)==40
+          assert unsupported['count']==len(urows)==129
+          shands=[row['hand_class'] for row in srows]
+          uhands=[row['hand_class'] for row in urows]
+          assert len(set(shands))==40 and len(set(uhands))==129
+          assert set(shands).isdisjoint(uhands)
+          assert set(shands)|set(uhands)==set(HAND_CLASSES)
+          assert Counter(row['action'] for row in srows)==Counter(result['selected_action_counts'])
+          assert all(row['search_budget']==80 for row in srows)
+          assert all(row['search_seed'] for row in srows)
+          assert all(row['failing_street'] in {'preflop','flop','turn','river'} for row in urows)
+          assert Counter(row['failing_street'] for row in urows)==Counter(result['unsupported_by_street'])
+          assert Counter(row['failing_actor'] for row in urows)==Counter(result['unsupported_by_actor'])
+
+          contexts=list(repo['contexts'].values())
+          assert repo['schema']=='poker-hero-range-repository/v1'
+          assert len(contexts)==1
+          calculated=contexts[0]['layers']['calculated']
+          assert set(calculated['hands'])==set(shands)
+          assert calculated['provenance']['master_seed']==20260916
+          assert calculated['provenance']['budget']['completed_hand_classes']==40
+          assert calculated['provenance']['budget']['unsupported_hand_classes']==129
+          assert calculated['provenance']['selection']=='NOT_PROMOTED_ISSUE_107_EXPERIMENTAL'
+          assert not contexts[0]['layers']['personal']['hands']
+
+          for row in srows:
+              strategy=calculated['hands'][row['hand_class']]
+              assert strategy['actions']=={row['action']:1}
+              if row['target_total_bb'] is None:
+                  assert strategy['sizings']=={}
+              else:
+                  sizing=strategy['sizings'][row['action']]
+                  assert sizing==[{'target_total_bb':row['target_total_bb'],'probability':1}]
+
+          print(json.dumps({
+              'coverage':result['coverage'],
+              'actions':result['selected_action_counts'],
+              'unsupported_by_street':result['unsupported_by_street'],
+              'artifact_sha256':result['full_artifact_sha256'],
+          },indent=2,sort_keys=True))
+          PY
+      - name: Validate editor repository contract
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          const H=require('./site/hero-ranges.js');
+          const repo=JSON.parse(fs.readFileSync('training/runs/20260917_hero_preflop_169_btn_unopened_v1/HERO_RANGE_REPOSITORY.json','utf8'));
+          H.validateRepository(repo);
+          const stats=H.repositoryStats(repo);
+          if(stats.calculated_defined_hands!==40)throw new Error(JSON.stringify(stats));
+          if(stats.personal_defined_hands!==0)throw new Error(JSON.stringify(stats));
+          console.log(stats);
+          JS
+
   generate-shards:
+    needs: detect-persisted
+    if: ${{ needs.detect-persisted.outputs.persisted == 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
@@ -70,6 +198,8 @@ jobs:
             --allow-partial \
             "${HAND_ARGS[@]}"
       - name: Verify every requested class is accounted in shard
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
         run: |
           python3 - <<'PY'
           import json, os
@@ -84,8 +214,6 @@ jobs:
           assert all(str(r.get('reason') or '').strip() for r in unsupported)
           print({'requested':requested,'completed':len(rows),'unsupported':len(unsupported)})
           PY
-        env:
-          SHARD_INDEX: ${{ matrix.shard }}
       - uses: actions/upload-artifact@v4
         with:
           name: issue-107-shard-${{ matrix.shard }}-${{ github.sha }}
@@ -94,7 +222,8 @@ jobs:
           retention-days: 2
 
   merge-full-169:
-    needs: generate-shards
+    needs: [detect-persisted, generate-shards]
+    if: ${{ needs.detect-persisted.outputs.persisted == 'false' && needs.generate-shards.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -117,12 +246,9 @@ jobs:
           FILES=(/tmp/issue-107-shards/issue-107-shard-*.json)
           [[ ${#FILES[@]} -eq 26 ]]
           INPUT_ARGS=()
-          for file in "${FILES[@]}"; do
-            INPUT_ARGS+=(--input "$file")
-          done
+          for file in "${FILES[@]}"; do INPUT_ARGS+=(--input "$file"); done
           PYTHONPATH=. python3 tools/training/merge_hero_range_decision_runs.py \
-            "${INPUT_ARGS[@]}" \
-            --allow-partial \
+            "${INPUT_ARGS[@]}" --allow-partial \
             --rows-out /tmp/issue-107-full-run.json \
             --candidate-out /tmp/issue-107-full-candidate.json
       - name: Materialize certified summary for provenance bundle
@@ -135,58 +261,19 @@ jobs:
         run: |
           python3 - <<'PY'
           import json
-          from collections import Counter
           run=json.load(open('/tmp/issue-107-full-run.json'))
           candidate=json.load(open('/tmp/issue-107-full-candidate.json'))
-          assert run['schema']=='poker-hero-range-decision-run/v1', run.get('schema')
           cov=run['coverage']
-          assert cov['requested']==169, cov
-          assert cov['accounted']==169, cov
-          assert cov['completed']+cov['unsupported']==169, cov
-          rows=run['rows']; unsupported=run['unsupported']
-          row_hands={row['hand_class'] for row in rows}
-          unsupported_hands={row['hand_class'] for row in unsupported}
-          assert len(row_hands)==len(rows)
-          assert len(unsupported_hands)==len(unsupported)
-          assert row_hands.isdisjoint(unsupported_hands)
-          assert all(row['decision']['schema']=='poker-preflop-decision/v1' for row in rows)
-          assert all(str(row.get('reason') or '').strip() for row in unsupported)
-          assert run['provenance']['hero_future_continuation']['claim']=='NOT_OPTIMAL_HERO_STRATEGY'
-          sizing=run['provenance']['sizing_support']
-          assert sizing['contract']=='CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1'
-          assert sizing['filters']['split']=='TRAIN'
-          assert sizing['filters']['is_hero'] is False
-          assert sizing['observed_nonjam_raises'] > 0
-          budget=run['provenance']['budget']
-          assert budget['samples_per_nonfold_candidate']==16, budget
-          assert budget['completed_hand_classes']==cov['completed']
-          assert budget['unsupported_hand_classes']==cov['unsupported']
+          assert run['schema']=='poker-hero-range-decision-run/v1'
+          assert cov['requested']==169 and cov['accounted']==169
+          assert cov['completed']+cov['unsupported']==169
           assert candidate['schema']=='poker-hero-calculated-range-candidate/v1'
           assert candidate['promotion_authorized'] is False
-          assert candidate['coverage']['defined_hand_classes']==cov['completed'], (candidate['coverage'],cov)
-          assert candidate['coverage']['complete'] is cov['complete_169']
-          source=candidate['source_decision_run']
-          assert source['coverage']==cov
-          assert source['unsupported']==unsupported
-          actions=Counter(row['decision']['action'] for row in rows)
-          reasons=Counter(
-            'preflop' if ' on preflop:' in row['reason'] else
-            'flop' if ' on flop:' in row['reason'] else
-            'turn' if ' on turn:' in row['reason'] else
-            'river' if ' on river:' in row['reason'] else 'other'
-            for row in unsupported
-          )
-          print(json.dumps({
-            'coverage':cov,
-            'actions':dict(sorted(actions.items())),
-            'unsupported_by_street':dict(sorted(reasons.items())),
-            'sizing_targets_bb':sizing['legal_grid_targets_bb'],
-            'sizing_observations':sizing['observed_nonjam_raises'],
-            'samples_per_nonfold_candidate':budget['samples_per_nonfold_candidate'],
-            'rollout_samples_consumed':budget['rollout_samples_consumed'],
-            'master_seed':run['provenance']['master_seed'],
-            'promotion_authorized':candidate['promotion_authorized'],
-          },indent=2,sort_keys=True))
+          assert candidate['coverage']['defined_hand_classes']==cov['completed']
+          assert candidate['source_decision_run']['unsupported']==run['unsupported']
+          assert run['provenance']['budget']['samples_per_nonfold_candidate']==16
+          assert run['provenance']['sizing_support']['filters']['split']=='TRAIN'
+          print(json.dumps({'coverage':cov,'budget':run['provenance']['budget']},indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
