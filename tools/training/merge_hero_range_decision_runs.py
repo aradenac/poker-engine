@@ -1,0 +1,157 @@
+#!/usr/bin/env python3
+"""Merge deterministic #107 partial decision runs into one immutable 169 run.
+
+Each shard must come from the same context, models, seed, sizing evidence and
+selection contract. Only the per-shard budget/coverage may differ. Every one of
+the 169 hand classes must be represented exactly once, either by a completed
+decision row or by an explicit unsupported record. No silent hole is allowed.
+"""
+from __future__ import annotations
+
+import argparse
+import copy
+import json
+from pathlib import Path
+from typing import Any, Sequence
+
+from tools.training.generate_hero_range_decisions import HAND_CLASSES, SCHEMA, export_candidate
+
+
+def _stable(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _identity(run: dict[str, Any]) -> dict[str, Any]:
+    provenance = copy.deepcopy(run.get("provenance") or {})
+    provenance.pop("budget", None)
+    return {
+        "schema": run.get("schema"),
+        "status": run.get("status"),
+        "promotion_authorized": run.get("promotion_authorized"),
+        "population_id": run.get("population_id"),
+        "context": run.get("context"),
+        "context_id": run.get("context_id"),
+        "version": run.get("version"),
+        "provenance_without_budget": provenance,
+    }
+
+
+def merge_runs(runs: Sequence[dict[str, Any]], *, require_complete: bool = True) -> dict[str, Any]:
+    if not runs:
+        raise ValueError("at least one partial run is required")
+    for index, run in enumerate(runs):
+        if run.get("schema") != SCHEMA:
+            raise ValueError(f"shard {index}: unsupported schema {run.get('schema')!r}")
+
+    expected = _identity(runs[0])
+    for index, run in enumerate(runs[1:], 1):
+        if _stable(_identity(run)) != _stable(expected):
+            raise ValueError(f"shard {index}: run identity/provenance mismatch")
+
+    rows_by_hand: dict[str, dict[str, Any]] = {}
+    unsupported_by_hand: dict[str, dict[str, Any]] = {}
+    requested = 0
+    total_rollouts = 0
+    samples: set[int] = set()
+    for index, run in enumerate(runs):
+        coverage = run.get("coverage") or {}
+        shard_requested = int(coverage.get("requested") or 0)
+        shard_rows = list(run.get("rows") or [])
+        shard_unsupported = list(run.get("unsupported") or [])
+        if shard_requested != len(shard_rows) + len(shard_unsupported):
+            raise ValueError(
+                f"shard {index}: requested={shard_requested} but "
+                f"completed+unsupported={len(shard_rows) + len(shard_unsupported)}"
+            )
+        requested += shard_requested
+        budget = (run.get("provenance") or {}).get("budget") or {}
+        samples.add(int(budget.get("samples_per_nonfold_candidate") or 0))
+        total_rollouts += int(budget.get("rollout_samples_consumed") or 0)
+
+        for row in shard_rows:
+            hand = str(row.get("hand_class") or "")
+            if hand not in HAND_CLASSES:
+                raise ValueError(f"shard {index}: unknown hand class {hand!r}")
+            if hand in rows_by_hand or hand in unsupported_by_hand:
+                raise ValueError(f"duplicate hand class across shards: {hand}")
+            rows_by_hand[hand] = copy.deepcopy(row)
+
+        for item in shard_unsupported:
+            hand = str(item.get("hand_class") or "")
+            reason = str(item.get("reason") or "").strip()
+            if hand not in HAND_CLASSES:
+                raise ValueError(f"shard {index}: unknown unsupported hand class {hand!r}")
+            if not reason:
+                raise ValueError(f"shard {index}: unsupported {hand} has no reason")
+            if hand in rows_by_hand or hand in unsupported_by_hand:
+                raise ValueError(f"duplicate hand class across shards: {hand}")
+            unsupported_by_hand[hand] = {"hand_class": hand, "reason": reason}
+
+    if samples == {0} or len(samples) != 1:
+        raise ValueError(f"shards disagree on samples_per_nonfold_candidate: {sorted(samples)}")
+    if requested != len(HAND_CLASSES):
+        raise ValueError(f"shard request coverage must partition exactly 169 classes, got {requested}")
+
+    accounted = set(rows_by_hand) | set(unsupported_by_hand)
+    missing = [hand for hand in HAND_CLASSES if hand not in accounted]
+    if missing:
+        raise ValueError(f"169 merge has silent missing classes: {missing[:12]}")
+    if len(accounted) != len(HAND_CLASSES):
+        raise AssertionError("accounted Hero hand classes must total exactly 169")
+    if require_complete and unsupported_by_hand:
+        examples = [unsupported_by_hand[hand] for hand in HAND_CLASSES if hand in unsupported_by_hand][:3]
+        raise ValueError(
+            f"incomplete 169 merge: unsupported={len(unsupported_by_hand)} examples={examples}"
+        )
+
+    merged = copy.deepcopy(runs[0])
+    merged["rows"] = [rows_by_hand[hand] for hand in HAND_CLASSES if hand in rows_by_hand]
+    merged["unsupported"] = [
+        unsupported_by_hand[hand] for hand in HAND_CLASSES if hand in unsupported_by_hand
+    ]
+    merged["coverage"] = {
+        "requested": len(HAND_CLASSES),
+        "completed": len(merged["rows"]),
+        "unsupported": len(merged["unsupported"]),
+        "accounted": len(merged["rows"]) + len(merged["unsupported"]),
+        "complete_169": len(merged["rows"]) == len(HAND_CLASSES) and not merged["unsupported"],
+    }
+    merged["provenance"]["budget"] = {
+        "requested_hand_classes": len(HAND_CLASSES),
+        "completed_hand_classes": len(merged["rows"]),
+        "unsupported_hand_classes": len(merged["unsupported"]),
+        "samples_per_nonfold_candidate": samples.pop(),
+        "rollout_samples_consumed": total_rollouts,
+        "execution": "deterministic hand-class shards merged without changing per-hand seeds",
+    }
+    return merged
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input", type=Path, action="append", required=True)
+    parser.add_argument("--rows-out", type=Path, required=True)
+    parser.add_argument("--candidate-out", type=Path)
+    parser.add_argument("--allow-partial", action="store_true")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    runs = [json.loads(path.read_text(encoding="utf-8")) for path in args.input]
+    merged = merge_runs(runs, require_complete=not args.allow_partial)
+    args.rows_out.parent.mkdir(parents=True, exist_ok=True)
+    args.rows_out.write_text(json.dumps(merged, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.candidate_out:
+        args.candidate_out.parent.mkdir(parents=True, exist_ok=True)
+        export_candidate(merged, run_path=args.rows_out, output_path=args.candidate_out)
+    print(json.dumps({
+        "context_id": merged["context_id"],
+        "coverage": merged["coverage"],
+        "budget": merged["provenance"]["budget"],
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
