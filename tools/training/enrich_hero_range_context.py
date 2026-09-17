@@ -99,7 +99,7 @@ def enrich_run(run: Mapping[str, Any], spec: ContextSpec) -> dict[str, Any]:
         "legacy_context_id": legacy_id,
         "binding": "IDENTITY_ONLY_FROM_SAME_PUBLIC_STATE_BEFORE_ACTION",
         "decision_payload_mutation": "NONE",
-        "rollout_recomputation": false,
+        "rollout_recomputation": False,
     }
     return out
 
