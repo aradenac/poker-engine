@@ -1,0 +1,52 @@
+name: Validate preflop strategy support-closed replacement
+
+on:
+  pull_request:
+    paths:
+      - 'training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json'
+      - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917_SUPPORT_CLOSED.json'
+      - 'training/runs/20260917_preflop_strategy_validation_v2_blocked/RESULT.json'
+      - 'tools/simulation/reference_support_closure.py'
+      - 'tools/simulation/preflop_strategy_benchmark_support_closed.py'
+      - 'tools/training/validate_preflop_strategy_benchmark_support_closed.py'
+      - 'tests/simulation/test_reference_support_closure.py'
+      - 'tests/simulation/test_preflop_strategy_support_closed.py'
+      - '.github/workflows/preflop-strategy-support-closed.yml'
+  push:
+    branches:
+      - 'issue-108-support-closure-sol'
+
+concurrency:
+  group: preflop-strategy-support-closed-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile support-closed runtime
+        run: |
+          python3 -m py_compile \
+            tools/simulation/reference_support_closure.py \
+            tools/simulation/preflop_strategy_benchmark_support_closed.py \
+            tools/training/validate_preflop_strategy_benchmark_support_closed.py
+      - name: Validate immutable replacement design
+        run: PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_support_closed.py
+      - name: Run support-closure tests
+        run: |
+          PYTHONPATH=. python3 tests/simulation/test_reference_support_closure.py
+          PYTHONPATH=. python3 tests/simulation/test_preflop_strategy_support_closed.py
+      - name: Prove contract CI cannot execute strategy holdouts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('.github/workflows/preflop-strategy-support-closed.yml').read_text()
+          forbidden=['prepare-validation','run-environment','--split VALIDATION','--split TEST','SCENARIOS_VALIDATION']
+          found=[token for token in forbidden if token in text]
+          assert not found, found
+          print('support-closed contract workflow is holdout-free')
+          PY
