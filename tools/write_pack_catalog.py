@@ -50,6 +50,14 @@ def asset(key: str, role: str, url: str, expected_schema: str | None = None) -> 
     return item
 
 
+def assert_public_catalog_entry(entry: dict) -> dict:
+    if entry.get("distribution_class") == "TEST_ONLY" or entry.get("test_only") is True:
+        raise ValueError("TEST_ONLY pack cannot enter the public catalogue")
+    if entry.get("non_publishable") is True:
+        raise ValueError("NON_PUBLISHABLE pack cannot enter the public catalogue")
+    return entry
+
+
 def build_catalog() -> dict:
     trainer = load(TRAINER_MANIFEST)
     pack = load(PACK_CONFIG)
@@ -104,6 +112,7 @@ def build_catalog() -> dict:
             "note": "Runtime subset uses the same promoted population identity; the complete immutable distribution ZIP is owned by #110.",
         },
     }
+    assert_public_catalog_entry(entry)
     return {
         "schema": CATALOG_SCHEMA,
         "generated_from": {
