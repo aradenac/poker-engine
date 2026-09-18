@@ -127,7 +127,8 @@ def build_policy_context(preflop_context: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("policy context requires BEFORE_ACTION PFC state")
 
     current_price = _number(preflop_context.get("current_price_bb", 0.0), "current_price_bb")
-    minimum = _number(preflop_context.get("min_raise_to_bb", current_price), "min_raise_to_bb")
+    raw_minimum = preflop_context.get("min_raise_to_bb", current_price)
+    minimum = current_price if raw_minimum is None else _number(raw_minimum, "min_raise_to_bb")
     legal = sorted({str(action).upper() for action in (preflop_context.get("legal_actions") or [])})
     result = {
         "schema": SCHEMA,

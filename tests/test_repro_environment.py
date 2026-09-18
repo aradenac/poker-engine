@@ -8,7 +8,6 @@ import unittest
 
 from tools import repro_environment
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -17,35 +16,61 @@ class ReproEnvironmentTests(unittest.TestCase):
         self.assertEqual([], repro_environment.validate_contract(ROOT))
 
     def test_lock_versions_are_exact_and_expected(self) -> None:
-        lock = json.loads(
-            (ROOT / "reproducibility" / "environment.lock.json").read_text(encoding="utf-8")
-        )
+        lock = json.loads((ROOT / "reproducibility" / "environment.lock.json").read_text(encoding="utf-8"))
         self.assertEqual("3.11.9", lock["python"]["version"])
         self.assertEqual("22.14.0", lock["node"]["version"])
         self.assertEqual("1.55.0", lock["playwright"]["python_package_version"])
         self.assertEqual("140.0.7339.16", lock["playwright"]["chromium_version"])
+        self.assertEqual("ubuntu", lock["os"]["id"])
+        self.assertEqual("24.04", lock["os"]["version_id"])
+        self.assertTrue(lock["scope"]["os_base_pinned"])
         self.assertFalse(lock["scope"]["workflows_wired"])
 
     def test_contract_detects_runtime_file_drift(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             for relative in (
-                ".python-version",
-                ".node-version",
-                "requirements.in",
-                "requirements.lock.txt",
-                "package.json",
-                "package-lock.json",
-                "reproducibility/environment.lock.json",
+                ".python-version", ".node-version", "requirements.in", "requirements.lock.txt",
+                "package.json", "package-lock.json", "reproducibility/environment.lock.json",
+                "reproducibility/os-base.lock.json",
             ):
                 source = ROOT / relative
                 target = root / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(source.read_bytes())
-
             (root / ".node-version").write_text("99.0.0\n", encoding="utf-8")
-            errors = repro_environment.validate_contract(root)
-            self.assertIn(".node-version differs from environment.lock.json", errors)
+            self.assertIn(
+                ".node-version differs from environment.lock.json",
+                repro_environment.validate_contract(root),
+            )
+
+    def test_runtime_mismatch_is_fail_closed(self) -> None:
+        manifest = repro_environment.attach_payload_sha256({
+            "schema": repro_environment.MANIFEST_SCHEMA,
+            "expected": {}, "observed": {},
+            "matches": {"python": True, "node": False, "playwright": True, "chromium": True, "os": True},
+        })
+        self.assertEqual(["node"], repro_environment.runtime_mismatches(manifest))
+
+    def test_manifest_content_address_detects_tampering(self) -> None:
+        manifest = repro_environment.attach_payload_sha256({
+            "schema": repro_environment.MANIFEST_SCHEMA,
+            "matches": {"python": True},
+        })
+        self.assertTrue(repro_environment.verify_content_address(manifest))
+        manifest["matches"]["python"] = False
+        self.assertFalse(repro_environment.verify_content_address(manifest))
+
+    def test_content_addressed_manifest_filename(self) -> None:
+        manifest = repro_environment.attach_payload_sha256({
+            "schema": repro_environment.MANIFEST_SCHEMA,
+            "matches": {"python": True},
+        })
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = repro_environment.write_content_addressed_manifest(manifest, Path(temp_dir))
+            self.assertIn(manifest["payload_sha256"], path.name)
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+            self.assertTrue(repro_environment.verify_content_address(loaded))
 
 
 if __name__ == "__main__":

@@ -63,6 +63,24 @@ def test_price_and_to_call_buckets_are_part_of_identity() -> None:
     assert base["policy_context_id"] != changed["policy_context_id"]
 
 
+def test_explicit_null_min_raise_maps_to_existing_none_increment_bucket() -> None:
+    pfc = canonical_preflop_context(unopened_btn_state(100), "BTN")
+    null_minimum = copy.deepcopy(pfc)
+    null_minimum["min_raise_to_bb"] = None
+    null_minimum["raise_reopened"] = False
+    null_minimum["legal_actions"] = ["FOLD", "CALL"]
+
+    missing_minimum = copy.deepcopy(null_minimum)
+    missing_minimum.pop("min_raise_to_bb")
+
+    null_policy = build_policy_context(null_minimum)
+    missing_policy = build_policy_context(missing_minimum)
+
+    assert null_policy["min_raise_increment_bucket"] == "NONE"
+    assert missing_policy["min_raise_increment_bucket"] == "NONE"
+    assert null_policy["policy_context_id"] == missing_policy["policy_context_id"]
+
+
 def test_history_and_actor_remain_structural() -> None:
     pfc = canonical_preflop_context(unopened_btn_state(100), "BTN")
     base = build_policy_context(pfc)

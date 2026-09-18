@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/analytics/review-dashboard.schema.json",
+  "title": "Poker Review Dashboard",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "scope", "scope_key", "state", "metrics", "top_leaks", "priority", "ctas", "traceability"],
+  "properties": {
+    "schema": {"const": "poker-review-dashboard/v1"},
+    "scope_key": {"type": "string", "minLength": 1},
+    "state": {"enum": ["NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"]},
+    "scope": {
+      "type": "object",
+      "required": ["population_id", "pack_id", "strategy_id", "strategy_version", "ev_reference"],
+      "properties": {
+        "population_id": {"type": "string"},
+        "pack_id": {"type": ["string", "null"]},
+        "strategy_id": {"type": "string"},
+        "strategy_version": {"type": "string"},
+        "ev_reference": {"type": "string"}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "hands_loaded", "hands_with_review_score", "hands_in_scope", "hands_incomplete",
+        "decisions_analyzed", "decisions_to_review", "total_ev_loss_bb", "nominal_ev_loss_bb",
+        "review_coverage_pct", "source_refs"
+      ],
+      "properties": {
+        "hands_loaded": {"type": "integer", "minimum": 0},
+        "hands_with_review_score": {"type": "integer", "minimum": 0},
+        "hands_in_scope": {"type": "integer", "minimum": 0},
+        "hands_incomplete": {"type": "integer", "minimum": 0},
+        "decisions_analyzed": {"type": "integer", "minimum": 0},
+        "decisions_to_review": {"type": "integer", "minimum": 0},
+        "total_ev_loss_bb": {"type": "number", "minimum": 0},
+        "nominal_ev_loss_bb": {"type": "number", "minimum": 0},
+        "review_coverage_pct": {"type": ["number", "null"]},
+        "source_refs": {"type": "array", "items": {"$ref": "#/$defs/source_ref"}}
+      }
+    },
+    "top_leaks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["dimension", "key", "decisions", "hands", "total_loss_bb", "frequency_pct", "loss_share_pct", "source_refs"],
+        "properties": {
+          "dimension": {"const": "spot_family"},
+          "key": {"type": "string"},
+          "decisions": {"type": "integer", "minimum": 0},
+          "hands": {"type": "integer", "minimum": 0},
+          "total_loss_bb": {"type": "number", "minimum": 0},
+          "frequency_pct": {"type": "number"},
+          "loss_share_pct": {"type": "number"},
+          "source_refs": {"type": "array", "items": {"$ref": "#/$defs/source_ref"}}
+        }
+      }
+    },
+    "priority": {
+      "type": "object",
+      "required": ["hand", "decision"],
+      "properties": {
+        "hand": {"type": ["object", "null"]},
+        "decision": {"type": ["object", "null"]}
+      }
+    },
+    "ctas": {
+      "type": "object",
+      "required": ["review", "leak", "training"],
+      "properties": {
+        "review": {"$ref": "#/$defs/cta"},
+        "leak": {"$ref": "#/$defs/cta"},
+        "training": {"$ref": "#/$defs/cta"}
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "required": ["inbox_schema", "leak_report_schema", "event_schema", "adapter_schema", "training_target_schema"],
+      "properties": {
+        "inbox_schema": {"const": "poker-review-inbox/v1"},
+        "leak_report_schema": {"const": "poker-leak-analysis/v1"},
+        "event_schema": {"const": "poker-leak-decision-event/v1"},
+        "adapter_schema": {"const": "poker-review-leak-adapter/v1"},
+        "training_target_schema": {"type": ["string", "null"]}
+      }
+    }
+  },
+  "$defs": {
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hand_id", "decision_id"],
+      "properties": {"hand_id": {"type": "string"}, "decision_id": {"type": "string"}}
+    },
+    "cta": {
+      "type": "object",
+      "required": ["schema", "kind", "enabled", "reason", "target"],
+      "properties": {
+        "schema": {"const": "poker-review-dashboard-cta/v1"},
+        "kind": {"enum": ["REVIEW", "LEAK", "TRAINING"]},
+        "enabled": {"type": "boolean"},
+        "reason": {"type": "string"},
+        "target": {"type": ["object", "null"]},
+        "error": {"type": "string"}
+      }
+    }
+  }
+}

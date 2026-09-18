@@ -1,47 +1,50 @@
 # Machine-readable project state
 
-Issue #206 introduces a repository-owned distinction between administrative completion and delivered capability. A closed issue is not, by itself, evidence that a feature is active in the current runtime.
+Issue #206 separates administrative completion from capability delivery. A closed issue, a successful build, or publication metadata is not sufficient evidence that a capability is scientifically selected, integrated, promoted, or live.
 
-## Delivery states
+## Canonical delivery states
 
-The canonical order is:
+The ordered states are:
 
-1. CONTRACT_READY — the contract, schema, infrastructure or reproducible boundary exists.
-2. SCIENTIFICALLY_SELECTED — a candidate/artifact has been selected under its declared scientific gate.
-3. PRODUCT_INTEGRATED — the selected capability is wired into the product/runtime used by the user.
-4. PROMOTED — the integrated artifact is the promoted/default repository or release identity.
-5. LIVE — the exact promoted identity has been verified on the canonical production surface.
+1. `CONTRACT_READY` — contract, schema, infrastructure, or reproducible boundary exists.
+2. `SCIENTIFICALLY_SELECTED` — a candidate/artifact has been selected under its declared scientific gate.
+3. `PRODUCT_INTEGRATED` — the selected capability is wired into the user-facing/runtime product.
+4. `PROMOTED` — the integrated artifact is the promoted/default repository or release identity.
+5. `LIVE` — the exact promoted identity has explicit canonical-production proof.
 
-The order is intentional: publication metadata, a closed ticket, or a successful CI run cannot silently skip missing scientific, integration, promotion or live-deployment evidence.
+`.project/capabilities.json` is the machine-readable inventory. Each capability declares its current state, versioned evidence, optional higher-state blockers, and optional administrative mismatch metadata.
 
-## Sources of truth
+## Deterministic STATUS
 
-.project/capabilities.json is the machine-readable inventory for capabilities tracked by this first phase. Each capability declares its current delivery state, versioned evidence, optional higher-state blockers, and optional administrative metadata.
+`.project/STATUS.md` is generated from the manifest plus the current versioned evidence. It contains no manual roadmap, chat-derived state, or generated timestamp.
 
-tools/validate_project_state.py evaluates only repository files. It does not call GitHub, mutate issues, rewrite history, or infer a feature state from chat context.
-
-Run:
+Commands:
 
     python3 tools/validate_project_state.py
+    python3 tools/validate_project_state.py --render-status
+    python3 tools/validate_project_state.py --check-status
+    python3 tools/validate_project_state.py --write-status
     python3 tests/test_project_state.py
 
-A report is PASS, WARN, or FAIL:
+`--render-status` prints the deterministic Markdown view.
 
-- PASS: all declared evidence is present and no administrative gap exists.
-- WARN: evidence is valid, but a higher administrative claim is explicitly acknowledged and linked to a successor issue.
-- FAIL: evidence is missing/stale, the manifest is malformed, or a higher administrative claim is not traceably acknowledged.
+`--check-status` regenerates the view in memory and fails if `.project/STATUS.md` differs byte-for-byte from it. This catches stale or manually edited recovery documentation.
 
-Use --strict-warnings when a later CI phase should treat acknowledged gaps as non-zero (exit code 2). Ordinary validation returns zero for PASS and WARN, and one for FAIL.
+`--write-status` is the safe repository update path. It refuses to write when versioned evidence validation is `FAIL`; `PASS` and explicitly acknowledged `WARN` states may be rendered.
 
-## Current deliberate gaps
+Use `--status-path` only when testing or intentionally targeting another path inside the repository root. `--strict-warnings` preserves the phase-1 behavior where an acknowledged warning can be promoted to exit code 2.
 
-The manifest records two important boundaries rather than hiding them:
+## Contradictions stay visible
 
-- issue #109 is closed, but site/trainer.js explicitly says that Hero training decisions begin on the flop; the capability therefore remains CONTRACT_READY until versioned runtime evidence proves integration;
-- site/RELEASE.json has a promoted repository/build identity, but publication_verification.status is UNVERIFIED_LIVE; the application must not be represented as LIVE until issue #45 supplies exact canonical-production proof.
+The generated view contains both higher-state blockers and acknowledged historical contradictions. They are not normalized away merely because an issue is closed.
 
-The validator never reopens historical issues. A contradiction is either linked to a successor issue or reported as a failure.
+Current examples include:
 
-## Phase-1 scope
+- #109 is closed with a historical `PRODUCT_INTEGRATED` claim, while the current trainer still contains the explicit flop-only Hero-decision boundary. The capability therefore remains `CONTRACT_READY` and the mismatch is tracked by #206.
+- the legacy mixed v83 engine and assembled static application are `PROMOTED`, but `site/RELEASE.json` still records `UNVERIFIED_LIVE` / issue #45, so neither is represented as `LIVE`.
 
-This phase deliberately does not rewrite .project/STATUS.md or .project/PLAN.md and does not edit scientific workflows owned by #107/#108. The validator provides the stable machine-readable layer that later work can use to generate/check human status documents and wire an appropriate CI job without competing with the frozen scientific lanes.
+The validator never reopens historical issues and never infers state from GitHub or chat context.
+
+## Remaining DoD gap
+
+The repository now has deterministic generation and stale-file checking, but no dedicated CI workflow invokes `--check-status` yet. Under #225 that integration is intentionally left separate while lanes A/F own or audit workflow-sensitive areas. Until that final integration exists, #206 should remain open.
