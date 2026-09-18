@@ -1,0 +1,22 @@
+{
+  "schema": "poker-preflop-strategy-pfpc-validation-execution-request/v1",
+  "issue": 108,
+  "contract_version": "2026-09-18.3",
+  "phase": "VALIDATION",
+  "candidate_evidence_branch": "evidence/issue-107-pfpc-d7ec5e532dc5",
+  "candidate_evidence_commit": "dfddfb5696623a2611f35565a213d14013d8a343",
+  "candidate_repository_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+  "candidate_binding_sha256": "44e1e4d9e5846f3f2e6cc0402848b35b0e9e69b0a34334981c8e961f523a6bb7",
+  "source_head_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
+  "master_seed": 20260917,
+  "rollouts_per_base_hand": 2,
+  "bootstrap_samples": 5000,
+  "environments": [
+    "model-b-public-reference-nominal-v1",
+    "model-b-public-reference-lower-aggression-v1",
+    "model-b-public-reference-higher-aggression-v1"
+  ],
+  "test_authorized": false,
+  "test_consumed": false,
+  "thresholds_changed": false
+}
