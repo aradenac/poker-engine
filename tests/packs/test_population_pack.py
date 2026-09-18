@@ -15,6 +15,7 @@ from tools.population_pack_candidate import (
     validate_candidate_contract,
 )
 from tools.validate_population_pack import REQUIRED_ROLES, validate
+from tools.write_pack_catalog import build_catalog
 
 CONFIG = ROOT / "user/packs/legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1/pack.json"
 CANDIDATE = ROOT / "user/packs/pokerstars_nlhe_100-200_zoom_play_6max_v1/candidate.json"
@@ -130,8 +131,9 @@ class PopulationPackTests(unittest.TestCase):
                 validate(str(archive))
 
     def test_blocked_zoom_candidate_is_not_in_browser_catalog(self):
-        catalog = json.loads((ROOT / "site/packs/catalog.json").read_text(encoding="utf-8"))
+        catalog = build_catalog()
         self.assertNotIn(TARGET_ZOOM, {entry["population_id"] for entry in catalog["entries"]})
+        self.assertTrue(all(entry.get("recommended") is True for entry in catalog["entries"]))
 
 
 if __name__ == "__main__":
