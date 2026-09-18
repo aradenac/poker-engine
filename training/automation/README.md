@@ -151,3 +151,40 @@ python3 tools/training/build_promote_release_handoff.py prepare \
 The later transition commands consume provider/live/rollback JSON evidence; they
 do not execute the corresponding external action. A successful CI/build or a
 preview URL therefore cannot be upgraded to `VERIFIED_LIVE` by this tool.
+
+
+### Read-only live verification
+
+After an external production deployment, `tools/training/verify_live_release.py`
+produces the `live_verification` payload consumed by the PROMOTE handoff. It
+does not deploy or mutate the service. The verifier:
+
+- hashes the exact served `RELEASE.json`;
+- reads the deployed commit/build identity from `deployment-meta.css`;
+- downloads every functional file declared by the served release and verifies
+  its Git-blob identity;
+- runs a browser smoke that parses/renders a synthetic PokerStars hand in the
+  live replayer;
+- opens the live trainer and waits for the promoted Model A / Model B / Hero
+  range assets to load and a training hand to be created.
+
+Example:
+
+```bash
+python3 -m pip install --user playwright
+python3 -m playwright install --with-deps chromium
+python3 tools/training/verify_live_release.py \
+  --production-url <canonical-production-url> \
+  --expected-commit-sha <40-char-release-commit> \
+  --expected-site-release-sha256 <candidate-release-sha256> \
+  --out <run-dir>/LIVE_VERIFICATION.json
+
+python3 tools/training/build_promote_release_handoff.py verified-live \
+  --handoff <run-dir>/RELEASE_HANDOFF_PREPARED.json \
+  --deployment-evidence <run-dir>/DEPLOYMENT.json \
+  --live-verification <run-dir>/LIVE_VERIFICATION.json \
+  --out <run-dir>/RELEASE_HANDOFF_VERIFIED_LIVE.json
+```
+
+A failed live probe leaves the release undelivered; it cannot be converted to
+`VERIFIED_LIVE`.
