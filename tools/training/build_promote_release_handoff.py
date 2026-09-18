@@ -43,7 +43,6 @@ from tools.validate_release_handoff import (
     validate_handoff,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 PLAN_SCHEMA = "poker-atomic-promotion/v1"
 
