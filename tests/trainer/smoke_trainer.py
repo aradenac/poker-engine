@@ -272,6 +272,7 @@ async def main() -> None:
         assert await page.evaluate("document.activeElement?.id") == "actionDetailModalClose"
         await page.keyboard.press("Escape")
         await page.wait_for_function("!document.querySelector('#actionDetailModal').classList.contains('open')")
+        await page.wait_for_function("document.activeElement?.id === 'trainerOpenBtn'")
         assert await page.evaluate("document.activeElement?.id") == "trainerOpenBtn"
 
         desktop_font = await page.evaluate(
