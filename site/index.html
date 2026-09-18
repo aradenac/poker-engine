@@ -668,6 +668,23 @@
   .street-event{cursor:pointer;transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease;scroll-snap-align:start;position:relative}
   .street-event:hover{background:rgba(255,255,255,.045);border-color:rgba(122,151,205,.28);transform:translateY(-1px)}
   .street-event:focus{outline:2px solid rgba(92,225,185,.42);outline-offset:1px}
+  button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,[role="button"]:focus-visible{
+    outline:2px solid rgba(92,225,185,.78);outline-offset:2px
+  }
+  [role="dialog"]:focus-visible{outline:2px solid rgba(92,225,185,.55);outline-offset:-3px}
+  @media(min-width:901px){
+    .decision-primary-card .k,
+    .action-eq-item.used-prior .label::after,.action-eq-item.used-post .label::after,
+    .population-modal-cell .freq,.population-delta-cell,
+    .street-event .player .known-hand-compact,.street-event .action-badge,.street-event .pot,
+    .action-mini-pill{font-size:10px}
+    .product-identity-chip,.runtime-identity>summary,.runtime-identity-grid,
+    .local-persistence-chip,.local-persistence-details>summary,.local-persistence-actions button,
+    .population-modal-sub,.population-modal-cell .hand,.population-modal-trace-row,
+    .population-modal-metric,.population-combo-row,.population-delta-cell .hand,
+    .population-modal-warning,.action-detail-chip,.action-retrospective-boundary,
+    .replayer-export-status{font-size:10px}
+  }
   .street-event.current{box-shadow:0 8px 18px rgba(0,0,0,.18)}
   .action-analysis{margin-top:4px;padding-top:5px}
   .action-analysis-compact{display:grid;gap:5px}
@@ -1001,7 +1018,7 @@
   </div>
 </div>
 <div id="populationRangeModal" class="population-modal-backdrop" aria-hidden="true">
-  <div class="population-modal" role="dialog" aria-modal="true" aria-labelledby="populationRangeModalTitle">
+  <div class="population-modal" role="dialog" aria-modal="true" aria-labelledby="populationRangeModalTitle" tabindex="-1">
     <div class="population-modal-head">
       <div>
         <div id="populationRangeModalTitle" class="population-modal-title">Range adverse estimée</div>
@@ -1013,7 +1030,7 @@
   </div>
 </div>
 <div id="actionDetailModal" class="population-modal-backdrop" aria-hidden="true">
-  <div class="action-verdict-detail-modal" role="dialog" aria-modal="true" aria-labelledby="actionDetailModalTitle">
+  <div class="action-verdict-detail-modal" role="dialog" aria-modal="true" aria-labelledby="actionDetailModalTitle" tabindex="-1">
     <div class="action-verdict-head">
       <div>
         <div id="actionDetailModalTitle" class="action-verdict-title">Verdict d'action</div>
@@ -3813,13 +3830,10 @@ function openActionDetailModal(stepIndex){
   actionDetailModalTitle.textContent=`Verdict · ${step.activePlayer||'Action'} · ${actionLabel}`;
   actionDetailModalSub.textContent=`Étape ${stepIndex+1}/${state.replaySteps.length} · ${step.label||step.street||''} · ${step.actionText||''}`;
   actionDetailModalBody.innerHTML=actionDetailModalInnerHtml(stepIndex,step);
-  actionDetailModal.classList.add('open');
-  actionDetailModal.setAttribute('aria-hidden','false');
+  openAccessibleModal(actionDetailModal,{initialFocus:()=>actionDetailModalClose});
 }
 function closeActionDetailModal(){
-  if(!actionDetailModal)return;
-  actionDetailModal.classList.remove('open');
-  actionDetailModal.setAttribute('aria-hidden','true');
+  closeAccessibleModal(actionDetailModal);
 }
 function actionAnalysisHtml(stepIndex,step){
   if(!isAnyMoneyEvent(step)&&!ctxPostflopCheck(step))return "";
@@ -4179,7 +4193,7 @@ function replayStreetTimelineHtml(step,currentIndex){
       const amount=replayActionAmountText(s,s.activePlayer);
       const compactDetail=amount || (["fold","check","show","muck","noshow","collect"].includes(type)?"":detail);
       const canOpen=isAnyMoneyEvent(s)||ctxPostflopCheck(s);
-      return `<div class="street-event${i===currentIndex?" current":""}" data-replay-step="${i}"${canOpen?` data-open-action-detail="${i}" role="button" tabindex="0" aria-label="Ouvrir le détail de ${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}"`:""} title="${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}">
+      return `<div class="street-event${i===currentIndex?" current":""}" data-replay-step="${i}"${i===currentIndex?` aria-current="step"`:""}${canOpen?` data-open-action-detail="${i}" role="button" tabindex="0" aria-label="Ouvrir le détail de ${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}"`:""} title="${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}">
         <div class="street-event-main">
           <span class="player" title="${escapeHtml(s.activePlayer)}">${escapeHtml(s.activePlayer)}</span>
           <span class="action"><span class="action-badge ${escapeHtml(type)}">${escapeHtml(replayActionLabel(type))}</span>${compactDetail?`<span class="action-text-compact">${escapeHtml(compactDetail)}</span>`:""}</span>
@@ -4356,10 +4370,56 @@ function populationRangeWidthFromEntries(entries){
   }
   return total?weighted/total:0;
 }
+const modalFocusOrigins=new WeakMap();
+function modalDialogElement(backdrop){
+  return backdrop?.querySelector('[role="dialog"]')||null;
+}
+function modalFocusableElements(backdrop){
+  const dialog=modalDialogElement(backdrop);if(!dialog)return [];
+  return [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')]
+    .filter(el=>!el.hasAttribute('hidden')&&el.getAttribute('aria-hidden')!=="true"&&el.getClientRects().length>0);
+}
+function openAccessibleModal(backdrop,{initialFocus=null}={}){
+  if(!backdrop)return;
+  const origin=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  if(origin)modalFocusOrigins.set(backdrop,origin);
+  backdrop.classList.add("open");
+  backdrop.setAttribute("aria-hidden","false");
+  requestAnimationFrame(()=>{
+    const dialog=modalDialogElement(backdrop);
+    const target=initialFocus?.()||modalFocusableElements(backdrop)[0]||dialog;
+    target?.focus({preventScroll:true});
+  });
+}
+function closeAccessibleModal(backdrop){
+  if(!backdrop)return;
+  backdrop.classList.remove("open");
+  backdrop.setAttribute("aria-hidden","true");
+  const origin=modalFocusOrigins.get(backdrop);
+  modalFocusOrigins.delete(backdrop);
+  if(origin?.isConnected)requestAnimationFrame(()=>origin.focus({preventScroll:true}));
+}
+function activeAccessibleModal(){
+  if(actionDetailModal?.classList.contains("open"))return actionDetailModal;
+  if(populationRangeModal?.classList.contains("open"))return populationRangeModal;
+  return null;
+}
+function handleAccessibleModalKeydown(e){
+  const modal=activeAccessibleModal();if(!modal)return;
+  if(e.key==="Escape"){
+    e.preventDefault();e.stopPropagation();
+    if(modal===actionDetailModal)closeActionDetailModal();else closePopulationRangeModal();
+    return;
+  }
+  if(e.key!=="Tab")return;
+  const items=modalFocusableElements(modal);
+  if(!items.length){e.preventDefault();modalDialogElement(modal)?.focus();return;}
+  const first=items[0],last=items[items.length-1],active=document.activeElement;
+  if(e.shiftKey&&(active===first||!modal.contains(active))){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&(active===last||!modal.contains(active))){e.preventDefault();first.focus();}
+}
 function closePopulationRangeModal(){
-  if(!populationRangeModal) return;
-  populationRangeModal.classList.remove("open");
-  populationRangeModal.setAttribute("aria-hidden","true");
+  closeAccessibleModal(populationRangeModal);
 }
 
 function updateQuickNavUi(){
@@ -4449,16 +4509,13 @@ function openPopulationRangeModal(playerName){
     </div>
     ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
     <div class="section"><div class="section-title">Historique de conditionnement</div><div class="population-modal-trace">${traceHtml}</div></div>`;
-  populationRangeModal.classList.add("open");populationRangeModal.setAttribute("aria-hidden","false");
+  openAccessibleModal(populationRangeModal,{initialFocus:()=>populationRangeModalClose});
 }
 populationRangeModalClose?.addEventListener("click",closePopulationRangeModal);
 populationRangeModal?.addEventListener("click",e=>{if(e.target===populationRangeModal) closePopulationRangeModal();});
 actionDetailModalClose?.addEventListener('click',closeActionDetailModal);
 actionDetailModal?.addEventListener('click',e=>{if(e.target===actionDetailModal) closeActionDetailModal();});
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"&&populationRangeModal?.classList.contains("open")) closePopulationRangeModal();
-  if(e.key==="Escape"&&actionDetailModal?.classList.contains("open")) closeActionDetailModal();
-});
+document.addEventListener("keydown",handleAccessibleModalKeydown);
 
 function toggleReplayPlayback(){
   if(!state.hhMode||!state.selectedHand||!state.replaySteps.length)return;
