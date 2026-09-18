@@ -83,7 +83,12 @@ def finalize_cycle_release(
     contract_path: Path = DEFAULT_CONTRACT,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     root = Path(root).resolve()
-    cycle_decision_path = Path(cycle_decision_path).resolve()
+    cycle_decision_path = _resolve(root, Path(cycle_decision_path))
+    snapshot = None if snapshot is None else _resolve(root, Path(snapshot))
+    site_release_path = _resolve(root, Path(site_release_path))
+    population_registry_path = _resolve(root, Path(population_registry_path))
+    wrangler_config_path = _resolve(root, Path(wrangler_config_path))
+    contract_path = _resolve(root, Path(contract_path))
     decision = load_json(cycle_decision_path)
     outcome = classify_release_outcome(decision)
 
@@ -108,11 +113,15 @@ def finalize_cycle_release(
             contract_path=contract_path,
         )
 
-    promotion_plan_path = Path(_need_promote(promotion_plan_path, "--promotion-plan")).resolve()
-    candidate_pack_path = Path(_need_promote(candidate_pack_path, "--candidate-pack")).resolve()
-    candidate_site_release_path = Path(
-        _need_promote(candidate_site_release_path, "--candidate-site-release")
-    ).resolve()
+    promotion_plan_path = _resolve(
+        root, Path(_need_promote(promotion_plan_path, "--promotion-plan"))
+    )
+    candidate_pack_path = _resolve(
+        root, Path(_need_promote(candidate_pack_path, "--candidate-pack"))
+    )
+    candidate_site_release_path = _resolve(
+        root, Path(_need_promote(candidate_site_release_path, "--candidate-site-release"))
+    )
     expected_release_commit_sha = str(
         _need_promote(expected_release_commit_sha, "--expected-release-commit-sha")
     )
