@@ -1,0 +1,99 @@
+{
+  "schema": "poker-prospective-holdout-protocol/v1",
+  "protocol_version": "2026-09-19.2",
+  "manifest_schema": "poker-prospective-holdout/v1",
+  "purpose": "Freeze a candidate and its fit provenance before admitting genuinely future hand histories, keep the prospective ledger append-only and uncontaminated, close evaluation under precommitted metrics/thresholds, then explicitly release those hands only to a later TRAIN cycle.",
+  "state_order": [
+    "UNCONSUMED",
+    "EVALUATING",
+    "CLOSED",
+    "RELEASED_TO_FUTURE_TRAIN"
+  ],
+  "rules": {
+    "candidate_frozen_before_admission": true,
+    "candidate_fit_identity_frozen": true,
+    "prospective_hands_must_be_absent_from_candidate_fit": true,
+    "append_only_hands_while_unconsumed": true,
+    "ledger_frozen_during_evaluation": true,
+    "no_train_before_closed": true,
+    "thresholds_frozen_before_admission": true,
+    "future_train_requires_new_cycle": true,
+    "separate_drift_coverage_performance_report": true,
+    "test_or_validation_split_is_not_reused_as_prospective_holdout": true,
+    "historical_holdout_ledgers_are_not_rewritten": true
+  },
+  "precommit_identity": {
+    "required": [
+      "population_id",
+      "source_commit_sha",
+      "frozen_at",
+      "prior_hand_ids_sha256",
+      "fit.completed_at",
+      "fit.training_dataset_sha256",
+      "fit.training_hand_ids_sha256",
+      "candidate.id",
+      "candidate.artifact_sha256",
+      "candidate.pack_sha256",
+      "models.*_sha256",
+      "strategy_sha256",
+      "protocol_sha256",
+      "metrics_sha256",
+      "thresholds_sha256",
+      "cutoff_utc",
+      "admission_not_before_utc"
+    ],
+    "temporal_rule": "fit.completed_at <= frozen_at <= cutoff_utc < admission_not_before_utc",
+    "interpretation": "Candidate, fit dataset identity, models, strategy, metrics, thresholds and temporal boundary are immutable for one holdout generation before any prospective HH is admitted."
+  },
+  "hand_provenance": {
+    "required": [
+      "hand_id",
+      "sha256",
+      "observed_at",
+      "first_seen_at",
+      "novelty_proof",
+      "train_eligible"
+    ],
+    "novelty_proof_required": [
+      "checked_against_hand_ids_sha256",
+      "absent_from_prior_hand_ids",
+      "checked_against_candidate_fit_hand_ids_sha256",
+      "absent_from_candidate_fit_hand_ids",
+      "evidence_sha256"
+    ],
+    "admission_rule": "observed_at and first_seen_at are on/after admission_not_before_utc; novelty proof binds both to the frozen prior-hand universe and to the frozen candidate-fit hand-ID fingerprint.",
+    "append_only_rule": "Hands may be appended only while state=UNCONSUMED. Existing rows are immutable. On RELEASED_TO_FUTURE_TRAIN the sole permitted row mutation is train_eligible false->true."
+  },
+  "evaluation": {
+    "start_rule": "UNCONSUMED -> EVALUATING freezes the hand ledger; evaluation.started_at must be on/after every admitted first_seen_at.",
+    "required_report_classification": [
+      "population_drift",
+      "coverage",
+      "performance"
+    ],
+    "classification_values": [
+      "PASS",
+      "WARN",
+      "FAIL",
+      "INCONCLUSIVE",
+      "NOT_EVALUATED"
+    ],
+    "rule": "CLOSED persists one content-addressed report that distinguishes population drift, context/model coverage, and performance under the precommitted metrics and thresholds."
+  },
+  "training_transition": {
+    "from_state": "CLOSED",
+    "to_state": "RELEASED_TO_FUTURE_TRAIN",
+    "requires": [
+      "evaluation.closed_at",
+      "training_transition.released_at >= evaluation.closed_at",
+      "training_transition.next_training_cycle_id"
+    ],
+    "rule": "Prospective hands are never eligible for the fit of the candidate they evaluated. After closure they may be released only to a separately identified future TRAIN cycle."
+  },
+  "scope": {
+    "phase": "PROTOCOL_ONLY",
+    "issue": 202,
+    "no_scientific_execution": true,
+    "notes": "This contract creates no real holdout generation, admits no real HH, consumes no existing VALIDATION/TEST data, and does not modify #107/#108 contracts, workflows or ledgers."
+  }
+}
