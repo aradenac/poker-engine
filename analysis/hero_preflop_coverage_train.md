@@ -65,7 +65,6 @@ Diagnostic only: no Hero strategy is generated and neither VALIDATION nor TEST d
 
 ## Reproduction
 
-Run:
 python3 tools/training/audit_hero_preflop_coverage.py --output-json analysis/hero_preflop_coverage_train.json --output-md analysis/hero_preflop_coverage_train.md
 
 The tool verifies certification/archive SHA identities and filters to TRAIN hand IDs before normalization.
