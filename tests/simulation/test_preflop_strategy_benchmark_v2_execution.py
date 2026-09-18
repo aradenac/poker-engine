@@ -43,6 +43,13 @@ def rows():
                         "hero_preflop_decisions": 1,
                         "candidate_supported_decisions": 1 if hand == "h1" else 0,
                         "candidate_out_of_support_decisions": 0 if hand == "h1" else 1,
+                        "policy_contexts": {
+                            "PFPC_FIXTURE": {
+                                "hero_preflop_decisions": 1,
+                                "candidate_supported_decisions": 1 if hand == "h1" else 0,
+                                "candidate_out_of_support_decisions": 0 if hand == "h1" else 1,
+                            }
+                        },
                     },
                     "reference_outcome": {
                         "players_to_flop": 2,
