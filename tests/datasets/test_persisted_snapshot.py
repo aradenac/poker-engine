@@ -9,7 +9,9 @@ sys.path.insert(0, str(ROOT))
 from tools.datasets.build_hand_history_increment import (
     build_increment, fingerprint, read_archive, sha256_file,
 )
-from tools.training.audit_hero_preflop_coverage import (\n    audit as audit_hero_preflop_coverage, render_markdown as render_hero_preflop_coverage_markdown,\n)
+from tools.training.audit_hero_preflop_coverage import (
+    audit as audit_hero_preflop_coverage, render_markdown as render_hero_preflop_coverage_markdown,
+)
 
 
 class PersistedSnapshotTests(unittest.TestCase):
