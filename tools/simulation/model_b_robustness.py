@@ -600,9 +600,10 @@ def compact_robustness_summary(report: Mapping[str, Any]) -> dict[str, Any]:
     """Small feed/detail/export contract; deliberately hides full simulation detail."""
     if report.get("schema") != REPORT_SCHEMA:
         raise ValueError("unsupported robustness report schema")
-    nominal = report["nominal_recommendation"]
+    nominal = report.get("nominal_recommendation")
     environment = report["environment_uncertainty"]
     stability = report["stability"]
+    diagnostics = report.get("diagnostics") or {}
     classification = str(report["classification"])
     labels = {
         "ROBUST": "robust",
@@ -611,26 +612,44 @@ def compact_robustness_summary(report: Mapping[str, Any]) -> dict[str, Any]:
     }
     if classification not in labels:
         raise ValueError(f"unknown robustness classification: {classification}")
+    nominal_summary = None
+    if nominal is not None:
+        nominal_summary = {
+            "action": nominal["action"],
+            "sizing": nominal["sizing"],
+            "ev_bb": nominal["ev_bb"],
+            "advantage_bb": nominal.get("nominal_advantage_bb"),
+            "mc_ci95": nominal["mc_uncertainty"]["ci95"],
+            "mc_ci95_width_bb": nominal["mc_uncertainty"].get("ci95_width_bb"),
+        }
     return {
         "schema": SUMMARY_SCHEMA,
         "decision_id": report["decision_id"],
         "status": labels[classification],
-        "nominal": {
-            "action": nominal["action"],
-            "sizing": nominal["sizing"],
-            "ev_bb": nominal["ev_bb"],
-            "mc_ci95": nominal["mc_uncertainty"]["ci95"],
-        },
+        "nominal": nominal_summary,
         "model_environment": {
+            "comparable": environment.get("comparable"),
             "ev_span_bb": environment["nominal_recommendation_ev_span_bb"],
             "max_regret_bb": environment["max_regret_bb"],
+            "worst_environment_regret": environment.get("worst_environment_regret"),
             "environment_count": len(report["environments"]),
+            "missing_environment_ids": environment.get("missing_environment_ids", []),
+            "noncomparable_environment_ids": environment.get(
+                "noncomparable_environment_ids", []
+            ),
             "weighted": False,
         },
         "stability": {
             "action": stability["action_stable"],
             "sizing": stability["sizing_stable"],
+            "ranking": stability.get("ranking_stable"),
         },
+        "support": {
+            "all_environments_supported": report["support"]["all_environments_supported"],
+            "unsupported_environment_count": report["support"]["unsupported_environment_count"],
+        },
+        "shove_fragility": diagnostics.get("shove_fragility"),
+        "overbet_fragility": diagnostics.get("overbet_fragility"),
         "aggressive_fragility": report.get("aggressive_fragility"),
         "detail_available": True,
     }
