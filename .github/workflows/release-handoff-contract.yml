@@ -7,10 +7,12 @@ on:
       - 'tools/validate_release_handoff.py'
       - 'tools/training/build_release_handoff.py'
       - 'tools/training/build_promote_release_handoff.py'
+      - 'tools/training/finalize_cycle_release.py'
       - 'tools/training/verify_live_release.py'
       - 'tests/test_release_handoff.py'
       - 'tests/training/test_build_release_handoff.py'
       - 'tests/training/test_build_promote_release_handoff.py'
+      - 'tests/training/test_finalize_cycle_release.py'
       - 'tests/training/test_verify_live_release.py'
       - '.github/workflows/release-handoff-contract.yml'
   push:
@@ -39,20 +41,24 @@ jobs:
             tools/validate_release_handoff.py \
             tools/training/build_release_handoff.py \
             tools/training/build_promote_release_handoff.py \
+            tools/training/finalize_cycle_release.py \
             tools/training/verify_live_release.py \
             tests/test_release_handoff.py \
             tests/training/test_build_release_handoff.py \
             tests/training/test_build_promote_release_handoff.py \
+            tests/training/test_finalize_cycle_release.py \
             tests/training/test_verify_live_release.py
       - name: Smoke standalone handoff builder CLIs
         run: |
           python3 tools/training/build_release_handoff.py --help >/dev/null
           python3 tools/training/build_promote_release_handoff.py --help >/dev/null
+          python3 tools/training/finalize_cycle_release.py --help >/dev/null
       - name: Exercise release state machine and no-publication handoff builder
         run: |
           PYTHONPATH=. python3 tests/test_release_handoff.py
           PYTHONPATH=. python3 tests/training/test_build_release_handoff.py
           PYTHONPATH=. python3 tests/training/test_build_promote_release_handoff.py
+          PYTHONPATH=. python3 tests/training/test_finalize_cycle_release.py
           PYTHONPATH=. python3 tests/training/test_verify_live_release.py
       - name: Prove contract workflow has no publication side effect
         run: |

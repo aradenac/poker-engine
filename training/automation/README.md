@@ -188,3 +188,36 @@ python3 tools/training/build_promote_release_handoff.py verified-live \
 
 A failed live probe leaves the release undelivered; it cannot be converted to
 `VERIFIED_LIVE`.
+
+
+## Single completed-cycle release command
+
+`tools/training/finalize_cycle_release.py` is the stable #113 routing entrypoint
+once an immutable scientific cycle decision exists. It does not create another
+scientific gate: it delegates to the two release-handoff builders above and
+fails closed when the persisted decision is ambiguous.
+
+- `RETAIN`, `NO_OP` and `BLOCKED` become
+  `VERIFIED_NO_PUBLICATION`, with byte-identical production identities and no
+  deployment attempt.
+- `PROMOTE` becomes only `PREPARED`; the atomic promotion plan, immutable
+  pack, candidate site release, expected release commit and canonical production
+  URL are mandatory. Publication and live verification remain separate governed
+  actions.
+- The output path is append-only. Existing handoff evidence is never replaced.
+
+Typical no-publication terminalization:
+
+```bash
+python3 tools/training/finalize_cycle_release.py \
+  --population-id pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+  --cycle-run-id <immutable-run-id> \
+  --cycle-decision <run-dir>/DECISION.json \
+  --snapshot-sha256 <64-char-snapshot-sha256> \
+  --out <run-dir>/RELEASE_HANDOFF.json
+```
+
+For a `PROMOTE` decision, the same command additionally requires
+`--promotion-plan`, `--candidate-pack`, `--candidate-site-release`,
+`--expected-release-commit-sha` and `--production-url`. A successful run
+still does not mean that production was changed or verified live.

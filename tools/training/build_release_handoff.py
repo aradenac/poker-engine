@@ -202,6 +202,14 @@ def build_no_publication_handoff(
     return document, validation
 
 
+def write_new_handoff(path: Path, document: Mapping[str, Any]) -> None:
+    path = Path(path)
+    if path.exists():
+        raise FileExistsError(f"refusing to overwrite existing release handoff: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
@@ -247,8 +255,7 @@ def main() -> int:
         contract_path=resolve(args.contract),
     )
     output = resolve(args.out)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_new_handoff(output, document)
     print(json.dumps({
         "handoff": rel(root, output),
         "outcome": document["outcome"],
