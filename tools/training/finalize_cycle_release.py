@@ -29,6 +29,7 @@ from tools.training.build_release_handoff import (  # noqa: E402
     build_no_publication_handoff,
     derive_outcome,
     rel,
+    write_new_handoff,
 )
 from tools.validate_release_handoff import DEFAULT_CONTRACT, load_json  # noqa: E402
 
@@ -145,14 +146,6 @@ def finalize_cycle_release(
         production_url=production_url,
         contract_path=contract_path,
     )
-
-
-def write_new_handoff(path: Path, document: Mapping[str, Any]) -> None:
-    path = Path(path)
-    if path.exists():
-        raise FileExistsError(f"refusing to overwrite existing release handoff: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def parse_args() -> argparse.Namespace:
