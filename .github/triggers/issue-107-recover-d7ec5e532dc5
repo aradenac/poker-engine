@@ -1,9 +1,6 @@
-{
-  "schema": "poker-issue-107-artifact-recovery-trigger/v1",
-  "issue": 107,
-  "source_workflow_run_id": 35379387883,
-  "source_head_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
-  "mode": "ARTIFACT_ONLY_NO_GENERATION",
-  "validation_consumed": false,
-  "test_consumed": false
-}
+issue=107
+mode=ARTIFACT_ONLY_NO_GENERATION
+source_run_id=35379387883
+source_head_sha=d7ec5e532dc550d4c37e9129218b348eef4587b4
+source_branch=issue-107-multiposition-generation-sol
+base_main=1b66705383557bb3d1745bc15cb904a302cb92bc
