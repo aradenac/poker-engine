@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT))
 from tools.datasets.build_hand_history_increment import (
     build_increment, fingerprint, read_archive, sha256_file,
 )
-from tools.training.audit_hero_preflop_coverage import audit as audit_hero_preflop_coverage
+from tools.training.audit_hero_preflop_coverage import (\n    audit as audit_hero_preflop_coverage, render_markdown as render_hero_preflop_coverage_markdown,\n)
 
 
 class PersistedSnapshotTests(unittest.TestCase):
@@ -56,7 +56,11 @@ class PersistedSnapshotTests(unittest.TestCase):
         self.assertEqual(report['accounting']['train_unique_hand_ids_parsed'], 19016)
         self.assertGreater(report['accounting']['targeted_population_preflop_decisions'], 0)
         self.assertTrue(report['matrix'])
-        print('HERO_PREFLOP_COVERAGE_AUDIT=' + json.dumps(report, sort_keys=True, separators=(',', ':')))
+        persisted_json = json.loads((ROOT / 'analysis/hero_preflop_coverage_train.json').read_text(encoding='utf-8'))
+        self.assertEqual(report, persisted_json)
+        persisted_md = (ROOT / 'analysis/hero_preflop_coverage_train.md').read_text(encoding='utf-8')
+        self.assertEqual(render_hero_preflop_coverage_markdown(report), persisted_md)
+        print('Hero preflop TRAIN coverage audit reproduced:', report['accounting'])
 
 
 if __name__ == '__main__':
