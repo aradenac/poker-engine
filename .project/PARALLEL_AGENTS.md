@@ -1,74 +1,78 @@
 # Parallel agent coordination
 
-Source of truth: GitHub issue #225.
+Human dispatch source of truth: GitHub issue **#225**.
 
-This repository may be worked on by up to 8 concurrent ChatGPT web conversations. Parallelism is organized by **conflict group**, not only by issue priority.
+`.project/parallel-agents.json` is a versioned machine-readable mirror used to check file scope before an agent opens or merges a PR. It does **not** replace #225, parse live claims, assign work, merge PRs, close issues, or mutate GitHub comments.
 
-## Active lanes
+## Machine-readable lanes
 
-| Lane | Conflict group | Start now | Reserved area |
-|---|---|---|---|
-| A | SCIENCE-FROZEN | #107 then #108 | immutable #107/#108 runs, evidence, frozen workflows/contracts |
-| B | MODEL-B | #197 | Model B response-to-price and its tests |
-| C | ANALYTICS | #200 | leak/EV aggregation modules and tests |
-| D | HERO-EDITOR | #215 | `site/hero-ranges.*` and Hero editor tests |
-| E | PACKS-UX | #216 | `site/packs.*`, `site/population-packs.js` |
-| F | REPRO | #203 phase 1 | dependency manifests/locks/setup; no frozen science workflow edits |
-| G | PROJECT-STATE | #206 phase 1 | project-state validators/docs; avoid #107/#108 workflows |
-| H | CENTRAL-UI | #211 | exclusive owner of `site/index.html` and `site/trainer.js` during this wave |
+| Lane | Conflict group | Primary protected area |
+|---|---|---|
+| A | SCIENCE-FROZEN | #107/#108 frozen scientific contracts/runs/evidence |
+| B | MODEL-B | Model B response-to-price/evaluators/runs |
+| C | ANALYTICS | analytics contracts/modules/tests |
+| D | HERO-EDITOR | Hero/preflop editor family |
+| E | PACKS-UX | pack UX/runtime helper family |
+| F | REPRO | reproducibility + general workflow audit |
+| G | PROJECT-STATE | project-state/coordination contracts and validators |
+| H | CENTRAL-UI | central UI, especially `site/index.html` and `site/trainer.js` |
 
-See #225 for full queue, dependencies and deferred work.
+Exclusive hotspot ownership takes precedence over broad reserved areas:
 
-## Claim protocol
+- `site/index.html` and `site/trainer.js` -> H;
+- `site/hero-ranges*` -> D;
+- `site/packs*` and `site/population-packs.js` -> E;
+- frozen #108 PFPC/preflop-benchmark contracts, runs and workflows -> A;
+- Model B dedicated evaluator/run/workflow paths -> B;
+- other GitHub workflow files fall under F's workflow-audit scope unless a more specific A/B hotspot owns them.
 
-Before editing:
+## Local pre-PR scope check
 
-1. Read #225.
-2. Read the target issue and latest comments.
-3. Check open PRs and branches mentioning the issue.
-4. Comment on the issue:
+Explicit files:
 
-```text
-<!-- parallel-claim:v1 -->
-AGENT_SLOT: H
-ISSUE: #211
-STATUS: CLAIMED
-BASE: <main sha>
-BRANCH: agent-H/issue-211-<slug>
-CONFLICT_GROUP: CENTRAL-UI
-FILES_INTENT:
-- site/index.html
-- tests/...
-NOTES: ...
-```
+    python3 tools/check_parallel_scope.py \
+      --slot C \
+      --files src/analytics/review-inbox.js contracts/analytics/review-inbox.schema.json
 
-5. Create one branch per issue from current `main`.
-6. Open a PR as soon as a coherent first commit exists.
-7. Prefix PR titles with `[<slot>][#<issue>]`.
+Complete branch diff:
 
-Release with another comment using `STATUS: RELEASED`, the PR number and next target.
+    python3 tools/check_parallel_scope.py \
+      --slot C \
+      --base origin/main \
+      --head HEAD
 
-## Rules
+Stable JSON:
 
-- Never push agent work directly to `main`.
-- Never keep one long-lived branch for several issues.
-- Never modify another lane's reserved files without coordination.
-- If an open PR already touches intended files, avoid competing work.
-- Start the next issue from fresh `main` after the previous issue is released/merged.
-- Keep one conflict group single-writer even if several issues in it are independently valuable.
-- Lane A alone may trigger or alter #107/#108 evidence/VALIDATION/TEST state.
-- Future Model B / Monte Carlo work must not retroactively change the frozen #108 protocol.
+    python3 tools/check_parallel_scope.py \
+      --slot C \
+      --base origin/main \
+      --head HEAD \
+      --json
 
-## Deferred/high-conflict work
+The git-range mode uses a three-dot diff and disables rename collapsing, so both sides of a rename remain visible.
 
-- #204: defer until #107/#108 are finished; high overlap with GitHub Actions.
-- #205: defer until central UX wave stabilizes; broad frontend refactor.
-- #198: branch-safe only; merge after frozen #107/#108 result.
-- #196: final implementation after #107/#108 and preferably #198.
-- #195/#201: promotion/integration gated by #108.
-- #219: gated by #200 and benefits from #195/#196.
-- #208: integrated by lane H after localized D/E/H work to reduce cross-page conflicts.
+## Result semantics
 
-## Recommended chat bootstrap
+- `PASS`: every classified file belongs to the selected lane or an explicitly shared path.
+- `WARN`: no violation was found, but at least one path is unclassified. This is a coordination prompt, not silent authorization.
+- `FAIL`: another lane owns a file/hotspot, the lane forbids the path, or the change set spans multiple conflict groups.
 
-> You are agent X on `aradenac/poker-engine`. Read issue #225 first and strictly follow lane X, its conflict group and claim protocol. Check concurrent claims/open PRs before editing. Work the first READY issue in your lane through a clean tested PR, then take the next issue only after releasing the previous one. Never touch files reserved to another lane.
+Every violation includes file, expected owner, rule and #225/#108/#197 reference when available. Output ordering is deterministic for future CI and `agent-worklog:v1`.
+
+## Claim/release protocol
+
+The checker validates file scope only. Agents still follow #225 manually:
+
+1. read #225 and the target issue;
+2. inspect live claims and open PRs;
+3. post `parallel-claim:v1`;
+4. branch from current `main`;
+5. run the scope checker before PR/merge;
+6. post `agent-worklog:v1` when requested;
+7. post `STATUS: RELEASED`.
+
+Live GitHub claim parsing is intentionally not implemented in this tranche.
+
+## Safety boundary
+
+This coordination layer changes no scientific/runtime behavior. It does not edit `.github/workflows/**`, #108 artifacts, TEST ledgers, or product runtime files. Optional CI wiring may invoke this checker later when workflow-sensitive lanes permit it.

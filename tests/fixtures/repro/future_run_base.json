@@ -1,0 +1,6 @@
+{
+  "schema": "synthetic-future-scientific-run/v1",
+  "run_id": "FUTURE_RUN_SYNTHETIC_001",
+  "environment_identity_policy": "REQUIRED",
+  "scientific_effect": "NONE_SYNTHETIC_FIXTURE"
+}
