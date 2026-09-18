@@ -390,5 +390,225 @@ class RobustnessTests(unittest.TestCase):
         self.assertTrue(summary["detail_available"])
 
 
+class RequiredRobustnessCompletionTests(unittest.TestCase):
+    def test_missing_environment_is_insufficiently_supported(self):
+        rows = [
+            evaluation("nom", "raise", "RAISE", 1.0, 2.0, ci=[1.9, 2.1]),
+            evaluation("nom", "call", "CALL", None, 1.0, ci=[0.9, 1.1]),
+            evaluation("low", "raise", "RAISE", 1.0, 1.9, ci=[1.8, 2.0]),
+            evaluation("low", "call", "CALL", None, 1.0, ci=[0.9, 1.1]),
+        ]
+        report = evaluate_robustness(
+            decision_id="missing-env",
+            environments=envs(),
+            evaluations=rows,
+        )
+        self.assertEqual(report["classification"], "INSUFFICIENTLY_SUPPORTED")
+        self.assertFalse(report["environment_uncertainty"]["comparable"])
+        self.assertEqual(report["environment_uncertainty"]["missing_environment_ids"], ["high"])
+        self.assertIsNone(report["stability"]["action_stable"])
+        self.assertIsNone(report["environment_uncertainty"]["max_regret_bb"])
+
+    def test_missing_alternative_is_insufficiently_supported(self):
+        rows = [
+            evaluation("nom", "raise", "RAISE", 1.0, 2.0),
+            evaluation("nom", "call", "CALL", None, 1.5),
+            evaluation("low", "raise", "RAISE", 1.0, 1.9),
+            evaluation("low", "call", "CALL", None, 1.4),
+            evaluation("high", "raise", "RAISE", 1.0, 1.8),
+        ]
+        report = evaluate_robustness(
+            decision_id="missing-alt",
+            environments=envs(),
+            evaluations=rows,
+        )
+        self.assertEqual(report["classification"], "INSUFFICIENTLY_SUPPORTED")
+        self.assertEqual(
+            report["environment_uncertainty"]["missing_alternatives_by_environment"],
+            {"high": ["call"]},
+        )
+
+    def test_shove_fragility_reports_nominal_advantage_and_worst_regret(self):
+        rows = [
+            evaluation("nom", "jam", "RAISE", 4.0, 2.0, ci=[1.98, 2.02], shove=True),
+            evaluation("nom", "call", "CALL", None, 1.7, ci=[1.68, 1.72]),
+            evaluation("low", "jam", "RAISE", 4.0, 1.4, ci=[1.38, 1.42], shove=True),
+            evaluation("low", "call", "CALL", None, 1.8, ci=[1.78, 1.82]),
+            evaluation("high", "jam", "RAISE", 4.0, 2.2, ci=[2.18, 2.22], shove=True),
+            evaluation("high", "call", "CALL", None, 1.6, ci=[1.58, 1.62]),
+        ]
+        report = evaluate_robustness(
+            decision_id="fragile-jam",
+            environments=envs(),
+            evaluations=rows,
+        )
+        diagnostic = report["diagnostics"]["shove_fragility"]
+        self.assertEqual(report["classification"], "SENSITIVE")
+        self.assertTrue(diagnostic["applicable"])
+        self.assertTrue(diagnostic["fragile"])
+        self.assertEqual(diagnostic["affected_environments"], ["low"])
+        self.assertAlmostEqual(diagnostic["nominal_advantage_bb"], 0.3)
+        self.assertEqual(
+            diagnostic["worst_environment_regret"]["environment_id"],
+            "low",
+        )
+        self.assertAlmostEqual(
+            diagnostic["worst_environment_regret"]["regret_bb"],
+            0.4,
+        )
+
+    def test_overbet_fragility_is_reported_separately(self):
+        rows = [
+            evaluation("nom", "overbet", "RAISE", 1.5, 2.0, overbet=True),
+            evaluation("nom", "small", "RAISE", 0.75, 1.85),
+            evaluation("low", "overbet", "RAISE", 1.5, 1.6, overbet=True),
+            evaluation("low", "small", "RAISE", 0.75, 1.9),
+            evaluation("high", "overbet", "RAISE", 1.5, 2.1, overbet=True),
+            evaluation("high", "small", "RAISE", 0.75, 1.8),
+        ]
+        report = evaluate_robustness(
+            decision_id="fragile-overbet",
+            environments=envs(),
+            evaluations=rows,
+        )
+        diagnostic = report["diagnostics"]["overbet_fragility"]
+        self.assertTrue(diagnostic["applicable"])
+        self.assertTrue(diagnostic["fragile"])
+        self.assertEqual(diagnostic["affected_environments"], ["low"])
+        self.assertTrue(report["stability"]["action_stable"])
+        self.assertFalse(report["stability"]["sizing_stable"])
+
+    def test_high_mc_uncertainty_can_coexist_with_low_model_uncertainty(self):
+        rows = []
+        for env, raise_ev in (("nom", 2.00), ("low", 1.98), ("high", 1.97)):
+            rows += [
+                evaluation(env, "raise", "RAISE", 1.0, raise_ev, ci=[0.0, 4.0]),
+                evaluation(env, "call", "CALL", None, 1.0, ci=[-1.0, 3.0]),
+            ]
+        report = evaluate_robustness(
+            decision_id="wide-mc-low-model",
+            environments=envs(),
+            evaluations=rows,
+        )
+        self.assertEqual(report["classification"], "ROBUST")
+        self.assertAlmostEqual(
+            report["nominal_recommendation"]["mc_uncertainty"]["ci95_width_bb"],
+            4.0,
+        )
+        self.assertLess(
+            report["environment_uncertainty"]["nominal_recommendation_ev_range_width_bb"],
+            0.05,
+        )
+        nominal_env = next(
+            row for row in report["environments"] if row["environment_id"] == "nom"
+        )
+        self.assertTrue(
+            all("mc_uncertainty" in alt for alt in nominal_env["alternatives"])
+        )
+
+    def test_high_model_uncertainty_can_coexist_with_low_mc_uncertainty(self):
+        rows = [
+            evaluation("nom", "raise", "RAISE", 1.0, 2.0, ci=[1.99, 2.01]),
+            evaluation("nom", "call", "CALL", None, 1.8, ci=[1.79, 1.81]),
+            evaluation("low", "raise", "RAISE", 1.0, 1.0, ci=[0.99, 1.01]),
+            evaluation("low", "call", "CALL", None, 2.0, ci=[1.99, 2.01]),
+            evaluation("high", "raise", "RAISE", 1.0, 2.2, ci=[2.19, 2.21]),
+            evaluation("high", "call", "CALL", None, 1.7, ci=[1.69, 1.71]),
+        ]
+        report = evaluate_robustness(
+            decision_id="low-mc-high-model",
+            environments=envs(),
+            evaluations=rows,
+        )
+        self.assertEqual(report["classification"], "SENSITIVE")
+        self.assertLess(
+            report["nominal_recommendation"]["mc_uncertainty"]["ci95_width_bb"],
+            0.03,
+        )
+        self.assertGreater(
+            report["environment_uncertainty"]["nominal_recommendation_ev_range_width_bb"],
+            1.0,
+        )
+        self.assertFalse(report["stability"]["action_stable"])
+
+    def test_compact_summary_contains_only_decision_level_robustness_fields(self):
+        rows = []
+        for env in ("nom", "low", "high"):
+            rows += [
+                evaluation(env, "raise", "RAISE", 1.0, 2.0, ci=[1.9, 2.1]),
+                evaluation(env, "call", "CALL", None, 1.0, ci=[0.9, 1.1]),
+            ]
+        report = evaluate_robustness(
+            decision_id="summary",
+            environments=envs(),
+            evaluations=rows,
+        )
+        summary = compact_robustness_summary(report)
+        self.assertEqual(summary["status"], "robust")
+        self.assertEqual(summary["nominal"]["action"], "RAISE")
+        self.assertIn("advantage_bb", summary["nominal"])
+        self.assertTrue(summary["model_environment"]["comparable"])
+        self.assertIn("worst_environment_regret", summary["model_environment"])
+        self.assertNotIn("environments", summary)
+        self.assertIn("shove_fragility", summary)
+        self.assertIn("overbet_fragility", summary)
+
+    def test_contexts_with_same_environment_ids_are_never_pooled(self):
+        def context(index, fold):
+            return {
+                "context_index": index,
+                "identifiability": "LOCAL_SUPPORTED",
+                "context": {"validation_support": 25 + index, "street": "flop"},
+                "environments": [
+                    {
+                        "environment_id": "fold-low",
+                        "probabilities": {"FOLD": fold - 0.1, "CALL": 1.0 - fold, "RAISE": 0.1},
+                        "weight": None,
+                    },
+                    {
+                        "environment_id": "nominal",
+                        "probabilities": {"FOLD": fold, "CALL": 0.9 - fold, "RAISE": 0.1},
+                        "weight": None,
+                    },
+                    {
+                        "environment_id": "fold-high",
+                        "probabilities": {"FOLD": fold + 0.1, "CALL": 0.8 - fold, "RAISE": 0.1},
+                        "weight": None,
+                    },
+                ],
+            }
+        document = {
+            "schema": "model-b-response-to-price-plausible-environments/v1",
+            "environments_weighted": False,
+            "contexts": [context(0, 0.4), context(1, 0.6)],
+        }
+        contexts = response_to_price_context_environment_sets(document)
+        self.assertEqual(
+            [row["context_id"] for row in contexts],
+            ["response-to-price-context-0", "response-to-price-context-1"],
+        )
+        self.assertNotEqual(
+            contexts[0]["environments"][1]["metadata"]["response_probabilities"],
+            contexts[1]["environments"][1]["metadata"]["response_probabilities"],
+        )
+
+    def test_undeclared_environment_evaluation_is_rejected(self):
+        rows = [
+            evaluation("nom", "raise", "RAISE", 1.0, 2.0),
+            evaluation("nom", "call", "CALL", None, 1.0),
+            evaluation("low", "raise", "RAISE", 1.0, 2.0),
+            evaluation("low", "call", "CALL", None, 1.0),
+            evaluation("high", "raise", "RAISE", 1.0, 2.0),
+            evaluation("high", "call", "CALL", None, 1.0),
+            evaluation("invented", "raise", "RAISE", 1.0, 3.0),
+        ]
+        with self.assertRaisesRegex(ValueError, "undeclared environment"):
+            evaluate_robustness(
+                decision_id="undeclared",
+                environments=envs(),
+                evaluations=rows,
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
