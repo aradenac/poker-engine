@@ -687,7 +687,7 @@ def finalize(args: argparse.Namespace) -> int:
             "hero_strategy_sensitivity": True,
             "persisted_artifacts": True,
             "test_unconsumed": True,
-            "automatic_promotion": False,
+            "automatic_promotion_disabled": True,
         },
         "artifacts": {
             "predictive_result": "RESULT.partial.json",
