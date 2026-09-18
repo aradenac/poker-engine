@@ -1,0 +1,447 @@
+name: Execute preflop strategy PFPC TEST confirmation
+
+on:
+  pull_request:
+    paths:
+      - 'tools/simulation/preflop_strategy_test_confirmation.py'
+      - 'tests/simulation/test_preflop_strategy_test_confirmation.py'
+      - '.github/workflows/preflop-strategy-test-pfpc.yml'
+  push:
+    branches:
+      - 'execute/issue-108-pfpc-test-20260918'
+    paths:
+      - '.github/triggers/issue-108-pfpc-test-20260918'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: preflop-strategy-pfpc-test-20260918
+  cancel-in-progress: false
+
+env:
+  POPULATION_ID: pokerstars_nlhe_100-200_zoom_play_6max_v1
+  CANDIDATE_DIR: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1
+  CANDIDATE_REPOSITORY: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json
+  CANDIDATE_BINDING: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/POLICY_CONTEXT_BINDING.json
+  VALIDATION_DIR: training/runs/20260918_preflop_strategy_validation_pfpc_v1
+  VALIDATION_RUN: training/runs/20260918_preflop_strategy_validation_pfpc_v1/RUN_MANIFEST_VALIDATION.json
+  VALIDATION_SELECTION: training/runs/20260918_preflop_strategy_validation_pfpc_v1/VALIDATION_SELECTION.json
+  CONTRACT: training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260918_PFPC.json
+  REFERENCE: training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json
+  SENSITIVITY: training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json
+  HOLDOUT_LEDGER: training/full_hand/TEST_HOLDOUT_LEDGER.json
+  HOLDOUT_GENERATION: zoom_100-200_play_20260915_g1
+  TEST_RUN_ID: 20260918_preflop_strategy_test_pfpc_v1
+  EVIDENCE_BRANCH: evidence/issue-108-pfpc-test-20260918
+  MASTER_SEED: '20260917'
+
+jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test one-shot TEST authorization and consumption guards only
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/simulation/preflop_strategy_test_confirmation.py
+          PYTHONPATH=. python3 tests/simulation/test_preflop_strategy_test_confirmation.py
+          PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_pfpc.py
+      - name: Prove PR cannot read TEST
+        run: |
+          python3 - <<'PY'
+          import os
+          assert os.environ['GITHUB_EVENT_NAME']=='pull_request'
+          print('PR path executes contract/unit tests only; TEST scenario builder is push-only')
+          PY
+
+  prepare-test:
+    if: >-
+      github.event_name == 'push' &&
+      github.ref_name == 'execute/issue-108-pfpc-test-20260918'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Require persisted frozen VALIDATION finalist and unchanged scientific runtime
+        id: validation
+        run: |
+          set -euo pipefail
+          test -s "$VALIDATION_RUN"
+          test -s "$VALIDATION_SELECTION"
+          test -s "$CANDIDATE_REPOSITORY"
+          test -s "$CANDIDATE_BINDING"
+          VALIDATION_CODE_SHA=$(python3 - <<'PY'
+          import json, os
+          run=json.load(open(os.environ['VALIDATION_RUN']))
+          selection=json.load(open(os.environ['VALIDATION_SELECTION']))
+          assert run['contract_version']=='2026-09-18.3'
+          assert run['phase']=='VALIDATION'
+          assert run['test_data_read'] is False
+          assert selection['outcome']=='FREEZE_FINALIST'
+          assert selection['test_authorized'] is True
+          assert selection['test_consumed'] is False
+          assert selection['promotion_authorized'] is False
+          assert selection['frozen_finalist']==run['identities']['candidate_id']
+          assert selection['candidate_exposure_validity']['status']=='PASS'
+          print(run['identities']['code_commit_sha'])
+          PY
+          )
+          git cat-file -e "$VALIDATION_CODE_SHA^{commit}"
+          git diff --exit-code "$VALIDATION_CODE_SHA" -- \
+            tools/simulation/full_hand_arena.py \
+            tools/simulation/game_core.py \
+            tools/simulation/hero_preflop_overlay.py \
+            tools/simulation/model_a_continuation.py \
+            tools/simulation/model_b_runtime.py \
+            tools/simulation/model_b_sensitivity.py \
+            tools/simulation/preflop_strategy_benchmark_v2.py \
+            tools/simulation/preflop_strategy_benchmark_support_closed.py \
+            tools/simulation/preflop_strategy_test_confirmation.py \
+            tools/simulation/reference_support_closure.py \
+            tools/preflop/policy_context.py \
+            tools/training/select_preflop_strategy_validation.py \
+            training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260918_PFPC.json \
+            training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json \
+            training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json \
+            training/models/preflop_population_model_v5.json \
+            training/models/postflop_population_model_v5.json \
+            training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json
+          echo "code_sha=$VALIDATION_CODE_SHA" >> "$GITHUB_OUTPUT"
+      - name: Prepare one-shot TEST scenarios after authorization
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue108test
+          CANDIDATE_SOURCE_SHA=$(python3 - <<'PY'
+          import json, os
+          run=json.load(open(os.environ['VALIDATION_RUN']))
+          print(run['identities']['candidate_source_commit_sha'])
+          PY
+          )
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_test_confirmation prepare-test \
+            --population "$POPULATION_ID" \
+            --profiles training/runs/20260912_independent_profiles_v2/model/profiles.json \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --seed "$MASTER_SEED" \
+            --code-sha "$GITHUB_SHA" \
+            --candidate-source-commit "$CANDIDATE_SOURCE_SHA" \
+            --candidate "$CANDIDATE_REPOSITORY" \
+            --binding "$CANDIDATE_BINDING" \
+            --validation-run-manifest "$VALIDATION_RUN" \
+            --validation-selection "$VALIDATION_SELECTION" \
+            --holdout-ledger "$HOLDOUT_LEDGER" \
+            --holdout-generation-id "$HOLDOUT_GENERATION" \
+            --contract "$CONTRACT" \
+            --reference-descriptor "$REFERENCE" \
+            --sensitivity "$SENSITIVITY" \
+            --scenarios-out /tmp/issue108test/SCENARIOS_TEST.json \
+            --run-manifest-out /tmp/issue108test/RUN_MANIFEST_TEST.json
+      - name: Freeze consumed-ledger payload immediately after TEST read
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          from tools.simulation.preflop_strategy_test_confirmation import consume_holdout_ledger
+
+          run=json.load(open('/tmp/issue108test/RUN_MANIFEST_TEST.json'))
+          ledger=json.load(open(os.environ['HOLDOUT_LEDGER']))
+          consumed=consume_holdout_ledger(
+              ledger,
+              generation_id=os.environ['HOLDOUT_GENERATION'],
+              cycle_id=os.environ['TEST_RUN_ID'],
+              finalist_id=run['identities']['candidate_id'],
+              consumed_at_commit=os.environ['GITHUB_SHA'],
+          )
+          Path('/tmp/issue108test/TEST_HOLDOUT_LEDGER_AFTER.json').write_text(
+              json.dumps(consumed,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          consumption={
+              'schema':'poker-test-holdout-consumption/v1',
+              'issue':108,
+              'cycle_id':os.environ['TEST_RUN_ID'],
+              'generation_id':os.environ['HOLDOUT_GENERATION'],
+              'frozen_finalist':run['identities']['candidate_id'],
+              'consumed_at_commit':os.environ['GITHUB_SHA'],
+              'test_scenario_manifest_sha256':run['identities']['scenario_manifest_sha256'],
+              'state':'TEST_CONSUMED_EXECUTION_IN_PROGRESS',
+          }
+          Path('/tmp/issue108test/CONSUMPTION.json').write_text(
+              json.dumps(consumption,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-pfpc-test-frozen-${{ github.sha }}
+          path: |
+            /tmp/issue108test/SCENARIOS_TEST.json
+            /tmp/issue108test/RUN_MANIFEST_TEST.json
+            /tmp/issue108test/TEST_HOLDOUT_LEDGER_AFTER.json
+            /tmp/issue108test/CONSUMPTION.json
+          if-no-files-found: error
+          retention-days: 30
+
+  mark-holdout-consumed:
+    needs: prepare-test
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-test-frozen-${{ github.sha }}
+          path: /tmp/issue108test
+      - name: Create or verify immutable holdout-consumption evidence branch
+        run: |
+          set -euo pipefail
+          mkdir -p "training/runs/$TEST_RUN_ID"
+          cp /tmp/issue108test/RUN_MANIFEST_TEST.json "training/runs/$TEST_RUN_ID/RUN_MANIFEST_TEST.json"
+          cp /tmp/issue108test/CONSUMPTION.json "training/runs/$TEST_RUN_ID/CONSUMPTION.json"
+          cp /tmp/issue108test/TEST_HOLDOUT_LEDGER_AFTER.json "$HOLDOUT_LEDGER"
+
+          git config user.name 'poker-engine evidence bot'
+          git config user.email 'evidence-bot@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin "$EVIDENCE_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$EVIDENCE_BRANCH"
+            EXISTING=$(git show "origin/$EVIDENCE_BRANCH:training/runs/$TEST_RUN_ID/CONSUMPTION.json")
+            CURRENT=$(cat "training/runs/$TEST_RUN_ID/CONSUMPTION.json")
+            test "$EXISTING" = "$CURRENT"
+            echo 'Identical TEST-consumption lock already exists; safe technical rerun.'
+            exit 0
+          fi
+          git switch -c "$EVIDENCE_BRANCH"
+          git add "$HOLDOUT_LEDGER" "training/runs/$TEST_RUN_ID"
+          git commit -m "Consume issue #108 TEST holdout generation"
+          git push --set-upstream origin "$EVIDENCE_BRANCH"
+
+  environment:
+    needs: [prepare-test, mark-holdout-consumed]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        environment_id:
+          - model-b-public-reference-nominal-v1
+          - model-b-public-reference-lower-aggression-v1
+          - model-b-public-reference-higher-aggression-v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-test-frozen-${{ github.sha }}
+          path: /tmp/issue108test
+      - name: Download immutable issue 104 retained public Model B
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/model-b-104
+          gh run download 34993837824 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4 \
+            --dir /tmp/model-b-104
+          echo 'fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca  /tmp/model-b-104/public_reference_behavior.json' | sha256sum -c -
+      - name: Run paired one-shot TEST environment
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue108test/report
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_test_confirmation run-environment \
+            --scenarios /tmp/issue108test/SCENARIOS_TEST.json \
+            --run-manifest /tmp/issue108test/RUN_MANIFEST_TEST.json \
+            --environment-id '${{ matrix.environment_id }}' \
+            --reference-behavior /tmp/model-b-104/public_reference_behavior.json \
+            --issue-104-result training/runs/20260915_model_b_card_aware_v1/RESULT.json \
+            --candidate "$CANDIDATE_REPOSITORY" \
+            --binding "$CANDIDATE_BINDING" \
+            --reference-descriptor "$REFERENCE" \
+            --sensitivity "$SENSITIVITY" \
+            --output '/tmp/issue108test/report/${{ matrix.environment_id }}.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-pfpc-test-environment-${{ matrix.environment_id }}-${{ github.sha }}
+          path: '/tmp/issue108test/report/${{ matrix.environment_id }}.json'
+          if-no-files-found: error
+          retention-days: 30
+
+  confirm:
+    needs: environment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-test-frozen-${{ github.sha }}
+          path: /tmp/issue108test
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-108-pfpc-test-environment-*-${{ github.sha }}
+          path: /tmp/issue108test/reports
+          merge-multiple: true
+      - name: Confirm or reject the frozen finalist without retuning
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_test_confirmation select-test \
+            --run-manifest /tmp/issue108test/RUN_MANIFEST_TEST.json \
+            --report /tmp/issue108test/reports/model-b-public-reference-nominal-v1.json \
+            --report /tmp/issue108test/reports/model-b-public-reference-lower-aggression-v1.json \
+            --report /tmp/issue108test/reports/model-b-public-reference-higher-aggression-v1.json \
+            --output /tmp/issue108test/TEST_CONFIRMATION.json \
+            --holdout-ledger "$HOLDOUT_LEDGER" \
+            --consumed-ledger-out /tmp/issue108test/TEST_HOLDOUT_LEDGER_AFTER_SELECT.json \
+            --cycle-id "$TEST_RUN_ID" \
+            --consumed-at-commit "$GITHUB_SHA"
+          cmp /tmp/issue108test/TEST_HOLDOUT_LEDGER_AFTER.json /tmp/issue108test/TEST_HOLDOUT_LEDGER_AFTER_SELECT.json
+      - name: Persist compact scientific summary and full-artifact hashes
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root=Path('/tmp/issue108test')
+          reports={}
+          manifest={}
+          for path in sorted((root/'reports').glob('*.json')):
+              value=json.loads(path.read_text(encoding='utf-8'))
+              compact={key:value[key] for key in value if key!='rows'}
+              reports[path.name]=compact
+              manifest[path.name]={
+                  'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                  'size_bytes':path.stat().st_size,
+                  'rows':len(value.get('rows') or []),
+              }
+          for name in ('SCENARIOS_TEST.json','RUN_MANIFEST_TEST.json','TEST_CONFIRMATION.json'):
+              path=root/name
+              manifest[name]={
+                  'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                  'size_bytes':path.stat().st_size,
+              }
+          (root/'ENVIRONMENT_SUMMARIES.json').write_text(
+              json.dumps(reports,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          (root/'ARTIFACT_MANIFEST.json').write_text(
+              json.dumps(manifest,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-pfpc-test-result-${{ github.sha }}
+          path: |
+            /tmp/issue108test/TEST_CONFIRMATION.json
+            /tmp/issue108test/ENVIRONMENT_SUMMARIES.json
+            /tmp/issue108test/ARTIFACT_MANIFEST.json
+          if-no-files-found: error
+          retention-days: 30
+
+  persist-final-result:
+    needs: confirm
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EVIDENCE_BRANCH }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-test-result-${{ github.sha }}
+          path: /tmp/issue108test
+      - name: Finalize immutable TEST evidence branch
+        run: |
+          set -euo pipefail
+          DEST="training/runs/$TEST_RUN_ID"
+          test -s "$DEST/CONSUMPTION.json"
+          test -s "$DEST/RUN_MANIFEST_TEST.json"
+          test -s "$HOLDOUT_LEDGER"
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          src=Path('/tmp/issue108test')
+          dest=Path('training/runs')/os.environ['TEST_RUN_ID']
+          confirmation=json.loads((src/'TEST_CONFIRMATION.json').read_text(encoding='utf-8'))
+          consumption=json.loads((dest/'CONSUMPTION.json').read_text(encoding='utf-8'))
+          ledger=json.loads(Path(os.environ['HOLDOUT_LEDGER']).read_text(encoding='utf-8'))
+          row=next(x for x in ledger['generations'] if x['generation_id']==os.environ['HOLDOUT_GENERATION'])
+          assert row['status']=='CONSUMED'
+          assert row['consumed_by_cycle']==os.environ['TEST_RUN_ID']
+          assert row['consumed_by_frozen_finalist']==confirmation['candidate_id']
+          assert confirmation['test_consumed'] is True
+          assert confirmation['retuning_authorized'] is False
+          assert confirmation['alternative_selection_authorized'] is False
+          assert confirmation['outcome'] in {'CONFIRM_FINALIST','RETAIN_REFERENCE'}
+          assert confirmation['promotion_authorized'] is (confirmation['outcome']=='CONFIRM_FINALIST')
+          assert consumption['generation_id']==os.environ['HOLDOUT_GENERATION']
+
+          for name in ('TEST_CONFIRMATION.json','ENVIRONMENT_SUMMARIES.json','ARTIFACT_MANIFEST.json'):
+              shutil.copy2(src/name,dest/name)
+
+          result={
+              'schema':'poker-preflop-strategy-pfpc-test-result/v1',
+              'issue':108,
+              'run_id':os.environ['TEST_RUN_ID'],
+              'population_id':os.environ['POPULATION_ID'],
+              'contract_version':'2026-09-18.3',
+              'candidate_id':confirmation['candidate_id'],
+              'holdout_generation_id':os.environ['HOLDOUT_GENERATION'],
+              'decision':confirmation['outcome'],
+              'promotion_authorized':confirmation['promotion_authorized'],
+              'test_consumed':True,
+              'retuning_authorized':False,
+              'alternative_selection_authorized':False,
+              'test_confirmation_sha256':hashlib.sha256((dest/'TEST_CONFIRMATION.json').read_bytes()).hexdigest(),
+              'artifact_manifest_sha256':hashlib.sha256((dest/'ARTIFACT_MANIFEST.json').read_bytes()).hexdigest(),
+          }
+          (dest/'RESULT.json').write_text(
+              json.dumps(result,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          git config user.name 'poker-engine evidence bot'
+          git config user.email 'evidence-bot@users.noreply.github.com'
+          git add "$HOLDOUT_LEDGER" "$DEST"
+          if git diff --cached --quiet; then
+            echo 'Final TEST evidence already persisted identically.'
+            exit 0
+          fi
+          git commit -m "Persist issue #108 PFPC TEST confirmation"
+          git push origin "$EVIDENCE_BRANCH"
