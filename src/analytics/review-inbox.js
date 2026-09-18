@@ -159,7 +159,7 @@
       jam:rows.some(e=>e.tags&&e.tags.jam),
       overbet:rows.some(e=>e.tags&&e.tags.overbet)
     };
-    const sc=scope||deriveScope(arguments[6]||{},summary);
+    const sc=scope;
     return {
       schema:ITEM_SCHEMA,hand_id:String(handId),timestamp,scope:{...sc},
       total_loss_bb:totalLoss,nominal_loss_bb:nominalLoss,
