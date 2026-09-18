@@ -205,6 +205,19 @@ class EnvironmentContractTests(unittest.TestCase):
             environment_declarations(document)
 
 
+    def test_repository_issue_197_environment_artifact_is_accepted_context_by_context(self):
+        source = ROOT / "training/runs/20260919_model_b_response_to_price_v1/plausible_environments.json"
+        document = __import__("json").loads(source.read_text(encoding="utf-8"))
+        contexts = response_to_price_context_environment_sets(document)
+        self.assertEqual(len(contexts), 12)
+        self.assertTrue(all(context["environment_supported"] for context in contexts))
+        self.assertTrue(all(context["validation_support"] > 0 for context in contexts))
+        for context in contexts:
+            environments = context["environments"]
+            self.assertEqual(len(environments), 3)
+            self.assertEqual(sum(row["role"] == "nominal" for row in environments), 1)
+            self.assertTrue(all(row["environment_supported"] for row in environments))
+
 class RobustnessTests(unittest.TestCase):
     def test_robust_case_keeps_action_sizing_and_mc_separate(self):
         rows = []
