@@ -29,18 +29,20 @@ def quantile(values: list[float], q: float) -> float | None:
     f = pos - lo
     return xs[lo] * (1-f) + xs[hi] * f
 
-def stack_summary(values: list[float]) -> dict[str, Any]:
+def stack_summary(values: list[float], *, include_top: bool = True) -> dict[str, Any]:
     xs = [round(float(x), 6) for x in values if math.isfinite(float(x)) and float(x) > 0]
-    rounded = collections.Counter(round(x) for x in xs)
-    return {
+    result = {
         "n": len(xs), "min_bb": min(xs) if xs else None,
         "p10_bb": quantile(xs,.10), "p25_bb": quantile(xs,.25),
         "p50_bb": quantile(xs,.50), "p75_bb": quantile(xs,.75),
         "p90_bb": quantile(xs,.90), "p95_bb": quantile(xs,.95),
         "max_bb": max(xs) if xs else None,
-        "top_rounded_bb": [{"effective_stack_bb": int(s), "observations": int(n)}
-            for s,n in sorted(rounded.items(), key=lambda kv:(-kv[1],kv[0]))[:20]],
     }
+    if include_top:
+        rounded = collections.Counter(round(x) for x in xs)
+        result["top_rounded_bb"] = [{"effective_stack_bb": int(s), "observations": int(n)}
+            for s,n in sorted(rounded.items(), key=lambda kv:(-kv[1],kv[0]))[:20]]
+    return result
 
 def aggressors(history):
     return [str(x.get("position")) for x in history if x.get("action") in {"RAISE","JAM"}]
@@ -144,7 +146,7 @@ def audit(certification_path=DEFAULT_CERTIFICATION):
             "observations":n,"distinct_hands":len(e["hands"]),
             "frequency_of_targeted":n/targeted if targeted else 0.0,
             "frequency_of_population_preflop":n/len(pop) if pop else 0.0,
-            "support_tier":support_tier(n),"effective_stack":stack_summary(e["stacks"])})
+            "support_tier":support_tier(n),"effective_stack":stack_summary(e["stacks"], include_top=False)})
     stacks=[float(s) for r in pop if coverage_group(r) in TARGET_GROUPS
         for s in [(r.get("preflop_context_v1") or {}).get("effective_stack_bb")] if s is not None]
     return {"schema":SCHEMA,"population_id":"pokerstars_nlhe_100-200_zoom_play_6max_v1",
