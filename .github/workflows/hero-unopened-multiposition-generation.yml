@@ -1,0 +1,350 @@
+name: Generate multi-position Hero unopened PFPC candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'issue-107-multiposition-generation-sol'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hero-unopened-multiposition-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SAMPLES: '16'
+  MASTER_SEED: '20260916'
+  SHARD_COUNT: '26'
+
+jobs:
+  prepare-sizing-corpus:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Materialize certified TRAIN sizing corpus once
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/build_certified_population_decisions.py \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --out /tmp/issue-107-certified-decisions.jsonl \
+            --summary /tmp/issue-107-certified-summary.json
+          python3 - <<'PY'
+          import json
+          s=json.load(open('/tmp/issue-107-certified-summary.json'))
+          assert s['population_id']=='pokerstars_nlhe_100-200_zoom_play_6max_v1'
+          assert s['hands_by_split']=={'TRAIN':19016,'VALIDATION':2324,'TEST':2449}
+          print({'rows_total':s['rows_total'],'hands_by_split':s['hands_by_split']})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-certified-train-sizing-${{ github.sha }}
+          path: |
+            /tmp/issue-107-certified-decisions.jsonl
+            /tmp/issue-107-certified-summary.json
+          if-no-files-found: error
+          retention-days: 7
+
+  smoke-lj-aa:
+    needs: prepare-sizing-corpus
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-107-certified-train-sizing-${{ github.sha }}
+          path: /tmp/issue-107-sizing
+      - name: Prove full-budget LJ AA is evaluable with audited continuation closure
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+            --position LJ --spot UNOPENED --stack-bb 100 \
+            --samples "$SAMPLES" --seed "$MASTER_SEED" \
+            --version hero-lj-unopened-100bb-169-v1 \
+            --code-sha "$GITHUB_SHA" \
+            --sizing-decisions /tmp/issue-107-sizing/issue-107-certified-decisions.jsonl \
+            --support-closure \
+            --hand-class AA \
+            --rows-out /tmp/issue-107-lj-aa-smoke.json \
+            --allow-partial
+          python3 - <<'PY'
+          import json
+          run=json.load(open('/tmp/issue-107-lj-aa-smoke.json'))
+          assert run['coverage']['requested']==1
+          assert run['coverage']['completed']==1, run.get('unsupported')
+          assert len(run['rows'])==1 and run['rows'][0]['hand_class']=='AA'
+          closure=run['provenance']['continuation_support']
+          assert closure['enabled'] is True
+          assert closure['nearest_context_substitution'] is False
+          assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
+          decision=run['rows'][0]['decision']
+          assert decision['schema']=='poker-preflop-decision/v1'
+          assert decision['search']['budget']>0
+          print({
+              'action':decision['action'],
+              'target_total_bb':decision.get('target_total_bb'),
+              'ev_bb':decision['ev_bb'],
+              'search_budget':decision['search']['budget'],
+              'closure':closure,
+          })
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-lj-aa-support-closure-smoke-${{ github.sha }}
+          path: /tmp/issue-107-lj-aa-smoke.json
+          if-no-files-found: error
+          retention-days: 7
+
+  generate-shards:
+    needs: [prepare-sizing-corpus, smoke-lj-aa]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        position: [LJ, HJ, CO, SB]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-107-certified-train-sizing-${{ github.sha }}
+          path: /tmp/issue-107-sizing
+      - name: Generate deterministic position/hand-class shard
+        env:
+          POSITION: ${{ matrix.position }}
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: |
+          set -euo pipefail
+          mapfile -t HAND_ARGS < <(PYTHONPATH=. python3 - <<'PY'
+          import os
+          from tools.training.generate_hero_range_decisions import HAND_CLASSES
+          index=int(os.environ['SHARD_INDEX']); count=int(os.environ['SHARD_COUNT'])
+          hands=list(HAND_CLASSES)[index::count]
+          assert hands
+          for hand in hands:
+              print('--hand-class')
+              print(hand)
+          PY
+          )
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+            --position "$POSITION" --spot UNOPENED --stack-bb 100 \
+            --samples "$SAMPLES" --seed "$MASTER_SEED" \
+            --version "hero-${POSITION,,}-unopened-100bb-169-v1" \
+            --code-sha "$GITHUB_SHA" \
+            --sizing-decisions /tmp/issue-107-sizing/issue-107-certified-decisions.jsonl \
+            --support-closure \
+            --rows-out "/tmp/issue-107-${POSITION}-${SHARD_INDEX}.json" \
+            --allow-partial \
+            "${HAND_ARGS[@]}"
+      - name: Verify shard accounting
+        env:
+          POSITION: ${{ matrix.position }}
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          p=f"/tmp/issue-107-{os.environ['POSITION']}-{os.environ['SHARD_INDEX']}.json"
+          run=json.load(open(p))
+          requested=int(run['coverage']['requested'])
+          rows=run.get('rows') or []
+          unsupported=run.get('unsupported') or []
+          accounted=[r['hand_class'] for r in rows]+[r['hand_class'] for r in unsupported]
+          assert requested==len(accounted)
+          assert len(accounted)==len(set(accounted))
+          assert run['context']['position']==os.environ['POSITION']
+          assert run['context']['spot']=='UNOPENED'
+          assert run['provenance']['sizing_support']['filters']['split']=='TRAIN'
+          assert run['provenance']['sizing_support']['filters']['is_hero'] is False
+          closure=run['provenance']['continuation_support']
+          assert closure['enabled'] is True
+          assert closure['nearest_context_substitution'] is False
+          assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
+          print({'position':os.environ['POSITION'],'requested':requested,'completed':len(rows),'unsupported':len(unsupported)})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-${{ matrix.position }}-shard-${{ matrix.shard }}-${{ github.sha }}
+          path: /tmp/issue-107-${{ matrix.position }}-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: 3
+
+  merge-position:
+    needs: [prepare-sizing-corpus, generate-shards]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        position: [LJ, HJ, CO, SB]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-107-${{ matrix.position }}-shard-*-${{ github.sha }}
+          path: /tmp/issue-107-shards
+          merge-multiple: true
+      - name: Merge 169 classes without filling unsupported holes
+        env:
+          POSITION: ${{ matrix.position }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          FILES=(/tmp/issue-107-shards/issue-107-"$POSITION"-*.json)
+          [[ ${#FILES[@]} -eq 26 ]]
+          INPUT_ARGS=()
+          for file in "${FILES[@]}"; do INPUT_ARGS+=(--input "$file"); done
+          mkdir -p "/tmp/source-$POSITION"
+          PYTHONPATH=. python3 tools/training/merge_hero_range_decision_runs.py \
+            "${INPUT_ARGS[@]}" --allow-partial \
+            --rows-out "/tmp/source-$POSITION/DECISION_RUN.json" \
+            --candidate-out "/tmp/source-$POSITION/CANDIDATE.json"
+      - name: Bind exact PFC identity without recomputation
+        env:
+          POSITION: ${{ matrix.position }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/enrich_hero_range_context.py \
+            --input "/tmp/source-$POSITION/DECISION_RUN.json" \
+            --output "/tmp/source-$POSITION/DECISION_RUN_PFC.json" \
+            --candidate-out "/tmp/source-$POSITION/CANDIDATE_PFC.json" \
+            --position "$POSITION" --spot UNOPENED --stack-bb 100
+          PYTHONPATH=. python3 tools/training/materialize_hero_pfc_source.py \
+            --run "/tmp/source-$POSITION/DECISION_RUN_PFC.json" \
+            --candidate "/tmp/source-$POSITION/CANDIDATE_PFC.json" \
+            --repository-out "/tmp/source-$POSITION/HERO_RANGE_REPOSITORY_PFC.json" \
+            --binding-out "/tmp/source-$POSITION/PFC_BINDING.json" \
+            --run-id "20260918_hero_preflop_169_${POSITION,,}_unopened_pfc_v1"
+      - name: Verify complete accounting and holdout boundary
+        env:
+          POSITION: ${{ matrix.position }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path('/tmp/source-'+os.environ['POSITION'])
+          run=json.loads((root/'DECISION_RUN_PFC.json').read_text())
+          bind=json.loads((root/'PFC_BINDING.json').read_text())
+          cov=bind['coverage']
+          assert cov['requested']==169
+          assert cov['accounted']==169
+          assert cov['supported']+cov['unsupported']==169
+          assert cov['supported']>0, ('new position has zero calculated overrides', os.environ['POSITION'], cov)
+          closure=run['provenance']['continuation_support']
+          assert closure['enabled'] is True
+          assert closure['nearest_context_substitution'] is False
+          assert bind['selection_boundary']['validation_consumed'] is False
+          assert bind['selection_boundary']['test_consumed'] is False
+          assert bind['promotion_authorized'] is False
+          assert run['context']['position']==os.environ['POSITION']
+          assert run['canonical_preflop_context']['actor_position']==os.environ['POSITION']
+          print({'position':os.environ['POSITION'],'pfc':bind['preflop_context_id'],'coverage':cov})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-source-${{ matrix.position }}-${{ github.sha }}
+          path: |
+            /tmp/source-${{ matrix.position }}/DECISION_RUN_PFC.json
+            /tmp/source-${{ matrix.position }}/CANDIDATE_PFC.json
+            /tmp/source-${{ matrix.position }}/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/source-${{ matrix.position }}/PFC_BINDING.json
+          if-no-files-found: error
+          retention-days: 14
+
+  merge-pfpc-candidate:
+    needs: merge-position
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-107-source-*-${{ github.sha }}
+          path: /tmp/issue-107-sources
+      - name: Merge four new sources with immutable BTN source
+        run: |
+          set -euo pipefail
+          REPOS=(
+            training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/issue-107-sources/issue-107-source-LJ-${GITHUB_SHA}/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/issue-107-sources/issue-107-source-HJ-${GITHUB_SHA}/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/issue-107-sources/issue-107-source-CO-${GITHUB_SHA}/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/issue-107-sources/issue-107-source-SB-${GITHUB_SHA}/HERO_RANGE_REPOSITORY_PFC.json
+          )
+          BINDS=(
+            training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/PFC_BINDING.json
+            /tmp/issue-107-sources/issue-107-source-LJ-${GITHUB_SHA}/PFC_BINDING.json
+            /tmp/issue-107-sources/issue-107-source-HJ-${GITHUB_SHA}/PFC_BINDING.json
+            /tmp/issue-107-sources/issue-107-source-CO-${GITHUB_SHA}/PFC_BINDING.json
+            /tmp/issue-107-sources/issue-107-source-SB-${GITHUB_SHA}/PFC_BINDING.json
+          )
+          ARGS=()
+          for i in 0 1 2 3 4; do
+            ARGS+=(--source-repository "${REPOS[$i]}" --source-binding "${BINDS[$i]}")
+          done
+          mkdir -p /tmp/final
+          PYTHONPATH=. python3 tools/training/merge_hero_policy_context_sources.py \
+            "${ARGS[@]}" \
+            --repository-out /tmp/final/HERO_RANGE_REPOSITORY_PFPC.json \
+            --policy-binding-out /tmp/final/POLICY_CONTEXT_BINDING.json \
+            --summary-out /tmp/final/RESULT.json \
+            --run-id 20260918_hero_preflop_unopened_5pos_pfpc_v1
+      - name: Verify frozen five-position candidate
+        run: |
+          python3 - <<'PY'
+          import json
+          result=json.load(open('/tmp/final/RESULT.json'))
+          binding=json.load(open('/tmp/final/POLICY_CONTEXT_BINDING.json'))
+          repo=json.load(open('/tmp/final/HERO_RANGE_REPOSITORY_PFPC.json'))
+          assert result['policy_contexts']==5
+          assert result['repository_contexts']==5
+          assert result['supported_hand_slots']>40
+          assert result['unsupported_hand_slots']>=0
+          assert result['validation_consumed'] is False
+          assert result['test_consumed'] is False
+          assert result['promotion_authorized'] is False
+          assert binding['matching']=='EXACT_PFPC_AND_169_HAND_CLASS_ONLY'
+          assert binding['nearest_context_substitution'] is False
+          assert set(x['actor_position'] for x in result['sources'])=={'LJ','HJ','CO','BTN','SB'}
+          new_sources=[x for x in result['sources'] if x['actor_position']!='BTN']
+          assert all(x['supported_hand_classes']>0 for x in new_sources), new_sources
+          assert len(repo['contexts'])==5
+          print(json.dumps({
+            'policy_contexts':result['policy_contexts'],
+            'supported_hand_slots':result['supported_hand_slots'],
+            'unsupported_hand_slots':result['unsupported_hand_slots'],
+            'repository_sha256':result['repository_sha256'],
+          },indent=2,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-unopened-5pos-pfpc-${{ github.sha }}
+          path: |
+            /tmp/final/HERO_RANGE_REPOSITORY_PFPC.json
+            /tmp/final/POLICY_CONTEXT_BINDING.json
+            /tmp/final/RESULT.json
+          if-no-files-found: error
+          retention-days: 30

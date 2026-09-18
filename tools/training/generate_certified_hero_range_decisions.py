@@ -28,6 +28,7 @@ from tools.simulation.model_a_continuation import (
     exact_preflop_node,
 )
 from tools.simulation.model_a_preflop_rollout import ModelAPreflopContinuationRollout
+from tools.simulation.model_a_support_closure import SupportClosedModelAContinuationPolicy
 from tools.simulation.preflop_grid_evaluator import (
     PreflopEvaluationError,
     UnsupportedAlternative,
@@ -171,6 +172,7 @@ def generate_run(
     spec: base.ContextSpec,
     policy: ModelAContinuationPolicy,
     sizing_decisions: Path,
+    continuation_support_closure: bool = False,
     hand_classes: Sequence[str],
     samples_per_candidate: int,
     master_seed: int,
@@ -184,7 +186,13 @@ def generate_run(
         policy, state, spec.position, sizing_decisions
     )
     call_action, raise_action = base.semantic_grid_labels(state)
-    hero_continuation = base.FixedPopulationDerivedHeroContinuation(policy)
+    if continuation_support_closure:
+        opponent_continuation = SupportClosedModelAContinuationPolicy(policy)
+        hero_policy = SupportClosedModelAContinuationPolicy(policy)
+    else:
+        opponent_continuation = policy
+        hero_policy = policy
+    hero_continuation = base.FixedPopulationDerivedHeroContinuation(hero_policy)
     rows: list[dict[str, Any]] = []
     unsupported: list[dict[str, str]] = []
     total_rollouts = 0
@@ -192,7 +200,7 @@ def generate_run(
     for hand in hand_classes:
         cards = base.representative_cards(hand)
         rollout = ModelAPreflopContinuationRollout(
-            opponent_policy=policy,
+            opponent_policy=opponent_continuation,
             hero_hole_cards=cards,
             hero_continuation_policy=hero_continuation,
         )
@@ -226,6 +234,23 @@ def generate_run(
         rows.append({"hand_class": hand, "representative_cards": list(cards), "decision": decision})
         total_rollouts += int((decision.get("search") or {}).get("budget") or 0)
 
+    if continuation_support_closure:
+        continuation_support = {
+            "enabled": True,
+            "contract": SupportClosedModelAContinuationPolicy.policy_id,
+            "fallback_contract": SupportClosedModelAContinuationPolicy.fallback_contract,
+            "nearest_context_substitution": False,
+            "opponent_future_actions": opponent_continuation.aggregate_audit(),
+            "hero_future_actions": hero_policy.aggregate_audit(),
+            "interpretation": "EXPERIMENTAL_CONTINUATION_CLOSURE_NOT_A_FITTED_POPULATION_ACTION",
+        }
+    else:
+        continuation_support = {
+            "enabled": False,
+            "strict_fail_closed": True,
+            "nearest_context_substitution": False,
+        }
+
     provenance = {
         "code": code_sha,
         "models": {
@@ -243,7 +268,12 @@ def generate_run(
         "selection": "NOT_PROMOTED_ISSUE_107_EXPERIMENTAL",
         "master_seed": int(master_seed),
         "hero_future_continuation": hero_continuation.identity,
-        "opponent_policy": "MODEL_A_SELECTED_POPULATION_CONTINUATION",
+        "opponent_policy": (
+            "MODEL_A_SELECTED_POPULATION_CONTINUATION_WITH_AUDITED_PASSIVE_SUPPORT_CLOSURE"
+            if continuation_support_closure
+            else "MODEL_A_SELECTED_POPULATION_CONTINUATION"
+        ),
+        "continuation_support": continuation_support,
         "sizing_support": sizing_support,
         "decision_source": "tools.simulation.preflop_grid_evaluator.evaluate_preflop_grid",
     }
@@ -287,6 +317,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rows-out", type=Path, required=True)
     parser.add_argument("--candidate-out", type=Path)
     parser.add_argument("--allow-partial", action="store_true")
+    parser.add_argument(
+        "--support-closure",
+        action="store_true",
+        help="use audited CHECK/CALL/FOLD continuation closure when a future exact Model-A action node is absent",
+    )
     return parser.parse_args()
 
 
@@ -318,6 +353,7 @@ def main() -> int:
         spec=spec,
         policy=policy,
         sizing_decisions=args.sizing_decisions,
+        continuation_support_closure=bool(args.support_closure),
         hand_classes=hands,
         samples_per_candidate=args.samples,
         master_seed=args.seed,

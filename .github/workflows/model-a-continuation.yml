@@ -5,8 +5,10 @@ on:
     paths:
       - 'tools/simulation/model_a_continuation.py'
       - 'tools/simulation/model_a_preflop_rollout.py'
+      - 'tools/simulation/model_a_support_closure.py'
       - 'tests/simulation/test_model_a_continuation.py'
       - 'tests/simulation/test_model_a_preflop_rollout.py'
+      - 'tests/simulation/test_model_a_support_closure.py'
       - 'tools/simulation/game_core.py'
       - 'tools/training/model_a_latent_ranges.py'
       - 'tools/training/model_a_postflop_runtime.py'
@@ -20,8 +22,10 @@ on:
     paths:
       - 'tools/simulation/model_a_continuation.py'
       - 'tools/simulation/model_a_preflop_rollout.py'
+      - 'tools/simulation/model_a_support_closure.py'
       - 'tests/simulation/test_model_a_continuation.py'
       - 'tests/simulation/test_model_a_preflop_rollout.py'
+      - 'tests/simulation/test_model_a_support_closure.py'
       - '.github/workflows/model-a-continuation.yml'
   workflow_dispatch:
 
@@ -41,11 +45,15 @@ jobs:
           python3 -m py_compile \
             tools/simulation/model_a_continuation.py \
             tools/simulation/model_a_preflop_rollout.py \
+            tools/simulation/model_a_support_closure.py \
             tests/simulation/test_model_a_continuation.py \
-            tests/simulation/test_model_a_preflop_rollout.py
+            tests/simulation/test_model_a_preflop_rollout.py \
+            tests/simulation/test_model_a_support_closure.py
       - name: Model A continuation contracts
         run: PYTHONPATH=. python3 tests/simulation/test_model_a_continuation.py
       - name: Full-hand preflop rollout contracts
         run: PYTHONPATH=. python3 tests/simulation/test_model_a_preflop_rollout.py
+      - name: Audited Model A support-closure contracts
+        run: PYTHONPATH=. python3 tests/simulation/test_model_a_support_closure.py
       - name: Existing preflop grid contracts
         run: PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py
