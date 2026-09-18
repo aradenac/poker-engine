@@ -196,6 +196,20 @@
   }
   .hh-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
   .hh-controls button{width:auto}
+  .hh-import-primary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .hh-import-primary .filelabel,.hh-import-primary button{width:auto}
+  .hh-import-primary .hh-import-main{font-weight:900;border-color:rgba(92,225,185,.42);background:rgba(92,225,185,.09);color:var(--accent2)}
+  .hh-import-effect{margin-top:7px;font-size:10px;line-height:1.4;color:var(--muted)}
+  .hh-import-summary{margin-top:9px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1729;font-size:11px;font-weight:800;color:var(--text)}
+  .hh-import-summary.busy{border-color:rgba(109,132,255,.4);color:#cbd6ff}
+  .hh-import-summary.warn{border-color:rgba(241,198,109,.4);color:#ead8ad}
+  .hh-import-advanced{margin-top:9px;border:1px solid var(--border);border-radius:10px;background:#0c1526;overflow:hidden}
+  .hh-import-advanced>summary{cursor:pointer;list-style:none;padding:8px 10px;font-size:10px;font-weight:850;color:var(--muted)}
+  .hh-import-advanced>summary::-webkit-details-marker{display:none}
+  .hh-import-advanced>summary::after{content:"▾";float:right}
+  .hh-import-advanced[open]>summary{border-bottom:1px solid var(--border);color:var(--text)}
+  .hh-import-advanced[open]>summary::after{content:"▴"}
+  .hh-import-advanced-body{padding:0 10px 10px}
   .hh-selection-section{
     margin-top:14px;padding-top:12px;border-top:1px solid var(--border);
     scroll-margin-top:18px
@@ -1044,32 +1058,36 @@
     </section>
 
     <section id="historiesSection" class="panel wide">
-      <h2>2. Hand Histories PokerStars</h2>
-      <label class="filelabel" for="hhFileInput">Charger un ou plusieurs fichiers .txt</label>
-      <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
-      <div class="hh-import-row">
-        <div class="field">
-          <label for="hhImportMode">À l'import manuel</label>
-          <select id="hhImportMode">
-            <option value="replace">Remplacer les mains chargées</option>
-            <option value="add">Ajouter aux mains chargées</option>
-          </select>
+      <h2>2. Mes Hand Histories PokerStars</h2>
+      <div class="hh-import-primary">
+        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
+        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
+        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
+      </div>
+      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
+      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
+      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
+      <details class="hh-import-advanced">
+        <summary>Options d’import et outils avancés</summary>
+        <div class="hh-import-advanced-body">
+          <div class="hh-import-row">
+            <div class="field">
+              <label for="hhImportMode">Comportement du prochain import</label>
+              <select id="hhImportMode">
+                <option value="replace">Remplacer les mains chargées</option>
+                <option value="add">Ajouter aux mains chargées</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
+              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+              <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
+              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
+            </div>
+          </div>
+          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
         </div>
-        <div class="actions">
-          <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
-        </div>
-      </div>
-      <div class="hh-controls" style="margin-top:9px">
-        <button id="hhWatchBtn" type="button" class="secondary">Charger et surveiller automatiquement</button>
-        <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-      </div>
-      <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
-      <div id="hhFileMeta" class="filemeta">Aucun historique importé.</div>
-      <div class="hh-controls">
-        <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
-        <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
-      </div>
-      <div id="hhStatus" class="status" style="margin-top:9px">Le mode manuel reste actif tant qu'aucune main n'est sélectionnée.</div>
+      </details>
 
       <div id="handSelectionSection" class="hh-selection-section">
         <div class="hh-selection-title">Sélection de main</div>
@@ -1354,7 +1372,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       deck = $("deck"), matrix = $("matrix"), calcBtn = $("calcBtn"), calcStatus = $("calcStatus"),
       bar = $("bar"), results = $("results"), floatingEquity=$("floatingEquity"), rangeEditionBtn=$("rangeEditionBtn"),
       knownHandsBtn=$("knownHandsBtn"), rangeResetBtn=$("rangeResetBtn"), rangeClearBtn=$("rangeClearBtn"), rangeAllBtn=$("rangeAllBtn"),
-      rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"),
+      rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"), hhImportEffect=$("hhImportEffect"),
       hhWatchBtn=$("hhWatchBtn"), hhWatchStopBtn=$("hhWatchStopBtn"), hhWatchStatus=$("hhWatchStatus"),
       hhModeBtn=$("hhModeBtn"), hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
@@ -4891,11 +4909,12 @@ function selectHistoryHandById(id){
 }
 function updateHistoryUi(){
   if(hhImportModeSelect) hhImportModeSelect.value=state.hhImportMode;
+  updateHHImportEffect();
   hhModeBtn.disabled=!state.hhHands.length;
   hhModeBtn.classList.toggle("active",state.hhMode);
   hhModeBtn.textContent=`Mode Hand History : ${state.hhMode?"ON":"OFF"}`;
   if(!state.hhHands.length){
-    hhStatus.textContent="Le mode manuel reste actif tant qu'aucune main n'est sélectionnée.";
+    hhStatus.textContent=state.hhSourceSnapshots.length?"Aucune main PokerStars reconnue dans les fichiers chargés.":"Importez un ou plusieurs fichiers PokerStars .txt pour commencer.";
   }else if(state.hhMode&&state.selectedHand){
     const h=state.selectedHand;
     const known=h.players.filter(p=>p.name!==h.heroName&&p.knownCards?.length===2).length;
@@ -5024,7 +5043,7 @@ async function clearLoadedHands({persist=true,reason="Mains vidées."}={}){
   state.actionEquityBusy=false;
   state.seatEquities={status:"idle",range:{},real:{},heroScenarios:{},hasRange:{},hasReal:{},error:"",stepIndex:0};
   if(state.hhMode) leaveHistoryMode();
-  hhFileMeta.textContent="Aucun historique importé.";
+  setHHImportSummary("Aucune main importée.");
   hhStatus.textContent=reason;
   updateAppView();
   updateHistoryUi();
@@ -5037,6 +5056,27 @@ async function clearLoadedHands({persist=true,reason="Mains vidées."}={}){
     }catch(_){ }
   }
 }
+function hhImportEffectText(){
+  return state.hhImportMode==="add"
+    ? "Le prochain import ajoutera les nouvelles mains aux mains déjà chargées."
+    : "Le prochain import remplacera les mains actuellement chargées.";
+}
+function updateHHImportEffect(){
+  if(hhImportEffect) hhImportEffect.textContent=hhImportEffectText();
+}
+function hhImportSummaryText({files=0,recognized=0,hands=0,errors=0,restored=false,mode="replace",at=new Date()}={}){
+  const total=Math.max(0,Number(files)||0),ok=Math.max(0,Math.min(total,Number(recognized)||0)),handCount=Math.max(0,Number(hands)||0),errorCount=Math.max(0,Number(errors)||0);
+  const fileWord=total>1?"fichiers":"fichier",recognizedText=total>0?(ok===total?`${total} ${fileWord} reconnu${total>1?"s":""}`:`${ok}/${total} ${fileWord} reconnu${ok>1?"s":""}`):"aucun fichier reconnu";
+  const handText=`${handCount} main${handCount>1?"s":""}`;
+  const errorText=errorCount?`${errorCount} erreur${errorCount>1?"s":""} de lecture/parsing`:"aucune erreur détectée";
+  const d=at instanceof Date?at:new Date(at),time=Number.isNaN(d.getTime())?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  return `${recognizedText} · ${handText} · ${errorText}${time?` · mise à jour ${time}`:""}${restored?" · restauré localement":""}${mode==="add"&&!restored?" · ajout":""}`;
+}
+function setHHImportSummary(text,{busy=false,warn=false}={}){
+  if(!hhFileMeta)return;
+  hhFileMeta.textContent=text;
+  hhFileMeta.className=`hh-import-summary${busy?" busy":""}${warn?" warn":""}`;
+}
 function mergeSourceSnapshots(existing, incoming){
   const map=new Map();
   for(const rec of [...(existing||[]), ...(incoming||[])]){
@@ -5045,7 +5085,7 @@ function mergeSourceSnapshots(existing, incoming){
   }
   return [...map.values()];
 }
-async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restored=false,mergeMode="replace"}={}){
+async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restored=false,mergeMode="replace",readErrors=0}={}){
   const incoming=[...(records||[])].map(r=>({...r}));
   if(!incoming.length){
     if(mergeMode==="replace") return clearLoadedHands({persist,reason:"Aucune main PokerStars reconnue dans les fichiers sélectionnés."});
@@ -5054,8 +5094,9 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
 
   const sourceRecords=mergeMode==="add" ? mergeSourceSnapshots(state.hhSourceSnapshots,incoming) : incoming;
 
-  const parsed=[];
+  const parsed=[];let recognizedFiles=0,parseErrors=Math.max(0,Number(readErrors)||0);
   for(const rec of sourceRecords){
+    let recognized=false;
     try{
       const content=String(rec.content||"");
       const blocks=splitPokerStarsHands(content);
@@ -5063,9 +5104,11 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
         const block=blocks[bi];
         if(bi===blocks.length-1&&!block.includes("*** SUMMARY ***")) continue;
         const h=parsePokerStarsHand(block,rec.name||"Hand History");
-        if(h) parsed.push(h);
+        if(h){parsed.push(h);recognized=true;}
+        else parseErrors++;
       }
-    }catch(_){ }
+    }catch(_){parseErrors++;}
+    if(recognized) recognizedFiles++;
   }
 
   const byId=new Map();
@@ -5073,7 +5116,8 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
   state.hhHands=[...byId.values()].sort((a,b)=>b.sortKey-a.sortKey||Number(b.id)-Number(a.id));
   state.hhSourceSnapshots=sourceRecords.map(r=>({...r}));
 
-  hhFileMeta.textContent=`${metaPrefix} · ${sourceRecords.length} fichier(s) · ${state.hhHands.length} main(s) PokerStars détectée(s)${restored?" · restauré localement":""}${mergeMode==="add"&&!restored?" · mode ajout":""}`;
+  const totalFiles=sourceRecords.length+Math.max(0,Number(readErrors)||0);
+  setHHImportSummary(hhImportSummaryText({files:totalFiles,recognized:recognizedFiles,hands:state.hhHands.length,errors:parseErrors,restored,mode:mergeMode}),{warn:parseErrors>0||recognizedFiles<sourceRecords.length});
 
   if(persist) await persistHHSources(sourceRecords);
 
@@ -5101,11 +5145,16 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
 async function applyHHFiles(files,metaPrefix="Import",{persist=true,mergeMode="replace"}={}){
   const fileList=[...(files||[])];
   if(!fileList.length) return;
-  const records=[];
+  const records=[];let readErrors=0;
   for(const file of fileList){
-    try{records.push(await fileToStoredSnapshot(file));}catch(_){ }
+    try{records.push(await fileToStoredSnapshot(file));}catch(_){readErrors++;}
   }
-  if(records.length) await applyHHSnapshots(records,metaPrefix,{persist,restored:false,mergeMode});
+  if(records.length){
+    await applyHHSnapshots(records,metaPrefix,{persist,restored:false,mergeMode,readErrors});
+  }else{
+    setHHImportSummary(hhImportSummaryText({files:fileList.length,recognized:0,hands:state.hhHands.length,errors:Math.max(1,readErrors),mode:mergeMode}),{warn:true});
+    hhStatus.textContent="Import impossible : aucun fichier sélectionné n’a pu être lu.";
+  }
 }
 function stopHHWatch(message="Surveillance automatique arrêtée.",{forgetHandle=true}={}){
   if(state.hhWatchTimer){
@@ -5116,11 +5165,12 @@ function stopHHWatch(message="Surveillance automatique arrêtée.",{forgetHandle
   state.hhWatchMeta=[];
   state.hhWatchChecking=false;
   hhWatchBtn.classList.remove("active");
-  hhWatchBtn.textContent="Charger et surveiller automatiquement";
+  hhWatchBtn.textContent="Surveiller mes HH";
   hhWatchStopBtn.disabled=true;
   updateHHWatchCapabilityUi();
   if(forgetHandle) persistWatchHandles([]);
-  if(message) hhFileMeta.textContent=message;
+  if(message) hhWatchStatus.textContent=message;
+  updateHHImportEffect();
 }
 
 async function readWatchedFiles(force=false){
@@ -5144,7 +5194,7 @@ async function readWatchedFiles(force=false){
     if(changed){
       state.hhWatchMeta=meta;
       await applyHHFiles(files,"Surveillance auto",{mergeMode:"replace"});
-      hhFileMeta.textContent=`Surveillance auto active · ${files.length} fichier(s) · ${state.hhHands.length} main(s) · dernière vérification ${new Date().toLocaleTimeString("fr-FR")}`;
+      hhWatchStatus.textContent=`Surveillance active · dernière vérification ${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
     }
   }catch(err){
     stopHHWatch(`Surveillance interrompue : ${err?.message||"accès au fichier perdu"}`,{forgetHandle:false});
@@ -5199,7 +5249,7 @@ async function startHHWatch(){
     state.hhWatchMeta=[];
     await persistWatchHandles(handles);
     hhWatchBtn.classList.add("active");
-    hhWatchBtn.textContent="Surveillance auto : ON";
+    hhWatchBtn.textContent="Surveillance : active";
     hhWatchStopBtn.disabled=false;
     hhWatchStatus.textContent="Surveillance active. Les modifications du fichier PokerStars sont vérifiées toutes les 2 s.";
 
@@ -5230,11 +5280,14 @@ hhFileInput.addEventListener("change",async e=>{
   // Manual import is a snapshot. Stop a previous watched set to avoid an
   // ambiguous source list.
   if(state.hhWatchTimer || state.hhWatchHandles.length) stopHHWatch("",{forgetHandle:true});
+  setHHImportSummary(`${files.length} fichier${files.length>1?"s":""} sélectionné${files.length>1?"s":""} · import en cours…`,{busy:true});
+  hhStatus.textContent="Lecture et parsing des Hand Histories PokerStars…";
   await applyHHFiles(files,"Import manuel",{persist:true,mergeMode:state.hhImportMode});
 });
 
 hhImportModeSelect?.addEventListener("change",()=>{
   state.hhImportMode=hhImportModeSelect.value==="add"?"add":"replace";
+  updateHHImportEffect();
   schedulePersistPrefs();
 });
 hhClearBtn?.addEventListener("click",()=>clearLoadedHands({persist:true,reason:"Mains chargées vidées manuellement."}));
@@ -7270,7 +7323,7 @@ async function tryRestoreWatchHandles(){
     state.hhWatchHandles=granted;
     state.hhWatchMeta=[];
     hhWatchBtn.classList.add("active");
-    hhWatchBtn.textContent="Surveillance auto : ON";
+    hhWatchBtn.textContent="Surveillance : active";
     hhWatchStopBtn.disabled=false;
     hhWatchStatus.textContent="Surveillance automatique restaurée depuis la session précédente.";
     await readWatchedFiles(true);
