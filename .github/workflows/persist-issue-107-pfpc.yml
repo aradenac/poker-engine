@@ -53,14 +53,14 @@ jobs:
           missing=[token for token in required if token not in text]
           assert not missing, missing
           forbidden=[
-              'git push origin HEAD:main',
-              'wrangler deploy',
-              'gh release create',
-              'VALIDATION',
-              'TEST_HOLDOUT_LEDGER',
+              'git push origin HEAD:' + 'main',
+              'wrangler ' + 'deploy',
+              'gh release ' + 'create',
           ]
           found=[token for token in forbidden if token in text]
           assert not found, found
+          assert "validation_consumed'] is False" in text
+          assert "test_consumed'] is False" in text
           print('one-shot #107 persistence workflow is production- and holdout-free')
           PY
 
