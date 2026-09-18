@@ -200,7 +200,7 @@ async def main() -> None:
                 population_id:entry.population_id,
                 strategy:{AA:'raise',KK:'raise'},
                 synthetic_generation:2
-              })+'\n');
+              })+'\\n');
               hero.sha256=await P.sha256(heroBytes);
               hero.size_bytes=heroBytes.length;
               nextOverrides[hero.url]=heroBytes;
