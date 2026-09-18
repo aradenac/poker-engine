@@ -2716,6 +2716,10 @@ function actionEquityValuesHtml(equities,required=null,usedKeys={}){
     return `<div class="action-eq-item${usedClass}"><span class="label">${escapeHtml(actionScenarioLabel(key))}</span><span class="value">${escapeHtml(value)}${d?` <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span>`:""}</span></div>`;
   }).join("")}</div>`;
 }
+function actionSingleEquityHtml(equities,key,required=null,usedClass="used-prior"){
+  const e=equities?.[key],value=Number.isFinite(e)?fmtEquityThreshold(e):"—",d=required===null?null:fmtEquityDelta(e,required);
+  return `<div class="action-eq-grid"><div class="action-eq-item ${usedClass}"><span class="label">${escapeHtml(actionScenarioLabel(key))}</span><span class="value">${escapeHtml(value)}${d?` <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span>`:""}</span></div></div>`;
+}
 function postflopActorRemainingBB(stepIndex){const ctx=actionDecisionContext(stepIndex);if(!ctx)return NaN;const st=historyPlayerStackBB(ctx.hand,ctx.actor),paid=Number(ctx.before.state?.[ctx.actor]?.totalPaidBB)||0;return Number.isFinite(st)?Math.max(0,st-paid):NaN;}
 function postflopMaxOpponentEffectiveCostBB(stepIndex){
   const ctx=actionDecisionContext(stepIndex);if(!ctx)return NaN;
@@ -3569,14 +3573,14 @@ function actionDetailModalInnerHtml(stepIndex,step){
       ? "CALL : EV de continuation à équité brute, rake inclus ; les futures mises ne sont pas simulées."
       : postflopTree
         ? "BET/RAISE postflop : réponses fold/call/raise conditionnées par range, nœud, sizing et SPR. Flop/turn : continuation après call terminalisée par un checkdown ; river : terminale. Re-raise : continuation conservatrice par fold."
-        : "BET/RAISE préflop : score historique ; le nouveau moteur EV concerne le postflop.";
+        : "BET/RAISE préflop : diagnostic historique non comparable en ΔEV ; le moteur EV contrefactuel concerne ici le postflop.";
   const evLines=req.kind==="fold"
-    ? `<div class="action-analysis-meta">EV FOLD <b>0 BB</b> · les alternatives sont calculées sur la range de fold estimée.</div>`
+    ? `<div class="action-analysis-meta">EV FOLD a priori <b>0 BB</b> · les alternatives sont calculées sur la range de fold estimée au moment de la décision.</div>`
     : req.kind==="check"
-    ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b> · a posteriori <b>${Number.isFinite(postEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,postEq))):"—"}</b></div>`
+    ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b></div>`
     : req.kind==="call"
-      ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b> · a posteriori <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b></div>`
-      : postflopTree?`${actionTreeDetailsHtml(priorTree,"A priori")}${actionTreeDetailsHtml(postTree,"A posteriori")}`:"";
+      ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b></div>`
+      : postflopTree?actionTreeDetailsHtml(priorTree,"A priori"):"";
   const chips=`<div class="action-detail-meta-strip">
       <span class="action-detail-chip">Action <b>${escapeHtml(actionName)}${allIn?" ALL-IN":""}</b></span>
       <span class="action-detail-chip">Investi <b>${escapeHtml(formatBB(req.cost))}</b></span>
@@ -3584,11 +3588,12 @@ function actionDetailModalInnerHtml(stepIndex,step){
       <span class="action-detail-chip">% pot <b>${Number.isFinite(pctPot)?escapeHtml(fmtEquityThreshold(pctPot)):"—"}</b></span>
       <span class="action-detail-chip">Rake <b>${escapeHtml(rakeText)}</b></span>
     </div>`;
-  const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree});
+  const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,sources,postflopTree,priorEq,priorTree});
+  const retrospective=actionRetrospectivePanelHtml({req,postMetrics,sources,postflopTree,postflopCheck,postEq,postTree,eq,stepIndex});
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
     : `${chips}${keyPoints}`;
-  return `${primary}
+  return `${primary}${retrospective}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
@@ -3601,7 +3606,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
             <div class="action-analysis-title">${actionName}${allIn?" ALL-IN":""} · ${postflopTree?"arbre EV de réponses population":postflopCheck?"CHECK vs bets hypothétiques":postflopFold?"FOLD vs continuations hypothétiques":`seuil rake inclus ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`}</div>
             <div class="action-analysis-meta">Investi ${escapeHtml(formatBB(req.cost))} dans ${escapeHtml(formatBB(req.potBefore))}${Number.isFinite(pctPot)?` · ${escapeHtml(fmtEquityThreshold(pctPot))} du pot`:""} → pot brut ${escapeHtml(formatBB(req.grossPotAfter))} → rake estimé ${escapeHtml(rakeText)} → pot net ${escapeHtml(formatBB(req.netPotAfter))}.</div>
             ${evLines}
-            ${actionEquityValuesHtml(eq,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,sources)}
+            ${actionSingleEquityHtml(eq,sources.prior,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,"used-prior")}
             <div class="action-analysis-meta" style="margin-top:6px">${escapeHtml(kindNote)}</div>
           </div>
         </div>
