@@ -7,9 +7,11 @@ on:
       - 'tools/validate_release_handoff.py'
       - 'tools/training/build_release_handoff.py'
       - 'tools/training/build_promote_release_handoff.py'
+      - 'tools/training/verify_live_release.py'
       - 'tests/test_release_handoff.py'
       - 'tests/training/test_build_release_handoff.py'
       - 'tests/training/test_build_promote_release_handoff.py'
+      - 'tests/training/test_verify_live_release.py'
       - '.github/workflows/release-handoff-contract.yml'
   push:
     branches:
@@ -37,9 +39,11 @@ jobs:
             tools/validate_release_handoff.py \
             tools/training/build_release_handoff.py \
             tools/training/build_promote_release_handoff.py \
+            tools/training/verify_live_release.py \
             tests/test_release_handoff.py \
             tests/training/test_build_release_handoff.py \
-            tests/training/test_build_promote_release_handoff.py
+            tests/training/test_build_promote_release_handoff.py \
+            tests/training/test_verify_live_release.py
       - name: Smoke standalone handoff builder CLIs
         run: |
           python3 tools/training/build_release_handoff.py --help >/dev/null
@@ -49,6 +53,7 @@ jobs:
           PYTHONPATH=. python3 tests/test_release_handoff.py
           PYTHONPATH=. python3 tests/training/test_build_release_handoff.py
           PYTHONPATH=. python3 tests/training/test_build_promote_release_handoff.py
+          PYTHONPATH=. python3 tests/training/test_verify_live_release.py
       - name: Prove contract workflow has no publication side effect
         run: |
           python3 - <<'PY'
