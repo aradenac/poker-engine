@@ -279,6 +279,27 @@ def test_shove_preserves_all_in_boundary() -> None:
     assert reference.calls == 0
 
 
+def test_pfpc_shove_retargets_to_live_all_in_within_frozen_stack_bucket() -> None:
+    reference = DummyReference()
+    candidate = bound_policy(reference)
+    live_stack = 106.16
+    live_state = unopened_btn_state(live_stack)
+    live_policy_context = build_policy_context(canonical_preflop_context(live_state, "BTN"))
+    source_policy_context = build_policy_context(canonical_preflop_context(unopened_btn_state(100.0), "BTN"))
+    assert live_policy_context["policy_context_id"] == source_policy_context["policy_context_id"]
+
+    result = candidate.decide(
+        live_state,
+        seed_parts=("scenario-bound-shove", 123, "hero", "BTN", 0, "preflop"),
+        **decision_context(("Ks", "Kh")),
+    )
+    assert result["action"] == "RAISE"
+    assert result["target_total_bb"] == live_stack
+    assert result["benchmark_candidate"]["supported"] is True
+    assert result["benchmark_candidate"]["source_preflop_context_id"] == PFC
+    assert reference.calls == 0
+
+
 def main() -> None:
     tests = [value for name, value in sorted(globals().items()) if name.startswith("test_") and callable(value)]
     for test in tests:
