@@ -40,7 +40,10 @@
         "TEST"
       ],
       "test_consumed": false
-    }
+    },
+    "excluded_players": [
+      "RoiDePiqueNique"
+    ]
   },
   "incumbent": {
     "model_dir": "training/runs/20260912_independent_profiles_v2/model",
@@ -87,7 +90,8 @@
     ],
     "action_min_support": 30,
     "sizing_min_support": 12,
-    "alpha_per_action": 1
+    "alpha_per_action": 1,
+    "fit_population": "opponents_only_excluding_declared_hero"
   },
   "predictive_evaluation": {
     "pairing_unit": "hand_id",
