@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INDEX = ROOT / "site/index.html"
-SOURCE = '<a href="./hero-ranges.html">Ranges Hero</a>'
+SOURCE = '<a href="./hero-ranges.html">Stratégie Hero</a>'
 TARGET = SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
 
 
