@@ -203,6 +203,47 @@ async def main() -> None:
         assert review_context["afterBack"]["handCount"] == 1, review_context
         assert "leave" in review_context["afterBack"]["calls"], review_context
 
+        # Local persistence stays compact in the normal path; details are opt-in,
+        # retry performs a real write, and erase cannot proceed without confirmation.
+        local_persistence = await page.evaluate(
+            """async () => {
+                const details=document.querySelector('#localPersistenceDetails');
+                const initial={
+                    chip:document.querySelector('#localPersistenceStatus')?.textContent?.trim(),
+                    open:!!details?.open,
+                    detailsText:document.querySelector('#localPersistenceDetail')?.textContent?.trim()
+                };
+                persistenceStatus("Smoke save in progress",false,true);
+                const busy=document.querySelector('#localPersistenceStatus')?.textContent?.trim();
+                persistenceStatus("Smoke saved",false,false);
+                const saved=document.querySelector('#localPersistenceStatus')?.textContent?.trim();
+                const retryOk=await retryLocalPersistence();
+                const afterRetry=document.querySelector('#localPersistenceStatus')?.textContent?.trim();
+                const realConfirm=window.confirm;
+                try{
+                    window.confirm=()=>false;
+                    const eraseResult=await clearLocalPersistenceWithConfirmation();
+                    return {
+                        initial,busy,saved,retryOk,afterRetry,
+                        eraseResult,
+                        eraseStatus:document.querySelector('#localPersistenceActionStatus')?.textContent?.trim(),
+                        detailsOpenAfterCancel:!!details?.open
+                    };
+                } finally {
+                    window.confirm=realConfirm;
+                }
+            }"""
+        )
+        assert local_persistence["initial"]["open"] is False, local_persistence
+        assert "restent" in folded(local_persistence["initial"]["detailsText"]), local_persistence
+        assert local_persistence["busy"] == "Sauvegarde…", local_persistence
+        assert local_persistence["saved"] == "Sauvegardé localement", local_persistence
+        assert local_persistence["retryOk"] is True, local_persistence
+        assert local_persistence["afterRetry"] == "Sauvegardé localement", local_persistence
+        assert local_persistence["eraseResult"] is False, local_persistence
+        assert "annulé" in folded(local_persistence["eraseStatus"]), local_persistence
+        assert local_persistence["detailsOpenAfterCancel"] is False, local_persistence
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -280,6 +321,7 @@ async def main() -> None:
             "prior_posterior_information_boundary": information_boundary,
             "hh_import_ux": hh_import_ux,
             "review_context": review_context,
+            "local_persistence": local_persistence,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,
