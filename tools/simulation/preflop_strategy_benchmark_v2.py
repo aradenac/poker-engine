@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from tools.populations.registry import resolve_population
+from tools.preflop.policy_context import build_policy_context
 from tools.simulation.full_hand_arena import run_full_hand
 from tools.simulation.full_hand_benchmark import ProfileSource, build_manifest_from_archives
 from tools.simulation.full_hand_scenarios import eligible_table_templates
@@ -331,6 +332,7 @@ def _row_from_pair(
         raise AssertionError("paired results lost scenario identity")
     hero = str(scenario["hero"])
     pfc = _first_hero_preflop_context(reference_result)
+    policy_context = None if pfc is None else build_policy_context(pfc)
     history = [] if pfc is None else list(pfc.get("history") or [])
     raises = [row for row in history if row.get("action") in {"RAISE", "JAM"}]
     first_raise = next((i for i, row in enumerate(history) if row.get("action") in {"RAISE", "JAM"}), None)
@@ -344,6 +346,7 @@ def _row_from_pair(
         "rep": int(scenario.get("rep", 0)),
         "hero_position": str((scenario.get("positions") or {}).get(hero, "NA")),
         "preflop_context_id": None if pfc is None else pfc["context_id"],
+        "preflop_policy_context_id": None if policy_context is None else policy_context["policy_context_id"],
         "preflop_family": "NO_HERO_PREFLOP_DECISION" if pfc is None else pfc["family"],
         "limper_count": int(limpers),
         "caller_count": int(callers),
@@ -427,6 +430,31 @@ def _delta_groups(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]
     }
 
 
+def _candidate_support_groups(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]:
+    groups: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
+    for row in rows:
+        name = str(row.get(key))
+        audit = dict(row.get("candidate_audit") or {})
+        groups[name]["hero_preflop_decisions"] += int(audit.get("hero_preflop_decisions", 0))
+        groups[name]["supported_decisions"] += int(audit.get("candidate_supported_decisions", 0))
+        groups[name]["out_of_support_decisions"] += int(audit.get("candidate_out_of_support_decisions", 0))
+    out: dict[str, Any] = {}
+    for name, counts in sorted(groups.items()):
+        total = int(counts["hero_preflop_decisions"])
+        supported = int(counts["supported_decisions"])
+        unsupported = int(counts["out_of_support_decisions"])
+        if supported + unsupported != total:
+            raise AssertionError(f"candidate support accounting incomplete for policy context {name}")
+        out[name] = {
+            "hero_preflop_decisions": total,
+            "supported_decisions": supported,
+            "out_of_support_decisions": unsupported,
+            "supported_decision_rate": None if total == 0 else supported / total,
+            "out_of_support_decision_rate": None if total == 0 else unsupported / total,
+        }
+    return out
+
+
 def _policy_outcomes(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]:
     payloads = [dict(row[key]) for row in rows]
     n = len(payloads)
@@ -477,6 +505,8 @@ def summarize_environment_rows(
         },
         "breakdowns": {
             "position": _delta_groups(rows, "hero_position"),
+            "policy_context": _delta_groups(rows, "preflop_policy_context_id"),
+            "candidate_support_by_policy_context": _candidate_support_groups(rows, "preflop_policy_context_id"),
             "preflop_family": _delta_groups(rows, "preflop_family"),
             "limper_count": _delta_groups(rows, "limper_count"),
             "caller_count": _delta_groups(rows, "caller_count"),
