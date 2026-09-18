@@ -93,6 +93,7 @@ jobs:
             --version "hero-${POSITION,,}-unopened-100bb-169-v1" \
             --code-sha "$GITHUB_SHA" \
             --sizing-decisions /tmp/issue-107-sizing/issue-107-certified-decisions.jsonl \
+            --support-closure \
             --rows-out "/tmp/issue-107-${POSITION}-${SHARD_INDEX}.json" \
             --allow-partial \
             "${HAND_ARGS[@]}"
@@ -115,6 +116,10 @@ jobs:
           assert run['context']['spot']=='UNOPENED'
           assert run['provenance']['sizing_support']['filters']['split']=='TRAIN'
           assert run['provenance']['sizing_support']['filters']['is_hero'] is False
+          closure=run['provenance']['continuation_support']
+          assert closure['enabled'] is True
+          assert closure['nearest_context_substitution'] is False
+          assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
           print({'position':os.environ['POSITION'],'requested':requested,'completed':len(rows),'unsupported':len(unsupported)})
           PY
       - uses: actions/upload-artifact@v4
@@ -190,6 +195,10 @@ jobs:
           assert cov['requested']==169
           assert cov['accounted']==169
           assert cov['supported']+cov['unsupported']==169
+          assert cov['supported']>0, ('new position has zero calculated overrides', os.environ['POSITION'], cov)
+          closure=run['provenance']['continuation_support']
+          assert closure['enabled'] is True
+          assert closure['nearest_context_substitution'] is False
           assert bind['selection_boundary']['validation_consumed'] is False
           assert bind['selection_boundary']['test_consumed'] is False
           assert bind['promotion_authorized'] is False
@@ -266,6 +275,8 @@ jobs:
           assert binding['matching']=='EXACT_PFPC_AND_169_HAND_CLASS_ONLY'
           assert binding['nearest_context_substitution'] is False
           assert set(x['actor_position'] for x in result['sources'])=={'LJ','HJ','CO','BTN','SB'}
+          new_sources=[x for x in result['sources'] if x['actor_position']!='BTN']
+          assert all(x['supported_hand_classes']>0 for x in new_sources), new_sources
           assert len(repo['contexts'])==5
           print(json.dumps({
             'policy_contexts':result['policy_contexts'],
