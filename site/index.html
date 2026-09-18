@@ -196,6 +196,20 @@
   }
   .hh-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
   .hh-controls button{width:auto}
+  .hh-import-primary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .hh-import-primary .filelabel,.hh-import-primary button{width:auto}
+  .hh-import-primary .hh-import-main{font-weight:900;border-color:rgba(92,225,185,.42);background:rgba(92,225,185,.09);color:var(--accent2)}
+  .hh-import-effect{margin-top:7px;font-size:10px;line-height:1.4;color:var(--muted)}
+  .hh-import-summary{margin-top:9px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1729;font-size:11px;font-weight:800;color:var(--text)}
+  .hh-import-summary.busy{border-color:rgba(109,132,255,.4);color:#cbd6ff}
+  .hh-import-summary.warn{border-color:rgba(241,198,109,.4);color:#ead8ad}
+  .hh-import-advanced{margin-top:9px;border:1px solid var(--border);border-radius:10px;background:#0c1526;overflow:hidden}
+  .hh-import-advanced>summary{cursor:pointer;list-style:none;padding:8px 10px;font-size:10px;font-weight:850;color:var(--muted)}
+  .hh-import-advanced>summary::-webkit-details-marker{display:none}
+  .hh-import-advanced>summary::after{content:"▾";float:right}
+  .hh-import-advanced[open]>summary{border-bottom:1px solid var(--border);color:var(--text)}
+  .hh-import-advanced[open]>summary::after{content:"▴"}
+  .hh-import-advanced-body{padding:0 10px 10px}
   .hh-selection-section{
     margin-top:14px;padding-top:12px;border-top:1px solid var(--border);
     scroll-margin-top:18px
@@ -1044,32 +1058,36 @@
     </section>
 
     <section id="historiesSection" class="panel wide">
-      <h2>2. Hand Histories PokerStars</h2>
-      <label class="filelabel" for="hhFileInput">Charger un ou plusieurs fichiers .txt</label>
-      <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
-      <div class="hh-import-row">
-        <div class="field">
-          <label for="hhImportMode">À l'import manuel</label>
-          <select id="hhImportMode">
-            <option value="replace">Remplacer les mains chargées</option>
-            <option value="add">Ajouter aux mains chargées</option>
-          </select>
+      <h2>2. Mes Hand Histories PokerStars</h2>
+      <div class="hh-import-primary">
+        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
+        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
+        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
+      </div>
+      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
+      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
+      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
+      <details class="hh-import-advanced">
+        <summary>Options d’import et outils avancés</summary>
+        <div class="hh-import-advanced-body">
+          <div class="hh-import-row">
+            <div class="field">
+              <label for="hhImportMode">Comportement du prochain import</label>
+              <select id="hhImportMode">
+                <option value="replace">Remplacer les mains chargées</option>
+                <option value="add">Ajouter aux mains chargées</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
+              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+              <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
+              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
+            </div>
+          </div>
+          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
         </div>
-        <div class="actions">
-          <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
-        </div>
-      </div>
-      <div class="hh-controls" style="margin-top:9px">
-        <button id="hhWatchBtn" type="button" class="secondary">Charger et surveiller automatiquement</button>
-        <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-      </div>
-      <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
-      <div id="hhFileMeta" class="filemeta">Aucun historique importé.</div>
-      <div class="hh-controls">
-        <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
-        <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
-      </div>
-      <div id="hhStatus" class="status" style="margin-top:9px">Le mode manuel reste actif tant qu'aucune main n'est sélectionnée.</div>
+      </details>
 
       <div id="handSelectionSection" class="hh-selection-section">
         <div class="hh-selection-title">Sélection de main</div>
