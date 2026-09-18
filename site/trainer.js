@@ -45,6 +45,8 @@ const trainerStats=document.getElementById("trainerStats");
 const trainerBreakdown=document.getElementById("trainerBreakdown");
 const trainerProfiles=document.getElementById("trainerProfiles");
 const trainerTestLog=document.getElementById("trainerTestLog");
+const trainerPopulationIdentity=document.getElementById("trainerPopulationIdentity");
+const trainerTechnicalIdentity=document.getElementById("trainerTechnicalIdentity");
 
 function trainerSleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function trainerClamp(x,a,b){return Math.max(a,Math.min(b,x));}
@@ -115,7 +117,7 @@ async function trainerEnsureModels(){
     while(trainerState.loading)await trainerSleep(100);
     return trainerState.ready;
   }
-  trainerState.loading=true;trainerState.error="";trainerRenderStatus("Chargement des modèles promus A/B…","busy");
+  trainerState.loading=true;trainerState.error="";trainerRenderStatus("Chargement de la population et de la stratégie…","busy");
   const loadStarted=performance.now();
   try{
     const alreadyWarm=!!(trainerWarmAssets.modelA&&trainerWarmAssets.modelB&&trainerWarmAssets.heroRanges),assets=await trainerLoadWarmAssets();
@@ -125,6 +127,8 @@ async function trainerEnsureModels(){
     if(profiles.schema!=="independent-opponent-profiles/v2"||ranges.schema!=="independent-preflop-ranges/v2"||actions.schema!=="independent-postflop-actions/v2"||sizing.schema!=="independent-postflop-sizing/v2")throw new Error("Model B : schéma inattendu.");
     if(assets.heroRanges?.schema!=="trainer-hero-preflop-ranges/v1")throw new Error("Ranges Hero : schéma inattendu.");
     trainerState.populationId=assets.population.population_id;trainerState.modelB=assets.modelB;trainerState.heroRanges=assets.heroRanges;
+    if(trainerPopulationIdentity)trainerPopulationIdentity.textContent=trainerState.populationId;
+    if(typeof updateProductIdentityUi==="function")updateProductIdentityUi();
 
     if(!state.populationModel){
       const content=assets.modelA.preflop;
@@ -138,7 +142,8 @@ async function trainerEnsureModels(){
     }
     trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2 + stratégie Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
+    if(trainerTechnicalIdentity)trainerTechnicalIdentity.textContent=`Population ${trainerState.populationId} · Model A v5 · Model B v2 · stratégie Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`;
+    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · stratégie Hero Custom.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
@@ -316,7 +321,7 @@ function trainerBuildReviewHH(hand,actionLine,actionKind,cost=0){
   lines.push("*** SUMMARY ***",`Total pot ${trainerNum(gross)} | Rake ${trainerNum(rake)}`);
   lines[0]=lines[0].replace(/Hand #\d+/,`Hand #${evalId}`);return lines.join("\n")+"\n";
 }
-async function trainerWaitFor(fn,timeout=30000){const start=Date.now();while(!fn()){if(Date.now()-start>timeout)throw new Error("Timeout du moteur de recommandation.");await trainerSleep(40);}}
+async function trainerWaitFor(fn,timeout=30000){const start=Date.now();while(!fn()){if(Date.now()-start>timeout)throw new Error("Timeout du calcul de recommandation.");await trainerSleep(40);}}
 function trainerReviewCacheClone(value){return JSON.parse(JSON.stringify(value));}
 function trainerReviewCacheNormalize(text){return String(text||"").replace(/Hand #\d+/,"Hand #<trainer>");}
 function trainerReviewCacheEnsureModelIdentity(){
@@ -361,7 +366,7 @@ async function trainerReviewText(text){
 function trainerPlaceholderLine(hand){const s=hand.heroSeat,toCall=trainerToCall(hand,s);return {kind:toCall>1e-8?"FOLD":"CHECK",line:trainerActionLine(hand,s,toCall>1e-8?"FOLD":"CHECK"),cost:0};}
 async function trainerComputeRecommendation(){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero)return;
-  trainerState.busy=true;trainerState.recommendation=null;trainerRenderStatus("Calcul de la recommandation Model A…","busy");trainerRender();
+  trainerState.busy=true;trainerState.recommendation=null;trainerRenderStatus("Calcul de la recommandation…","busy");trainerRender();
   try{const ph=trainerPlaceholderLine(hand),detail=await trainerTimedReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,0));trainerState.recommendation=detail;trainerRenderStatus(`À vous de jouer · calcul ${trainerState.perf.lastMs.toFixed(0)} ms.`);}
   catch(err){trainerRenderStatus(`Recommandation indisponible : ${err.message}`,"error");trainerState.recommendation={error:err.message};}
   finally{trainerState.busy=false;trainerRender();}
@@ -508,7 +513,7 @@ function trainerRenderRecommendation(){
   if(!trainerRecommendation)return;const h=trainerState.hand,rec=trainerState.recommendation;
   if(!h||h.ended){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Recommandation</div><div class="trainer-rec-main">—</div>';return;}
   const canShow=trainerState.mode==="guided";
-  if(trainerState.busy&&!rec){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Moteur</div><div class="trainer-rec-main">Calcul…</div>';return;}
+  if(trainerState.busy&&!rec){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Analyse</div><div class="trainer-rec-main">Calcul…</div>';return;}
   if(!canShow){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">${trainerState.mode==="test"?"Mode Test":"Décidez d'abord"}</div><div class="trainer-rec-main">Réponse masquée</div><div class="trainer-rec-ev">${trainerState.mode==="test"?"Le bilan apparaît en fin de main.":"Le feedback apparaît après votre action."}</div>`;return;}
   trainerRecommendation.className="trainer-recommendation";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · EV finale</div><div class="trainer-rec-main">${escapeHtml(trainerBestText(rec))}</div><div class="trainer-rec-ev">EV ${Number.isFinite(Number(rec?.bestEV))?escapeHtml(trainerFmtBB(rec.bestEV)):"—"}</div>`;
 }
@@ -525,7 +530,7 @@ function trainerRenderFeedback(){
   const primary=summary?`${decisionPrimarySummaryHtml(summary,{compact:true})}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
   const noise=r.withinNoise?" · dans le bruit Monte-Carlo":"";
   trainerFeedback.className=`trainer-feedback ${cls}`;
-  trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV effective après incertitude : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>La catégorie affichée est dérivée uniquement de la perte EV et de l’incertitude du moteur.</div></div></details>`;
+  trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV effective après incertitude : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>La catégorie affichée est dérivée uniquement de la perte EV et de l’incertitude du modèle.</div></div></details>`;
 }
 function trainerSizingValue(){return Math.max(0,Number(document.getElementById("trainerSizingInput")?.value)||0);}
 function trainerSetSizing(x){const input=document.getElementById("trainerSizingInput");if(input)input.value=trainerNum(x);}
