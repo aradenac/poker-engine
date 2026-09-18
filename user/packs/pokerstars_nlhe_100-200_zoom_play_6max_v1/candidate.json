@@ -1,0 +1,39 @@
+{
+  "schema": "poker-population-pack-candidate/v1",
+  "candidate_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1@pending-scientific-decision",
+  "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "blocked_on": [
+    "#108"
+  ],
+  "publication_policy": {
+    "release_allowed": false,
+    "catalog_eligible": false,
+    "recommended": false,
+    "default": false
+  },
+  "required_roles": [
+    "model_a_preflop",
+    "model_a_postflop",
+    "model_b",
+    "hero_strategy",
+    "engine",
+    "hero_ranges",
+    "application_release"
+  ],
+  "components": {
+    "model_a_preflop": null,
+    "model_a_postflop": null,
+    "model_b": null,
+    "hero_strategy": null,
+    "engine": null,
+    "hero_ranges": null,
+    "application_release": null
+  },
+  "notes": [
+    "Preparation-only contract for issue #201 while #108 is unresolved.",
+    "No component may be inherited silently from the legacy MIXED_ZOOM_REGULAR population.",
+    "A resolved component must be content-addressed, population-scoped, provenance-bound and backed by an admissible decision before assembly.",
+    "This candidate is intentionally non-publishable and must never be added to the active/recommended catalogue in this state."
+  ]
+}
