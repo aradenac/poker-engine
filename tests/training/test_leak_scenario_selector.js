@@ -229,8 +229,8 @@ function event(id,overrides={}){
   assert.equal(summary.summary.unsupported,1);
   assert.equal(summary.summary.non_comparable,1);
   assert.equal(summary.summary.total_delta_ev_loss_bb,1);
-  assert.equal(summary.summary.average_delta_ev_loss_bb,1/3);
-  assert.equal(summary.summary.loss_bb_per_100_decisions,100/3);
+  assert.equal(summary.summary.average_delta_ev_loss_bb,.333333333);
+  assert.equal(summary.summary.loss_bb_per_100_decisions,33.333333333);
   assert.equal(summary.long_term_progression.claimed,false);
   assert.equal(summary.long_term_progression.sample_sufficient_for_assessment,false);
   assert.equal(summary.long_term_progression.reason,'INSUFFICIENT_SAMPLE');
