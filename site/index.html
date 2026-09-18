@@ -1748,7 +1748,7 @@ function showImportOk(msg){
 
 async function applyRangeSourceSnapshot(snapshot,{persist=true,restored=false}={}){
   if(!snapshot?.content) return false;
-  fileMeta.textContent=`${snapshot.name||"Range"} — ${((snapshot.size||snapshot.content.length)/1024).toFixed(1)} Ko`;
+  fileMeta.textContent=`${snapshot.name||"Range source"} — ${((snapshot.size||snapshot.content.length)/1024).toFixed(1)} Ko`;
   try{
     const json=JSON.parse(snapshot.content);
     const ranges=collectRanges(json.folder||json);
@@ -3539,15 +3539,15 @@ function actionRetrospectivePanelHtml(args){
 function foldRangeAnalysisHtml(stepIndex,decisionSummary){
   const step=state.replaySteps?.[stepIndex];if(!step||step.actionType!=="fold")return '';
   if(step.street==="Préflop"){
-    const fr=preflopFoldSelectedRange(stepIndex);if(!fr)return `<div class="section"><div class="section-title">Range sélectionnée par le fold</div><div class="action-section-note">Range préflop de fold indisponible pour ce joueur.</div></div>`;
+    const fr=preflopFoldSelectedRange(stepIndex);if(!fr)return `<div class="section"><div class="section-title">Distribution sélectionnée par le fold</div><div class="action-section-note">Distribution préflop de fold indisponible pour ce joueur.</div></div>`;
     const rows=(fr.entries||[]).slice().sort((a,b)=>(Number(b.frequency)||0)-(Number(a.frequency)||0)).slice(0,14);
     const top=rows.map(r=>`<span class="action-detail-chip"><b>${escapeHtml(r.hand)}</b> ${Number(r.frequency||0).toFixed(1).replace('.',',')} %</span>`).join('');
-    return `<div class="section"><div class="section-title">Range sélectionnée par le fold</div><div class="action-section-note">Le modèle préflop conditionne bien la range par l’action FOLD. En revanche, l’application ne possède toujours pas d’arbre EV préflop validé pour comparer proprement CALL / 3-bet / 4-bet / jam : aucune fausse EV n’est inventée ici.</div><div class="action-detail-meta-strip">${top}</div></div>`;
+    return `<div class="section"><div class="section-title">Distribution sélectionnée par le fold</div><div class="action-section-note">Le modèle préflop conditionne bien la distribution du joueur par l’action FOLD. En revanche, l’application ne possède toujours pas d’arbre EV préflop validé pour comparer proprement CALL / 3-bet / 4-bet / jam : aucune fausse EV n’est inventée ici.</div><div class="action-detail-meta-strip">${top}</div></div>`;
   }
   const fr=postflopFoldSelectedRange(stepIndex);if(!fr)return '';
   const stats=normalizedExactRangeStats(fr.entries),top=stats.rows.slice(0,12).map(r=>`<span class="action-detail-chip"><b>${escapeHtml(r.hand)}</b> ${(r.p*100).toFixed(1).replace('.',',')} %</span>`).join('');
-  const best=decisionSummary?.best,continuation=best&&!best.chosen?`Sur cette range de fold, la meilleure continuation agrégée est <b>${escapeHtml(best.label)}</b> à <b>${escapeHtml(formatBB(best.evBB))}</b> d’EV.`:`Sur cette range, le FOLD reste la meilleure famille d’action agrégée.`;
-  return `<div class="section"><div class="section-title">Analyse de la range de fold</div><div class="action-section-note">La distribution ci-dessous est reconstruite par Bayes : range avant action × P(FOLD | combo, nœud), puis renormalisation. Les EV de CALL/RAISE utilisent cette range sélectionnée, pas la range générale du joueur.</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Nœud <b>${escapeHtml(fr.nodeId)}</b></span><span class="action-detail-chip">n <b>${Number(fr.observations||0).toLocaleString('fr-FR')}</b></span><span class="action-detail-chip">Fold marginal <b>${escapeHtml(fmtEquityThreshold(fr.targetFold))}</b></span><span class="action-detail-chip">Combos effectifs <b>${stats.effective.toFixed(0)}</b></span><span class="action-detail-chip">Top 10 <b>${(stats.top10*100).toFixed(1).replace('.',',')} %</b></span></div><div class="action-detail-point" style="margin-top:8px">${continuation}</div><div class="action-detail-meta-strip">${top}</div></div>`;
+  const best=decisionSummary?.best,continuation=best&&!best.chosen?`Sur cette distribution de fold, la meilleure continuation agrégée est <b>${escapeHtml(best.label)}</b> à <b>${escapeHtml(formatBB(best.evBB))}</b> d’EV.`:`Sur cette distribution, le FOLD reste la meilleure famille d’action agrégée.`;
+  return `<div class="section"><div class="section-title">Analyse de la distribution de fold</div><div class="action-section-note">La distribution ci-dessous est reconstruite par Bayes : distribution avant action × P(FOLD | combo, nœud), puis renormalisation. Les EV de CALL/RAISE utilisent cette distribution sélectionnée, pas la distribution générale du joueur.</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Nœud <b>${escapeHtml(fr.nodeId)}</b></span><span class="action-detail-chip">n <b>${Number(fr.observations||0).toLocaleString('fr-FR')}</b></span><span class="action-detail-chip">Fold marginal <b>${escapeHtml(fmtEquityThreshold(fr.targetFold))}</b></span><span class="action-detail-chip">Combos effectifs <b>${stats.effective.toFixed(0)}</b></span><span class="action-detail-chip">Top 10 <b>${(stats.top10*100).toFixed(1).replace('.',',')} %</b></span></div><div class="action-detail-point" style="margin-top:8px">${continuation}</div><div class="action-detail-meta-strip">${top}</div></div>`;
 }
 function actionDetailModalInnerHtml(stepIndex,step){
   if(step?.actionType==="fold"&&step.street==="Préflop")return foldRangeAnalysisHtml(stepIndex,null);
@@ -3575,7 +3575,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
         ? "BET/RAISE postflop : réponses fold/call/raise conditionnées par range, nœud, sizing et SPR. Flop/turn : continuation après call terminalisée par un checkdown ; river : terminale. Re-raise : continuation conservatrice par fold."
         : "BET/RAISE préflop : diagnostic historique non comparable en ΔEV ; le moteur EV contrefactuel concerne ici le postflop.";
   const evLines=req.kind==="fold"
-    ? `<div class="action-analysis-meta">EV FOLD a priori <b>0 BB</b> · les alternatives sont calculées sur la range de fold estimée au moment de la décision.</div>`
+    ? `<div class="action-analysis-meta">EV FOLD a priori <b>0 BB</b> · les alternatives sont calculées sur la distribution de fold estimée au moment de la décision.</div>`
     : req.kind==="check"
     ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b></div>`
     : req.kind==="call"
@@ -4223,7 +4223,7 @@ function openPopulationRangeModal(playerName){
   const freq=gridFreqMapFromEstimate(estimate,player);
   const source=estimate?.exactComboEngine
     ? (estimate.postflopMatchedActions>0 ? "Moteur dynamique préflop + postflop · combos exacts" : "Moteur dynamique préflop · combos exacts")
-    : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range historique importée";
+    : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range source importée";
   const width=estimate?.width??populationRangeWidthFromEntries(entries);
   const preOccurred=populationPreflopDecisionTrace(state.selectedHand).slice(0,replayPreflopDecisionCount(state.replayIndex));
   const postOccurred=postflopDecisionTrace(state.selectedHand).slice(0,replayPostflopDecisionCount(state.replayIndex));
@@ -4251,7 +4251,7 @@ function openPopulationRangeModal(playerName){
     </div>
     <div class="population-modal-warning">L’indice de fiabilité est un diagnostic de couverture (nœuds exacts, volume, actions appariées et street), pas une probabilité que la range soit « vraie ». Les ranges turn/river restent structurellement moins fiables que préflop/flop.</div>
     <div class="population-modal-columns">
-      <div class="section"><div class="section-title">Range à l’instant T · 169 classes</div><div class="tiny">Le moteur travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
+      <div class="section"><div class="section-title">Range adverse estimée · 169 classes</div><div class="tiny">Le moteur travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
       <div class="section"><div class="section-title">Combos exacts les plus probables</div><div class="tiny">Pourcentage = masse probabiliste après normalisation de tous les combos légaux.</div><div class="population-combo-list">${topCombos}</div></div>
     </div>
     ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
@@ -5299,7 +5299,7 @@ function renderOpponents(){
     if(!state.ranges.length){
       const op=document.createElement("option");op.textContent="Aucune range source";op.value="0";rs.appendChild(op);rs.disabled=true;
     }else{
-      state.ranges.forEach((r,ri)=>{const op=document.createElement("option");op.value=ri;op.textContent=r.name||`Range ${ri+1}`;rs.appendChild(op);});
+      state.ranges.forEach((r,ri)=>{const op=document.createElement("option");op.value=ri;op.textContent=r.name||`Range source ${ri+1}`;rs.appendChild(op);});
       rs.value=String(Math.max(0,o.rangeIndex));
       rs.onchange=()=>{
         o.rangeIndex=Number(rs.value);
