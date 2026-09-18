@@ -4,7 +4,12 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
+from pathlib import Path
 import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
 from playwright.async_api import async_playwright
 
 from tests.packs.synthetic_pack_fixture import runtime_entry
