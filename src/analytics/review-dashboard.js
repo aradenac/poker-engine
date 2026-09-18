@@ -29,6 +29,15 @@
       String(e[k]==null?'':e[k])===String(scope[k]==null?'':scope[k])
     );
   }
+  function baseScope(input={}){
+    const population_id=text(input.population_id);if(!population_id)throw new Error('scope.population_id is required');
+    const strategy_id=text(input.strategy_id);if(!strategy_id)throw new Error('scope.strategy_id is required');
+    return {
+      population_id,pack_id:text(input.pack_id)||null,strategy_id,
+      strategy_version:text(input.strategy_version)||'UNKNOWN_RUNTIME',
+      ev_reference:text(input.ev_reference)||(Adapter&&Adapter.DEFAULT_EV_REFERENCE)||'review_score_policy_adjusted_incremental_bb'
+    };
+  }
   function emptyReport(scope){
     return {
       schema:Leak.REPORT_SCHEMA,event_schema:Leak.EVENT_SCHEMA,scope:{...scope},filters:{},
@@ -164,8 +173,12 @@
     if(dashboards.length>1)throw new Error('review dashboard spans '+dashboards.length+' population/pack/strategy/version/EV scopes; select one scope');
     if(dashboards.length===1)return dashboards[0];
 
-    const inbox=Inbox.buildReviewInbox(input);
     const adapted=Adapter.adaptPersistedReviewData({reviewScores:input.reviewScores||{},hhSources:input.hhSources||[],scope:input.scope});
+    const scope=baseScope(input.scope||{});
+    const inbox={
+      schema:Inbox.INBOX_SCHEMA,event_schema:Leak.EVENT_SCHEMA,adapter_schema:Adapter.ADAPTER_SCHEMA,
+      scope,scope_key:Leak.scopeKey(scope),items:[],warnings:[...adapted.warnings],user_metadata_schema:Inbox.USER_METADATA_SCHEMA
+    };
     return dashboardFrom(inbox,adapted,input.reviewScores||{},input);
   }
 
