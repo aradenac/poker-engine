@@ -26,10 +26,21 @@ def write(path: Path, data: bytes | str = b"x") -> None:
         path.write_bytes(data)
 
 
-def en_hand(hand_id: str, date: str = "2026/09/14 12:00:00", stake: str = "100/200") -> str:
+def en_hand(
+    hand_id: str,
+    date: str = "2026/09/14 12:00:00",
+    stake: str = "100/200",
+    *,
+    zoom: bool = True,
+    max_seats: int | None = 6,
+) -> str:
+    zoom_token = " Zoom" if zoom else ""
+    table = "Table 'CycleFixture'"
+    if max_seats is not None:
+        table += f" {max_seats}-max"
     return (
-        f"PokerStars Zoom Hand #{hand_id}: Hold'em No Limit ({stake}) - {date} CET\n"
-        "Table 'CycleFixture' 6-max Seat #1 is the button\n"
+        f"PokerStars{zoom_token} Hand #{hand_id}: Hold'em No Limit ({stake}) - {date} CET Play Money\n"
+        f"{table} Seat #1 is the button\n"
         "Seat 1: Hero (20000 in chips)\n"
         "*** SUMMARY ***\n"
     )
@@ -115,8 +126,6 @@ def install_artifacts(root: Path, suffix: str) -> None:
 
 
 def fixture(root: Path, *, new_unique_hand: bool = True, include_b: bool = False) -> None:
-    # Closed-cycle legacy registry remains present/protected but is deliberately not
-    # used as an implicit population selector by the new planner.
     write(root / "training/registry.json", json.dumps({"schema_version": 2, "active_dataset": "legacy"}))
     write_population_registry(root, include_b=include_b)
     install_artifacts(root, "a")
@@ -176,6 +185,9 @@ def test_discovers_one_pending_snapshot_with_explicit_population() -> None:
         plan = discover(root, population_id=POP_A)
         assert plan["status"] == "PLANNED"
         assert plan["population_id"] == POP_A
+        assert plan["population_identity"]["format"] == "ZOOM"
+        assert plan["population_identity"]["money"] == "play"
+        assert plan["population_registry"] == "training/populations/registry.json"
         assert plan["snapshot_id"] == "new"
         assert plan["stake"] == "100/200"
         assert plan["cache_namespace"] == "cache-a"
@@ -196,6 +208,7 @@ def test_contract_is_population_scoped_validation_only_and_protected() -> None:
         plan = discover(root, population_id=POP_A)
         contract = contract_for(root, plan)
         assert contract["population_id"] == POP_A
+        assert contract["population_identity"]["format"] == "ZOOM"
         assert contract["dataset_id"] == "NLHE_100-200"
         assert contract["cache_namespace"] == "cache-a"
         assert contract["promotion_mode"] == "disabled"
@@ -207,9 +220,13 @@ def test_contract_is_population_scoped_validation_only_and_protected() -> None:
         assert "site" in contract["protected_production_paths"]
         ids = [x["id"] for x in contract["stages"]]
         assert ids == [
-            "audit-snapshot", "build-deterministic-increment", "classify-increment",
+            "audit-snapshot", "build-population-admitted-increment", "classify-increment",
             "normalize-decisions", "build-train-overlay", "write-increment-readiness-gate",
         ]
+        increment_argv = contract["stages"][1]["argv"]
+        assert "tools/datasets/build_population_increment.py" in increment_argv
+        assert increment_argv[increment_argv.index("--population") + 1] == POP_A
+        assert "--stake" not in increment_argv
 
 
 def test_generated_contract_executes_new_increment_without_production_mutation() -> None:
@@ -229,9 +246,46 @@ def test_generated_contract_executes_new_increment_without_production_mutation()
         increment = root / "training/datasets/NLHE_100-200/increments/new/manifest.json"
         manifest = json.loads(increment.read_text(encoding="utf-8"))
         assert manifest["selected_unique_hands"] == 1, manifest
+        assert manifest["population_id"] == POP_A
+        assert manifest["population_admission"]["ambiguous_unique_hands"] == 0
         run = root / plan["runs_root"] / plan["run_id"]
         assert (run / "data/decisions.jsonl").is_file()
         assert (run / "artifacts/population_increment_overlay.json").is_file()
+
+
+def test_generated_contract_excludes_same_stake_regular_hand() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw); fixture(root); install_repo_tools(root)
+        candidate = root / "training/datasets/NLHE_100-200/snapshots/new/source/new.zip"
+        make_zip(candidate, {"new.txt": en_hand("1010", zoom=False) + en_hand("1011", zoom=True)})
+        plan = discover(root, population_id=POP_A)
+        config = write_contract(root, contract_for(root, plan))
+        code, report = execute(root=root, config_path=config)
+        assert code == 0, report
+        manifest = json.loads((root / "training/datasets/NLHE_100-200/increments/new/manifest.json").read_text())
+        assert manifest["selected_unique_hands"] == 1
+        assert manifest["population_admission"]["excluded_reason_counts"] == {"format:REGULAR!=ZOOM": 1}
+        selected = root / "training/datasets/NLHE_100-200/increments/new/source/selected_100_200.zip"
+        with zipfile.ZipFile(selected) as zf:
+            payload = "\n".join(zf.read(name).decode("utf-8") for name in zf.namelist())
+        assert "#1011:" in payload
+        assert "#1010:" not in payload
+
+
+def test_generated_contract_blocks_ambiguous_population_hand_before_decisions() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw); fixture(root); install_repo_tools(root)
+        candidate = root / "training/datasets/NLHE_100-200/snapshots/new/source/new.zip"
+        make_zip(candidate, {"new.txt": en_hand("1012", max_seats=None)})
+        plan = discover(root, population_id=POP_A)
+        config = write_contract(root, contract_for(root, plan))
+        code, report = execute(root=root, config_path=config)
+        assert code != 0
+        assert report["status"] == "FAIL"
+        assert "build-population-admitted-increment" in report["reason"]
+        run = root / plan["runs_root"] / plan["run_id"]
+        assert not (run / "data/decisions.jsonl").exists()
+        assert not (root / "training/datasets/NLHE_100-200/increments/new/manifest.json").exists()
 
 
 def test_cycle_on_population_a_does_not_touch_population_b() -> None:

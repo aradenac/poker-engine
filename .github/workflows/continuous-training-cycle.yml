@@ -5,6 +5,8 @@ on:
     branches-ignore:
       - main
     paths:
+      - 'tools/datasets/build_population_increment.py'
+      - 'tools/datasets/certify_population.py'
       - 'tools/training/run_continuous_cycle.py'
       - 'tools/training/atomic_promotion.py'
       - 'tools/training/plan_snapshot_cycle.py'
@@ -12,6 +14,7 @@ on:
       - 'tools/training/execute_recalculation_plan.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
+      - 'tests/datasets/test_build_population_increment.py'
       - 'tests/training/test_continuous_cycle.py'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - 'tests/training/test_recalculation_plan.py'
@@ -20,6 +23,8 @@ on:
       - '.github/workflows/continuous-training-cycle.yml'
   pull_request:
     paths:
+      - 'tools/datasets/build_population_increment.py'
+      - 'tools/datasets/certify_population.py'
       - 'tools/training/run_continuous_cycle.py'
       - 'tools/training/atomic_promotion.py'
       - 'tools/training/plan_snapshot_cycle.py'
@@ -27,6 +32,7 @@ on:
       - 'tools/training/execute_recalculation_plan.py'
       - 'tools/training/classify_increment.py'
       - 'tools/training/write_increment_gate.py'
+      - 'tests/datasets/test_build_population_increment.py'
       - 'tests/training/test_continuous_cycle.py'
       - 'tests/training/test_snapshot_cycle_planner.py'
       - 'tests/training/test_recalculation_plan.py'
@@ -48,6 +54,9 @@ concurrency:
   group: continuous-training-cycle-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
 jobs:
   safety-contract:
     runs-on: ubuntu-latest
@@ -56,6 +65,8 @@ jobs:
       - name: Compile transaction and planning modules
         run: |
           python3 -m py_compile \
+            tools/datasets/build_population_increment.py \
+            tools/datasets/certify_population.py \
             tools/training/atomic_promotion.py \
             tools/training/run_continuous_cycle.py \
             tools/training/plan_snapshot_cycle.py \
@@ -63,10 +74,13 @@ jobs:
             tools/training/execute_recalculation_plan.py \
             tools/training/classify_increment.py \
             tools/training/write_increment_gate.py \
+            tests/datasets/test_build_population_increment.py \
             tests/training/test_continuous_cycle.py \
             tests/training/test_snapshot_cycle_planner.py \
             tests/training/test_recalculation_plan.py \
             tests/training/test_execute_recalculation_plan.py
+      - name: Exercise exact population admission boundary
+        run: python3 tests/datasets/test_build_population_increment.py
       - name: Exercise rollback and atomic-promotion contract
         run: python3 tests/training/test_continuous_cycle.py
       - name: Exercise generic snapshot planner contract

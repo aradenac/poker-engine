@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Plan an immutable continuous-training cycle for one explicit population.
 
-Population identity, stake, data roots and artifact pointers are resolved from
-training/populations/registry.json. The historical training/registry.json is
-never used as an implicit population selector and remains a protected closed-
-cycle anchor during migration.
+Population identity, data roots and artifact pointers are resolved from the
+versioned population registry. A raw snapshot is never admitted by blinds alone:
+the generated cycle routes it through the conservative population classifier
+before any normalized decision or model input can be produced.
 """
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def exactly_one_zip(source_dir: Path) -> Path:
 
 
 def rel(root: Path, path: Path) -> str:
-    return path.relative_to(root).as_posix()
+    return path.resolve().relative_to(root.resolve()).as_posix()
 
 
 def discover(
@@ -54,6 +54,8 @@ def discover(
     snapshot_id: str | None = None,
     registry_path: Path = DEFAULT_REGISTRY,
 ) -> dict[str, Any]:
+    root = root.resolve()
+    registry_full = registry_path if registry_path.is_absolute() else root / registry_path
     population = resolve_population(root, population_id, registry_path)
     identity = population["identity"]
     data = population["data"]
@@ -123,6 +125,8 @@ def discover(
         "status": "PLANNED",
         "population_id": population_id,
         "population_status": population["status"],
+        "population_identity": dict(identity),
+        "population_registry": rel(root, registry_full),
         "dataset": str(data["dataset_id"]),
         "stake": stake,
         "snapshot_id": selected["id"],
@@ -158,10 +162,8 @@ def contract_for(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
         known_args += ["--known", path]
     has_new = {"json": status_path, "path": ["has_new_hands"], "equals": True}
 
-    # The population registry itself and the closed legacy registry are immutable
-    # during a scientific run. Existing promoted artifacts are protected by their
-    # exact paths, without assuming that every population has every role filled.
-    protected = ["training/populations/registry.json", "training/registry.json"]
+    registry_path = str(plan.get("population_registry") or DEFAULT_REGISTRY.as_posix())
+    protected = [registry_path, "training/registry.json"]
     for role in ("model_a_preflop", "model_a_postflop", "model_b", "hero_strategy", "pack"):
         value = plan["artifacts"].get(role)
         if value and value not in protected:
@@ -173,6 +175,7 @@ def contract_for(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
         "schema": "poker-continuous-cycle/v1",
         "cycle": run_id,
         "population_id": plan["population_id"],
+        "population_identity": dict(plan["population_identity"]),
         "dataset_id": plan["dataset"],
         "cache_namespace": plan["cache_namespace"],
         "promotion_mode": "disabled",
@@ -185,10 +188,17 @@ def contract_for(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
                 "required_outputs": [f"{run_dir}/source/snapshot_audit.json"],
             },
             {
-                "id": "build-deterministic-increment",
-                "argv": ["python3", "tools/datasets/build_hand_history_increment.py", *known_args,
-                         "--candidate", plan["candidate_archive"], "--stake", plan["stake"],
-                         "--manifest", inc_manifest, "--output-zip", selected_zip],
+                "id": "build-population-admitted-increment",
+                "argv": [
+                    "python3", "tools/datasets/build_population_increment.py",
+                    "--root", ".",
+                    "--registry", registry_path,
+                    "--population", plan["population_id"],
+                    *known_args,
+                    "--candidate", plan["candidate_archive"],
+                    "--manifest", inc_manifest,
+                    "--output-zip", selected_zip,
+                ],
                 "required_outputs": [inc_manifest, selected_zip],
             },
             {
