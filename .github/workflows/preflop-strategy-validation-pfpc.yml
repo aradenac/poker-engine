@@ -362,8 +362,41 @@ jobs:
           assert selection['promotion_authorized'] is False
 
           dest.mkdir(parents=True)
-          for name in list(manifest)+['ARTIFACT_MANIFEST.json']:
+          for name in ('RUN_MANIFEST_VALIDATION.json','VALIDATION_SELECTION.json','ARTIFACT_MANIFEST.json'):
               shutil.copy2(src/name,dest/name)
+
+          scenarios=json.loads((src/'SCENARIOS_VALIDATION.json').read_text(encoding='utf-8'))
+          scenario_summary={
+              'schema':'poker-preflop-strategy-scenario-summary/v1',
+              'phase':'VALIDATION',
+              'split':scenarios.get('split'),
+              'scenario_manifest_sha256':manifest['SCENARIOS_VALIDATION.json']['sha256'],
+              'scenario_manifest_size_bytes':manifest['SCENARIOS_VALIDATION.json']['size_bytes'],
+              'scenario_count':len(scenarios.get('scenarios') or []),
+              'eligibility':scenarios.get('eligibility') or {},
+          }
+          (dest/'SCENARIO_SUMMARY.json').write_text(
+              json.dumps(scenario_summary,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+
+          compact_reports={}
+          for name in (
+              'model-b-public-reference-nominal-v1.json',
+              'model-b-public-reference-lower-aggression-v1.json',
+              'model-b-public-reference-higher-aggression-v1.json',
+          ):
+              value=json.loads((src/name).read_text(encoding='utf-8'))
+              compact={key:value[key] for key in value if key!='rows'}
+              compact['full_report_sha256']=manifest[name]['sha256']
+              compact['full_report_size_bytes']=manifest[name]['size_bytes']
+              compact['full_report_rows']=len(value.get('rows') or [])
+              compact_reports[name]=compact
+          (dest/'ENVIRONMENT_SUMMARIES.json').write_text(
+              json.dumps(compact_reports,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+
           result={
               'schema':'poker-preflop-strategy-pfpc-validation-result/v1',
               'issue':108,
