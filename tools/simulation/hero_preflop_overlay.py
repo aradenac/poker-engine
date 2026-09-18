@@ -412,10 +412,13 @@ class ExactHeroPreflopOverlayPolicy:
             core_action = "RAISE"
             sizing_rows = (strategy.get("sizings") or {}).get(action) or []
             target = _choose_sizing(sizing_rows, *seed_parts, "candidate-sizing", action)
-            if action == "SHOVE" and abs(target - float(view["max_raise_to_bb"])) > 1e-6:
-                raise RuleError(
-                    f"candidate SHOVE target {target} != legal all-in {view['max_raise_to_bb']}"
-                )
+            if action == "SHOVE":
+                # SHOVE is a semantic all-in action. PFPC v1 deliberately
+                # groups nearby effective stacks (for example 100bb and
+                # 106.16bb) in one frozen policy bucket, so the source-PFC
+                # numeric target is provenance, not a transferable fixed
+                # raise-to amount. Apply the live legal all-in boundary.
+                target = float(view["max_raise_to_bb"])
         else:
             raise ValueError(f"unsupported Hero repository action {action!r}")
 

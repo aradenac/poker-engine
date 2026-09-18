@@ -74,6 +74,16 @@ def repository() -> dict:
                                 "sizings": {"SHOVE": [{"target_total_bb": 100.0, "probability": 1.0}]},
                                 "notes": "fixture",
                             },
+                            "QQ": {
+                                "actions": {"3BET": 1.0},
+                                "sizings": {"3BET": [{"target_total_bb": 9.0, "probability": 1.0}]},
+                                "notes": "fixture",
+                            },
+                            "JJ": {
+                                "actions": {"4BET": 1.0},
+                                "sizings": {"4BET": [{"target_total_bb": 22.0, "probability": 1.0}]},
+                                "notes": "fixture",
+                            },
                         }
                     }
                 },
@@ -227,6 +237,30 @@ def test_explicit_pfpc_binding_matches_same_declared_stack_bucket() -> None:
     assert identity["nearest_context_substitution"] is False
 
 
+def test_pfpc_non_shove_aggression_preserves_source_sizing_within_bucket() -> None:
+    reference = DummyReference()
+    candidate = bound_policy(reference)
+    live_state = unopened_btn_state(106.16)
+
+    cases = [
+        (("As", "Ah"), 3.0, "OPEN"),
+        (("Qs", "Qh"), 9.0, "3BET"),
+        (("Js", "Jh"), 22.0, "4BET"),
+    ]
+    for index, (cards, expected_target, repository_action) in enumerate(cases):
+        result = candidate.decide(
+            live_state,
+            seed_parts=(f"scenario-bound-nonshove-{index}", 123, "hero", "BTN", 0, "preflop"),
+            **decision_context(cards),
+        )
+        assert result["action"] == "RAISE"
+        assert result["target_total_bb"] == expected_target
+        assert result["benchmark_candidate"]["repository_action"] == repository_action
+        assert result["benchmark_candidate"]["supported"] is True
+
+    assert reference.calls == 0
+
+
 def test_pfpc_binding_does_not_cross_declared_stack_bucket() -> None:
     reference = DummyReference()
     candidate = bound_policy(reference)
@@ -276,6 +310,27 @@ def test_shove_preserves_all_in_boundary() -> None:
     )
     assert result["action"] == "RAISE"
     assert result["target_total_bb"] == 100.0
+    assert reference.calls == 0
+
+
+def test_pfpc_shove_retargets_to_live_all_in_within_frozen_stack_bucket() -> None:
+    reference = DummyReference()
+    candidate = bound_policy(reference)
+    live_stack = 106.16
+    live_state = unopened_btn_state(live_stack)
+    live_policy_context = build_policy_context(canonical_preflop_context(live_state, "BTN"))
+    source_policy_context = build_policy_context(canonical_preflop_context(unopened_btn_state(100.0), "BTN"))
+    assert live_policy_context["policy_context_id"] == source_policy_context["policy_context_id"]
+
+    result = candidate.decide(
+        live_state,
+        seed_parts=("scenario-bound-shove", 123, "hero", "BTN", 0, "preflop"),
+        **decision_context(("Ks", "Kh")),
+    )
+    assert result["action"] == "RAISE"
+    assert result["target_total_bb"] == live_stack
+    assert result["benchmark_candidate"]["supported"] is True
+    assert result["benchmark_candidate"]["source_preflop_context_id"] == PFC
     assert reference.calls == 0
 
 

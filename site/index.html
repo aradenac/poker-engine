@@ -1081,7 +1081,6 @@
             <div class="actions">
               <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
               <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-              <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
               <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
             </div>
           </div>
@@ -1374,7 +1373,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       knownHandsBtn=$("knownHandsBtn"), rangeResetBtn=$("rangeResetBtn"), rangeClearBtn=$("rangeClearBtn"), rangeAllBtn=$("rangeAllBtn"),
       rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"), hhImportEffect=$("hhImportEffect"),
       hhWatchBtn=$("hhWatchBtn"), hhWatchStopBtn=$("hhWatchStopBtn"), hhWatchStatus=$("hhWatchStatus"),
-      hhModeBtn=$("hhModeBtn"), hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
+      hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
@@ -1657,7 +1656,7 @@ function persistenceStatus(message,error=false){
 function currentLocalPrefs(){
   return {
     selectedHandId:state.selectedHand?.id||null,
-    hhMode:!!state.hhMode,
+    hhMode:!!(state.appView==="replayer"&&state.selectedHand),
     appView:state.appView,
     hhSort:state.hhSort,
     hhKnownOnly:!!state.hhKnownOnly,
@@ -4842,25 +4841,22 @@ function openReplayerPage({scrollTop=true}={}){
   updateAppView({scrollTop});
 }
 function returnToHandsPage(){
-  state.appView='main';
-  schedulePersistPrefs(30);
-  updateAppView();
+  // Review is an implicit context: leaving it restores the independent manual Equity Lab.
+  // selectedHand and imported HH data are intentionally preserved for a later reopen.
+  if(state.hhMode) leaveHistoryMode();
+  else{
+    state.appView='main';
+    schedulePersistPrefs(30);
+    updateAppView();
+  }
   scheduleBackgroundReviewScoring(80);
   requestAnimationFrame(()=>{
     const target=document.getElementById('handSelectionSection')||document.getElementById('historiesSection');
     target?.scrollIntoView({behavior:'auto',block:'start'});
   });
 }
-function enterHistoryMode(){
-  if(!state.hhHands.length) return;
-  if(!state.hhMode) saveManualSnapshot();
-  state.hhMode=true;
-  schedulePersistPrefs();
-  if(!state.selectedHand) state.selectedHand=state.hhHands[0];
-  loadSelectedHistoryHand(false);
-  openReplayerPage({scrollTop:true});
-}
 function leaveHistoryMode(){
+  // Internal scientific/reconstruction context only; there is no user-facing HH mode.
   state.hhMode=false;
   state.appView="main";
   state.knownHandsMode=false;
@@ -4910,9 +4906,6 @@ function selectHistoryHandById(id){
 function updateHistoryUi(){
   if(hhImportModeSelect) hhImportModeSelect.value=state.hhImportMode;
   updateHHImportEffect();
-  hhModeBtn.disabled=!state.hhHands.length;
-  hhModeBtn.classList.toggle("active",state.hhMode);
-  hhModeBtn.textContent=`Mode Hand History : ${state.hhMode?"ON":"OFF"}`;
   if(!state.hhHands.length){
     hhStatus.textContent=state.hhSourceSnapshots.length?"Aucune main PokerStars reconnue dans les fichiers chargés.":"Importez un ou plusieurs fichiers PokerStars .txt pour commencer.";
   }else if(state.hhMode&&state.selectedHand){
@@ -4999,7 +4992,7 @@ function renderHistoryHands(){
 
   for(const h of hands){
     const b=document.createElement("button");
-    b.type="button";b.className="hh-hand"+(state.hhMode&&state.selectedHand?.id===h.id?" selected":"");
+    b.type="button";b.className="hh-hand"+(state.selectedHand?.id===h.id?" selected":"");
     const known=knownOpponentCount(h);
     const hero=h.heroCards.map(cardLabel).join(" ");
     const heroHtml=cardsHtml(h.heroCards,{token:true,small:true});
@@ -5306,9 +5299,6 @@ hhKnownFilter.addEventListener("change",()=>{
   renderHistoryHands();
 });
 
-hhModeBtn.addEventListener("click",()=>{
-  if(state.hhMode) leaveHistoryMode(); else enterHistoryMode();
-});
 knownHandsBtn.addEventListener("click",()=>{
   if(knownHandsBtn.disabled) return;
   const known=state.opponents.filter(o=>o.knownCards?.length===2);
@@ -7381,12 +7371,13 @@ async function restoreLocalState(){
       state.selectedHand=state.hhHands.find(h=>h.id===String(prefs.selectedHandId))||null;
     }
 
-    if(prefs?.hhMode&&state.selectedHand){
+    if(prefs?.appView==="replayer"&&state.selectedHand){
       state.hhMode=true;
       loadSelectedHistoryHand(false);
-      if(state.appView==='replayer') openReplayerPage({scrollTop:false});
-      else { state.appView='main'; updateAppView(); }
+      openReplayerPage({scrollTop:false});
     }else{
+      // A remembered hand may stay selected, but main view is always the independent Equity Lab context.
+      state.hhMode=false;
       state.appView='main';
       updateAppView();
       updateHistoryUi();
@@ -7432,9 +7423,8 @@ document.querySelectorAll(".quick-nav a").forEach(a=>{
     const id=(a.getAttribute("href")||"").replace(/^#/,"");
     e.preventDefault();
     if(id==='replayerSection'){
-      if(state.hhMode&&state.selectedHand){ openReplayerPage({scrollTop:true}); return; }
-      if(state.hhHands.length){ enterHistoryMode(); return; }
-      state.appView='main';updateAppView();
+      if(state.selectedHand){ selectHistoryHandById(state.selectedHand.id); return; }
+      state.appView='main';state.hhMode=false;updateAppView();
       document.getElementById('historiesSection')?.scrollIntoView({behavior:'smooth',block:'start'});
       return;
     }

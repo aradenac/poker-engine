@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Leak Analyzer · Poker Engine</title>
+  <link rel="stylesheet" href="./leaks.css">
+</head>
+<body>
+<main class="page">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Review · Analytics</div>
+      <h1>Leak Analyzer</h1>
+      <p>Les pertes EV sont agrégées uniquement entre décisions comparables du même périmètre.</p>
+    </div>
+    <a class="back" href="./index.html">Retour à Review</a>
+  </header>
+
+  <section class="panel control-panel" aria-label="Chargement et périmètre">
+    <div id="loadStatus" class="status">Chargement des décisions analysées…</div>
+    <div class="control-row">
+      <label class="grow">Périmètre exact
+        <select id="scopeSelect"></select>
+      </label>
+      <button id="reloadBtn" type="button">Actualiser</button>
+      <button id="exportJsonBtn" type="button" disabled>Exporter JSON</button>
+      <button id="exportCsvBtn" type="button" disabled>Exporter CSV</button>
+    </div>
+  </section>
+
+  <section class="metrics" aria-label="Synthèse">
+    <article><span>Perte EV attribuée</span><strong id="metricTotalLoss">—</strong><small>BB, hors unsupported / non comparable / bruit</small></article>
+    <article><span>BB / 100 mains comparables</span><strong id="metricBb100">—</strong><small>mains avec ≥ 1 décision comparable</small></article>
+    <article><span>Décisions comparables</span><strong id="metricAnalyzed">—</strong><small id="metricCoverage">—</small></article>
+    <article class="metric-status"><span>Diagnostics exclus</span><strong id="metricExcluded">—</strong><small id="metricNoise">—</small></article>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div><div class="eyebrow">Filtres</div><h2>Contexte analysé</h2></div>
+      <button id="resetFiltersBtn" class="ghost" type="button">Réinitialiser</button>
+    </div>
+    <div class="filters">
+      <label>Position<select id="filterPosition"><option value="">Toutes</option></select></label>
+      <label>Street<select id="filterStreet"><option value="">Toutes</option></select></label>
+      <label>Famille de spot<select id="filterFamily"><option value="">Toutes</option></select></label>
+      <label>Action jouée<select id="filterPlayed"><option value="">Toutes</option></select></label>
+      <label>Action recommandée<select id="filterRecommended"><option value="">Toutes</option></select></label>
+      <label>Couverture
+        <select id="filterCoverage">
+          <option value="">Toutes</option>
+          <option value="comparable">Comparable</option>
+          <option value="unsupported">Unsupported</option>
+          <option value="non_comparable">Non comparable</option>
+          <option value="within_noise">Within noise</option>
+        </select>
+      </label>
+      <label>Erreur de sizing
+        <select id="filterSizingError"><option value="">Toutes</option><option value="true">Oui</option><option value="false">Non</option></select>
+      </label>
+      <label>Jam / all-in
+        <select id="filterJam"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select>
+      </label>
+      <label>Overbet
+        <select id="filterOverbet"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select>
+      </label>
+      <label>Sizing min. (pot)<input id="filterSizingMin" type="number" min="0" step="0.05" placeholder="ex. 0.5"></label>
+      <label>Sizing max. (pot)<input id="filterSizingMax" type="number" min="0" step="0.05" placeholder="ex. 1.5"></label>
+      <label>Depuis<input id="filterFrom" type="date"></label>
+      <label>Jusqu’au<input id="filterTo" type="date"></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div><div class="eyebrow">Agrégation</div><h2>Principaux leaks</h2></div>
+      <label class="compact">Regrouper par
+        <select id="leakDimension">
+          <option value="spot_family">Famille de spot</option>
+          <option value="position">Position</option>
+          <option value="street">Street</option>
+          <option value="action_pair">Action jouée → recommandée</option>
+          <option value="error_type">Type d’erreur</option>
+        </select>
+      </label>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Leak</th><th>Perte EV</th><th>Fréquence</th><th>Décisions</th><th>Mains</th></tr></thead><tbody id="leaksBody"></tbody></table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head"><div><div class="eyebrow">Priorités</div><h2>Décisions les plus coûteuses</h2></div></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Main</th><th>Spot</th><th>Décision</th><th>Perte EV</th><th>Tags</th><th></th></tr></thead><tbody id="decisionsBody"></tbody></table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head"><div><div class="eyebrow">Qualité des données</div><h2>Unsupported / non comparable / within noise</h2></div></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>État</th><th>Main</th><th>Street</th><th>Action</th><th>Motif</th><th></th></tr></thead><tbody id="diagnosticsBody"></tbody></table>
+    </div>
+  </section>
+
+  <section id="sourcePanel" class="panel source-panel hidden" aria-live="polite">
+    <div class="section-head">
+      <div><div class="eyebrow">Traçabilité</div><h2 id="sourceTitle">Main source</h2></div>
+      <button id="closeSourceBtn" class="ghost" type="button">Fermer</button>
+    </div>
+    <div id="sourceMeta" class="source-meta"></div>
+    <pre id="sourceAction" class="source-action"></pre>
+    <pre id="sourceRaw" class="source-raw"></pre>
+  </section>
+</main>
+
+<script src="./population-packs.js"></script>
+<script src="./leak-analyzer.js"></script>
+<script src="./review-score-adapter.js"></script>
+<script src="./leaks.js"></script>
+</body>
+</html>
