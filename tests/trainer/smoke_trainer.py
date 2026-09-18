@@ -103,6 +103,34 @@ async def main() -> None:
         assert information_boundary["retrospective_changed"], information_boundary
         assert information_boundary["low"]["recommended"] == "FOLD", information_boundary
 
+        # HH import keeps the primary path compact while preserving advanced controls.
+        hh_import_ux = await page.evaluate(
+            """() => ({
+                primary: document.querySelector('label[for="hhFileInput"]')?.textContent?.trim(),
+                watch: document.querySelector('#hhWatchBtn')?.textContent?.trim(),
+                advanced_open: !!document.querySelector('.hh-import-advanced')?.open,
+                default_mode: state.hhImportMode,
+                effect: document.querySelector('#hhImportEffect')?.textContent?.trim(),
+                summary: hhImportSummaryText({
+                    files:3, recognized:2, hands:47, errors:1, mode:"replace",
+                    at:new Date(2000,0,1,12,34,0)
+                })
+            })"""
+        )
+        assert hh_import_ux["primary"] == "Importer mes mains", hh_import_ux
+        assert hh_import_ux["watch"] == "Surveiller mes HH", hh_import_ux
+        assert hh_import_ux["advanced_open"] is False, hh_import_ux
+        assert hh_import_ux["default_mode"] == "replace", hh_import_ux
+        assert "remplacera" in folded(hh_import_ux["effect"]), hh_import_ux
+        assert "2/3 fichiers reconnus" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert "47 mains" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert "1 erreur de lecture/parsing" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert "mise à jour" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert not await page.locator("#hhBenchmarkExportBtn").is_visible()
+        await page.click(".hh-import-advanced > summary")
+        assert await page.locator("#hhBenchmarkExportBtn").is_visible()
+        await page.click(".hh-import-advanced > summary")
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -178,6 +206,7 @@ async def main() -> None:
             "replayer_hand_classes": hand_classes,
             "delta_ev_quality_contract": quality_contract,
             "prior_posterior_information_boundary": information_boundary,
+            "hh_import_ux": hh_import_ux,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,
