@@ -36,12 +36,19 @@ def _action_metrics(rows: Sequence[tuple[str, Mapping[str, float]]]) -> dict[str
         for action in ACTIONS:
             predicted[action] += float(probabilities[action])
     n = len(rows)
+    observed_frequency = {action: observed[action] / n for action in ACTIONS}
+    mean_predicted_frequency = {action: predicted[action] / n for action in ACTIONS}
+    calibration_l1 = sum(
+        abs(observed_frequency[action] - mean_predicted_frequency[action])
+        for action in ACTIONS
+    ) / len(ACTIONS)
     return {
         "n": n,
         "log_loss": loss / n,
         "brier": brier / n,
-        "observed_frequency": {action: observed[action] / n for action in ACTIONS},
-        "mean_predicted_frequency": {action: predicted[action] / n for action in ACTIONS},
+        "calibration_l1": calibration_l1,
+        "observed_frequency": observed_frequency,
+        "mean_predicted_frequency": mean_predicted_frequency,
     }
 
 
@@ -130,6 +137,8 @@ def evaluate_validation(
     tail_reference = []
     candidate_sizing_errors = []
     reference_sizing_errors = []
+    tail_candidate_sizing_errors = []
+    tail_reference_sizing_errors = []
     deltas_by_hand: dict[str, list[float]] = defaultdict(list)
     support_rows = []
     selection_levels = Counter()
@@ -163,40 +172,44 @@ def evaluate_validation(
         support_rows.append(row)
 
         price = row.get("facing_price_to_pot")
-        is_tail = bool(row.get("is_jam")) or (
-            price is not None and float(price) > 1.5
+        actual_sizing = row.get("raise_sizing_ratio")
+        is_tail = (
+            bool(row.get("is_jam"))
+            or (price is not None and float(price) > 1.5)
+            or (actual_sizing is not None and float(actual_sizing) > 1.5)
         )
         if is_tail:
             tail_candidate.append((actual, cp))
             tail_reference.append((actual, rp))
 
-        actual_sizing = row.get("raise_sizing_ratio")
         if actual_sizing is not None and actual == "RAISE":
             actual_value = float(actual_sizing)
             c_median = (candidate.get("sizing") or {}).get("median")
             r_median = (reference.get("sizing") or {}).get("median")
             if c_median is not None:
-                candidate_sizing_errors.append(abs(float(c_median) - actual_value))
+                error = abs(float(c_median) - actual_value)
+                candidate_sizing_errors.append(error)
+                if is_tail:
+                    tail_candidate_sizing_errors.append(error)
             if r_median is not None:
-                reference_sizing_errors.append(abs(float(r_median) - actual_value))
+                error = abs(float(r_median) - actual_value)
+                reference_sizing_errors.append(error)
+                if is_tail:
+                    tail_reference_sizing_errors.append(error)
+
+    def sizing_summary(values: Sequence[float]) -> dict[str, Any]:
+        return {
+            "n": len(values),
+            "mae": sum(values) / len(values) if values else None,
+        }
 
     sizing = {
-        "candidate": {
-            "n": len(candidate_sizing_errors),
-            "mae": (
-                sum(candidate_sizing_errors) / len(candidate_sizing_errors)
-                if candidate_sizing_errors
-                else None
-            ),
-        },
-        "reference": {
-            "n": len(reference_sizing_errors),
-            "mae": (
-                sum(reference_sizing_errors) / len(reference_sizing_errors)
-                if reference_sizing_errors
-                else None
-            ),
-        },
+        "candidate": sizing_summary(candidate_sizing_errors),
+        "reference": sizing_summary(reference_sizing_errors),
+    }
+    tail_sizing = {
+        "candidate": sizing_summary(tail_candidate_sizing_errors),
+        "reference": sizing_summary(tail_reference_sizing_errors),
     }
     return {
         "schema": REPORT_SCHEMA,
@@ -209,9 +222,10 @@ def evaluate_validation(
         ),
         "sizing_error": sizing,
         "tail_diagnostics": {
-            "definition": "is_jam OR facing_price_to_pot > 1.5",
+            "definition": "is_jam OR facing_price_to_pot > 1.5 OR raise_sizing_ratio > 1.5",
             "candidate_actions": _action_metrics(tail_candidate),
             "reference_actions": _action_metrics(tail_reference),
+            "sizing_error": tail_sizing,
         },
         "support": support_audit(support_rows),
         "selected_level_counts": dict(sorted(selection_levels.items())),
