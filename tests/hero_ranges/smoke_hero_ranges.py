@@ -30,17 +30,57 @@ async def main() -> None:
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
         assert await page.locator("#heroGrid .hand-cell").count() == 169
 
+        # Seed a calculated strategy and verify that the comparison layer is visible
+        # before any personal override is created.
+        await page.evaluate(
+            f"""() => {{
+              const H = window.PokerHeroRanges;
+              const repo = H.emptyRepository({{populationId:'pokerstars_nlhe_100-200_zoom_play_6max_v1'}});
+              const context = {{population_id:'pokerstars_nlhe_100-200_zoom_play_6max_v1',table_size:6,position:'BTN',effective_stack_bb:100,spot:'UNOPENED'}};
+              H.setHandStrategy(repo, context, 'AA', {{
+                actions:{{OPEN:1}},
+                sizings:{{OPEN:[{{target_total_bb:2.5,probability:1}}]}},
+                notes:'calculated fixture'
+              }}, {{layer:'calculated'}});
+              localStorage.setItem('{STORAGE_KEY}', JSON.stringify(repo));
+            }}"""
+        )
+        await page.reload(wait_until="domcontentloaded")
+        assert "calculated-only" in (await page.locator('[data-hand="AA"]').get_attribute("class") or "")
+
+        # Multi-selection + bulk apply: Ctrl adds hands without touching non-selected rows.
+        await page.locator('[data-hand="AKs"]').click(modifiers=["Control"])
+        await page.locator('[data-hand="AQs"]').click(modifiers=["Control"])
+        assert await page.locator("#heroGrid .hand-cell.selected").count() == 3
+        assert "3 mains" in (await page.locator("#selectionSummary").inner_text())
+
         await page.locator("#quickAction").select_option("OPEN")
         await page.click("#quickApply")
         repo = await page.evaluate(f"JSON.parse(localStorage.getItem('{STORAGE_KEY}'))")
-        assert len(repo["contexts"]) == 1
         node = next(iter(repo["contexts"].values()))
-        assert node["layers"]["personal"]["hands"]["AA"]["actions"] == {"OPEN": 1}
+        for hand in ("AA", "AKs", "AQs"):
+            assert node["layers"]["personal"]["hands"][hand]["actions"] == {"OPEN": 1}
+        assert "KK" not in node["layers"]["personal"]["hands"]
+        assert node["layers"]["calculated"]["hands"]["AA"]["sizings"]["OPEN"] == [
+            {"target_total_bb": 2.5, "probability": 1}
+        ], "bulk personal edit must not rewrite calculated layer"
 
+        # Return to one hand and edit a mixed strategy with structured sizing rows.
+        await page.locator('[data-hand="AA"]').click()
         await page.locator('[data-action-prob="OPEN"]').fill("75")
         await page.locator('[data-action-prob="LIMP"]').fill("25")
-        await page.locator('[data-action-size="OPEN"]').fill("2.2:40%, 2.5:60%")
+        await page.locator('[data-add-size="OPEN"]').click()
+        first = page.locator('[data-sizes-for="OPEN"] .sizing-row').nth(0)
+        await first.locator('[data-size-target="OPEN"]').fill("2.2")
+        await first.locator('[data-size-prob="OPEN"]').fill("40")
+        await page.locator('[data-add-size="OPEN"]').click()
+        second = page.locator('[data-sizes-for="OPEN"] .sizing-row').nth(1)
+        await second.locator('[data-size-target="OPEN"]').fill("2.5")
+        await second.locator('[data-size-prob="OPEN"]').fill("60")
+        assert "100 %" in (await page.locator("#actionTotal").inner_text())
+        assert "100 %" in (await page.locator('[data-sizing-total="OPEN"]').inner_text())
         await page.click("#saveHand")
+
         repo = await page.evaluate(f"JSON.parse(localStorage.getItem('{STORAGE_KEY}'))")
         node = next(iter(repo["contexts"].values()))
         aa = node["layers"]["personal"]["hands"]["AA"]
@@ -49,6 +89,13 @@ async def main() -> None:
             {"target_total_bb": 2.2, "probability": 0.4},
             {"target_total_bb": 2.5, "probability": 0.6},
         ]
+        assert "action-mismatch" in (await page.locator('[data-hand="AA"]').get_attribute("class") or "")
+
+        # Category selection gives a fast bulk-selection path while keeping 169 cells.
+        await page.locator('[data-select-kind="pairs"]').click()
+        assert await page.locator("#heroGrid .hand-cell.selected").count() == 13
+        await page.locator('[data-select-kind="single"]').click()
+        assert await page.locator("#heroGrid .hand-cell.selected").count() == 1
 
         await page.locator("#heroRangeImport").set_input_files(
             files={"name": "custom.json", "mimeType": "application/json", "buffer": source_bytes}
@@ -62,6 +109,9 @@ async def main() -> None:
         imported_aa = imported_node["layers"]["personal"]["hands"]["AA"]
         assert imported_aa["actions"] == aa["actions"], "legacy source refresh must preserve personal customization"
         assert imported_aa["sizings"] == aa["sizings"]
+        assert imported_node["layers"]["calculated"]["hands"]["AA"]["sizings"]["OPEN"] == [
+            {"target_total_bb": 2.5, "probability": 1}
+        ]
 
         await page.locator("#quickAction").select_option("OPEN")
         await page.click("#quickApply")
@@ -72,13 +122,17 @@ async def main() -> None:
         after_undefine = await page.evaluate(f"JSON.parse(localStorage.getItem('{STORAGE_KEY}'))")
         node = next(iter(after_undefine["contexts"].values()))
         assert "AA" not in node["layers"]["personal"]["hands"]
-        assert "non défini" in (await page.locator("#selectedHandState").inner_text()).casefold()
+        assert "calculée seule" in (await page.locator("#selectedHandState").inner_text()).casefold()
+        assert "calculated-only" in (await page.locator('[data-hand="AA"]').get_attribute("class") or "")
 
         snapshot = {
             "grid_cells": await page.locator("#heroGrid .hand-cell").count(),
             "source_ranges": await page.locator("#sourceRangeSelect option").count(),
             "source_preserved": edited["source"]["preserved_verbatim"],
-            "customization_survived_source_refresh": True,
+            "bulk_selection": True,
+            "structured_sizings": True,
+            "calculated_layer_preserved": True,
+            "comparison_states": True,
             "errors": errors,
         }
         print(json.dumps(snapshot, ensure_ascii=False, indent=2))

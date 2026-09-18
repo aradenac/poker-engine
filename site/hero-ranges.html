@@ -45,21 +45,43 @@
   <section class="editor-layout">
     <section class="panel grid-panel">
       <div class="panel-head"><h2>Grille 169</h2><span id="gridSummary" class="badge"></span></div>
-      <div class="legend"><span class="dot defined"></span>défini <span class="dot source"></span>présent dans la source <span class="dot undefined"></span>non défini</div>
+      <div class="legend">
+        <span class="dot calculated-only"></span>calculée seule
+        <span class="dot identical"></span>identique
+        <span class="dot personal-only"></span>personnelle seule
+        <span class="dot action-mismatch"></span>désaccord action
+        <span class="dot sizing-mismatch"></span>désaccord sizing
+        <span class="dot source"></span>source importée
+      </div>
+      <div class="selection-toolbar">
+        <div>
+          <strong id="selectionSummary">1 main sélectionnée</strong>
+          <span>Clic : sélectionner · Ctrl/Cmd : ajouter/retirer · Maj : plage</span>
+        </div>
+        <div class="selection-actions">
+          <button type="button" class="secondary compact" data-select-kind="all">Tout</button>
+          <button type="button" class="secondary compact" data-select-kind="pairs">Paires</button>
+          <button type="button" class="secondary compact" data-select-kind="suited">Suited</button>
+          <button type="button" class="secondary compact" data-select-kind="offsuit">Offsuit</button>
+          <button type="button" class="secondary compact" data-select-kind="single">Une main</button>
+        </div>
+      </div>
       <div id="heroGrid" class="hand-grid"></div>
     </section>
 
     <aside class="panel hand-editor">
       <div class="panel-head"><h2 id="selectedHandTitle">AA</h2><span id="selectedHandState" class="badge">non défini</span></div>
-      <p class="hint">Une main non définie reste « non couverte » ; elle n’est jamais transformée automatiquement en fold.</p>
+      <p class="hint">Les valeurs affichées proviennent de la main active. « Enregistrer » applique la stratégie à toute la sélection sans modifier les mains non sélectionnées.</p>
+      <div id="comparisonSummary" class="comparison-summary"></div>
       <label class="quick-label">Édition rapide 100 %
-        <div class="quick-row"><select id="quickAction"></select><button id="quickApply" class="button secondary">Appliquer</button></div>
+        <div class="quick-row"><select id="quickAction"></select><button id="quickApply" class="button secondary">Appliquer à la sélection</button></div>
       </label>
+      <div class="editor-validation"><span>Somme des actions</span><span id="actionTotal" class="sum-badge">0 %</span></div>
       <div id="actionEditor" class="action-editor"></div>
       <label>Notes<textarea id="handNotes" rows="3" placeholder="Optionnel"></textarea></label>
       <div class="editor-actions">
-        <button id="saveHand" class="button">Enregistrer</button>
-        <button id="undefineHand" class="button danger">Rendre non définie</button>
+        <button id="saveHand" class="button">Enregistrer la sélection</button>
+        <button id="undefineHand" class="button danger">Retirer l’override personnel</button>
       </div>
       <div id="handStatus" class="status"></div>
     </aside>
@@ -67,7 +89,7 @@
 
   <section class="panel repository-panel">
     <div class="panel-head"><h2>Répertoire</h2><span id="repositoryStats" class="badge"></span></div>
-    <p class="hint">Les ranges personnelles et les futurs résultats calculés ont une provenance distincte. Cette page n’étiquette jamais une range personnelle comme optimale.</p>
+    <p class="hint">Les ranges personnelles et les résultats calculés ont une provenance distincte. Une édition personnelle ne réécrit jamais la couche calculée.</p>
     <pre id="contextList" class="context-list"></pre>
   </section>
 </main>

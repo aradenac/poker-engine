@@ -1,0 +1,3 @@
+# Canonical direct Python dependencies for reproducible tooling.
+# Keep this file minimal; requirements.lock.txt contains the full transitive lock.
+playwright==1.55.0
