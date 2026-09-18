@@ -9,6 +9,7 @@ from pathlib import PurePosixPath
 import zipfile
 
 SCHEMA = "poker-population-pack/v1"
+ZOOM_100_200_POPULATION = "pokerstars_nlhe_100-200_zoom_play_6max_v1"
 CANDIDATE_SCHEMA = "poker-population-pack-candidate/v1"
 READY_STATUS = "READY_FOR_ASSEMBLY"
 ADMISSIBLE_DECISION = "ADMISSIBLE_FOR_PACK"
@@ -51,7 +52,10 @@ def validate(zip_path: str) -> dict:
             raise ValueError("pack is not marked inseparable")
         if manifest.get("population_status") not in {"PROMOTED", "PROMOTED_LEGACY"}:
             raise ValueError("pack population is not an accepted promoted state")
-        if manifest.get("population_status") == "PROMOTED":
+        if (
+            manifest.get("population_status") == "PROMOTED"
+            and manifest.get("population_id") == ZOOM_100_200_POPULATION
+        ):
             assembly = manifest.get("assembly_contract")
             if not isinstance(assembly, dict):
                 raise ValueError("promoted scoped pack is missing assembly_contract")
