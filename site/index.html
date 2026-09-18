@@ -3556,10 +3556,6 @@ function actionDetailModalInnerHtml(stepIndex,step){
     : req.kind==="call"
       ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b> · a posteriori <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b></div>`
       : postflopTree?`${actionTreeDetailsHtml(priorTree,"A priori")}${actionTreeDetailsHtml(postTree,"A posteriori")}`:"";
-  const posteriorBadge=["check","fold"].includes(req.kind)?`<div class="action-score large score-na"><span class="score-label">A posteriori</span><span class="score-value">info</span></div>`:actionVerdictBadge("A posteriori",postEq,req,postTree).replace('action-score ','action-score large ');
-  const scoreGrid=decisionSummary
-    ? `<div class="action-detail-score-grid">${actionDecisionSummaryBadge(decisionSummary).replace('action-score ','action-score large ')}${posteriorBadge}</div>`
-    : `<div class="action-detail-score-grid">${actionVerdictBadge("A priori",priorEq,req,priorTree).replace('action-score ','action-score large ')}${posteriorBadge}</div>`;
   const chips=`<div class="action-detail-meta-strip">
       <span class="action-detail-chip">Action <b>${escapeHtml(actionName)}${allIn?" ALL-IN":""}</b></span>
       <span class="action-detail-chip">Investi <b>${escapeHtml(formatBB(req.cost))}</b></span>
@@ -3570,12 +3566,12 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree});
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
-    : `${scoreGrid}${chips}${keyPoints}`;
+    : `${chips}${keyPoints}`;
   return `${primary}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
-        ${canonicalDecision?`${scoreGrid}${chips}${keyPoints}`:""}
+        ${canonicalDecision?`${chips}${keyPoints}`:""}
         <div class="action-detail-stack">
           ${foldRangeAnalysisHtml(stepIndex,decisionSummary)}
           ${decisionSummary?actionDecisionAlternativesHtml(decisionSummary):""}
@@ -3621,13 +3617,19 @@ function actionAnalysisHtml(stepIndex,step){
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree),postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
   if(canonicalDecision)return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}</div>`;
-  const priorMeta=actionScoreMeta(priorMetrics.score),postMeta=actionScoreMeta(postMetrics.score),row=[];
-  const priorCls=priorMeta.cls.includes("bad")?"bad":priorMeta.cls.includes("borderline")||priorMeta.cls.includes("poor")?"warn":"good";
-  row.push(actionCompactPillHtml(`Pré <span class="strong">${escapeHtml(formatScore(priorMetrics.score))}</span>`,priorCls,"primary-summary"));
-  if(req.kind==="call"&&Number.isFinite(req.actorRequired)){
-    const d=fmtEquityDelta(priorEq,req.actorRequired);
-    row.push(actionCompactPillHtml(`Eq ${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"} · req ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`,d.cls==="neg"?"warn":"subtle","best-summary"));
-  }else row.push(actionCompactPillHtml(`Post <span class="strong">${escapeHtml(formatScore(postMetrics.score))}</span>`,"subtle","best-summary"));
+  const row=[];
+  if(req.kind==="call"&&Number.isFinite(priorMetrics.evBB)){
+    const loss=Math.max(0,-Number(priorMetrics.evBB)),quality=loss<=1e-9?"good":"warn";
+    row.push(actionCompactPillHtml(`EV <span class="strong">${escapeHtml(formatBB(priorMetrics.evBB))}</span>`,quality,"primary-summary"));
+    row.push(actionCompactPillHtml(`Perte EV vs FOLD <span class="strong">${escapeHtml(formatBB(loss))}</span>`,quality,"best-summary"));
+    if(Number.isFinite(req.actorRequired)){
+      const d=fmtEquityDelta(priorEq,req.actorRequired);
+      row.push(actionCompactPillHtml(`Eq ${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"} · req ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`,d.cls==="neg"?"warn":"subtle","best-summary"));
+    }
+  }else{
+    row.push(actionCompactPillHtml("ΔEV non comparable","subtle","primary-summary"));
+    row.push(actionCompactPillHtml("Aucune alternative EV validée","subtle","best-summary"));
+  }
   return `<div class="action-analysis"><div class="action-analysis-compact"><div class="action-compact-row">${row.join("")}</div></div></div>`;
 }
 function safeActionAnalysisHtml(stepIndex,step){
