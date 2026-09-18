@@ -5,7 +5,11 @@ import json
 import tempfile
 from pathlib import Path
 
-from tools.training.build_release_handoff import build_no_publication_handoff, derive_outcome
+from tools.training.build_release_handoff import (
+    build_no_publication_handoff,
+    derive_outcome,
+    write_new_handoff,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -85,6 +89,19 @@ def test_population_mismatch_fails_closed():
             assert "population mismatch" in str(exc)
         else:
             raise AssertionError("population mismatch must fail")
+
+
+
+def test_handoff_output_is_append_only():
+    with tempfile.TemporaryDirectory() as raw:
+        path=Path(raw)/"RELEASE_HANDOFF.json"
+        write_new_handoff(path, {"schema":"fixture","state":"first"})
+        try:
+            write_new_handoff(path, {"schema":"fixture","state":"second"})
+        except FileExistsError as exc:
+            assert "refusing to overwrite" in str(exc)
+        else:
+            raise AssertionError("release handoff evidence must be append-only")
 
 
 def main():
