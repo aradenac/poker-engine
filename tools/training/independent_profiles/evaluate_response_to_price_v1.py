@@ -409,6 +409,11 @@ def fit_evaluate(args: argparse.Namespace) -> int:
     profiles = load_json(incumbent / "profiles.json")
     by_id, provenance = merge_archives(args.archive, set(args.stake))
     records = list(by_id.values())
+    safe_provenance = json.loads(json.dumps(provenance))
+    if isinstance(safe_provenance.get("split_counts"), dict):
+        safe_provenance["split_counts"].pop("TEST", None)
+    safe_provenance["reported_splits"] = ["TRAIN", "VALIDATION"]
+    safe_provenance["reserved_holdout"] = "TEST_NOT_CONSUMED"
 
     # TEST records may exist in the archives but are never selected into either list below.
     train_records = [record for record in records if split_for(record.hand_id) == "TRAIN"]
@@ -511,7 +516,12 @@ def fit_evaluate(args: argparse.Namespace) -> int:
         "production_effect": "NONE",
         "automatic_promotion": False,
         "independence_contract": "hand histories + TRAIN-fitted Model B profiles only; no Model A EV/policy/recommendations as features",
-        "dataset": provenance,
+        "dataset": safe_provenance,
+        "holdout_access_contract": (
+            "archives are deduplicated before deterministic split assignment; "
+            "TEST rows are never passed to fit, predictive evaluation, counterfactual diagnostics, "
+            "or Hero sensitivity"
+        ),
         "counts": {
             "train_hands": len(train_records),
             "validation_hands": len(validation_records),
