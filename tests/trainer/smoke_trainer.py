@@ -29,6 +29,24 @@ async def main() -> None:
         )
         assert hand_classes == {"suited": "AKs", "offsuit": "AKo", "pair": "77", "hidden": "", "backs": ""}, hand_classes
 
+        # UX categories may change with uncertainty, but must never mutate the EV values.
+        quality_contract = await page.evaluate(
+            """() => {
+                const near={lossEVBB:0.4,effectiveLossEVBB:0.2,deltaEVBB:-0.4,withinNoise:true};
+                const far={...near,withinNoise:false};
+                const good={lossEVBB:0,effectiveLossEVBB:0,deltaEVBB:0,withinNoise:false};
+                const before=JSON.stringify({near,far,good});
+                const out={near:decisionQualityFromEV(near),far:decisionQualityFromEV(far),good:decisionQualityFromEV(good)};
+                const after=JSON.stringify({near,far,good});
+                return {out,before,after,near_loss:near.lossEVBB,far_loss:far.lossEVBB};
+            }"""
+        )
+        assert quality_contract["out"]["near"]["label"] == "Proche", quality_contract
+        assert quality_contract["out"]["far"]["label"] == "Erreur", quality_contract
+        assert quality_contract["out"]["good"]["label"] == "Bonne", quality_contract
+        assert quality_contract["near_loss"] == quality_contract["far_loss"] == 0.4, quality_contract
+        assert quality_contract["before"] == quality_contract["after"], quality_contract
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -102,6 +120,7 @@ async def main() -> None:
 
         snapshot = {
             "replayer_hand_classes": hand_classes,
+            "delta_ev_quality_contract": quality_contract,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,
