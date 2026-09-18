@@ -1,0 +1,14 @@
+{
+  "schema": "trainer-population-pack/v1",
+  "distribution_class": "TEST_ONLY",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "population_identity": {
+    "platform": "PokerStars",
+    "variant": "NLHE",
+    "stake": "100/200",
+    "money": "play",
+    "format": "ZOOM",
+    "max_seats": 6
+  },
+  "engine_version": "test-engine-1"
+}
