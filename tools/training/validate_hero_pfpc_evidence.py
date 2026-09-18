@@ -71,6 +71,33 @@ def _selected_sizing_probability(strategy: Mapping[str, Any], action: str, targe
 
 
 
+
+
+def _validate_closure_audit(value: Mapping[str, Any], *, label: str) -> dict[str, Any]:
+    audit = dict(value or {})
+    decisions = int(audit.get("decisions") or 0)
+    exact = int(audit.get("exact_model_a_decisions") or 0)
+    fallback = int(audit.get("support_closure_decisions") or 0)
+    _need(decisions >= 0 and exact >= 0 and fallback >= 0, f"{label}: negative closure count")
+    _need(exact + fallback == decisions, f"{label}: closure accounting incomplete")
+    expected_rate = None if decisions == 0 else fallback / decisions
+    observed_rate = audit.get("support_closure_rate")
+    if expected_rate is None:
+        _need(observed_rate is None, f"{label}: zero-decision closure rate must be null")
+    else:
+        _need(observed_rate is not None, f"{label}: missing closure rate")
+        _need(abs(float(observed_rate) - expected_rate) <= 1e-12, f"{label}: closure rate drift")
+    _need(audit.get("fallback_contract") == "CHECK_THEN_CALL_THEN_FOLD_V1", f"{label}: fallback contract drift")
+    _need(audit.get("nearest_context_substitution") is False, f"{label}: nearest-context substitution enabled")
+    return {
+        "decisions": decisions,
+        "exact_model_a_decisions": exact,
+        "support_closure_decisions": fallback,
+        "support_closure_rate": expected_rate,
+        "support_closure_by_street": dict(audit.get("support_closure_by_street") or {}),
+    }
+
+
 def _validate_btn_history(
     history_dir: Path,
     *,
@@ -233,6 +260,16 @@ def _validate_source(
     _need(closure.get("enabled") is True, f"{position}: continuation closure missing")
     _need(closure.get("nearest_context_substitution") is False, f"{position}: nearest-context substitution enabled")
     _need(closure.get("fallback_contract") == "CHECK_THEN_CALL_THEN_FOLD_V1", f"{position}: closure contract drift")
+    closure_audit = {
+        "opponent_future_actions": _validate_closure_audit(
+            closure.get("opponent_future_actions") or {},
+            label=f"{position}/opponent_future_actions",
+        ),
+        "hero_future_actions": _validate_closure_audit(
+            closure.get("hero_future_actions") or {},
+            label=f"{position}/hero_future_actions",
+        ),
+    }
 
     candidate_coverage = dict(candidate.get("coverage") or {})
     _need(int(candidate_coverage.get("defined_hand_classes", -1)) == completed, f"{position}: candidate coverage drift")
@@ -301,6 +338,7 @@ def _validate_source(
         "supported": completed,
         "unsupported": unsupported_count,
         "parity_checked_hands": parity,
+        "continuation_support": closure_audit,
         "context_key": next(iter(contexts)),
         "context_node": node,
     }
@@ -396,6 +434,9 @@ def validate(
         "supported": int(btn_cov.get("supported") or 0),
         "unsupported": int(btn_cov.get("unsupported") or 0),
         "parity_checked_hands": btn_parity,
+        "continuation_support": {
+            "mode": "STRICT_HISTORICAL_SOURCE_NO_SUPPORT_CLOSURE",
+        },
         "context_key": next(iter(btn_contexts)),
         "context_node": next(iter(btn_contexts.values())),
     }
@@ -441,6 +482,7 @@ def validate(
                 "supported": validated_sources[position]["supported"],
                 "unsupported": validated_sources[position]["unsupported"],
                 "parity_checked_hands": validated_sources[position]["parity_checked_hands"],
+                "continuation_support": validated_sources[position]["continuation_support"],
             }
             for position in POSITIONS
         },
