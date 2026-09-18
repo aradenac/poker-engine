@@ -5,11 +5,14 @@ on:
     paths:
       - 'training/automation/RELEASE_HANDOFF_CONTRACT.json'
       - 'tools/validate_release_handoff.py'
+      - 'tools/training/build_release_handoff.py'
       - 'tests/test_release_handoff.py'
+      - 'tests/training/test_build_release_handoff.py'
       - '.github/workflows/release-handoff-contract.yml'
   push:
     branches:
       - 'issue-113-release-handoff-contract-sol'
+      - 'issue-113-no-publication-handoff-sol'
 
 permissions:
   contents: read
@@ -26,10 +29,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Compile handoff validator
-        run: python3 -m py_compile tools/validate_release_handoff.py tests/test_release_handoff.py
-      - name: Exercise release state machine
-        run: PYTHONPATH=. python3 tests/test_release_handoff.py
+      - name: Compile handoff validator and builder
+        run: |
+          python3 -m py_compile \
+            tools/validate_release_handoff.py \
+            tools/training/build_release_handoff.py \
+            tests/test_release_handoff.py \
+            tests/training/test_build_release_handoff.py
+      - name: Smoke standalone handoff builder CLI
+        run: python3 tools/training/build_release_handoff.py --help >/dev/null
+      - name: Exercise release state machine and no-publication handoff builder
+        run: |
+          PYTHONPATH=. python3 tests/test_release_handoff.py
+          PYTHONPATH=. python3 tests/training/test_build_release_handoff.py
       - name: Prove contract workflow has no publication side effect
         run: |
           python3 - <<'PY'

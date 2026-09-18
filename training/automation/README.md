@@ -76,3 +76,30 @@ The Model B summary contains the CLI feature-source path, so a safe `/tmp` rebui
 `reference_user_bundle_20260912.json` builds the coherent `NLHE 100-200` user bundle under `/tmp`, validates manifest/checksums/custom-range identity, and leaves production unchanged. The bundle itself is generated only from the accepted final training state.
 
 The protected set includes `training/registry.json`, all promoted Model A files, promoted Model B v2 model files, `user/releases/`, and the complete assembled `site/` tree.
+
+
+## Release handoff for no-publication outcomes
+
+`tools/training/build_release_handoff.py` turns one immutable cycle decision into the
+versioned #113 release-handoff evidence for `RETAIN`, `NO_OP` or `BLOCKED`.
+It derives known terminal vocabulary when possible, hashes the snapshot,
+decision, source commit and current production identities, asserts that no
+deployment was attempted, and validates the generated document against
+`RELEASE_HANDOFF_CONTRACT.json`.
+
+Example for a zero-new-hands cycle:
+
+```bash
+python3 tools/training/build_release_handoff.py \
+  --population-id pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+  --cycle-run-id <immutable-run-id> \
+  --cycle-decision <run-dir>/gate.json \
+  --snapshot <snapshot.zip> \
+  --reason "No unseen hands in the admitted population; production remains unchanged." \
+  --out <run-dir>/RELEASE_HANDOFF.json
+python3 tools/validate_release_handoff.py --handoff <run-dir>/RELEASE_HANDOFF.json
+```
+
+The builder deliberately cannot produce a `PROMOTE` handoff. Promotion still
+requires the separately governed content-addressed pack, atomic promotion plan,
+Cloudflare production deployment and live verification/rollback evidence.
