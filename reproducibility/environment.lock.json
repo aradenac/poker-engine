@@ -1,0 +1,23 @@
+{
+  "schema": "poker-engine-repro-environment/v1",
+  "issue": 203,
+  "phase": 1,
+  "python": {
+    "version": "3.11.9",
+    "requirements": "requirements.lock.txt"
+  },
+  "node": {
+    "version": "22.14.0",
+    "package_lock": "package-lock.json"
+  },
+  "playwright": {
+    "python_package_version": "1.55.0",
+    "browser": "chromium",
+    "chromium_version": "140.0.7339.16"
+  },
+  "scope": {
+    "workflows_wired": false,
+    "os_packages_pinned": false,
+    "note": "Phase 1 defines the repository contract only. Scientific workflow integration and OS/container pinning are deferred until the #107/#108 freeze is released."
+  }
+}

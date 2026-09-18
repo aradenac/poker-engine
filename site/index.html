@@ -186,9 +186,7 @@
   .hh-review .amount{display:block;font-size:12px;font-weight:950;color:#f1c66d;margin-top:1px}
   .hh-review .split{display:block;font-size:8px;font-weight:750;color:var(--muted);margin-top:1px}
   .hh-review.partial .amount{color:#b8cae6}
-  .hh-review.high .amount{color:#ff9090}
-  .hh-review.medium .amount{color:#f1c66d}
-  .hh-review.low .amount{color:#9be0c8}
+  .hh-review.complete .amount{color:#f1c66d}
   .hh-review.unknown{opacity:.62}
   @media(max-width:760px){
     .hh-hand{grid-template-columns:96px minmax(0,1fr) 96px 78px}
@@ -198,6 +196,20 @@
   }
   .hh-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
   .hh-controls button{width:auto}
+  .hh-import-primary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .hh-import-primary .filelabel,.hh-import-primary button{width:auto}
+  .hh-import-primary .hh-import-main{font-weight:900;border-color:rgba(92,225,185,.42);background:rgba(92,225,185,.09);color:var(--accent2)}
+  .hh-import-effect{margin-top:7px;font-size:10px;line-height:1.4;color:var(--muted)}
+  .hh-import-summary{margin-top:9px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1729;font-size:11px;font-weight:800;color:var(--text)}
+  .hh-import-summary.busy{border-color:rgba(109,132,255,.4);color:#cbd6ff}
+  .hh-import-summary.warn{border-color:rgba(241,198,109,.4);color:#ead8ad}
+  .hh-import-advanced{margin-top:9px;border:1px solid var(--border);border-radius:10px;background:#0c1526;overflow:hidden}
+  .hh-import-advanced>summary{cursor:pointer;list-style:none;padding:8px 10px;font-size:10px;font-weight:850;color:var(--muted)}
+  .hh-import-advanced>summary::-webkit-details-marker{display:none}
+  .hh-import-advanced>summary::after{content:"▾";float:right}
+  .hh-import-advanced[open]>summary{border-bottom:1px solid var(--border);color:var(--text)}
+  .hh-import-advanced[open]>summary::after{content:"▴"}
+  .hh-import-advanced-body{padding:0 10px 10px}
   .hh-selection-section{
     margin-top:14px;padding-top:12px;border-top:1px solid var(--border);
     scroll-margin-top:18px
@@ -661,6 +673,46 @@
   .action-detail-chip b{color:var(--text)}
   .action-score.large{padding:8px 10px;font-size:10px}
   .action-score.large .score-value{font-size:15px}
+  .decision-primary-grid{display:grid;grid-template-columns:repeat(5,minmax(112px,1fr));gap:7px;margin-top:9px}
+  .decision-primary-card{min-width:0;padding:8px 9px;border:1px solid #273b5a;border-radius:9px;background:#0b1627}
+  .decision-primary-card .k{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .decision-primary-card .v{margin-top:3px;font-size:14px;font-weight:950;color:var(--text);overflow-wrap:anywhere}
+  .decision-primary-card .s{margin-top:2px;font-size:8.5px;line-height:1.3;color:var(--muted)}
+  .decision-primary-card.recommended{border-color:rgba(92,225,185,.38);background:rgba(92,225,185,.06)}
+  .decision-primary-card.recommended .v{color:var(--accent2)}
+  .decision-primary-card.delta{border-width:2px;border-color:rgba(241,198,109,.42);background:rgba(241,198,109,.07)}
+  .decision-primary-card.delta .v{font-size:18px;color:#f1c66d}
+  .decision-primary-card.delta.quality-good{border-color:rgba(92,225,185,.42);background:rgba(92,225,185,.065)}
+  .decision-primary-card.delta.quality-good .v{color:var(--accent2)}
+  .decision-primary-card.delta.quality-close{border-color:rgba(241,198,109,.45)}
+  .decision-primary-card.delta.quality-bad{border-color:rgba(239,68,68,.48);background:rgba(239,68,68,.07)}
+  .decision-primary-card.delta.quality-bad .v{color:#ff9090}
+  .decision-primary-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:3px}
+  .decision-primary-grid.compact .decision-primary-card{padding:5px 6px}
+  .decision-primary-grid.compact .decision-primary-card .v{font-size:10px}
+  .decision-primary-grid.compact .decision-primary-card .s{font-size:7.5px}
+  .decision-primary-grid.compact .decision-primary-card.delta{grid-column:1/-1}
+  .decision-alt-strip{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:8.5px;color:var(--muted)}
+  .decision-alt-label{font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+  .decision-alt-pill{padding:3px 5px;border:1px solid #2b405f;border-radius:999px;background:#0d192b;color:#cbd7e8;white-space:nowrap}
+  .decision-alt-pill.best{border-color:rgba(92,225,185,.35);color:#a7ead4}
+  .decision-summary-feed .decision-alt-strip{margin-top:4px}
+  .action-advanced{margin-top:10px;border:1px solid #273b59;border-radius:10px;background:#0b1423;overflow:hidden}
+  .action-advanced>summary{cursor:pointer;list-style:none;padding:9px 10px;font-size:10px;font-weight:900;color:#c4d1e4}
+  .action-advanced>summary::-webkit-details-marker{display:none}
+  .action-advanced>summary::after{content:"▾";float:right;color:var(--muted)}
+  .action-advanced[open]>summary{border-bottom:1px solid #273b59}
+  .action-advanced[open]>summary::after{content:"▴"}
+  .action-advanced-body{padding:0 10px 10px}
+  .action-retrospective{margin-top:10px;border:1px solid rgba(241,198,109,.28);border-radius:10px;background:rgba(241,198,109,.035);overflow:hidden}
+  .action-retrospective>summary{cursor:pointer;list-style:none;padding:9px 10px;font-size:10px;font-weight:900;color:#e6c982}
+  .action-retrospective>summary::-webkit-details-marker{display:none}
+  .action-retrospective>summary::after{content:"▾";float:right;color:var(--muted)}
+  .action-retrospective[open]>summary{border-bottom:1px solid rgba(241,198,109,.22)}
+  .action-retrospective[open]>summary::after{content:"▴"}
+  .action-retrospective-body{padding:9px 10px 10px}
+  .action-retrospective-boundary{padding:7px 8px;border:1px solid rgba(241,198,109,.2);border-radius:8px;background:rgba(241,198,109,.04);font-size:9px;line-height:1.45;color:#d6c7a6}
+  @media(max-width:900px){.decision-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.decision-primary-card.delta{grid-column:1/-1}}
   @media(max-width:860px){.action-detail-grid{grid-template-columns:1fr}}
   @keyframes replayFadeIn{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   @keyframes replayCardReveal{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
@@ -949,26 +1001,26 @@
 <nav id="quickNav" class="quick-nav" aria-label="Navigation rapide">
   <button id="quickNavToggle" type="button" class="quick-nav-toggle" aria-expanded="true" title="Replier / déplier la navigation">❮</button>
   <div class="quick-nav-title">Navigation</div>
-  <a href="#rangesSection">Ranges</a>
-  <a href="./hero-ranges.html">Ranges Hero</a>
+  <a href="#rangesSection">Sources importées</a>
+  <a href="./hero-ranges.html">Stratégie Hero</a>
   <a href="#historiesSection">Fichiers HH</a>
   <a href="#handSelectionSection">Mains</a>
   <a href="#replayerSection">Replayer</a>
   <a id="trainerNavLink" href="#trainerPage">Training</a>
   <a href="#opponentsSection">Adversaires</a>
   <a href="#cardsSection">Cartes</a>
-  <a href="#rangeDisplaySection">Range</a>
+  <a href="#rangeDisplaySection">Range adverse</a>
   <a href="#equitySection">Calcul</a>
 </nav>
 <div id="mainPage" class="wrap">
   <h1>Poker Range Equity <span style="font-size:.55em;font-weight:600;opacity:.72">v78</span></h1>
   <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
-  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Ranges Hero</a></div>
+  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>
   <div id="localPersistenceStatus" class="status" style="margin:10px 0 0">Restauration de la configuration locale…</div>
 
   <div class="grid">
     <section id="rangesSection" class="panel wide">
-      <h2>1. Importer un set de ranges</h2>
+      <h2>1. Importer une range source</h2>
       <label class="filelabel" for="fileInput">Choisir un fichier JSON</label>
       <input id="fileInput" type="file" accept=".json,application/json">
       <div id="fileMeta" class="filemeta">Aucun fichier importé.</div>
@@ -985,8 +1037,8 @@
           <button id="populationModelClearBtn" type="button" class="secondary" disabled>Retirer le modèle population</button>
         </div>
         <div id="populationModelMeta" class="filemeta">Aucun modèle population chargé.</div>
-        <div id="populationModelStatus" class="status">Sans modèle population, les ranges historiques importées restent utilisées.</div>
-        <div class="population-source-note">En mode Hand History, le modèle population filtre la distribution des 169 mains au fil des actions préflop réellement observées. Si un joueur n'a encore effectué aucune action volontaire, ou si aucun nœud exploitable n'est trouvé, la range du fichier historique reste la source de repli.</div>
+        <div id="populationModelStatus" class="status">Sans modèle population, les ranges sources importées restent utilisées.</div>
+        <div class="population-source-note">En mode Hand History, le modèle population filtre la distribution des 169 mains au fil des actions préflop réellement observées. Si un joueur n'a encore effectué aucune action volontaire, ou si aucun nœud exploitable n'est trouvé, la range source importée reste la source de repli.</div>
       </div>
 
       <div class="population-model-box">
@@ -1000,38 +1052,42 @@
           <button id="postflopModelClearBtn" type="button" class="secondary" disabled>Retirer le modèle postflop</button>
         </div>
         <div id="postflopModelMeta" class="filemeta">Aucun modèle postflop chargé.</div>
-        <div id="postflopModelStatus" class="status">Sans modèle postflop, les ranges restent conditionnées uniquement par le préflop.</div>
-        <div class="population-source-note">Le moteur v61 maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range » affiche l’état estimé à l’étape courante.</div>
+        <div id="postflopModelStatus" class="status">Sans modèle postflop, les ranges adverses estimées restent conditionnées uniquement par le préflop.</div>
+        <div class="population-source-note">Le moteur v61 maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range adverse » affiche l’état estimé à l’étape courante.</div>
       </div>
     </section>
 
     <section id="historiesSection" class="panel wide">
-      <h2>2. Hand Histories PokerStars</h2>
-      <label class="filelabel" for="hhFileInput">Charger un ou plusieurs fichiers .txt</label>
-      <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
-      <div class="hh-import-row">
-        <div class="field">
-          <label for="hhImportMode">À l'import manuel</label>
-          <select id="hhImportMode">
-            <option value="replace">Remplacer les mains chargées</option>
-            <option value="add">Ajouter aux mains chargées</option>
-          </select>
+      <h2>2. Mes Hand Histories PokerStars</h2>
+      <div class="hh-import-primary">
+        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
+        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
+        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
+      </div>
+      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
+      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
+      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
+      <details class="hh-import-advanced">
+        <summary>Options d’import et outils avancés</summary>
+        <div class="hh-import-advanced-body">
+          <div class="hh-import-row">
+            <div class="field">
+              <label for="hhImportMode">Comportement du prochain import</label>
+              <select id="hhImportMode">
+                <option value="replace">Remplacer les mains chargées</option>
+                <option value="add">Ajouter aux mains chargées</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
+              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+              <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
+              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
+            </div>
+          </div>
+          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
         </div>
-        <div class="actions">
-          <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
-        </div>
-      </div>
-      <div class="hh-controls" style="margin-top:9px">
-        <button id="hhWatchBtn" type="button" class="secondary">Charger et surveiller automatiquement</button>
-        <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-      </div>
-      <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
-      <div id="hhFileMeta" class="filemeta">Aucun historique importé.</div>
-      <div class="hh-controls">
-        <button id="hhModeBtn" class="secondary toggle-btn" disabled>Mode Hand History : OFF</button>
-        <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
-      </div>
-      <div id="hhStatus" class="status" style="margin-top:9px">Le mode manuel reste actif tant qu'aucune main n'est sélectionnée.</div>
+      </details>
 
       <div id="handSelectionSection" class="hh-selection-section">
         <div class="hh-selection-title">Sélection de main</div>
@@ -1043,7 +1099,7 @@
               <option value="date_asc">Date — plus anciennes d'abord</option>
               <option value="result_desc">Résultat — plus gros gains d'abord</option>
               <option value="result_asc">Résultat — plus grosses pertes d'abord</option>
-              <option value="review_desc">Valeur de revue — plus gros écart EV cumulé</option>
+              <option value="review_desc">Perte EV cumulée — plus élevée d’abord</option>
             </select>
           </div>
           <label class="hh-filter-check">
@@ -1113,10 +1169,10 @@
     </section>
 
     <section id="rangeDisplaySection" class="panel wide">
-      <h2>5. Range affichée</h2>
-      <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
+      <h2>5. Range adverse affichée</h2>
+      <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range adverse estimée, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
       <div class="range-toolbar">
-        <button id="rangeEditionBtn" class="secondary toggle-btn">Range edition : OFF</button>
+        <button id="rangeEditionBtn" class="secondary toggle-btn">Édition range adverse : OFF</button>
         <button id="knownHandsBtn" class="secondary toggle-btn" disabled>Mains connues HH : OFF</button>
         <button id="rangeResetBtn" class="secondary" disabled>Réinitialiser depuis le fichier</button>
         <button id="rangeClearBtn" class="secondary" disabled>Tout vider</button>
@@ -1316,7 +1372,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       deck = $("deck"), matrix = $("matrix"), calcBtn = $("calcBtn"), calcStatus = $("calcStatus"),
       bar = $("bar"), results = $("results"), floatingEquity=$("floatingEquity"), rangeEditionBtn=$("rangeEditionBtn"),
       knownHandsBtn=$("knownHandsBtn"), rangeResetBtn=$("rangeResetBtn"), rangeClearBtn=$("rangeClearBtn"), rangeAllBtn=$("rangeAllBtn"),
-      rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"),
+      rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"), hhImportEffect=$("hhImportEffect"),
       hhWatchBtn=$("hhWatchBtn"), hhWatchStopBtn=$("hhWatchStopBtn"), hhWatchStatus=$("hhWatchStatus"),
       hhModeBtn=$("hhModeBtn"), hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
@@ -1512,7 +1568,7 @@ function effectiveEntriesForOpponent(index){
 }
 function updateRangeEditionUi(){
   rangeEditionBtn.classList.toggle("active",state.rangeEdition);
-  rangeEditionBtn.textContent=`Range edition : ${state.rangeEdition?"ON":"OFF"}`;
+  rangeEditionBtn.textContent=`Édition range adverse : ${state.rangeEdition?"ON":"OFF"}`;
 
   const knownPlayers=state.opponents.filter(o=>o.knownCards?.length===2);
   const knownCount=knownPlayers.length;
@@ -1530,11 +1586,11 @@ function updateRangeEditionUi(){
     b.disabled=!state.rangeEdition||!state.ranges.length||!hasPosition;
 
   if(state.hhMode && exactCount>0){
-    rangeModeNote.textContent=`Mode mixte : ${exactCount}/${knownCount} main(s) connue(s) sont utilisées exactement. Les autres adversaires utilisent leurs ranges. Les ranges restent configurables et éditables même lorsqu'une main exacte est active.`;
+    rangeModeNote.textContent=`Mode mixte : ${exactCount}/${knownCount} main(s) connue(s) sont utilisées exactement. Les autres adversaires utilisent leurs ranges adverses estimées. Elles restent configurables et éditables même lorsqu'une main exacte est active.`;
   }else if(state.rangeEdition){
     rangeModeNote.textContent="Édition binaire active pour chaque adversaire : clic sur une case = 0 ↔ 100 %. Le fichier importé reste intact.";
   }else if(state.hhMode&&state.populationModel){
-    rangeModeNote.textContent=state.postflopModel?"Modèles population actifs : la range est conditionnée par le préflop puis, combo par combo, par les actions postflop observées jusqu'au point d'analyse.":"Modèle population préflop actif : après une action exploitable, la range est conditionnée par la ligne préflop observée.";
+    rangeModeNote.textContent=state.postflopModel?"Modèles population actifs : la range adverse estimée est conditionnée par le préflop puis, combo par combo, par les actions postflop observées jusqu'au point d'analyse.":"Modèle population préflop actif : après une action exploitable, la range adverse estimée est conditionnée par la ligne préflop observée.";
   }else{
     rangeModeNote.textContent="Les fréquences du fichier sont utilisées sans modification ; les éditions manuelles sont conservées en mémoire pour une réactivation ultérieure.";
   }
@@ -1710,7 +1766,7 @@ function showImportOk(msg){
 
 async function applyRangeSourceSnapshot(snapshot,{persist=true,restored=false}={}){
   if(!snapshot?.content) return false;
-  fileMeta.textContent=`${snapshot.name||"Range"} — ${((snapshot.size||snapshot.content.length)/1024).toFixed(1)} Ko`;
+  fileMeta.textContent=`${snapshot.name||"Range source"} — ${((snapshot.size||snapshot.content.length)/1024).toFixed(1)} Ko`;
   try{
     const json=JSON.parse(snapshot.content);
     const ranges=collectRanges(json.folder||json);
@@ -1786,7 +1842,7 @@ function populationModelUi(message="",error=false){
   if(populationModelStatus){
     populationModelStatus.textContent=message || (loaded
       ? "Modèle population actif pour les adversaires en mode Hand History."
-      : "Sans modèle population, les ranges historiques importées restent utilisées.");
+      : "Sans modèle population, les ranges sources importées restent utilisées.");
     populationModelStatus.className=error?"status error":"status";
   }
 }
@@ -1920,7 +1976,7 @@ function postflopModelUi(message="",error=false){
   if(postflopModelStatus){
     postflopModelStatus.textContent=message||(loaded
       ? "Modèle postflop actif : les ranges exactes sont filtrées street après street."
-      : "Sans modèle postflop, les ranges restent conditionnées uniquement par le préflop.");
+      : "Sans modèle postflop, les ranges adverses estimées restent conditionnées uniquement par le préflop.");
     postflopModelStatus.className=error?"status error":"status";
   }
 }
@@ -2638,6 +2694,7 @@ function actionVerdictSourceKeys(stepIndex){
   const actorKnown=exactEntriesFromCards(exactCardsForHistoryPlayer(ctx.hand,actorPlayer)).length>0;
   return {prior:actorKnown?"hand_ranges":"range_ranges",post:actorKnown?"hand_real":"range_real",actorKnown};
 }
+// Legacy heuristic score is retained in raw analysis/export compatibility only; primary UX is ΔEV-first.
 function clampActionScore(x){return Math.max(0,Math.min(10,Number(x)||0));}
 function actionScoreMeta(score){
   if(!Number.isFinite(score))return {label:"Indéterminé",cls:"score-na"};
@@ -2676,6 +2733,10 @@ function actionEquityValuesHtml(equities,required=null,usedKeys={}){
     const usedClass=key===usedKeys.prior?" used-prior":key===usedKeys.post?" used-post":"";
     return `<div class="action-eq-item${usedClass}"><span class="label">${escapeHtml(actionScenarioLabel(key))}</span><span class="value">${escapeHtml(value)}${d?` <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span>`:""}</span></div>`;
   }).join("")}</div>`;
+}
+function actionSingleEquityHtml(equities,key,required=null,usedClass="used-prior"){
+  const e=equities?.[key],value=Number.isFinite(e)?fmtEquityThreshold(e):"—",d=required===null?null:fmtEquityDelta(e,required);
+  return `<div class="action-eq-grid"><div class="action-eq-item ${usedClass}"><span class="label">${escapeHtml(actionScenarioLabel(key))}</span><span class="value">${escapeHtml(value)}${d?` <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span>`:""}</span></div></div>`;
 }
 function postflopActorRemainingBB(stepIndex){const ctx=actionDecisionContext(stepIndex);if(!ctx)return NaN;const st=historyPlayerStackBB(ctx.hand,ctx.actor),paid=Number(ctx.before.state?.[ctx.actor]?.totalPaidBB)||0;return Number.isFinite(st)?Math.max(0,st-paid):NaN;}
 function postflopMaxOpponentEffectiveCostBB(stepIndex){
@@ -2899,7 +2960,9 @@ function reviewRegretForAction(stepIndex,cached){
         lossBB:Math.max(0,Number(summary.effectiveGap)||0),
         rawLossBB:Math.max(0,Number(summary.rawGap)||0),
         chosenEV:Number(summary.chosenPolicyEV),bestEV:Number(summary.bestPolicyEV),modelChosenEV:Number(summary.chosenEV),modelBestEV:Number(summary.best?.evBB),
-        bestLabel:String(summary.best?.label||""),withinNoise:!!summary.withinNoise,policyCalibration:'v3',
+        bestLabel:String(summary.best?.label||""),bestCostBB:Number.isFinite(Number(summary.best?.costBB))?Number(summary.best.costBB):null,
+        chosenCostBB:Number.isFinite(Number(summary.alternatives?.find(a=>a.chosen)?.costBB))?Number(summary.alternatives.find(a=>a.chosen).costBB):null,
+        decisionSummary:decisionCanonicalSummary(stepIndex,step,cached),withinNoise:!!summary.withinNoise,policyCalibration:'v3',
         street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true
       };
     }
@@ -3133,17 +3196,15 @@ function exportPolicyBenchmarkForSimulator(){
   const payload={schema:'poker-analyzer-policy-benchmark/v1',application:{name:'Poker Range Equity Offline',version:'v83',exported_at:new Date().toISOString()},context_signature:sig,models:{preflop:state.populationModel?.sourceName||state.populationModel?.name||'',postflop:state.postflopModel?.sourceName||state.postflopModel?.name||''},hands:ready,coverage:{loaded:all.length,exported:ready.length,pending:Math.max(0,all.length-ready.length)},notes:['Chaque main contient les recommandations du pseudo-solveur calculées sans connaissance future dans les champs review_value.details.','bestCostBB est exporté pour les agressions afin de permettre un replay contrefactuel dans le simulateur de population indépendant.']};
   const blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`poker_policy_benchmark_v76_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);hhStatus.textContent=`Benchmark exporté : ${ready.length}/${all.length} mains entièrement scorées.`;
 }
-function reviewScoreClass(r){
+function reviewLossClass(r){
   if(!r)return "unknown";
   if(!r.complete)return "partial";
-  if(r.totalLossBB>=5)return "high";
-  if(r.totalLossBB>=1.5)return "medium";
-  return "low";
+  return "complete";
 }
-function reviewScoreTitle(r){
-  if(!r)return "Main non encore analysée pour la valeur de revue.";
-  const biggest=r.biggest&&r.biggestLossBB>0?` · Plus gros écart : ${formatBB(r.biggestLossBB)} (${r.biggest.actor}, ${r.biggest.street} ${String(r.biggest.action||'').toUpperCase()})`:"";
-  return `Écart EV cumulé : ${formatBB(r.totalLossBB)} · Hero ${formatBB(r.heroLossBB)} · adversaires ${formatBB(r.opponentLossBB)} · décisions comparables ${r.comparableDecisions}/${r.analyzableDecisions}${r.complete?"":" · calcul partiel"}${biggest}`;
+function reviewLossTitle(r){
+  if(!r)return "Main non encore analysée pour la perte EV.";
+  const biggest=r.biggest&&r.biggestLossBB>0?` · Plus grosse perte EV : ${formatBB(r.biggestLossBB)} (${r.biggest.actor}, ${r.biggest.street} ${String(r.biggest.action||'').toUpperCase()})`:"";
+  return `Perte EV cumulée : ${formatBB(r.totalLossBB)} · Hero ${formatBB(r.heroLossBB)} · adversaires ${formatBB(r.opponentLossBB)} · décisions comparables ${r.comparableDecisions}/${r.analyzableDecisions}${r.complete?"":" · calcul partiel"}${biggest}`;
 }
 
 
@@ -3347,16 +3408,66 @@ function actionSizingAmountLabel(a,summary){
   const er=Number.isFinite(eff)&&Math.abs(eff-cost)>.01?` · risque eff. ${formatBB(eff)}`:'';
   return `mise ${formatBB(cost)}${er}`;
 }
+function decisionCanonicalSummary(stepIndex,step,cached=null){
+  if(!step)return null;
+  const key=actionEquityKey(stepIndex),c=cached||(key?state.actionEquityCache?.[key]:null),req=requiredEquityInfo(stepIndex);
+  if(!req||!c||c.status!=="done"||!["Flop","Turn","River"].includes(step.street))return null;
+  const eq=c.equities||{},sources=actionVerdictSourceKeys(stepIndex),priorEq=eq[sources.prior];
+  const raw=postflopDecisionAlternativeSummary(stepIndex,priorEq,c);if(!raw)return null;
+  const ordered=(raw.alternatives||[]).filter(a=>Number.isFinite(finalDecisionEV(a))).slice().sort((a,b)=>finalDecisionEV(b)-finalDecisionEV(a));
+  const playedAlt=ordered.find(a=>a.chosen)||null,best=raw.best||ordered[0]||null;
+  const playedEV=playedAlt?finalDecisionEV(playedAlt):Number(raw.chosenPolicyEV),bestEV=best?finalDecisionEV(best):Number(raw.bestPolicyEV);
+  const delta=Number.isFinite(playedEV)&&Number.isFinite(bestEV)?playedEV-bestEV:NaN;
+  const normalize=(a,isBest=false)=>a?{
+    label:String(a.label||"—"),sizing:actionSizingAmountLabel(a,raw),
+    costBB:Number.isFinite(Number(a.costBB))?Number(a.costBB):null,
+    targetStreetBB:Number.isFinite(Number(a.targetStreetBB))?Number(a.targetStreetBB):null,
+    evBB:Number.isFinite(finalDecisionEV(a))?finalDecisionEV(a):null,
+    chosen:!!a.chosen,recommended:!!isBest
+  }:null;
+  return {
+    schema:"decision-summary/v1",
+    played:normalize(playedAlt,false)||{label:String(step.actionType||"—").toUpperCase(),sizing:Number(req.cost)>0?formatBB(req.cost):"0 BB",costBB:Number(req.cost)||0,targetStreetBB:null,evBB:Number.isFinite(playedEV)?playedEV:null,chosen:true,recommended:false},
+    recommended:normalize(best,true),
+    deltaEVBB:Number.isFinite(delta)?delta:null,
+    lossEVBB:Number.isFinite(delta)?Math.max(0,-delta):null,
+    effectiveLossEVBB:Number.isFinite(Number(raw.effectiveGap))?Math.max(0,Number(raw.effectiveGap)):null,
+    withinNoise:!!raw.withinNoise,score:Number(raw.score),
+    alternatives:ordered.map(a=>normalize(a,a===best)).filter(Boolean)
+  };
+}
+function decisionQualityFromEV(summary){
+  const rawLoss=Number(summary?.lossEVBB),effectiveLoss=Number(summary?.effectiveLossEVBB),withinNoise=!!summary?.withinNoise;
+  if(!Number.isFinite(rawLoss))return {key:"unknown",label:"Indéterminée",note:"ΔEV indisponible"};
+  if(rawLoss<=1e-9)return {key:"good",label:"Bonne",note:"meilleure EV"};
+  if(withinNoise||(Number.isFinite(effectiveLoss)&&effectiveLoss<=1e-9))return {key:"close",label:"Proche",note:"écart dans le bruit Monte-Carlo"};
+  return {key:"bad",label:"Erreur",note:"perte EV au-delà de l’incertitude"};
+}
+function decisionPrimarySummaryHtml(summary,{compact=false}={}){
+  if(!summary)return "";
+  const p=summary.played||{},r=summary.recommended||{},delta=Number(summary.deltaEVBB),loss=Number(summary.lossEVBB),quality=decisionQualityFromEV(summary);
+  const deltaText=Number.isFinite(delta)?formatBB(delta):"—";
+  const lossText=Number.isFinite(loss)?formatBB(Math.max(0,loss)):"—";
+  const qualityText=quality.note?`${quality.label} · ${quality.note}`:quality.label;
+  const card=(k,v,s,cls="")=>`<div class="decision-primary-card ${cls}"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v||"—")}</div>${s?`<div class="s">${escapeHtml(s)}</div>`:""}</div>`;
+  return `<div class="decision-primary-grid${compact?" compact":""}" data-decision-summary-schema="decision-summary/v1">
+    ${card("Perte EV",lossText,`ΔEV ${deltaText} · ${qualityText}`,`delta quality-${quality.key}`)}
+    ${card("Joué",p.label,p.sizing,"played")}
+    ${card("Recommandé",r?.label||"—",r?.sizing||"—","recommended")}
+    ${card("EV jouée",Number.isFinite(Number(p.evBB))?formatBB(Number(p.evBB)):"—","EV finale retenue")}
+    ${card("Meilleure EV",Number.isFinite(Number(r?.evBB))?formatBB(Number(r.evBB)):"—","Meilleure alternative")}
+  </div>`;
+}
+function decisionAlternativesStripHtml(summary,limit=3){
+  const xs=(summary?.alternatives||[]).slice().sort((a,b)=>Number(b.evBB)-Number(a.evBB)).slice(0,Math.max(1,limit));
+  if(!xs.length)return "";
+  return `<div class="decision-alt-strip"><span class="decision-alt-label">Alternatives</span>${xs.map(a=>`<span class="decision-alt-pill${a.recommended?" best":""}">${escapeHtml(a.label)} · ${escapeHtml(a.sizing||"—")} · EV ${Number.isFinite(Number(a.evBB))?escapeHtml(formatBB(a.evBB)):"—"}</span>`).join("")}</div>`;
+}
 function actionSizingEVTableHtml(summary){
   const alts=(summary?.alternatives||[]).filter(a=>Number.isFinite(finalDecisionEV(a)));
   if(!alts.length)return '';
   const best=summary.best;
-  const rows=alts.slice().sort((a,b)=>{
-    const ca=Number(a.costBB)||0,cb=Number(b.costBB)||0;
-    const fa=postflopPolicyFamily(a.label),fb=postflopPolicyFamily(b.label);
-    const passive=x=>['FOLD','CHECK','CALL'].includes(x)?0:1;
-    return passive(fa)-passive(fb)||ca-cb;
-  }).map(a=>{
+  const rows=alts.slice().sort((a,b)=>finalDecisionEV(b)-finalDecisionEV(a)).map(a=>{
     const flags=[
       a===best?'<span class="action-detail-chip"><b>RECOMMANDÉ</b></span>':'',
       a.chosen?'<span class="action-detail-chip">joué</span>':''
@@ -3368,9 +3479,9 @@ function actionSizingEVTableHtml(summary){
     </tr>`;
   }).join('');
   return `<div class="section">
-    <div class="section-title">Sizing et EV</div>
+    <div class="section-title">Alternatives · meilleure EV d’abord</div>
     <div class="action-section-note">
-      Chaque ligne associe directement <b>l’action</b>, <b>le montant réellement testé</b> et <b>son EV finale</b>.
+      Chaque ligne associe directement <b>l’action</b>, <b>son sizing propre</b> et <b>son EV finale</b>, classées de la meilleure à la moins bonne.
       Pour un raise, « ajoute » est le montant supplémentaire engagé maintenant ; « total rue » est le montant total atteint sur la street.
     </div>
     <div style="overflow-x:auto">
@@ -3411,37 +3522,50 @@ function ctxPostflopFold(step){return !!step&&["Flop","Turn","River"].includes(s
 function actionTreeDetailsHtml(tree,label){if(!tree||!Number.isFinite(tree.evBB))return `<div class="action-analysis-meta">${escapeHtml(label)} : arbre EV indisponible.</div>`;const assumption=tree.continuationAssumption==="river_terminal"?"river terminale":"checkdown après call",eff=Number.isFinite(tree.avgEffectiveCostBB)?` · risque effectif ${escapeHtml(formatBB(tree.avgEffectiveCostBB))}`:'',support=tree.empiricalSizingSupport,ood=support?.ood?` · OOD ${Number(support.ratio).toFixed(1)}× pot / P99,5 ${Number(support.threshold).toFixed(1)}×`:'' ,sanity=tree.sanityInvalid?` · <b>écarté : ${escapeHtml(tree.sanityReason||'range de continuation incohérente')}</b>`:'';return `<div class="action-analysis-meta"><b>${escapeHtml(label)}</b> · EV <b>${escapeHtml(formatBB(tree.evBB))}</b> · tous fold ${escapeHtml(fmtEquityThreshold(tree.pAllFold))} · call ${escapeHtml(fmtEquityThreshold(tree.pCallNoRaise))} · re-raise ${escapeHtml(fmtEquityThreshold(tree.pReraise))} · équité quand suivi ${escapeHtml(Number.isFinite(tree.equityWhenCalled)?fmtEquityThreshold(tree.equityWhenCalled):"—")}${eff}${ood}${sanity} · ${escapeHtml(assumption)}.</div>`;}
 function actionCompactPillHtml(text,cls='subtle',extra=''){return `<span class="action-mini-pill ${cls}${extra?' '+extra:''}">${text}</span>`;}
 function actionDetailKeyPointsHtml(args){
-  const {req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree}=args;
+  const {req,decisionSummary,priorMetrics,sources,postflopTree,priorEq,priorTree}=args;
   const pts=[];
   if(decisionSummary){
-    const gapText=Number.isFinite(decisionSummary.effectiveGap)?formatBB(decisionSummary.effectiveGap):'—';
-    const evText=Number.isFinite(decisionSummary.chosenEV)?formatBB(decisionSummary.chosenEV):'—';
-    const bestText=decisionSummary.best?`${decisionSummary.best.label} · ${actionSizingAmountLabel(decisionSummary.best,decisionSummary)} · EV ${formatBB(finalDecisionEV(decisionSummary.best))}`:'—';
-    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Recommandation : <b>${escapeHtml(bestText)}</b>. Manque à gagner retenu pour la note : <b>${escapeHtml(gapText)}</b>${decisionSummary.withinNoise?" · l'écart reste compatible avec le bruit Monte-Carlo.":" · l'écart dépasse le bruit Monte-Carlo."}</div>`);
-  }else if(req.kind==='call'){
-    const d1=fmtEquityDelta(priorEq,req.actorRequired), d2=fmtEquityDelta(postEq,req.actorRequired);
+    const gapText=Number.isFinite(decisionSummary.effectiveGap)?formatBB(decisionSummary.effectiveGap):"—";
+    const bestText=decisionSummary.best?`${decisionSummary.best.label} · ${actionSizingAmountLabel(decisionSummary.best,decisionSummary)} · EV ${formatBB(finalDecisionEV(decisionSummary.best))}`:"—";
+    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Recommandation : <b>${escapeHtml(bestText)}</b>. Perte EV effective après incertitude : <b>${escapeHtml(gapText)}</b>${decisionSummary.withinNoise?" · l’écart reste compatible avec le bruit Monte-Carlo.":" · l’écart dépasse le bruit Monte-Carlo."}</div>`);
+  }else if(req.kind==="call"){
+    const d1=fmtEquityDelta(priorEq,req.actorRequired);
     pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Équité requise <b>${escapeHtml(fmtEquityThreshold(req.actorRequired))}</b> · estimée <b>${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"}</b> <span class="action-delta ${d1.cls}">(${escapeHtml(d1.text)})</span>. EV estimée <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b>.</div>`);
-    pts.push(`<div class="action-detail-point"><b>Lecture a posteriori.</b> Équité avec données connues <b>${Number.isFinite(postEq)?escapeHtml(fmtEquityThreshold(postEq)):"—"}</b> <span class="action-delta ${d2.cls}">(${escapeHtml(d2.text)})</span>. EV rétrospective <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b>.</div>`);
   }else if(postflopTree){
-    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> L'action est jugée via un arbre EV de réponses population. Tous fold <b>${escapeHtml(fmtEquityThreshold(priorTree?.pAllFold))}</b>, call <b>${escapeHtml(fmtEquityThreshold(priorTree?.pCallNoRaise))}</b>, re-raise <b>${escapeHtml(fmtEquityThreshold(priorTree?.pReraise))}</b>. Équité quand suivi <b>${Number.isFinite(priorTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(priorTree.equityWhenCalled)):"—"}</b>.</div>`);
-    pts.push(`<div class="action-detail-point"><b>Lecture a posteriori.</b> Avec les cartes connues, l'équité quand suivi devient <b>${Number.isFinite(postTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(postTree.equityWhenCalled)):"—"}</b> et l'EV rétrospective vaut <b>${Number.isFinite(postTree?.evBB)?escapeHtml(formatBB(postTree.evBB)):"—"}</b>.</div>`);
+    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> L’action est jugée via un arbre EV de réponses population. Tous fold <b>${escapeHtml(fmtEquityThreshold(priorTree?.pAllFold))}</b>, call <b>${escapeHtml(fmtEquityThreshold(priorTree?.pCallNoRaise))}</b>, re-raise <b>${escapeHtml(fmtEquityThreshold(priorTree?.pReraise))}</b>. Équité quand suivi <b>${Number.isFinite(priorTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(priorTree.equityWhenCalled)):"—"}</b>.</div>`);
   }
-  pts.push(`<div class="action-detail-point"><b>Source du jugement.</b> A priori : <b>${escapeHtml(actionScenarioLabel(sources.prior))}</b> · a posteriori : <b>${escapeHtml(actionScenarioLabel(sources.post))}</b>. ${sources.actorKnown?"La main du joueur est connue dans la HH, donc la comparaison main/range ou main/réel est disponible.":"La main du joueur n'est pas connue ; le verdict repose sur la range estimée."}</div>`);
-  return `<div class="action-detail-summary">${pts.join('')}</div>`;
+  pts.push(`<div class="action-detail-point"><b>Frontière d’information.</b> Le verdict ci-dessus utilise uniquement la vue a priori <b>${escapeHtml(actionScenarioLabel(sources.prior))}</b>, disponible au moment de la décision. Les cartes révélées ensuite ne peuvent modifier ni la recommandation ni le ΔEV historique.</div>`);
+  return `<div class="action-detail-summary">${pts.join("")}</div>`;
 }
-
+function actionRetrospectivePanelHtml(args){
+  const {req,postMetrics,sources,postflopTree,postflopCheck,postEq,postTree,eq,stepIndex}=args;
+  const source=actionScenarioLabel(sources.post);
+  const rows=[];
+  if(req.kind==="call"){
+    const d=fmtEquityDelta(postEq,req.actorRequired);
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> Équité <b>${Number.isFinite(postEq)?escapeHtml(fmtEquityThreshold(postEq)):"—"}</b> <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span> · EV rétrospective <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b>.</div>`);
+  }else if(postflopCheck){
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> EV CHECK rétrospective <b>${Number.isFinite(postEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,postEq))):"—"}</b>.</div>`);
+  }else if(postflopTree){
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> Équité quand suivi <b>${Number.isFinite(postTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(postTree.equityWhenCalled)):"—"}</b> · EV rétrospective <b>${Number.isFinite(postTree?.evBB)?escapeHtml(formatBB(postTree.evBB)):"—"}</b>.</div>`);
+  }else if(Number.isFinite(postEq)){
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> Équité rétrospective <b>${escapeHtml(fmtEquityThreshold(postEq))}</b>.</div>`);
+  }
+  const sourceValue=Number.isFinite(eq?.[sources.post])?fmtEquityThreshold(eq[sources.post]):"—";
+  return `<details class="action-retrospective"><summary>Analyse rétrospective / cartes révélées</summary><div class="action-retrospective-body"><div class="action-retrospective-boundary"><b>Information future — hors verdict.</b> Ce panneau peut utiliser des cartes connues après la décision. Il sert uniquement à comprendre la main après coup et n’entre jamais dans la recommandation, la meilleure EV ni la perte EV affichées au-dessus.</div>${rows.join("")}<div class="action-analysis-meta" style="margin-top:7px">Source rétrospective : <b>${escapeHtml(source)}</b> · équité utilisée <b>${escapeHtml(sourceValue)}</b>.</div></div></details>`;
+}
 function foldRangeAnalysisHtml(stepIndex,decisionSummary){
   const step=state.replaySteps?.[stepIndex];if(!step||step.actionType!=="fold")return '';
   if(step.street==="Préflop"){
-    const fr=preflopFoldSelectedRange(stepIndex);if(!fr)return `<div class="section"><div class="section-title">Range sélectionnée par le fold</div><div class="action-section-note">Range préflop de fold indisponible pour ce joueur.</div></div>`;
+    const fr=preflopFoldSelectedRange(stepIndex);if(!fr)return `<div class="section"><div class="section-title">Distribution sélectionnée par le fold</div><div class="action-section-note">Distribution préflop de fold indisponible pour ce joueur.</div></div>`;
     const rows=(fr.entries||[]).slice().sort((a,b)=>(Number(b.frequency)||0)-(Number(a.frequency)||0)).slice(0,14);
     const top=rows.map(r=>`<span class="action-detail-chip"><b>${escapeHtml(r.hand)}</b> ${Number(r.frequency||0).toFixed(1).replace('.',',')} %</span>`).join('');
-    return `<div class="section"><div class="section-title">Range sélectionnée par le fold</div><div class="action-section-note">Le modèle préflop conditionne bien la range par l’action FOLD. En revanche, l’application ne possède toujours pas d’arbre EV préflop validé pour comparer proprement CALL / 3-bet / 4-bet / jam : aucune fausse EV n’est inventée ici.</div><div class="action-detail-meta-strip">${top}</div></div>`;
+    return `<div class="section"><div class="section-title">Distribution sélectionnée par le fold</div><div class="action-section-note">Le modèle préflop conditionne bien la distribution du joueur par l’action FOLD. En revanche, l’application ne possède toujours pas d’arbre EV préflop validé pour comparer proprement CALL / 3-bet / 4-bet / jam : aucune fausse EV n’est inventée ici.</div><div class="action-detail-meta-strip">${top}</div></div>`;
   }
   const fr=postflopFoldSelectedRange(stepIndex);if(!fr)return '';
   const stats=normalizedExactRangeStats(fr.entries),top=stats.rows.slice(0,12).map(r=>`<span class="action-detail-chip"><b>${escapeHtml(r.hand)}</b> ${(r.p*100).toFixed(1).replace('.',',')} %</span>`).join('');
-  const best=decisionSummary?.best,continuation=best&&!best.chosen?`Sur cette range de fold, la meilleure continuation agrégée est <b>${escapeHtml(best.label)}</b> à <b>${escapeHtml(formatBB(best.evBB))}</b> d’EV.`:`Sur cette range, le FOLD reste la meilleure famille d’action agrégée.`;
-  return `<div class="section"><div class="section-title">Analyse de la range de fold</div><div class="action-section-note">La distribution ci-dessous est reconstruite par Bayes : range avant action × P(FOLD | combo, nœud), puis renormalisation. Les EV de CALL/RAISE utilisent cette range sélectionnée, pas la range générale du joueur.</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Nœud <b>${escapeHtml(fr.nodeId)}</b></span><span class="action-detail-chip">n <b>${Number(fr.observations||0).toLocaleString('fr-FR')}</b></span><span class="action-detail-chip">Fold marginal <b>${escapeHtml(fmtEquityThreshold(fr.targetFold))}</b></span><span class="action-detail-chip">Combos effectifs <b>${stats.effective.toFixed(0)}</b></span><span class="action-detail-chip">Top 10 <b>${(stats.top10*100).toFixed(1).replace('.',',')} %</b></span></div><div class="action-detail-point" style="margin-top:8px">${continuation}</div><div class="action-detail-meta-strip">${top}</div></div>`;
+  const best=decisionSummary?.best,continuation=best&&!best.chosen?`Sur cette distribution de fold, la meilleure continuation agrégée est <b>${escapeHtml(best.label)}</b> à <b>${escapeHtml(formatBB(best.evBB))}</b> d’EV.`:`Sur cette distribution, le FOLD reste la meilleure famille d’action agrégée.`;
+  return `<div class="section"><div class="section-title">Analyse de la distribution de fold</div><div class="action-section-note">La distribution ci-dessous est reconstruite par Bayes : distribution avant action × P(FOLD | combo, nœud), puis renormalisation. Les EV de CALL/RAISE utilisent cette distribution sélectionnée, pas la distribution générale du joueur.</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Nœud <b>${escapeHtml(fr.nodeId)}</b></span><span class="action-detail-chip">n <b>${Number(fr.observations||0).toLocaleString('fr-FR')}</b></span><span class="action-detail-chip">Fold marginal <b>${escapeHtml(fmtEquityThreshold(fr.targetFold))}</b></span><span class="action-detail-chip">Combos effectifs <b>${stats.effective.toFixed(0)}</b></span><span class="action-detail-chip">Top 10 <b>${(stats.top10*100).toFixed(1).replace('.',',')} %</b></span></div><div class="action-detail-point" style="margin-top:8px">${continuation}</div><div class="action-detail-meta-strip">${top}</div></div>`;
 }
 function actionDetailModalInnerHtml(stepIndex,step){
   if(step?.actionType==="fold"&&step.street==="Préflop")return foldRangeAnalysisHtml(stepIndex,null);
@@ -3453,6 +3577,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
+  const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
   const allIn=/all-in/i.test(step.actionText||"");
@@ -3466,18 +3591,14 @@ function actionDetailModalInnerHtml(stepIndex,step){
       ? "CALL : EV de continuation à équité brute, rake inclus ; les futures mises ne sont pas simulées."
       : postflopTree
         ? "BET/RAISE postflop : réponses fold/call/raise conditionnées par range, nœud, sizing et SPR. Flop/turn : continuation après call terminalisée par un checkdown ; river : terminale. Re-raise : continuation conservatrice par fold."
-        : "BET/RAISE préflop : score historique ; le nouveau moteur EV concerne le postflop.";
+        : "BET/RAISE préflop : diagnostic historique non comparable en ΔEV ; le moteur EV contrefactuel concerne ici le postflop.";
   const evLines=req.kind==="fold"
-    ? `<div class="action-analysis-meta">EV FOLD <b>0 BB</b> · les alternatives sont calculées sur la range de fold estimée.</div>`
+    ? `<div class="action-analysis-meta">EV FOLD a priori <b>0 BB</b> · les alternatives sont calculées sur la distribution de fold estimée au moment de la décision.</div>`
     : req.kind==="check"
-    ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b> · a posteriori <b>${Number.isFinite(postEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,postEq))):"—"}</b></div>`
+    ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b></div>`
     : req.kind==="call"
-      ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b> · a posteriori <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b></div>`
-      : postflopTree?`${actionTreeDetailsHtml(priorTree,"A priori")}${actionTreeDetailsHtml(postTree,"A posteriori")}`:"";
-  const posteriorBadge=["check","fold"].includes(req.kind)?`<div class="action-score large score-na"><span class="score-label">A posteriori</span><span class="score-value">info</span></div>`:actionVerdictBadge("A posteriori",postEq,req,postTree).replace('action-score ','action-score large ');
-  const scoreGrid=decisionSummary
-    ? `<div class="action-detail-score-grid">${actionDecisionSummaryBadge(decisionSummary).replace('action-score ','action-score large ')}${posteriorBadge}</div>`
-    : `<div class="action-detail-score-grid">${actionVerdictBadge("A priori",priorEq,req,priorTree).replace('action-score ','action-score large ')}${posteriorBadge}</div>`;
+      ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b></div>`
+      : postflopTree?actionTreeDetailsHtml(priorTree,"A priori"):"";
   const chips=`<div class="action-detail-meta-strip">
       <span class="action-detail-chip">Action <b>${escapeHtml(actionName)}${allIn?" ALL-IN":""}</b></span>
       <span class="action-detail-chip">Investi <b>${escapeHtml(formatBB(req.cost))}</b></span>
@@ -3485,21 +3606,30 @@ function actionDetailModalInnerHtml(stepIndex,step){
       <span class="action-detail-chip">% pot <b>${Number.isFinite(pctPot)?escapeHtml(fmtEquityThreshold(pctPot)):"—"}</b></span>
       <span class="action-detail-chip">Rake <b>${escapeHtml(rakeText)}</b></span>
     </div>`;
-  return `${scoreGrid}${chips}
-    ${actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree})}
-    <div class="action-detail-stack">
-      ${foldRangeAnalysisHtml(stepIndex,decisionSummary)}
-      ${decisionSummary?actionDecisionAlternativesHtml(decisionSummary):""}
-      ${decisionSummary?actionSizingEVTableHtml(decisionSummary):""}
-      ${(!decisionSummary&&(postflopTree||postflopCheck||postflopFold))?sizingOptimizationHtml(cached.sizingOptimization,decisionSummary?.potScale||req.potBefore||1,step.actionType):""}
-      <div class="section action-detail-context"><div class="section-title">Contexte du calcul</div>
-        <div class="action-analysis-title">${actionName}${allIn?" ALL-IN":""} · ${postflopTree?"arbre EV de réponses population":postflopCheck?"CHECK vs bets hypothétiques":postflopFold?"FOLD vs continuations hypothétiques":`seuil rake inclus ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`}</div>
-        <div class="action-analysis-meta">Investi ${escapeHtml(formatBB(req.cost))} dans ${escapeHtml(formatBB(req.potBefore))}${Number.isFinite(pctPot)?` · ${escapeHtml(fmtEquityThreshold(pctPot))} du pot`:""} → pot brut ${escapeHtml(formatBB(req.grossPotAfter))} → rake estimé ${escapeHtml(rakeText)} → pot net ${escapeHtml(formatBB(req.netPotAfter))}.</div>
-        ${evLines}
-        ${actionEquityValuesHtml(eq,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,sources)}
-        <div class="action-analysis-meta" style="margin-top:6px">${escapeHtml(kindNote)}</div>
+  const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,sources,postflopTree,priorEq,priorTree});
+  const retrospective=actionRetrospectivePanelHtml({req,postMetrics,sources,postflopTree,postflopCheck,postEq,postTree,eq,stepIndex});
+  const primary=canonicalDecision
+    ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
+    : `${chips}${keyPoints}`;
+  return `${primary}${retrospective}
+    <details class="action-advanced">
+      <summary>Pourquoi ? / Détails avancés</summary>
+      <div class="action-advanced-body">
+        ${canonicalDecision?`${chips}${keyPoints}`:""}
+        <div class="action-detail-stack">
+          ${foldRangeAnalysisHtml(stepIndex,decisionSummary)}
+          ${decisionSummary?actionDecisionAlternativesHtml(decisionSummary):""}
+          ${(!decisionSummary&&(postflopTree||postflopCheck||postflopFold))?sizingOptimizationHtml(cached.sizingOptimization,decisionSummary?.potScale||req.potBefore||1,step.actionType):""}
+          <div class="section action-detail-context"><div class="section-title">Contexte du calcul</div>
+            <div class="action-analysis-title">${actionName}${allIn?" ALL-IN":""} · ${postflopTree?"arbre EV de réponses population":postflopCheck?"CHECK vs bets hypothétiques":postflopFold?"FOLD vs continuations hypothétiques":`seuil rake inclus ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`}</div>
+            <div class="action-analysis-meta">Investi ${escapeHtml(formatBB(req.cost))} dans ${escapeHtml(formatBB(req.potBefore))}${Number.isFinite(pctPot)?` · ${escapeHtml(fmtEquityThreshold(pctPot))} du pot`:""} → pot brut ${escapeHtml(formatBB(req.grossPotAfter))} → rake estimé ${escapeHtml(rakeText)} → pot net ${escapeHtml(formatBB(req.netPotAfter))}.</div>
+            ${evLines}
+            ${actionSingleEquityHtml(eq,sources.prior,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,"used-prior")}
+            <div class="action-analysis-meta" style="margin-top:6px">${escapeHtml(kindNote)}</div>
+          </div>
+        </div>
       </div>
-    </div>`;
+    </details>`;
 }
 function openActionDetailModal(stepIndex){
   const step=state.replaySteps?.[stepIndex];
@@ -3518,41 +3648,33 @@ function closeActionDetailModal(){
 }
 function actionAnalysisHtml(stepIndex,step){
   if(!isAnyMoneyEvent(step)&&!ctxPostflopCheck(step))return "";
-  if(step.actionType==="post")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Forcée','subtle','primary-summary')}</div></div></div>`;
-  if(step.actionType==="return")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Retour jetons','subtle','primary-summary')}</div></div></div>`;
-  if(step.actionType==="collect")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Pot gagné','good','primary-summary')}</div></div></div>`;
+  if(step.actionType==="post")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Forcée","subtle","primary-summary")}</div></div></div>`;
+  if(step.actionType==="return")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Retour jetons","subtle","primary-summary")}</div></div></div>`;
+  if(step.actionType==="collect")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Pot gagné","good","primary-summary")}</div></div></div>`;
   if(!isAnalyzableDecisionAction(step))return "";
-  const key=actionEquityKey(stepIndex), cached=key?state.actionEquityCache[key]:null, req=requiredEquityInfo(stepIndex);
-  if(!req)return `<div class="action-analysis na"><div class="action-compact-row">${actionCompactPillHtml('Verdict —','subtle','primary-summary')}</div></div>`;
-  if(!cached||cached.status==="queued"||cached.status==="running") return `<div class="action-analysis pending"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Calcul…','pending','primary-summary')}</div></div></div>`;
-  if(cached.status==="error") return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Verdict indispo','bad','primary-summary')}</div></div></div>`;
-  const eq=cached.equities||{}, sources=actionVerdictSourceKeys(stepIndex), trees=cached.postflopTrees||{};
-  const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
-  const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
-  const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
-  const priorMeta=actionScoreMeta(decisionSummary?decisionSummary.score:priorMetrics.score);
-  const postMeta=actionScoreMeta(postMetrics.score);
+  const key=actionEquityKey(stepIndex),cached=key?state.actionEquityCache[key]:null,req=requiredEquityInfo(stepIndex);
+  if(!req)return `<div class="action-analysis na"><div class="action-compact-row">${actionCompactPillHtml("Verdict —","subtle","primary-summary")}</div></div>`;
+  if(!cached||cached.status==="queued"||cached.status==="running")return `<div class="action-analysis pending"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Calcul…","pending","primary-summary")}</div></div></div>`;
+  if(cached.status==="error")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Verdict indispo","bad","primary-summary")}</div></div></div>`;
+  const eq=cached.equities||{},sources=actionVerdictSourceKeys(stepIndex),trees=cached.postflopTrees||{};
+  const priorEq=eq[sources.prior],postEq=eq[sources.post],priorTree=trees.prior||null,postTree=trees.post||null;
+  const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree),postMetrics=actionDecisionMetrics(postEq,req,postTree);
+  const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
+  if(canonicalDecision)return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}</div>`;
   const row=[];
-  if(decisionSummary){
-    const scoreCls=decisionSummary.score>=7?'good':decisionSummary.score>=4.5?'warn':'bad';
-    row.push(actionCompactPillHtml(`<span class="strong">${escapeHtml(formatScore(decisionSummary.score))}</span>`,scoreCls,'primary-summary'));
-    row.push(actionCompactPillHtml(`EV <span class="strong">${escapeHtml(Number.isFinite(decisionSummary.chosenEV)?formatBB(decisionSummary.chosenEV):'—')}</span>`,'subtle','ev-summary'));
-    if(decisionSummary.best){
-      const bestSame=!!decisionSummary.best.chosen;
-      const amount=actionSizingAmountLabel(decisionSummary.best,decisionSummary);
-      row.push(actionCompactPillHtml(`${bestSame?'Reco = joué':'Reco '+escapeHtml(decisionSummary.best.label)} · ${escapeHtml(amount)} · EV ${escapeHtml(formatBB(finalDecisionEV(decisionSummary.best)))}`,'subtle','best-summary'));
+  if(req.kind==="call"&&Number.isFinite(priorMetrics.evBB)){
+    const loss=Math.max(0,-Number(priorMetrics.evBB)),quality=loss<=1e-9?"good":"warn";
+    row.push(actionCompactPillHtml(`EV <span class="strong">${escapeHtml(formatBB(priorMetrics.evBB))}</span>`,quality,"primary-summary"));
+    row.push(actionCompactPillHtml(`Perte EV vs FOLD <span class="strong">${escapeHtml(formatBB(loss))}</span>`,quality,"best-summary"));
+    if(Number.isFinite(req.actorRequired)){
+      const d=fmtEquityDelta(priorEq,req.actorRequired);
+      row.push(actionCompactPillHtml(`Eq ${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"} · req ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`,d.cls==="neg"?"warn":"subtle","best-summary"));
     }
   }else{
-    const priorCls=priorMeta.cls.includes('bad')?'bad':priorMeta.cls.includes('borderline')||priorMeta.cls.includes('poor')?'warn':'good';
-    row.push(actionCompactPillHtml(`Pré <span class="strong">${escapeHtml(formatScore(priorMetrics.score))}</span>`,priorCls,'primary-summary'));
-    if(req.kind==='call'&&Number.isFinite(req.actorRequired)){
-      const d=fmtEquityDelta(priorEq,req.actorRequired);
-      row.push(actionCompactPillHtml(`Eq ${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):'—'} · req ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`,d.cls==='neg'?'warn':'subtle','best-summary'));
-    }else{
-      row.push(actionCompactPillHtml(`Post <span class="strong">${escapeHtml(formatScore(postMetrics.score))}</span>`,'subtle','best-summary'));
-    }
+    row.push(actionCompactPillHtml("ΔEV non comparable","subtle","primary-summary"));
+    row.push(actionCompactPillHtml("Aucune alternative EV validée","subtle","best-summary"));
   }
-  return `<div class="action-analysis"><div class="action-analysis-compact"><div class="action-compact-row">${row.join('')}</div></div></div>`;
+  return `<div class="action-analysis"><div class="action-analysis-compact"><div class="action-compact-row">${row.join("")}</div></div></div>`;
 }
 function safeActionAnalysisHtml(stepIndex,step){
   try{return actionAnalysisHtml(stepIndex,step);}catch(err){
@@ -4007,7 +4129,7 @@ function replaySeatHtml(player,step,hand){
   const actionType=st.lastActionType||"";
   const amountText=replayActionAmountText(step,player.name);
   const populationRangeButton=player.name===hand.heroName ? "" :
-    `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range théorique estimée à cette étape">Range</button>`;
+    `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range adverse estimée à cette étape">Range adverse</button>`;
 
   const actionHtml=actionType ? `<div class="seat-action">
     ${amountText?`<div class="seat-action-main"><span class="seat-action-amount">${escapeHtml(amountText)}</span></div>`:""}
@@ -4119,7 +4241,7 @@ function openPopulationRangeModal(playerName){
   const freq=gridFreqMapFromEstimate(estimate,player);
   const source=estimate?.exactComboEngine
     ? (estimate.postflopMatchedActions>0 ? "Moteur dynamique préflop + postflop · combos exacts" : "Moteur dynamique préflop · combos exacts")
-    : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range historique importée";
+    : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range source importée";
   const width=estimate?.width??populationRangeWidthFromEntries(entries);
   const preOccurred=populationPreflopDecisionTrace(state.selectedHand).slice(0,replayPreflopDecisionCount(state.replayIndex));
   const postOccurred=postflopDecisionTrace(state.selectedHand).slice(0,replayPostflopDecisionCount(state.replayIndex));
@@ -4127,7 +4249,7 @@ function openPopulationRangeModal(playerName){
   const stats=normalizedExactRangeStats(entries),diag=rangeTraceDiagnostic(estimate);
   const prev=previousPlayerDecisionRange(playerName,state.replayIndex),prevFreq=prev?.estimate?gridFreqMapFromEstimate(prev.estimate,player):null;
 
-  populationRangeModalTitle.textContent=`Range estimée · ${player.name}`;
+  populationRangeModalTitle.textContent=`Range adverse estimée · ${player.name}`;
   populationRangeModalSub.textContent=`${player.hhPosition||"?"} · étape ${state.replayIndex+1}/${state.replaySteps.length} · ${source}`;
   const modalMaxFreq=Math.max(1,...ALL_NOTATIONS.map(n=>Number(freq.get(n)||0)));
   const grid=ALL_NOTATIONS.map(n=>{const f=Number(freq.get(n)||0);const heat=heatColorForPercent(f,modalMaxFreq);const opacity=Math.max(.10,Math.min(.92,Math.pow(f/modalMaxFreq||0,0.58)*.92));const valueText=f?`${f.toFixed(f>=10?0:1).replace(".",",")} %`:"—";return `<div class="population-modal-cell" style="background:${heat.bg};border-color:${heat.border};color:${heat.text};text-shadow:${heat.shadow}" title="${escapeHtml(n)} — ${f.toFixed(1).replace(".",",")} %"><div class="heat" style="opacity:${opacity};background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 40%,rgba(0,0,0,.06))"></div><div class="hand">${escapeHtml(n)}</div><div class="freq">${valueText}</div></div>`;}).join("");
@@ -4147,7 +4269,7 @@ function openPopulationRangeModal(playerName){
     </div>
     <div class="population-modal-warning">L’indice de fiabilité est un diagnostic de couverture (nœuds exacts, volume, actions appariées et street), pas une probabilité que la range soit « vraie ». Les ranges turn/river restent structurellement moins fiables que préflop/flop.</div>
     <div class="population-modal-columns">
-      <div class="section"><div class="section-title">Range à l’instant T · 169 classes</div><div class="tiny">Le moteur travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
+      <div class="section"><div class="section-title">Range adverse estimée · 169 classes</div><div class="tiny">Le moteur travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
       <div class="section"><div class="section-title">Combos exacts les plus probables</div><div class="tiny">Pourcentage = masse probabiliste après normalisation de tous les combos légaux.</div><div class="population-combo-list">${topCombos}</div></div>
     </div>
     ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
@@ -4787,11 +4909,12 @@ function selectHistoryHandById(id){
 }
 function updateHistoryUi(){
   if(hhImportModeSelect) hhImportModeSelect.value=state.hhImportMode;
+  updateHHImportEffect();
   hhModeBtn.disabled=!state.hhHands.length;
   hhModeBtn.classList.toggle("active",state.hhMode);
   hhModeBtn.textContent=`Mode Hand History : ${state.hhMode?"ON":"OFF"}`;
   if(!state.hhHands.length){
-    hhStatus.textContent="Le mode manuel reste actif tant qu'aucune main n'est sélectionnée.";
+    hhStatus.textContent=state.hhSourceSnapshots.length?"Aucune main PokerStars reconnue dans les fichiers chargés.":"Importez un ou plusieurs fichiers PokerStars .txt pour commencer.";
   }else if(state.hhMode&&state.selectedHand){
     const h=state.selectedHand;
     const known=h.players.filter(p=>p.name!==h.heroName&&p.knownCards?.length===2).length;
@@ -4891,13 +5014,13 @@ function renderHistoryHands(){
     const resultTitle=Number.isFinite(netBB)
       ? `Engagé : ${formatBB(investedBB)} · Encaissé : ${formatBB(collectedBB)} · Net : ${netBB>0?"+":netBB<0?"−":""}${formatBB(Math.abs(netBB))}`
       : "Grosse blind non reconnue dans l'historique.";
-    const review=reviewSummaryForHand(h),reviewCls=reviewScoreClass(review);
+    const review=reviewSummaryForHand(h),reviewCls=reviewLossClass(review);
     const reviewAmount=review?`${review.complete?"":"~ "}${formatBB(review.totalLossBB)}`:"—";
     const reviewSplit=review?`H ${formatBB(review.heroLossBB)} · A ${formatBB(review.opponentLossBB)} · ${review.comparableDecisions}/${review.analyzableDecisions}`:"non analysée";
     b.innerHTML=`<span class="hh-time">${escapeHtml(h.dateText.replace(/ \w+$/,""))}<br>#${escapeHtml(h.id)}</span>
       <span class="hh-main"><strong>${escapeHtml(h.heroName)} · ${heroHtml}</strong><small>${handStreetLabel(h)} · ${h.players.length} joueurs · ${known} main(s) adverse(s) connue(s) · ${escapeHtml(h.sourceName)}</small></span>
       <span class="hh-cards">${heroHtml}</span>
-      <span class="hh-review ${reviewCls}" title="${escapeHtml(reviewScoreTitle(review))}">Revue ΣΔEV<span class="amount">${escapeHtml(reviewAmount)}</span><span class="split">${escapeHtml(reviewSplit)}</span></span>
+      <span class="hh-review ${reviewCls}" title="${escapeHtml(reviewLossTitle(review))}">Perte EV cumulée<span class="amount">${escapeHtml(reviewAmount)}</span><span class="split">${escapeHtml(reviewSplit)}</span></span>
       <span class="hh-result ${resultClass}" title="${escapeHtml(resultTitle)}">${resultLabel}<span class="amount">${escapeHtml(signed)}</span></span>`;
     b.onclick=()=>selectHistoryHandById(h.id);
     hhHandsEl.appendChild(b);
@@ -4920,7 +5043,7 @@ async function clearLoadedHands({persist=true,reason="Mains vidées."}={}){
   state.actionEquityBusy=false;
   state.seatEquities={status:"idle",range:{},real:{},heroScenarios:{},hasRange:{},hasReal:{},error:"",stepIndex:0};
   if(state.hhMode) leaveHistoryMode();
-  hhFileMeta.textContent="Aucun historique importé.";
+  setHHImportSummary("Aucune main importée.");
   hhStatus.textContent=reason;
   updateAppView();
   updateHistoryUi();
@@ -4933,6 +5056,27 @@ async function clearLoadedHands({persist=true,reason="Mains vidées."}={}){
     }catch(_){ }
   }
 }
+function hhImportEffectText(){
+  return state.hhImportMode==="add"
+    ? "Le prochain import ajoutera les nouvelles mains aux mains déjà chargées."
+    : "Le prochain import remplacera les mains actuellement chargées.";
+}
+function updateHHImportEffect(){
+  if(hhImportEffect) hhImportEffect.textContent=hhImportEffectText();
+}
+function hhImportSummaryText({files=0,recognized=0,hands=0,errors=0,restored=false,mode="replace",at=new Date()}={}){
+  const total=Math.max(0,Number(files)||0),ok=Math.max(0,Math.min(total,Number(recognized)||0)),handCount=Math.max(0,Number(hands)||0),errorCount=Math.max(0,Number(errors)||0);
+  const fileWord=total>1?"fichiers":"fichier",recognizedText=total>0?(ok===total?`${total} ${fileWord} reconnu${total>1?"s":""}`:`${ok}/${total} ${fileWord} reconnu${ok>1?"s":""}`):"aucun fichier reconnu";
+  const handText=`${handCount} main${handCount>1?"s":""}`;
+  const errorText=errorCount?`${errorCount} erreur${errorCount>1?"s":""} de lecture/parsing`:"aucune erreur détectée";
+  const d=at instanceof Date?at:new Date(at),time=Number.isNaN(d.getTime())?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  return `${recognizedText} · ${handText} · ${errorText}${time?` · mise à jour ${time}`:""}${restored?" · restauré localement":""}${mode==="add"&&!restored?" · ajout":""}`;
+}
+function setHHImportSummary(text,{busy=false,warn=false}={}){
+  if(!hhFileMeta)return;
+  hhFileMeta.textContent=text;
+  hhFileMeta.className=`hh-import-summary${busy?" busy":""}${warn?" warn":""}`;
+}
 function mergeSourceSnapshots(existing, incoming){
   const map=new Map();
   for(const rec of [...(existing||[]), ...(incoming||[])]){
@@ -4941,7 +5085,7 @@ function mergeSourceSnapshots(existing, incoming){
   }
   return [...map.values()];
 }
-async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restored=false,mergeMode="replace"}={}){
+async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restored=false,mergeMode="replace",readErrors=0}={}){
   const incoming=[...(records||[])].map(r=>({...r}));
   if(!incoming.length){
     if(mergeMode==="replace") return clearLoadedHands({persist,reason:"Aucune main PokerStars reconnue dans les fichiers sélectionnés."});
@@ -4950,8 +5094,9 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
 
   const sourceRecords=mergeMode==="add" ? mergeSourceSnapshots(state.hhSourceSnapshots,incoming) : incoming;
 
-  const parsed=[];
+  const parsed=[];let recognizedFiles=0,parseErrors=Math.max(0,Number(readErrors)||0);
   for(const rec of sourceRecords){
+    let recognized=false;
     try{
       const content=String(rec.content||"");
       const blocks=splitPokerStarsHands(content);
@@ -4959,9 +5104,11 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
         const block=blocks[bi];
         if(bi===blocks.length-1&&!block.includes("*** SUMMARY ***")) continue;
         const h=parsePokerStarsHand(block,rec.name||"Hand History");
-        if(h) parsed.push(h);
+        if(h){parsed.push(h);recognized=true;}
+        else parseErrors++;
       }
-    }catch(_){ }
+    }catch(_){parseErrors++;}
+    if(recognized) recognizedFiles++;
   }
 
   const byId=new Map();
@@ -4969,7 +5116,8 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
   state.hhHands=[...byId.values()].sort((a,b)=>b.sortKey-a.sortKey||Number(b.id)-Number(a.id));
   state.hhSourceSnapshots=sourceRecords.map(r=>({...r}));
 
-  hhFileMeta.textContent=`${metaPrefix} · ${sourceRecords.length} fichier(s) · ${state.hhHands.length} main(s) PokerStars détectée(s)${restored?" · restauré localement":""}${mergeMode==="add"&&!restored?" · mode ajout":""}`;
+  const totalFiles=sourceRecords.length+Math.max(0,Number(readErrors)||0);
+  setHHImportSummary(hhImportSummaryText({files:totalFiles,recognized:recognizedFiles,hands:state.hhHands.length,errors:parseErrors,restored,mode:mergeMode}),{warn:parseErrors>0||recognizedFiles<sourceRecords.length});
 
   if(persist) await persistHHSources(sourceRecords);
 
@@ -4997,11 +5145,16 @@ async function applyHHSnapshots(records,metaPrefix="Import",{persist=true,restor
 async function applyHHFiles(files,metaPrefix="Import",{persist=true,mergeMode="replace"}={}){
   const fileList=[...(files||[])];
   if(!fileList.length) return;
-  const records=[];
+  const records=[];let readErrors=0;
   for(const file of fileList){
-    try{records.push(await fileToStoredSnapshot(file));}catch(_){ }
+    try{records.push(await fileToStoredSnapshot(file));}catch(_){readErrors++;}
   }
-  if(records.length) await applyHHSnapshots(records,metaPrefix,{persist,restored:false,mergeMode});
+  if(records.length){
+    await applyHHSnapshots(records,metaPrefix,{persist,restored:false,mergeMode,readErrors});
+  }else{
+    setHHImportSummary(hhImportSummaryText({files:fileList.length,recognized:0,hands:state.hhHands.length,errors:Math.max(1,readErrors),mode:mergeMode}),{warn:true});
+    hhStatus.textContent="Import impossible : aucun fichier sélectionné n’a pu être lu.";
+  }
 }
 function stopHHWatch(message="Surveillance automatique arrêtée.",{forgetHandle=true}={}){
   if(state.hhWatchTimer){
@@ -5012,11 +5165,12 @@ function stopHHWatch(message="Surveillance automatique arrêtée.",{forgetHandle
   state.hhWatchMeta=[];
   state.hhWatchChecking=false;
   hhWatchBtn.classList.remove("active");
-  hhWatchBtn.textContent="Charger et surveiller automatiquement";
+  hhWatchBtn.textContent="Surveiller mes HH";
   hhWatchStopBtn.disabled=true;
   updateHHWatchCapabilityUi();
   if(forgetHandle) persistWatchHandles([]);
-  if(message) hhFileMeta.textContent=message;
+  if(message) hhWatchStatus.textContent=message;
+  updateHHImportEffect();
 }
 
 async function readWatchedFiles(force=false){
@@ -5040,7 +5194,7 @@ async function readWatchedFiles(force=false){
     if(changed){
       state.hhWatchMeta=meta;
       await applyHHFiles(files,"Surveillance auto",{mergeMode:"replace"});
-      hhFileMeta.textContent=`Surveillance auto active · ${files.length} fichier(s) · ${state.hhHands.length} main(s) · dernière vérification ${new Date().toLocaleTimeString("fr-FR")}`;
+      hhWatchStatus.textContent=`Surveillance active · dernière vérification ${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
     }
   }catch(err){
     stopHHWatch(`Surveillance interrompue : ${err?.message||"accès au fichier perdu"}`,{forgetHandle:false});
@@ -5095,7 +5249,7 @@ async function startHHWatch(){
     state.hhWatchMeta=[];
     await persistWatchHandles(handles);
     hhWatchBtn.classList.add("active");
-    hhWatchBtn.textContent="Surveillance auto : ON";
+    hhWatchBtn.textContent="Surveillance : active";
     hhWatchStopBtn.disabled=false;
     hhWatchStatus.textContent="Surveillance active. Les modifications du fichier PokerStars sont vérifiées toutes les 2 s.";
 
@@ -5126,11 +5280,14 @@ hhFileInput.addEventListener("change",async e=>{
   // Manual import is a snapshot. Stop a previous watched set to avoid an
   // ambiguous source list.
   if(state.hhWatchTimer || state.hhWatchHandles.length) stopHHWatch("",{forgetHandle:true});
+  setHHImportSummary(`${files.length} fichier${files.length>1?"s":""} sélectionné${files.length>1?"s":""} · import en cours…`,{busy:true});
+  hhStatus.textContent="Lecture et parsing des Hand Histories PokerStars…";
   await applyHHFiles(files,"Import manuel",{persist:true,mergeMode:state.hhImportMode});
 });
 
 hhImportModeSelect?.addEventListener("change",()=>{
   state.hhImportMode=hhImportModeSelect.value==="add"?"add":"replace";
+  updateHHImportEffect();
   schedulePersistPrefs();
 });
 hhClearBtn?.addEventListener("click",()=>clearLoadedHands({persist:true,reason:"Mains chargées vidées manuellement."}));
@@ -5175,7 +5332,7 @@ function renderOpponents(){
   opponentsEl.innerHTML="";
   if(!state.opponents.length){
     const d=document.createElement("div");d.className="status";
-    d.textContent=state.hhMode?"Aucun adversaire n'est encore en jeu au début de cette street.":"Importez un fichier de ranges pour configurer les adversaires.";
+    d.textContent=state.hhMode?"Aucun adversaire n'est encore en jeu au début de cette street.":"Importez une range source pour configurer les adversaires.";
     opponentsEl.appendChild(d);
     addOpponentBtn.disabled=state.hhMode||!state.ranges.length;
     return;
@@ -5193,9 +5350,9 @@ function renderOpponents(){
     const rf=document.createElement("div"); rf.className="field"; rf.innerHTML="<label>Modèle</label>";
     const rs=document.createElement("select");
     if(!state.ranges.length){
-      const op=document.createElement("option");op.textContent="Aucun set de ranges";op.value="0";rs.appendChild(op);rs.disabled=true;
+      const op=document.createElement("option");op.textContent="Aucune range source";op.value="0";rs.appendChild(op);rs.disabled=true;
     }else{
-      state.ranges.forEach((r,ri)=>{const op=document.createElement("option");op.value=ri;op.textContent=r.name||`Range ${ri+1}`;rs.appendChild(op);});
+      state.ranges.forEach((r,ri)=>{const op=document.createElement("option");op.value=ri;op.textContent=r.name||`Range source ${ri+1}`;rs.appendChild(op);});
       rs.value=String(Math.max(0,o.rangeIndex));
       rs.onchange=()=>{
         o.rangeIndex=Number(rs.value);
@@ -5205,7 +5362,7 @@ function renderOpponents(){
     }
     rf.appendChild(rs);row.appendChild(rf);
 
-    const pf=document.createElement("div");pf.className="field";pf.innerHTML=`<label>Position de range${o.hhPosition?` · HH ${escapeHtml(o.hhPosition)}`:""}</label>`;
+    const pf=document.createElement("div");pf.className="field";pf.innerHTML=`<label>Position dans la range source${o.hhPosition?` · HH ${escapeHtml(o.hhPosition)}`:""}</label>`;
     const ps=document.createElement("select");
     if(!range){
       const op=document.createElement("option");op.value="-1";op.textContent="— indisponible —";ps.appendChild(op);ps.disabled=true;
@@ -5225,14 +5382,14 @@ function renderOpponents(){
     const populationEstimate=state.hhMode&&o.playerName&&state.populationModel
       ? populationRangeEstimateForPlayer(currentHandPlayer(o.playerName),calculatorPopulationReplayIndex())
       : null;
-    const theoreticalLabel=populationEstimate?"range population":"range fichier";
+    const theoreticalLabel=populationEstimate?"range adverse estimée":"range source importée";
 
     const sourceBtn=document.createElement("button");
     sourceBtn.className="secondary source-btn"+(exactKnownOverride(i)?" active":"");
     if(o.knownCards?.length===2){
       sourceBtn.textContent=exactKnownOverride(i)?"Source : main HH":`Source : ${theoreticalLabel}`;
       sourceBtn.title=exactKnownOverride(i)
-        ? `Calcul avec ${o.knownCards.map(cardLabel).join(" ")}. Cliquer pour revenir à la range théorique.`
+        ? `Calcul avec ${o.knownCards.map(cardLabel).join(" ")}. Cliquer pour revenir à la range adverse estimée.`
         : `Calcul avec la ${theoreticalLabel}. Cliquer pour utiliser la main exacte connue dans l'historique.`;
       sourceBtn.onclick=()=>{
         o.useKnownHand=!o.useKnownHand;
@@ -5255,15 +5412,15 @@ function renderOpponents(){
     const active=effectiveEntriesForOpponent(i);
     const info=document.createElement("div");info.className="tiny";info.style.gridColumn="2 / -1";
     if(exactKnownOverride(i)){
-      info.textContent=`Main exacte HH utilisée : ${o.knownCards.map(cardLabel).join(" ")} · la range théorique reste disponible et sera réutilisée si vous repassez sur la source range.`;
+      info.textContent=`Main exacte HH utilisée : ${o.knownCards.map(cardLabel).join(" ")} · la range adverse estimée reste disponible et sera réutilisée si vous repassez sur cette source.`;
     }else if(populationEstimate){
-      info.textContent=`Range population estimée · ${populationEstimate.postflopMatchedActions>0?`${populationEstimate.entries.length} combos exacts`:`${populationEstimate.entries.length} classes pondérées`} · ${populationEstimate.matchedActions}/${populationEstimate.totalActions} action(s) appariée(s) · dernier nœud ${populationEstimate.lastNodeId||"—"} (${populationEstimate.lastQuality||"—"}).`;
+      info.textContent=`Range adverse estimée · ${populationEstimate.postflopMatchedActions>0?`${populationEstimate.entries.length} combos exacts`:`${populationEstimate.entries.length} classes pondérées`} · ${populationEstimate.matchedActions}/${populationEstimate.totalActions} action(s) appariée(s) · dernier nœud ${populationEstimate.lastNodeId||"—"} (${populationEstimate.lastQuality||"—"}).`;
     }else if(position){
       info.textContent=`${active.length} classes actives · ${range?.name||""} · ${positionLabel(position.position||"")}${state.rangeEdition?" · édition 0/100 %":""}${state.populationModel&&o.playerName?" · aucun nœud population encore applicable":""}`;
     }else if(o.hhPosition){
-      info.textContent=`Aucune position de range n'est automatiquement associée à ${o.hhPosition}. Choisissez-en une, ou utilisez la main HH si elle est connue.`;
+      info.textContent=`Aucune position de range source n'est automatiquement associée à ${o.hhPosition}. Choisissez-en une, ou utilisez la main HH si elle est connue.`;
     }else{
-      info.textContent="Configuration de range incomplète.";
+      info.textContent="Configuration adverse incomplète.";
     }
     row.appendChild(info);
     opponentsEl.appendChild(row);
@@ -6897,15 +7054,15 @@ function renderFloatingEquity(){
 
     content=`
       <div class="floating-eq-row hero-range">
-        <span class="floating-eq-label">Hero Range / Ranges adverses</span>
+        <span class="floating-eq-label">Stratégie Hero / Ranges adverses estimées</span>
         <b class="floating-eq-value">${escapeHtml(value("range_ranges"))}</b>
       </div>
       <div class="floating-eq-row hero-range">
-        <span class="floating-eq-label">Hero Range / Mains adverses réelles</span>
+        <span class="floating-eq-label">Stratégie Hero / Mains adverses réelles</span>
         <b class="floating-eq-value">${escapeHtml(value("range_real"))}</b>
       </div>
       <div class="floating-eq-row hero-hand">
-        <span class="floating-eq-label">Main Hero / Ranges adverses</span>
+        <span class="floating-eq-label">Main Hero / Ranges adverses estimées</span>
         <b class="floating-eq-value">${escapeHtml(value("hand_ranges"))}</b>
       </div>
       <div class="floating-eq-row hero-hand">
@@ -7166,7 +7323,7 @@ async function tryRestoreWatchHandles(){
     state.hhWatchHandles=granted;
     state.hhWatchMeta=[];
     hhWatchBtn.classList.add("active");
-    hhWatchBtn.textContent="Surveillance auto : ON";
+    hhWatchBtn.textContent="Surveillance : active";
     hhWatchStopBtn.disabled=false;
     hhWatchStatus.textContent="Surveillance automatique restaurée depuis la session précédente.";
     await readWatchedFiles(true);
