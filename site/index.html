@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Poker Range Equity — Offline v83</title>
+<title>Poker Range Equity — Offline</title>
 <style>
   :root{
     --bg:#0b1020; --panel:#131a2d; --panel2:#192238; --text:#eef2ff; --muted:#9aa7c2;
@@ -194,6 +194,17 @@
     .hh-review{min-width:88px}
     .hh-review .split{display:none}
   }
+  .product-identity{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 5px}
+  .product-identity-chip{display:inline-flex;gap:5px;align-items:baseline;padding:4px 7px;border:1px solid var(--border);border-radius:999px;background:#0f1729;color:var(--muted);font-size:9px}
+  .product-identity-chip b{color:var(--text);font-size:10px}
+  .runtime-identity{margin:0 0 8px;width:max-content;max-width:100%}
+  .runtime-identity>summary{cursor:pointer;list-style:none;color:var(--muted);font-size:9px;font-weight:750}
+  .runtime-identity>summary::-webkit-details-marker{display:none}
+  .runtime-identity>summary::after{content:" · détails techniques"}
+  .runtime-identity[open]>summary::after{content:" · masquer"}
+  .runtime-identity-grid{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:6px;margin-top:6px;padding:8px 9px;border:1px solid var(--border);border-radius:9px;background:#0c1526;font-size:9px;color:var(--muted)}
+  .runtime-identity-grid b,.runtime-identity-grid code{display:block;margin-top:2px;color:var(--text);font-size:10px;overflow-wrap:anywhere}
+  @media(max-width:680px){.runtime-identity-grid{grid-template-columns:1fr}}
   .local-persistence{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin:7px 0 13px}
   .local-persistence-chip{display:inline-flex;align-items:center;gap:6px;width:auto;padding:5px 8px;border:1px solid rgba(92,225,185,.28);border-radius:999px;background:rgba(92,225,185,.055);color:#a9daca;font-size:9px;font-weight:850;line-height:1.2}
   .local-persistence-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.82}
@@ -1028,9 +1039,24 @@
   <a href="#equitySection">Calcul</a>
 </nav>
 <div id="mainPage" class="wrap">
-  <h1>Poker Range Equity <span style="font-size:.55em;font-weight:600;opacity:.72">v78</span></h1>
+  <h1>Poker Range Equity</h1>
   <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
   <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>
+  <div class="product-identity" aria-label="Contexte actif">
+    <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
+    <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
+  </div>
+  <details id="runtimeIdentityDetails" class="runtime-identity">
+    <summary>Identité du produit</summary>
+    <div class="runtime-identity-grid">
+      <div>Application<b id="runtimeAppVersion">v83</b></div>
+      <div>Engine<b id="runtimeEngineVersion">v83</b></div>
+      <div>Model A<b id="runtimeModelAIdentity">non chargé</b></div>
+      <div>Model B<b id="runtimeModelBIdentity">chargé à l’ouverture du Training</b></div>
+      <div>Runtime revision<code id="runtimeRevisionIdentity">—</code></div>
+      <div>Provenance / hash<code id="runtimeHashIdentity">—</code></div>
+    </div>
+  </details>
   <div class="local-persistence">
     <span id="localPersistenceStatus" class="local-persistence-chip busy" role="status" aria-live="polite">Restauration locale…</span>
     <details id="localPersistenceDetails" class="local-persistence-details">
@@ -1081,7 +1107,7 @@
         </div>
         <div id="postflopModelMeta" class="filemeta">Aucun modèle postflop chargé.</div>
         <div id="postflopModelStatus" class="status">Sans modèle postflop, les ranges adverses estimées restent conditionnées uniquement par le préflop.</div>
-        <div class="population-source-note">Le moteur v61 maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range adverse » affiche l’état estimé à l’étape courante.</div>
+        <div class="population-source-note">Le modèle population maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range adverse » affiche l’état estimé à l’étape courante.</div>
       </div>
     </section>
 
@@ -1242,7 +1268,7 @@
       <button id="trainerBackBtn" type="button" class="secondary">← Analyseur</button>
       <div>
         <div class="trainer-title">Training 6-max</div>
-        <div class="trainer-sub">100 BB · profils population observés · coaching ACTION / SIZING / EV</div>
+        <div class="trainer-sub">100 BB · <span id="trainerPopulationIdentity">population en chargement</span> · coaching ACTION / SIZING / EV</div>
       </div>
       <div class="trainer-head-spacer"></div>
       <div class="trainer-mode-group" role="group" aria-label="Mode d'entraînement">
@@ -1280,7 +1306,13 @@
           <div class="trainer-section-title">Bilan Test</div>
           <div id="trainerTestLog" class="trainer-test-log"></div>
         </section>
-        <div class="trainer-note">Model B v2 pilote les profils, fréquences d’action et sizings adverses. Limite actuelle : sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Le moteur Model A reste l’unique source de recommandation Hero et d’EV.</div>
+        <details class="action-advanced">
+          <summary>Détails techniques du Trainer</summary>
+          <div class="action-advanced-body">
+            <div id="trainerTechnicalIdentity" class="trainer-note">Population — · Model A v5 · Model B v2 · stratégie Hero Custom.</div>
+            <div class="trainer-note">Model B pilote les profils, fréquences d’action et sizings adverses. Sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Model A reste la source de recommandation Hero et d’EV.</div>
+          </div>
+        </details>
       </aside>
     </div>
   </div>
@@ -1405,6 +1437,10 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
+      activePopulationIdentity=$("activePopulationIdentity"), activeStrategyIdentity=$("activeStrategyIdentity"),
+      runtimeIdentityDetails=$("runtimeIdentityDetails"), runtimeAppVersion=$("runtimeAppVersion"), runtimeEngineVersion=$("runtimeEngineVersion"),
+      runtimeModelAIdentity=$("runtimeModelAIdentity"), runtimeModelBIdentity=$("runtimeModelBIdentity"),
+      runtimeRevisionIdentity=$("runtimeRevisionIdentity"), runtimeHashIdentity=$("runtimeHashIdentity"),
       localPersistenceStatus=$("localPersistenceStatus"), localPersistenceDetails=$("localPersistenceDetails"),
       localPersistenceDetail=$("localPersistenceDetail"), localPersistenceRetryBtn=$("localPersistenceRetryBtn"),
       localPersistenceClearBtn=$("localPersistenceClearBtn"), localPersistenceActionStatus=$("localPersistenceActionStatus"),
@@ -1625,6 +1661,46 @@ function updateRangeEditionUi(){
   }
 }
 
+
+function compactIdentityName(name){
+  const raw=String(name||"").trim();
+  if(!raw)return "";
+  return raw.replace(/\.json$/i,"").replace(/_/g," ");
+}
+function updateProductIdentityUi(){
+  let population="";
+  if(typeof trainerState!=="undefined"&&trainerState?.populationId) population=String(trainerState.populationId);
+  else if(state.populationModelMeta?.name) population=compactIdentityName(state.populationModelMeta.name);
+  if(activePopulationIdentity) activePopulationIdentity.textContent=population||"non chargée";
+  if(activeStrategyIdentity) activeStrategyIdentity.textContent="Custom";
+  if(runtimeModelAIdentity){
+    const pre=state.populationModelMeta?.schemaVersion,post=state.postflopModelMeta?.schemaVersion;
+    runtimeModelAIdentity.textContent=pre||post?`préflop ${pre||"—"} · postflop ${post||"—"}`:"non chargé";
+  }
+  if(runtimeModelBIdentity){
+    runtimeModelBIdentity.textContent=(typeof trainerState!=="undefined"&&trainerState?.modelB)?"v2 · chargé":"v2 · chargé à l’ouverture du Training";
+  }
+}
+async function loadRuntimeReleaseIdentity(){
+  try{
+    const response=await fetch("./RELEASE.json",{cache:"no-store"});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const release=await response.json();
+    const app=String(release?.version||"v83");
+    const artifact=String(release?.identity?.engine_release?.artifact||release?.release_artifact||"");
+    const engineMatch=artifact.match(/_v(\d+)\.html$/i);
+    const revision=String(release?.identity?.assembled_site?.assets_tree_git_sha||"");
+    const hash=String(release?.identity?.engine_release?.sha256||release?.sha256||"");
+    if(runtimeAppVersion) runtimeAppVersion.textContent=app;
+    if(runtimeEngineVersion) runtimeEngineVersion.textContent=engineMatch?`v${engineMatch[1]}`:app;
+    if(runtimeRevisionIdentity) runtimeRevisionIdentity.textContent=revision?revision.slice(0,16):"non disponible";
+    if(runtimeHashIdentity) runtimeHashIdentity.textContent=hash?hash.slice(0,20):"non disponible";
+  }catch(_){
+    if(runtimeRevisionIdentity) runtimeRevisionIdentity.textContent="indisponible hors serveur";
+    if(runtimeHashIdentity) runtimeHashIdentity.textContent="voir RELEASE.json";
+  }
+  updateProductIdentityUi();
+}
 
 const LOCAL_DB_NAME="PokerRangeEquityOffline";
 const LOCAL_DB_VERSION=1;
@@ -1972,6 +2048,7 @@ async function applyPopulationModelSnapshot(snapshot,{persist=true,restored=fals
       embeddedPolicyCount:(json.nodes||[]).reduce((s,n)=>s+(n?.population_model?.policy169_q_b64?1:0),0)
     };
     state.populationNodeIndex=buildPopulationNodeIndex(json);
+    updateProductIdentityUi();
     state.populationPolicyCache=Object.create(null);
     state.populationTraceCache=Object.create(null);
     state.populationRangeCache=Object.create(null);
@@ -2012,6 +2089,7 @@ populationModelInput?.addEventListener("change",async e=>{
 });
 populationModelClearBtn?.addEventListener("click",async()=>{
   clearPopulationModelRuntime();
+  updateProductIdentityUi();
   if(populationModelMeta) populationModelMeta.textContent="Aucun modèle population chargé.";
   populationModelUi("Modèle population retiré. Retour aux ranges historiques importées.");
   await persistPopulationModelSource(null);
@@ -2105,6 +2183,7 @@ async function applyPostflopModelSnapshot(snapshot,{persist=true,restored=false}
       populationDecisions:Number(json.dataset?.population_postflop_decisions)||Number(json.dataset?.train_population_postflop_decisions)||0
     };
     state.postflopNodeIndex=buildPostflopNodeIndex(json);
+    updateProductIdentityUi();
     state.postflopTraceCache=Object.create(null);
     state.postflopRangeCache=Object.create(null);
     state.populationRangeCache=Object.create(null);
@@ -2135,6 +2214,7 @@ postflopModelInput?.addEventListener("change",async e=>{
 });
 postflopModelClearBtn?.addEventListener("click",async()=>{
   clearPostflopModelRuntime();
+  updateProductIdentityUi();
   if(postflopModelMeta) postflopModelMeta.textContent="Aucun modèle postflop chargé.";
   postflopModelUi("Modèle postflop retiré. Les ranges restent conditionnées uniquement par le préflop.");
   await persistPostflopModelSource(null);
@@ -4335,7 +4415,7 @@ function openPopulationRangeModal(playerName){
   const entries=estimate?.entries?.length ? estimate.entries : legacyRangeEntriesForHistoryPlayer(player);
   const freq=gridFreqMapFromEstimate(estimate,player);
   const source=estimate?.exactComboEngine
-    ? (estimate.postflopMatchedActions>0 ? "Moteur dynamique préflop + postflop · combos exacts" : "Moteur dynamique préflop · combos exacts")
+    ? (estimate.postflopMatchedActions>0 ? "Modèle dynamique préflop + postflop · combos exacts" : "Modèle dynamique préflop · combos exacts")
     : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range source importée";
   const width=estimate?.width??populationRangeWidthFromEntries(entries);
   const preOccurred=populationPreflopDecisionTrace(state.selectedHand).slice(0,replayPreflopDecisionCount(state.replayIndex));
@@ -4364,7 +4444,7 @@ function openPopulationRangeModal(playerName){
     </div>
     <div class="population-modal-warning">L’indice de fiabilité est un diagnostic de couverture (nœuds exacts, volume, actions appariées et street), pas une probabilité que la range soit « vraie ». Les ranges turn/river restent structurellement moins fiables que préflop/flop.</div>
     <div class="population-modal-columns">
-      <div class="section"><div class="section-title">Range adverse estimée · 169 classes</div><div class="tiny">Le moteur travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
+      <div class="section"><div class="section-title">Range adverse estimée · 169 classes</div><div class="tiny">Le modèle travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
       <div class="section"><div class="section-title">Combos exacts les plus probables</div><div class="tiny">Pourcentage = masse probabiliste après normalisation de tous les combos légaux.</div><div class="population-combo-list">${topCombos}</div></div>
     </div>
     ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
@@ -7515,6 +7595,8 @@ replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
 quickNavToggle?.addEventListener("click",toggleQuickNav);
 updateQuickNavUi();
+updateProductIdentityUi();
+loadRuntimeReleaseIdentity();
 updateAppView();
 document.querySelectorAll(".quick-nav a").forEach(a=>{
   a.addEventListener("click",e=>{

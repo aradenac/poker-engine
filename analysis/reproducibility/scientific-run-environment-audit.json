@@ -1,0 +1,106 @@
+{
+  "policy": {
+    "current_scientific_effect": "NONE_INFRASTRUCTURE_ONLY",
+    "future_runs_after_activation": "ENVIRONMENT_IDENTITY_REQUIRED_FAIL_CLOSED",
+    "historical_runs": "IMMUTABLE_GRANDFATHERED_NO_REWRITE"
+  },
+  "schema": "poker-scientific-run-environment-audit/v1",
+  "summary": {
+    "missing_representatives": [],
+    "targets": 10,
+    "with_environment_identity": 0,
+    "without_environment_identity": 10
+  },
+  "targets": [
+    {
+      "category": "Model A",
+      "environment_identity_present": false,
+      "future_integration": "Future Model A PROTOCOL/RESULT manifests: persist top-level environment_identity before execution and carry the same identity_sha256 into result provenance.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE",
+      "id": "model_a",
+      "path": "training/runs/20260915_model_a_postflop_refit_v1/PROTOCOL.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Model B",
+      "environment_identity_present": false,
+      "future_integration": "Future Model B PROTOCOL and RESULT: top-level environment_identity; result must match the frozen protocol identity_sha256.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE",
+      "id": "model_b",
+      "path": "training/runs/20260919_model_b_response_to_price_v1/RESULT.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Hero strategy / PFPC",
+      "environment_identity_present": false,
+      "future_integration": "Future Hero/PFPC run root RESULT/VALIDATION and source-run descriptor: bind one environment_identity for the complete generated evidence set.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE",
+      "id": "hero_pfpc",
+      "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/RESULT.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Full-hand arena",
+      "environment_identity_present": false,
+      "future_integration": "Future frozen arena protocol records environment_identity.identity_sha256 before execution; generated arena evidence persists the full fragment.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE_PROTOCOL",
+      "id": "full_hand_arena",
+      "path": "training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Validation",
+      "environment_identity_present": false,
+      "future_integration": "Future VALIDATION/TEST execution RESULT: top-level environment_identity and identity_sha256 inside frozen_run_identity/provenance.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE",
+      "id": "validation",
+      "path": "training/runs/20260917_preflop_strategy_validation_support_closed_zero_exposure/RESULT.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Promotion gate",
+      "environment_identity_present": false,
+      "future_integration": "After activation, promotion evidence requires a validated environment_identity for every new scientific result; the historical gate contract itself is not rewritten.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE_CONTRACT",
+      "id": "promotion",
+      "path": "training/PROMOTION_GATE_CONTRACT.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Prospective",
+      "environment_identity_present": false,
+      "future_integration": "Next prospective protocol version adds environment_identity.identity_sha256 to precommit_identity and stores the full fragment in the future evaluation manifest/ledger entry.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE_PROTOCOL",
+      "id": "prospective",
+      "path": "training/prospective/PROTOCOL.json",
+      "priority": "HIGH"
+    },
+    {
+      "category": "Other scientific run: incremental training cycle",
+      "environment_identity_present": false,
+      "future_integration": "Future training-cycle manifest: top-level environment_identity before model fitting/evaluation.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE",
+      "id": "increment_cycle",
+      "path": "training/runs/20260912_population_increment_cycle/manifest.json",
+      "priority": "MEDIUM"
+    },
+    {
+      "category": "Other scientific run: strategy selection",
+      "environment_identity_present": false,
+      "future_integration": "Future strategy-selection manifest: replace generic environment prose with top-level environment_identity plus any domain-specific environment fields.",
+      "historical_policy": "GRANDFATHERED_IMMUTABLE",
+      "id": "strategy_selection",
+      "path": "training/runs/20260913_strategy_candidate_v84/validation_selection.json",
+      "priority": "MEDIUM"
+    },
+    {
+      "category": "Generic run manifest template",
+      "environment_identity_present": false,
+      "future_integration": "After #108 release, extend the template/producer so every newly created scientific run carries environment_identity with policy REQUIRED.",
+      "historical_policy": "NOT_A_HISTORICAL_RUN",
+      "id": "generic_template",
+      "path": "training/RUN_MANIFEST_TEMPLATE.json",
+      "priority": "HIGH"
+    }
+  ]
+}
