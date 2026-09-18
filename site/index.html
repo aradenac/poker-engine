@@ -690,6 +690,14 @@
   .action-advanced[open]>summary{border-bottom:1px solid #273b59}
   .action-advanced[open]>summary::after{content:"▴"}
   .action-advanced-body{padding:0 10px 10px}
+  .action-retrospective{margin-top:10px;border:1px solid rgba(241,198,109,.28);border-radius:10px;background:rgba(241,198,109,.035);overflow:hidden}
+  .action-retrospective>summary{cursor:pointer;list-style:none;padding:9px 10px;font-size:10px;font-weight:900;color:#e6c982}
+  .action-retrospective>summary::-webkit-details-marker{display:none}
+  .action-retrospective>summary::after{content:"▾";float:right;color:var(--muted)}
+  .action-retrospective[open]>summary{border-bottom:1px solid rgba(241,198,109,.22)}
+  .action-retrospective[open]>summary::after{content:"▴"}
+  .action-retrospective-body{padding:9px 10px 10px}
+  .action-retrospective-boundary{padding:7px 8px;border:1px solid rgba(241,198,109,.2);border-radius:8px;background:rgba(241,198,109,.04);font-size:9px;line-height:1.45;color:#d6c7a6}
   @media(max-width:900px){.decision-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.decision-primary-card.delta{grid-column:1/-1}}
   @media(max-width:860px){.action-detail-grid{grid-template-columns:1fr}}
   @keyframes replayFadeIn{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -2708,6 +2716,10 @@ function actionEquityValuesHtml(equities,required=null,usedKeys={}){
     return `<div class="action-eq-item${usedClass}"><span class="label">${escapeHtml(actionScenarioLabel(key))}</span><span class="value">${escapeHtml(value)}${d?` <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span>`:""}</span></div>`;
   }).join("")}</div>`;
 }
+function actionSingleEquityHtml(equities,key,required=null,usedClass="used-prior"){
+  const e=equities?.[key],value=Number.isFinite(e)?fmtEquityThreshold(e):"—",d=required===null?null:fmtEquityDelta(e,required);
+  return `<div class="action-eq-grid"><div class="action-eq-item ${usedClass}"><span class="label">${escapeHtml(actionScenarioLabel(key))}</span><span class="value">${escapeHtml(value)}${d?` <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span>`:""}</span></div></div>`;
+}
 function postflopActorRemainingBB(stepIndex){const ctx=actionDecisionContext(stepIndex);if(!ctx)return NaN;const st=historyPlayerStackBB(ctx.hand,ctx.actor),paid=Number(ctx.before.state?.[ctx.actor]?.totalPaidBB)||0;return Number.isFinite(st)?Math.max(0,st-paid):NaN;}
 function postflopMaxOpponentEffectiveCostBB(stepIndex){
   const ctx=actionDecisionContext(stepIndex);if(!ctx)return NaN;
@@ -3492,25 +3504,38 @@ function ctxPostflopFold(step){return !!step&&["Flop","Turn","River"].includes(s
 function actionTreeDetailsHtml(tree,label){if(!tree||!Number.isFinite(tree.evBB))return `<div class="action-analysis-meta">${escapeHtml(label)} : arbre EV indisponible.</div>`;const assumption=tree.continuationAssumption==="river_terminal"?"river terminale":"checkdown après call",eff=Number.isFinite(tree.avgEffectiveCostBB)?` · risque effectif ${escapeHtml(formatBB(tree.avgEffectiveCostBB))}`:'',support=tree.empiricalSizingSupport,ood=support?.ood?` · OOD ${Number(support.ratio).toFixed(1)}× pot / P99,5 ${Number(support.threshold).toFixed(1)}×`:'' ,sanity=tree.sanityInvalid?` · <b>écarté : ${escapeHtml(tree.sanityReason||'range de continuation incohérente')}</b>`:'';return `<div class="action-analysis-meta"><b>${escapeHtml(label)}</b> · EV <b>${escapeHtml(formatBB(tree.evBB))}</b> · tous fold ${escapeHtml(fmtEquityThreshold(tree.pAllFold))} · call ${escapeHtml(fmtEquityThreshold(tree.pCallNoRaise))} · re-raise ${escapeHtml(fmtEquityThreshold(tree.pReraise))} · équité quand suivi ${escapeHtml(Number.isFinite(tree.equityWhenCalled)?fmtEquityThreshold(tree.equityWhenCalled):"—")}${eff}${ood}${sanity} · ${escapeHtml(assumption)}.</div>`;}
 function actionCompactPillHtml(text,cls='subtle',extra=''){return `<span class="action-mini-pill ${cls}${extra?' '+extra:''}">${text}</span>`;}
 function actionDetailKeyPointsHtml(args){
-  const {req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree}=args;
+  const {req,decisionSummary,priorMetrics,sources,postflopTree,priorEq,priorTree}=args;
   const pts=[];
   if(decisionSummary){
-    const gapText=Number.isFinite(decisionSummary.effectiveGap)?formatBB(decisionSummary.effectiveGap):'—';
-    const evText=Number.isFinite(decisionSummary.chosenEV)?formatBB(decisionSummary.chosenEV):'—';
-    const bestText=decisionSummary.best?`${decisionSummary.best.label} · ${actionSizingAmountLabel(decisionSummary.best,decisionSummary)} · EV ${formatBB(finalDecisionEV(decisionSummary.best))}`:'—';
-    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Recommandation : <b>${escapeHtml(bestText)}</b>. Perte EV effective après incertitude : <b>${escapeHtml(gapText)}</b>${decisionSummary.withinNoise?" · l'écart reste compatible avec le bruit Monte-Carlo.":" · l'écart dépasse le bruit Monte-Carlo."}</div>`);
-  }else if(req.kind==='call'){
-    const d1=fmtEquityDelta(priorEq,req.actorRequired), d2=fmtEquityDelta(postEq,req.actorRequired);
+    const gapText=Number.isFinite(decisionSummary.effectiveGap)?formatBB(decisionSummary.effectiveGap):"—";
+    const bestText=decisionSummary.best?`${decisionSummary.best.label} · ${actionSizingAmountLabel(decisionSummary.best,decisionSummary)} · EV ${formatBB(finalDecisionEV(decisionSummary.best))}`:"—";
+    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Recommandation : <b>${escapeHtml(bestText)}</b>. Perte EV effective après incertitude : <b>${escapeHtml(gapText)}</b>${decisionSummary.withinNoise?" · l’écart reste compatible avec le bruit Monte-Carlo.":" · l’écart dépasse le bruit Monte-Carlo."}</div>`);
+  }else if(req.kind==="call"){
+    const d1=fmtEquityDelta(priorEq,req.actorRequired);
     pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Équité requise <b>${escapeHtml(fmtEquityThreshold(req.actorRequired))}</b> · estimée <b>${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"}</b> <span class="action-delta ${d1.cls}">(${escapeHtml(d1.text)})</span>. EV estimée <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b>.</div>`);
-    pts.push(`<div class="action-detail-point"><b>Lecture a posteriori.</b> Équité avec données connues <b>${Number.isFinite(postEq)?escapeHtml(fmtEquityThreshold(postEq)):"—"}</b> <span class="action-delta ${d2.cls}">(${escapeHtml(d2.text)})</span>. EV rétrospective <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b>.</div>`);
   }else if(postflopTree){
-    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> L'action est jugée via un arbre EV de réponses population. Tous fold <b>${escapeHtml(fmtEquityThreshold(priorTree?.pAllFold))}</b>, call <b>${escapeHtml(fmtEquityThreshold(priorTree?.pCallNoRaise))}</b>, re-raise <b>${escapeHtml(fmtEquityThreshold(priorTree?.pReraise))}</b>. Équité quand suivi <b>${Number.isFinite(priorTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(priorTree.equityWhenCalled)):"—"}</b>.</div>`);
-    pts.push(`<div class="action-detail-point"><b>Lecture a posteriori.</b> Avec les cartes connues, l'équité quand suivi devient <b>${Number.isFinite(postTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(postTree.equityWhenCalled)):"—"}</b> et l'EV rétrospective vaut <b>${Number.isFinite(postTree?.evBB)?escapeHtml(formatBB(postTree.evBB)):"—"}</b>.</div>`);
+    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> L’action est jugée via un arbre EV de réponses population. Tous fold <b>${escapeHtml(fmtEquityThreshold(priorTree?.pAllFold))}</b>, call <b>${escapeHtml(fmtEquityThreshold(priorTree?.pCallNoRaise))}</b>, re-raise <b>${escapeHtml(fmtEquityThreshold(priorTree?.pReraise))}</b>. Équité quand suivi <b>${Number.isFinite(priorTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(priorTree.equityWhenCalled)):"—"}</b>.</div>`);
   }
-  pts.push(`<div class="action-detail-point"><b>Source du jugement.</b> A priori : <b>${escapeHtml(actionScenarioLabel(sources.prior))}</b> · a posteriori : <b>${escapeHtml(actionScenarioLabel(sources.post))}</b>. ${sources.actorKnown?"La main du joueur est connue dans la HH, donc la comparaison main/range ou main/réel est disponible.":"La main du joueur n'est pas connue ; le verdict repose sur la range estimée."}</div>`);
-  return `<div class="action-detail-summary">${pts.join('')}</div>`;
+  pts.push(`<div class="action-detail-point"><b>Frontière d’information.</b> Le verdict ci-dessus utilise uniquement la vue a priori <b>${escapeHtml(actionScenarioLabel(sources.prior))}</b>, disponible au moment de la décision. Les cartes révélées ensuite ne peuvent modifier ni la recommandation ni le ΔEV historique.</div>`);
+  return `<div class="action-detail-summary">${pts.join("")}</div>`;
 }
-
+function actionRetrospectivePanelHtml(args){
+  const {req,postMetrics,sources,postflopTree,postflopCheck,postEq,postTree,eq,stepIndex}=args;
+  const source=actionScenarioLabel(sources.post);
+  const rows=[];
+  if(req.kind==="call"){
+    const d=fmtEquityDelta(postEq,req.actorRequired);
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> Équité <b>${Number.isFinite(postEq)?escapeHtml(fmtEquityThreshold(postEq)):"—"}</b> <span class="action-delta ${d.cls}">(${escapeHtml(d.text)})</span> · EV rétrospective <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b>.</div>`);
+  }else if(postflopCheck){
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> EV CHECK rétrospective <b>${Number.isFinite(postEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,postEq))):"—"}</b>.</div>`);
+  }else if(postflopTree){
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> Équité quand suivi <b>${Number.isFinite(postTree?.equityWhenCalled)?escapeHtml(fmtEquityThreshold(postTree.equityWhenCalled)):"—"}</b> · EV rétrospective <b>${Number.isFinite(postTree?.evBB)?escapeHtml(formatBB(postTree.evBB)):"—"}</b>.</div>`);
+  }else if(Number.isFinite(postEq)){
+    rows.push(`<div class="action-detail-point"><b>Lecture avec cartes révélées.</b> Équité rétrospective <b>${escapeHtml(fmtEquityThreshold(postEq))}</b>.</div>`);
+  }
+  const sourceValue=Number.isFinite(eq?.[sources.post])?fmtEquityThreshold(eq[sources.post]):"—";
+  return `<details class="action-retrospective"><summary>Analyse rétrospective / cartes révélées</summary><div class="action-retrospective-body"><div class="action-retrospective-boundary"><b>Information future — hors verdict.</b> Ce panneau peut utiliser des cartes connues après la décision. Il sert uniquement à comprendre la main après coup et n’entre jamais dans la recommandation, la meilleure EV ni la perte EV affichées au-dessus.</div>${rows.join("")}<div class="action-analysis-meta" style="margin-top:7px">Source rétrospective : <b>${escapeHtml(source)}</b> · équité utilisée <b>${escapeHtml(sourceValue)}</b>.</div></div></details>`;
+}
 function foldRangeAnalysisHtml(stepIndex,decisionSummary){
   const step=state.replaySteps?.[stepIndex];if(!step||step.actionType!=="fold")return '';
   if(step.street==="Préflop"){
@@ -3548,14 +3573,14 @@ function actionDetailModalInnerHtml(stepIndex,step){
       ? "CALL : EV de continuation à équité brute, rake inclus ; les futures mises ne sont pas simulées."
       : postflopTree
         ? "BET/RAISE postflop : réponses fold/call/raise conditionnées par range, nœud, sizing et SPR. Flop/turn : continuation après call terminalisée par un checkdown ; river : terminale. Re-raise : continuation conservatrice par fold."
-        : "BET/RAISE préflop : score historique ; le nouveau moteur EV concerne le postflop.";
+        : "BET/RAISE préflop : diagnostic historique non comparable en ΔEV ; le moteur EV contrefactuel concerne ici le postflop.";
   const evLines=req.kind==="fold"
-    ? `<div class="action-analysis-meta">EV FOLD <b>0 BB</b> · les alternatives sont calculées sur la range de fold estimée.</div>`
+    ? `<div class="action-analysis-meta">EV FOLD a priori <b>0 BB</b> · les alternatives sont calculées sur la range de fold estimée au moment de la décision.</div>`
     : req.kind==="check"
-    ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b> · a posteriori <b>${Number.isFinite(postEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,postEq))):"—"}</b></div>`
+    ? `<div class="action-analysis-meta">EV CHECK a priori <b>${Number.isFinite(priorEq)?escapeHtml(formatBB(postflopCheckEV(stepIndex,priorEq))):"—"}</b></div>`
     : req.kind==="call"
-      ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b> · a posteriori <b>${Number.isFinite(postMetrics.evBB)?escapeHtml(formatBB(postMetrics.evBB)):"—"}</b></div>`
-      : postflopTree?`${actionTreeDetailsHtml(priorTree,"A priori")}${actionTreeDetailsHtml(postTree,"A posteriori")}`:"";
+      ? `<div class="action-analysis-meta">EV nette a priori <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b></div>`
+      : postflopTree?actionTreeDetailsHtml(priorTree,"A priori"):"";
   const chips=`<div class="action-detail-meta-strip">
       <span class="action-detail-chip">Action <b>${escapeHtml(actionName)}${allIn?" ALL-IN":""}</b></span>
       <span class="action-detail-chip">Investi <b>${escapeHtml(formatBB(req.cost))}</b></span>
@@ -3563,11 +3588,12 @@ function actionDetailModalInnerHtml(stepIndex,step){
       <span class="action-detail-chip">% pot <b>${Number.isFinite(pctPot)?escapeHtml(fmtEquityThreshold(pctPot)):"—"}</b></span>
       <span class="action-detail-chip">Rake <b>${escapeHtml(rakeText)}</b></span>
     </div>`;
-  const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree});
+  const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,sources,postflopTree,priorEq,priorTree});
+  const retrospective=actionRetrospectivePanelHtml({req,postMetrics,sources,postflopTree,postflopCheck,postEq,postTree,eq,stepIndex});
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
     : `${chips}${keyPoints}`;
-  return `${primary}
+  return `${primary}${retrospective}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
@@ -3580,7 +3606,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
             <div class="action-analysis-title">${actionName}${allIn?" ALL-IN":""} · ${postflopTree?"arbre EV de réponses population":postflopCheck?"CHECK vs bets hypothétiques":postflopFold?"FOLD vs continuations hypothétiques":`seuil rake inclus ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`}</div>
             <div class="action-analysis-meta">Investi ${escapeHtml(formatBB(req.cost))} dans ${escapeHtml(formatBB(req.potBefore))}${Number.isFinite(pctPot)?` · ${escapeHtml(fmtEquityThreshold(pctPot))} du pot`:""} → pot brut ${escapeHtml(formatBB(req.grossPotAfter))} → rake estimé ${escapeHtml(rakeText)} → pot net ${escapeHtml(formatBB(req.netPotAfter))}.</div>
             ${evLines}
-            ${actionEquityValuesHtml(eq,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,sources)}
+            ${actionSingleEquityHtml(eq,sources.prior,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,"used-prior")}
             <div class="action-analysis-meta" style="margin-top:6px">${escapeHtml(kindNote)}</div>
           </div>
         </div>
