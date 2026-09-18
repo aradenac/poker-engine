@@ -247,8 +247,6 @@ async def main() -> None:
               if((await P.installed()).length!==prodCountBefore)throw new Error('production installed set contaminated');
               const testIds=(await P.testInstalled()).map(x=>x.id);
               if(!testIds.includes(first.id)||!testIds.includes(second.id))throw new Error('TEST_ONLY store incomplete');
-              if(testIds.some(id=>(await Promise.resolve(false))))throw new Error('unreachable');
-
               const idPrefix=entry.population_id+'::'+entry.pack_id+'::'+entry.pack_version+'::';
               if(!first.id.startsWith(idPrefix))throw new Error('cache/storage key lacks population/pack/version');
               if(first.id===prodBefore.id)throw new Error('TEST_ONLY cache/storage key collides with production');
