@@ -11,12 +11,12 @@ Diagnostic only: no Hero strategy is generated and neither VALIDATION nor TEST d
 
 ## Family/group frequency
 
-- RFI_CALLERS_SQUEEZE: 4,662 (4.58 % of population preflop decisions)
+- VS_LIMPERS_ISO: 48,179 (47.30 % of population preflop decisions)
 - UNOPENED: 36,600 (35.94 % of population preflop decisions)
+- VS_RFI: 9,467 (9.30 % of population preflop decisions)
+- RFI_CALLERS_SQUEEZE: 4,662 (4.58 % of population preflop decisions)
 - VS_3BET: 2,568 (2.52 % of population preflop decisions)
 - VS_4BET_OR_JAM: 372 (0.37 % of population preflop decisions)
-- VS_LIMPERS_ISO: 48,179 (47.30 % of population preflop decisions)
-- VS_RFI: 9,467 (9.30 % of population preflop decisions)
 
 ## Highest-priority TRAIN-supported matrix cells
 
