@@ -24,6 +24,7 @@ from tools.simulation.preflop_strategy_benchmark_v2 import (
     DEFAULT_BINDING,
     DEFAULT_CANDIDATE,
     DEFAULT_SENSITIVITY,
+    candidate_policy_binding_path,
     _row_from_pair,
     build_validation_run as build_validation_run_v2,
     load_json,
@@ -98,6 +99,7 @@ def run_environment(
     reference_behavior_path: Path,
     issue_104_result_path: Path,
     candidate_path: Path = DEFAULT_CANDIDATE,
+    binding_path: Path = DEFAULT_BINDING,
     reference_descriptor_path: Path = DEFAULT_REFERENCE,
     sensitivity_path: Path = DEFAULT_SENSITIVITY,
 ) -> dict[str, Any]:
@@ -113,6 +115,9 @@ def run_environment(
     if sha256_file(reference_descriptor_path) != run_manifest["identities"]["reference_descriptor_sha256"]:
         raise ValueError("reference descriptor changed after run identity freeze")
 
+    policy_binding_path = candidate_policy_binding_path(
+        binding_path, candidate_path, run_manifest
+    )
     reference = _reference_policy(reference_descriptor_path)
     candidate_reference = _reference_policy(reference_descriptor_path)
     opponent = ModelBSensitivityPolicy.from_paths(
@@ -125,6 +130,7 @@ def run_environment(
         candidate_path,
         reference_policy=candidate_reference,
         candidate_id=str(run_manifest["identities"]["candidate_id"]),
+        policy_binding_path=policy_binding_path,
     )
     if candidate.repository_sha256 != run_manifest["identities"]["candidate_artifact_sha256"]:
         raise ValueError("candidate repository changed after run identity freeze")
@@ -170,6 +176,7 @@ def run_environment(
     )
     report["reference_support_closure"] = _aggregate_support_audits(rows, "reference_support_audit")
     report["candidate_reference_support_closure"] = _aggregate_support_audits(rows, "candidate_reference_support_audit")
+    report["candidate_policy_identity"] = candidate.identity()
     report["support_closure_contract"] = {
         "shared_semantics": True,
         "fallback_contract": SupportClosedModelAReferencePolicy.fallback_contract,
@@ -244,6 +251,7 @@ def _cmd_environment(args: argparse.Namespace) -> int:
         reference_behavior_path=args.reference_behavior,
         issue_104_result_path=args.issue_104_result,
         candidate_path=args.candidate,
+        binding_path=args.binding,
         reference_descriptor_path=args.reference_descriptor,
         sensitivity_path=args.sensitivity,
     )
@@ -296,6 +304,7 @@ def main() -> int:
     environment.add_argument("--reference-behavior", type=Path, required=True)
     environment.add_argument("--issue-104-result", type=Path, required=True)
     environment.add_argument("--candidate", type=Path, default=DEFAULT_CANDIDATE)
+    environment.add_argument("--binding", type=Path, default=DEFAULT_BINDING)
     environment.add_argument("--reference-descriptor", type=Path, default=DEFAULT_REFERENCE)
     environment.add_argument("--sensitivity", type=Path, default=DEFAULT_SENSITIVITY)
     environment.add_argument("--output", type=Path, required=True)
