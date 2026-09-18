@@ -247,6 +247,8 @@ def main() -> int:
         contract_path=resolve(args.contract),
     )
     output = resolve(args.out)
+    if output.exists():
+        raise FileExistsError(f"refusing to overwrite existing release handoff: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({
