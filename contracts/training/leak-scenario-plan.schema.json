@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/leak-scenario-plan.schema.json",
+  "title": "Leak-targeted training session plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "plan_id", "target_id", "criteria_id", "target", "runtime_identity",
+    "criteria_applied", "request", "pool", "rejected", "selection", "ready", "fallback", "fallback_detail"
+  ],
+  "properties": {
+    "schema": {"const": "poker-leak-training-session-plan/v1"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "criteria_id": {"type": "string", "minLength": 1},
+    "target": {"type": "object"},
+    "runtime_identity": {"$ref": "#/$defs/identity"},
+    "criteria_applied": {
+      "type": "object",
+      "required": ["identity", "context", "policy", "focus", "coverage", "source_played_action_diagnostic_only"],
+      "properties": {
+        "identity": {"$ref": "#/$defs/identity"},
+        "context": {"type": "object"},
+        "policy": {"type": "object"},
+        "focus": {"type": "object"},
+        "coverage": {"type": "object"},
+        "source_played_action_diagnostic_only": {"const": true}
+      }
+    },
+    "request": {
+      "type": "object",
+      "required": [
+        "session_size", "seed", "target_minimum_supported_scenarios",
+        "effective_minimum_supported_scenarios", "minimum_observations_per_scenario"
+      ],
+      "properties": {
+        "session_size": {"type": "integer", "minimum": 1},
+        "seed": {"type": "string"},
+        "target_minimum_supported_scenarios": {"type": "integer", "minimum": 1},
+        "effective_minimum_supported_scenarios": {"type": "integer", "minimum": 1},
+        "minimum_observations_per_scenario": {"type": "integer", "minimum": 0}
+      }
+    },
+    "pool": {
+      "type": "object",
+      "required": [
+        "candidates", "unique_candidates", "supported_unique", "matching_supported", "rejected",
+        "selected", "supported_coverage_pct", "matching_coverage_pct", "requested_coverage_pct", "rejection_reasons"
+      ],
+      "properties": {
+        "candidates": {"type": "integer", "minimum": 0},
+        "unique_candidates": {"type": "integer", "minimum": 0},
+        "supported_unique": {"type": "integer", "minimum": 0},
+        "matching_supported": {"type": "integer", "minimum": 0},
+        "rejected": {"type": "integer", "minimum": 0},
+        "selected": {"type": "integer", "minimum": 0},
+        "supported_coverage_pct": {"type": ["number", "null"]},
+        "matching_coverage_pct": {"type": ["number", "null"]},
+        "requested_coverage_pct": {"type": ["number", "null"]},
+        "rejection_reasons": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}}
+      }
+    },
+    "rejected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scenario_id", "reasons", "support_reason"],
+        "properties": {
+          "scenario_id": {"type": "string"},
+          "reasons": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "support_reason": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["schema", "rank", "scenario_id", "diversity_key", "support", "identity", "context", "policy", "focus", "scenario"],
+        "properties": {
+          "schema": {"const": "poker-leak-training-session-plan-item/v1"},
+          "rank": {"type": "integer", "minimum": 1},
+          "scenario_id": {"type": "string"},
+          "diversity_key": {"type": "string"},
+          "support": {"type": "object"},
+          "identity": {"$ref": "#/$defs/identity"},
+          "context": {"type": "object"},
+          "policy": {"type": "object"},
+          "focus": {"type": "object"},
+          "scenario": {"type": "object"}
+        }
+      }
+    },
+    "ready": {"type": "boolean"},
+    "fallback": {"enum": ["INSUFFICIENT_SUPPORTED_SCENARIOS", null]},
+    "fallback_detail": {"type": ["object", "null"]}
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["population_id", "pack_id", "strategy_id", "strategy_version", "ev_reference"],
+      "properties": {
+        "population_id": {"type": "string", "minLength": 1},
+        "pack_id": {"type": ["string", "null"]},
+        "strategy_id": {"type": "string", "minLength": 1},
+        "strategy_version": {"type": "string", "minLength": 1},
+        "ev_reference": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
