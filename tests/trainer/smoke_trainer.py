@@ -131,6 +131,78 @@ async def main() -> None:
         assert await page.locator("#hhBenchmarkExportBtn").is_visible()
         await page.click(".hh-import-advanced > summary")
 
+        # Review is entered by explicit HH selection and leaving it restores Equity Lab
+        # without clearing the selected hand or imported HH collection.
+        review_context = await page.evaluate(
+            """() => {
+                const saved={
+                    hhHands:state.hhHands, selectedHand:state.selectedHand, hhMode:state.hhMode,
+                    appView:state.appView, replaySteps:state.replaySteps, replayIndex:state.replayIndex,
+                    saveManualSnapshot:window.saveManualSnapshot,
+                    cancelReplayBackgroundComputation:window.cancelReplayBackgroundComputation,
+                    stopReplayTimer:window.stopReplayTimer,
+                    schedulePersistPrefs:window.schedulePersistPrefs,
+                    loadSelectedHistoryHand:window.loadSelectedHistoryHand,
+                    openReplayerPage:window.openReplayerPage,
+                    leaveHistoryMode:window.leaveHistoryMode,
+                    requestAnimationFrame:window.requestAnimationFrame
+                };
+                const calls=[];
+                try{
+                    const hand={id:"__review_context_smoke__"};
+                    state.hhHands=[hand];state.selectedHand=null;state.hhMode=false;state.appView="main";
+                    window.saveManualSnapshot=()=>calls.push("save");
+                    window.cancelReplayBackgroundComputation=()=>{};
+                    window.stopReplayTimer=()=>{};
+                    window.schedulePersistPrefs=()=>{};
+                    window.loadSelectedHistoryHand=()=>calls.push("load");
+                    window.openReplayerPage=()=>{state.appView="replayer";calls.push("open");};
+                    window.requestAnimationFrame=()=>0;
+                    selectHistoryHandById(hand.id);
+                    const afterSelect={
+                        hhMode:state.hhMode,appView:state.appView,
+                        selectedId:state.selectedHand?.id||null,handCount:state.hhHands.length,
+                        calls:[...calls]
+                    };
+                    window.leaveHistoryMode=()=>{
+                        state.hhMode=false;state.appView="main";calls.push("leave");
+                    };
+                    returnToHandsPage();
+                    const afterBack={
+                        hhMode:state.hhMode,appView:state.appView,
+                        selectedId:state.selectedHand?.id||null,handCount:state.hhHands.length,
+                        calls:[...calls]
+                    };
+                    return {
+                        togglePresent:!!document.querySelector("#hhModeBtn"),
+                        afterSelect,afterBack
+                    };
+                } finally {
+                    state.hhHands=saved.hhHands;state.selectedHand=saved.selectedHand;state.hhMode=saved.hhMode;
+                    state.appView=saved.appView;state.replaySteps=saved.replaySteps;state.replayIndex=saved.replayIndex;
+                    window.saveManualSnapshot=saved.saveManualSnapshot;
+                    window.cancelReplayBackgroundComputation=saved.cancelReplayBackgroundComputation;
+                    window.stopReplayTimer=saved.stopReplayTimer;
+                    window.schedulePersistPrefs=saved.schedulePersistPrefs;
+                    window.loadSelectedHistoryHand=saved.loadSelectedHistoryHand;
+                    window.openReplayerPage=saved.openReplayerPage;
+                    window.leaveHistoryMode=saved.leaveHistoryMode;
+                    window.requestAnimationFrame=saved.requestAnimationFrame;
+                }
+            }"""
+        )
+        assert review_context["togglePresent"] is False, review_context
+        assert review_context["afterSelect"]["hhMode"] is True, review_context
+        assert review_context["afterSelect"]["appView"] == "replayer", review_context
+        assert review_context["afterSelect"]["selectedId"] == "__review_context_smoke__", review_context
+        assert review_context["afterSelect"]["handCount"] == 1, review_context
+        assert review_context["afterSelect"]["calls"][:3] == ["save", "load", "open"], review_context
+        assert review_context["afterBack"]["hhMode"] is False, review_context
+        assert review_context["afterBack"]["appView"] == "main", review_context
+        assert review_context["afterBack"]["selectedId"] == "__review_context_smoke__", review_context
+        assert review_context["afterBack"]["handCount"] == 1, review_context
+        assert "leave" in review_context["afterBack"]["calls"], review_context
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -207,6 +279,7 @@ async def main() -> None:
             "delta_ev_quality_contract": quality_contract,
             "prior_posterior_information_boundary": information_boundary,
             "hh_import_ux": hh_import_ux,
+            "review_context": review_context,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,
