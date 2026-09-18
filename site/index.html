@@ -3166,17 +3166,15 @@ function exportPolicyBenchmarkForSimulator(){
   const payload={schema:'poker-analyzer-policy-benchmark/v1',application:{name:'Poker Range Equity Offline',version:'v83',exported_at:new Date().toISOString()},context_signature:sig,models:{preflop:state.populationModel?.sourceName||state.populationModel?.name||'',postflop:state.postflopModel?.sourceName||state.postflopModel?.name||''},hands:ready,coverage:{loaded:all.length,exported:ready.length,pending:Math.max(0,all.length-ready.length)},notes:['Chaque main contient les recommandations du pseudo-solveur calculées sans connaissance future dans les champs review_value.details.','bestCostBB est exporté pour les agressions afin de permettre un replay contrefactuel dans le simulateur de population indépendant.']};
   const blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`poker_policy_benchmark_v76_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);hhStatus.textContent=`Benchmark exporté : ${ready.length}/${all.length} mains entièrement scorées.`;
 }
-function reviewScoreClass(r){
+function reviewLossClass(r){
   if(!r)return "unknown";
   if(!r.complete)return "partial";
-  if(r.totalLossBB>=5)return "high";
-  if(r.totalLossBB>=1.5)return "medium";
-  return "low";
+  return "complete";
 }
-function reviewScoreTitle(r){
-  if(!r)return "Main non encore analysée pour la valeur de revue.";
-  const biggest=r.biggest&&r.biggestLossBB>0?` · Plus gros écart : ${formatBB(r.biggestLossBB)} (${r.biggest.actor}, ${r.biggest.street} ${String(r.biggest.action||'').toUpperCase()})`:"";
-  return `Écart EV cumulé : ${formatBB(r.totalLossBB)} · Hero ${formatBB(r.heroLossBB)} · adversaires ${formatBB(r.opponentLossBB)} · décisions comparables ${r.comparableDecisions}/${r.analyzableDecisions}${r.complete?"":" · calcul partiel"}${biggest}`;
+function reviewLossTitle(r){
+  if(!r)return "Main non encore analysée pour la perte EV.";
+  const biggest=r.biggest&&r.biggestLossBB>0?` · Plus grosse perte EV : ${formatBB(r.biggestLossBB)} (${r.biggest.actor}, ${r.biggest.street} ${String(r.biggest.action||'').toUpperCase()})`:"";
+  return `Perte EV cumulée : ${formatBB(r.totalLossBB)} · Hero ${formatBB(r.heroLossBB)} · adversaires ${formatBB(r.opponentLossBB)} · décisions comparables ${r.comparableDecisions}/${r.analyzableDecisions}${r.complete?"":" · calcul partiel"}${biggest}`;
 }
 
 
@@ -4961,13 +4959,13 @@ function renderHistoryHands(){
     const resultTitle=Number.isFinite(netBB)
       ? `Engagé : ${formatBB(investedBB)} · Encaissé : ${formatBB(collectedBB)} · Net : ${netBB>0?"+":netBB<0?"−":""}${formatBB(Math.abs(netBB))}`
       : "Grosse blind non reconnue dans l'historique.";
-    const review=reviewSummaryForHand(h),reviewCls=reviewScoreClass(review);
+    const review=reviewSummaryForHand(h),reviewCls=reviewLossClass(review);
     const reviewAmount=review?`${review.complete?"":"~ "}${formatBB(review.totalLossBB)}`:"—";
     const reviewSplit=review?`H ${formatBB(review.heroLossBB)} · A ${formatBB(review.opponentLossBB)} · ${review.comparableDecisions}/${review.analyzableDecisions}`:"non analysée";
     b.innerHTML=`<span class="hh-time">${escapeHtml(h.dateText.replace(/ \w+$/,""))}<br>#${escapeHtml(h.id)}</span>
       <span class="hh-main"><strong>${escapeHtml(h.heroName)} · ${heroHtml}</strong><small>${handStreetLabel(h)} · ${h.players.length} joueurs · ${known} main(s) adverse(s) connue(s) · ${escapeHtml(h.sourceName)}</small></span>
       <span class="hh-cards">${heroHtml}</span>
-      <span class="hh-review ${reviewCls}" title="${escapeHtml(reviewScoreTitle(review))}">Revue ΣΔEV<span class="amount">${escapeHtml(reviewAmount)}</span><span class="split">${escapeHtml(reviewSplit)}</span></span>
+      <span class="hh-review ${reviewCls}" title="${escapeHtml(reviewLossTitle(review))}">Perte EV cumulée<span class="amount">${escapeHtml(reviewAmount)}</span><span class="split">${escapeHtml(reviewSplit)}</span></span>
       <span class="hh-result ${resultClass}" title="${escapeHtml(resultTitle)}">${resultLabel}<span class="amount">${escapeHtml(signed)}</span></span>`;
     b.onclick=()=>selectHistoryHandById(h.id);
     hhHandsEl.appendChild(b);
