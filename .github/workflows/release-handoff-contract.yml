@@ -36,6 +36,8 @@ jobs:
             tools/training/build_release_handoff.py \
             tests/test_release_handoff.py \
             tests/training/test_build_release_handoff.py
+      - name: Smoke standalone handoff builder CLI
+        run: python3 tools/training/build_release_handoff.py --help >/dev/null
       - name: Exercise release state machine and no-publication handoff builder
         run: |
           PYTHONPATH=. python3 tests/test_release_handoff.py
