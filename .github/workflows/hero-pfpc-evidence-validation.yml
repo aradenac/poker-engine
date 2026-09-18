@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'tools/training/validate_hero_pfpc_evidence.py'
+      - 'tools/training/merge_hero_range_decision_runs.py'
       - 'tests/training/test_validate_hero_pfpc_evidence.py'
+      - 'tests/training/test_merge_hero_range_decision_runs.py'
       - '.github/workflows/hero-pfpc-evidence-validation.yml'
       - 'training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/**'
   push:
@@ -12,7 +14,9 @@ on:
       - main
     paths:
       - 'tools/training/validate_hero_pfpc_evidence.py'
+      - 'tools/training/merge_hero_range_decision_runs.py'
       - 'tests/training/test_validate_hero_pfpc_evidence.py'
+      - 'tests/training/test_merge_hero_range_decision_runs.py'
       - '.github/workflows/hero-pfpc-evidence-validation.yml'
       - 'training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/**'
 
@@ -31,7 +35,10 @@ jobs:
       - name: Compile and test artifact-only validator
         run: |
           set -euo pipefail
-          python3 -m py_compile tools/training/validate_hero_pfpc_evidence.py
+          python3 -m py_compile \
+            tools/training/validate_hero_pfpc_evidence.py \
+            tools/training/merge_hero_range_decision_runs.py
+          PYTHONPATH=. python3 tests/training/test_merge_hero_range_decision_runs.py
           PYTHONPATH=. python3 tests/training/test_validate_hero_pfpc_evidence.py
       - name: Validate immutable issue 107 evidence when present
         run: |
