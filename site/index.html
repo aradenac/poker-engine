@@ -987,26 +987,26 @@
 <nav id="quickNav" class="quick-nav" aria-label="Navigation rapide">
   <button id="quickNavToggle" type="button" class="quick-nav-toggle" aria-expanded="true" title="Replier / déplier la navigation">❮</button>
   <div class="quick-nav-title">Navigation</div>
-  <a href="#rangesSection">Ranges</a>
-  <a href="./hero-ranges.html">Ranges Hero</a>
+  <a href="#rangesSection">Sources importées</a>
+  <a href="./hero-ranges.html">Stratégie Hero</a>
   <a href="#historiesSection">Fichiers HH</a>
   <a href="#handSelectionSection">Mains</a>
   <a href="#replayerSection">Replayer</a>
   <a id="trainerNavLink" href="#trainerPage">Training</a>
   <a href="#opponentsSection">Adversaires</a>
   <a href="#cardsSection">Cartes</a>
-  <a href="#rangeDisplaySection">Range</a>
+  <a href="#rangeDisplaySection">Range adverse</a>
   <a href="#equitySection">Calcul</a>
 </nav>
 <div id="mainPage" class="wrap">
   <h1>Poker Range Equity <span style="font-size:.55em;font-weight:600;opacity:.72">v78</span></h1>
   <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
-  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Ranges Hero</a></div>
+  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>
   <div id="localPersistenceStatus" class="status" style="margin:10px 0 0">Restauration de la configuration locale…</div>
 
   <div class="grid">
     <section id="rangesSection" class="panel wide">
-      <h2>1. Importer un set de ranges</h2>
+      <h2>1. Importer une range source</h2>
       <label class="filelabel" for="fileInput">Choisir un fichier JSON</label>
       <input id="fileInput" type="file" accept=".json,application/json">
       <div id="fileMeta" class="filemeta">Aucun fichier importé.</div>
@@ -1023,8 +1023,8 @@
           <button id="populationModelClearBtn" type="button" class="secondary" disabled>Retirer le modèle population</button>
         </div>
         <div id="populationModelMeta" class="filemeta">Aucun modèle population chargé.</div>
-        <div id="populationModelStatus" class="status">Sans modèle population, les ranges historiques importées restent utilisées.</div>
-        <div class="population-source-note">En mode Hand History, le modèle population filtre la distribution des 169 mains au fil des actions préflop réellement observées. Si un joueur n'a encore effectué aucune action volontaire, ou si aucun nœud exploitable n'est trouvé, la range du fichier historique reste la source de repli.</div>
+        <div id="populationModelStatus" class="status">Sans modèle population, les ranges sources importées restent utilisées.</div>
+        <div class="population-source-note">En mode Hand History, le modèle population filtre la distribution des 169 mains au fil des actions préflop réellement observées. Si un joueur n'a encore effectué aucune action volontaire, ou si aucun nœud exploitable n'est trouvé, la range source importée reste la source de repli.</div>
       </div>
 
       <div class="population-model-box">
@@ -1038,8 +1038,8 @@
           <button id="postflopModelClearBtn" type="button" class="secondary" disabled>Retirer le modèle postflop</button>
         </div>
         <div id="postflopModelMeta" class="filemeta">Aucun modèle postflop chargé.</div>
-        <div id="postflopModelStatus" class="status">Sans modèle postflop, les ranges restent conditionnées uniquement par le préflop.</div>
-        <div class="population-source-note">Le moteur v61 maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range » affiche l’état estimé à l’étape courante.</div>
+        <div id="postflopModelStatus" class="status">Sans modèle postflop, les ranges adverses estimées restent conditionnées uniquement par le préflop.</div>
+        <div class="population-source-note">Le moteur v61 maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range adverse » affiche l’état estimé à l’étape courante.</div>
       </div>
     </section>
 
@@ -1151,10 +1151,10 @@
     </section>
 
     <section id="rangeDisplaySection" class="panel wide">
-      <h2>5. Range affichée</h2>
-      <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
+      <h2>5. Range adverse affichée</h2>
+      <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range adverse estimée, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
       <div class="range-toolbar">
-        <button id="rangeEditionBtn" class="secondary toggle-btn">Range edition : OFF</button>
+        <button id="rangeEditionBtn" class="secondary toggle-btn">Édition range adverse : OFF</button>
         <button id="knownHandsBtn" class="secondary toggle-btn" disabled>Mains connues HH : OFF</button>
         <button id="rangeResetBtn" class="secondary" disabled>Réinitialiser depuis le fichier</button>
         <button id="rangeClearBtn" class="secondary" disabled>Tout vider</button>
@@ -1550,7 +1550,7 @@ function effectiveEntriesForOpponent(index){
 }
 function updateRangeEditionUi(){
   rangeEditionBtn.classList.toggle("active",state.rangeEdition);
-  rangeEditionBtn.textContent=`Range edition : ${state.rangeEdition?"ON":"OFF"}`;
+  rangeEditionBtn.textContent=`Édition range adverse : ${state.rangeEdition?"ON":"OFF"}`;
 
   const knownPlayers=state.opponents.filter(o=>o.knownCards?.length===2);
   const knownCount=knownPlayers.length;
@@ -1568,11 +1568,11 @@ function updateRangeEditionUi(){
     b.disabled=!state.rangeEdition||!state.ranges.length||!hasPosition;
 
   if(state.hhMode && exactCount>0){
-    rangeModeNote.textContent=`Mode mixte : ${exactCount}/${knownCount} main(s) connue(s) sont utilisées exactement. Les autres adversaires utilisent leurs ranges. Les ranges restent configurables et éditables même lorsqu'une main exacte est active.`;
+    rangeModeNote.textContent=`Mode mixte : ${exactCount}/${knownCount} main(s) connue(s) sont utilisées exactement. Les autres adversaires utilisent leurs ranges adverses estimées. Elles restent configurables et éditables même lorsqu'une main exacte est active.`;
   }else if(state.rangeEdition){
     rangeModeNote.textContent="Édition binaire active pour chaque adversaire : clic sur une case = 0 ↔ 100 %. Le fichier importé reste intact.";
   }else if(state.hhMode&&state.populationModel){
-    rangeModeNote.textContent=state.postflopModel?"Modèles population actifs : la range est conditionnée par le préflop puis, combo par combo, par les actions postflop observées jusqu'au point d'analyse.":"Modèle population préflop actif : après une action exploitable, la range est conditionnée par la ligne préflop observée.";
+    rangeModeNote.textContent=state.postflopModel?"Modèles population actifs : la range adverse estimée est conditionnée par le préflop puis, combo par combo, par les actions postflop observées jusqu'au point d'analyse.":"Modèle population préflop actif : après une action exploitable, la range adverse estimée est conditionnée par la ligne préflop observée.";
   }else{
     rangeModeNote.textContent="Les fréquences du fichier sont utilisées sans modification ; les éditions manuelles sont conservées en mémoire pour une réactivation ultérieure.";
   }
@@ -1824,7 +1824,7 @@ function populationModelUi(message="",error=false){
   if(populationModelStatus){
     populationModelStatus.textContent=message || (loaded
       ? "Modèle population actif pour les adversaires en mode Hand History."
-      : "Sans modèle population, les ranges historiques importées restent utilisées.");
+      : "Sans modèle population, les ranges sources importées restent utilisées.");
     populationModelStatus.className=error?"status error":"status";
   }
 }
@@ -1958,7 +1958,7 @@ function postflopModelUi(message="",error=false){
   if(postflopModelStatus){
     postflopModelStatus.textContent=message||(loaded
       ? "Modèle postflop actif : les ranges exactes sont filtrées street après street."
-      : "Sans modèle postflop, les ranges restent conditionnées uniquement par le préflop.");
+      : "Sans modèle postflop, les ranges adverses estimées restent conditionnées uniquement par le préflop.");
     postflopModelStatus.className=error?"status error":"status";
   }
 }
@@ -4111,7 +4111,7 @@ function replaySeatHtml(player,step,hand){
   const actionType=st.lastActionType||"";
   const amountText=replayActionAmountText(step,player.name);
   const populationRangeButton=player.name===hand.heroName ? "" :
-    `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range théorique estimée à cette étape">Range</button>`;
+    `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range adverse estimée à cette étape">Range adverse</button>`;
 
   const actionHtml=actionType ? `<div class="seat-action">
     ${amountText?`<div class="seat-action-main"><span class="seat-action-amount">${escapeHtml(amountText)}</span></div>`:""}
@@ -4231,7 +4231,7 @@ function openPopulationRangeModal(playerName){
   const stats=normalizedExactRangeStats(entries),diag=rangeTraceDiagnostic(estimate);
   const prev=previousPlayerDecisionRange(playerName,state.replayIndex),prevFreq=prev?.estimate?gridFreqMapFromEstimate(prev.estimate,player):null;
 
-  populationRangeModalTitle.textContent=`Range estimée · ${player.name}`;
+  populationRangeModalTitle.textContent=`Range adverse estimée · ${player.name}`;
   populationRangeModalSub.textContent=`${player.hhPosition||"?"} · étape ${state.replayIndex+1}/${state.replaySteps.length} · ${source}`;
   const modalMaxFreq=Math.max(1,...ALL_NOTATIONS.map(n=>Number(freq.get(n)||0)));
   const grid=ALL_NOTATIONS.map(n=>{const f=Number(freq.get(n)||0);const heat=heatColorForPercent(f,modalMaxFreq);const opacity=Math.max(.10,Math.min(.92,Math.pow(f/modalMaxFreq||0,0.58)*.92));const valueText=f?`${f.toFixed(f>=10?0:1).replace(".",",")} %`:"—";return `<div class="population-modal-cell" style="background:${heat.bg};border-color:${heat.border};color:${heat.text};text-shadow:${heat.shadow}" title="${escapeHtml(n)} — ${f.toFixed(1).replace(".",",")} %"><div class="heat" style="opacity:${opacity};background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 40%,rgba(0,0,0,.06))"></div><div class="hand">${escapeHtml(n)}</div><div class="freq">${valueText}</div></div>`;}).join("");
@@ -5279,7 +5279,7 @@ function renderOpponents(){
   opponentsEl.innerHTML="";
   if(!state.opponents.length){
     const d=document.createElement("div");d.className="status";
-    d.textContent=state.hhMode?"Aucun adversaire n'est encore en jeu au début de cette street.":"Importez un fichier de ranges pour configurer les adversaires.";
+    d.textContent=state.hhMode?"Aucun adversaire n'est encore en jeu au début de cette street.":"Importez une range source pour configurer les adversaires.";
     opponentsEl.appendChild(d);
     addOpponentBtn.disabled=state.hhMode||!state.ranges.length;
     return;
@@ -5297,7 +5297,7 @@ function renderOpponents(){
     const rf=document.createElement("div"); rf.className="field"; rf.innerHTML="<label>Modèle</label>";
     const rs=document.createElement("select");
     if(!state.ranges.length){
-      const op=document.createElement("option");op.textContent="Aucun set de ranges";op.value="0";rs.appendChild(op);rs.disabled=true;
+      const op=document.createElement("option");op.textContent="Aucune range source";op.value="0";rs.appendChild(op);rs.disabled=true;
     }else{
       state.ranges.forEach((r,ri)=>{const op=document.createElement("option");op.value=ri;op.textContent=r.name||`Range ${ri+1}`;rs.appendChild(op);});
       rs.value=String(Math.max(0,o.rangeIndex));
@@ -5309,7 +5309,7 @@ function renderOpponents(){
     }
     rf.appendChild(rs);row.appendChild(rf);
 
-    const pf=document.createElement("div");pf.className="field";pf.innerHTML=`<label>Position de range${o.hhPosition?` · HH ${escapeHtml(o.hhPosition)}`:""}</label>`;
+    const pf=document.createElement("div");pf.className="field";pf.innerHTML=`<label>Position dans la range source${o.hhPosition?` · HH ${escapeHtml(o.hhPosition)}`:""}</label>`;
     const ps=document.createElement("select");
     if(!range){
       const op=document.createElement("option");op.value="-1";op.textContent="— indisponible —";ps.appendChild(op);ps.disabled=true;
@@ -5329,14 +5329,14 @@ function renderOpponents(){
     const populationEstimate=state.hhMode&&o.playerName&&state.populationModel
       ? populationRangeEstimateForPlayer(currentHandPlayer(o.playerName),calculatorPopulationReplayIndex())
       : null;
-    const theoreticalLabel=populationEstimate?"range population":"range fichier";
+    const theoreticalLabel=populationEstimate?"range adverse estimée":"range source importée";
 
     const sourceBtn=document.createElement("button");
     sourceBtn.className="secondary source-btn"+(exactKnownOverride(i)?" active":"");
     if(o.knownCards?.length===2){
       sourceBtn.textContent=exactKnownOverride(i)?"Source : main HH":`Source : ${theoreticalLabel}`;
       sourceBtn.title=exactKnownOverride(i)
-        ? `Calcul avec ${o.knownCards.map(cardLabel).join(" ")}. Cliquer pour revenir à la range théorique.`
+        ? `Calcul avec ${o.knownCards.map(cardLabel).join(" ")}. Cliquer pour revenir à la range adverse estimée.`
         : `Calcul avec la ${theoreticalLabel}. Cliquer pour utiliser la main exacte connue dans l'historique.`;
       sourceBtn.onclick=()=>{
         o.useKnownHand=!o.useKnownHand;
@@ -5359,15 +5359,15 @@ function renderOpponents(){
     const active=effectiveEntriesForOpponent(i);
     const info=document.createElement("div");info.className="tiny";info.style.gridColumn="2 / -1";
     if(exactKnownOverride(i)){
-      info.textContent=`Main exacte HH utilisée : ${o.knownCards.map(cardLabel).join(" ")} · la range théorique reste disponible et sera réutilisée si vous repassez sur la source range.`;
+      info.textContent=`Main exacte HH utilisée : ${o.knownCards.map(cardLabel).join(" ")} · la range adverse estimée reste disponible et sera réutilisée si vous repassez sur cette source.`;
     }else if(populationEstimate){
-      info.textContent=`Range population estimée · ${populationEstimate.postflopMatchedActions>0?`${populationEstimate.entries.length} combos exacts`:`${populationEstimate.entries.length} classes pondérées`} · ${populationEstimate.matchedActions}/${populationEstimate.totalActions} action(s) appariée(s) · dernier nœud ${populationEstimate.lastNodeId||"—"} (${populationEstimate.lastQuality||"—"}).`;
+      info.textContent=`Range adverse estimée · ${populationEstimate.postflopMatchedActions>0?`${populationEstimate.entries.length} combos exacts`:`${populationEstimate.entries.length} classes pondérées`} · ${populationEstimate.matchedActions}/${populationEstimate.totalActions} action(s) appariée(s) · dernier nœud ${populationEstimate.lastNodeId||"—"} (${populationEstimate.lastQuality||"—"}).`;
     }else if(position){
       info.textContent=`${active.length} classes actives · ${range?.name||""} · ${positionLabel(position.position||"")}${state.rangeEdition?" · édition 0/100 %":""}${state.populationModel&&o.playerName?" · aucun nœud population encore applicable":""}`;
     }else if(o.hhPosition){
-      info.textContent=`Aucune position de range n'est automatiquement associée à ${o.hhPosition}. Choisissez-en une, ou utilisez la main HH si elle est connue.`;
+      info.textContent=`Aucune position de range source n'est automatiquement associée à ${o.hhPosition}. Choisissez-en une, ou utilisez la main HH si elle est connue.`;
     }else{
-      info.textContent="Configuration de range incomplète.";
+      info.textContent="Configuration adverse incomplète.";
     }
     row.appendChild(info);
     opponentsEl.appendChild(row);
@@ -7001,15 +7001,15 @@ function renderFloatingEquity(){
 
     content=`
       <div class="floating-eq-row hero-range">
-        <span class="floating-eq-label">Hero Range / Ranges adverses</span>
+        <span class="floating-eq-label">Stratégie Hero / Ranges adverses estimées</span>
         <b class="floating-eq-value">${escapeHtml(value("range_ranges"))}</b>
       </div>
       <div class="floating-eq-row hero-range">
-        <span class="floating-eq-label">Hero Range / Mains adverses réelles</span>
+        <span class="floating-eq-label">Stratégie Hero / Mains adverses réelles</span>
         <b class="floating-eq-value">${escapeHtml(value("range_real"))}</b>
       </div>
       <div class="floating-eq-row hero-hand">
-        <span class="floating-eq-label">Main Hero / Ranges adverses</span>
+        <span class="floating-eq-label">Main Hero / Ranges adverses estimées</span>
         <b class="floating-eq-value">${escapeHtml(value("hand_ranges"))}</b>
       </div>
       <div class="floating-eq-row hero-hand">
