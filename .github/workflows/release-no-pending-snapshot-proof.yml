@@ -1,0 +1,170 @@
+name: Prove no-pending-snapshot release handoff
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/release-no-pending-snapshot-proof.yml'
+  push:
+    branches:
+      - 'execute/issue-113-no-pending-release-20260918'
+    paths:
+      - '.github/triggers/issue-113-no-pending-release-20260918'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-no-pending-snapshot-proof-20260918
+  cancel-in-progress: false
+
+env:
+  POPULATION_ID: pokerstars_nlhe_100-200_zoom_play_6max_v1
+  BASELINE_ARCHIVE_SHA256: 2cff4b858a9f4597ee1296c5a7ca7b9432cb38b081458f609097fd319f84632e
+  RESULT_RUN_ID: 20260918_release_no_pending_snapshot_v1
+  RESULT_BRANCH: evidence/issue-113-no-pending-release-20260918
+
+jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate release handoff tooling
+        run: |
+          set -euo pipefail
+          python3 tools/training/finalize_cycle_release.py --help >/dev/null
+          python3 tools/validate_release_handoff.py --help >/dev/null
+          PYTHONPATH=. python3 tests/training/test_finalize_cycle_release.py
+      - name: Prove PR path has no publication side effect
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          assert os.environ['GITHUB_EVENT_NAME']=='pull_request'
+          print('PR path executes contract tests only')
+          PY
+
+  prove-no-publication:
+    if: >-
+      github.event_name == 'push' &&
+      github.ref_name == 'execute/issue-113-no-pending-release-20260918'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prove current target population has no pending snapshot
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue113
+          PYTHONPATH=. python3 tools/training/plan_snapshot_cycle.py \
+            --population "$POPULATION_ID" \
+            > /tmp/issue113/DECISION.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          decision=json.loads(Path('/tmp/issue113/DECISION.json').read_text(encoding='utf-8'))
+          assert decision['status']=='NO_PENDING_SNAPSHOT', decision
+          assert decision['population_id']==os.environ['POPULATION_ID']
+          assert decision['dataset']==os.environ['POPULATION_ID']
+          print(json.dumps(decision,indent=2,sort_keys=True))
+          PY
+      - name: Route actual NO_PENDING_SNAPSHOT to verified no-publication handoff
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/finalize_cycle_release.py \
+            --population-id "$POPULATION_ID" \
+            --cycle-run-id "$RESULT_RUN_ID" \
+            --cycle-decision /tmp/issue113/DECISION.json \
+            --snapshot-sha256 "$BASELINE_ARCHIVE_SHA256" \
+            --source-commit-sha "$GITHUB_SHA" \
+            --reason 'No pending snapshot exists for the certified target population; production remains unchanged.' \
+            --out /tmp/issue113/RELEASE_HANDOFF.json
+          python3 tools/validate_release_handoff.py \
+            --handoff /tmp/issue113/RELEASE_HANDOFF.json \
+            > /tmp/issue113/VALIDATION.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          handoff=json.loads(Path('/tmp/issue113/RELEASE_HANDOFF.json').read_text(encoding='utf-8'))
+          validation=json.loads(Path('/tmp/issue113/VALIDATION.json').read_text(encoding='utf-8'))
+          assert handoff['outcome']=='NO_OP'
+          assert handoff['state']=='VERIFIED_NO_PUBLICATION'
+          assert handoff['promotion_authorized'] is False
+          assert handoff['deployment']=={'attempted':False}
+          assert handoff['production_after']==handoff['production_before']
+          assert validation['status']=='PASS'
+          assert validation['delivered'] is True
+          print(json.dumps(handoff,indent=2,sort_keys=True))
+          PY
+      - name: Persist immutable proof on a dedicated evidence branch
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          src=Path('/tmp/issue113')
+          dest=Path('training/runs')/os.environ['RESULT_RUN_ID']
+          assert not dest.exists(), f'immutable result already exists: {dest}'
+          dest.mkdir(parents=True)
+          for name in ('DECISION.json','RELEASE_HANDOFF.json','VALIDATION.json'):
+              shutil.copy2(src/name,dest/name)
+
+          def sha(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          handoff=json.loads((dest/'RELEASE_HANDOFF.json').read_text(encoding='utf-8'))
+          result={
+              'schema':'poker-release-no-pending-proof/v1',
+              'issue':113,
+              'run_id':os.environ['RESULT_RUN_ID'],
+              'population_id':os.environ['POPULATION_ID'],
+              'source_commit_sha':os.environ['GITHUB_SHA'],
+              'decision':'NO_OP',
+              'state':'VERIFIED_NO_PUBLICATION',
+              'delivered':True,
+              'promotion_authorized':False,
+              'deployment_attempted':False,
+              'snapshot_sha256':handoff['snapshot_sha256'],
+              'production_before':handoff['production_before'],
+              'production_after':handoff['production_after'],
+              'artifact_sha256':{
+                  'DECISION.json':sha(dest/'DECISION.json'),
+                  'RELEASE_HANDOFF.json':sha(dest/'RELEASE_HANDOFF.json'),
+                  'VALIDATION.json':sha(dest/'VALIDATION.json'),
+              },
+          }
+          assert result['production_before']==result['production_after']
+          (dest/'RESULT.json').write_text(
+              json.dumps(result,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          git config user.name 'poker-engine evidence bot'
+          git config user.email 'evidence-bot@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin "$RESULT_BRANCH" >/dev/null 2>&1; then
+            echo "Immutable #113 evidence branch already exists; refusing overwrite."
+            exit 1
+          fi
+          git switch -c "$RESULT_BRANCH"
+          git add "training/runs/$RESULT_RUN_ID"
+          test -n "$(git status --porcelain)"
+          git commit -m "Persist issue #113 no-pending release proof"
+          git push --set-upstream origin "$RESULT_BRANCH"
