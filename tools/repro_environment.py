@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and capture the reproducible runtime contract for issue #203."""
+"""Validate, verify and fingerprint the reproducible runtime contract for issue #203."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import sys
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCK_PATH = ROOT / "reproducibility" / "environment.lock.json"
+MANIFEST_SCHEMA = "poker-engine-runtime-environment/v2"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -30,8 +30,60 @@ def _normalized_lines(path: Path) -> list[str]:
     ]
 
 
-def lock_sha256(path: Path = LOCK_PATH) -> str:
+def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _canonical_payload_bytes(manifest: dict[str, Any]) -> bytes:
+    payload = dict(manifest)
+    payload.pop("payload_sha256", None)
+    return json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+
+
+def payload_sha256(manifest: dict[str, Any]) -> str:
+    return hashlib.sha256(_canonical_payload_bytes(manifest)).hexdigest()
+
+
+def attach_payload_sha256(manifest: dict[str, Any]) -> dict[str, Any]:
+    result = dict(manifest)
+    result["payload_sha256"] = payload_sha256(result)
+    return result
+
+
+def verify_content_address(manifest: dict[str, Any]) -> bool:
+    digest = manifest.get("payload_sha256")
+    return isinstance(digest, str) and digest == payload_sha256(manifest)
+
+
+def _read_os_release(path: Path = Path("/etc/os-release")) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    values: dict[str, str] = {}
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if "=" not in raw or raw.lstrip().startswith("#"):
+            continue
+        key, value = raw.split("=", 1)
+        values[key] = value.strip().strip('"')
+    return values
+
+
+def expected_runtime(root: Path = ROOT) -> dict[str, Any]:
+    lock = _read_json(root / "reproducibility" / "environment.lock.json")
+    os_lock = _read_json(root / lock["os"]["spec"])
+    return {
+        "python": lock["python"]["version"],
+        "node": lock["node"]["version"],
+        "playwright": lock["playwright"]["python_package_version"],
+        "chromium": lock["playwright"]["chromium_version"],
+        "os": {
+            "platform": os_lock["platform"],
+            "id": os_lock["distribution"]["id"],
+            "version_id": os_lock["distribution"]["version_id"],
+            "machine": os_lock["machine"],
+        },
+    }
 
 
 def validate_contract(root: Path = ROOT) -> list[str]:
@@ -52,9 +104,9 @@ def validate_contract(root: Path = ROOT) -> list[str]:
     if direct != {expected_playwright}:
         errors.append("requirements.in must contain only the pinned Playwright direct dependency")
     if expected_playwright not in locked:
-        errors.append("requirements.lock.txt does not pin the Playwright version from the environment lock")
+        errors.append("requirements.lock.txt does not pin Playwright from environment.lock.json")
     for line in locked:
-        if "==" not in line or line.count("==") != 1:
+        if line.count("==") != 1:
             errors.append(f"unlocked Python dependency: {line}")
 
     package = _read_json(root / "package.json")
@@ -70,9 +122,31 @@ def validate_contract(root: Path = ROOT) -> list[str]:
     if lock.get("schema") != "poker-engine-repro-environment/v1":
         errors.append("unexpected environment lock schema")
     if lock.get("phase") != 1:
-        errors.append("phase-1 branch must keep phase=1")
+        errors.append("local REPRO tranche must keep phase=1")
     if lock.get("scope", {}).get("workflows_wired") is not False:
-        errors.append("phase 1 must not claim workflows are wired")
+        errors.append("local REPRO tranche must not claim workflows are wired")
+    if lock.get("scope", {}).get("os_base_pinned") is not True:
+        errors.append("OS base identity must be pinned")
+    if lock.get("manifest", {}).get("schema") != MANIFEST_SCHEMA:
+        errors.append("unexpected runtime manifest schema")
+    if lock.get("manifest", {}).get("content_addressed") is not True:
+        errors.append("runtime manifests must be content-addressed")
+
+    os_spec = lock.get("os", {}).get("spec")
+    if not os_spec or not (root / os_spec).exists():
+        errors.append("missing pinned OS base specification")
+    else:
+        os_lock = _read_json(root / os_spec)
+        if os_lock.get("schema") != "poker-engine-os-base/v1":
+            errors.append("unexpected OS base schema")
+        if os_lock.get("platform") != "linux":
+            errors.append("OS base platform must be linux")
+        if os_lock.get("distribution", {}).get("id") != lock["os"]["id"]:
+            errors.append("OS distribution differs between locks")
+        if os_lock.get("distribution", {}).get("version_id") != lock["os"]["version_id"]:
+            errors.append("OS version differs between locks")
+        if os_lock.get("machine") != lock["os"]["machine"]:
+            errors.append("OS machine differs between locks")
 
     return errors
 
@@ -80,11 +154,7 @@ def validate_contract(root: Path = ROOT) -> list[str]:
 def _command_version(command: list[str]) -> str | None:
     try:
         result = subprocess.run(
-            command,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=10,
+            command, check=True, capture_output=True, text=True, timeout=10
         )
     except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return None
@@ -109,6 +179,8 @@ def _numeric_version(text: str | None) -> str | None:
 def collect_manifest(root: Path = ROOT) -> dict[str, Any]:
     lock_path = root / "reproducibility" / "environment.lock.json"
     lock = _read_json(lock_path)
+    expected = expected_runtime(root)
+
     node_text = _command_version(["node", "--version"])
     node_version = node_text[1:] if node_text and node_text.startswith("v") else node_text
 
@@ -124,40 +196,70 @@ def collect_manifest(root: Path = ROOT) -> dict[str, Any]:
         except Exception:
             chromium_version = None
 
+    os_release = _read_os_release()
     observed = {
         "python": platform.python_version(),
         "python_implementation": platform.python_implementation(),
         "node": node_version,
         "playwright": observed_playwright,
         "chromium": chromium_version,
-        "platform": platform.platform(),
+        "os": {
+            "platform": sys.platform,
+            "id": os_release.get("ID"),
+            "version_id": os_release.get("VERSION_ID"),
+            "machine": platform.machine(),
+        },
     }
-    expected = {
-        "python": lock["python"]["version"],
-        "node": lock["node"]["version"],
-        "playwright": lock["playwright"]["python_package_version"],
-        "chromium": lock["playwright"]["chromium_version"],
+    matches = {
+        "python": observed["python"] == expected["python"],
+        "node": observed["node"] == expected["node"],
+        "playwright": observed["playwright"] == expected["playwright"],
+        "chromium": observed["chromium"] == expected["chromium"],
+        "os": observed["os"] == expected["os"],
     }
-    matches = {key: observed.get(key) == value for key, value in expected.items()}
-    return {
-        "schema": "poker-engine-runtime-environment/v1",
+    files = {
+        "environment_lock_sha256": sha256_file(lock_path),
+        "os_base_lock_sha256": sha256_file(root / lock["os"]["spec"]),
+        "python_lock_sha256": sha256_file(root / lock["python"]["requirements"]),
+        "node_lock_sha256": sha256_file(root / lock["node"]["package_lock"]),
+    }
+    return attach_payload_sha256({
+        "schema": MANIFEST_SCHEMA,
         "contract_schema": lock["schema"],
-        "contract_sha256": hashlib.sha256(lock_path.read_bytes()).hexdigest(),
         "expected": expected,
         "observed": observed,
         "matches": matches,
-    }
+        "files": files,
+    })
+
+
+def runtime_mismatches(manifest: dict[str, Any]) -> list[str]:
+    if not verify_content_address(manifest):
+        return ["manifest_content_address"]
+    return [key for key, ok in manifest.get("matches", {}).items() if ok is not True]
+
+
+def write_content_addressed_manifest(manifest: dict[str, Any], directory: Path) -> Path:
+    finalized = attach_payload_sha256(manifest)
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f'environment-manifest-{finalized["payload_sha256"]}.json'
+    content = json.dumps(finalized, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    if path.exists() and path.read_text(encoding="utf-8") != content:
+        raise RuntimeError(f"content-address collision at {path}")
+    path.write_text(content, encoding="utf-8")
+    return path
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check-contract", action="store_true")
     parser.add_argument("--verify-runtime", action="store_true")
-    parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--manifest", type=Path, help="legacy explicit manifest path")
+    parser.add_argument("--manifest-dir", type=Path, help="write a content-addressed manifest")
     args = parser.parse_args()
 
-    if not (args.check_contract or args.verify_runtime or args.manifest):
-        parser.error("choose --check-contract, --verify-runtime and/or --manifest")
+    if not (args.check_contract or args.verify_runtime or args.manifest or args.manifest_dir):
+        parser.error("choose --check-contract, --verify-runtime, --manifest and/or --manifest-dir")
 
     if args.check_contract:
         errors = validate_contract()
@@ -168,11 +270,11 @@ def main() -> int:
         print("reproducibility contract: OK")
 
     manifest: dict[str, Any] | None = None
-    if args.verify_runtime or args.manifest:
+    if args.verify_runtime or args.manifest or args.manifest_dir:
         manifest = collect_manifest()
 
     if args.verify_runtime and manifest is not None:
-        mismatches = [key for key, ok in manifest["matches"].items() if not ok]
+        mismatches = runtime_mismatches(manifest)
         if mismatches:
             print("runtime mismatch: " + ", ".join(mismatches), file=sys.stderr)
             return 2
@@ -181,10 +283,13 @@ def main() -> int:
     if args.manifest and manifest is not None:
         args.manifest.parent.mkdir(parents=True, exist_ok=True)
         args.manifest.write_text(
-            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+            json.dumps(manifest, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
         print(args.manifest)
+
+    if args.manifest_dir and manifest is not None:
+        print(write_content_addressed_manifest(manifest, args.manifest_dir))
 
     return 0
 

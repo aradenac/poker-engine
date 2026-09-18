@@ -1,0 +1,11 @@
+{
+  "schema": "poker-engine-os-base/v1",
+  "platform": "linux",
+  "distribution": {"id": "ubuntu", "version_id": "24.04"},
+  "machine": "x86_64",
+  "enforcement": {"distribution_exact": true, "version_exact": true, "machine_exact": true},
+  "package_snapshot": {
+    "pinned": false,
+    "note": "Phase 1b pins the base OS identity, not the apt package snapshot. Full OS package/container digest pinning remains future REPRO work."
+  }
+}
