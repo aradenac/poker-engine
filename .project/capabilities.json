@@ -1,0 +1,120 @@
+{
+  "schema": "poker-project-capabilities/v1",
+  "state_order": [
+    "CONTRACT_READY",
+    "SCIENTIFICALLY_SELECTED",
+    "PRODUCT_INTEGRATED",
+    "PROMOTED",
+    "LIVE"
+  ],
+  "capabilities": [
+    {
+      "id": "target_zoom_population_data",
+      "summary": "Certified PokerStars NLHE 100/200 Zoom play-money population boundary and isolated registry entry.",
+      "state": "CONTRACT_READY",
+      "evidence": [
+        {
+          "id": "target-population-certified",
+          "proves": "CONTRACT_READY",
+          "kind": "json_equals",
+          "path": "training/populations/registry.json",
+          "pointer": "/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/status",
+          "equals": "CERTIFIED_DATA_ONLY"
+        }
+      ]
+    },
+    {
+      "id": "trainer_preflop_guidance",
+      "summary": "Preflop decision contracts exist, but the current trainer still starts Hero decisions on the flop.",
+      "state": "CONTRACT_READY",
+      "evidence": [
+        {
+          "id": "preflop-decision-contract",
+          "proves": "CONTRACT_READY",
+          "kind": "path_exists",
+          "path": "docs/preflop-decision-contract.md",
+          "type": "file"
+        }
+      ],
+      "limits": [
+        {
+          "id": "trainer-flop-only-boundary",
+          "blocks_state": "PRODUCT_INTEGRATED",
+          "check": {
+            "kind": "file_contains",
+            "path": "site/trainer.js",
+            "text": "Hero training decisions begin on the flop."
+          }
+        }
+      ],
+      "administrative": {
+        "issue": 109,
+        "status": "CLOSED",
+        "claimed_state": "PRODUCT_INTEGRATED",
+        "successor_issue": 206,
+        "known_mismatch_reason": "The shipped trainer declares a deliberate v1 boundary where Hero decisions begin on the flop."
+      }
+    },
+    {
+      "id": "legacy_mixed_population_engine_v83",
+      "summary": "Legacy mixed-format population retains the explicitly promoted v83 engine identity.",
+      "state": "PROMOTED",
+      "evidence": [
+        {
+          "id": "legacy-registry-promoted",
+          "proves": "PROMOTED",
+          "kind": "json_equals",
+          "path": "training/populations/registry.json",
+          "pointer": "/populations/legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1/status",
+          "equals": "PROMOTED_LEGACY"
+        },
+        {
+          "id": "v83-release-present",
+          "proves": "PROMOTED",
+          "kind": "path_exists",
+          "path": "user/releases/poker_range_equity_offline_multiway_v83.html",
+          "type": "file"
+        }
+      ],
+      "limits": [
+        {
+          "id": "live-site-unverified",
+          "blocks_state": "LIVE",
+          "check": {
+            "kind": "json_equals",
+            "path": "site/RELEASE.json",
+            "pointer": "/publication_verification/status",
+            "equals": "UNVERIFIED_LIVE"
+          }
+        }
+      ]
+    },
+    {
+      "id": "assembled_static_application",
+      "summary": "The assembled static application has a promoted repository/build identity; canonical live deployment remains unverified.",
+      "state": "PROMOTED",
+      "evidence": [
+        {
+          "id": "site-release-promoted",
+          "proves": "PROMOTED",
+          "kind": "json_equals",
+          "path": "site/RELEASE.json",
+          "pointer": "/status",
+          "equals": "promoted"
+        }
+      ],
+      "limits": [
+        {
+          "id": "canonical-live-proof-pending",
+          "blocks_state": "LIVE",
+          "check": {
+            "kind": "json_equals",
+            "path": "site/RELEASE.json",
+            "pointer": "/publication_verification/tracked_by_issue",
+            "equals": 45
+          }
+        }
+      ]
+    }
+  ]
+}
