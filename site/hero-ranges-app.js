@@ -7,12 +7,15 @@ const els={
   import:$("heroRangeImport"),export:$("heroRangeExport"),sourceBadge:$("sourceBadge"),sourceStatus:$("sourceStatus"),
   sourceRange:$("sourceRangeSelect"),sourcePosition:$("sourcePositionSelect"),sourceHandDetail:$("sourceHandDetail"),
   population:$("populationInput"),position:$("positionSelect"),stack:$("stackInput"),spot:$("spotSelect"),contextStatus:$("contextStatus"),
-  grid:$("heroGrid"),gridSummary:$("gridSummary"),title:$("selectedHandTitle"),state:$("selectedHandState"),actions:$("actionEditor"),
-  notes:$("handNotes"),save:$("saveHand"),undefine:$("undefineHand"),quickAction:$("quickAction"),quickApply:$("quickApply"),
-  handStatus:$("handStatus"),stats:$("repositoryStats"),contextList:$("contextList")
+  grid:$("heroGrid"),gridSummary:$("gridSummary"),selectionSummary:$("selectionSummary"),title:$("selectedHandTitle"),state:$("selectedHandState"),
+  comparison:$("comparisonSummary"),actions:$("actionEditor"),actionTotal:$("actionTotal"),notes:$("handNotes"),save:$("saveHand"),
+  undefine:$("undefineHand"),quickAction:$("quickAction"),quickApply:$("quickApply"),handStatus:$("handStatus"),
+  stats:$("repositoryStats"),contextList:$("contextList")
 };
 let repo=restoreRepository();
 let selectedHand="AA";
+let selectionAnchor="AA";
+let selectedHands=new Set(["AA"]);
 
 function restoreRepository(){
   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return HeroRanges.importDocument(JSON.parse(raw));}catch(_){}
@@ -22,8 +25,10 @@ function persist(){HeroRanges.validateRepository(repo);localStorage.setItem(STOR
 function setStatus(el,message,error=false){el.textContent=message;el.classList.toggle("error",!!error);}
 function context(){return HeroRanges.normalizeContext({population_id:els.population.value,table_size:6,position:els.position.value,effective_stack_bb:Number(els.stack.value),spot:els.spot.value});}
 function currentNode(){try{return repo.contexts[HeroRanges.contextKey(context())]||null;}catch(_){return null;}}
-function currentPersonal(){return HeroRanges.getHandStrategy(repo,context(),selectedHand,{layer:"personal"});}
-function currentCalculated(){return HeroRanges.getHandStrategy(repo,context(),selectedHand,{layer:"calculated"});}
+function strategy(hand,layer){return HeroRanges.getHandStrategy(repo,context(),hand,{layer});}
+function currentPersonal(){return strategy(selectedHand,"personal");}
+function currentCalculated(){return strategy(selectedHand,"calculated");}
+function selectedList(){return HeroRanges.HAND_CLASSES.filter(hand=>selectedHands.has(hand));}
 
 function initOptions(){
   els.position.innerHTML=HeroRanges.POSITIONS.map(p=>`<option>${p}</option>`).join("");els.position.value="BTN";
@@ -33,17 +38,17 @@ function initOptions(){
   if(repo.defaults?.effective_stack_bb)els.stack.value=repo.defaults.effective_stack_bb;
 }
 function canonicalHandClass(value){
-  const wanted=String(value||'').trim().toUpperCase();
+  const wanted=String(value||"").trim().toUpperCase();
   if(!wanted)return null;
   return HeroRanges.HAND_CLASSES.find(hand=>hand.toUpperCase()===wanted)||null;
 }
 function applyDeepLink(){
-  const params=new URLSearchParams(location.search||'');
-  const population=String(params.get('population')||'').trim();if(population)els.population.value=population;
-  const position=String(params.get('position')||'').trim().toUpperCase();if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
-  const spot=String(params.get('spot')||'').trim().toUpperCase();if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
-  const stack=Number(params.get('stack'));if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
-  const hand=canonicalHandClass(params.get('hand'));if(hand)selectedHand=hand;
+  const params=new URLSearchParams(location.search||"");
+  const population=String(params.get("population")||"").trim();if(population)els.population.value=population;
+  const position=String(params.get("position")||"").trim().toUpperCase();if(HeroRanges.POSITIONS.includes(position))els.position.value=position;
+  const spot=String(params.get("spot")||"").trim().toUpperCase();if(HeroRanges.SPOTS.includes(spot))els.spot.value=spot;
+  const stack=Number(params.get("stack"));if(Number.isFinite(stack)&&stack>0)els.stack.value=String(stack);
+  const hand=canonicalHandClass(params.get("hand"));if(hand){selectedHand=hand;selectionAnchor=hand;selectedHands=new Set([hand]);}
 }
 
 function legacyEntries(){return HeroRanges.legacyRanges(repo.source?.range_folder);}
@@ -60,7 +65,7 @@ function sourceFrequency(hand){
   for(const a of (row.actions||[])){const name=String(a?.name||"").toUpperCase(),v=Number(a?.frequency)||0;if(name!=="FOLD"&&v>0)f+=v;}
   return Math.max(0,Math.min(100,f));
 }
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"})[c]);}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
 function renderSourceBrowser(){
   const entries=legacyEntries();
   els.sourceBadge.textContent=repo.source?.preserved_verbatim?"source préservée":"aucune source";
@@ -77,45 +82,169 @@ function renderSourceHandDetail(){
   const row=sourceHand(selectedHand);els.sourceHandDetail.textContent=row?`${selectedHand}\n${JSON.stringify(row.actions||[],null,2)}`:`${selectedHand} : absent de la position source sélectionnée.`;
 }
 
-function renderGrid(){
-  let personal=0,calculated=0,source=0;
-  els.grid.innerHTML=HeroRanges.HAND_CLASSES.map(hand=>{
-    const p=HeroRanges.getHandStrategy(repo,context(),hand,{layer:"personal"}),c=HeroRanges.getHandStrategy(repo,context(),hand,{layer:"calculated"}),sf=sourceFrequency(hand);
-    if(p)personal++;else if(c)calculated++;if(sf!=null)source++;
-    const cls=["hand-cell",p||c?"defined":"",sf!=null?"source-only":"",hand===selectedHand?"selected":""].filter(Boolean).join(" ");
-    const mini=p?"P":c?"C":sf!=null?`${Math.round(sf)}%`:"";
-    return `<button type="button" class="${cls}" data-hand="${hand}">${hand}<span class="mini">${mini}</span></button>`;
-  }).join("");
-  els.gridSummary.textContent=`P ${personal} · C ${calculated} · source ${source}`;
-  for(const b of els.grid.querySelectorAll(".hand-cell"))b.addEventListener("click",()=>{selectedHand=b.dataset.hand;renderAll();});
+function nearly(a,b){return Math.abs(Number(a||0)-Number(b||0))<1e-8;}
+function actionsEqual(a,b){
+  const keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);
+  for(const key of keys)if(!nearly(a?.[key],b?.[key]))return false;
+  return true;
 }
-
-function sizingText(list){return (list||[]).map(x=>`${x.target_total_bb}:${Math.round(x.probability*10000)/100}%`).join(", ");}
-function renderActionEditor(){
-  const personal=currentPersonal(),calculated=currentCalculated(),strategy=personal||calculated;
-  els.title.textContent=selectedHand;
-  els.state.textContent=personal?"personnel":calculated?"calculé":"non défini";
-  els.actions.innerHTML=HeroRanges.ACTIONS.map(a=>`<div class="action-row"><span class="name">${a}</span><input data-action-prob="${a}" type="number" min="0" max="100" step="1" value="${strategy?Math.round((strategy.actions?.[a]||0)*10000)/100:"0"}" aria-label="Fréquence ${a}"><input data-action-size="${a}" value="${escapeHtml(strategy?.sizings?.[a]?sizingText(strategy.sizings[a]):"")}" placeholder="sizing ex. 2.5 ou 2.2:50%,2.5:50%" aria-label="Sizing ${a}"></div>`).join("");
-  els.notes.value=strategy?.notes||"";
-  setStatus(els.handStatus,personal?"Couche personnelle active.":calculated?"Couche calculée affichée. Enregistrer créera une personnalisation sans écraser la couche calculée.":"Main non couverte dans ce contexte.");
+function sizingListEqual(a,b){
+  const left=(a||[]).map(x=>({target:Number(x.target_total_bb),prob:Number(x.probability)})).sort((x,y)=>x.target-y.target||x.prob-y.prob);
+  const right=(b||[]).map(x=>({target:Number(x.target_total_bb),prob:Number(x.probability)})).sort((x,y)=>x.target-y.target||x.prob-y.prob);
+  if(left.length!==right.length)return false;
+  return left.every((x,i)=>nearly(x.target,right[i].target)&&nearly(x.prob,right[i].prob));
 }
+function sizingsEqual(a,b){
+  const keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);
+  for(const key of keys)if(!sizingListEqual(a?.[key],b?.[key]))return false;
+  return true;
+}
+function comparisonKind(personal,calculated){
+  if(!personal&&!calculated)return "undefined";
+  if(!personal)return "calculated-only";
+  if(!calculated)return "personal-only";
+  if(!actionsEqual(personal.actions,calculated.actions))return "action-mismatch";
+  if(!sizingsEqual(personal.sizings,calculated.sizings))return "sizing-mismatch";
+  return "identical";
+}
+const COMP_LABELS={
+  "undefined":"non définie","calculated-only":"calculée seule","personal-only":"personnelle seule",
+  "identical":"identique","action-mismatch":"désaccord action","sizing-mismatch":"désaccord sizing"
+};
+const COMP_MINI={"undefined":"","calculated-only":"C","personal-only":"P","identical":"=","action-mismatch":"A≠","sizing-mismatch":"S≠"};
 
-function parseSizing(text){
-  const s=String(text||"").trim();if(!s)return null;
-  const chunks=s.split(",").map(x=>x.trim()).filter(Boolean),rows=[];
-  for(const chunk of chunks){
-    const [target0,prob0]=chunk.split(":").map(x=>x.trim()),target=Number(target0);if(!Number.isFinite(target)||target<=0)throw new Error(`sizing invalide: ${chunk}`);
-    let probability=prob0==null?1:Number(prob0.replace("%",""));if(prob0!=null&&probability>1)probability/=100;
-    rows.push({target_total_bb:target,probability});
+function selectHand(hand,event){
+  if(event.shiftKey){
+    const a=HeroRanges.HAND_CLASSES.indexOf(selectionAnchor),b=HeroRanges.HAND_CLASSES.indexOf(hand);
+    const [lo,hi]=a<=b?[a,b]:[b,a];
+    selectedHands=new Set(HeroRanges.HAND_CLASSES.slice(lo,hi+1));
+  }else if(event.ctrlKey||event.metaKey){
+    if(selectedHands.has(hand)&&selectedHands.size>1)selectedHands.delete(hand);else selectedHands.add(hand);
+    selectionAnchor=hand;
+  }else{
+    selectedHands=new Set([hand]);selectionAnchor=hand;
   }
-  if(rows.length>1&&rows.every(x=>Math.abs(x.probability-1)<1e-9)){const q=1/rows.length;for(const row of rows)row.probability=q;}
-  return rows;
+  selectedHand=hand;
+  if(!selectedHands.has(selectedHand))selectedHand=selectedList()[0]||hand;
+  renderAll();
+}
+function selectCategory(kind){
+  let list=[];
+  if(kind==="all")list=[...HeroRanges.HAND_CLASSES];
+  else if(kind==="pairs")list=HeroRanges.HAND_CLASSES.filter(h=>h.length===2);
+  else if(kind==="suited")list=HeroRanges.HAND_CLASSES.filter(h=>h.endsWith("s"));
+  else if(kind==="offsuit")list=HeroRanges.HAND_CLASSES.filter(h=>h.endsWith("o"));
+  else list=[selectedHand];
+  selectedHands=new Set(list);selectedHand=list.includes(selectedHand)?selectedHand:list[0];selectionAnchor=selectedHand;renderAll();
+}
+
+function renderGrid(){
+  let personal=0,calculated=0,source=0,diffs=0;
+  els.grid.innerHTML=HeroRanges.HAND_CLASSES.map(hand=>{
+    const p=strategy(hand,"personal"),c=strategy(hand,"calculated"),sf=sourceFrequency(hand),kind=comparisonKind(p,c);
+    if(p)personal++;if(c)calculated++;if(sf!=null)source++;if(kind==="action-mismatch"||kind==="sizing-mismatch")diffs++;
+    const cls=["hand-cell",kind,sf!=null?"source-only":"",selectedHands.has(hand)?"selected":""].filter(Boolean).join(" ");
+    return `<button type="button" class="${cls}" data-hand="${hand}" data-comparison="${kind}" title="${escapeHtml(COMP_LABELS[kind])}">${hand}<span class="mini">${COMP_MINI[kind]}</span></button>`;
+  }).join("");
+  const count=selectedHands.size;
+  els.selectionSummary.textContent=`${count} main${count>1?"s":""} sélectionnée${count>1?"s":""}`;
+  els.gridSummary.textContent=`sélection ${count} · P ${personal} · C ${calculated} · Δ ${diffs} · source ${source}`;
+  for(const b of els.grid.querySelectorAll(".hand-cell"))b.addEventListener("click",event=>selectHand(b.dataset.hand,event));
+}
+
+function formatPct(v){return `${Math.round(Number(v||0)*10000)/100}%`;}
+function strategyLine(value){
+  if(!value)return "—";
+  const actions=Object.entries(value.actions||{}).map(([name,p])=>`${name} ${formatPct(p)}`).join(" · ")||"—";
+  const sizes=Object.entries(value.sizings||{}).map(([name,list])=>`${name}: ${list.map(x=>`${x.target_total_bb} BB @ ${formatPct(x.probability)}`).join(" / ")}`).join(" · ");
+  return sizes?`${actions}<br>${sizes}`:actions;
+}
+function renderComparison(){
+  const hands=selectedList();
+  const counts={};
+  for(const hand of hands){const kind=comparisonKind(strategy(hand,"personal"),strategy(hand,"calculated"));counts[kind]=(counts[kind]||0)+1;}
+  const rollup=Object.entries(counts).map(([kind,n])=>`${COMP_LABELS[kind]}: ${n}`).join(" · ");
+  const p=currentPersonal(),c=currentCalculated(),kind=comparisonKind(p,c);
+  els.comparison.innerHTML=
+    `<div class="compare-card"><strong>Calculée · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(c)}</span></div>`+
+    `<div class="compare-card"><strong>Personnelle · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(p)}</span></div>`+
+    `<div class="compare-rollup">État actif : <strong>${escapeHtml(COMP_LABELS[kind])}</strong>${hands.length>1?` · sélection : ${escapeHtml(rollup)}`:""}</div>`;
+}
+
+function sizeRowHtml(action,row={target_total_bb:"",probability:""}){
+  const target=row.target_total_bb==null?"":row.target_total_bb;
+  const pct=row.probability===""?"":Math.round(Number(row.probability)*10000)/100;
+  return `<div class="sizing-row">
+    <label class="sizing-input"><span>BB</span><input type="number" min="0.01" step="0.1" data-size-target="${action}" value="${escapeHtml(target)}" aria-label="Sizing ${action} en BB"></label>
+    <label class="sizing-input"><span>%</span><input type="number" min="0" max="100" step="1" data-size-prob="${action}" value="${escapeHtml(pct)}" aria-label="Fréquence sizing ${action}"></label>
+    <button type="button" class="remove-size" data-remove-size="${action}" aria-label="Retirer ce sizing">×</button>
+  </div>`;
+}
+function sizingEditorHtml(action,list){
+  return `<div class="sizing-editor" data-sizes-for="${action}">
+    <div class="sizing-head"><span>Sizings structurés</span><span class="sum-badge" data-sizing-total="${action}">aucun</span></div>
+    <div class="sizing-rows">${(list||[]).map(row=>sizeRowHtml(action,row)).join("")}</div>
+    <button type="button" class="add-size" data-add-size="${action}">+ Ajouter un sizing</button>
+  </div>`;
+}
+function renderActionEditor(){
+  const personal=currentPersonal(),calculated=currentCalculated(),strategyValue=personal||calculated;
+  const count=selectedHands.size;
+  els.title.textContent=count===1?selectedHand:`${count} mains`;
+  els.state.textContent=count===1?COMP_LABELS[comparisonKind(personal,calculated)]:"édition groupée";
+  els.actions.innerHTML=HeroRanges.ACTIONS.map(action=>{
+    const pct=strategyValue?Math.round((strategyValue.actions?.[action]||0)*10000)/100:0;
+    return `<div class="action-card">
+      <div class="action-head"><span class="name">${action}</span><label>Fréquence %<input data-action-prob="${action}" type="number" min="0" max="100" step="1" value="${pct}" aria-label="Fréquence ${action}"></label></div>
+      ${sizingEditorHtml(action,strategyValue?.sizings?.[action]||[])}
+    </div>`;
+  }).join("");
+  els.notes.value=strategyValue?.notes||"";
+  const origin=personal?"personnelle":calculated?"calculée":"vide";
+  setStatus(els.handStatus,count===1?`Édition de ${selectedHand} à partir de la couche ${origin}.`:`Édition groupée de ${count} mains. Les valeurs affichées proviennent de ${selectedHand}; seules les mains sélectionnées seront modifiées.`);
+  refreshEditorValidation();
+}
+
+function setSumBadge(el,total,hasRows=true){
+  if(!el)return;
+  if(!hasRows){el.textContent="aucun";el.classList.remove("ok","bad");return;}
+  const ok=Math.abs(total-100)<1e-6;
+  el.textContent=`${Math.round(total*100)/100} %`;
+  el.classList.toggle("ok",ok);el.classList.toggle("bad",!ok);
+}
+function refreshEditorValidation(){
+  let actionTotal=0;
+  for(const input of els.actions.querySelectorAll("[data-action-prob]"))actionTotal+=Number(input.value)||0;
+  setSumBadge(els.actionTotal,actionTotal,true);
+  for(const action of HeroRanges.ACTIONS){
+    const rows=[...els.actions.querySelectorAll(`[data-sizes-for="${action}"] .sizing-row`)];
+    const total=rows.reduce((sum,row)=>sum+(Number(row.querySelector("[data-size-prob]").value)||0),0);
+    setSumBadge(els.actions.querySelector(`[data-sizing-total="${action}"]`),total,rows.length>0);
+  }
+}
+function readSizing(action){
+  const rows=[...els.actions.querySelectorAll(`[data-sizes-for="${action}"] .sizing-row`)];
+  const out=[];let total=0;
+  for(const row of rows){
+    const targetText=row.querySelector("[data-size-target]").value.trim(),pctText=row.querySelector("[data-size-prob]").value.trim();
+    if(!targetText&&!pctText)continue;
+    const target=Number(targetText),pct=Number(pctText);
+    if(!Number.isFinite(target)||target<=0)throw new Error(`${action}: sizing BB invalide`);
+    if(!Number.isFinite(pct)||pct<=0||pct>100)throw new Error(`${action}: fréquence de sizing hors ]0–100]`);
+    total+=pct;out.push({target_total_bb:target,probability:pct/100});
+  }
+  if(out.length&&Math.abs(total-100)>1e-6)throw new Error(`${action}: les fréquences de sizing doivent totaliser 100 % (actuellement ${total} %)`);
+  return out.length?out:null;
 }
 function readEditorStrategy(){
   const actions={},sizings={};let total=0;
-  for(const a of HeroRanges.ACTIONS){
-    const pct=Number(els.actions.querySelector(`[data-action-prob="${a}"]`).value)||0;if(pct<0||pct>100)throw new Error(`${a}: fréquence hors 0–100 %`);
-    if(pct>0){actions[a]=pct/100;total+=pct;const size=parseSizing(els.actions.querySelector(`[data-action-size="${a}"]`).value);if(size)sizings[a]=size;}
+  for(const action of HeroRanges.ACTIONS){
+    const pct=Number(els.actions.querySelector(`[data-action-prob="${action}"]`).value)||0;
+    if(pct<0||pct>100)throw new Error(`${action}: fréquence hors 0–100 %`);
+    if(pct>0){
+      actions[action]=pct/100;total+=pct;
+      const sizing=readSizing(action);if(sizing)sizings[action]=sizing;
+    }
   }
   if(Math.abs(total-100)>1e-6)throw new Error(`la distribution doit totaliser 100 % (actuellement ${total} %)`);
   return {actions,sizings,notes:els.notes.value||""};
@@ -133,17 +262,31 @@ function renderRepository(){
 function renderContextStatus(){
   try{const c=context(),node=currentNode(),p=Object.keys(node?.layers?.personal?.hands||{}).length,calc=Object.keys(node?.layers?.calculated?.hands||{}).length;setStatus(els.contextStatus,`${c.population_id} · ${c.position} · ${c.effective_stack_bb} BB · ${c.spot} · personnel ${p}/169 · calculé ${calc}/169`);}catch(err){setStatus(els.contextStatus,err.message,true);}
 }
-function renderAll(){renderSourceBrowser();renderContextStatus();try{renderGrid();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderRepository();}
+function renderAll(){renderSourceBrowser();renderContextStatus();try{renderGrid();renderComparison();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderRepository();}
 
 function saveSelected(){
-  try{const s=readEditorStrategy();HeroRanges.setHandStrategy(repo,context(),selectedHand,s,{layer:"personal"});persist();renderAll();setStatus(els.handStatus,`${selectedHand} enregistrée dans la couche personnelle.`);}catch(err){setStatus(els.handStatus,err.message,true);}
+  try{
+    const value=readEditorStrategy(),hands=selectedList();
+    for(const hand of hands)HeroRanges.setHandStrategy(repo,context(),hand,value,{layer:"personal"});
+    persist();renderAll();setStatus(els.handStatus,`${hands.length} main${hands.length>1?"s":""} enregistrée${hands.length>1?"s":""} dans la couche personnelle. La couche calculée est inchangée.`);
+  }catch(err){setStatus(els.handStatus,err.message,true);}
 }
 function undefineSelected(){
-  try{HeroRanges.setHandStrategy(repo,context(),selectedHand,null,{layer:"personal"});persist();renderAll();setStatus(els.handStatus,`${selectedHand} n'a plus de définition personnelle. La couche calculée, si présente, reste intacte.`);}catch(err){setStatus(els.handStatus,err.message,true);}
+  try{
+    const hands=selectedList();
+    for(const hand of hands)HeroRanges.setHandStrategy(repo,context(),hand,null,{layer:"personal"});
+    persist();renderAll();setStatus(els.handStatus,`Override personnel retiré pour ${hands.length} main${hands.length>1?"s":""}. Les stratégies calculées restent intactes.`);
+  }catch(err){setStatus(els.handStatus,err.message,true);}
 }
 function quickApply(){
-  for(const a of HeroRanges.ACTIONS)els.actions.querySelector(`[data-action-prob="${a}"]`).value=a===els.quickAction.value?100:0;
-  saveSelected();
+  for(const action of HeroRanges.ACTIONS)els.actions.querySelector(`[data-action-prob="${action}"]`).value=action===els.quickAction.value?100:0;
+  refreshEditorValidation();saveSelected();
+}
+function addSizing(action){
+  const rows=els.actions.querySelector(`[data-sizes-for="${action}"] .sizing-rows`);
+  const hasRows=rows.children.length>0;
+  rows.insertAdjacentHTML("beforeend",sizeRowHtml(action,{target_total_bb:"",probability:hasRows?0:1}));
+  refreshEditorValidation();
 }
 
 async function importFile(file){
@@ -159,5 +302,11 @@ els.import.addEventListener("change",async e=>{const f=e.target.files?.[0];e.tar
 els.export.addEventListener("click",exportFile);els.save.addEventListener("click",saveSelected);els.undefine.addEventListener("click",undefineSelected);els.quickApply.addEventListener("click",quickApply);
 els.sourceRange.addEventListener("change",()=>{renderSourceBrowser();renderGrid();});els.sourcePosition.addEventListener("change",()=>{renderSourceHandDetail();renderGrid();});
 for(const el of [els.population,els.position,els.stack,els.spot])el.addEventListener("change",renderAll);
+for(const button of document.querySelectorAll("[data-select-kind]"))button.addEventListener("click",()=>selectCategory(button.dataset.selectKind));
+els.actions.addEventListener("input",refreshEditorValidation);
+els.actions.addEventListener("click",event=>{
+  const add=event.target.closest("[data-add-size]");if(add){addSizing(add.dataset.addSize);return;}
+  const remove=event.target.closest("[data-remove-size]");if(remove){remove.closest(".sizing-row")?.remove();refreshEditorValidation();}
+});
 
 initOptions();applyDeepLink();renderAll();
