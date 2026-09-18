@@ -1,0 +1,406 @@
+name: Execute preflop strategy PFPC VALIDATION
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/preflop-strategy-validation-pfpc.yml'
+      - 'tools/training/select_preflop_strategy_validation.py'
+      - 'tests/simulation/test_preflop_strategy_exposure_guard.py'
+  push:
+    branches:
+      - 'execute/issue-108-pfpc-validation-20260918'
+    paths:
+      - '.github/triggers/issue-108-pfpc-validation-20260918'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: preflop-strategy-pfpc-validation-20260918
+  cancel-in-progress: false
+
+env:
+  CANDIDATE_DIR: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1
+  CANDIDATE_REPOSITORY: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json
+  CANDIDATE_BINDING: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/POLICY_CONTEXT_BINDING.json
+  CANDIDATE_SOURCE: training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/SOURCE_RUN.json
+  CONTRACT: training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260918_PFPC.json
+  REFERENCE: training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json
+  SENSITIVITY: training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json
+  RESULT_RUN_ID: 20260918_preflop_strategy_validation_pfpc_v1
+  RESULT_BRANCH: evidence/issue-108-pfpc-validation-20260918
+  MASTER_SEED: '20260917'
+
+jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate frozen PFPC contract and selection semantics
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_pfpc.py
+          PYTHONPATH=. python3 tests/simulation/test_preflop_strategy_exposure_guard.py
+          python3 -m py_compile \
+            tools/simulation/preflop_strategy_benchmark_support_closed.py \
+            tools/training/select_preflop_strategy_validation.py
+      - name: Prove PR validation cannot execute scientific rollout
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          assert os.environ['GITHUB_EVENT_NAME']=='pull_request'
+          print('PFPC workflow PR path validates contracts only; rollout jobs are push-only')
+          PY
+
+  prepare:
+    if: >-
+      github.event_name == 'push' &&
+      github.ref_name == 'execute/issue-108-pfpc-validation-20260918'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate frozen contract before any PFPC rollout
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/validate_preflop_strategy_benchmark_pfpc.py
+      - name: Freeze and verify persisted issue 107 candidate
+        id: candidate
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root=Path(os.environ['CANDIDATE_DIR'])
+          source=json.loads(Path(os.environ['CANDIDATE_SOURCE']).read_text(encoding='utf-8'))
+          binding=json.loads(Path(os.environ['CANDIDATE_BINDING']).read_text(encoding='utf-8'))
+
+          def sha(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          assert source['schema']=='poker-hero-pfpc-persistence/v1'
+          assert source['issue']==107
+          assert source['source_workflow_run_id']==35379387883
+          assert source['source_head_sha']=='d7ec5e532dc550d4c37e9129218b348eef4587b4'
+          assert source['source_branch']=='issue-107-multiposition-generation-sol'
+          assert source['promotion_authorized'] is False
+          assert source['validation_consumed'] is False
+          assert source['test_consumed'] is False
+          assert source['artifact_sha256']['HERO_RANGE_REPOSITORY_PFPC.json']==sha(os.environ['CANDIDATE_REPOSITORY'])
+          assert source['artifact_sha256']['POLICY_CONTEXT_BINDING.json']==sha(os.environ['CANDIDATE_BINDING'])
+          assert binding['schema']=='poker-hero-policy-context-binding/v1'
+          assert binding['run_id']=='20260918_hero_preflop_unopened_5pos_pfpc_v1'
+          assert binding['promotion_authorized'] is False
+          assert binding['selection_boundary']=={
+              'validation_consumed':False,
+              'test_consumed':False,
+          }
+          assert binding['matching']=='EXACT_PFPC_AND_169_HAND_CLASS_ONLY'
+          assert binding['nearest_context_substitution'] is False
+          print('sha='+source['source_head_sha'])
+          PY
+      - name: Prepare immutable certified VALIDATION scenarios and run identity
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue108
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_benchmark_support_closed prepare-validation \
+            --population pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+            --profiles training/runs/20260912_independent_profiles_v2/model/profiles.json \
+            --archive 'training/datasets/NLHE_100-200/source/NLHE 100-200.zip' \
+            --archive 'training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip' \
+            --certification training/datasets/NLHE_100-200/population_certification.json \
+            --seed "$MASTER_SEED" \
+            --code-sha "$GITHUB_SHA" \
+            --candidate-source-commit '${{ steps.candidate.outputs.sha }}' \
+            --contract "$CONTRACT" \
+            --reference-descriptor "$REFERENCE" \
+            --sensitivity "$SENSITIVITY" \
+            --candidate "$CANDIDATE_REPOSITORY" \
+            --binding "$CANDIDATE_BINDING" \
+            --scenarios-out /tmp/issue108/SCENARIOS_VALIDATION.json \
+            --run-manifest-out /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+      - name: Revalidate frozen run manifest before policy rollout
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from tools.training.validate_preflop_strategy_benchmark_v2 import (
+              load_json,
+              validate_run_manifest,
+          )
+
+          contract=load_json(Path(os.environ['CONTRACT']))
+          sensitivity=load_json(Path(os.environ['SENSITIVITY']))
+          run=load_json(Path('/tmp/issue108/RUN_MANIFEST_VALIDATION.json'))
+          scenarios=Path('/tmp/issue108/SCENARIOS_VALIDATION.json')
+          check=validate_run_manifest(contract,sensitivity,run)
+          assert check['status']=='PASS', check
+          assert run['contract_version']=='2026-09-18.3'
+          assert run['phase']=='VALIDATION'
+          assert run['test_data_read'] is False
+          assert run['results_inspected'] is False
+          assert run['selection_boundary']['test_visible'] is False
+          assert run['selection_boundary']['test_consumed'] is False
+          assert run['identities']['candidate_binding_schema']=='poker-hero-policy-context-binding/v1'
+          assert hashlib.sha256(scenarios.read_bytes()).hexdigest()==run['identities']['scenario_manifest_sha256']
+          assert run['budgets']['rollouts_per_base_hand']==2
+          assert run['budgets']['bootstrap_samples']==5000
+          print(json.dumps(check,indent=2,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-pfpc-validation-scenarios-${{ github.sha }}
+          path: |
+            /tmp/issue108/SCENARIOS_VALIDATION.json
+            /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+          if-no-files-found: error
+          retention-days: 30
+
+  environment:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        environment_id:
+          - model-b-public-reference-nominal-v1
+          - model-b-public-reference-lower-aggression-v1
+          - model-b-public-reference-higher-aggression-v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-validation-scenarios-${{ github.sha }}
+          path: /tmp/issue108
+      - name: Download immutable issue 104 retained public Model B
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/model-b-104
+          gh run download 34993837824 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4 \
+            --dir /tmp/model-b-104
+          test -s /tmp/model-b-104/public_reference_behavior.json
+          echo 'fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca  /tmp/model-b-104/public_reference_behavior.json' | sha256sum -c -
+      - name: Run paired PFPC VALIDATION environment
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue108/report
+          PYTHONPATH=. python3 -m tools.simulation.preflop_strategy_benchmark_support_closed run-environment \
+            --scenarios /tmp/issue108/SCENARIOS_VALIDATION.json \
+            --run-manifest /tmp/issue108/RUN_MANIFEST_VALIDATION.json \
+            --environment-id '${{ matrix.environment_id }}' \
+            --reference-behavior /tmp/model-b-104/public_reference_behavior.json \
+            --issue-104-result training/runs/20260915_model_b_card_aware_v1/RESULT.json \
+            --reference-descriptor "$REFERENCE" \
+            --sensitivity "$SENSITIVITY" \
+            --candidate "$CANDIDATE_REPOSITORY" \
+            --binding "$CANDIDATE_BINDING" \
+            --output '/tmp/issue108/report/${{ matrix.environment_id }}.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-pfpc-environment-${{ matrix.environment_id }}-${{ github.sha }}
+          path: '/tmp/issue108/report/${{ matrix.environment_id }}.json'
+          if-no-files-found: error
+          retention-days: 30
+
+  select:
+    needs: environment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-validation-scenarios-${{ github.sha }}
+          path: /tmp/issue108
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue-108-pfpc-environment-*-${{ github.sha }}
+          path: /tmp/issue108/reports
+          merge-multiple: true
+      - name: Validate exposure then apply unchanged frozen performance gate
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/select_preflop_strategy_validation.py \
+            --run-manifest /tmp/issue108/RUN_MANIFEST_VALIDATION.json \
+            --report /tmp/issue108/reports/model-b-public-reference-nominal-v1.json \
+            --report /tmp/issue108/reports/model-b-public-reference-lower-aggression-v1.json \
+            --report /tmp/issue108/reports/model-b-public-reference-higher-aggression-v1.json \
+            --output /tmp/issue108/VALIDATION_SELECTION.json
+      - name: Freeze immutable validation evidence bundle
+        run: |
+          set -euo pipefail
+          cp /tmp/issue108/reports/*.json /tmp/issue108/
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root=Path('/tmp/issue108')
+          selection=json.loads((root/'VALIDATION_SELECTION.json').read_text(encoding='utf-8'))
+          allowed={
+              'BLOCKED_NOT_A_PERFORMANCE_RESULT',
+              'RETAIN_REFERENCE',
+              'FREEZE_FINALIST',
+          }
+          assert selection['outcome'] in allowed, selection
+          assert selection['contract_version']=='2026-09-18.3'
+          assert selection['test_consumed'] is False
+          assert selection['promotion_authorized'] is False
+          assert selection['test_authorized'] is (selection['outcome']=='FREEZE_FINALIST')
+          if selection['outcome']=='BLOCKED_NOT_A_PERFORMANCE_RESULT':
+              assert selection['performance_gate_interpretable'] is False
+          else:
+              assert selection['candidate_exposure_validity']['status']=='PASS'
+
+          files=[
+              'SCENARIOS_VALIDATION.json',
+              'RUN_MANIFEST_VALIDATION.json',
+              'model-b-public-reference-nominal-v1.json',
+              'model-b-public-reference-lower-aggression-v1.json',
+              'model-b-public-reference-higher-aggression-v1.json',
+              'VALIDATION_SELECTION.json',
+          ]
+          manifest={
+              name:{
+                  'sha256':hashlib.sha256((root/name).read_bytes()).hexdigest(),
+                  'size_bytes':(root/name).stat().st_size,
+              }
+              for name in files
+          }
+          (root/'ARTIFACT_MANIFEST.json').write_text(
+              json.dumps(manifest,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(selection,indent=2,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-108-pfpc-validation-result-${{ github.sha }}
+          path: |
+            /tmp/issue108/RUN_MANIFEST_VALIDATION.json
+            /tmp/issue108/SCENARIOS_VALIDATION.json
+            /tmp/issue108/model-b-public-reference-nominal-v1.json
+            /tmp/issue108/model-b-public-reference-lower-aggression-v1.json
+            /tmp/issue108/model-b-public-reference-higher-aggression-v1.json
+            /tmp/issue108/VALIDATION_SELECTION.json
+            /tmp/issue108/ARTIFACT_MANIFEST.json
+          if-no-files-found: error
+          retention-days: 30
+
+  persist-result-branch:
+    needs: select
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-108-pfpc-validation-result-${{ github.sha }}
+          path: /tmp/issue108
+      - name: Verify and materialize immutable VALIDATION result
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          src=Path('/tmp/issue108')
+          dest=Path('training/runs')/os.environ['RESULT_RUN_ID']
+          assert not dest.exists(), f'immutable result already exists: {dest}'
+          manifest=json.loads((src/'ARTIFACT_MANIFEST.json').read_text(encoding='utf-8'))
+          for name,row in manifest.items():
+              path=src/name
+              assert path.is_file(), path
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==row['sha256']
+              assert path.stat().st_size==row['size_bytes']
+
+          run=json.loads((src/'RUN_MANIFEST_VALIDATION.json').read_text(encoding='utf-8'))
+          selection=json.loads((src/'VALIDATION_SELECTION.json').read_text(encoding='utf-8'))
+          assert run['contract_version']=='2026-09-18.3'
+          assert run['phase']=='VALIDATION'
+          assert run['test_data_read'] is False
+          assert run['selection_boundary']['test_consumed'] is False
+          assert selection['test_consumed'] is False
+          assert selection['promotion_authorized'] is False
+
+          dest.mkdir(parents=True)
+          for name in list(manifest)+['ARTIFACT_MANIFEST.json']:
+              shutil.copy2(src/name,dest/name)
+          result={
+              'schema':'poker-preflop-strategy-pfpc-validation-result/v1',
+              'issue':108,
+              'run_id':os.environ['RESULT_RUN_ID'],
+              'population_id':'pokerstars_nlhe_100-200_zoom_play_6max_v1',
+              'contract_version':'2026-09-18.3',
+              'source_workflow_run_id':int(os.environ['GITHUB_RUN_ID']),
+              'source_code_commit_sha':run['identities']['code_commit_sha'],
+              'candidate_id':run['identities']['candidate_id'],
+              'candidate_artifact_sha256':run['identities']['candidate_artifact_sha256'],
+              'candidate_binding_sha256':run['identities']['candidate_binding_sha256'],
+              'candidate_source_commit_sha':run['identities']['candidate_source_commit_sha'],
+              'decision':selection['outcome'],
+              'frozen_finalist':selection.get('frozen_finalist'),
+              'test_authorized':selection['test_authorized'],
+              'test_consumed':False,
+              'promotion_authorized':False,
+              'artifact_manifest_sha256':hashlib.sha256((dest/'ARTIFACT_MANIFEST.json').read_bytes()).hexdigest(),
+          }
+          (dest/'RESULT.json').write_text(
+              json.dumps(result,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+      - name: Commit result to dedicated evidence branch only
+        run: |
+          set -euo pipefail
+          DEST="training/runs/$RESULT_RUN_ID"
+          git config user.name 'poker-engine evidence bot'
+          git config user.email 'evidence-bot@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin "$RESULT_BRANCH" >/dev/null 2>&1; then
+            echo "Immutable #108 evidence branch already exists; refusing overwrite."
+            exit 1
+          fi
+          git switch -c "$RESULT_BRANCH"
+          git add "$DEST"
+          test -n "$(git status --porcelain)"
+          git commit -m "Persist issue #108 PFPC VALIDATION evidence"
+          git push --set-upstream origin "$RESULT_BRANCH"
