@@ -19,8 +19,9 @@ def main() -> None:
     assert 'decisionPrimarySummaryHtml(summary,{compact:true})' in TRAINER
 
     # Primary hierarchy: played/recommended/sizing/EV/delta before diagnostics.
-    for label in ('Joué', 'Recommandé', 'EV jouée', 'Meilleure EV', 'ΔEV vs meilleure'):
+    for label in ('Perte EV', 'Joué', 'Recommandé', 'EV jouée', 'Meilleure EV'):
         assert label in INDEX, f"missing primary decision label: {label}"
+    assert '`ΔEV ${deltaText} · ${qualityText}`' in INDEX
     assert '<summary>Pourquoi ? / Détails avancés</summary>' in INDEX
     assert '<summary>Pourquoi ? / Détails avancés</summary>' in TRAINER
     assert '<details class="action-advanced" open>' not in INDEX
@@ -35,7 +36,7 @@ def main() -> None:
     # losing it when the analyzer detail is copied out of the replayer.
     assert 'bestCostBB:Number.isFinite(Number(summary.best?.costBB))' in INDEX
     assert 'decisionSummary:decisionCanonicalSummary(stepIndex,step,cached)' in INDEX
-    assert 'Perte EV retenue' in TRAINER
+    assert 'Perte EV effective après incertitude' in TRAINER
 
     print("decision summary contract checks: OK")
 
