@@ -1268,7 +1268,7 @@
       <button id="trainerBackBtn" type="button" class="secondary">← Analyseur</button>
       <div>
         <div class="trainer-title">Training 6-max</div>
-        <div class="trainer-sub">100 BB · profils population observés · coaching ACTION / SIZING / EV</div>
+        <div class="trainer-sub">100 BB · <span id="trainerPopulationIdentity">population en chargement</span> · coaching ACTION / SIZING / EV</div>
       </div>
       <div class="trainer-head-spacer"></div>
       <div class="trainer-mode-group" role="group" aria-label="Mode d'entraînement">
@@ -1306,7 +1306,13 @@
           <div class="trainer-section-title">Bilan Test</div>
           <div id="trainerTestLog" class="trainer-test-log"></div>
         </section>
-        <div class="trainer-note">Model B v2 pilote les profils, fréquences d’action et sizings adverses. Limite actuelle : sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Le moteur Model A reste l’unique source de recommandation Hero et d’EV.</div>
+        <details class="action-advanced">
+          <summary>Détails techniques du Trainer</summary>
+          <div class="action-advanced-body">
+            <div id="trainerTechnicalIdentity" class="trainer-note">Population — · Model A v5 · Model B v2 · stratégie Hero Custom.</div>
+            <div class="trainer-note">Model B pilote les profils, fréquences d’action et sizings adverses. Sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Model A reste la source de recommandation Hero et d’EV.</div>
+          </div>
+        </details>
       </aside>
     </div>
   </div>
