@@ -22,6 +22,7 @@ from tools.training.generate_hero_range_decisions import HAND_CLASSES
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EVIDENCE = ROOT / "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1"
 DEFAULT_BTN = ROOT / "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1"
+DEFAULT_BTN_HISTORY = ROOT / "training/runs/20260917_hero_preflop_169_btn_unopened_v1"
 
 RUN_SCHEMA = "poker-hero-range-decision-run/v1"
 CANDIDATE_SCHEMA = "poker-hero-calculated-range-candidate/v1"
@@ -66,6 +67,117 @@ def _selected_sizing_probability(strategy: Mapping[str, Any], action: str, targe
         if abs(float(row["target_total_bb"]) - float(target)) <= 1e-6:
             probability += float(row.get("probability") or 0.0)
     return probability
+
+
+
+
+
+
+def _validate_closure_audit(value: Mapping[str, Any], *, label: str) -> dict[str, Any]:
+    audit = dict(value or {})
+    decisions = int(audit.get("decisions") or 0)
+    exact = int(audit.get("exact_model_a_decisions") or 0)
+    fallback = int(audit.get("support_closure_decisions") or 0)
+    _need(decisions >= 0 and exact >= 0 and fallback >= 0, f"{label}: negative closure count")
+    _need(exact + fallback == decisions, f"{label}: closure accounting incomplete")
+    expected_rate = None if decisions == 0 else fallback / decisions
+    observed_rate = audit.get("support_closure_rate")
+    if expected_rate is None:
+        _need(observed_rate is None, f"{label}: zero-decision closure rate must be null")
+    else:
+        _need(observed_rate is not None, f"{label}: missing closure rate")
+        _need(abs(float(observed_rate) - expected_rate) <= 1e-12, f"{label}: closure rate drift")
+    _need(audit.get("fallback_contract") == "CHECK_THEN_CALL_THEN_FOLD_V1", f"{label}: fallback contract drift")
+    _need(audit.get("nearest_context_substitution") is False, f"{label}: nearest-context substitution enabled")
+    return {
+        "decisions": decisions,
+        "exact_model_a_decisions": exact,
+        "support_closure_decisions": fallback,
+        "support_closure_rate": expected_rate,
+        "support_closure_by_street": dict(audit.get("support_closure_by_street") or {}),
+    }
+
+
+def _validate_btn_history(
+    history_dir: Path,
+    *,
+    repository: Mapping[str, Any],
+    binding: Mapping[str, Any],
+    expected_population: str,
+) -> int:
+    """Re-prove historical BTN action/sizing parity from compact run evidence."""
+    supported_path = history_dir / "SUPPORTED_DECISIONS.json"
+    unsupported_path = history_dir / "UNSUPPORTED.json"
+    result_path = history_dir / "RESULT.json"
+    for path in (supported_path, unsupported_path, result_path):
+        _need(path.is_file(), f"BTN: missing historical {path.name}")
+
+    supported = load(supported_path)
+    unsupported = load(unsupported_path)
+    result = load(result_path)
+    _need(supported.get("schema") == "poker-hero-supported-decisions/v1", "BTN: supported decision schema mismatch")
+    _need(unsupported.get("schema") == "poker-hero-unsupported-hand-classes/v1", "BTN: unsupported schema mismatch")
+    _need(result.get("schema") == "poker-hero-preflop-169-generation-result/v1", "BTN: historical result schema mismatch")
+    _need(str(supported.get("population_id") or "") == expected_population, "BTN: supported population mismatch")
+    _need(str(unsupported.get("population_id") or "") == expected_population, "BTN: unsupported population mismatch")
+    _need(str(result.get("population_id") or "") == expected_population, "BTN: result population mismatch")
+    _need(result.get("promotion_authorized") is False, "BTN: historical result self-promotes")
+    boundary = dict(result.get("selection_boundary") or {})
+    _need(boundary.get("validation_consumed") is False, "BTN: historical run consumed VALIDATION")
+    _need(boundary.get("test_consumed") is False, "BTN: historical run consumed TEST")
+
+    supported_rows = list(supported.get("rows") or [])
+    unsupported_rows = list(unsupported.get("rows") or [])
+    _need(int(supported.get("count") or -1) == len(supported_rows), "BTN: supported count mismatch")
+    _need(int(unsupported.get("count") or -1) == len(unsupported_rows), "BTN: unsupported count mismatch")
+    supported_hands = [str(row.get("hand_class") or "") for row in supported_rows]
+    unsupported_hands = [str(row.get("hand_class") or "") for row in unsupported_rows]
+    _need(len(set(supported_hands)) == len(supported_hands), "BTN: duplicate supported hand")
+    _need(len(set(unsupported_hands)) == len(unsupported_hands), "BTN: duplicate unsupported hand")
+    _need(set(supported_hands).isdisjoint(unsupported_hands), "BTN: hand both supported and unsupported")
+    _need(set(supported_hands) | set(unsupported_hands) == set(HAND_CLASSES), "BTN: historical 169 hand set mismatch")
+
+    coverage = dict(result.get("coverage") or {})
+    _need(int(coverage.get("requested") or -1) == 169, "BTN: historical requested coverage drift")
+    _need(int(coverage.get("completed") or -1) == len(supported_rows), "BTN: historical completed coverage drift")
+    _need(int(coverage.get("unsupported") or -1) == len(unsupported_rows), "BTN: historical unsupported coverage drift")
+    _need(int(coverage.get("accounted") or -1) == 169, "BTN: historical accounted coverage drift")
+    bind_cov = dict(binding.get("coverage") or {})
+    _need(int(bind_cov.get("supported") or -1) == len(supported_rows), "BTN: PFC binding supported count differs from history")
+    _need(int(bind_cov.get("unsupported") or -1) == len(unsupported_rows), "BTN: PFC binding unsupported count differs from history")
+
+    contexts = dict(repository.get("contexts") or {})
+    _need(len(contexts) == 1, "BTN: source repository must contain one context")
+    node = next(iter(contexts.values()))
+    context = dict(node.get("context") or {})
+    _need(str(context.get("position") or "") == "BTN", "BTN: repository position mismatch")
+    _need(str(context.get("spot") or "") == "UNOPENED", "BTN: repository spot mismatch")
+    calculated = dict((((node.get("layers") or {}).get("calculated") or {}).get("hands") or {}))
+    _need(set(calculated) == set(supported_hands), "BTN: repository hand coverage differs from historical supported decisions")
+
+    expected_action_counts: dict[str, int] = {}
+    parity = 0
+    for row in supported_rows:
+        hand = str(row.get("hand_class") or "")
+        action = _range_action(str(row.get("action") or ""), str(context.get("spot") or ""))
+        expected_action_counts[action] = expected_action_counts.get(action, 0) + 1
+        _need(math.isfinite(float(row.get("ev_bb"))), f"BTN/{hand}: non-finite EV")
+        _need(int(row.get("search_budget") or 0) > 0, f"BTN/{hand}: missing search budget")
+        strategy = dict(calculated.get(hand) or {})
+        probability = float((strategy.get("actions") or {}).get(action) or 0.0)
+        _need(abs(probability - 1.0) <= EPS, f"BTN/{hand}: selected action parity drift")
+        _need(len(strategy.get("actions") or {}) == 1, f"BTN/{hand}: historical one-hot strategy gained actions")
+        target = row.get("target_total_bb")
+        if target is None:
+            _need(not (strategy.get("sizings") or {}), f"BTN/{hand}: sizing appeared for no-target decision")
+        else:
+            sizing_probability = _selected_sizing_probability(strategy, action, float(target))
+            _need(abs(sizing_probability - 1.0) <= EPS, f"BTN/{hand}: selected sizing parity drift")
+        parity += 1
+
+    result_counts = {str(key): int(value) for key, value in (result.get("selected_action_counts") or {}).items()}
+    _need(result_counts == expected_action_counts, "BTN: historical selected action counts drift")
+    return parity
 
 
 def _validate_source(
@@ -148,6 +260,16 @@ def _validate_source(
     _need(closure.get("enabled") is True, f"{position}: continuation closure missing")
     _need(closure.get("nearest_context_substitution") is False, f"{position}: nearest-context substitution enabled")
     _need(closure.get("fallback_contract") == "CHECK_THEN_CALL_THEN_FOLD_V1", f"{position}: closure contract drift")
+    closure_audit = {
+        "opponent_future_actions": _validate_closure_audit(
+            closure.get("opponent_future_actions") or {},
+            label=f"{position}/opponent_future_actions",
+        ),
+        "hero_future_actions": _validate_closure_audit(
+            closure.get("hero_future_actions") or {},
+            label=f"{position}/hero_future_actions",
+        ),
+    }
 
     candidate_coverage = dict(candidate.get("coverage") or {})
     _need(int(candidate_coverage.get("defined_hand_classes", -1)) == completed, f"{position}: candidate coverage drift")
@@ -216,14 +338,20 @@ def _validate_source(
         "supported": completed,
         "unsupported": unsupported_count,
         "parity_checked_hands": parity,
+        "continuation_support": closure_audit,
         "context_key": next(iter(contexts)),
         "context_node": node,
     }
 
 
-def validate(evidence_dir: Path, btn_source: Path = DEFAULT_BTN) -> dict[str, Any]:
+def validate(
+    evidence_dir: Path,
+    btn_source: Path = DEFAULT_BTN,
+    btn_history: Path = DEFAULT_BTN_HISTORY,
+) -> dict[str, Any]:
     evidence_dir = Path(evidence_dir)
     btn_source = Path(btn_source)
+    btn_history = Path(btn_history)
     final_repo_path = evidence_dir / "HERO_RANGE_REPOSITORY_PFPC.json"
     final_binding_path = evidence_dir / "POLICY_CONTEXT_BINDING.json"
     result_path = evidence_dir / "RESULT.json"
@@ -292,6 +420,12 @@ def validate(evidence_dir: Path, btn_source: Path = DEFAULT_BTN) -> dict[str, An
     btn_contexts = dict(btn_repo.get("contexts") or {})
     _need(len(btn_contexts) == 1, "BTN source repository must contain one context")
     btn_cov = dict(btn_binding.get("coverage") or {})
+    btn_parity = _validate_btn_history(
+        btn_history,
+        repository=btn_repo,
+        binding=btn_binding,
+        expected_population=population,
+    )
     validated_sources["BTN"] = {
         "position": "BTN",
         "preflop_context_id": str(btn_binding.get("preflop_context_id") or ""),
@@ -299,7 +433,10 @@ def validate(evidence_dir: Path, btn_source: Path = DEFAULT_BTN) -> dict[str, An
         "binding_sha256": sha256(btn_binding_path),
         "supported": int(btn_cov.get("supported") or 0),
         "unsupported": int(btn_cov.get("unsupported") or 0),
-        "parity_checked_hands": 0,
+        "parity_checked_hands": btn_parity,
+        "continuation_support": {
+            "mode": "STRICT_HISTORICAL_SOURCE_NO_SUPPORT_CLOSURE",
+        },
         "context_key": next(iter(btn_contexts)),
         "context_node": next(iter(btn_contexts.values())),
     }
@@ -345,11 +482,15 @@ def validate(evidence_dir: Path, btn_source: Path = DEFAULT_BTN) -> dict[str, An
                 "supported": validated_sources[position]["supported"],
                 "unsupported": validated_sources[position]["unsupported"],
                 "parity_checked_hands": validated_sources[position]["parity_checked_hands"],
+                "continuation_support": validated_sources[position]["continuation_support"],
             }
             for position in POSITIONS
         },
         "supported_hand_slots": supported_total,
         "unsupported_hand_slots": unsupported_total,
+        "parity_checked_hands": sum(
+            validated_sources[position]["parity_checked_hands"] for position in POSITIONS
+        ),
         "new_position_parity_checked_hands": sum(
             validated_sources[position]["parity_checked_hands"] for position in NEW_POSITIONS
         ),
@@ -363,9 +504,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, default=DEFAULT_EVIDENCE)
     parser.add_argument("--btn-source", type=Path, default=DEFAULT_BTN)
+    parser.add_argument("--btn-history", type=Path, default=DEFAULT_BTN_HISTORY)
     args = parser.parse_args()
     try:
-        result = validate(args.evidence, args.btn_source)
+        result = validate(args.evidence, args.btn_source, args.btn_history)
     except Exception as exc:
         result = {
             "schema": "poker-hero-pfpc-evidence-validation/v1",
