@@ -40,6 +40,7 @@ from tools.population_pack_candidate import (  # noqa: E402
 
 PACK_CONFIG_SCHEMA = "poker-population-pack-config/v1"
 PACK_SCHEMA = "poker-population-pack/v1"
+ZOOM_100_200_POPULATION = "pokerstars_nlhe_100-200_zoom_play_6max_v1"
 ALLOWED_POPULATION_STATUSES = {"PROMOTED", "PROMOTED_LEGACY"}
 REQUIRED_DISTRIBUTION_ROLES = {
     "model_a_preflop",
@@ -180,10 +181,7 @@ def build(config_path: Path, out_dir: Path, *, population_override: str | None =
         raise PackError(f"population {population_id} is {status or 'UNSPECIFIED'}, not an accepted promoted distribution state")
 
     candidate_binding = None
-    legacy_unscoped_allowed = bool(
-        population.get("compatibility", {}).get("legacy_unscoped_artifacts_allowed", False)
-    )
-    if not legacy_unscoped_allowed:
+    if population_id == ZOOM_100_200_POPULATION:
         candidate_rel = str(cfg.get("candidate_contract") or "")
         if not candidate_rel:
             raise PackError(
