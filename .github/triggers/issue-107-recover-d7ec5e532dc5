@@ -4,6 +4,9 @@
   "source_workflow_run_id": 35379387883,
   "source_head_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
   "mode": "ARTIFACT_ONLY_NO_GENERATION",
+  "recovery_attempt": 2,
+  "previous_recovery_run_id": 35402812409,
+  "previous_result": "BLOCKED_ARTIFACT_LIST_PAGINATION_100_OF_104",
   "validation_consumed": false,
   "test_consumed": false
 }
