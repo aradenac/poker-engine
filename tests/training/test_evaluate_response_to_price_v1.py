@@ -118,6 +118,28 @@ class HeroSensitivityTests(unittest.TestCase):
             self.assertGreater(report["any_environment"]["first_action_changed_fraction"], 0)
             self.assertFalse(report["test_consumed"])
 
+    def test_finalize_encodes_no_automatic_promotion_as_positive_dod_evidence(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "RESULT.partial.json").write_text(json.dumps({
+                "test_consumed": False,
+                "predictive_gate": {"pass": True, "checks": {"fixture": True}},
+            }), encoding="utf-8")
+            hero = root / "hero.json"
+            hero.write_text(json.dumps({
+                "test_consumed": False,
+                "scenario_split": "VALIDATION",
+                "environments_weighted": False,
+            }), encoding="utf-8")
+            rc = finalize(SimpleNamespace(run_dir=str(root), hero_sensitivity=str(hero)))
+            self.assertEqual(rc, 0)
+            result = json.loads((root / "RESULT.json").read_text(encoding="utf-8"))
+            self.assertIs(result["automatic_promotion"], False)
+            self.assertIs(result["active_model_b_changed"], False)
+            self.assertIs(result["test_consumed"], False)
+            self.assertIs(result["scientific_dod"]["automatic_promotion_disabled"], True)
+            self.assertTrue(all(result["scientific_dod"].values()))
+
     def test_finalize_rejects_test_consumption(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
