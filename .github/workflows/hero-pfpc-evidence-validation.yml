@@ -1,0 +1,44 @@
+name: Validate persisted Hero PFPC evidence
+
+on:
+  pull_request:
+    paths:
+      - 'tools/training/validate_hero_pfpc_evidence.py'
+      - 'tests/training/test_validate_hero_pfpc_evidence.py'
+      - '.github/workflows/hero-pfpc-evidence-validation.yml'
+      - 'training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/training/validate_hero_pfpc_evidence.py'
+      - 'tests/training/test_validate_hero_pfpc_evidence.py'
+      - '.github/workflows/hero-pfpc-evidence-validation.yml'
+      - 'training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and test artifact-only validator
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/training/validate_hero_pfpc_evidence.py
+          PYTHONPATH=. python3 tests/training/test_validate_hero_pfpc_evidence.py
+      - name: Validate immutable issue 107 evidence when present
+        run: |
+          set -euo pipefail
+          EVIDENCE=training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1
+          if [[ -d "$EVIDENCE" ]]; then
+            PYTHONPATH=. python3 tools/training/validate_hero_pfpc_evidence.py --evidence "$EVIDENCE"
+          else
+            echo "Persisted five-position evidence not present yet; synthetic contract tests passed."
+          fi
