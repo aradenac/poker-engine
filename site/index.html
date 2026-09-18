@@ -3406,18 +3406,26 @@ function decisionCanonicalSummary(stepIndex,step,cached=null){
     alternatives:ordered.map(a=>normalize(a,a===best)).filter(Boolean)
   };
 }
+function decisionQualityFromEV(summary){
+  const rawLoss=Number(summary?.lossEVBB),effectiveLoss=Number(summary?.effectiveLossEVBB),withinNoise=!!summary?.withinNoise;
+  if(!Number.isFinite(rawLoss))return {key:"unknown",label:"Indéterminée",note:"ΔEV indisponible"};
+  if(rawLoss<=1e-9)return {key:"good",label:"Bonne",note:"meilleure EV"};
+  if(withinNoise||(Number.isFinite(effectiveLoss)&&effectiveLoss<=1e-9))return {key:"close",label:"Proche",note:"écart dans le bruit Monte-Carlo"};
+  return {key:"bad",label:"Erreur",note:"perte EV au-delà de l’incertitude"};
+}
 function decisionPrimarySummaryHtml(summary,{compact=false}={}){
   if(!summary)return "";
-  const p=summary.played||{},r=summary.recommended||{},delta=Number(summary.deltaEVBB),loss=Number(summary.lossEVBB);
+  const p=summary.played||{},r=summary.recommended||{},delta=Number(summary.deltaEVBB),loss=Number(summary.lossEVBB),quality=decisionQualityFromEV(summary);
   const deltaText=Number.isFinite(delta)?formatBB(delta):"—";
-  const lossText=Number.isFinite(loss)&&loss>1e-9?`Perte EV ${formatBB(loss)}`:(summary.withinNoise?"Écart nul / bruit MC":"Aucune perte EV");
+  const lossText=Number.isFinite(loss)?formatBB(Math.max(0,loss)):"—";
+  const qualityText=quality.note?`${quality.label} · ${quality.note}`:quality.label;
   const card=(k,v,s,cls="")=>`<div class="decision-primary-card ${cls}"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v||"—")}</div>${s?`<div class="s">${escapeHtml(s)}</div>`:""}</div>`;
   return `<div class="decision-primary-grid${compact?" compact":""}" data-decision-summary-schema="decision-summary/v1">
+    ${card("Perte EV",lossText,`ΔEV ${deltaText} · ${qualityText}`,`delta quality-${quality.key}`)}
     ${card("Joué",p.label,p.sizing,"played")}
     ${card("Recommandé",r?.label||"—",r?.sizing||"—","recommended")}
     ${card("EV jouée",Number.isFinite(Number(p.evBB))?formatBB(Number(p.evBB)):"—","EV finale retenue")}
     ${card("Meilleure EV",Number.isFinite(Number(r?.evBB))?formatBB(Number(r.evBB)):"—","Meilleure alternative")}
-    ${card("ΔEV vs meilleure",deltaText,lossText,"delta")}
   </div>`;
 }
 function decisionAlternativesStripHtml(summary,limit=3){
@@ -3490,7 +3498,7 @@ function actionDetailKeyPointsHtml(args){
     const gapText=Number.isFinite(decisionSummary.effectiveGap)?formatBB(decisionSummary.effectiveGap):'—';
     const evText=Number.isFinite(decisionSummary.chosenEV)?formatBB(decisionSummary.chosenEV):'—';
     const bestText=decisionSummary.best?`${decisionSummary.best.label} · ${actionSizingAmountLabel(decisionSummary.best,decisionSummary)} · EV ${formatBB(finalDecisionEV(decisionSummary.best))}`:'—';
-    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Recommandation : <b>${escapeHtml(bestText)}</b>. Manque à gagner retenu pour la note : <b>${escapeHtml(gapText)}</b>${decisionSummary.withinNoise?" · l'écart reste compatible avec le bruit Monte-Carlo.":" · l'écart dépasse le bruit Monte-Carlo."}</div>`);
+    pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Recommandation : <b>${escapeHtml(bestText)}</b>. Perte EV effective après incertitude : <b>${escapeHtml(gapText)}</b>${decisionSummary.withinNoise?" · l'écart reste compatible avec le bruit Monte-Carlo.":" · l'écart dépasse le bruit Monte-Carlo."}</div>`);
   }else if(req.kind==='call'){
     const d1=fmtEquityDelta(priorEq,req.actorRequired), d2=fmtEquityDelta(postEq,req.actorRequired);
     pts.push(`<div class="action-detail-point"><b>Verdict a priori.</b> Équité requise <b>${escapeHtml(fmtEquityThreshold(req.actorRequired))}</b> · estimée <b>${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"}</b> <span class="action-delta ${d1.cls}">(${escapeHtml(d1.text)})</span>. EV estimée <b>${Number.isFinite(priorMetrics.evBB)?escapeHtml(formatBB(priorMetrics.evBB)):"—"}</b>.</div>`);
