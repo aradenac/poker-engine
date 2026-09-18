@@ -282,11 +282,15 @@ def evaluate_robustness(
     quasi_dominant_regret_bb: float = 0.10,
     sizing_tolerance: float = 1e-9,
 ) -> dict[str, Any]:
-    """Compare one decision's alternatives across declared Model B environments.
+    """Compare the same Hero alternatives across declared Model B environments.
 
-    ``evaluations`` contains one row per environment/alternative with EV and
-    optional MC CI. Environment uncertainty is the cross-environment envelope;
-    MC uncertainty remains attached to each evaluated row and is never pooled.
+    The contract is deliberately fail-closed:
+    - undeclared environments are rejected;
+    - missing environments, missing alternatives, or unsupported evidence produce
+      INSUFFICIENTLY_SUPPORTED rather than a robustness claim;
+    - Monte-Carlo uncertainty stays attached to each evaluation;
+    - Model-B uncertainty is represented only by the unweighted cross-environment
+      envelope/regret. No environment probability is synthesized.
     """
     regret_limit = _finite(quasi_dominant_regret_bb, name="quasi_dominant_regret_bb")
     if regret_limit < 0:
@@ -325,38 +329,65 @@ def evaluate_robustness(
             raise ValueError(f"duplicate evaluation for {env_id}/{item.alternative_id}")
         by_environment[env_id][item.alternative_id] = item
 
-    empty = [env_id for env_id, rows in by_environment.items() if not rows]
-    if empty:
-        raise ValueError(f"missing evaluations for environments: {empty}")
-    alternatives = set(by_environment[nominal_id])
-    for env_id, rows in by_environment.items():
-        if set(rows) != alternatives:
-            raise ValueError(
-                f"all environments must evaluate the same alternatives; mismatch in {env_id}"
-            )
+    missing_environment_ids = [env_id for env_id in ids if not by_environment[env_id]]
+    nominal_rows = by_environment[nominal_id]
+    required_alternatives = set(nominal_rows)
+    noncomparable_environment_ids: list[str] = []
+    missing_alternatives_by_environment: dict[str, list[str]] = {}
+    extra_alternatives_by_environment: dict[str, list[str]] = {}
+    if required_alternatives:
+        for env_id in ids:
+            actual = set(by_environment[env_id])
+            missing = sorted(required_alternatives - actual)
+            extra = sorted(actual - required_alternatives)
+            if missing:
+                missing_alternatives_by_environment[env_id] = missing
+            if extra:
+                extra_alternatives_by_environment[env_id] = extra
+            if missing or extra:
+                noncomparable_environment_ids.append(env_id)
+    else:
+        noncomparable_environment_ids = list(ids)
 
-    rankings = {env_id: _rank(rows) for env_id, rows in by_environment.items()}
-    best_ids = {env_id: ranking[0] for env_id, ranking in rankings.items()}
-    nominal_best_id = best_ids[nominal_id]
-    nominal_best = by_environment[nominal_id][nominal_best_id]
+    comparable = bool(required_alternatives) and not missing_environment_ids and not noncomparable_environment_ids
+    support_by_environment = {
+        env_id: (
+            declaration_support[env_id]
+            and bool(by_environment[env_id])
+            and all(item.environment_supported for item in by_environment[env_id].values())
+        )
+        for env_id in ids
+    }
+    all_supported = all(support_by_environment.values())
 
-    regret_by_environment = {}
-    nominal_ev_by_environment = {}
-    best_by_environment = {}
-    all_supported = True
+    rankings = {
+        env_id: _rank(rows)
+        for env_id, rows in by_environment.items()
+        if rows
+    }
+    best_ids = {
+        env_id: ranking[0]
+        for env_id, ranking in rankings.items()
+        if ranking
+    }
+    nominal_best_id = best_ids.get(nominal_id)
+    nominal_best = nominal_rows.get(nominal_best_id) if nominal_best_id else None
+
+    nominal_advantage_bb: float | None = None
+    if nominal_best is not None and len(rankings.get(nominal_id, [])) >= 2:
+        second_id = rankings[nominal_id][1]
+        nominal_advantage_bb = nominal_best.ev_bb - nominal_rows[second_id].ev_bb
+
+    regret_by_environment: dict[str, float | None] = {env_id: None for env_id in ids}
+    nominal_ev_by_environment: dict[str, float | None] = {env_id: None for env_id in ids}
+    best_by_environment: dict[str, dict[str, Any] | None] = {}
     for env_id in ids:
         rows = by_environment[env_id]
-        best_id = best_ids[env_id]
+        best_id = best_ids.get(env_id)
+        if best_id is None:
+            best_by_environment[env_id] = None
+            continue
         best = rows[best_id]
-        nominal_here = rows[nominal_best_id]
-        regret = max(0.0, best.ev_bb - nominal_here.ev_bb)
-        regret_by_environment[env_id] = regret
-        nominal_ev_by_environment[env_id] = nominal_here.ev_bb
-        all_supported = (
-            all_supported
-            and declaration_support[env_id]
-            and all(item.environment_supported for item in rows.values())
-        )
         best_by_environment[env_id] = {
             "alternative_id": best.alternative_id,
             "action": best.action,
@@ -365,60 +396,118 @@ def evaluate_robustness(
             "mc_ci95": list(best.mc_ci95) if best.mc_ci95 is not None else None,
             "ranking": rankings[env_id],
         }
+        if nominal_best_id is not None and nominal_best_id in rows:
+            nominal_here = rows[nominal_best_id]
+            nominal_ev_by_environment[env_id] = nominal_here.ev_bb
+            regret_by_environment[env_id] = max(0.0, best.ev_bb - nominal_here.ev_bb)
 
-    best_actions = [best_by_environment[env_id]["action"] for env_id in ids]
-    action_stable = len(set(best_actions)) == 1
-    nominal_sizing = nominal_best.sizing
-    sizing_stable = all(
-        _sizing_equal(best_by_environment[env_id]["sizing"], nominal_sizing, tolerance)
-        for env_id in ids
-    )
-    ranking_stable = len({tuple(rankings[env_id]) for env_id in ids}) == 1
-    max_regret = max(regret_by_environment.values())
-    quasi_dominant = max_regret <= regret_limit + EPS
-    model_ev_span = [
-        min(nominal_ev_by_environment.values()),
-        max(nominal_ev_by_environment.values()),
-    ]
+    if comparable:
+        best_actions = [best_by_environment[env_id]["action"] for env_id in ids]
+        action_stable: bool | None = len(set(best_actions)) == 1
+        nominal_sizing = nominal_best.sizing if nominal_best is not None else None
+        sizing_stable: bool | None = all(
+            _sizing_equal(best_by_environment[env_id]["sizing"], nominal_sizing, tolerance)
+            for env_id in ids
+        )
+        ranking_stable: bool | None = len({tuple(rankings[env_id]) for env_id in ids}) == 1
+        complete_regrets = [float(regret_by_environment[env_id]) for env_id in ids]
+        max_regret: float | None = max(complete_regrets)
+        quasi_dominant: bool | None = max_regret <= regret_limit + EPS
+        complete_nominal_evs = [float(nominal_ev_by_environment[env_id]) for env_id in ids]
+        model_ev_span: list[float] | None = [
+            min(complete_nominal_evs),
+            max(complete_nominal_evs),
+        ]
+        model_ev_range_width: float | None = model_ev_span[1] - model_ev_span[0]
+        worst_env_id = max(ids, key=lambda env_id: (float(regret_by_environment[env_id]), -ids.index(env_id)))
+        worst_environment_regret: dict[str, Any] | None = {
+            "environment_id": worst_env_id,
+            "regret_bb": float(regret_by_environment[worst_env_id]),
+        }
+    else:
+        action_stable = None
+        sizing_stable = None
+        ranking_stable = None
+        max_regret = None
+        quasi_dominant = None
+        model_ev_span = None
+        model_ev_range_width = None
+        worst_environment_regret = None
 
-    if not all_supported:
+    if not comparable or not all_supported:
         classification = "INSUFFICIENTLY_SUPPORTED"
     elif action_stable and sizing_stable and quasi_dominant:
         classification = "ROBUST"
     else:
         classification = "SENSITIVE"
 
-    aggressive_nominal = nominal_best.is_shove or nominal_best.is_overbet
-    aggressive_fragility = None
-    if aggressive_nominal:
-        changed = [
-            env_id
-            for env_id in ids
-            if env_id != nominal_id
-            and (
-                best_ids[env_id] != nominal_best_id
-                or regret_by_environment[env_id] > regret_limit + EPS
-            )
-        ]
-        aggressive_fragility = {
-            "nominal_is_shove": nominal_best.is_shove,
-            "nominal_is_overbet": nominal_best.is_overbet,
-            "advantage_disappears": bool(changed),
-            "affected_environments": changed,
-            "max_regret_bb": max_regret,
+    def fragility(kind: str, applicable: bool) -> dict[str, Any]:
+        if not applicable or nominal_best_id is None:
+            return {
+                "applicable": False,
+                "fragile": None,
+                "affected_environments": [],
+                "nominal_advantage_bb": nominal_advantage_bb,
+                "worst_environment_regret": worst_environment_regret,
+            }
+        affected: list[str] = []
+        if comparable:
+            for env_id in ids:
+                if env_id == nominal_id:
+                    continue
+                if (
+                    best_ids[env_id] != nominal_best_id
+                    or float(regret_by_environment[env_id]) > regret_limit + EPS
+                ):
+                    affected.append(env_id)
+        return {
+            "applicable": True,
+            "kind": kind,
+            "fragile": None if not comparable or not all_supported else bool(affected),
+            "affected_environments": affected,
+            "nominal_advantage_bb": nominal_advantage_bb,
+            "worst_environment_regret": worst_environment_regret,
         }
+
+    shove_fragility = fragility("SHOVE", bool(nominal_best and nominal_best.is_shove))
+    overbet_fragility = fragility("OVERBET", bool(nominal_best and nominal_best.is_overbet))
 
     environment_rows = []
     for env_id in ids:
+        rows = by_environment[env_id]
+        alternatives = []
+        for alt_id in rankings.get(env_id, []):
+            item = rows[alt_id]
+            ci = list(item.mc_ci95) if item.mc_ci95 is not None else None
+            alternatives.append(
+                {
+                    "alternative_id": item.alternative_id,
+                    "action": item.action,
+                    "sizing": item.sizing,
+                    "ev_bb": item.ev_bb,
+                    "mc_uncertainty": {
+                        "source": "MONTE_CARLO",
+                        "ci95": ci,
+                        "ci95_width_bb": (
+                            item.mc_ci95[1] - item.mc_ci95[0]
+                            if item.mc_ci95 is not None
+                            else None
+                        ),
+                    },
+                    "environment_supported": item.environment_supported,
+                    "is_shove": item.is_shove,
+                    "is_overbet": item.is_overbet,
+                }
+            )
         environment_rows.append(
             {
                 "environment_id": env_id,
                 "role": roles[env_id],
-                "environment_supported": (
-                    declaration_support[env_id]
-                    and all(item.environment_supported for item in by_environment[env_id].values())
-                ),
-                "best": best_by_environment[env_id],
+                "environment_supported": support_by_environment[env_id],
+                "comparable_alternatives": comparable,
+                "best": best_by_environment.get(env_id),
+                "ranking": rankings.get(env_id, []),
+                "alternatives": alternatives,
                 "nominal_recommendation_ev_bb": nominal_ev_by_environment[env_id],
                 "nominal_recommendation_regret_bb": regret_by_environment[env_id],
             }
@@ -429,23 +518,40 @@ def evaluate_robustness(
         "decision_id": str(decision_id),
         "classification": classification,
         "nominal_environment_id": nominal_id,
-        "nominal_recommendation": {
-            "alternative_id": nominal_best.alternative_id,
-            "action": nominal_best.action,
-            "sizing": nominal_best.sizing,
-            "ev_bb": nominal_best.ev_bb,
-            "mc_uncertainty": {
-                "ci95": list(nominal_best.mc_ci95) if nominal_best.mc_ci95 is not None else None,
-                "source": "MONTE_CARLO",
-            },
-        },
+        "nominal_recommendation": (
+            None
+            if nominal_best is None
+            else {
+                "alternative_id": nominal_best.alternative_id,
+                "action": nominal_best.action,
+                "sizing": nominal_best.sizing,
+                "ev_bb": nominal_best.ev_bb,
+                "nominal_advantage_bb": nominal_advantage_bb,
+                "mc_uncertainty": {
+                    "ci95": list(nominal_best.mc_ci95) if nominal_best.mc_ci95 is not None else None,
+                    "ci95_width_bb": (
+                        nominal_best.mc_ci95[1] - nominal_best.mc_ci95[0]
+                        if nominal_best.mc_ci95 is not None
+                        else None
+                    ),
+                    "source": "MONTE_CARLO",
+                },
+            }
+        ),
         "environment_uncertainty": {
             "source": "MODEL_B_VARIANTS",
             "environments_weighted": False,
+            "comparable": comparable,
+            "required_environment_ids": ids,
+            "missing_environment_ids": missing_environment_ids,
+            "noncomparable_environment_ids": noncomparable_environment_ids,
+            "missing_alternatives_by_environment": missing_alternatives_by_environment,
+            "extra_alternatives_by_environment": extra_alternatives_by_environment,
             "nominal_recommendation_ev_span_bb": model_ev_span,
-            "nominal_recommendation_ev_range_width_bb": model_ev_span[1] - model_ev_span[0],
+            "nominal_recommendation_ev_range_width_bb": model_ev_range_width,
             "max_regret_bb": max_regret,
             "regret_by_environment_bb": regret_by_environment,
+            "worst_environment_regret": worst_environment_regret,
         },
         "stability": {
             "action_stable": action_stable,
@@ -456,19 +562,39 @@ def evaluate_robustness(
         },
         "support": {
             "all_environments_supported": all_supported,
+            "unsupported_environment_ids": [
+                env_id for env_id in ids if not support_by_environment[env_id]
+            ],
             "unsupported_environment_count": sum(
-                1
-                for env_id in ids
-                if not (
-                    declaration_support[env_id]
-                    and all(item.environment_supported for item in by_environment[env_id].values())
-                )
+                1 for env_id in ids if not support_by_environment[env_id]
             ),
         },
-        "aggressive_fragility": aggressive_fragility,
+        "diagnostics": {
+            "nominal_advantage_bb": nominal_advantage_bb,
+            "worst_environment_regret": worst_environment_regret,
+            "shove_fragility": shove_fragility,
+            "overbet_fragility": overbet_fragility,
+        },
+        # Backward-compatible aggregate alias for earlier #199 consumers.
+        "aggressive_fragility": {
+            "nominal_is_shove": bool(nominal_best and nominal_best.is_shove),
+            "nominal_is_overbet": bool(nominal_best and nominal_best.is_overbet),
+            "advantage_disappears": (
+                None
+                if not comparable or not all_supported
+                else bool(
+                    shove_fragility.get("fragile")
+                    or overbet_fragility.get("fragile")
+                )
+            ),
+            "affected_environments": sorted(
+                set(shove_fragility["affected_environments"])
+                | set(overbet_fragility["affected_environments"])
+            ),
+            "max_regret_bb": max_regret,
+        },
         "environments": environment_rows,
     }
-
 
 def compact_robustness_summary(report: Mapping[str, Any]) -> dict[str, Any]:
     """Small feed/detail/export contract; deliberately hides full simulation detail."""
