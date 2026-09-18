@@ -270,6 +270,25 @@ jobs:
           print(json.dumps(source_record,indent=2,sort_keys=True))
           PY
 
+      - name: Validate persisted action/sizing parity before push
+        run: |
+          set -euo pipefail
+          DEST="training/runs/$EVIDENCE_RUN_ID"
+          PYTHONPATH=. python3 tools/training/validate_hero_pfpc_evidence.py \
+            --evidence "$DEST" \
+            > "$DEST/VALIDATION.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          result=json.loads((Path('training/runs')/os.environ['EVIDENCE_RUN_ID']/'VALIDATION.json').read_text())
+          assert result['status']=='PASS', result
+          assert result['issue']==107
+          assert result['validation_consumed'] is False
+          assert result['test_consumed'] is False
+          assert result['promotion_authorized'] is False
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+
       - name: Commit evidence to a dedicated branch only
         run: |
           set -euo pipefail
