@@ -21,7 +21,7 @@ permissions:
 
 concurrency:
   group: model-b-response-to-price-issue-197
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
@@ -222,7 +222,9 @@ jobs:
           assert r["production_effect"]=="NONE"
           assert r["automatic_promotion"] is False
           assert r["active_model_b_changed"] is False
-          assert all(r["scientific_dod"].values())
+          failed_dod=[key for key,value in r["scientific_dod"].items() if value is not True]
+          print(json.dumps({"scientific_dod":r["scientific_dod"],"failed_scientific_dod":failed_dod},indent=2))
+          assert all(r["scientific_dod"].values()), failed_dod
           h=r["hero_sensitivity"]
           assert h["scenario_split"]=="VALIDATION"
           assert h["test_consumed"] is False
@@ -255,5 +257,13 @@ jobs:
             echo "No evidence changes to commit"
           else
             git commit -m "[B][#197] Persist response-to-price scientific evidence"
-            git push origin "HEAD:$GITHUB_REF_NAME"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            echo "Unable to persist issue #197 evidence after three race-safe retries." >&2
+            exit 1
           fi
