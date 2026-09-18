@@ -1,0 +1,18 @@
+{
+  "schema": "poker-population-pack-test-fixture/v1",
+  "distribution_class": "TEST_ONLY",
+  "non_publishable": true,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "pack_id": "test-only:pokerstars-nlhe-100-200-zoom-6max",
+  "pack_version": "0.0.0-test.1",
+  "engine_version": "test-engine-1",
+  "scientific_effect": "NONE_TEST_FIXTURE_ONLY",
+  "publication_policy": {
+    "release_allowed": false,
+    "catalog_eligible": false,
+    "recommended": false,
+    "default": false,
+    "registry_promotion_allowed": false,
+    "production_activation_allowed": false
+  }
+}

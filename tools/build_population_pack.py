@@ -168,6 +168,8 @@ def build(config_path: Path, out_dir: Path, *, population_override: str | None =
     cfg = load_json(config_path)
     if cfg.get("schema") != PACK_CONFIG_SCHEMA:
         raise PackError(f"unsupported pack config schema: {cfg.get('schema')!r}")
+    if cfg.get("distribution_class") == "TEST_ONLY" or cfg.get("test_only") is True:
+        raise PackError("TEST_ONLY/NON_PUBLISHABLE fixtures cannot use the production pack builder")
 
     population_id = population_override or str(cfg.get("population_id") or "")
     if not population_id:

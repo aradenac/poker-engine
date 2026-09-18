@@ -1,0 +1,7 @@
+{
+  "schema": "poker-population-pack-test-admission/v1",
+  "artifact_class": "TEST_ONLY",
+  "non_publishable": true,
+  "scientific_effect": "NONE_TEST_FIXTURE_ONLY",
+  "decision": "TEST_ONLY_INTEGRATION"
+}
