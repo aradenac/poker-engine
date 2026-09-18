@@ -6,7 +6,7 @@ on:
       - '.github/workflows/recover-issue-107-pfpc.yml'
   push:
     branches:
-      - 'agent-A/issue-107-artifact-recovery'
+      - 'trigger/issue-107-recover-d7ec5e532dc5'
     paths:
       - '.github/triggers/issue-107-recover-d7ec5e532dc5'
 
@@ -70,7 +70,7 @@ jobs:
   recover-and-persist:
     if: >-
       github.event_name == 'push' &&
-      github.ref_name == 'agent-A/issue-107-artifact-recovery'
+      github.ref_name == 'trigger/issue-107-recover-d7ec5e532dc5'
     permissions:
       contents: write
       actions: read

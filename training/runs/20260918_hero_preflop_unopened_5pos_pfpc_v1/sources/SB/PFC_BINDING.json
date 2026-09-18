@@ -1,0 +1,84 @@
+{
+  "artifact_sha256": {
+    "hero_range_repository_pfc": "3c162fb2fe64b282940c5f0670c0286c7da1f476fa6485bd86cdf4cb5b55408d"
+  },
+  "canonical_preflop_context": {
+    "actor_contribution_bb": 0.5,
+    "actor_position": "SB",
+    "actor_remaining_bb": 99.5,
+    "all_in_positions": [],
+    "amount_semantics": {
+      "call_or_bet_cost": "incremental_cost_bb",
+      "check_and_fold_cost_bb": 0.0,
+      "raise_cost": "incremental_cost_bb",
+      "raise_target": "target_total_bb"
+    },
+    "caller_positions": [],
+    "canonical_key": "6|SB|family=UNOPENED|rl=0|free=0|live=SB,BB|allin=|remaining=BB|hist=",
+    "context_id": "PFC_9b3dd1f4e211bd09",
+    "contribution_bb_by_position": {
+      "BB": 1.0,
+      "SB": 0.5
+    },
+    "current_price_bb": 1.0,
+    "effective_stack_bb": 100.0,
+    "family": "UNOPENED",
+    "free_check": false,
+    "history": [],
+    "legal_actions": [
+      "FOLD",
+      "LIMP",
+      "RAISE",
+      "JAM"
+    ],
+    "limper_positions": [],
+    "live_positions": [
+      "SB",
+      "BB"
+    ],
+    "max_raise_to_bb": 100.0,
+    "min_raise_to_bb": 2.0,
+    "pot_before_bb": 1.5,
+    "raise_level": 0,
+    "raise_reopened": true,
+    "remaining_to_act_positions": [
+      "BB"
+    ],
+    "schema": "poker-preflop-context/v1",
+    "state_timing": "BEFORE_ACTION",
+    "table_size": 6,
+    "to_call_bb": 0.5
+  },
+  "coverage": {
+    "accounted": 169,
+    "requested": 169,
+    "supported": 169,
+    "unsupported": 0
+  },
+  "handoff": {
+    "nearest_context_substitution": false,
+    "supported_policy": "SOURCE_PFC_FOR_EXPLICIT_PFPC_BINDING_ONLY"
+  },
+  "identity_transform": {
+    "binding": "IDENTITY_ONLY_FROM_SAME_PUBLIC_STATE_BEFORE_ACTION",
+    "decision_payload_mutation": "NONE",
+    "legacy_context_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1:6max:SB:UNOPENED:100bb",
+    "preflop_context_id": "PFC_9b3dd1f4e211bd09",
+    "rollout_recomputation": false,
+    "schema": "poker-preflop-context/v1"
+  },
+  "issue": 107,
+  "legacy_context_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1:6max:SB:UNOPENED:100bb",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "preflop_context_id": "PFC_9b3dd1f4e211bd09",
+  "promotion_authorized": false,
+  "run_id": "20260918_hero_preflop_169_sb_unopened_pfc_v1",
+  "schema": "poker-hero-range-pfc-binding/v1",
+  "selection_boundary": {
+    "candidate_status": "EXPERIMENTAL",
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "source_run_id": "hero-sb-unopened-100bb-169-v1",
+  "status": "EXPERIMENTAL"
+}

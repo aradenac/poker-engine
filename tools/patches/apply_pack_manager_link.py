@@ -7,16 +7,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INDEX = ROOT / "site/index.html"
-SOURCE = '<a href="./hero-ranges.html">Ranges Hero</a>'
-TARGET = SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
+SOURCE = '<a href="./hero-ranges.html">Stratégie Hero</a>'
+LEGACY_SOURCE = '<a href="./hero-ranges.html">Ranges Hero</a>'
 
 
 def patch_text(text: str) -> str:
     if '<a href="./packs.html">Packs de population</a>' in text:
         return text
-    if SOURCE not in text:
-        raise ValueError("hero-ranges navigation anchor not found")
-    return text.replace(SOURCE, TARGET, 1)
+    for source in (SOURCE, LEGACY_SOURCE):
+        if source in text:
+            target = source + '\n      <a href="./packs.html">Packs de population</a>'
+            return text.replace(source, target, 1)
+    raise ValueError("hero-ranges navigation anchor not found")
 
 
 def main() -> int:

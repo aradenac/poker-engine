@@ -138,7 +138,7 @@ async function trainerEnsureModels(){
     }
     trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2 + ranges Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
+    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2 + stratégie Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
@@ -374,7 +374,11 @@ function trainerActualLine(hand,kind,cost){
   if(kind==="BET"){const c=trainerClamp(Number(cost)||1,Math.min(1,remaining),remaining);return {line:trainerActionLine(hand,s,"BET",c,paid+c,c),kind,cost:c};}
   const minTarget=hand.currentBet+Math.max(hand.lastRaise,1),target=Math.min(paid+remaining,Math.max(minTarget,paid+(Number(cost)||toCall+hand.lastRaise))),c=target-paid,inc=target-hand.currentBet;return {line:trainerActionLine(hand,s,"RAISE",c,target,inc),kind:"RAISE",cost:c};
 }
-function trainerDecisionClass(detail){const loss=Math.max(0,Number(detail?.lossBB)||0);if(detail?.withinNoise||loss<=.15)return "good";if(loss<=.5)return "close";return "bad";}
+function trainerDecisionClass(detail){
+  const rawLoss=Math.max(0,Number(detail?.rawLossBB??detail?.lossBB)||0),effectiveLoss=Math.max(0,Number(detail?.lossBB)||0);
+  const quality=decisionQualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
+  return quality.key==="unknown"?"close":quality.key;
+}
 function trainerRecordDecision(detail,playedKind,playedCost){
   const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail),row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:detail?.bestLabel||"—",bestCostBB:Number.isFinite(Number(detail?.bestCostBB))?Number(detail.bestCostBB):null,bestEV:Number(detail?.bestEV),chosenEV:Number(detail?.chosenEV),lossBB:loss,withinNoise:!!detail?.withinNoise,cls};
   const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else s.poor++;
@@ -421,7 +425,7 @@ function trainerGuideAnchoredDetail(guide,played){
   const d=JSON.parse(JSON.stringify(played||{})),bestEV=Number(guide?.bestEV),chosenEV=Number(d.chosenEV);
   d.bestLabel=guide?.bestLabel;d.bestCostBB=guide?.bestCostBB;d.bestEV=bestEV;
   const loss=Number.isFinite(bestEV)&&Number.isFinite(chosenEV)?Math.max(0,bestEV-chosenEV):Math.max(0,Number(d.lossBB)||0);
-  d.lossBB=loss;d.withinNoise=loss<=0.15;return d;
+  d.rawLossBB=loss;d.lossBB=loss;d.withinNoise=!!played?.withinNoise;return d;
 }
 function trainerGuidedClickCost(kind){
   const raw=trainerSizingValue(),rec=trainerState.recommendation,hand=trainerState.hand,k=String(kind||"").toUpperCase();
@@ -492,7 +496,7 @@ function trainerSeatHtml(hand,s){
 function trainerBetSpotsHtml(hand){return hand.streetPaid.map((x,s)=>x>1e-8?`<div class="bet-spot bet${s+1}">${escapeHtml(trainerFmtBB(x))}</div>`:"").join("");}
 function trainerRenderTable(){
   const h=trainerState.hand;if(!trainerTable)return;if(!h){trainerTable.innerHTML='<div class="trainer-note">Cliquez sur « Nouvelle main » pour commencer.</div>';return;}
-  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")} · range Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
+  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")} · stratégie Hero Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";
@@ -515,12 +519,13 @@ function trainerRenderFeedback(){
     if(h?.ended&&trainerState.mode==="test"){const loss=trainerState.testLog.reduce((s,x)=>s+x.lossBB,0);trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan de la main</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>.</div>`;return;}
     trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Feedback</div><div class="trainer-feedback-body">Jouez une décision Hero pour obtenir le verdict.</div>';return;
   }
-  const d=f.detail,r=f.row,cls=r?.cls||"close",title=cls==="good"?"Bonne décision":cls==="close"?"Décision proche":"Erreur coûteuse";
-  const summary=trainerDecisionCanonical(d,r);
+  const d=f.detail,r=f.row,summary=trainerDecisionCanonical(d,r);
+  const quality=summary?decisionQualityFromEV(summary):{key:r?.cls||"unknown",label:"Indéterminée",note:""};
+  const cls=quality.key==="unknown"?"close":quality.key,title=quality.label;
   const primary=summary?`${decisionPrimarySummaryHtml(summary,{compact:true})}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
   const noise=r.withinNoise?" · dans le bruit Monte-Carlo":"";
   trainerFeedback.className=`trainer-feedback ${cls}`;
-  trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV retenue : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>Le moteur Model A reste la source du verdict ; le détail scientifique est conservé sans dominer la décision.</div></div></details>`;
+  trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV effective après incertitude : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>La catégorie affichée est dérivée uniquement de la perte EV et de l’incertitude du moteur.</div></div></details>`;
 }
 function trainerSizingValue(){return Math.max(0,Number(document.getElementById("trainerSizingInput")?.value)||0);}
 function trainerSetSizing(x){const input=document.getElementById("trainerSizingInput");if(input)input.value=trainerNum(x);}

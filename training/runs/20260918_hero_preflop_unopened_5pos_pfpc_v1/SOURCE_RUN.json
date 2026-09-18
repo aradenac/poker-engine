@@ -1,0 +1,53 @@
+{
+  "artifact_sha256": {
+    "HERO_RANGE_REPOSITORY_PFPC.json": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+    "POLICY_CONTEXT_BINDING.json": "44e1e4d9e5846f3f2e6cc0402848b35b0e9e69b0a34334981c8e961f523a6bb7",
+    "RESULT.json": "471e0e0f392153f07ed9fd94751ba4e83bb5f815c516e203dfbb93963f8721a3",
+    "SHARD_INVENTORY.json": "b5bf82803bcdd5ef00f6a575a009623ff5f8801cce3385d2c8fe3e89eda6482e"
+  },
+  "immutable_btn_source": "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1",
+  "issue": 107,
+  "new_position_sources": {
+    "CO": {
+      "binding_sha256": "46629893342c6394ec9bfac665224953ba28d284b2103320536f874b9f206a02",
+      "repository_sha256": "383ad37b945a1944b34fdb64594e22726d2b94c10ce0bbf4f581b47ab786cfad",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    },
+    "HJ": {
+      "binding_sha256": "6b3a608d1a4856187aab8e06d94b11327d9fc77a6cf694e503fdc0f1a9dae750",
+      "repository_sha256": "9da472ac6b0a30fb53b86f2eb83ebdd7684c72a40537b6def21efaaf4ed1f326",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    },
+    "LJ": {
+      "binding_sha256": "b1e4d38b69ef42c1c16acfec9ee75f89f3d8e4df078c237d86a353abd5a803fc",
+      "repository_sha256": "f6662ccfb6a4d96dcbd43e7ba384eb25096f9844f64c85e90cd34f245e573fb9",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    },
+    "SB": {
+      "binding_sha256": "94074c25ae7b40cb062808fff397d5c83af5cbf0358525c7e20f90bd5684f624",
+      "repository_sha256": "3c162fb2fe64b282940c5f0670c0286c7da1f476fa6485bd86cdf4cb5b55408d",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    }
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "promotion_authorized": false,
+  "recovery_code_sha": "82c5af939d5ff37531036aeecc59dc8128bc93cd",
+  "recovery_mode": "ARTIFACT_ONLY_NO_GENERATION",
+  "recovery_workflow_name": "Recover issue 107 PFPC from immutable shards",
+  "recovery_workflow_run_id": 35403043245,
+  "run_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+  "schema": "poker-hero-pfpc-persistence/v1",
+  "shard_inventory_sha256": "f24b51d975e11a3d5b7d9b9eb0b1c6d7cd5dfc5c2fec6363027f8d8a94426581",
+  "source_branch": "issue-107-multiposition-generation-sol",
+  "source_head_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
+  "source_workflow_conclusion": "failure_after_successful_generation_shards_before_position_merge",
+  "source_workflow_name": "Generate multi-position Hero unopened PFPC candidate",
+  "source_workflow_run_id": 35379387883,
+  "source_workflow_url": "https://github.com/aradenac/poker-engine/actions/runs/35379387883",
+  "test_consumed": false,
+  "validation_consumed": false
+}
