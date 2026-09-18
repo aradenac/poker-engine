@@ -112,7 +112,7 @@ assert.ok(unsupported&&!unsupported.support.covered);
 assert.equal(unsupported.error_type,'UNSUPPORTED');
 assert.equal(jam.tags.jam,true);
 assert.equal(jam.tags.overbet,true);
-assert.equal(jam.position,'BTN');
+assert.equal(jam.context.position,'BTN');
 assert.equal(jam.context.street,'FLOP');
 assert.equal(jam.context.spot_family,'SRP|PFR|IP');
 assert.equal(jam.ev.attributed_loss_bb,1.7);
