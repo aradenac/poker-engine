@@ -18,8 +18,10 @@ def main() -> None:
     assert 'Par défaut, un nouvel import remplace les mains actuellement chargées.' in section
 
     # Secondary choices and debug/maintenance actions stay available but collapsed.
-    for element_id in ('hhImportMode', 'hhClearBtn', 'hhWatchStopBtn', 'hhModeBtn', 'hhBenchmarkExportBtn'):
+    for element_id in ('hhImportMode', 'hhClearBtn', 'hhWatchStopBtn', 'hhBenchmarkExportBtn'):
         assert f'id="{element_id}"' in advanced, element_id
+    assert 'id="hhModeBtn"' not in section
+    assert 'Mode Hand History' not in section
     assert '<details class="hh-import-advanced" open' not in section
 
     # Existing semantics are preserved: replace is still the safe default and add remains explicit.
