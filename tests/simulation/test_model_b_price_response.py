@@ -235,8 +235,44 @@ class DiagnosticsTests(unittest.TestCase):
             report["tail_diagnostics"]["candidate_actions"]["n"],
             0,
         )
+        self.assertIn("calibration_l1", report["candidate_actions"])
         self.assertFalse(report["test_consumed"])
         self.assertEqual(report["promotion_effect"], "NONE")
+
+    def test_tail_sizing_error_is_reported_separately(self):
+        validation = [
+            row(
+                price=1.7,
+                action="RAISE",
+                sizing=2.0,
+                hand_id="tail-raise",
+            )
+        ]
+
+        def candidate(_row):
+            return {
+                "probabilities": {"FOLD": 0.1, "CALL": 0.1, "RAISE": 0.8},
+                "sizing": {"median": 1.8},
+                "selection": {"level": 0},
+                "identifiability": "LOCAL_SUPPORTED",
+            }
+
+        def reference(_row):
+            return {
+                "probabilities": {"FOLD": 0.2, "CALL": 0.2, "RAISE": 0.6},
+                "sizing": {"median": 1.0},
+            }
+
+        report = evaluate_validation(
+            validation,
+            candidate_predict=candidate,
+            reference_predict=reference,
+            bootstrap_samples=20,
+        )
+        tail = report["tail_diagnostics"]["sizing_error"]
+        self.assertEqual(tail["candidate"]["n"], 1)
+        self.assertAlmostEqual(tail["candidate"]["mae"], 0.2)
+        self.assertAlmostEqual(tail["reference"]["mae"], 1.0)
 
     def test_counterfactual_changes_only_price_and_does_not_gate_monotonicity(self):
         context = row(price=0.4)
