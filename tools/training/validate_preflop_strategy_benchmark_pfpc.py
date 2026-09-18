@@ -75,7 +75,7 @@ def validate_contract(
     need("never edit" in str(contract.get("change_policy") or "").lower(), "PFPC change policy must remain immutable")
 
     need(
-        zero_exposure.get("schema") == "poker-preflop-strategy-validation-zero-exposure/v1",
+        zero_exposure.get("schema") == "poker-preflop-strategy-validation-execution-result/v1",
         "zero-exposure predecessor evidence schema mismatch",
     )
     need(zero_exposure.get("decision") == "BLOCKED_ZERO_CANDIDATE_EXPOSURE", "predecessor must remain blocked for zero exposure")
