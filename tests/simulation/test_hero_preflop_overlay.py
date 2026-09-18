@@ -153,11 +153,15 @@ def test_exact_pfc_and_hand_uses_candidate_action_and_sizing() -> None:
     assert result["benchmark_candidate"]["hand_class"] == "AA"
     assert result["benchmark_candidate"]["preflop_context_id"] == PFC
     assert reference.calls == 0
-    assert candidate.scenario_audit("scenario-1") == {
+    audit = candidate.scenario_audit("scenario-1")
+    assert audit["hero_preflop_decisions"] == 1
+    assert audit["candidate_supported_decisions"] == 1
+    assert audit["candidate_out_of_support_decisions"] == 0
+    assert audit["postflop_reference_decisions"] == 0
+    assert audit["policy_contexts"][PFC] == {
         "hero_preflop_decisions": 1,
         "candidate_supported_decisions": 1,
         "candidate_out_of_support_decisions": 0,
-        "postflop_reference_decisions": 0,
     }
 
 
@@ -212,6 +216,12 @@ def test_explicit_pfpc_binding_matches_same_declared_stack_bucket() -> None:
     assert evidence["live_preflop_context_id"] == live_pfc["context_id"]
     assert result["target_total_bb"] == 3.0
     assert reference.calls == 0
+    audit = candidate.scenario_audit("scenario-bound")
+    assert audit["policy_contexts"][live_policy_context["policy_context_id"]] == {
+        "hero_preflop_decisions": 1,
+        "candidate_supported_decisions": 1,
+        "candidate_out_of_support_decisions": 0,
+    }
     identity = candidate.identity()
     assert identity["matching"] == "EXACT_POLICY_CONTEXT_AND_169_HAND_CLASS_ONLY"
     assert identity["nearest_context_substitution"] is False
@@ -228,6 +238,13 @@ def test_pfpc_binding_does_not_cross_declared_stack_bucket() -> None:
     )
     assert result["benchmark_candidate"]["supported"] is False
     assert result["benchmark_candidate"]["reason"].startswith("PFPC_OUT_OF_SUPPORT:")
+    miss_id = build_policy_context(canonical_preflop_context(live_state, "BTN"))["policy_context_id"]
+    audit = candidate.scenario_audit("scenario-bound-miss")
+    assert audit["policy_contexts"][miss_id] == {
+        "hero_preflop_decisions": 1,
+        "candidate_supported_decisions": 0,
+        "candidate_out_of_support_decisions": 1,
+    }
     assert reference.calls == 1
 
 
