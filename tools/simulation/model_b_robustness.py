@@ -435,11 +435,11 @@ def evaluate_robustness(
         worst_environment_regret = None
 
     if not comparable or not all_supported:
-        classification = "INSUFFICIENTLY_SUPPORTED"
+        classification = "insufficiently_supported"
     elif action_stable and sizing_stable and quasi_dominant:
-        classification = "ROBUST"
+        classification = "robust"
     else:
-        classification = "SENSITIVE"
+        classification = "sensitive"
 
     def fragility(kind: str, applicable: bool) -> dict[str, Any]:
         if not applicable or nominal_best_id is None:
@@ -605,12 +605,8 @@ def compact_robustness_summary(report: Mapping[str, Any]) -> dict[str, Any]:
     stability = report["stability"]
     diagnostics = report.get("diagnostics") or {}
     classification = str(report["classification"])
-    labels = {
-        "ROBUST": "robust",
-        "SENSITIVE": "sensitive",
-        "INSUFFICIENTLY_SUPPORTED": "insufficiently_supported",
-    }
-    if classification not in labels:
+    allowed = {"robust", "sensitive", "insufficiently_supported"}
+    if classification not in allowed:
         raise ValueError(f"unknown robustness classification: {classification}")
     nominal_summary = None
     if nominal is not None:
@@ -625,7 +621,7 @@ def compact_robustness_summary(report: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "schema": SUMMARY_SCHEMA,
         "decision_id": report["decision_id"],
-        "status": labels[classification],
+        "status": classification,
         "nominal": nominal_summary,
         "model_environment": {
             "comparable": environment.get("comparable"),
