@@ -430,14 +430,25 @@ def _delta_groups(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]
     }
 
 
-def _candidate_support_groups(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]:
+def _candidate_support_groups(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     groups: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
+    overall = collections.Counter()
     for row in rows:
-        name = str(row.get(key))
         audit = dict(row.get("candidate_audit") or {})
-        groups[name]["hero_preflop_decisions"] += int(audit.get("hero_preflop_decisions", 0))
-        groups[name]["supported_decisions"] += int(audit.get("candidate_supported_decisions", 0))
-        groups[name]["out_of_support_decisions"] += int(audit.get("candidate_out_of_support_decisions", 0))
+        overall["hero_preflop_decisions"] += int(audit.get("hero_preflop_decisions", 0))
+        overall["supported_decisions"] += int(audit.get("candidate_supported_decisions", 0))
+        overall["out_of_support_decisions"] += int(audit.get("candidate_out_of_support_decisions", 0))
+        for name, node0 in (audit.get("policy_contexts") or {}).items():
+            node = dict(node0 or {})
+            groups[str(name)]["hero_preflop_decisions"] += int(node.get("hero_preflop_decisions", 0))
+            groups[str(name)]["supported_decisions"] += int(node.get("candidate_supported_decisions", 0))
+            groups[str(name)]["out_of_support_decisions"] += int(node.get("candidate_out_of_support_decisions", 0))
+    if sum(row["hero_preflop_decisions"] for row in groups.values()) != overall["hero_preflop_decisions"]:
+        raise AssertionError("policy-context candidate audit does not cover every Hero preflop decision")
+    if sum(row["supported_decisions"] for row in groups.values()) != overall["supported_decisions"]:
+        raise AssertionError("policy-context supported audit does not match overall candidate coverage")
+    if sum(row["out_of_support_decisions"] for row in groups.values()) != overall["out_of_support_decisions"]:
+        raise AssertionError("policy-context out-of-support audit does not match overall candidate coverage")
     out: dict[str, Any] = {}
     for name, counts in sorted(groups.items()):
         total = int(counts["hero_preflop_decisions"])
@@ -506,7 +517,7 @@ def summarize_environment_rows(
         "breakdowns": {
             "position": _delta_groups(rows, "hero_position"),
             "policy_context": _delta_groups(rows, "preflop_policy_context_id"),
-            "candidate_support_by_policy_context": _candidate_support_groups(rows, "preflop_policy_context_id"),
+            "candidate_support_by_policy_context": _candidate_support_groups(rows),
             "preflop_family": _delta_groups(rows, "preflop_family"),
             "limper_count": _delta_groups(rows, "limper_count"),
             "caller_count": _delta_groups(rows, "caller_count"),
