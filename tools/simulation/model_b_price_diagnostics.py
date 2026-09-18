@@ -26,6 +26,7 @@ def _action_metrics(rows: Sequence[tuple[str, Mapping[str, float]]]) -> dict[str
     brier = 0.0
     observed = Counter()
     predicted = defaultdict(float)
+    reliability = defaultdict(lambda: [0, 0.0, 0])
     for actual, probabilities in rows:
         loss += -math.log(max(EPS, float(probabilities[actual])))
         brier += sum(
@@ -35,6 +36,12 @@ def _action_metrics(rows: Sequence[tuple[str, Mapping[str, float]]]) -> dict[str
         observed[actual] += 1
         for action in ACTIONS:
             predicted[action] += float(probabilities[action])
+        confidence = max(float(probabilities[action]) for action in ACTIONS)
+        predicted_action = max(ACTIONS, key=lambda action: (float(probabilities[action]), action))
+        bucket = min(9, int(confidence * 10.0))
+        reliability[bucket][0] += 1
+        reliability[bucket][1] += confidence
+        reliability[bucket][2] += int(predicted_action == actual)
     n = len(rows)
     observed_frequency = {action: observed[action] / n for action in ACTIONS}
     mean_predicted_frequency = {action: predicted[action] / n for action in ACTIONS}
@@ -42,11 +49,15 @@ def _action_metrics(rows: Sequence[tuple[str, Mapping[str, float]]]) -> dict[str
         abs(observed_frequency[action] - mean_predicted_frequency[action])
         for action in ACTIONS
     ) / len(ACTIONS)
+    ece_confidence = 0.0
+    for rn, confidence_sum, correct in reliability.values():
+        ece_confidence += (rn / n) * abs((confidence_sum / rn) - (correct / rn))
     return {
         "n": n,
         "log_loss": loss / n,
         "brier": brier / n,
         "calibration_l1": calibration_l1,
+        "ece_confidence": ece_confidence,
         "observed_frequency": observed_frequency,
         "mean_predicted_frequency": mean_predicted_frequency,
     }
