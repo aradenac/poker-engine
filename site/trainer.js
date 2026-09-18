@@ -517,7 +517,7 @@ function trainerRenderFeedback(){
   }
   const d=f.detail,r=f.row,cls=r?.cls||"close",title=cls==="good"?"Bonne décision":cls==="close"?"Décision proche":"Erreur coûteuse";
   const summary=trainerDecisionCanonical(d,r);
-  const primary=summary?`${decisionPrimarySummaryHtml(summary)}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
+  const primary=summary?`${decisionPrimarySummaryHtml(summary,{compact:true})}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
   const noise=r.withinNoise?" · dans le bruit Monte-Carlo":"";
   trainerFeedback.className=`trainer-feedback ${cls}`;
   trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV retenue : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>Le moteur Model A reste la source du verdict ; le détail scientifique est conservé sans dominer la décision.</div></div></details>`;
