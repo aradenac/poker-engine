@@ -185,7 +185,7 @@ const report=Leak.analyzeLeaks(sourceEvents);
 {
   const target=Target.targetFromLeakReport(report,{dimension:'action_pair',key:'CALL->FOLD'});
   const noEligible=Target.summarizeTargetedSession(target,[
-    event(31,{played_ev_bb:null,best_ev_bb:null,support:{covered:false,reason:'X'},comparability:{comparable:false,reason:'X'}})
+    event(6,{played_ev_bb:null,best_ev_bb:null,support:{covered:false,reason:'X'},comparability:{comparable:false,reason:'X'}})
   ]);
   assert.equal(noEligible.summary.decisions_eligible,0);
   assert.equal(noEligible.summary.loss_bb_per_100_decisions,null);
