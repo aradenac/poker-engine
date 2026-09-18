@@ -661,6 +661,33 @@
   .action-detail-chip b{color:var(--text)}
   .action-score.large{padding:8px 10px;font-size:10px}
   .action-score.large .score-value{font-size:15px}
+  .decision-primary-grid{display:grid;grid-template-columns:repeat(5,minmax(112px,1fr));gap:7px;margin-top:9px}
+  .decision-primary-card{min-width:0;padding:8px 9px;border:1px solid #273b5a;border-radius:9px;background:#0b1627}
+  .decision-primary-card .k{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .decision-primary-card .v{margin-top:3px;font-size:14px;font-weight:950;color:var(--text);overflow-wrap:anywhere}
+  .decision-primary-card .s{margin-top:2px;font-size:8.5px;line-height:1.3;color:var(--muted)}
+  .decision-primary-card.recommended{border-color:rgba(92,225,185,.38);background:rgba(92,225,185,.06)}
+  .decision-primary-card.recommended .v{color:var(--accent2)}
+  .decision-primary-card.delta{border-color:rgba(241,198,109,.34);background:rgba(241,198,109,.055)}
+  .decision-primary-card.delta .v{color:#f1c66d}
+  .decision-primary-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:3px}
+  .decision-primary-grid.compact .decision-primary-card{padding:5px 6px}
+  .decision-primary-grid.compact .decision-primary-card .v{font-size:10px}
+  .decision-primary-grid.compact .decision-primary-card .s{font-size:7.5px}
+  .decision-primary-grid.compact .decision-primary-card.delta{grid-column:1/-1}
+  .decision-alt-strip{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:8.5px;color:var(--muted)}
+  .decision-alt-label{font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+  .decision-alt-pill{padding:3px 5px;border:1px solid #2b405f;border-radius:999px;background:#0d192b;color:#cbd7e8;white-space:nowrap}
+  .decision-alt-pill.best{border-color:rgba(92,225,185,.35);color:#a7ead4}
+  .decision-summary-feed .decision-alt-strip{margin-top:4px}
+  .action-advanced{margin-top:10px;border:1px solid #273b59;border-radius:10px;background:#0b1423;overflow:hidden}
+  .action-advanced>summary{cursor:pointer;list-style:none;padding:9px 10px;font-size:10px;font-weight:900;color:#c4d1e4}
+  .action-advanced>summary::-webkit-details-marker{display:none}
+  .action-advanced>summary::after{content:"▾";float:right;color:var(--muted)}
+  .action-advanced[open]>summary{border-bottom:1px solid #273b59}
+  .action-advanced[open]>summary::after{content:"▴"}
+  .action-advanced-body{padding:0 10px 10px}
+  @media(max-width:900px){.decision-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.decision-primary-card.delta{grid-column:1/-1}}
   @media(max-width:860px){.action-detail-grid{grid-template-columns:1fr}}
   @keyframes replayFadeIn{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   @keyframes replayCardReveal{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
@@ -2899,7 +2926,9 @@ function reviewRegretForAction(stepIndex,cached){
         lossBB:Math.max(0,Number(summary.effectiveGap)||0),
         rawLossBB:Math.max(0,Number(summary.rawGap)||0),
         chosenEV:Number(summary.chosenPolicyEV),bestEV:Number(summary.bestPolicyEV),modelChosenEV:Number(summary.chosenEV),modelBestEV:Number(summary.best?.evBB),
-        bestLabel:String(summary.best?.label||""),withinNoise:!!summary.withinNoise,policyCalibration:'v3',
+        bestLabel:String(summary.best?.label||""),bestCostBB:Number.isFinite(Number(summary.best?.costBB))?Number(summary.best.costBB):null,
+        chosenCostBB:Number.isFinite(Number(summary.alternatives?.find(a=>a.chosen)?.costBB))?Number(summary.alternatives.find(a=>a.chosen).costBB):null,
+        decisionSummary:decisionCanonicalSummary(stepIndex,step,cached),withinNoise:!!summary.withinNoise,policyCalibration:'v3',
         street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true
       };
     }
@@ -3347,16 +3376,58 @@ function actionSizingAmountLabel(a,summary){
   const er=Number.isFinite(eff)&&Math.abs(eff-cost)>.01?` · risque eff. ${formatBB(eff)}`:'';
   return `mise ${formatBB(cost)}${er}`;
 }
+function decisionCanonicalSummary(stepIndex,step,cached=null){
+  if(!step)return null;
+  const key=actionEquityKey(stepIndex),c=cached||(key?state.actionEquityCache?.[key]:null),req=requiredEquityInfo(stepIndex);
+  if(!req||!c||c.status!=="done"||!["Flop","Turn","River"].includes(step.street))return null;
+  const eq=c.equities||{},sources=actionVerdictSourceKeys(stepIndex),priorEq=eq[sources.prior];
+  const raw=postflopDecisionAlternativeSummary(stepIndex,priorEq,c);if(!raw)return null;
+  const ordered=(raw.alternatives||[]).filter(a=>Number.isFinite(finalDecisionEV(a))).slice().sort((a,b)=>finalDecisionEV(b)-finalDecisionEV(a));
+  const playedAlt=ordered.find(a=>a.chosen)||null,best=raw.best||ordered[0]||null;
+  const playedEV=playedAlt?finalDecisionEV(playedAlt):Number(raw.chosenPolicyEV),bestEV=best?finalDecisionEV(best):Number(raw.bestPolicyEV);
+  const delta=Number.isFinite(playedEV)&&Number.isFinite(bestEV)?playedEV-bestEV:NaN;
+  const normalize=(a,isBest=false)=>a?{
+    label:String(a.label||"—"),sizing:actionSizingAmountLabel(a,raw),
+    costBB:Number.isFinite(Number(a.costBB))?Number(a.costBB):null,
+    targetStreetBB:Number.isFinite(Number(a.targetStreetBB))?Number(a.targetStreetBB):null,
+    evBB:Number.isFinite(finalDecisionEV(a))?finalDecisionEV(a):null,
+    chosen:!!a.chosen,recommended:!!isBest
+  }:null;
+  return {
+    schema:"decision-summary/v1",
+    played:normalize(playedAlt,false)||{label:String(step.actionType||"—").toUpperCase(),sizing:Number(req.cost)>0?formatBB(req.cost):"0 BB",costBB:Number(req.cost)||0,targetStreetBB:null,evBB:Number.isFinite(playedEV)?playedEV:null,chosen:true,recommended:false},
+    recommended:normalize(best,true),
+    deltaEVBB:Number.isFinite(delta)?delta:null,
+    lossEVBB:Number.isFinite(delta)?Math.max(0,-delta):null,
+    effectiveLossEVBB:Number.isFinite(Number(raw.effectiveGap))?Math.max(0,Number(raw.effectiveGap)):null,
+    withinNoise:!!raw.withinNoise,score:Number(raw.score),
+    alternatives:ordered.map(a=>normalize(a,a===best)).filter(Boolean)
+  };
+}
+function decisionPrimarySummaryHtml(summary,{compact=false}={}){
+  if(!summary)return "";
+  const p=summary.played||{},r=summary.recommended||{},delta=Number(summary.deltaEVBB),loss=Number(summary.lossEVBB);
+  const deltaText=Number.isFinite(delta)?formatBB(delta):"—";
+  const lossText=Number.isFinite(loss)&&loss>1e-9?`Perte EV ${formatBB(loss)}`:(summary.withinNoise?"Écart nul / bruit MC":"Aucune perte EV");
+  const card=(k,v,s,cls="")=>`<div class="decision-primary-card ${cls}"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v||"—")}</div>${s?`<div class="s">${escapeHtml(s)}</div>`:""}</div>`;
+  return `<div class="decision-primary-grid${compact?" compact":""}" data-decision-summary-schema="decision-summary/v1">
+    ${card("Joué",p.label,p.sizing,"played")}
+    ${card("Recommandé",r?.label||"—",r?.sizing||"—","recommended")}
+    ${card("EV jouée",Number.isFinite(Number(p.evBB))?formatBB(Number(p.evBB)):"—","EV finale retenue")}
+    ${card("Meilleure EV",Number.isFinite(Number(r?.evBB))?formatBB(Number(r.evBB)):"—","Meilleure alternative")}
+    ${card("ΔEV vs meilleure",deltaText,lossText,"delta")}
+  </div>`;
+}
+function decisionAlternativesStripHtml(summary,limit=3){
+  const xs=(summary?.alternatives||[]).slice().sort((a,b)=>Number(b.evBB)-Number(a.evBB)).slice(0,Math.max(1,limit));
+  if(!xs.length)return "";
+  return `<div class="decision-alt-strip"><span class="decision-alt-label">Alternatives</span>${xs.map(a=>`<span class="decision-alt-pill${a.recommended?" best":""}">${escapeHtml(a.label)} · ${escapeHtml(a.sizing||"—")} · EV ${Number.isFinite(Number(a.evBB))?escapeHtml(formatBB(a.evBB)):"—"}</span>`).join("")}</div>`;
+}
 function actionSizingEVTableHtml(summary){
   const alts=(summary?.alternatives||[]).filter(a=>Number.isFinite(finalDecisionEV(a)));
   if(!alts.length)return '';
   const best=summary.best;
-  const rows=alts.slice().sort((a,b)=>{
-    const ca=Number(a.costBB)||0,cb=Number(b.costBB)||0;
-    const fa=postflopPolicyFamily(a.label),fb=postflopPolicyFamily(b.label);
-    const passive=x=>['FOLD','CHECK','CALL'].includes(x)?0:1;
-    return passive(fa)-passive(fb)||ca-cb;
-  }).map(a=>{
+  const rows=alts.slice().sort((a,b)=>finalDecisionEV(b)-finalDecisionEV(a)).map(a=>{
     const flags=[
       a===best?'<span class="action-detail-chip"><b>RECOMMANDÉ</b></span>':'',
       a.chosen?'<span class="action-detail-chip">joué</span>':''
@@ -3368,9 +3439,9 @@ function actionSizingEVTableHtml(summary){
     </tr>`;
   }).join('');
   return `<div class="section">
-    <div class="section-title">Sizing et EV</div>
+    <div class="section-title">Alternatives · meilleure EV d’abord</div>
     <div class="action-section-note">
-      Chaque ligne associe directement <b>l’action</b>, <b>le montant réellement testé</b> et <b>son EV finale</b>.
+      Chaque ligne associe directement <b>l’action</b>, <b>son sizing propre</b> et <b>son EV finale</b>, classées de la meilleure à la moins bonne.
       Pour un raise, « ajoute » est le montant supplémentaire engagé maintenant ; « total rue » est le montant total atteint sur la street.
     </div>
     <div style="overflow-x:auto">
@@ -3453,6 +3524,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
+  const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
   const allIn=/all-in/i.test(step.actionText||"");
@@ -3485,21 +3557,29 @@ function actionDetailModalInnerHtml(stepIndex,step){
       <span class="action-detail-chip">% pot <b>${Number.isFinite(pctPot)?escapeHtml(fmtEquityThreshold(pctPot)):"—"}</b></span>
       <span class="action-detail-chip">Rake <b>${escapeHtml(rakeText)}</b></span>
     </div>`;
-  return `${scoreGrid}${chips}
-    ${actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree})}
-    <div class="action-detail-stack">
-      ${foldRangeAnalysisHtml(stepIndex,decisionSummary)}
-      ${decisionSummary?actionDecisionAlternativesHtml(decisionSummary):""}
-      ${decisionSummary?actionSizingEVTableHtml(decisionSummary):""}
-      ${(!decisionSummary&&(postflopTree||postflopCheck||postflopFold))?sizingOptimizationHtml(cached.sizingOptimization,decisionSummary?.potScale||req.potBefore||1,step.actionType):""}
-      <div class="section action-detail-context"><div class="section-title">Contexte du calcul</div>
-        <div class="action-analysis-title">${actionName}${allIn?" ALL-IN":""} · ${postflopTree?"arbre EV de réponses population":postflopCheck?"CHECK vs bets hypothétiques":postflopFold?"FOLD vs continuations hypothétiques":`seuil rake inclus ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`}</div>
-        <div class="action-analysis-meta">Investi ${escapeHtml(formatBB(req.cost))} dans ${escapeHtml(formatBB(req.potBefore))}${Number.isFinite(pctPot)?` · ${escapeHtml(fmtEquityThreshold(pctPot))} du pot`:""} → pot brut ${escapeHtml(formatBB(req.grossPotAfter))} → rake estimé ${escapeHtml(rakeText)} → pot net ${escapeHtml(formatBB(req.netPotAfter))}.</div>
-        ${evLines}
-        ${actionEquityValuesHtml(eq,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,sources)}
-        <div class="action-analysis-meta" style="margin-top:6px">${escapeHtml(kindNote)}</div>
+  const keyPoints=actionDetailKeyPointsHtml({req,decisionSummary,priorMetrics,postMetrics,sources,postflopTree,priorEq,postEq,priorTree,postTree});
+  const primary=canonicalDecision
+    ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
+    : `${scoreGrid}${chips}${keyPoints}`;
+  return `${primary}
+    <details class="action-advanced">
+      <summary>Pourquoi ? / Détails avancés</summary>
+      <div class="action-advanced-body">
+        ${canonicalDecision?`${scoreGrid}${chips}${keyPoints}`:""}
+        <div class="action-detail-stack">
+          ${foldRangeAnalysisHtml(stepIndex,decisionSummary)}
+          ${decisionSummary?actionDecisionAlternativesHtml(decisionSummary):""}
+          ${(!decisionSummary&&(postflopTree||postflopCheck||postflopFold))?sizingOptimizationHtml(cached.sizingOptimization,decisionSummary?.potScale||req.potBefore||1,step.actionType):""}
+          <div class="section action-detail-context"><div class="section-title">Contexte du calcul</div>
+            <div class="action-analysis-title">${actionName}${allIn?" ALL-IN":""} · ${postflopTree?"arbre EV de réponses population":postflopCheck?"CHECK vs bets hypothétiques":postflopFold?"FOLD vs continuations hypothétiques":`seuil rake inclus ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`}</div>
+            <div class="action-analysis-meta">Investi ${escapeHtml(formatBB(req.cost))} dans ${escapeHtml(formatBB(req.potBefore))}${Number.isFinite(pctPot)?` · ${escapeHtml(fmtEquityThreshold(pctPot))} du pot`:""} → pot brut ${escapeHtml(formatBB(req.grossPotAfter))} → rake estimé ${escapeHtml(rakeText)} → pot net ${escapeHtml(formatBB(req.netPotAfter))}.</div>
+            ${evLines}
+            ${actionEquityValuesHtml(eq,(postflopTree||postflopCheck||postflopFold)?null:req.actorRequired,sources)}
+            <div class="action-analysis-meta" style="margin-top:6px">${escapeHtml(kindNote)}</div>
+          </div>
+        </div>
       </div>
-    </div>`;
+    </details>`;
 }
 function openActionDetailModal(stepIndex){
   const step=state.replaySteps?.[stepIndex];
@@ -3518,41 +3598,27 @@ function closeActionDetailModal(){
 }
 function actionAnalysisHtml(stepIndex,step){
   if(!isAnyMoneyEvent(step)&&!ctxPostflopCheck(step))return "";
-  if(step.actionType==="post")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Forcée','subtle','primary-summary')}</div></div></div>`;
-  if(step.actionType==="return")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Retour jetons','subtle','primary-summary')}</div></div></div>`;
-  if(step.actionType==="collect")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Pot gagné','good','primary-summary')}</div></div></div>`;
+  if(step.actionType==="post")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Forcée","subtle","primary-summary")}</div></div></div>`;
+  if(step.actionType==="return")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Retour jetons","subtle","primary-summary")}</div></div></div>`;
+  if(step.actionType==="collect")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Pot gagné","good","primary-summary")}</div></div></div>`;
   if(!isAnalyzableDecisionAction(step))return "";
-  const key=actionEquityKey(stepIndex), cached=key?state.actionEquityCache[key]:null, req=requiredEquityInfo(stepIndex);
-  if(!req)return `<div class="action-analysis na"><div class="action-compact-row">${actionCompactPillHtml('Verdict —','subtle','primary-summary')}</div></div>`;
-  if(!cached||cached.status==="queued"||cached.status==="running") return `<div class="action-analysis pending"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Calcul…','pending','primary-summary')}</div></div></div>`;
-  if(cached.status==="error") return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml('Verdict indispo','bad','primary-summary')}</div></div></div>`;
-  const eq=cached.equities||{}, sources=actionVerdictSourceKeys(stepIndex), trees=cached.postflopTrees||{};
-  const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
-  const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
-  const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
-  const priorMeta=actionScoreMeta(decisionSummary?decisionSummary.score:priorMetrics.score);
-  const postMeta=actionScoreMeta(postMetrics.score);
-  const row=[];
-  if(decisionSummary){
-    const scoreCls=decisionSummary.score>=7?'good':decisionSummary.score>=4.5?'warn':'bad';
-    row.push(actionCompactPillHtml(`<span class="strong">${escapeHtml(formatScore(decisionSummary.score))}</span>`,scoreCls,'primary-summary'));
-    row.push(actionCompactPillHtml(`EV <span class="strong">${escapeHtml(Number.isFinite(decisionSummary.chosenEV)?formatBB(decisionSummary.chosenEV):'—')}</span>`,'subtle','ev-summary'));
-    if(decisionSummary.best){
-      const bestSame=!!decisionSummary.best.chosen;
-      const amount=actionSizingAmountLabel(decisionSummary.best,decisionSummary);
-      row.push(actionCompactPillHtml(`${bestSame?'Reco = joué':'Reco '+escapeHtml(decisionSummary.best.label)} · ${escapeHtml(amount)} · EV ${escapeHtml(formatBB(finalDecisionEV(decisionSummary.best)))}`,'subtle','best-summary'));
-    }
-  }else{
-    const priorCls=priorMeta.cls.includes('bad')?'bad':priorMeta.cls.includes('borderline')||priorMeta.cls.includes('poor')?'warn':'good';
-    row.push(actionCompactPillHtml(`Pré <span class="strong">${escapeHtml(formatScore(priorMetrics.score))}</span>`,priorCls,'primary-summary'));
-    if(req.kind==='call'&&Number.isFinite(req.actorRequired)){
-      const d=fmtEquityDelta(priorEq,req.actorRequired);
-      row.push(actionCompactPillHtml(`Eq ${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):'—'} · req ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`,d.cls==='neg'?'warn':'subtle','best-summary'));
-    }else{
-      row.push(actionCompactPillHtml(`Post <span class="strong">${escapeHtml(formatScore(postMetrics.score))}</span>`,'subtle','best-summary'));
-    }
-  }
-  return `<div class="action-analysis"><div class="action-analysis-compact"><div class="action-compact-row">${row.join('')}</div></div></div>`;
+  const key=actionEquityKey(stepIndex),cached=key?state.actionEquityCache[key]:null,req=requiredEquityInfo(stepIndex);
+  if(!req)return `<div class="action-analysis na"><div class="action-compact-row">${actionCompactPillHtml("Verdict —","subtle","primary-summary")}</div></div>`;
+  if(!cached||cached.status==="queued"||cached.status==="running")return `<div class="action-analysis pending"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Calcul…","pending","primary-summary")}</div></div></div>`;
+  if(cached.status==="error")return `<div class="action-analysis na"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml("Verdict indispo","bad","primary-summary")}</div></div></div>`;
+  const eq=cached.equities||{},sources=actionVerdictSourceKeys(stepIndex),trees=cached.postflopTrees||{};
+  const priorEq=eq[sources.prior],postEq=eq[sources.post],priorTree=trees.prior||null,postTree=trees.post||null;
+  const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree),postMetrics=actionDecisionMetrics(postEq,req,postTree);
+  const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
+  if(canonicalDecision)return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}</div>`;
+  const priorMeta=actionScoreMeta(priorMetrics.score),postMeta=actionScoreMeta(postMetrics.score),row=[];
+  const priorCls=priorMeta.cls.includes("bad")?"bad":priorMeta.cls.includes("borderline")||priorMeta.cls.includes("poor")?"warn":"good";
+  row.push(actionCompactPillHtml(`Pré <span class="strong">${escapeHtml(formatScore(priorMetrics.score))}</span>`,priorCls,"primary-summary"));
+  if(req.kind==="call"&&Number.isFinite(req.actorRequired)){
+    const d=fmtEquityDelta(priorEq,req.actorRequired);
+    row.push(actionCompactPillHtml(`Eq ${Number.isFinite(priorEq)?escapeHtml(fmtEquityThreshold(priorEq)):"—"} · req ${escapeHtml(fmtEquityThreshold(req.actorRequired))}`,d.cls==="neg"?"warn":"subtle","best-summary"));
+  }else row.push(actionCompactPillHtml(`Post <span class="strong">${escapeHtml(formatScore(postMetrics.score))}</span>`,"subtle","best-summary"));
+  return `<div class="action-analysis"><div class="action-analysis-compact"><div class="action-compact-row">${row.join("")}</div></div></div>`;
 }
 function safeActionAnalysisHtml(stepIndex,step){
   try{return actionAnalysisHtml(stepIndex,step);}catch(err){
