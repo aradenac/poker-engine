@@ -32,6 +32,11 @@ from tools.populations.registry import (  # noqa: E402
     require_artifact_role,
     resolve_population,
 )
+from tools.population_pack_candidate import (  # noqa: E402
+    CandidateContractError,
+    assembly_binding,
+    validate_candidate_contract,
+)
 
 PACK_CONFIG_SCHEMA = "poker-population-pack-config/v1"
 PACK_SCHEMA = "poker-population-pack/v1"
@@ -174,6 +179,27 @@ def build(config_path: Path, out_dir: Path, *, population_override: str | None =
     if status not in ALLOWED_POPULATION_STATUSES:
         raise PackError(f"population {population_id} is {status or 'UNSPECIFIED'}, not an accepted promoted distribution state")
 
+    candidate_binding = None
+    legacy_unscoped_allowed = bool(
+        population.get("compatibility", {}).get("legacy_unscoped_artifacts_allowed", False)
+    )
+    if not legacy_unscoped_allowed:
+        candidate_rel = str(cfg.get("candidate_contract") or "")
+        if not candidate_rel:
+            raise PackError(
+                f"population {population_id} requires a population-scoped candidate_contract before assembly"
+            )
+        try:
+            candidate_summary = validate_candidate_contract(
+                repo_path(candidate_rel),
+                root=ROOT,
+                expected_population_id=population_id,
+                require_ready=True,
+            )
+            candidate_binding = assembly_binding(candidate_summary)
+        except CandidateContractError as exc:
+            raise PackError(f"candidate assembly contract rejected: {exc}") from exc
+
     role_sources: dict[str, str] = {}
     for role in ("model_a_preflop", "model_a_postflop", "model_b", "hero_strategy", "engine"):
         try:
@@ -303,6 +329,9 @@ def build(config_path: Path, out_dir: Path, *, population_override: str | None =
         },
         "scope_notes": list(cfg.get("scope_notes") or []),
     }
+    if candidate_binding is not None:
+        manifest["assembly_contract"] = candidate_binding
+
     manifest_path = bundle_dir / "MANIFEST.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
