@@ -35,6 +35,11 @@ from tools.simulation.preflop_strategy_benchmark_v2 import (
 )
 from tools.simulation.reference_support_closure import SupportClosedModelAReferencePolicy
 from tools.training.validate_preflop_strategy_benchmark_support_closed import validate_contract
+from tools.training.validate_preflop_strategy_benchmark_pfpc import (
+    DEFAULT_PREVIOUS as DEFAULT_PFPC_PREVIOUS,
+    DEFAULT_ZERO_EXPOSURE as DEFAULT_PFPC_ZERO_EXPOSURE,
+    validate_contract as validate_pfpc_contract,
+)
 from tools.training.validate_preflop_strategy_benchmark_v2 import validate_run_manifest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -207,13 +212,26 @@ def select_validation(reports: Sequence[Mapping[str, Any]], run_manifest: Mappin
 def _preflight_contract(contract_path: Path, reference_path: Path, sensitivity_path: Path) -> None:
     contract = load_json(contract_path)
     sensitivity = load_json(sensitivity_path)
-    result = validate_contract(
-        contract,
-        load_json(DEFAULT_BASE),
-        load_json(reference_path),
-        sensitivity,
-        load_json(DEFAULT_BLOCKED),
-    )
+    version = str(contract.get("contract_version") or "")
+    if version == "2026-09-17.2":
+        result = validate_contract(
+            contract,
+            load_json(DEFAULT_BASE),
+            load_json(reference_path),
+            sensitivity,
+            load_json(DEFAULT_BLOCKED),
+        )
+    elif version == "2026-09-18.3":
+        result = validate_pfpc_contract(
+            contract,
+            load_json(DEFAULT_PFPC_PREVIOUS),
+            load_json(DEFAULT_BASE),
+            load_json(reference_path),
+            sensitivity,
+            load_json(DEFAULT_PFPC_ZERO_EXPOSURE),
+        )
+    else:
+        raise ValueError(f"unsupported support-closed benchmark contract version {version!r}")
     if result["status"] != "PASS":
         raise ValueError("invalid support-closed benchmark contract: " + "; ".join(result["errors"]))
 
