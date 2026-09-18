@@ -29,7 +29,7 @@ function target(overrides={}){
       dimension:'action_pair',key:'CALL->FOLD',decisions:12,total_loss_bb:8.2,source_refs:[],
       ...(overrides.source_leak||{})
     },
-    minimum_support:{decisions:2,scenarios:2,...(overrides.minimum_support||{})}
+    minimum_support:{decisions:2,scenarios:1,...(overrides.minimum_support||{})}
   });
 }
 
