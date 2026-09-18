@@ -1,0 +1,107 @@
+{
+  "any_environment": {
+    "first_action_changed_fraction": 0.59375,
+    "first_sizing_changed_fraction": 0.140625
+  },
+  "environment_summaries": {
+    "candidate_fold_high": {
+      "first_action_counts": {
+        "100% pot": 11,
+        "125% pot": 4,
+        "25% pot": 2,
+        "33% pot": 6,
+        "50% pot": 16,
+        "75% pot": 11,
+        "CALL": 2,
+        "CHECK": 4,
+        "all-in effectif": 8
+      },
+      "first_sizing_p50": 0.75,
+      "first_sizing_p90": 2.275,
+      "mean_utility_bb": 6.1993546875,
+      "scenarios": 64
+    },
+    "candidate_fold_low": {
+      "first_action_counts": {
+        "100% pot": 11,
+        "125% pot": 4,
+        "25% pot": 2,
+        "33% pot": 6,
+        "50% pot": 16,
+        "75% pot": 11,
+        "CALL": 2,
+        "CHECK": 4,
+        "all-in effectif": 8
+      },
+      "first_sizing_p50": 0.75,
+      "first_sizing_p90": 2.275,
+      "mean_utility_bb": 10.548283203125,
+      "scenarios": 64
+    },
+    "candidate_nominal": {
+      "first_action_counts": {
+        "100% pot": 11,
+        "125% pot": 4,
+        "25% pot": 2,
+        "33% pot": 6,
+        "50% pot": 16,
+        "75% pot": 11,
+        "CALL": 2,
+        "CHECK": 4,
+        "all-in effectif": 8
+      },
+      "first_sizing_p50": 0.75,
+      "first_sizing_p90": 2.275,
+      "mean_utility_bb": 8.442458984375,
+      "scenarios": 64
+    },
+    "reference": {
+      "first_action_counts": {
+        "100% pot": 9,
+        "125% pot": 10,
+        "25% pot": 10,
+        "33% pot": 2,
+        "50% pot": 6,
+        "66% pot": 7,
+        "75% pot": 6,
+        "CALL": 2,
+        "CHECK": 4,
+        "all-in effectif": 8
+      },
+      "first_sizing_p50": 0.75,
+      "first_sizing_p90": 2.275,
+      "mean_utility_bb": 12.918206640625,
+      "scenarios": 64
+    }
+  },
+  "environments_weighted": false,
+  "interpretation": "paired strategic sensitivity diagnostic; not a probability-weighted true environment estimate",
+  "matched_scenarios": 64,
+  "pairwise_vs_reference": {
+    "candidate_fold_high": {
+      "first_action_changed_fraction": 0.59375,
+      "first_sizing_changed_fraction": 0.140625,
+      "mean_utility_delta_bb_vs_reference": -6.718851953124999,
+      "utility_delta_p10_bb": -18.730574999999998,
+      "utility_delta_p90_bb": 1.77466
+    },
+    "candidate_fold_low": {
+      "first_action_changed_fraction": 0.59375,
+      "first_sizing_changed_fraction": 0.140625,
+      "mean_utility_delta_bb_vs_reference": -2.3699234375,
+      "utility_delta_p10_bb": -12.653749999999995,
+      "utility_delta_p90_bb": 3.3081300000000007
+    },
+    "candidate_nominal": {
+      "first_action_changed_fraction": 0.59375,
+      "first_sizing_changed_fraction": 0.140625,
+      "mean_utility_delta_bb_vs_reference": -4.475747656249999,
+      "utility_delta_p10_bb": -12.474499999999995,
+      "utility_delta_p90_bb": 2.204000000000001
+    }
+  },
+  "policy": "current",
+  "scenario_split": "VALIDATION",
+  "schema": "model-b-response-to-price-hero-sensitivity/v1",
+  "test_consumed": false
+}

@@ -194,6 +194,21 @@
     .hh-review{min-width:88px}
     .hh-review .split{display:none}
   }
+  .local-persistence{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin:7px 0 13px}
+  .local-persistence-chip{display:inline-flex;align-items:center;gap:6px;width:auto;padding:5px 8px;border:1px solid rgba(92,225,185,.28);border-radius:999px;background:rgba(92,225,185,.055);color:#a9daca;font-size:9px;font-weight:850;line-height:1.2}
+  .local-persistence-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.82}
+  .local-persistence-chip.busy{border-color:rgba(109,132,255,.32);background:rgba(109,132,255,.06);color:#b8c5ef}
+  .local-persistence-chip.error{border-color:rgba(255,105,105,.38);background:rgba(255,105,105,.07);color:#ffb0b0}
+  .local-persistence-details{max-width:680px;border:0;background:transparent}
+  .local-persistence-details>summary{cursor:pointer;color:var(--muted);font-size:9px;font-weight:750;padding:5px 2px;list-style:none}
+  .local-persistence-details>summary::-webkit-details-marker{display:none}
+  .local-persistence-details>summary::after{content:" · détails"}
+  .local-persistence-details[open]>summary::after{content:" · masquer"}
+  .local-persistence-detail-body{margin-top:5px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:#0c1526;font-size:10px;line-height:1.45;color:var(--muted)}
+  .local-persistence-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .local-persistence-actions button{width:auto;padding:6px 9px;font-size:9px}
+  .local-persistence-actions .danger{border-color:rgba(255,105,105,.35);color:#ffb0b0}
+  .local-persistence-action-status{margin-top:7px;font-size:9px;color:var(--muted)}
   .hh-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
   .hh-controls button{width:auto}
   .hh-import-primary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
@@ -1016,7 +1031,20 @@
   <h1>Poker Range Equity <span style="font-size:.55em;font-weight:600;opacity:.72">v78</span></h1>
   <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
   <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>
-  <div id="localPersistenceStatus" class="status" style="margin:10px 0 0">Restauration de la configuration locale…</div>
+  <div class="local-persistence">
+    <span id="localPersistenceStatus" class="local-persistence-chip busy" role="status" aria-live="polite">Restauration locale…</span>
+    <details id="localPersistenceDetails" class="local-persistence-details">
+      <summary>Données enregistrées dans ce navigateur</summary>
+      <div class="local-persistence-detail-body">
+        <div id="localPersistenceDetail">Les Hand Histories, modèles, préférences et sélections restent sur cet appareil et sont restaurés automatiquement.</div>
+        <div class="local-persistence-actions">
+          <button id="localPersistenceRetryBtn" type="button" class="secondary">Réessayer la sauvegarde</button>
+          <button id="localPersistenceClearBtn" type="button" class="secondary danger">Effacer les données locales</button>
+        </div>
+        <div id="localPersistenceActionStatus" class="local-persistence-action-status"></div>
+      </div>
+    </details>
+  </div>
 
   <div class="grid">
     <section id="rangesSection" class="panel wide">
@@ -1377,7 +1405,9 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
-      localPersistenceStatus=$("localPersistenceStatus"),
+      localPersistenceStatus=$("localPersistenceStatus"), localPersistenceDetails=$("localPersistenceDetails"),
+      localPersistenceDetail=$("localPersistenceDetail"), localPersistenceRetryBtn=$("localPersistenceRetryBtn"),
+      localPersistenceClearBtn=$("localPersistenceClearBtn"), localPersistenceActionStatus=$("localPersistenceActionStatus"),
       populationModelInput=$("populationModelInput"), populationModelClearBtn=$("populationModelClearBtn"),
       populationModelMeta=$("populationModelMeta"), populationModelStatus=$("populationModelStatus"),
       populationModelBadge=$("populationModelBadge"), populationRangeModal=$("populationRangeModal"),
@@ -1643,15 +1673,78 @@ async function localDbDelete(key){
     tx.onerror=()=>reject(tx.error);
   });
 }
+async function localDbClearAll(){
+  const db=await openLocalDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(LOCAL_STORE,"readwrite");
+    tx.objectStore(LOCAL_STORE).clear();
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+    tx.onabort=()=>reject(tx.error||new Error("Effacement annulé"));
+  });
+}
 async function ensurePersistentBrowserStorage(){
   try{
     if(navigator.storage?.persist) await navigator.storage.persist();
   }catch(_){}
 }
-function persistenceStatus(message,error=false){
+function persistenceStatus(message,error=false,busy=false){
   if(!localPersistenceStatus) return;
-  localPersistenceStatus.textContent=message;
-  localPersistenceStatus.className=error?"status error":"status";
+  localPersistenceStatus.textContent=error?"Sauvegarde locale en erreur":busy?"Sauvegarde…":"Sauvegardé localement";
+  localPersistenceStatus.className=`local-persistence-chip${error?" error":busy?" busy":""}`;
+  if(localPersistenceDetail) localPersistenceDetail.textContent=`${message||"Sauvegarde locale active."} · Vos données restent enregistrées uniquement dans ce navigateur.`;
+  if(error&&localPersistenceDetails) localPersistenceDetails.open=true;
+}
+async function retryLocalPersistence(){
+  if(localPersistenceRetryBtn) localPersistenceRetryBtn.disabled=true;
+  if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Vérification de la sauvegarde…";
+  persistenceStatus("Vérification de l’écriture locale en cours…",false,true);
+  try{
+    await ensurePersistentBrowserStorage();
+    await localDbSet("prefs",currentLocalPrefs());
+    state.persistenceReady=true;
+    persistenceStatus("Sauvegarde locale vérifiée. Vos données restent enregistrées dans ce navigateur.");
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Sauvegarde locale vérifiée.";
+    return true;
+  }catch(err){
+    persistenceStatus(`La sauvegarde locale reste indisponible : ${err?.message||err}`,true);
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="La vérification a échoué. Vous pouvez réessayer.";
+    return false;
+  }finally{
+    if(localPersistenceRetryBtn) localPersistenceRetryBtn.disabled=false;
+  }
+}
+async function clearLocalPersistenceWithConfirmation(){
+  const confirmed=window.confirm("Effacer toutes les données enregistrées localement par Poker Range Equity sur ce navigateur ? Les Hand Histories, modèles, préférences et scores sauvegardés seront supprimés.");
+  if(!confirmed){
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Effacement annulé.";
+    return false;
+  }
+  if(localPersistenceClearBtn) localPersistenceClearBtn.disabled=true;
+  if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Effacement des données locales…";
+  const previousRestoring=state.restoringLocalState;
+  state.restoringLocalState=true;
+  if(state.persistPrefsTimer){clearTimeout(state.persistPrefsTimer);state.persistPrefsTimer=null;}
+  if(state.reviewPersistTimer){clearTimeout(state.reviewPersistTimer);state.reviewPersistTimer=null;}
+  if(state.hhWatchTimer){clearInterval(state.hhWatchTimer);state.hhWatchTimer=null;}
+  state.hhWatchHandles=[];state.hhWatchMeta=[];state.hhWatchChecking=false;
+  try{
+    await localDbClearAll();
+    if(localPersistenceStatus){
+      localPersistenceStatus.textContent="Données locales effacées";
+      localPersistenceStatus.className="local-persistence-chip";
+    }
+    if(localPersistenceDetail) localPersistenceDetail.textContent="Toutes les données enregistrées par l’application dans ce navigateur ont été effacées.";
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Données effacées · rechargement de l’application…";
+    window.location.reload();
+    return true;
+  }catch(err){
+    state.restoringLocalState=previousRestoring;
+    persistenceStatus(`Impossible d’effacer les données locales : ${err?.message||err}`,true);
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="L’effacement a échoué. Les données existantes ont été conservées.";
+    if(localPersistenceClearBtn) localPersistenceClearBtn.disabled=false;
+    return false;
+  }
 }
 function currentLocalPrefs(){
   return {
@@ -1667,6 +1760,7 @@ function currentLocalPrefs(){
 function schedulePersistPrefs(delay=80){
   if(state.restoringLocalState) return;
   if(state.persistPrefsTimer) clearTimeout(state.persistPrefsTimer);
+  persistenceStatus("Enregistrement des préférences dans ce navigateur…",false,true);
   state.persistPrefsTimer=setTimeout(async()=>{
     state.persistPrefsTimer=null;
     try{
@@ -1700,6 +1794,7 @@ async function persistPopulationModelSource(snapshot){
       populationModelStatus.textContent=`Impossible de sauvegarder le modèle population : ${err?.message||err}`;
       populationModelStatus.className="status error";
     }
+    persistenceStatus("Le modèle population n’a pas pu être enregistré localement.",true);
   }
 }
 async function persistPostflopModelSource(snapshot){
@@ -1714,6 +1809,7 @@ async function persistPostflopModelSource(snapshot){
       postflopModelStatus.textContent=`Impossible de sauvegarder le modèle postflop : ${err?.message||err}`;
       postflopModelStatus.className="status error";
     }
+    persistenceStatus("Le modèle postflop n’a pas pu être enregistré localement.",true);
   }
 }
 async function persistHHSources(records){
@@ -2984,7 +3080,7 @@ function schedulePersistReviewScores(delay=160){
   if(state.reviewPersistTimer)clearTimeout(state.reviewPersistTimer);
   state.reviewPersistTimer=setTimeout(async()=>{
     state.reviewPersistTimer=null;
-    try{await localDbSet("reviewScores",state.reviewScores||{});}catch(err){console.warn("Review score persistence failed",err);}
+    try{await localDbSet("reviewScores",state.reviewScores||{});}catch(err){console.warn("Review score persistence failed",err);persistenceStatus("Les scores de review n’ont pas pu être sauvegardés localement.",true);}
   },delay);
 }
 function scheduleReviewListRefresh(delay=90){
@@ -7326,7 +7422,7 @@ async function tryRestoreWatchHandles(){
 async function restoreLocalState(){
   state.restoringLocalState=true;
   try{
-    persistenceStatus("Chargement de la configuration locale…");
+    persistenceStatus("Restauration des données enregistrées dans ce navigateur…",false,true);
     await openLocalDb();
 
     const [prefs,rangeSource,populationModelSource,postflopModelSource,hhSources,reviewScores]=await Promise.all([
@@ -7413,6 +7509,8 @@ updateHHWatchCapabilityUi();
 window.addEventListener("focus",updateHHWatchCapabilityUi);
 document.addEventListener("keydown",handleReplayShortcut);
 replayerBackBtn?.addEventListener("click",returnToHandsPage);
+localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
+localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
 quickNavToggle?.addEventListener("click",toggleQuickNav);
