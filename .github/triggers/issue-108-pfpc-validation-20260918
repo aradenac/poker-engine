@@ -19,10 +19,14 @@
   "test_authorized": false,
   "test_consumed": false,
   "thresholds_changed": false,
-  "execution_attempt": 2,
-  "supersedes_failed_workflow_run_id": 35403172597,
+  "execution_attempt": 3,
+  "supersedes_failed_workflow_run_id": 35406589362,
   "previous_attempt_interpretation": "NO_PERFORMANCE_RESULT_MECHANICAL_RUNTIME_FAILURE",
-  "runtime_fix_pr": 250,
-  "runtime_fix_merge_sha": "c4ec01fd2e5512d0cc1b7abd0d6e3848470eb053",
-  "execution_base_main": "9d3d6186540ef95cc5de86ec086db256149c060c"
+  "runtime_fix_pr": 263,
+  "runtime_fix_merge_sha": "5e49f3746deb9ea1646cf92d7d5acfe0c82e69e4",
+  "execution_base_main": "d034d58b2fd983c70cc223de05f1d8e6afcb7d9a",
+  "prior_failed_runs": [
+    35403172597,
+    35406589362
+  ]
 }
