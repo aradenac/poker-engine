@@ -67,8 +67,8 @@
     if(!TARGET_DIMENSIONS.includes(dimension))throw new Error('unsupported source_leak.dimension '+dimension);
     const key=required(source.key||input.key,'source_leak.key');
     const sourceDecisions=int(source.decisions==null?0:source.decisions,'source_leak.decisions',0);
-    const minimumDecisions=int(input.minimum_support&&input.minimum_support.decisions==null?1:input.minimum_support&&input.minimum_support.decisions,'minimum_support.decisions',1);
-    const minimumScenarios=int(input.minimum_support&&input.minimum_support.scenarios==null?1:input.minimum_support&&input.minimum_support.scenarios,'minimum_support.scenarios',1);
+    const minimumDecisions=int(input.minimum_support?.decisions==null?1:input.minimum_support.decisions,'minimum_support.decisions',1);
+    const minimumScenarios=int(input.minimum_support?.scenarios==null?1:input.minimum_support.scenarios,'minimum_support.scenarios',1);
     const refs=normalizeRefs(source.source_refs||input.source_refs);
     const payload={identity:id,context:ctx,source_pattern:pattern,source_leak:{dimension,key},minimum_support:{decisions:minimumDecisions,scenarios:minimumScenarios}};
     const target_id=text(input.target_id)||('leak-target:'+hash(stableStringify(payload)));
