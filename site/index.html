@@ -1692,7 +1692,7 @@ function persistenceStatus(message,error=false,busy=false){
   if(!localPersistenceStatus) return;
   localPersistenceStatus.textContent=error?"Sauvegarde locale en erreur":busy?"Sauvegarde…":"Sauvegardé localement";
   localPersistenceStatus.className=`local-persistence-chip${error?" error":busy?" busy":""}`;
-  if(localPersistenceDetail) localPersistenceDetail.textContent=message||"Les données restent enregistrées localement dans ce navigateur.";
+  if(localPersistenceDetail) localPersistenceDetail.textContent=`${message||"Sauvegarde locale active."} · Vos données restent enregistrées uniquement dans ce navigateur.`;
   if(error&&localPersistenceDetails) localPersistenceDetails.open=true;
 }
 async function retryLocalPersistence(){
