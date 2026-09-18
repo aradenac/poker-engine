@@ -1,6 +1,6 @@
 "use strict";
-const DB_NAME="poker-population-packs-v1",DB_VERSION=1,PACK_STORE="packs",META_STORE="meta",ACTIVE_KEY="active";
-function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(PACK_STORE))db.createObjectStore(PACK_STORE,{keyPath:"id"});if(!db.objectStoreNames.contains(META_STORE))db.createObjectStore(META_STORE);};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+const DB_NAME="poker-population-packs-v1",DB_VERSION=2,PACK_STORE="packs",META_STORE="meta",TEST_PACK_STORE="test_packs",TEST_META_STORE="test_meta",ACTIVE_KEY="active";
+function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(PACK_STORE))db.createObjectStore(PACK_STORE,{keyPath:"id"});if(!db.objectStoreNames.contains(META_STORE))db.createObjectStore(META_STORE);if(!db.objectStoreNames.contains(TEST_PACK_STORE))db.createObjectStore(TEST_PACK_STORE,{keyPath:"id"});if(!db.objectStoreNames.contains(TEST_META_STORE))db.createObjectStore(TEST_META_STORE);};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 async function get(store,key){const db=await openDb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction(store,"readonly"),r=tx.objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}finally{db.close();}}
 async function activeRecord(){const id=await get(META_STORE,ACTIVE_KEY);return id?get(PACK_STORE,id):null;}
 self.addEventListener("install",()=>self.skipWaiting());

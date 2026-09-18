@@ -1,0 +1,12 @@
+{
+  "schema": "independent-preflop-ranges/v2",
+  "artifact_class": "TEST_ONLY",
+  "non_publishable": true,
+  "role": "model_b",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "ranges": {
+    "synthetic": [
+      "AA"
+    ]
+  }
+}
