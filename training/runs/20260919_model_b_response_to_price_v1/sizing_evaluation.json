@@ -1,0 +1,34 @@
+{
+  "candidate": {
+    "above_predicted_p99_fraction": 0.03496503496503497,
+    "inside_predicted_p10_p90_fraction": 0.6899766899766899,
+    "mean_absolute_log2_error": 1.0468830367661774,
+    "median_absolute_log2_error": 0.7863770565709532,
+    "p90_absolute_log2_error": 2.238127096821605,
+    "predicted": 429,
+    "prediction_coverage": 1.0,
+    "raises": 429,
+    "tail": {
+      "median_absolute_log2_error": 0.7863770565709532,
+      "p90_absolute_log2_error": 3.0831277081566655,
+      "predicted": 147,
+      "raises": 147
+    }
+  },
+  "reference": {
+    "above_predicted_p99_fraction": 0.023310023310023312,
+    "inside_predicted_p10_p90_fraction": 0.7878787878787878,
+    "mean_absolute_log2_error": 1.1409140123297672,
+    "median_absolute_log2_error": 0.8810946315977607,
+    "p90_absolute_log2_error": 2.3734215847415228,
+    "predicted": 429,
+    "prediction_coverage": 1.0,
+    "raises": 429,
+    "tail": {
+      "median_absolute_log2_error": 1.201186545066156,
+      "p90_absolute_log2_error": 3.009339601186896,
+      "predicted": 147,
+      "raises": 147
+    }
+  }
+}
