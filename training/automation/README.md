@@ -103,3 +103,88 @@ python3 tools/validate_release_handoff.py --handoff <run-dir>/RELEASE_HANDOFF.js
 The builder deliberately cannot produce a `PROMOTE` handoff. Promotion still
 requires the separately governed content-addressed pack, atomic promotion plan,
 Cloudflare production deployment and live verification/rollback evidence.
+
+
+## Release handoff for PROMOTE
+
+`tools/training/build_promote_release_handoff.py` is the evidence boundary for
+a cycle that has explicitly authorized `PROMOTE`. It does **not** publish,
+push, deploy or create a release. It only validates and records immutable
+evidence around those separately governed actions.
+
+The state machine is:
+
+1. `prepare` -> `PREPARED`: hashes the cycle decision, snapshot, current
+   production identities, atomic promotion plan, candidate pack, candidate
+   `site/RELEASE.json`, expected release commit and deployment configuration.
+   The plan must actually promote that candidate release with the current
+   production release as its hash precondition; a registry mutation, when
+   present, must be the final plan operation.
+2. `published` -> `PUBLISHED_UNVERIFIED`: records provider deployment
+   evidence after an external publication attempt. This state is never
+   considered delivered.
+3. `verified-live` -> `VERIFIED_LIVE`: additionally requires the canonical
+   production URL to report the expected commit and candidate release identity,
+   with PASS probes for release identity, index, replayer, trainer, Hero ranges
+   and required assets. Only this PROMOTE state is delivered.
+4. `rolled-back` -> `ROLLED_BACK`: records that an attempted publication
+   restored the exact pre-publication site-release and population-registry
+   hashes. It is valid evidence, but not a delivered release.
+
+Every command writes a **new** handoff file and refuses to overwrite existing
+evidence. Example preparation:
+
+```bash
+python3 tools/training/build_promote_release_handoff.py prepare \
+  --population-id pokerstars_nlhe_100-200_zoom_play_6max_v1 \
+  --cycle-run-id <immutable-run-id> \
+  --cycle-decision <run-dir>/DECISION.json \
+  --snapshot <snapshot.zip> \
+  --promotion-plan <run-dir>/PROMOTION_PLAN.json \
+  --candidate-pack <immutable-pack> \
+  --candidate-site-release <staging>/RELEASE.json \
+  --expected-release-commit-sha <40-char-commit> \
+  --production-url <canonical-production-url> \
+  --out <run-dir>/RELEASE_HANDOFF_PREPARED.json
+```
+
+The later transition commands consume provider/live/rollback JSON evidence; they
+do not execute the corresponding external action. A successful CI/build or a
+preview URL therefore cannot be upgraded to `VERIFIED_LIVE` by this tool.
+
+
+### Read-only live verification
+
+After an external production deployment, `tools/training/verify_live_release.py`
+produces the `live_verification` payload consumed by the PROMOTE handoff. It
+does not deploy or mutate the service. The verifier:
+
+- hashes the exact served `RELEASE.json`;
+- reads the deployed commit/build identity from `deployment-meta.css`;
+- downloads every functional file declared by the served release and verifies
+  its Git-blob identity;
+- runs a browser smoke that parses/renders a synthetic PokerStars hand in the
+  live replayer;
+- opens the live trainer and waits for the promoted Model A / Model B / Hero
+  range assets to load and a training hand to be created.
+
+Example:
+
+```bash
+python3 -m pip install --user playwright
+python3 -m playwright install --with-deps chromium
+python3 tools/training/verify_live_release.py \
+  --production-url <canonical-production-url> \
+  --expected-commit-sha <40-char-release-commit> \
+  --expected-site-release-sha256 <candidate-release-sha256> \
+  --out <run-dir>/LIVE_VERIFICATION.json
+
+python3 tools/training/build_promote_release_handoff.py verified-live \
+  --handoff <run-dir>/RELEASE_HANDOFF_PREPARED.json \
+  --deployment-evidence <run-dir>/DEPLOYMENT.json \
+  --live-verification <run-dir>/LIVE_VERIFICATION.json \
+  --out <run-dir>/RELEASE_HANDOFF_VERIFIED_LIVE.json
+```
+
+A failed live probe leaves the release undelivered; it cannot be converted to
+`VERIFIED_LIVE`.
