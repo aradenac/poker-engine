@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
+import json
+import tempfile
+from pathlib import Path
+
 from tools.simulation.preflop_strategy_test_confirmation import (
     _holdout_generation,
     _validation_authorization,
+    build_test_run,
     consume_holdout_ledger,
     select_test_confirmation,
 )
@@ -66,6 +72,104 @@ def ledger():
             }
         ],
     }
+
+
+
+def _write(path: Path, value) -> None:
+    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _frozen_candidate_files(root: Path):
+    candidate = root / "candidate.json"
+    candidate.write_text('{"schema":"fixture"}\n', encoding="utf-8")
+    candidate_sha = hashlib.sha256(candidate.read_bytes()).hexdigest()
+    binding = root / "binding.json"
+    _write(binding, {
+        "schema": "poker-hero-policy-context-binding/v1",
+        "run_id": CANDIDATE["candidate_id"],
+        "promotion_authorized": False,
+        "repository_sha256": candidate_sha,
+        "selection_boundary": {
+            "validation_consumed": False,
+            "test_consumed": False,
+        },
+    })
+    identity = dict(CANDIDATE)
+    identity["candidate_artifact_sha256"] = candidate_sha
+    identity["candidate_binding_sha256"] = hashlib.sha256(binding.read_bytes()).hexdigest()
+    return candidate, binding, identity
+
+
+def _full_validation_run(identity):
+    run = validation_run()
+    run["identities"] = dict(identity)
+    return run
+
+
+def _call_build_test(root: Path, *, selection_value, ledger_value):
+    candidate, binding, identity = _frozen_candidate_files(root)
+    run_path = root / "validation-run.json"
+    selection_path = root / "selection.json"
+    ledger_path = root / "ledger.json"
+    _write(run_path, _full_validation_run(identity))
+    selection_value = dict(selection_value)
+    selection_value["candidate_id"] = identity["candidate_id"]
+    if selection_value.get("frozen_finalist") is not None:
+        selection_value["frozen_finalist"] = identity["candidate_id"]
+    _write(selection_path, selection_value)
+    _write(ledger_path, ledger_value)
+    return build_test_run(
+        population_id="pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        profiles_path=root / "MUST_NOT_BE_READ_PROFILES.json",
+        archives=[root / "MUST_NOT_BE_READ_TEST.zip"],
+        certification=root / "MUST_NOT_BE_READ_CERTIFICATION.json",
+        master_seed=20260917,
+        code_commit_sha="e" * 40,
+        candidate_source_commit_sha="f" * 40,
+        candidate_path=candidate,
+        binding_path=binding,
+        validation_run_path=run_path,
+        validation_selection_path=selection_path,
+        holdout_ledger_path=ledger_path,
+        holdout_generation_id="zoom_100-200_play_20260915_g1",
+    )
+
+
+def test_nonfinalist_blocks_before_any_test_archive_access():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        selection = validation_selection()
+        selection["outcome"] = "RETAIN_REFERENCE"
+        selection["frozen_finalist"] = None
+        selection["test_authorized"] = False
+        try:
+            _call_build_test(root, selection_value=selection, ledger_value=ledger())
+        except ValueError as exc:
+            assert "FREEZE_FINALIST" in str(exc)
+            assert "MUST_NOT_BE_READ" not in str(exc)
+        else:
+            raise AssertionError("non-finalist must block before TEST archive access")
+
+
+def test_consumed_holdout_blocks_before_any_test_archive_access():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        consumed = ledger()
+        consumed["generations"][0]["status"] = "CONSUMED"
+        consumed["generations"][0]["consumed_by_cycle"] = "older-cycle"
+        consumed["generations"][0]["consumed_by_frozen_finalist"] = "older-finalist"
+        consumed["generations"][0]["consumed_at_commit"] = "1" * 40
+        try:
+            _call_build_test(
+                root,
+                selection_value=validation_selection(),
+                ledger_value=consumed,
+            )
+        except ValueError as exc:
+            assert "already consumed" in str(exc)
+            assert "MUST_NOT_BE_READ" not in str(exc)
+        else:
+            raise AssertionError("consumed holdout must block before TEST archive access")
 
 
 def test_validation_finalist_is_required_before_test():
