@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/analytics/leak-training-target.schema.json",
+  "title": "Poker leak training target",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "target_id", "identity", "context", "source_pattern", "source_leak", "minimum_support", "source_support", "semantics"],
+  "properties": {
+    "schema": {"const": "poker-leak-training-target/v1"},
+    "target_id": {"type": "string", "minLength": 1},
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["population_id", "pack_id", "strategy_id", "strategy_version", "ev_reference"],
+      "properties": {
+        "population_id": {"type": "string", "minLength": 1},
+        "pack_id": {"type": ["string", "null"]},
+        "strategy_id": {"type": "string", "minLength": 1},
+        "strategy_version": {"type": "string", "minLength": 1},
+        "ev_reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "street", "spot_family"],
+      "properties": {
+        "position": {"type": ["string", "null"]},
+        "street": {"type": ["string", "null"]},
+        "spot_family": {"type": ["string", "null"]}
+      }
+    },
+    "source_pattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["played_action", "recommended_action", "sizing_error", "jam", "overbet"],
+      "properties": {
+        "played_action": {"type": ["string", "null"]},
+        "recommended_action": {"type": ["string", "null"]},
+        "sizing_error": {"type": ["boolean", "null"]},
+        "jam": {"type": ["boolean", "null"]},
+        "overbet": {"type": ["boolean", "null"]}
+      }
+    },
+    "source_leak": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "key", "decisions", "total_loss_bb", "frequency_pct", "source_refs"],
+      "properties": {
+        "dimension": {"enum": ["position", "street", "spot_family", "action_pair", "error_type", "jam", "overbet"]},
+        "key": {"type": "string", "minLength": 1},
+        "decisions": {"type": "integer", "minimum": 0},
+        "total_loss_bb": {"type": ["number", "null"]},
+        "frequency_pct": {"type": ["number", "null"]},
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hand_id", "decision_id"],
+            "properties": {
+              "hand_id": {"type": "string", "minLength": 1},
+              "decision_id": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "minimum_support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decisions", "scenarios"],
+      "properties": {
+        "decisions": {"type": "integer", "minimum": 1},
+        "scenarios": {"type": "integer", "minimum": 1}
+      }
+    },
+    "source_support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observed_decisions", "sufficient"],
+      "properties": {
+        "observed_decisions": {"type": "integer", "minimum": 0},
+        "sufficient": {"type": "boolean"}
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_played_action_is_diagnostic", "generated_scenarios_must_not_require_repeating_source_mistake", "delta_ev_reference"],
+      "properties": {
+        "source_played_action_is_diagnostic": {"const": true},
+        "generated_scenarios_must_not_require_repeating_source_mistake": {"const": true},
+        "delta_ev_reference": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
