@@ -1,0 +1,869 @@
+{
+  "files": [
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-0.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "2cc499840827dd194c4651362e916d7ff63ff09159e0468d933277b65919ba3d",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-1.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "8692e91e1d3ca3aaed9270b5ad5c44e76eddc4425ba001ffc229a4de1ade2cd4",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-10.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "823755991344d20d06eba338a13b15eb6e00bbf38a8def719d99e31121d3fe1a",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-11.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "277195b959e129a38bac637c3336da84b583a63803fe509f14a088e1b287ba6b",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-12.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "cdb242943bfa1fdf209d7fb50435468120e5aeabef7e235d3ea64e5ccb823311",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-13.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "dc14d5fed81d90240116b3fe1e45b1e3ced405d3f811ea885c10e3eb11157b26",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-14.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "1de2be13bd6b8430d29e7dd2c9f847eff56c8d035b37b5156a6d2cea711133e0",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-15.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "01e37fd3fddc746f153122c9b6414fe688fbe56c251304bfdee8112e5e639ca1",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-16.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "24827608c8eabaef45586797f41fd8b6ccc5531263b22417002aa2dbde839b9c",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-17.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "309b5d8c6f40c7ff354bc7f973010c0bcbc450faf4a8ab174943b720658b4463",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-18.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "724c566593ebd30e0744ad5cbb4af5ed100b32dd86f17c616964398204d3e070",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-19.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "b8ca0193d10a2605e08456257b82a0f1e9940a99129ddaebeab3b64e26f6bb31",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-2.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "67397841dfd8973b2b08cde9912fb1d201201a6e9f111a68db58d081ed8bc13d",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-20.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "afaf8dffeb5a79a6db9dcddec5a49100e445267dd4b3954bdee13be47f54330b",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-21.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "0fd9d92ec09e8009b4de860de927d481610995e781d29bc61c04fc8e06b94e1b",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-22.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "cc1372990d9205e7fc1de081be60d4d32cf1102dc93e1d490b8d2ae35704a567",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-23.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "0374fea0c08dce0e0bd9e9928d7e3dd4edb1fe9388e5b33039f8b28deb8da75c",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-24.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "352f7bc5833477b523482eaf1647ea1533aea1cf7c1835b429d9cc9620a89235",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-LJ-25.json",
+      "position": "LJ",
+      "requested": 6,
+      "sha256": "36194ea0823d8a797284cb768292fb97fa26b337eb29671e3984e6c3d62941e9",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-3.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "e126088287d1f642a71e6ee1fc3414ff6cf707f121c8692f8ac486fb803c1254",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-4.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "db3ed5868d6dc9d6d6be211a6e5db1e086ecfe93aac42d2c4589c3a45c10db38",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-5.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "df0fa1b0678d7c36f7316457a798bc4bea50430c553aa6415fd7081548db3d45",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-6.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "e8bd53703da355602ab3ce56ff4f4f005a3482c2239fa0550a4ebae199fbd098",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-7.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "97ab7d151f875b5abb8196b8da875e612916f33cd5f69fd78b9c77db038490b2",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-8.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "fbc3a60644cea888829f72e0a4204bdcc63327c5a5b7f599938dd19291caaa5d",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-LJ-9.json",
+      "position": "LJ",
+      "requested": 7,
+      "sha256": "5c901b43e85ec37a1bee0903f199937d11b74a2395383a63121d3ff069f82840",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-0.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "2fbc701fe615f31d6b5e57493fecf861af6804526f68075e0db06461de5683b8",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-1.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "4e3496f449e29ab3fcc139be924961b42c2047c6cf9dfa5b64806ceb0606aeb4",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-10.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "947c9cbf7d6d41975e470dcaf07040aa67e2354007ec1f0fe1d6fdd220121678",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-11.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "5690ebd0ea58e54665b436e2dd9740a8c6dc993e480cb19a562dbc8e155ec61e",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-12.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "cdf51968781add2d0472d6d9c1f2b19e8a59559df737225d761abf29d26b84fe",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-13.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "e78d7b4a4c05a558465307dca98332b4266b6a9637445b03c84d5e7650295f4a",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-14.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "b51d1a4eff32e607ab473a264c1bcf05933b5618b246d56ec5df7a1eed52de18",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-15.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "bad003e78809bf00e2db112d398daa59e978dcbb7c92d41b25ddaa57c456a934",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-16.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "b0add5610d85ee8112197a314bd020219cef28143f8d56fb7740d53797f4b565",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-17.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "85bd1dbe06f8bbc8b28bcbfb3877bda710e394d163411d222042a1901ed32a55",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-18.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "61d6b7c68e6e877cf6c2b7fb8fb16004e67f2e2f799dc012a30e902e0b57585a",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-19.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "297d276e3fd241d9be86949a16e15db39fa43478ed850e20cbb25833449b1bbd",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-2.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "328c7c45882c457a649f3d208e1999a71e64bf9c2b739e40ee797399bfa5e166",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-20.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "fab6e65e6ac9912448f48fc1060543c8c6154504e4c1e2a9d4f4eeedf543e943",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-21.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "4cbb21e3bf599951437b0afc60ca96eff237d9e816e903c83d30fd1b90d660bb",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-22.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "c28e7b9d9fc27ec9c7ec4d2c4f89c9bf7f4b325299f11160928a41289eabc087",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-23.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "e2bd3e71ddf0fc3a4bb8ad7e70b2c150b6ac71896c200571f5d43bf17c48dda0",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-24.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "d049418639e6ed99d2dbdb3212846be28289e667ba6fd8812564f52d5444c5e4",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-HJ-25.json",
+      "position": "HJ",
+      "requested": 6,
+      "sha256": "fa9a2698a5b7ef659289b4debc6f8e3a0b3eedd71bb44cd9bc53096d84c34dea",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-3.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "030800b9d9e2c8f9f94768d5da66038ddf7fd3783627a03e17caa449376c654f",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-4.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "c2839a91182f925fb5b2f4305a6a5b15b81837e9765166ac5df64b2813c0252d",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-5.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "cf5bc84aac1f94fd2dce622218549fba6a519bb4f98cb653e4215b319ed0d8cf",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-6.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "17d6c6e27bfdd91acd381ab80d6f60371bf172deb2be48c9323cb298a1a38a90",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-7.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "9b3875375e97b90942702b1af827deb3f53ce85d7d049f030d9cfa1f2874a0fa",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-8.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "f028d028a5692431b8155c9f7573a05e01b43dc1bd27f7de4a3cef55f971997b",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-HJ-9.json",
+      "position": "HJ",
+      "requested": 7,
+      "sha256": "d74955a91d7063db604715bc7fe7e23cc6956156f0b7558492ef0ab3aa69940c",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-0.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "f72c9ea07be386aca0e07118e412c405dfcf3c9cb4f61976b1ae30104449aa56",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-1.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "c197bdb34fbf43a787f2c4a4e79abe894be96f6c547765a97e814964965b189d",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-10.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "f4201249b2da30c1c4fff6c154c1da64f81643cce598195fe09cdd31453e10f5",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-11.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "6733318c9adc35fc2cb5beae77ac03940c37f5e0f197ec72e9837e5b9cf84925",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-12.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "6a1a9c75a101f2baffd92e3253b7ac1e140e31074d0e060a36dd47e7e0958f7f",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-13.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "f61334706fc6b7e83828ba34a25c082cb4b20e7d6d48a8e9fdc99f3f41a40d6e",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-14.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "ebc1d176d2de23b0ecc85c03949b18248a0fe3cc1ea2bb046b93e2a48f0cb5fd",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-15.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "9359f4754d5dea61078fc87d460f60a0c9f6dbe0ec20aee36a6e3c31474d411e",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-16.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "e8aa1d4b49531cc33e11fbddd1f06727d11b5260f7d338099fa15d2e0be98b2c",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-17.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "6df0ca05614db3ae525874864efb2dd8248b06b49fce1b54bbe1ed0a52923daa",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-18.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "491e69f464df8a04e97e4174eb011a4b837bc68c26fd0e00ee172412729ba11e",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-19.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "ac64dea5783cdc8f096d7e2bee57ba160504eb9eb120ba7b9f9bcf514367b9ca",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-2.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "7803bdcf835c7da61748f4d2018a2513e1d5ac4076cb4d5aa7f73b0f7f7dcf18",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-20.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "cfe8e9e967e67030e85e12596742ccb79ff9e7dcf5aaf0c028d0f933dc2fd4ca",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-21.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "48541a141d81cbd3647e0a842907edc151a83f624bb7e9d5264686feb6beea59",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-22.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "02b2a683d9e27084bb2c0b048627a6e9140ec8b812782f960a31f6bd2453b7bd",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-23.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "1f27e9c5fc758f4b251f9a0394d3a6dbcd6a0f9d198d247dfcb4ad38970c40e9",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-24.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "1030d5b883a810befe70a7090863f62241239a4400d02b4e48b9285ef9b90342",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-CO-25.json",
+      "position": "CO",
+      "requested": 6,
+      "sha256": "ce6af06cd88fd485cbb7129bf0e42fadca1c3418498c021b141ae4cb72cba968",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-3.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "6452313c731f3f57cedb731fd043f46d361ce321405a8740017b813de4f9fb00",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-4.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "219d910d6c45a640937fea5c02891c9e1c20549bad827eb38fe67b8de7e9c727",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-5.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "6bb3258cc66d247199165e85cdb68bedc6581b35ac2e6ec9c2b5ac4969baac67",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-6.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "187872cf43b1668bcfc8f2470e75b76a5ace77a53226c6691ab595afbca1c09b",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-7.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "d1559548794a2a23238d9c7bf5e68425d9faffdd661e937f431e4e74f52d61d1",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-8.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "781ed6a7f8514e425a6f4ee4ca9c13e0b5e2f1653d95f543763e187d12cfaadb",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-CO-9.json",
+      "position": "CO",
+      "requested": 7,
+      "sha256": "0ccdec5a8fb88c8468775791761e365b9475752de117fb5b2216649721d2ec51",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-0.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "f4f55571b6d421489ec0f715c195f450e2c1ba79dae1c04e9ee6ca5e1ccf8883",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-1.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "bebaecfc578c5199bf5e3269df8fc18d034c23166383fd0380b8071b1429799c",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-10.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "e6bf7ef73cf3c6a292ebeffc21214db46f3a41cba38f346364ad80b4899331d6",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-11.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "794680c7710478634b05558fbd99a1419ea3931c275fccc4bbfda0f9aa98a287",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-12.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "0d5e2a98d0970dcb0673e83ceec33121294f1052812aee9611c75d2affad687d",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-13.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "5ab76694d217934aa3ee71b0a248cc9992f92be76ff44cdb4c4e56a3cc9f0616",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-14.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "bfead041ded8c9f261c2e1121b52df56e38c9e637725edcd18171ad979bd3c49",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-15.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "3c886898a4e80119c2d1335fd588eb1c0d9c6fa5847f1d562be960a91905ab54",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-16.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "d0add31283abe65705f46d012fbce0c1870e1128113d8beff8f85daeeb72469b",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-17.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "307187a4469e4d9bcbd216a8813cc62730bc57a6a0d2b9c84ea6a8f89a83a38c",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-18.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "dcde09c16bba1f8917a4bb153071999faed0d1fdf335d85764629691f6ae1ea6",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-19.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "2e11aa9403b551eca6ca571865e0889eead70d8a1fa0ff28f72af082ebfc43f2",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-2.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "8fd1defa5923b1cc18955711801d7a1c4a7ba5eb06fa057937c69874ff59668b",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-20.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "60aea12abeafe784b72bf5fbff43d737d6487720ddf563f6c258f945676f26a4",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-21.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "e389d065f8007c6162e7ab6efa32da2537685101f44f47deb01ee3379eb039c8",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-22.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "74225a68e2696aa536ee246e597e0905dbd6c54cd619fc773bd73ef45db4a2df",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-23.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "a003f02bf67d7b3334dd7e11738c0406099790c79c80457b27d870996c102c5c",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-24.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "bad1f140735b311dc86e5bdb55ebd044dd80a9855a45b480bcbf0af88b6a8faa",
+      "unsupported": 0
+    },
+    {
+      "completed": 6,
+      "file": "issue-107-SB-25.json",
+      "position": "SB",
+      "requested": 6,
+      "sha256": "645af8bb7c3968dfb5f7cedcaeb6c1eedd3e351c484069ef4be5b42b415e6a86",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-3.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "fb089625684e4cd844dc5dc339f03df6933acd2ee8a1be45f75c0e8898238241",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-4.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "0ae13cb60f9b045f9b40ac10eb0250685b10258b66310248ceccfa1c25115095",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-5.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "f0006eb1ddc897b1dd7a73d9675105e0456909d8eea2c4369763be61f682bcf4",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-6.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "c59724bbedc2fc565d6d147d4c093c1aa19d6161e9fcc62fed825e0d01c5dd50",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-7.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "34c58573fea58bdc3b6b38031dd88f2a3f9baf3b37980b15a0a4c2c2c5248bdc",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-8.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "5b1b1849428770930d5ff00c3955c5fc7026827c570ded32b25bef9b9623b889",
+      "unsupported": 0
+    },
+    {
+      "completed": 7,
+      "file": "issue-107-SB-9.json",
+      "position": "SB",
+      "requested": 7,
+      "sha256": "880f0a4ac5c8cab21b4072b52957939b46a284497c71a46c4c423a860b665a6d",
+      "unsupported": 0
+    }
+  ],
+  "inventory_sha256": "f24b51d975e11a3d5b7d9b9eb0b1c6d7cd5dfc5c2fec6363027f8d8a94426581",
+  "issue": 107,
+  "positions": {
+    "CO": {
+      "completed": 169,
+      "requested": 169,
+      "shards": 26,
+      "unsupported": 0
+    },
+    "HJ": {
+      "completed": 169,
+      "requested": 169,
+      "shards": 26,
+      "unsupported": 0
+    },
+    "LJ": {
+      "completed": 169,
+      "requested": 169,
+      "shards": 26,
+      "unsupported": 0
+    },
+    "SB": {
+      "completed": 169,
+      "requested": 169,
+      "shards": 26,
+      "unsupported": 0
+    }
+  },
+  "recovery_mode": "ARTIFACT_ONLY_NO_GENERATION",
+  "schema": "poker-hero-shard-inventory/v1",
+  "source_branch": "issue-107-multiposition-generation-sol",
+  "source_head_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
+  "source_workflow_run_id": 35379387883
+}
