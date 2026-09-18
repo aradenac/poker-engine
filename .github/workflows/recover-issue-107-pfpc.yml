@@ -54,13 +54,13 @@ jobs:
           missing=[token for token in required if token not in text]
           assert not missing, missing
           forbidden=[
-              'generate_certified_hero_range_decisions.py',
-              'evaluate_preflop_grid(',
-              'rerun-failed-jobs',
-              'workflow_dispatch:',
-              'preflop-strategy-validation-pfpc.yml',
-              'preflop-strategy-test-pfpc.yml',
-              'git push origin HEAD:main',
+              'generate_' + 'certified_hero_range_decisions.py',
+              'evaluate_' + 'preflop_grid(',
+              'rerun-' + 'failed-jobs',
+              'workflow_' + 'dispatch:',
+              'preflop-strategy-' + 'validation-pfpc.yml',
+              'preflop-strategy-' + 'test-pfpc.yml',
+              'git push origin HEAD:' + 'main',
           ]
           found=[token for token in forbidden if token in text]
           assert not found, found
