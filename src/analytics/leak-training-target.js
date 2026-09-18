@@ -120,9 +120,9 @@
     if(dimension==='action_pair'){
       const parts=String(key).split('->');if(parts.length===2){played=parts[0];recommended=parts[1];}
     }
-    const sizing=dimension==='error_type'&&String(key)==='SIZING_ERROR'?true:(events.length&&events.every(e=>e.sizing_error===true)?true:null);
-    const jam=dimension==='jam'?true:(events.length&&events.every(e=>e.tags&&e.tags.jam===true)?true:null);
-    const overbet=dimension==='overbet'?true:(events.length&&events.every(e=>e.tags&&e.tags.overbet===true)?true:null);
+    const sizing=dimension==='error_type'&&String(key)==='SIZING_ERROR'?true:null;
+    const jam=dimension==='jam'?true:null;
+    const overbet=dimension==='overbet'?true:null;
     return buildTrainingTarget({
       identity:report.scope,context:ctx,source_pattern:{played_action:played,recommended_action:recommended,sizing_error:sizing,jam,overbet},
       source_leak:{dimension,key,decisions:group.decisions,total_loss_bb:group.total_loss_bb,frequency_pct:group.frequency_pct,source_refs:refs},
