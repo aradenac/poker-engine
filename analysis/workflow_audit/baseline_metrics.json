@@ -1,0 +1,160 @@
+{
+  "schema": "poker-engine-workflow-baseline/v1",
+  "snapshot_base_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
+  "structural": {
+    "workflow_count": 54,
+    "concurrency": {
+      "cancel_true_count": 26,
+      "cancel_false_count": 10,
+      "no_concurrency_count": 18
+    },
+    "duplication_primitives": {
+      "checkout": 96,
+      "setup_python": 55,
+      "setup_node": 8,
+      "pip_install": 11,
+      "playwright_install": 11,
+      "npm_install": 0,
+      "upload_artifact": 39,
+      "download_artifact": 40
+    },
+    "high_cost_workflows": [
+      {
+        "path": ".github/workflows/hero-full-169-evidence.yml",
+        "score": 30
+      },
+      {
+        "path": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "score": 47
+      },
+      {
+        "path": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "score": 46
+      },
+      {
+        "path": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "score": 41
+      },
+      {
+        "path": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "score": 31
+      },
+      {
+        "path": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "score": 31
+      },
+      {
+        "path": ".github/workflows/recover-issue-107-pfpc.yml",
+        "score": 24
+      },
+      {
+        "path": ".github/workflows/sequential-arena.yml",
+        "score": 41
+      },
+      {
+        "path": ".github/workflows/strategic-benchmark-v3.yml",
+        "score": 39
+      },
+      {
+        "path": ".github/workflows/v84-strategy-candidate.yml",
+        "score": 36
+      }
+    ]
+  },
+  "recent_runs": {
+    "sample_size": 100,
+    "total_repository_runs_observed": 2507,
+    "latest_run_created_at_in_sample": "2026-09-18T23:20:39Z",
+    "completed": 80,
+    "in_progress": 20,
+    "conclusions": {
+      "success": 41,
+      "failure": 29,
+      "cancelled": 10,
+      "skipped": 0
+    },
+    "cancellation_rate_of_completed": 0.125,
+    "workflow_branch_pairs_with_both_push_and_pull_request": 9,
+    "top_workflows": [
+      {
+        "path": ".github/workflows/sequential-arena.yml",
+        "runs": 24,
+        "completed": 18,
+        "cancelled": 8,
+        "cancel_rate_completed": 0.444,
+        "median_wall_clock_seconds": 71
+      },
+      {
+        "path": ".github/workflows/trainer-smoke.yml",
+        "runs": 22,
+        "completed": 18,
+        "cancelled": 0,
+        "cancel_rate_completed": 0,
+        "median_wall_clock_seconds": 14
+      },
+      {
+        "path": ".github/workflows/hero-range-editor.yml",
+        "runs": 19,
+        "completed": 18,
+        "cancelled": 0,
+        "cancel_rate_completed": 0,
+        "median_wall_clock_seconds": 25
+      },
+      {
+        "path": ".github/workflows/hero-range-compliance.yml",
+        "runs": 10,
+        "completed": 7,
+        "cancelled": 0,
+        "cancel_rate_completed": 0,
+        "median_wall_clock_seconds": 50
+      },
+      {
+        "path": ".github/workflows/preflop-contract.yml",
+        "runs": 8,
+        "completed": 8,
+        "cancelled": 0,
+        "cancel_rate_completed": 0,
+        "median_wall_clock_seconds": 13
+      },
+      {
+        "path": ".github/workflows/dataset-integrity.yml",
+        "runs": 5,
+        "completed": 3,
+        "cancelled": 2,
+        "cancel_rate_completed": 0.667,
+        "median_wall_clock_seconds": 16
+      }
+    ],
+    "dual_trigger_examples": [
+      ".github/workflows/sequential-arena.yml|agent-B/issue-197-scientific-evaluation",
+      ".github/workflows/sequential-arena.yml|agent-A/issue-108-shove-live-allin-fix",
+      ".github/workflows/sequential-arena.yml|agent-H/issue-218-implicit-review-context",
+      ".github/workflows/trainer-smoke.yml|agent-H/issue-218-implicit-review-context",
+      ".github/workflows/hero-range-editor.yml|agent-H/issue-218-implicit-review-context",
+      ".github/workflows/hero-range-editor.yml|agent-H/issue-220-simplify-hh-import",
+      ".github/workflows/sequential-arena.yml|agent-H/issue-220-simplify-hh-import",
+      ".github/workflows/hero-range-compliance.yml|agent-H/issue-220-simplify-hh-import",
+      ".github/workflows/trainer-smoke.yml|agent-H/issue-220-simplify-hh-import"
+    ]
+  },
+  "comparison_contract": {
+    "recompute_after_factorization": [
+      "workflow_count",
+      "duplication_primitives",
+      "runs_per_representative_change",
+      "jobs_per_representative_change",
+      "cancellation_rate_of_completed",
+      "workflow_branch_pairs_with_both_push_and_pull_request",
+      "median_wall_clock_seconds_by_workflow"
+    ],
+    "representative_change_classes": [
+      "central-ui: site/trainer.js or site/index.html",
+      "hero-editor: site/hero-ranges.*",
+      "model-b/simulation: tools/simulation/**",
+      "dataset/training: tools/training/** or training/**",
+      "docs-only: docs/**"
+    ],
+    "rule": "Use the same 100-run sample size and the same change classes after phase-2 consolidation; compare counts and rates, not scientific outcomes."
+  },
+  "concurrent_drift_note": "Refreshed onto main 360d02225ff4ca0aca798f07e3abb87304be88ae. Workflow count remains 54 and all workflow definition blob SHAs are unchanged from the aff974c... audit refresh."
+}
