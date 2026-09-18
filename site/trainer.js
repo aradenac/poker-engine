@@ -388,12 +388,12 @@ function trainerDecisionCanonical(detail,row){
   const playedLabel=String(row.played||"—").toUpperCase(),recommendedLabel=String(detail.bestLabel||source?.recommended?.label||"—");
   const sizing=(label,cost)=>{const k=family(label);if(k==="FOLD"||k==="CHECK")return "0 BB";return Number.isFinite(cost)?trainerFmtBB(cost):"—";};
   const played={label:playedLabel,sizing:sizing(playedLabel,playedCost),costBB:Number.isFinite(playedCost)?playedCost:null,targetStreetBB:null,evBB:Number.isFinite(chosenEV)?chosenEV:null,chosen:true,recommended:false};
-  const recommended={label:recommendedLabel,sizing:source?.recommended?.sizing||sizing(recommendedLabel,bestCost),costBB:Number.isFinite(bestCost)?bestCost:(source?.recommended?.costBB??null),targetStreetBB:source?.recommended?.targetStreetBB??null,evBB:Number.isFinite(bestEV)?bestEV:(source?.recommended?.evBB??null),chosen:false,recommended:true};
+  const recommended={label:recommendedLabel,sizing:Number.isFinite(bestCost)?sizing(recommendedLabel,bestCost):(source?.recommended?.sizing||"—"),costBB:Number.isFinite(bestCost)?bestCost:(source?.recommended?.costBB??null),targetStreetBB:source?.recommended?.targetStreetBB??null,evBB:Number.isFinite(bestEV)?bestEV:(source?.recommended?.evBB??null),chosen:false,recommended:true};
   const alternatives=(source?.alternatives||[]).map(a=>({...a,chosen:false,recommended:false}));
   const same=(a,b)=>family(a?.label)===family(b?.label)&&(!["BET","RAISE"].includes(family(b?.label))||!Number.isFinite(Number(a?.costBB))||!Number.isFinite(Number(b?.costBB))||Math.abs(Number(a.costBB)-Number(b.costBB))<=.05);
   const pi=alternatives.findIndex(a=>same(a,played));if(pi>=0)alternatives[pi]={...alternatives[pi],...played};else alternatives.push(played);
   const ri=alternatives.findIndex(a=>same(a,recommended));if(ri>=0)alternatives[ri]={...alternatives[ri],...recommended,recommended:true,chosen:alternatives[ri].chosen||same(recommended,played)};else alternatives.push(recommended);
-  alternatives.sort((a,b)=>(Number(b.evBB)||-Infinity)-(Number(a.evBB)||-Infinity));
+  alternatives.sort((a,b)=>(Number.isFinite(Number(b.evBB))?Number(b.evBB):-Infinity)-(Number.isFinite(Number(a.evBB))?Number(a.evBB):-Infinity));
   const delta=Number.isFinite(chosenEV)&&Number.isFinite(bestEV)?chosenEV-bestEV:-Math.max(0,Number(row.lossBB)||0);
   return {schema:"decision-summary/v1",played,recommended,deltaEVBB:delta,lossEVBB:Math.max(0,-delta),effectiveLossEVBB:Math.max(0,Number(row.lossBB)||0),withinNoise:!!row.withinNoise,score:Number(source?.score),alternatives};
 }
