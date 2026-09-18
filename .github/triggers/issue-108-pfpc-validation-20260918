@@ -18,5 +18,11 @@
   ],
   "test_authorized": false,
   "test_consumed": false,
-  "thresholds_changed": false
+  "thresholds_changed": false,
+  "execution_attempt": 2,
+  "supersedes_failed_workflow_run_id": 35403172597,
+  "previous_attempt_interpretation": "NO_PERFORMANCE_RESULT_MECHANICAL_RUNTIME_FAILURE",
+  "runtime_fix_pr": 250,
+  "runtime_fix_merge_sha": "c4ec01fd2e5512d0cc1b7abd0d6e3848470eb053",
+  "execution_base_main": "9d3d6186540ef95cc5de86ec086db256149c060c"
 }
