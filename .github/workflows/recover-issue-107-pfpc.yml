@@ -1,0 +1,464 @@
+name: Recover issue 107 PFPC from immutable shards
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/recover-issue-107-pfpc.yml'
+  push:
+    branches:
+      - 'agent-A/issue-107-artifact-recovery'
+    paths:
+      - '.github/triggers/issue-107-recover-d7ec5e532dc5'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recover-issue-107-pfpc-d7ec5e532dc5
+  cancel-in-progress: false
+
+env:
+  SOURCE_RUN_ID: '35379387883'
+  SOURCE_SHA: 'd7ec5e532dc550d4c37e9129218b348eef4587b4'
+  SOURCE_BRANCH: 'issue-107-multiposition-generation-sol'
+  EVIDENCE_RUN_ID: '20260918_hero_preflop_unopened_5pos_pfpc_v1'
+  EVIDENCE_BRANCH: 'evidence/issue-107-pfpc-d7ec5e532dc5'
+
+jobs:
+  safety-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify artifact-only recovery boundary
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('.github/workflows/recover-issue-107-pfpc.yml').read_text(encoding='utf-8')
+          required=[
+              "SOURCE_RUN_ID: '35379387883'",
+              "SOURCE_SHA: 'd7ec5e532dc550d4c37e9129218b348eef4587b4'",
+              "SOURCE_BRANCH: 'issue-107-multiposition-generation-sol'",
+              "EVIDENCE_BRANCH: 'evidence/issue-107-pfpc-d7ec5e532dc5'",
+              "actions/download-artifact@v4",
+              "merge_hero_range_decision_runs.py",
+              "merge_hero_policy_context_sources.py",
+              "validate_hero_pfpc_evidence.py",
+              "ARTIFACT_ONLY_NO_GENERATION",
+              "validation_consumed'] is False",
+              "test_consumed'] is False",
+          ]
+          missing=[token for token in required if token not in text]
+          assert not missing, missing
+          forbidden=[
+              'generate_certified_hero_range_decisions.py',
+              'evaluate_preflop_grid(',
+              'rerun-failed-jobs',
+              'workflow_dispatch:',
+              'preflop-strategy-validation-pfpc.yml',
+              'preflop-strategy-test-pfpc.yml',
+              'git push origin HEAD:main',
+          ]
+          found=[token for token in forbidden if token in text]
+          assert not found, found
+          print('issue #107 artifact-only recovery contract: PASS')
+          PY
+
+  recover-and-persist:
+    if: >-
+      github.event_name == 'push' &&
+      github.ref_name == 'agent-A/issue-107-artifact-recovery'
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout current main for post-processing only
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify immutable source run identity
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" > /tmp/source-run.json
+          python3 - <<'PY'
+          import json, os
+          run=json.load(open('/tmp/source-run.json'))
+          assert str(run['id'])==os.environ['SOURCE_RUN_ID']
+          assert run['head_sha']==os.environ['SOURCE_SHA']
+          assert run['head_branch']==os.environ['SOURCE_BRANCH']
+          assert run['status']=='completed'
+          assert run['conclusion']=='failure'
+          assert run['run_attempt']==1
+          print({
+              'source_run_id':run['id'],
+              'head_sha':run['head_sha'],
+              'head_branch':run['head_branch'],
+              'conclusion':run['conclusion'],
+              'run_attempt':run['run_attempt'],
+          })
+          PY
+
+      - name: Download the 104 already-computed shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: issue-107-*-shard-*-${{ env.SOURCE_SHA }}
+          path: /tmp/issue-107-shards
+          merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Freeze shard inventory and verify scientific provenance
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root=Path('/tmp/issue-107-shards')
+          source_sha=os.environ['SOURCE_SHA']
+          positions=('LJ','HJ','CO','SB')
+          files=sorted(root.glob('issue-107-*.json'))
+          assert len(files)==104, len(files)
+          inventory=[]
+          by_position={}
+          for pos in positions:
+              pos_files=sorted(root.glob(f'issue-107-{pos}-*.json'))
+              assert len(pos_files)==26, (pos, len(pos_files))
+              requested=completed=unsupported=0
+              for path in pos_files:
+                  run=json.loads(path.read_text(encoding='utf-8'))
+                  assert run['schema']=='poker-hero-range-decision-run/v1'
+                  assert run['status']=='EXPERIMENTAL'
+                  assert run['promotion_authorized'] is False
+                  assert run['context']['position']==pos
+                  assert run['context']['spot']=='UNOPENED'
+                  assert float(run['context']['effective_stack_bb'])==100.0
+                  provenance=run['provenance']
+                  assert provenance['code']==source_sha
+                  assert provenance['master_seed']==20260916
+                  assert provenance['budget']['samples_per_nonfold_candidate']==16
+                  assert provenance['selection']=='NOT_PROMOTED_ISSUE_107_EXPERIMENTAL'
+                  assert provenance['sizing_support']['filters']['split']=='TRAIN'
+                  assert provenance['sizing_support']['filters']['is_hero'] is False
+                  closure=provenance['continuation_support']
+                  assert closure['enabled'] is True
+                  assert closure['nearest_context_substitution'] is False
+                  assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
+                  cov=run['coverage']
+                  shard_requested=int(cov['requested'])
+                  shard_completed=len(run.get('rows') or [])
+                  shard_unsupported=len(run.get('unsupported') or [])
+                  assert shard_requested==shard_completed+shard_unsupported
+                  requested+=shard_requested
+                  completed+=shard_completed
+                  unsupported+=shard_unsupported
+                  inventory.append({
+                      'file':path.name,
+                      'position':pos,
+                      'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                      'requested':shard_requested,
+                      'completed':shard_completed,
+                      'unsupported':shard_unsupported,
+                  })
+              assert requested==169, (pos, requested)
+              assert completed+unsupported==169
+              assert completed>0
+              by_position[pos]={
+                  'shards':26,
+                  'requested':requested,
+                  'completed':completed,
+                  'unsupported':unsupported,
+              }
+
+          payload={
+              'schema':'poker-hero-shard-inventory/v1',
+              'issue':107,
+              'recovery_mode':'ARTIFACT_ONLY_NO_GENERATION',
+              'source_workflow_run_id':int(os.environ['SOURCE_RUN_ID']),
+              'source_branch':os.environ['SOURCE_BRANCH'],
+              'source_head_sha':source_sha,
+              'positions':by_position,
+              'files':inventory,
+          }
+          canonical=json.dumps(payload,sort_keys=True,separators=(',',':')).encode()
+          payload['inventory_sha256']=hashlib.sha256(canonical).hexdigest()
+          (root/'SHARD_INVENTORY.json').write_text(
+              json.dumps(payload,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps({
+              'files':len(files),
+              'positions':by_position,
+              'inventory_sha256':payload['inventory_sha256'],
+          },indent=2,sort_keys=True))
+          PY
+
+      - name: Reconstruct four position results from shards only
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for POSITION in LJ HJ CO SB; do
+            FILES=(/tmp/issue-107-shards/issue-107-"$POSITION"-*.json)
+            [[ ${#FILES[@]} -eq 26 ]]
+            INPUT_ARGS=()
+            for file in "${FILES[@]}"; do INPUT_ARGS+=(--input "$file"); done
+            mkdir -p "/tmp/source-$POSITION"
+            PYTHONPATH=. python3 tools/training/merge_hero_range_decision_runs.py \
+              "${INPUT_ARGS[@]}" --allow-partial \
+              --rows-out "/tmp/source-$POSITION/DECISION_RUN.json" \
+              --candidate-out "/tmp/source-$POSITION/CANDIDATE.json"
+            PYTHONPATH=. python3 tools/training/enrich_hero_range_context.py \
+              --input "/tmp/source-$POSITION/DECISION_RUN.json" \
+              --output "/tmp/source-$POSITION/DECISION_RUN_PFC.json" \
+              --candidate-out "/tmp/source-$POSITION/CANDIDATE_PFC.json" \
+              --position "$POSITION" --spot UNOPENED --stack-bb 100
+            PYTHONPATH=. python3 tools/training/materialize_hero_pfc_source.py \
+              --run "/tmp/source-$POSITION/DECISION_RUN_PFC.json" \
+              --candidate "/tmp/source-$POSITION/CANDIDATE_PFC.json" \
+              --repository-out "/tmp/source-$POSITION/HERO_RANGE_REPOSITORY_PFC.json" \
+              --binding-out "/tmp/source-$POSITION/PFC_BINDING.json" \
+              --run-id "20260918_hero_preflop_169_${POSITION,,}_unopened_pfc_v1"
+          done
+
+      - name: Verify per-position 169 accounting and support closure
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for pos in ('LJ','HJ','CO','SB'):
+              root=Path('/tmp/source-'+pos)
+              run=json.loads((root/'DECISION_RUN_PFC.json').read_text())
+              bind=json.loads((root/'PFC_BINDING.json').read_text())
+              cov=bind['coverage']
+              assert cov['requested']==169
+              assert cov['accounted']==169
+              assert cov['supported']+cov['unsupported']==169
+              assert cov['supported']>0
+              assert bind['promotion_authorized'] is False
+              assert bind['selection_boundary']['validation_consumed'] is False
+              assert bind['selection_boundary']['test_consumed'] is False
+              closure=run['provenance']['continuation_support']
+              assert closure['enabled'] is True
+              assert closure['nearest_context_substitution'] is False
+              assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
+              for key in ('opponent_future_actions','hero_future_actions'):
+                  audit=closure[key]
+                  assert audit['exact_model_a_decisions']+audit['support_closure_decisions']==audit['decisions']
+                  expected=None if audit['decisions']==0 else audit['support_closure_decisions']/audit['decisions']
+                  assert audit['support_closure_rate']==expected
+              print(pos, cov)
+          PY
+
+      - name: Build the five-position PFPC with immutable BTN
+        run: |
+          set -euo pipefail
+          REPOS=(
+            training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/source-LJ/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/source-HJ/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/source-CO/HERO_RANGE_REPOSITORY_PFC.json
+            /tmp/source-SB/HERO_RANGE_REPOSITORY_PFC.json
+          )
+          BINDS=(
+            training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/PFC_BINDING.json
+            /tmp/source-LJ/PFC_BINDING.json
+            /tmp/source-HJ/PFC_BINDING.json
+            /tmp/source-CO/PFC_BINDING.json
+            /tmp/source-SB/PFC_BINDING.json
+          )
+          ARGS=()
+          for i in 0 1 2 3 4; do
+            ARGS+=(--source-repository "${REPOS[$i]}" --source-binding "${BINDS[$i]}")
+          done
+          mkdir -p /tmp/final
+          PYTHONPATH=. python3 tools/training/merge_hero_policy_context_sources.py \
+            "${ARGS[@]}" \
+            --repository-out /tmp/final/HERO_RANGE_REPOSITORY_PFPC.json \
+            --policy-binding-out /tmp/final/POLICY_CONTEXT_BINDING.json \
+            --summary-out /tmp/final/RESULT.json \
+            --run-id "$EVIDENCE_RUN_ID"
+
+      - name: Verify frozen five-position candidate before persistence
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          result=json.load(open('/tmp/final/RESULT.json'))
+          binding=json.load(open('/tmp/final/POLICY_CONTEXT_BINDING.json'))
+          repo=json.load(open('/tmp/final/HERO_RANGE_REPOSITORY_PFPC.json'))
+          assert result['issue']==107
+          assert result['policy_contexts']==5
+          assert result['repository_contexts']==5
+          assert result['supported_hand_slots']>40
+          assert result['unsupported_hand_slots']>=0
+          assert result['validation_consumed'] is False
+          assert result['test_consumed'] is False
+          assert result['promotion_authorized'] is False
+          assert binding['matching']=='EXACT_PFPC_AND_169_HAND_CLASS_ONLY'
+          assert binding['nearest_context_substitution'] is False
+          assert set(x['actor_position'] for x in result['sources'])=={'LJ','HJ','CO','BTN','SB'}
+          assert all(x['supported_hand_classes']>0 for x in result['sources'] if x['actor_position']!='BTN')
+          assert len(repo['contexts'])==5
+          print(json.dumps({
+              'policy_contexts':result['policy_contexts'],
+              'supported_hand_slots':result['supported_hand_slots'],
+              'unsupported_hand_slots':result['unsupported_hand_slots'],
+              'repository_sha256':result['repository_sha256'],
+          },indent=2,sort_keys=True))
+          PY
+
+      - name: Materialize content-addressed evidence directory
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          import subprocess
+          from pathlib import Path
+
+          evidence_run_id=os.environ['EVIDENCE_RUN_ID']
+          source_sha=os.environ['SOURCE_SHA']
+          dest=Path('training/runs')/evidence_run_id
+          assert not dest.exists(), f'immutable evidence destination already exists on main: {dest}'
+          dest.mkdir(parents=True)
+
+          final=Path('/tmp/final')
+          for name in ('HERO_RANGE_REPOSITORY_PFPC.json','POLICY_CONTEXT_BINDING.json','RESULT.json'):
+              shutil.copy2(final/name,dest/name)
+
+          for pos in ('LJ','HJ','CO','SB'):
+              target=dest/'sources'/pos
+              target.mkdir(parents=True)
+              source=Path('/tmp/source-'+pos)
+              for name in (
+                  'DECISION_RUN_PFC.json',
+                  'CANDIDATE_PFC.json',
+                  'HERO_RANGE_REPOSITORY_PFC.json',
+                  'PFC_BINDING.json',
+              ):
+                  shutil.copy2(source/name,target/name)
+
+          inventory_src=Path('/tmp/issue-107-shards/SHARD_INVENTORY.json')
+          shutil.copy2(inventory_src,dest/'SHARD_INVENTORY.json')
+
+          def load(path):
+              value=json.loads(Path(path).read_text(encoding='utf-8'))
+              assert isinstance(value,dict)
+              return value
+
+          def sha(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          result=load(dest/'RESULT.json')
+          copied_sources={}
+          for pos in ('LJ','HJ','CO','SB'):
+              source=dest/'sources'/pos
+              bind=load(source/'PFC_BINDING.json')
+              copied_sources[pos]={
+                  'repository_sha256':sha(source/'HERO_RANGE_REPOSITORY_PFC.json'),
+                  'binding_sha256':sha(source/'PFC_BINDING.json'),
+                  'supported_hand_classes':bind['coverage']['supported'],
+                  'unsupported_hand_classes':bind['coverage']['unsupported'],
+              }
+
+          recovery_code_sha=subprocess.check_output(
+              ['git','rev-parse','HEAD'],text=True
+          ).strip()
+          inventory=load(dest/'SHARD_INVENTORY.json')
+          source_record={
+              'schema':'poker-hero-pfpc-persistence/v1',
+              'issue':107,
+              'run_id':evidence_run_id,
+              'population_id':result['population_id'],
+              'recovery_mode':'ARTIFACT_ONLY_NO_GENERATION',
+              'source_workflow_name':'Generate multi-position Hero unopened PFPC candidate',
+              'source_workflow_run_id':int(os.environ['SOURCE_RUN_ID']),
+              'source_workflow_url':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['SOURCE_RUN_ID']}",
+              'source_workflow_conclusion':'failure_after_successful_generation_shards_before_position_merge',
+              'source_branch':os.environ['SOURCE_BRANCH'],
+              'source_head_sha':source_sha,
+              'recovery_workflow_name':'Recover issue 107 PFPC from immutable shards',
+              'recovery_workflow_run_id':int(os.environ['GITHUB_RUN_ID']),
+              'recovery_code_sha':recovery_code_sha,
+              'shard_inventory_sha256':inventory['inventory_sha256'],
+              'promotion_authorized':False,
+              'validation_consumed':False,
+              'test_consumed':False,
+              'artifact_sha256':{
+                  'HERO_RANGE_REPOSITORY_PFPC.json':sha(dest/'HERO_RANGE_REPOSITORY_PFPC.json'),
+                  'POLICY_CONTEXT_BINDING.json':sha(dest/'POLICY_CONTEXT_BINDING.json'),
+                  'RESULT.json':sha(dest/'RESULT.json'),
+                  'SHARD_INVENTORY.json':sha(dest/'SHARD_INVENTORY.json'),
+              },
+              'new_position_sources':copied_sources,
+              'immutable_btn_source':'training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1',
+          }
+          (dest/'SOURCE_RUN.json').write_text(
+              json.dumps(source_record,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(source_record,indent=2,sort_keys=True))
+          PY
+
+      - name: Execute existing issue 107 evidence validator
+        run: |
+          set -euo pipefail
+          DEST="training/runs/$EVIDENCE_RUN_ID"
+          PYTHONPATH=. python3 tools/training/validate_hero_pfpc_evidence.py \
+            --evidence "$DEST" \
+            > "$DEST/VALIDATION.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          result=json.loads((Path('training/runs')/os.environ['EVIDENCE_RUN_ID']/'VALIDATION.json').read_text())
+          assert result['status']=='PASS', result
+          assert result['issue']==107
+          assert result['validation_consumed'] is False
+          assert result['test_consumed'] is False
+          assert result['promotion_authorized'] is False
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+
+      - name: Persist immutable evidence to dedicated content-addressed branch
+        run: |
+          set -euo pipefail
+          DEST="training/runs/$EVIDENCE_RUN_ID"
+          git config user.name 'poker-engine evidence bot'
+          git config user.email 'evidence-bot@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin "$EVIDENCE_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$EVIDENCE_BRANCH"
+            if git diff --exit-code "origin/$EVIDENCE_BRANCH" -- "$DEST"; then
+              echo "Evidence branch already contains the exact immutable payload."
+              exit 0
+            fi
+            echo "Evidence branch exists with different payload; refusing overwrite."
+            exit 1
+          fi
+          git switch -c "$EVIDENCE_BRANCH"
+          git add "$DEST"
+          test -n "$(git status --porcelain)"
+          git commit -m "Persist issue #107 artifact-only PFPC evidence"
+          git push --set-upstream origin "$EVIDENCE_BRANCH"
