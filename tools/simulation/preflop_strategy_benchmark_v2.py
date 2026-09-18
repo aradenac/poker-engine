@@ -20,11 +20,16 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from tools.populations.registry import resolve_population
+from tools.preflop.policy_context import build_policy_context
 from tools.simulation.full_hand_arena import run_full_hand
 from tools.simulation.full_hand_benchmark import ProfileSource, build_manifest_from_archives
 from tools.simulation.full_hand_scenarios import eligible_table_templates
 from tools.simulation.game_core import EPS, NoLimitHoldemState
-from tools.simulation.hero_preflop_overlay import ExactHeroPreflopOverlayPolicy, canonical_preflop_context
+from tools.simulation.hero_preflop_overlay import (
+    POLICY_BINDING_SCHEMA,
+    ExactHeroPreflopOverlayPolicy,
+    canonical_preflop_context,
+)
 from tools.simulation.model_a_continuation import ModelAContinuationPolicy
 from tools.simulation.model_b_runtime import rake_net
 from tools.simulation.model_b_sensitivity import ModelBSensitivityPolicy, load_sensitivity_set
@@ -40,6 +45,7 @@ DEFAULT_REFERENCE = ROOT / "training/full_hand/HERO_REFERENCE_POLICY_20260917.js
 DEFAULT_SENSITIVITY = ROOT / "training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json"
 DEFAULT_CANDIDATE = ROOT / "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json"
 DEFAULT_BINDING = ROOT / "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/PFC_BINDING.json"
+PFC_BINDING_SCHEMA = "poker-hero-range-pfc-binding/v1"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -53,6 +59,73 @@ def sha256_file(path: Path) -> str:
 def write_json(path: Path, value: object) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def candidate_binding_identity(binding_path: Path, candidate_path: Path) -> dict[str, str]:
+    """Validate one frozen #107 binding and return content-addressed identities.
+
+    Legacy exact-PFC bindings and the new exact-PFPC policy binding are both
+    accepted.  The policy binding itself is always hashed so future runs can
+    prove that the PFPC -> source-PFC authorization map did not drift after the
+    run identity was frozen.
+    """
+    binding_path = Path(binding_path)
+    candidate_path = Path(candidate_path)
+    binding = load_json(binding_path)
+    schema = str(binding.get("schema") or "")
+    if schema == PFC_BINDING_SCHEMA:
+        expected_candidate_sha = str(
+            (binding.get("artifact_sha256") or {}).get("hero_range_repository_pfc") or ""
+        )
+    elif schema == POLICY_BINDING_SCHEMA:
+        expected_candidate_sha = str(binding.get("repository_sha256") or "")
+    else:
+        raise ValueError(f"unsupported #107 candidate binding schema {schema!r}")
+
+    actual_candidate_sha = sha256_file(candidate_path)
+    if actual_candidate_sha != expected_candidate_sha:
+        raise ValueError("candidate repository hash differs from frozen #107 binding")
+    if binding.get("promotion_authorized") is not False:
+        raise ValueError("#107 candidate binding must remain non-promoted")
+    boundary = binding.get("selection_boundary") or {}
+    if boundary.get("validation_consumed") is not False:
+        raise ValueError("#107 candidate binding must precede VALIDATION consumption")
+    if boundary.get("test_consumed") is not False:
+        raise ValueError("#107 candidate binding unexpectedly consumed TEST")
+    candidate_id = str(binding.get("run_id") or "")
+    if not candidate_id:
+        raise ValueError("#107 candidate binding must freeze run_id")
+
+    return {
+        "candidate_id": candidate_id,
+        "candidate_artifact_sha256": actual_candidate_sha,
+        "candidate_binding_sha256": sha256_file(binding_path),
+        "candidate_binding_schema": schema,
+    }
+
+
+def candidate_policy_binding_path(
+    binding_path: Path,
+    candidate_path: Path,
+    run_manifest: Mapping[str, Any],
+) -> Path | None:
+    """Revalidate frozen candidate/binding identities and select runtime mode."""
+    actual = candidate_binding_identity(binding_path, candidate_path)
+    frozen = dict(run_manifest.get("identities") or {})
+    for field in ("candidate_id", "candidate_artifact_sha256"):
+        if str(frozen.get(field) or "") != str(actual[field]):
+            raise ValueError(f"{field} changed after run identity freeze")
+
+    frozen_binding_sha = frozen.get("candidate_binding_sha256")
+    frozen_binding_schema = frozen.get("candidate_binding_schema")
+    if frozen_binding_sha is not None and str(frozen_binding_sha) != actual["candidate_binding_sha256"]:
+        raise ValueError("candidate binding changed after run identity freeze")
+    if frozen_binding_schema is not None and str(frozen_binding_schema) != actual["candidate_binding_schema"]:
+        raise ValueError("candidate binding schema changed after run identity freeze")
+
+    if actual["candidate_binding_schema"] == POLICY_BINDING_SCHEMA:
+        return Path(binding_path)
+    return None
 
 
 def _certified_eligible_count(
@@ -111,17 +184,9 @@ def build_validation_run(
     """Freeze scenarios and run identities before any strategy result exists."""
     contract = load_json(contract_path)
     sensitivity = load_sensitivity_set(sensitivity_path)
-    binding = load_json(binding_path)
+    binding_identity = candidate_binding_identity(binding_path, candidate_path)
     if contract.get("population", {}).get("population_id") != population_id:
         raise ValueError("benchmark population does not match frozen contract")
-    expected_candidate_sha = str((binding.get("artifact_sha256") or {}).get("hero_range_repository_pfc") or "")
-    actual_candidate_sha = sha256_file(candidate_path)
-    if actual_candidate_sha != expected_candidate_sha:
-        raise ValueError("candidate repository hash differs from frozen #107 binding")
-    if binding.get("selection_boundary", {}).get("validation_consumed") is not False:
-        raise ValueError("#107 candidate binding must precede VALIDATION consumption")
-    if binding.get("selection_boundary", {}).get("test_consumed") is not False:
-        raise ValueError("#107 candidate binding unexpectedly consumed TEST")
 
     count, eligibility = _certified_eligible_count(
         population_id=population_id,
@@ -164,8 +229,10 @@ def build_validation_run(
             "dataset_population_fingerprint_sha256": contract["population"]["population_fingerprint_sha256"],
             "scenario_manifest_sha256": scenario_sha,
             "reference_descriptor_sha256": sha256_file(reference_path),
-            "candidate_id": str(binding["run_id"]),
-            "candidate_artifact_sha256": actual_candidate_sha,
+            "candidate_id": binding_identity["candidate_id"],
+            "candidate_artifact_sha256": binding_identity["candidate_artifact_sha256"],
+            "candidate_binding_sha256": binding_identity["candidate_binding_sha256"],
+            "candidate_binding_schema": binding_identity["candidate_binding_schema"],
             "candidate_source_commit_sha": str(candidate_source_commit_sha),
             "model_b_sensitivity_descriptor_sha256": sha256_file(sensitivity_path),
             "model_b_base_artifact_sha256": contract["environment_sensitivity"]["base_artifact_sha256"],
@@ -265,6 +332,7 @@ def _row_from_pair(
         raise AssertionError("paired results lost scenario identity")
     hero = str(scenario["hero"])
     pfc = _first_hero_preflop_context(reference_result)
+    policy_context = None if pfc is None else build_policy_context(pfc)
     history = [] if pfc is None else list(pfc.get("history") or [])
     raises = [row for row in history if row.get("action") in {"RAISE", "JAM"}]
     first_raise = next((i for i, row in enumerate(history) if row.get("action") in {"RAISE", "JAM"}), None)
@@ -278,6 +346,7 @@ def _row_from_pair(
         "rep": int(scenario.get("rep", 0)),
         "hero_position": str((scenario.get("positions") or {}).get(hero, "NA")),
         "preflop_context_id": None if pfc is None else pfc["context_id"],
+        "preflop_policy_context_id": None if policy_context is None else policy_context["policy_context_id"],
         "preflop_family": "NO_HERO_PREFLOP_DECISION" if pfc is None else pfc["family"],
         "limper_count": int(limpers),
         "caller_count": int(callers),
@@ -361,6 +430,42 @@ def _delta_groups(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]
     }
 
 
+def _candidate_support_groups(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    groups: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
+    overall = collections.Counter()
+    for row in rows:
+        audit = dict(row.get("candidate_audit") or {})
+        overall["hero_preflop_decisions"] += int(audit.get("hero_preflop_decisions", 0))
+        overall["supported_decisions"] += int(audit.get("candidate_supported_decisions", 0))
+        overall["out_of_support_decisions"] += int(audit.get("candidate_out_of_support_decisions", 0))
+        for name, node0 in (audit.get("policy_contexts") or {}).items():
+            node = dict(node0 or {})
+            groups[str(name)]["hero_preflop_decisions"] += int(node.get("hero_preflop_decisions", 0))
+            groups[str(name)]["supported_decisions"] += int(node.get("candidate_supported_decisions", 0))
+            groups[str(name)]["out_of_support_decisions"] += int(node.get("candidate_out_of_support_decisions", 0))
+    if sum(row["hero_preflop_decisions"] for row in groups.values()) != overall["hero_preflop_decisions"]:
+        raise AssertionError("policy-context candidate audit does not cover every Hero preflop decision")
+    if sum(row["supported_decisions"] for row in groups.values()) != overall["supported_decisions"]:
+        raise AssertionError("policy-context supported audit does not match overall candidate coverage")
+    if sum(row["out_of_support_decisions"] for row in groups.values()) != overall["out_of_support_decisions"]:
+        raise AssertionError("policy-context out-of-support audit does not match overall candidate coverage")
+    out: dict[str, Any] = {}
+    for name, counts in sorted(groups.items()):
+        total = int(counts["hero_preflop_decisions"])
+        supported = int(counts["supported_decisions"])
+        unsupported = int(counts["out_of_support_decisions"])
+        if supported + unsupported != total:
+            raise AssertionError(f"candidate support accounting incomplete for policy context {name}")
+        out[name] = {
+            "hero_preflop_decisions": total,
+            "supported_decisions": supported,
+            "out_of_support_decisions": unsupported,
+            "supported_decision_rate": None if total == 0 else supported / total,
+            "out_of_support_decision_rate": None if total == 0 else unsupported / total,
+        }
+    return out
+
+
 def _policy_outcomes(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]:
     payloads = [dict(row[key]) for row in rows]
     n = len(payloads)
@@ -411,6 +516,8 @@ def summarize_environment_rows(
         },
         "breakdowns": {
             "position": _delta_groups(rows, "hero_position"),
+            "policy_context": _delta_groups(rows, "preflop_policy_context_id"),
+            "candidate_support_by_policy_context": _candidate_support_groups(rows),
             "preflop_family": _delta_groups(rows, "preflop_family"),
             "limper_count": _delta_groups(rows, "limper_count"),
             "caller_count": _delta_groups(rows, "caller_count"),
@@ -430,6 +537,7 @@ def run_environment(
     reference_behavior_path: Path,
     issue_104_result_path: Path,
     candidate_path: Path = DEFAULT_CANDIDATE,
+    binding_path: Path = DEFAULT_BINDING,
     reference_descriptor_path: Path = DEFAULT_REFERENCE,
     sensitivity_path: Path = DEFAULT_SENSITIVITY,
 ) -> dict[str, Any]:
@@ -443,6 +551,9 @@ def run_environment(
     if scenario_sha != run_manifest["identities"]["scenario_manifest_sha256"]:
         raise ValueError("scenario manifest content changed after run identity freeze")
 
+    policy_binding_path = candidate_policy_binding_path(
+        binding_path, candidate_path, run_manifest
+    )
     reference = _reference_policy(reference_descriptor_path)
     opponent = ModelBSensitivityPolicy.from_paths(
         reference_behavior_path,
@@ -454,6 +565,7 @@ def run_environment(
         candidate_path,
         reference_policy=reference,
         candidate_id=str(run_manifest["identities"]["candidate_id"]),
+        policy_binding_path=policy_binding_path,
     )
     if candidate.repository_sha256 != run_manifest["identities"]["candidate_artifact_sha256"]:
         raise ValueError("candidate repository changed after run identity freeze")
@@ -486,7 +598,7 @@ def run_environment(
     bootstrap_seed = int(run_manifest["budgets"]["master_seed"]) ^ int(
         hashlib.sha256(environment_id.encode("utf-8")).hexdigest()[:16], 16
     )
-    return summarize_environment_rows(
+    report = summarize_environment_rows(
         rows,
         environment=environment_identity,
         candidate_id=str(run_manifest["identities"]["candidate_id"]),
@@ -494,6 +606,8 @@ def run_environment(
         bootstrap_seed=bootstrap_seed,
         threshold=float(run_manifest["thresholds"]["validation_ci95_lower_bb_per_100"]),
     )
+    report["candidate_policy_identity"] = candidate.identity()
+    return report
 
 
 def select_validation(reports: Sequence[Mapping[str, Any]], run_manifest: Mapping[str, Any]) -> dict[str, Any]:
@@ -571,6 +685,7 @@ def _cmd_environment(args: argparse.Namespace) -> int:
         reference_behavior_path=args.reference_behavior,
         issue_104_result_path=args.issue_104_result,
         candidate_path=args.candidate,
+        binding_path=args.binding,
         reference_descriptor_path=args.reference_descriptor,
         sensitivity_path=args.sensitivity,
     )
@@ -621,6 +736,7 @@ def main() -> int:
     environment.add_argument("--reference-behavior", type=Path, required=True)
     environment.add_argument("--issue-104-result", type=Path, required=True)
     environment.add_argument("--candidate", type=Path, default=DEFAULT_CANDIDATE)
+    environment.add_argument("--binding", type=Path, default=DEFAULT_BINDING)
     environment.add_argument("--reference-descriptor", type=Path, default=DEFAULT_REFERENCE)
     environment.add_argument("--sensitivity", type=Path, default=DEFAULT_SENSITIVITY)
     environment.add_argument("--output", type=Path, required=True)

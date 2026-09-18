@@ -1,0 +1,166 @@
+{
+  "schema": "poker-preflop-strategy-benchmark-contract/v2",
+  "contract_version": "2026-09-18.3",
+  "status": "FROZEN_BEFORE_PFPC_VALIDATION_RESULTS",
+  "related_issue": 108,
+  "extends_protocol": "training/full_hand/FULL_HAND_EVALUATION_PROTOCOL_20260915.json",
+  "supersedes_for_future_execution": "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917_SUPPORT_CLOSED.json",
+  "supersession_reason": "The immutable 2026-09-17.2 support-closed VALIDATION attempt produced zero candidate exposure in every completed environment: the single exact-PFC BTN/UNOPENED/100bb candidate never matched a live Hero preflop decision, so its [0,0] delta was not an interpretable performance comparison. Evidence is persisted under training/runs/20260917_preflop_strategy_validation_support_closed_zero_exposure/RESULT.json and TEST remained untouched. Issue #107 subsequently introduced a versioned exact policy-context identity (poker-preflop-policy-context/v1) with explicit PFPC -> source-PFC bindings. This replacement changes only candidate matching/frozen-binding identity for future execution; population, reference policy, shared support closure, scenarios, seeds, Model-B sensitivity, statistics and thresholds remain unchanged.",
+  "change_policy": "Never edit this contract after any PFPC candidate VALIDATION result is inspected. Any further semantic change requires another immutable version/file committed before the affected experiment.",
+  "population": {
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "cross_population_generalization_forbidden": true
+  },
+  "reference_policy": {
+    "kind": "POPULATION_DERIVED_REFERENCE_WITH_SHARED_SUPPORT_CLOSURE",
+    "descriptor": "training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json",
+    "runtime": "tools.simulation.reference_support_closure.SupportClosedModelAReferencePolicy",
+    "exact_context_missing": "CHECK_THEN_CALL_THEN_FOLD_SHARED_AND_COUNTED",
+    "nearest_context_substitution_forbidden": true,
+    "postflop_shared_with_candidate": true,
+    "support_closure_must_be_reported": true,
+    "v83_autonomous_preflop_claim": false
+  },
+  "candidate_policy": {
+    "source_issue": 107,
+    "artifact_kind": "poker-hero-range-repository/v1",
+    "policy_binding_kind": "poker-hero-policy-context-binding/v1",
+    "immutable_artifact_sha256_required": true,
+    "immutable_binding_sha256_required": true,
+    "source_commit_required": true,
+    "decision_contract": "poker-preflop-decision/v1",
+    "source_audit_context_contract": "poker-preflop-context/v1",
+    "policy_context_contract": "poker-preflop-policy-context/v1",
+    "matching": "EXACT_PFPC_AND_169_HAND_CLASS_ONLY",
+    "exact_policy_context_and_hand_match_required": true,
+    "binding_source_pfc_must_exist_in_repository": true,
+    "out_of_support_behavior": "FALL_BACK_TO_FROZEN_REFERENCE_AND_COUNT_OUT_OF_SUPPORT",
+    "nearest_context_substitution_forbidden": true,
+    "policy_context_bucketing_frozen_before_validation": true,
+    "must_be_frozen_before_validation_rollout": true,
+    "same_cycle_mutation_after_validation_starts_forbidden": true
+  },
+  "scenarios": {
+    "source_issue": 105,
+    "scenario_manifest_required": true,
+    "validation_base_hands": "ALL_CERTIFIED_VALIDATION_HANDS",
+    "test_base_hands": "ALL_CERTIFIED_TEST_HANDS",
+    "rollouts_per_base_hand": 2,
+    "paired_across_hero_policies": true,
+    "same_scenarios_across_model_b_environments": true,
+    "paired_fields": [
+      "hand_id",
+      "hole_cards_and_deck",
+      "button_and_seats",
+      "starting_stacks",
+      "opponent_profiles",
+      "opponent_random_streams",
+      "rake_semantics"
+    ],
+    "rng_streams_must_be_separate": [
+      "scenario_and_deck",
+      "opponent_policy_sampling",
+      "hero_policy",
+      "hero_monte_carlo_estimation"
+    ]
+  },
+  "environment_sensitivity": {
+    "descriptor": "training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json",
+    "minimum_environments": 3,
+    "required_roles": [
+      "nominal",
+      "lower_aggression",
+      "higher_aggression"
+    ],
+    "base_model_b_source_issue": 104,
+    "base_artifact_sha256": "fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca",
+    "environment_identities_frozen_before_validation": true,
+    "automatic_promotion_requires_gate_pass_in_every_predeclared_environment": true
+  },
+  "statistics": {
+    "primary_metric": "bb_per_100_full_hands",
+    "paired_delta": "candidate_minus_reference",
+    "confidence_level": 0.95,
+    "cluster_unit": "hand_id",
+    "repeated_rollouts_clustered_by": "hand_id",
+    "bootstrap_samples": 5000,
+    "paired_comparison_required": true,
+    "point_estimate_alone_never_authorizes_promotion": true
+  },
+  "validation_selection": {
+    "split": "VALIDATION",
+    "test_data_visible": false,
+    "required_ci95_lower_bound_bb_per_100": 0,
+    "minimum_environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "if_no_candidate_passes": "RETAIN_REFERENCE",
+    "freeze_at_most_one_finalist": true,
+    "candidate_coverage_must_be_reported": true,
+    "reference_support_closure_must_be_reported": true,
+    "candidate_exposure_must_be_positive": true,
+    "zero_candidate_exposure_outcome": "BLOCKED_NOT_A_PERFORMANCE_RESULT"
+  },
+  "test_confirmation": {
+    "split": "TEST",
+    "authorized_only_for_frozen_validation_finalist": true,
+    "test_may_select_alternative": false,
+    "test_may_retune_candidate": false,
+    "test_may_change_thresholds": false,
+    "required_ci95_lower_bound_bb_per_100": 0,
+    "minimum_environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "failure_or_inconclusive_outcome": "RETAIN_REFERENCE",
+    "consumption_must_be_recorded_in": "training/full_hand/TEST_HOLDOUT_LEDGER.json"
+  },
+  "required_breakdowns": [
+    "position",
+    "preflop_family",
+    "limper_count",
+    "caller_count",
+    "stack_depth_bucket",
+    "players_to_flop",
+    "won_without_flop",
+    "all_in_preflop",
+    "jam_frequency",
+    "side_pot_frequency",
+    "out_of_support_decision_rate",
+    "reference_support_closure_rate",
+    "candidate_reference_support_closure_rate",
+    "support_closure_by_street",
+    "policy_context",
+    "candidate_support_by_policy_context"
+  ],
+  "run_manifest_requirements": {
+    "required_before_any_promotion_eligible_rollout": [
+      "code_commit_sha",
+      "dataset_population_fingerprint_sha256",
+      "scenario_manifest_sha256",
+      "reference_descriptor_sha256",
+      "candidate_id",
+      "candidate_artifact_sha256",
+      "candidate_binding_schema",
+      "candidate_binding_sha256",
+      "candidate_source_commit_sha",
+      "model_b_sensitivity_descriptor_sha256",
+      "model_b_base_artifact_sha256",
+      "model_b_environment_ids",
+      "master_seed",
+      "rollouts_per_base_hand",
+      "bootstrap_samples",
+      "validation_thresholds",
+      "test_thresholds"
+    ],
+    "missing_required_identity_status": "BLOCKED",
+    "results_must_be_immutable": true
+  },
+  "interpretation_limits": [
+    "The comparison baseline is the same frozen population-derived Model A policy with the same shared deterministic CHECK/CALL/FOLD support closure as contract 2026-09-17.2; it is not the v83 production preflop strategy and not an optimal Hero strategy.",
+    "PFPC matching is exact on the frozen poker-preflop-policy-context/v1 bucket identity. It is not nearest-context substitution; a live state either matches one explicit PFPC binding or falls back to the frozen reference and is counted out-of-support.",
+    "Every PFPC binding points to one exact source PFC retained in the editor-compatible Hero repository; both repository and binding are content-addressed before VALIDATION.",
+    "Every support-closure use is reported; support closure is shared by reference and candidate continuation and is not a fitted population action.",
+    "Candidate-minus-reference BB/100 is conditional on the certified Zoom population, frozen full-hand simulator, PFPC contract, support-closure contract and predeclared Model B sensitivity envelope.",
+    "Zero candidate exposure is BLOCKED and is never interpreted as equal performance or a passing gate.",
+    "Historical outcomes do not reveal counterfactual EV of unplayed Hero actions.",
+    "A favorable point estimate without the required clustered confidence bound in every environment does not authorize promotion.",
+    "TEST remains untouched unless PFPC VALIDATION freezes exactly one finalist."
+  ]
+}

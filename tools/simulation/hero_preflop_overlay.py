@@ -270,13 +270,36 @@ class ExactHeroPreflopOverlayPolicy:
     def _record(self, scenario_id: str, key: str) -> None:
         self._audit[str(scenario_id)][str(key)] += 1
 
-    def scenario_audit(self, scenario_id: str) -> dict[str, int]:
+    def scenario_audit(self, scenario_id: str) -> dict[str, Any]:
         row = self._audit.get(str(scenario_id), collections.Counter())
+        contexts: dict[str, dict[str, int]] = {}
+        prefix = "policy_context|"
+        for key, value in row.items():
+            if not str(key).startswith(prefix):
+                continue
+            _, context_id, metric = str(key).split("|", 2)
+            node = contexts.setdefault(
+                context_id,
+                {
+                    "hero_preflop_decisions": 0,
+                    "candidate_supported_decisions": 0,
+                    "candidate_out_of_support_decisions": 0,
+                },
+            )
+            node[metric] += int(value)
+        for context_id, node in contexts.items():
+            if (
+                node["candidate_supported_decisions"]
+                + node["candidate_out_of_support_decisions"]
+                != node["hero_preflop_decisions"]
+            ):
+                raise AssertionError(f"incomplete candidate support audit for {context_id}")
         return {
             "hero_preflop_decisions": int(row.get("hero_preflop_decisions", 0)),
             "candidate_supported_decisions": int(row.get("candidate_supported_decisions", 0)),
             "candidate_out_of_support_decisions": int(row.get("candidate_out_of_support_decisions", 0)),
             "postflop_reference_decisions": int(row.get("postflop_reference_decisions", 0)),
+            "policy_contexts": dict(sorted(contexts.items())),
         }
 
     def clear_audit(self) -> None:
@@ -317,7 +340,10 @@ class ExactHeroPreflopOverlayPolicy:
         policy_context_id = str(policy_context["policy_context_id"])
         binding = self.binding_index.get(policy_context_id)
         if binding is None:
-            return None, {}, f"PFPC_OUT_OF_SUPPORT:{policy_context_id}"
+            return None, {
+                "policy_context_id": policy_context_id,
+                "live_preflop_context_id": live_pfc_id,
+            }, f"PFPC_OUT_OF_SUPPORT:{policy_context_id}"
         source_pfc = str(binding["preflop_context_id"])
         node = self.index[source_pfc]
         return node, {
@@ -342,7 +368,14 @@ class ExactHeroPreflopOverlayPolicy:
         actor = str(context["actor"])
         pfc = canonical_preflop_context(state, actor)
         candidate_node, match_evidence, miss_reason = self._resolve_candidate_node(pfc)
+        audit_context_id = str(
+            match_evidence.get("policy_context_id")
+            or match_evidence.get("preflop_context_id")
+            or pfc["context_id"]
+        )
+        self._record(scenario_id, f"policy_context|{audit_context_id}|hero_preflop_decisions")
         if candidate_node is None:
+            self._record(scenario_id, f"policy_context|{audit_context_id}|candidate_out_of_support_decisions")
             return self._fallback(
                 state,
                 scenario_id=scenario_id,
@@ -354,6 +387,7 @@ class ExactHeroPreflopOverlayPolicy:
         hand = combo_class(tuple(context["hole_cards"]))
         strategy = (candidate_node.get("hands") or {}).get(hand)
         if strategy is None:
+            self._record(scenario_id, f"policy_context|{audit_context_id}|candidate_out_of_support_decisions")
             return self._fallback(
                 state,
                 scenario_id=scenario_id,
@@ -397,6 +431,7 @@ class ExactHeroPreflopOverlayPolicy:
             if minimum is not None and target + 1e-6 < float(minimum) and abs(target - maximum) > 1e-6:
                 raise RuleError(f"candidate target {target} below legal minimum {minimum}")
         self._record(scenario_id, "candidate_supported_decisions")
+        self._record(scenario_id, f"policy_context|{audit_context_id}|candidate_supported_decisions")
         evidence = {
             "candidate_id": self.candidate_id,
             "supported": True,

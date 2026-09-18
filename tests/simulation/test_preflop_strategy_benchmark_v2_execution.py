@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -9,10 +12,14 @@ sys.path.insert(0, str(ROOT))
 
 from tools.simulation.preflop_strategy_benchmark_v2 import (  # noqa: E402
     ENV_REPORT_SCHEMA,
+    PFC_BINDING_SCHEMA,
+    candidate_binding_identity,
+    candidate_policy_binding_path,
     paired_cluster_bootstrap,
     select_validation,
     summarize_environment_rows,
 )
+from tools.simulation.hero_preflop_overlay import POLICY_BINDING_SCHEMA  # noqa: E402
 
 
 def rows():
@@ -26,6 +33,7 @@ def rows():
                     "hand_id": hand,
                     "rep": rep,
                     "hero_position": "BTN",
+                    "preflop_policy_context_id": "PFPC_FIXTURE",
                     "preflop_family": "UNOPENED",
                     "limper_count": 0,
                     "caller_count": 0,
@@ -35,6 +43,13 @@ def rows():
                         "hero_preflop_decisions": 1,
                         "candidate_supported_decisions": 1 if hand == "h1" else 0,
                         "candidate_out_of_support_decisions": 0 if hand == "h1" else 1,
+                        "policy_contexts": {
+                            "PFPC_FIXTURE": {
+                                "hero_preflop_decisions": 1,
+                                "candidate_supported_decisions": 1 if hand == "h1" else 0,
+                                "candidate_out_of_support_decisions": 0 if hand == "h1" else 1,
+                            }
+                        },
                     },
                     "reference_outcome": {
                         "players_to_flop": 2,
@@ -82,6 +97,89 @@ def run_manifest():
     }
 
 
+
+def _write_json(path: Path, value) -> None:
+    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def test_candidate_binding_identity_supports_legacy_pfc_and_pfpc() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        candidate = root / "candidate.json"
+        candidate.write_text('{"schema":"fixture"}\n', encoding="utf-8")
+        candidate_sha = hashlib.sha256(candidate.read_bytes()).hexdigest()
+
+        legacy = root / "legacy-binding.json"
+        _write_json(legacy, {
+            "schema": PFC_BINDING_SCHEMA,
+            "run_id": "legacy-candidate",
+            "promotion_authorized": False,
+            "artifact_sha256": {"hero_range_repository_pfc": candidate_sha},
+            "selection_boundary": {"validation_consumed": False, "test_consumed": False},
+        })
+        legacy_id = candidate_binding_identity(legacy, candidate)
+        assert legacy_id["candidate_id"] == "legacy-candidate"
+        assert legacy_id["candidate_artifact_sha256"] == candidate_sha
+        assert legacy_id["candidate_binding_schema"] == PFC_BINDING_SCHEMA
+        legacy_manifest = {"identities": dict(legacy_id)}
+        assert candidate_policy_binding_path(legacy, candidate, legacy_manifest) is None
+
+        pfpc = root / "pfpc-binding.json"
+        _write_json(pfpc, {
+            "schema": POLICY_BINDING_SCHEMA,
+            "run_id": "pfpc-candidate",
+            "promotion_authorized": False,
+            "repository_sha256": candidate_sha,
+            "selection_boundary": {"validation_consumed": False, "test_consumed": False},
+        })
+        pfpc_id = candidate_binding_identity(pfpc, candidate)
+        assert pfpc_id["candidate_id"] == "pfpc-candidate"
+        assert pfpc_id["candidate_binding_schema"] == POLICY_BINDING_SCHEMA
+        pfpc_manifest = {"identities": dict(pfpc_id)}
+        assert candidate_policy_binding_path(pfpc, candidate, pfpc_manifest) == pfpc
+
+
+def test_candidate_binding_identity_rejects_repository_or_binding_drift() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        candidate = root / "candidate.json"
+        candidate.write_text('{"schema":"fixture"}\n', encoding="utf-8")
+        candidate_sha = hashlib.sha256(candidate.read_bytes()).hexdigest()
+        binding = root / "binding.json"
+        _write_json(binding, {
+            "schema": POLICY_BINDING_SCHEMA,
+            "run_id": "candidate-1",
+            "promotion_authorized": False,
+            "repository_sha256": candidate_sha,
+            "selection_boundary": {"validation_consumed": False, "test_consumed": False},
+        })
+        frozen = candidate_binding_identity(binding, candidate)
+        manifest = {"identities": dict(frozen)}
+
+        candidate.write_text('{"schema":"mutated"}\n', encoding="utf-8")
+        try:
+            candidate_policy_binding_path(binding, candidate, manifest)
+        except ValueError as exc:
+            assert "candidate repository hash differs" in str(exc)
+        else:
+            raise AssertionError("repository drift must fail closed")
+
+        candidate.write_text('{"schema":"fixture"}\n', encoding="utf-8")
+        _write_json(binding, {
+            "schema": POLICY_BINDING_SCHEMA,
+            "run_id": "candidate-1",
+            "promotion_authorized": False,
+            "repository_sha256": candidate_sha,
+            "selection_boundary": {"validation_consumed": False, "test_consumed": False},
+            "extra": "binding drift",
+        })
+        try:
+            candidate_policy_binding_path(binding, candidate, manifest)
+        except ValueError as exc:
+            assert "candidate binding changed" in str(exc)
+        else:
+            raise AssertionError("binding drift must fail closed")
+
 def test_paired_bootstrap_clusters_repetitions_by_hand() -> None:
     stats = paired_cluster_bootstrap(rows(), samples=200, seed=7)
     # Cluster means are h1=2bb and h2=0bb, so paired estimate is 1bb/hand.
@@ -108,6 +206,8 @@ def test_environment_summary_reports_support_and_required_breakdowns() -> None:
     assert summary["candidate_coverage"]["out_of_support_decision_rate"] == 0.5
     assert set(summary["breakdowns"]) == {
         "position",
+        "policy_context",
+        "candidate_support_by_policy_context",
         "preflop_family",
         "limper_count",
         "caller_count",
@@ -116,6 +216,10 @@ def test_environment_summary_reports_support_and_required_breakdowns() -> None:
         "candidate_outcomes",
     }
     assert summary["breakdowns"]["candidate_outcomes"]["jam_frequency"] == 0.5
+    pfpc = summary["breakdowns"]["candidate_support_by_policy_context"]["PFPC_FIXTURE"]
+    assert pfpc["hero_preflop_decisions"] == 4
+    assert pfpc["supported_decisions"] == 2
+    assert pfpc["out_of_support_decisions"] == 2
 
 
 def test_validation_selection_requires_every_frozen_environment() -> None:
