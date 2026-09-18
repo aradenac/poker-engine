@@ -17,6 +17,7 @@ from tools.population_pack_candidate import (
 from tools.validate_population_pack import REQUIRED_ROLES, validate
 from tools.write_pack_catalog import build_catalog
 from tests.packs.test_population_pack_preflight import PopulationPackPreflightTests  # noqa: F401
+from tests.packs.test_synthetic_population_pack import SyntheticPopulationPackIntegrationTests  # noqa: F401
 
 CONFIG = ROOT / "user/packs/legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1/pack.json"
 CANDIDATE = ROOT / "user/packs/pokerstars_nlhe_100-200_zoom_play_6max_v1/candidate.json"
