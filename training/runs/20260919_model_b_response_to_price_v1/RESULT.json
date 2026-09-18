@@ -1,0 +1,150 @@
+{
+  "active_model_b_changed": false,
+  "artifacts": {
+    "candidate_model": "model/response_to_price.json",
+    "counterfactual": "counterfactual_response.json",
+    "hero_sensitivity": "hero_sensitivity.json",
+    "plausible_environments": "plausible_environments.json",
+    "predictive_evaluation": "predictive_evaluation.json",
+    "predictive_result": "RESULT.partial.json",
+    "sizing_evaluation": "sizing_evaluation.json",
+    "support": "support_audit.json"
+  },
+  "automatic_promotion": false,
+  "decision": "RETAIN_ACTIVE_REFERENCE__RESPONSE_CANDIDATE_VALIDATION_SUPPORTED__NO_PROMOTION_WITHOUT_FROZEN_FINAL_PROTOCOL",
+  "hero_sensitivity": {
+    "any_environment": {
+      "first_action_changed_fraction": 0.59375,
+      "first_sizing_changed_fraction": 0.140625
+    },
+    "environment_summaries": {
+      "candidate_fold_high": {
+        "first_action_counts": {
+          "100% pot": 11,
+          "125% pot": 4,
+          "25% pot": 2,
+          "33% pot": 6,
+          "50% pot": 16,
+          "75% pot": 11,
+          "CALL": 2,
+          "CHECK": 4,
+          "all-in effectif": 8
+        },
+        "first_sizing_p50": 0.75,
+        "first_sizing_p90": 2.275,
+        "mean_utility_bb": 6.1993546875,
+        "scenarios": 64
+      },
+      "candidate_fold_low": {
+        "first_action_counts": {
+          "100% pot": 11,
+          "125% pot": 4,
+          "25% pot": 2,
+          "33% pot": 6,
+          "50% pot": 16,
+          "75% pot": 11,
+          "CALL": 2,
+          "CHECK": 4,
+          "all-in effectif": 8
+        },
+        "first_sizing_p50": 0.75,
+        "first_sizing_p90": 2.275,
+        "mean_utility_bb": 10.548283203125,
+        "scenarios": 64
+      },
+      "candidate_nominal": {
+        "first_action_counts": {
+          "100% pot": 11,
+          "125% pot": 4,
+          "25% pot": 2,
+          "33% pot": 6,
+          "50% pot": 16,
+          "75% pot": 11,
+          "CALL": 2,
+          "CHECK": 4,
+          "all-in effectif": 8
+        },
+        "first_sizing_p50": 0.75,
+        "first_sizing_p90": 2.275,
+        "mean_utility_bb": 8.442458984375,
+        "scenarios": 64
+      },
+      "reference": {
+        "first_action_counts": {
+          "100% pot": 9,
+          "125% pot": 10,
+          "25% pot": 10,
+          "33% pot": 2,
+          "50% pot": 6,
+          "66% pot": 7,
+          "75% pot": 6,
+          "CALL": 2,
+          "CHECK": 4,
+          "all-in effectif": 8
+        },
+        "first_sizing_p50": 0.75,
+        "first_sizing_p90": 2.275,
+        "mean_utility_bb": 12.918206640625,
+        "scenarios": 64
+      }
+    },
+    "environments_weighted": false,
+    "interpretation": "paired strategic sensitivity diagnostic; not a probability-weighted true environment estimate",
+    "matched_scenarios": 64,
+    "pairwise_vs_reference": {
+      "candidate_fold_high": {
+        "first_action_changed_fraction": 0.59375,
+        "first_sizing_changed_fraction": 0.140625,
+        "mean_utility_delta_bb_vs_reference": -6.718851953124999,
+        "utility_delta_p10_bb": -18.730574999999998,
+        "utility_delta_p90_bb": 1.77466
+      },
+      "candidate_fold_low": {
+        "first_action_changed_fraction": 0.59375,
+        "first_sizing_changed_fraction": 0.140625,
+        "mean_utility_delta_bb_vs_reference": -2.3699234375,
+        "utility_delta_p10_bb": -12.653749999999995,
+        "utility_delta_p90_bb": 3.3081300000000007
+      },
+      "candidate_nominal": {
+        "first_action_changed_fraction": 0.59375,
+        "first_sizing_changed_fraction": 0.140625,
+        "mean_utility_delta_bb_vs_reference": -4.475747656249999,
+        "utility_delta_p10_bb": -12.474499999999995,
+        "utility_delta_p90_bb": 2.204000000000001
+      }
+    },
+    "policy": "current",
+    "scenario_split": "VALIDATION",
+    "schema": "model-b-response-to-price-hero-sensitivity/v1",
+    "test_consumed": false
+  },
+  "issue": 197,
+  "predictive_gate": {
+    "checks": {
+      "candidate_brier_not_worse_by_gt_0_002": true,
+      "candidate_ece_not_worse_by_gt_0_01": true,
+      "paired_log_loss_ci95_upper_le_zero": true,
+      "sizing_median_abs_log2_not_worse_by_gt_0_05": true,
+      "validation_low_action_support_le_0_10": true
+    },
+    "pass": true
+  },
+  "production_effect": "NONE",
+  "schema": "model-b-response-to-price-final-decision/v1",
+  "scientific_dod": {
+    "automatic_promotion_disabled": true,
+    "counterfactual_price_response": true,
+    "fit_train_only": true,
+    "hero_strategy_sensitivity": true,
+    "log_loss_calibration_brier": true,
+    "overbet_jam_tail_diagnostics": true,
+    "paired_validation_vs_reference": true,
+    "persisted_artifacts": true,
+    "sizing_metrics": true,
+    "support_audit_price_spr_sequence": true,
+    "test_unconsumed": true
+  },
+  "status": "COMPLETE",
+  "test_consumed": false
+}

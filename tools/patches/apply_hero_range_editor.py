@@ -19,14 +19,14 @@ def main() -> None:
     text = INDEX.read_text(encoding="utf-8")
     text = replace_once(
         text,
-        '  <a href="#rangesSection">Ranges</a>\n',
-        '  <a href="#rangesSection">Ranges</a>\n  <a href="./hero-ranges.html">Ranges Hero</a>\n',
+        '  <a href="#rangesSection">Sources importées</a>\n',
+        '  <a href="#rangesSection">Sources importées</a>\n  <a href="./hero-ranges.html">Stratégie Hero</a>\n',
         "quick navigation Hero ranges link",
     )
     text = replace_once(
         text,
         '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button></div>\n',
-        '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Ranges Hero</a></div>\n',
+        '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>\n',
         "main Hero ranges link",
     )
     INDEX.write_text(text, encoding="utf-8")

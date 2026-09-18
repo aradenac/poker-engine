@@ -1,0 +1,7 @@
+{
+  "base_model_dir": "training/runs/20260912_independent_profiles_v2/model",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "production_effect": "NONE",
+  "response_artifact": "response_to_price.json",
+  "schema": "model-b-response-to-price-arena-config/v1"
+}

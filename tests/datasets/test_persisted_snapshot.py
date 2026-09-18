@@ -9,6 +9,9 @@ sys.path.insert(0, str(ROOT))
 from tools.datasets.build_hand_history_increment import (
     build_increment, fingerprint, read_archive, sha256_file,
 )
+from tools.training.audit_hero_preflop_coverage import (
+    audit as audit_hero_preflop_coverage, render_markdown as render_hero_preflop_coverage_markdown,
+)
 
 
 class PersistedSnapshotTests(unittest.TestCase):
@@ -42,6 +45,24 @@ class PersistedSnapshotTests(unittest.TestCase):
         self.assertEqual(dataset['latest_candidate_snapshot']['status'],
                          'source_verified_increment_materialized')
         self.assertIsNone(registry['pending_import'])
+
+    def test_certified_train_only_hero_preflop_coverage_audit(self):
+        report = audit_hero_preflop_coverage()
+        self.assertEqual(report['scope']['split_consumed'], 'TRAIN')
+        self.assertFalse(report['scope']['validation_consumed'])
+        self.assertFalse(report['scope']['test_consumed'])
+        self.assertFalse(report['scope']['strategy_generated'])
+        self.assertFalse(report['scope']['ev_evaluated'])
+        self.assertEqual(report['accounting']['train_hands_expected'], 19016)
+        self.assertEqual(report['accounting']['train_hands_parsed'], 19016)
+        self.assertEqual(report['accounting']['train_unique_hand_ids_parsed'], 19016)
+        self.assertGreater(report['accounting']['targeted_population_preflop_decisions'], 0)
+        self.assertTrue(report['matrix'])
+        persisted_json = json.loads((ROOT / 'analysis/hero_preflop_coverage_train.json').read_text(encoding='utf-8'))
+        self.assertEqual(report, persisted_json)
+        persisted_md = (ROOT / 'analysis/hero_preflop_coverage_train.md').read_text(encoding='utf-8')
+        self.assertEqual(render_hero_preflop_coverage_markdown(report), persisted_md)
+        print('Hero preflop TRAIN coverage audit reproduced:', report['accounting'])
 
 
 if __name__ == '__main__':
