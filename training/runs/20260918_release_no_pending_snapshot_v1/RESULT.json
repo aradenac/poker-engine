@@ -1,0 +1,38 @@
+{
+  "artifact_sha256": {
+    "DECISION.json": "776c6d0db53a5e75b1a41be71337bb97c069fe6c0800c618a7f7d11333c585df",
+    "RELEASE_HANDOFF.json": "5c482f8b5b3d41084820663bd72df7e0036a68797bc777c878824a57df4d367c",
+    "VALIDATION.json": "5936824ccc5cd1094b6374b1a01705a86801ed9a04fe5f7755701aae0379113f"
+  },
+  "decision": "NO_OP",
+  "delivered": true,
+  "deployment_attempted": false,
+  "issue": 113,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "production_after": {
+    "population_registry": {
+      "path": "training/populations/registry.json",
+      "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+    },
+    "site_release": {
+      "path": "site/RELEASE.json",
+      "sha256": "08e234b5bc3793171b3d1fdd9a956b96eb8b9593679b7c08be761e23dfd95070"
+    }
+  },
+  "production_before": {
+    "population_registry": {
+      "path": "training/populations/registry.json",
+      "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+    },
+    "site_release": {
+      "path": "site/RELEASE.json",
+      "sha256": "08e234b5bc3793171b3d1fdd9a956b96eb8b9593679b7c08be761e23dfd95070"
+    }
+  },
+  "promotion_authorized": false,
+  "run_id": "20260918_release_no_pending_snapshot_v1",
+  "schema": "poker-release-no-pending-proof/v1",
+  "snapshot_sha256": "2cff4b858a9f4597ee1296c5a7ca7b9432cb38b081458f609097fd319f84632e",
+  "source_commit_sha": "13d3b5da6338c500b6c367de702b6e047afd9fb7",
+  "state": "VERIFIED_NO_PUBLICATION"
+}
