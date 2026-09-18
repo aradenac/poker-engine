@@ -190,7 +190,7 @@ class EnvironmentContractTests(unittest.TestCase):
             environments=env,
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "INSUFFICIENTLY_SUPPORTED")
+        self.assertEqual(report["classification"], "insufficiently_supported")
         self.assertFalse(report["support"]["all_environments_supported"])
 
     def test_environment_probability_weight_is_rejected(self):
@@ -250,7 +250,7 @@ class RobustnessTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "ROBUST")
+        self.assertEqual(report["classification"], "robust")
         self.assertTrue(report["stability"]["action_stable"])
         self.assertTrue(report["stability"]["sizing_stable"])
         self.assertEqual(
@@ -277,7 +277,7 @@ class RobustnessTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "SENSITIVE")
+        self.assertEqual(report["classification"], "sensitive")
         self.assertFalse(report["stability"]["action_stable"])
         self.assertAlmostEqual(
             report["environment_uncertainty"]["max_regret_bb"],
@@ -303,7 +303,7 @@ class RobustnessTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "SENSITIVE")
+        self.assertEqual(report["classification"], "sensitive")
         self.assertTrue(report["stability"]["action_stable"])
         self.assertFalse(report["stability"]["sizing_stable"])
 
@@ -334,7 +334,7 @@ class RobustnessTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "INSUFFICIENTLY_SUPPORTED")
+        self.assertEqual(report["classification"], "insufficiently_supported")
         self.assertFalse(report["support"]["all_environments_supported"])
 
     def test_ranking_is_reported_per_environment(self):
@@ -403,7 +403,7 @@ class RequiredRobustnessCompletionTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "INSUFFICIENTLY_SUPPORTED")
+        self.assertEqual(report["classification"], "insufficiently_supported")
         self.assertFalse(report["environment_uncertainty"]["comparable"])
         self.assertEqual(report["environment_uncertainty"]["missing_environment_ids"], ["high"])
         self.assertIsNone(report["stability"]["action_stable"])
@@ -422,7 +422,7 @@ class RequiredRobustnessCompletionTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "INSUFFICIENTLY_SUPPORTED")
+        self.assertEqual(report["classification"], "insufficiently_supported")
         self.assertEqual(
             report["environment_uncertainty"]["missing_alternatives_by_environment"],
             {"high": ["call"]},
@@ -443,7 +443,7 @@ class RequiredRobustnessCompletionTests(unittest.TestCase):
             evaluations=rows,
         )
         diagnostic = report["diagnostics"]["shove_fragility"]
-        self.assertEqual(report["classification"], "SENSITIVE")
+        self.assertEqual(report["classification"], "sensitive")
         self.assertTrue(diagnostic["applicable"])
         self.assertTrue(diagnostic["fragile"])
         self.assertEqual(diagnostic["affected_environments"], ["low"])
@@ -490,7 +490,7 @@ class RequiredRobustnessCompletionTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "ROBUST")
+        self.assertEqual(report["classification"], "robust")
         self.assertAlmostEqual(
             report["nominal_recommendation"]["mc_uncertainty"]["ci95_width_bb"],
             4.0,
@@ -520,7 +520,7 @@ class RequiredRobustnessCompletionTests(unittest.TestCase):
             environments=envs(),
             evaluations=rows,
         )
-        self.assertEqual(report["classification"], "SENSITIVE")
+        self.assertEqual(report["classification"], "sensitive")
         self.assertLess(
             report["nominal_recommendation"]["mc_uncertainty"]["ci95_width_bb"],
             0.03,
