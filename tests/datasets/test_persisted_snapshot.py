@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT))
 from tools.datasets.build_hand_history_increment import (
     build_increment, fingerprint, read_archive, sha256_file,
 )
+from tools.training.audit_hero_preflop_coverage import audit as audit_hero_preflop_coverage
 
 
 class PersistedSnapshotTests(unittest.TestCase):
@@ -42,6 +43,20 @@ class PersistedSnapshotTests(unittest.TestCase):
         self.assertEqual(dataset['latest_candidate_snapshot']['status'],
                          'source_verified_increment_materialized')
         self.assertIsNone(registry['pending_import'])
+
+    def test_certified_train_only_hero_preflop_coverage_audit(self):
+        report = audit_hero_preflop_coverage()
+        self.assertEqual(report['scope']['split_consumed'], 'TRAIN')
+        self.assertFalse(report['scope']['validation_consumed'])
+        self.assertFalse(report['scope']['test_consumed'])
+        self.assertFalse(report['scope']['strategy_generated'])
+        self.assertFalse(report['scope']['ev_evaluated'])
+        self.assertEqual(report['accounting']['train_hands_expected'], 19016)
+        self.assertEqual(report['accounting']['train_hands_parsed'], 19016)
+        self.assertEqual(report['accounting']['train_unique_hand_ids_parsed'], 19016)
+        self.assertGreater(report['accounting']['targeted_population_preflop_decisions'], 0)
+        self.assertTrue(report['matrix'])
+        print('HERO_PREFLOP_COVERAGE_AUDIT=' + json.dumps(report, sort_keys=True, separators=(',', ':')))
 
 
 if __name__ == '__main__':
