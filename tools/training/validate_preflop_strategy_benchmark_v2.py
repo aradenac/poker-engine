@@ -21,6 +21,8 @@ DEFAULT_REFERENCE = ROOT / "training/full_hand/HERO_REFERENCE_POLICY_20260917.js
 DEFAULT_SENSITIVITY = ROOT / "training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
+PFC_BINDING_SCHEMA = "poker-hero-range-pfc-binding/v1"
+PFPC_BINDING_SCHEMA = "poker-hero-policy-context-binding/v1"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -166,6 +168,15 @@ def validate_run_manifest(
     require(errors, identities.get("dataset_population_fingerprint_sha256") == (contract.get("population") or {}).get("population_fingerprint_sha256"), "run population fingerprint drifted")
     for field in ("scenario_manifest_sha256", "reference_descriptor_sha256", "candidate_artifact_sha256", "model_b_sensitivity_descriptor_sha256"):
         require(errors, valid_sha(identities.get(field), HEX64), f"run must freeze {field}")
+    binding_sha = identities.get("candidate_binding_sha256")
+    binding_schema = identities.get("candidate_binding_schema")
+    if binding_sha is not None or binding_schema is not None:
+        require(errors, valid_sha(binding_sha, HEX64), "run must freeze candidate_binding_sha256 when binding identity is present")
+        require(
+            errors,
+            binding_schema in {PFC_BINDING_SCHEMA, PFPC_BINDING_SCHEMA},
+            "run candidate_binding_schema is unsupported",
+        )
     require(errors, bool(identities.get("candidate_id")), "run must freeze candidate_id")
     require(errors, valid_sha(identities.get("candidate_source_commit_sha"), HEX40), "run must freeze candidate source commit")
     require(errors, identities.get("model_b_base_artifact_sha256") == (contract.get("environment_sensitivity") or {}).get("base_artifact_sha256"), "run Model B base artifact drifted")
