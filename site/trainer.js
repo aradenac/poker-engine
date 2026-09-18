@@ -380,6 +380,23 @@ function trainerRecordDecision(detail,playedKind,playedCost){
   const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else s.poor++;
   const key=`${row.position} · ${row.street}`;const b=s.breakdown[key]||(s.breakdown[key]={n:0,loss:0});b.n++;b.loss+=loss;trainerState.testLog.unshift(row);return row;
 }
+function trainerDecisionCanonical(detail,row){
+  if(!detail||!row)return null;
+  const source=detail?.decisionSummary?.schema==="decision-summary/v1"?JSON.parse(JSON.stringify(detail.decisionSummary)):null;
+  const chosenEV=Number(detail.chosenEV),bestEV=Number(detail.bestEV),bestCost=Number(detail.bestCostBB),playedCost=Number(row.cost);
+  const family=x=>{const s=String(x||"").toUpperCase();if(s.includes("FOLD"))return "FOLD";if(s.includes("CHECK"))return "CHECK";if(s.includes("CALL"))return "CALL";if(s.includes("RAISE")||s.includes("JAM"))return "RAISE";if(s.includes("BET"))return "BET";return s;};
+  const playedLabel=String(row.played||"—").toUpperCase(),recommendedLabel=String(detail.bestLabel||source?.recommended?.label||"—");
+  const sizing=(label,cost)=>{const k=family(label);if(k==="FOLD"||k==="CHECK")return "0 BB";return Number.isFinite(cost)?trainerFmtBB(cost):"—";};
+  const played={label:playedLabel,sizing:sizing(playedLabel,playedCost),costBB:Number.isFinite(playedCost)?playedCost:null,targetStreetBB:null,evBB:Number.isFinite(chosenEV)?chosenEV:null,chosen:true,recommended:false};
+  const recommended={label:recommendedLabel,sizing:Number.isFinite(bestCost)?sizing(recommendedLabel,bestCost):(source?.recommended?.sizing||"—"),costBB:Number.isFinite(bestCost)?bestCost:(source?.recommended?.costBB??null),targetStreetBB:source?.recommended?.targetStreetBB??null,evBB:Number.isFinite(bestEV)?bestEV:(source?.recommended?.evBB??null),chosen:false,recommended:true};
+  const alternatives=(source?.alternatives||[]).map(a=>({...a,chosen:false,recommended:false}));
+  const same=(a,b)=>family(a?.label)===family(b?.label)&&(!["BET","RAISE"].includes(family(b?.label))||!Number.isFinite(Number(a?.costBB))||!Number.isFinite(Number(b?.costBB))||Math.abs(Number(a.costBB)-Number(b.costBB))<=.05);
+  const pi=alternatives.findIndex(a=>same(a,played));if(pi>=0)alternatives[pi]={...alternatives[pi],...played};else alternatives.push(played);
+  const ri=alternatives.findIndex(a=>same(a,recommended));if(ri>=0)alternatives[ri]={...alternatives[ri],...recommended,recommended:true,chosen:alternatives[ri].chosen||same(recommended,played)};else alternatives.push(recommended);
+  alternatives.sort((a,b)=>(Number.isFinite(Number(b.evBB))?Number(b.evBB):-Infinity)-(Number.isFinite(Number(a.evBB))?Number(a.evBB):-Infinity));
+  const delta=Number.isFinite(chosenEV)&&Number.isFinite(bestEV)?chosenEV-bestEV:-Math.max(0,Number(row.lossBB)||0);
+  return {schema:"decision-summary/v1",played,recommended,deltaEVBB:delta,lossEVBB:Math.max(0,-delta),effectiveLossEVBB:Math.max(0,Number(row.lossBB)||0),withinNoise:!!row.withinNoise,score:Number(source?.score),alternatives};
+}
 function trainerRecommendationKind(hand,rec){
   if(!hand||!rec||rec.error)return "";
   const label=String(rec.bestLabel||"").trim().toUpperCase();
@@ -499,7 +516,11 @@ function trainerRenderFeedback(){
     trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Feedback</div><div class="trainer-feedback-body">Jouez une décision Hero pour obtenir le verdict.</div>';return;
   }
   const d=f.detail,r=f.row,cls=r?.cls||"close",title=cls==="good"?"Bonne décision":cls==="close"?"Décision proche":"Erreur coûteuse";
-  trainerFeedback.className=`trainer-feedback ${cls}`;trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>Perte EV retenue : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${r.withinNoise?" · dans le bruit Monte-Carlo":""}.</div>`;
+  const summary=trainerDecisionCanonical(d,r);
+  const primary=summary?`${decisionPrimarySummaryHtml(summary,{compact:true})}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
+  const noise=r.withinNoise?" · dans le bruit Monte-Carlo":"";
+  trainerFeedback.className=`trainer-feedback ${cls}`;
+  trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV retenue : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>Le moteur Model A reste la source du verdict ; le détail scientifique est conservé sans dominer la décision.</div></div></details>`;
 }
 function trainerSizingValue(){return Math.max(0,Number(document.getElementById("trainerSizingInput")?.value)||0);}
 function trainerSetSizing(x){const input=document.getElementById("trainerSizingInput");if(input)input.value=trainerNum(x);}

@@ -1,0 +1,13 @@
+{
+  "name": "poker-engine-repro-contract",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pinned Node runtime contract for poker-engine reproducibility.",
+  "engines": {
+    "node": "22.14.0"
+  },
+  "scripts": {
+    "repro:check": "python3 tools/repro_environment.py --check-contract",
+    "test:repro": "python3 tests/test_repro_environment.py"
+  }
+}
