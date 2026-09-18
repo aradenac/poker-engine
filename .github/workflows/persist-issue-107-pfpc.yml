@@ -1,0 +1,292 @@
+name: Persist issue 107 generated PFPC evidence
+
+on:
+  workflow_run:
+    workflows:
+      - 'Generate multi-position Hero unopened PFPC candidate'
+    types:
+      - completed
+  pull_request:
+    paths:
+      - '.github/workflows/persist-issue-107-pfpc.yml'
+  push:
+    branches:
+      - 'trigger/issue-107-persist-d7ec5e532dc5'
+    paths:
+      - '.github/triggers/issue-107-persist-d7ec5e532dc5'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: persist-issue-107-pfpc-d7ec5e532dc5
+  cancel-in-progress: false
+
+env:
+  SOURCE_RUN_ID: '35379387883'
+  SOURCE_SHA: 'd7ec5e532dc550d4c37e9129218b348eef4587b4'
+  SOURCE_BRANCH: 'issue-107-multiposition-generation-sol'
+  EVIDENCE_RUN_ID: '20260918_hero_preflop_unopened_5pos_pfpc_v1'
+  EVIDENCE_BRANCH: 'evidence/issue-107-pfpc-d7ec5e532dc5'
+
+jobs:
+  safety-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate one-shot persistence boundary
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('.github/workflows/persist-issue-107-pfpc.yml').read_text(encoding='utf-8')
+          required=[
+              "SOURCE_RUN_ID: '35379387883'",
+              "SOURCE_SHA: 'd7ec5e532dc550d4c37e9129218b348eef4587b4'",
+              "SOURCE_BRANCH: 'issue-107-multiposition-generation-sol'",
+              "EVIDENCE_BRANCH: 'evidence/issue-107-pfpc-d7ec5e532dc5'",
+              "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1",
+              "github.event.workflow_run.conclusion == 'success'",
+          ]
+          missing=[token for token in required if token not in text]
+          assert not missing, missing
+          forbidden=[
+              'git push origin HEAD:main',
+              'wrangler deploy',
+              'gh release create',
+              'VALIDATION',
+              'TEST_HOLDOUT_LEDGER',
+          ]
+          found=[token for token in forbidden if token in text]
+          assert not found, found
+          print('one-shot #107 persistence workflow is production- and holdout-free')
+          PY
+
+  persist-generated-evidence:
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.id == 35379387883 &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'issue-107-multiposition-generation-sol' &&
+       github.event.workflow_run.head_sha == 'd7ec5e532dc550d4c37e9129218b348eef4587b4') ||
+      (github.event_name == 'push' &&
+       github.ref_name == 'trigger/issue-107-persist-d7ec5e532dc5')
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current main without source-branch code execution
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download immutable five-position candidate from source run
+        uses: actions/download-artifact@v4
+        with:
+          name: issue-107-unopened-5pos-pfpc-${{ env.SOURCE_SHA }}
+          path: /tmp/issue-107-final
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Download immutable per-position sources from source run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: issue-107-source-*-${{ env.SOURCE_SHA }}
+          path: /tmp/issue-107-sources
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Validate and materialize immutable #107 evidence
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          source_sha=os.environ['SOURCE_SHA']
+          source_run=int(os.environ['SOURCE_RUN_ID'])
+          source_branch=os.environ['SOURCE_BRANCH']
+          evidence_run_id=os.environ['EVIDENCE_RUN_ID']
+          final_dir=Path('/tmp/issue-107-final')
+          sources_root=Path('/tmp/issue-107-sources')
+          dest=Path('training/runs')/evidence_run_id
+
+          def load(path):
+              value=json.loads(Path(path).read_text(encoding='utf-8'))
+              assert isinstance(value, dict), path
+              return value
+
+          def sha(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          assert not dest.exists(), f'immutable evidence destination already exists: {dest}'
+          final_repo=final_dir/'HERO_RANGE_REPOSITORY_PFPC.json'
+          final_binding=final_dir/'POLICY_CONTEXT_BINDING.json'
+          final_result=final_dir/'RESULT.json'
+          for path in (final_repo, final_binding, final_result):
+              assert path.is_file(), path
+
+          result=load(final_result)
+          binding=load(final_binding)
+          repository=load(final_repo)
+          assert result['schema']=='poker-hero-policy-context-merge-result/v1'
+          assert result['issue']==107
+          assert result['run_id']==evidence_run_id
+          assert result['population_id']=='pokerstars_nlhe_100-200_zoom_play_6max_v1'
+          assert result['policy_contexts']==5
+          assert result['repository_contexts']==5
+          assert result['supported_hand_slots']>40
+          assert result['unsupported_hand_slots']>=0
+          assert result['promotion_authorized'] is False
+          assert result['validation_consumed'] is False
+          assert result['test_consumed'] is False
+          assert result['repository_sha256']==sha(final_repo)
+          assert binding['schema']=='poker-hero-policy-context-binding/v1'
+          assert binding['run_id']==evidence_run_id
+          assert binding['status']=='EXPERIMENTAL'
+          assert binding['promotion_authorized'] is False
+          assert binding['population_id']==result['population_id']
+          assert binding['repository_sha256']==result['repository_sha256']
+          assert binding['matching']=='EXACT_PFPC_AND_169_HAND_CLASS_ONLY'
+          assert binding['nearest_context_substitution'] is False
+          assert binding['selection_boundary']=={
+              'validation_consumed':False,
+              'test_consumed':False,
+          }
+          assert repository['schema']=='poker-hero-range-repository/v1'
+          assert len(repository['contexts'])==5
+
+          result_sources={row['actor_position']:row for row in result['sources']}
+          assert set(result_sources)=={'LJ','HJ','CO','BTN','SB'}
+          assert all(result_sources[pos]['supported_hand_classes']>0 for pos in ('LJ','HJ','CO','SB'))
+
+          copied_sources={}
+          for pos in ('LJ','HJ','CO','SB'):
+              artifact=sources_root/f'issue-107-source-{pos}-{source_sha}'
+              assert artifact.is_dir(), artifact
+              files={
+                  name:artifact/name
+                  for name in (
+                      'DECISION_RUN_PFC.json',
+                      'CANDIDATE_PFC.json',
+                      'HERO_RANGE_REPOSITORY_PFC.json',
+                      'PFC_BINDING.json',
+                  )
+              }
+              assert all(path.is_file() for path in files.values()), files
+              run=load(files['DECISION_RUN_PFC.json'])
+              source_binding=load(files['PFC_BINDING.json'])
+              source_repo=load(files['HERO_RANGE_REPOSITORY_PFC.json'])
+              coverage=source_binding['coverage']
+              assert coverage['requested']==169
+              assert coverage['accounted']==169
+              assert coverage['supported']+coverage['unsupported']==169
+              assert coverage['supported']>0
+              assert source_binding['promotion_authorized'] is False
+              assert source_binding['selection_boundary']=={
+                  'validation_consumed':False,
+                  'test_consumed':False,
+              }
+              provenance=run['provenance']
+              assert provenance['sizing_support']['filters']['split']=='TRAIN'
+              assert provenance['sizing_support']['filters']['is_hero'] is False
+              closure=provenance['continuation_support']
+              assert closure['enabled'] is True
+              assert closure['nearest_context_substitution'] is False
+              assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
+              assert run['context']['position']==pos
+              assert source_binding['canonical_preflop_context']['actor_position']==pos
+              source_repo_sha=sha(files['HERO_RANGE_REPOSITORY_PFC.json'])
+              source_binding_sha=sha(files['PFC_BINDING.json'])
+              assert source_binding['artifact_sha256']['hero_range_repository_pfc']==source_repo_sha
+              summary=result_sources[pos]
+              assert summary['repository_sha256']==source_repo_sha
+              assert summary['binding_sha256']==source_binding_sha
+              copied_sources[pos]={
+                  'repository_sha256':source_repo_sha,
+                  'binding_sha256':source_binding_sha,
+                  'supported_hand_classes':coverage['supported'],
+                  'unsupported_hand_classes':coverage['unsupported'],
+              }
+
+          btn_root=Path('training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1')
+          btn_repo=btn_root/'HERO_RANGE_REPOSITORY_PFC.json'
+          btn_binding=btn_root/'PFC_BINDING.json'
+          assert btn_repo.is_file() and btn_binding.is_file()
+          assert result_sources['BTN']['repository_sha256']==sha(btn_repo)
+          assert result_sources['BTN']['binding_sha256']==sha(btn_binding)
+
+          dest.mkdir(parents=True)
+          shutil.copy2(final_repo, dest/final_repo.name)
+          shutil.copy2(final_binding, dest/final_binding.name)
+          shutil.copy2(final_result, dest/final_result.name)
+          for pos in ('LJ','HJ','CO','SB'):
+              artifact=sources_root/f'issue-107-source-{pos}-{source_sha}'
+              target=dest/'sources'/pos
+              target.mkdir(parents=True)
+              for name in (
+                  'DECISION_RUN_PFC.json',
+                  'CANDIDATE_PFC.json',
+                  'HERO_RANGE_REPOSITORY_PFC.json',
+                  'PFC_BINDING.json',
+              ):
+                  shutil.copy2(artifact/name, target/name)
+
+          source_record={
+              'schema':'poker-hero-pfpc-persistence/v1',
+              'issue':107,
+              'run_id':evidence_run_id,
+              'population_id':result['population_id'],
+              'source_workflow_name':'Generate multi-position Hero unopened PFPC candidate',
+              'source_workflow_run_id':source_run,
+              'source_workflow_url':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{source_run}",
+              'source_branch':source_branch,
+              'source_head_sha':source_sha,
+              'promotion_authorized':False,
+              'validation_consumed':False,
+              'test_consumed':False,
+              'artifact_sha256':{
+                  'HERO_RANGE_REPOSITORY_PFPC.json':sha(dest/'HERO_RANGE_REPOSITORY_PFPC.json'),
+                  'POLICY_CONTEXT_BINDING.json':sha(dest/'POLICY_CONTEXT_BINDING.json'),
+                  'RESULT.json':sha(dest/'RESULT.json'),
+              },
+              'new_position_sources':copied_sources,
+              'immutable_btn_source':'training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1',
+          }
+          (dest/'SOURCE_RUN.json').write_text(
+              json.dumps(source_record,indent=2,sort_keys=True)+'\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(source_record,indent=2,sort_keys=True))
+          PY
+
+      - name: Commit evidence to a dedicated branch only
+        run: |
+          set -euo pipefail
+          DEST="training/runs/$EVIDENCE_RUN_ID"
+          git config user.name 'poker-engine evidence bot'
+          git config user.email 'evidence-bot@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin "$EVIDENCE_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$EVIDENCE_BRANCH"
+            if git diff --exit-code "origin/$EVIDENCE_BRANCH" -- "$DEST"; then
+              echo "Evidence branch already contains the exact immutable payload."
+              exit 0
+            fi
+            echo "Evidence branch exists with different payload; refusing overwrite."
+            exit 1
+          fi
+          git switch -c "$EVIDENCE_BRANCH"
+          git add "$DEST"
+          test -n "$(git status --porcelain)"
+          git commit -m "Persist issue #107 five-position PFPC evidence"
+          git push --set-upstream origin "$EVIDENCE_BRANCH"
