@@ -51,8 +51,62 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  generate-shards:
+  smoke-lj-aa:
     needs: prepare-sizing-corpus
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue-107-certified-train-sizing-${{ github.sha }}
+          path: /tmp/issue-107-sizing
+      - name: Prove full-budget LJ AA is evaluable with audited continuation closure
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/training/generate_certified_hero_range_decisions.py \
+            --position LJ --spot UNOPENED --stack-bb 100 \
+            --samples "$SAMPLES" --seed "$MASTER_SEED" \
+            --version hero-lj-unopened-100bb-169-v1 \
+            --code-sha "$GITHUB_SHA" \
+            --sizing-decisions /tmp/issue-107-sizing/issue-107-certified-decisions.jsonl \
+            --support-closure \
+            --hand-class AA \
+            --rows-out /tmp/issue-107-lj-aa-smoke.json \
+            --allow-partial
+          python3 - <<'PY'
+          import json
+          run=json.load(open('/tmp/issue-107-lj-aa-smoke.json'))
+          assert run['coverage']['requested']==1
+          assert run['coverage']['completed']==1, run.get('unsupported')
+          assert len(run['rows'])==1 and run['rows'][0]['hand_class']=='AA'
+          closure=run['provenance']['continuation_support']
+          assert closure['enabled'] is True
+          assert closure['nearest_context_substitution'] is False
+          assert closure['fallback_contract']=='CHECK_THEN_CALL_THEN_FOLD_V1'
+          decision=run['rows'][0]['decision']
+          assert decision['schema']=='poker-preflop-decision/v1'
+          assert decision['search']['budget']>0
+          print({
+              'action':decision['action'],
+              'target_total_bb':decision.get('target_total_bb'),
+              'ev_bb':decision['ev_bb'],
+              'search_budget':decision['search']['budget'],
+              'closure':closure,
+          })
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-107-lj-aa-support-closure-smoke-${{ github.sha }}
+          path: /tmp/issue-107-lj-aa-smoke.json
+          if-no-files-found: error
+          retention-days: 7
+
+  generate-shards:
+    needs: [prepare-sizing-corpus, smoke-lj-aa]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
