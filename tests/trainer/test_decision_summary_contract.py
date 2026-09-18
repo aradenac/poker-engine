@@ -16,7 +16,7 @@ def main() -> None:
     assert 'decisionPrimarySummaryHtml(canonicalDecision,{compact:true})' in INDEX
     assert 'decisionPrimarySummaryHtml(canonicalDecision)' in INDEX
     assert 'function trainerDecisionCanonical(detail,row)' in TRAINER
-    assert 'decisionPrimarySummaryHtml(summary)' in TRAINER
+    assert 'decisionPrimarySummaryHtml(summary,{compact:true})' in TRAINER
 
     # Primary hierarchy: played/recommended/sizing/EV/delta before diagnostics.
     for label in ('Joué', 'Recommandé', 'EV jouée', 'Meilleure EV', 'ΔEV vs meilleure'):
