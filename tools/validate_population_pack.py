@@ -154,6 +154,39 @@ def validate(zip_path: str) -> dict:
             if len(payload) != int(item["size_bytes"]):
                 raise ValueError(f"artifact size mismatch: {rel}")
 
+        if test_only:
+            compatibility = manifest.get("compatibility")
+            if not isinstance(compatibility, dict):
+                raise ValueError("TEST_ONLY compatibility contract missing")
+            engine_items = [item for item in artifacts if "engine" in item.get("roles", [])]
+            app_items = [item for item in artifacts if "application_release" in item.get("roles", [])]
+            if len(engine_items) != 1 or len(app_items) != 1:
+                raise ValueError("TEST_ONLY engine/application role cardinality invalid")
+            engine_item, app_item = engine_items[0], app_items[0]
+            if compatibility.get("engine_path") != engine_item["path"]:
+                raise ValueError("TEST_ONLY engine path mismatch")
+            if compatibility.get("engine_sha256") != engine_item["sha256"]:
+                raise ValueError("TEST_ONLY engine hash mismatch")
+            if compatibility.get("application_release_path") != app_item["path"]:
+                raise ValueError("TEST_ONLY application release path mismatch")
+            if compatibility.get("application_release_sha256") != app_item["sha256"]:
+                raise ValueError("TEST_ONLY application release hash mismatch")
+            app_payload = json.loads(zf.read(f"{root}/{app_item['path']}"))
+            if app_payload.get("schema") != "poker-site-release/v3":
+                raise ValueError("TEST_ONLY application release schema incompatible")
+            if app_payload.get("artifact_class") != "TEST_ONLY" or app_payload.get("non_publishable") is not True:
+                raise ValueError("TEST_ONLY application release classification missing")
+            if app_payload.get("version") != compatibility.get("engine_version"):
+                raise ValueError("TEST_ONLY application release version incompatible")
+            if app_payload.get("status") != "test_only":
+                raise ValueError("TEST_ONLY application release must not claim promoted status")
+            engine_identity = (app_payload.get("identity") or {}).get("engine_release") or {}
+            expected_engine_name = PurePosixPath(engine_item["path"]).name
+            if engine_identity.get("artifact") != expected_engine_name:
+                raise ValueError("TEST_ONLY application release engine artifact mismatch")
+            if engine_identity.get("sha256") != engine_item["sha256"]:
+                raise ValueError("TEST_ONLY application release engine hash mismatch")
+
         for line in zf.read(checksums_name).decode("utf-8").splitlines():
             expected, rel = line.split("  ", 1)
             archive_name = f"{root}/{rel}"
