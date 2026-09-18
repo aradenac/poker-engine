@@ -1,0 +1,212 @@
+{
+  "bindings": {
+    "PFPC_132cc73b0b562195": {
+      "actor_position": "CO",
+      "effective_stack_bucket": "GT75_LE125",
+      "family": "UNOPENED",
+      "preflop_context_id": "PFC_c2dca7f34a67a516",
+      "source_binding_sha256": "46629893342c6394ec9bfac665224953ba28d284b2103320536f874b9f206a02",
+      "source_repository_sha256": "383ad37b945a1944b34fdb64594e22726d2b94c10ce0bbf4f581b47ab786cfad",
+      "source_run_id": "20260918_hero_preflop_169_co_unopened_pfc_v1",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    },
+    "PFPC_91aa505f69a423e2": {
+      "actor_position": "HJ",
+      "effective_stack_bucket": "GT75_LE125",
+      "family": "UNOPENED",
+      "preflop_context_id": "PFC_13c88cb8c1ad6e75",
+      "source_binding_sha256": "6b3a608d1a4856187aab8e06d94b11327d9fc77a6cf694e503fdc0f1a9dae750",
+      "source_repository_sha256": "9da472ac6b0a30fb53b86f2eb83ebdd7684c72a40537b6def21efaaf4ed1f326",
+      "source_run_id": "20260918_hero_preflop_169_hj_unopened_pfc_v1",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    },
+    "PFPC_9af6a311fc2f3a5d": {
+      "actor_position": "SB",
+      "effective_stack_bucket": "GT75_LE125",
+      "family": "UNOPENED",
+      "preflop_context_id": "PFC_9b3dd1f4e211bd09",
+      "source_binding_sha256": "94074c25ae7b40cb062808fff397d5c83af5cbf0358525c7e20f90bd5684f624",
+      "source_repository_sha256": "3c162fb2fe64b282940c5f0670c0286c7da1f476fa6485bd86cdf4cb5b55408d",
+      "source_run_id": "20260918_hero_preflop_169_sb_unopened_pfc_v1",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    },
+    "PFPC_beffa163a9da147d": {
+      "actor_position": "BTN",
+      "effective_stack_bucket": "GT75_LE125",
+      "family": "UNOPENED",
+      "preflop_context_id": "PFC_0e01f7d1a1da491b",
+      "source_binding_sha256": "277f6cd7e6cfcbc392b28b9adffca9f93fcff3b5f3ed825c0c9c7b4106f59b4e",
+      "source_repository_sha256": "a0a373f55c11638ba092f862eca1c354c6065d50b5012fb3158e07cd426831cd",
+      "source_run_id": "20260917_hero_preflop_169_btn_unopened_pfc_v1",
+      "supported_hand_classes": 40,
+      "unsupported_hand_classes": 129
+    },
+    "PFPC_c248168d3d4ba0ae": {
+      "actor_position": "LJ",
+      "effective_stack_bucket": "GT75_LE125",
+      "family": "UNOPENED",
+      "preflop_context_id": "PFC_baa527f699055ad2",
+      "source_binding_sha256": "b1e4d38b69ef42c1c16acfec9ee75f89f3d8e4df078c237d86a353abd5a803fc",
+      "source_repository_sha256": "f6662ccfb6a4d96dcbd43e7ba384eb25096f9844f64c85e90cd34f245e573fb9",
+      "source_run_id": "20260918_hero_preflop_169_lj_unopened_pfc_v1",
+      "supported_hand_classes": 169,
+      "unsupported_hand_classes": 0
+    }
+  },
+  "issue": 107,
+  "matching": "EXACT_PFPC_AND_169_HAND_CLASS_ONLY",
+  "nearest_context_substitution": false,
+  "policy_context_contract": {
+    "matching": "EXACT_PFPC_ONLY_NO_NEAREST_CONTEXT",
+    "min_raise_increment_buckets": [
+      {
+        "label": "LE1",
+        "upper_inclusive": 1.0
+      },
+      {
+        "label": "GT1_LE2_5",
+        "upper_inclusive": 2.5
+      },
+      {
+        "label": "GT2_5_LE3_5",
+        "upper_inclusive": 3.5
+      },
+      {
+        "label": "GT3_5_LE5",
+        "upper_inclusive": 5.0
+      },
+      {
+        "label": "GT5_LE10",
+        "upper_inclusive": 10.0
+      },
+      {
+        "label": "GT10_LE25",
+        "upper_inclusive": 25.0
+      },
+      {
+        "label": "GT25",
+        "upper_inclusive": null
+      }
+    ],
+    "pot_buckets": [
+      {
+        "label": "LE1_5",
+        "upper_inclusive": 1.5
+      },
+      {
+        "label": "GT1_5_LE3",
+        "upper_inclusive": 3.0
+      },
+      {
+        "label": "GT3_LE6",
+        "upper_inclusive": 6.0
+      },
+      {
+        "label": "GT6_LE12",
+        "upper_inclusive": 12.0
+      },
+      {
+        "label": "GT12_LE30",
+        "upper_inclusive": 30.0
+      },
+      {
+        "label": "GT30",
+        "upper_inclusive": null
+      }
+    ],
+    "price_buckets": [
+      {
+        "label": "LE1",
+        "upper_inclusive": 1.0
+      },
+      {
+        "label": "GT1_LE2_5",
+        "upper_inclusive": 2.5
+      },
+      {
+        "label": "GT2_5_LE3_5",
+        "upper_inclusive": 3.5
+      },
+      {
+        "label": "GT3_5_LE5",
+        "upper_inclusive": 5.0
+      },
+      {
+        "label": "GT5_LE10",
+        "upper_inclusive": 10.0
+      },
+      {
+        "label": "GT10_LE25",
+        "upper_inclusive": 25.0
+      },
+      {
+        "label": "GT25",
+        "upper_inclusive": null
+      }
+    ],
+    "schema": "poker-preflop-policy-context/v1",
+    "source": "poker-preflop-context/v1",
+    "stack_buckets": [
+      {
+        "label": "LE40",
+        "upper_inclusive": 40.0
+      },
+      {
+        "label": "GT40_LE75",
+        "upper_inclusive": 75.0
+      },
+      {
+        "label": "GT75_LE125",
+        "upper_inclusive": 125.0
+      },
+      {
+        "label": "GT125",
+        "upper_inclusive": null
+      }
+    ],
+    "to_call_buckets": [
+      {
+        "label": "FREE",
+        "upper_inclusive": 0.0
+      },
+      {
+        "label": "GT0_LE1_5",
+        "upper_inclusive": 1.5
+      },
+      {
+        "label": "GT1_5_LE2_5",
+        "upper_inclusive": 2.5
+      },
+      {
+        "label": "GT2_5_LE4",
+        "upper_inclusive": 4.0
+      },
+      {
+        "label": "GT4_LE8",
+        "upper_inclusive": 8.0
+      },
+      {
+        "label": "GT8_LE20",
+        "upper_inclusive": 20.0
+      },
+      {
+        "label": "GT20",
+        "upper_inclusive": null
+      }
+    ]
+  },
+  "policy_context_schema": "poker-preflop-policy-context/v1",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "promotion_authorized": false,
+  "repository_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+  "run_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+  "schema": "poker-hero-policy-context-binding/v1",
+  "selection_boundary": {
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "status": "EXPERIMENTAL"
+}

@@ -47,6 +47,90 @@ async def main() -> None:
         assert quality_contract["near_loss"] == quality_contract["far_loss"] == 0.4, quality_contract
         assert quality_contract["before"] == quality_contract["after"], quality_contract
 
+        # Revealed-card changes must never alter the historical a-priori recommendation.
+        information_boundary = await page.evaluate(
+            """() => {
+                const saved={
+                    actionEquityKey:window.actionEquityKey,
+                    requiredEquityInfo:window.requiredEquityInfo,
+                    actionVerdictSourceKeys:window.actionVerdictSourceKeys,
+                    postflopDecisionAlternativeSummary:window.postflopDecisionAlternativeSummary,
+                    cache:state.actionEquityCache
+                };
+                try{
+                    window.actionEquityKey=()=>"__boundary__";
+                    window.requiredEquityInfo=()=>({kind:"call",cost:2,potBefore:10,actorRequired:0.4});
+                    window.actionVerdictSourceKeys=()=>({prior:"range_ranges",post:"range_real",actorKnown:true});
+                    window.postflopDecisionAlternativeSummary=()=>{
+                        const chosen={label:"CALL",evBB:0.5,policyAdjustedEVBB:0.5,seBB:0.02,chosen:true,costBB:2};
+                        const best={label:"FOLD",evBB:0.8,policyAdjustedEVBB:0.8,seBB:0.02,chosen:false,costBB:0};
+                        return {alternatives:[best,chosen],best,chosenPolicyEV:0.5,bestPolicyEV:0.8,effectiveGap:0.2,rawGap:0.3,withinNoise:false,score:4};
+                    };
+                    const step={street:"Flop",actionType:"call"};
+                    const sources={prior:"range_ranges",post:"range_real",actorKnown:true};
+                    const render=post=>{
+                        const cached={status:"done",equities:{range_ranges:0.42,range_real:post}};
+                        state.actionEquityCache={__boundary__:cached};
+                        const summary=decisionCanonicalSummary(0,step,cached);
+                        const retrospective=actionRetrospectivePanelHtml({
+                            req:{kind:"call",actorRequired:0.4},
+                            postMetrics:{evBB:post*10-2},
+                            sources,postflopTree:false,postflopCheck:false,
+                            postEq:post,postTree:null,eq:cached.equities,stepIndex:0
+                        });
+                        return {recommended:summary?.recommended?.label,delta:summary?.deltaEVBB,loss:summary?.lossEVBB,retrospective};
+                    };
+                    const low=render(0.10),high=render(0.90);
+                    return {
+                        low,high,
+                        same_recommendation:low.recommended===high.recommended,
+                        same_delta:low.delta===high.delta,
+                        same_loss:low.loss===high.loss,
+                        retrospective_changed:low.retrospective!==high.retrospective
+                    };
+                } finally {
+                    window.actionEquityKey=saved.actionEquityKey;
+                    window.requiredEquityInfo=saved.requiredEquityInfo;
+                    window.actionVerdictSourceKeys=saved.actionVerdictSourceKeys;
+                    window.postflopDecisionAlternativeSummary=saved.postflopDecisionAlternativeSummary;
+                    state.actionEquityCache=saved.cache;
+                }
+            }"""
+        )
+        assert information_boundary["same_recommendation"], information_boundary
+        assert information_boundary["same_delta"], information_boundary
+        assert information_boundary["same_loss"], information_boundary
+        assert information_boundary["retrospective_changed"], information_boundary
+        assert information_boundary["low"]["recommended"] == "FOLD", information_boundary
+
+        # HH import keeps the primary path compact while preserving advanced controls.
+        hh_import_ux = await page.evaluate(
+            """() => ({
+                primary: document.querySelector('label[for="hhFileInput"]')?.textContent?.trim(),
+                watch: document.querySelector('#hhWatchBtn')?.textContent?.trim(),
+                advanced_open: !!document.querySelector('.hh-import-advanced')?.open,
+                default_mode: state.hhImportMode,
+                effect: document.querySelector('#hhImportEffect')?.textContent?.trim(),
+                summary: hhImportSummaryText({
+                    files:3, recognized:2, hands:47, errors:1, mode:"replace",
+                    at:new Date(2000,0,1,12,34,0)
+                })
+            })"""
+        )
+        assert hh_import_ux["primary"] == "Importer mes mains", hh_import_ux
+        assert hh_import_ux["watch"] == "Surveiller mes HH", hh_import_ux
+        assert hh_import_ux["advanced_open"] is False, hh_import_ux
+        assert hh_import_ux["default_mode"] == "replace", hh_import_ux
+        assert "remplacera" in folded(hh_import_ux["effect"]), hh_import_ux
+        assert "2/3 fichiers reconnus" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert "47 mains" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert "1 erreur de lecture/parsing" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert "mise à jour" in folded(hh_import_ux["summary"]), hh_import_ux
+        assert not await page.locator("#hhBenchmarkExportBtn").is_visible()
+        await page.click(".hh-import-advanced > summary")
+        assert await page.locator("#hhBenchmarkExportBtn").is_visible()
+        await page.click(".hh-import-advanced > summary")
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -121,6 +205,8 @@ async def main() -> None:
         snapshot = {
             "replayer_hand_classes": hand_classes,
             "delta_ev_quality_contract": quality_contract,
+            "prior_posterior_information_boundary": information_boundary,
+            "hh_import_ux": hh_import_ux,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,

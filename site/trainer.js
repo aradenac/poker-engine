@@ -138,7 +138,7 @@ async function trainerEnsureModels(){
     }
     trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2 + ranges Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
+    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2 + stratégie Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
@@ -496,7 +496,7 @@ function trainerSeatHtml(hand,s){
 function trainerBetSpotsHtml(hand){return hand.streetPaid.map((x,s)=>x>1e-8?`<div class="bet-spot bet${s+1}">${escapeHtml(trainerFmtBB(x))}</div>`:"").join("");}
 function trainerRenderTable(){
   const h=trainerState.hand;if(!trainerTable)return;if(!h){trainerTable.innerHTML='<div class="trainer-note">Cliquez sur « Nouvelle main » pour commencer.</div>';return;}
-  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")} · range Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
+  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")} · stratégie Hero Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";

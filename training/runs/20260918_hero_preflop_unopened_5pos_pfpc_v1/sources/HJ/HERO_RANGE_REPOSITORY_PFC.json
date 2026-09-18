@@ -1,0 +1,2313 @@
+{
+  "contexts": {
+    "pokerstars_nlhe_100-200_zoom_play_6max_v1|6|HJ|100|UNOPENED|PFC_13c88cb8c1ad6e75": {
+      "context": {
+        "effective_stack_bb": 100,
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "position": "HJ",
+        "preflop_context_id": "PFC_13c88cb8c1ad6e75",
+        "spot": "UNOPENED",
+        "table_size": 6
+      },
+      "layers": {
+        "calculated": {
+          "hands": {
+            "22": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "32o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "32s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "33": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "42o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "42s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "43o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "43s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "44": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "52o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "52s": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "53o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "53s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "54o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "54s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "55": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "62o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "62s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "63o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "63s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "64o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "64s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "65o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "65s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "66": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "72o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "72s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "73o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "73s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "74o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "74s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "75o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "75s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "76o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "76s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "77": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "82o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "82s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "83o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "83s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "84o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "84s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "85o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "85s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "86o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "86s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "87o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "87s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "88": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "92o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "92s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "93o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "93s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "94o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "94s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "95o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "95s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "96o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "96s": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "97o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "97s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "98o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "98s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "99": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "A2o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "A2s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "A3o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "A3s": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "A4o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "A4s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "A5o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "A5s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "A6o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "A6s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "A7o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "A7s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "A8o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "A8s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "A9o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "A9s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "AA": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "AJo": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "AJs": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "AKo": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "AKs": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "AQo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "AQs": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "ATo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "ATs": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "J2o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "J2s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "J3o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "J3s": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "J4o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "J4s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "J5o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "J5s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "J6o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "J6s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "J7o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "J7s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "J8o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "J8s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "J9o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "J9s": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "JJ": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "JTo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "JTs": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "K2o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "K2s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "K3o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "K3s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "K4o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "K4s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "K5o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "K5s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "K6o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "K6s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "K7o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "K7s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "K8o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "K8s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "K9o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "K9s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "KJo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "KJs": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "KK": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "KQo": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "KQs": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "KTo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "KTs": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "Q2o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "Q2s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "Q3o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "Q3s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "Q4o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "Q4s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "Q5o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "Q5s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "Q6o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "Q6s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "Q7o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "Q7s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "Q8o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "Q8s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "Q9o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "Q9s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "QJo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "QJs": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "QQ": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "QTo": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "QTs": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "T2o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "T2s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "T3o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "T3s": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "T4o": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "T4s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "T5o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "T5s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "T6o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "T6s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@2BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2
+                  }
+                ]
+              }
+            },
+            "T7o": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "T7s": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3.5BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3.5
+                  }
+                ]
+              }
+            },
+            "T8o": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            },
+            "T8s": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative FOLD",
+              "sizings": {}
+            },
+            "T9o": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative OPEN@3BB",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 3
+                  }
+                ]
+              }
+            },
+            "T9s": {
+              "actions": {
+                "SHOVE": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative SHOVE@100BB",
+              "sizings": {
+                "SHOVE": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 100
+                  }
+                ]
+              }
+            },
+            "TT": {
+              "actions": {
+                "LIMP": 1
+              },
+              "notes": "Deterministic projection of selected poker-preflop-decision/v1 alternative LIMP@1BB",
+              "sizings": {
+                "LIMP": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 1
+                  }
+                ]
+              }
+            }
+          },
+          "kind": "calculated",
+          "provenance": {
+            "budget": {
+              "completed_hand_classes": 169,
+              "execution": "deterministic hand-class shards merged without changing per-hand seeds",
+              "requested_hand_classes": 169,
+              "rollout_samples_consumed": 13520,
+              "samples_per_nonfold_candidate": 16,
+              "unsupported_hand_classes": 0
+            },
+            "code": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
+            "context_identity": {
+              "binding": "IDENTITY_ONLY_FROM_SAME_PUBLIC_STATE_BEFORE_ACTION",
+              "decision_payload_mutation": "NONE",
+              "legacy_context_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1:6max:HJ:UNOPENED:100bb",
+              "preflop_context_id": "PFC_13c88cb8c1ad6e75",
+              "rollout_recomputation": false,
+              "schema": "poker-preflop-context/v1"
+            },
+            "continuation_support": {
+              "contract": "model-a-continuation-support-closed/v1",
+              "enabled": true,
+              "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+              "hero_future_actions": {
+                "decisions": 23550,
+                "exact_model_a_decisions": 22428,
+                "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+                "nearest_context_substitution": false,
+                "range_posterior": "DELEGATED_EXACT_MODEL_A",
+                "support_closure_by_street": {
+                  "flop": 237,
+                  "preflop": 248,
+                  "river": 356,
+                  "turn": 281
+                },
+                "support_closure_decisions": 1122,
+                "support_closure_rate": 0.04764331210191083,
+                "support_closure_reasons": {
+                  "missing exact postflop Model-A node": 479,
+                  "missing exact postflop Model-A node in prior history": 218,
+                  "missing exact preflop Model-A node": 248,
+                  "missing exact preflop Model-A node in prior history": 177
+                }
+              },
+              "interpretation": "EXPERIMENTAL_CONTINUATION_CLOSURE_NOT_A_FITTED_POPULATION_ACTION",
+              "nearest_context_substitution": false,
+              "opponent_future_actions": {
+                "decisions": 101798,
+                "exact_model_a_decisions": 98498,
+                "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+                "nearest_context_substitution": false,
+                "range_posterior": "DELEGATED_EXACT_MODEL_A",
+                "support_closure_by_street": {
+                  "flop": 686,
+                  "preflop": 1130,
+                  "river": 785,
+                  "turn": 699
+                },
+                "support_closure_decisions": 3300,
+                "support_closure_rate": 0.03241713982592978,
+                "support_closure_reasons": {
+                  "missing exact postflop Model-A node": 1079,
+                  "missing exact postflop Model-A node in prior history": 484,
+                  "missing exact preflop Model-A node": 1130,
+                  "missing exact preflop Model-A node in prior history": 607
+                }
+              }
+            },
+            "decision_source": "tools.simulation.preflop_grid_evaluator.evaluate_preflop_grid",
+            "hero_future_continuation": {
+              "claim": "NOT_OPTIMAL_HERO_STRATEGY",
+              "contract": "FIXED_POPULATION_DERIVED_MODEL_A_CONTINUATION_BASELINE_V1",
+              "purpose": "future-Hero continuation baseline after the fixed candidate",
+              "source_model_a": {
+                "claim": "EXPERIMENTAL_CONTINUATION_CLOSURE_NOT_A_FITTED_POPULATION_ACTION",
+                "contract": "model-a-continuation-support-closed/v1",
+                "delegate": {
+                  "continuation_overlay_sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
+                  "postflop_baseline_sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+                  "preflop_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+                  "stage_b_decision": "PROMOTE_STAGE_B_SCIENTIFICALLY"
+                },
+                "nearest_context_substitution": false,
+                "purpose": "candidate generation continuation only",
+                "range_posterior": "DELEGATED_EXACT_MODEL_A",
+                "unsupported_exact_node": "CHECK_THEN_CALL_THEN_FOLD_V1"
+              }
+            },
+            "master_seed": 20260916,
+            "models": {
+              "postflop_baseline_sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+              "postflop_continuation_overlay_sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
+              "postflop_stage_b_decision": "PROMOTE_STAGE_B_SCIENTIFICALLY",
+              "preflop_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+            },
+            "opponent_policy": "MODEL_A_SELECTED_POPULATION_CONTINUATION_WITH_AUDITED_PASSIVE_SUPPORT_CLOSURE",
+            "policy_semantics": "explicit policy when supplied; otherwise selected decision projected one-hot; SQUEEZE decision projects to Hero range 3BET only in VS_RFI_CALLERS; no synthetic mixes",
+            "schema": "poker-hero-calculated-range-candidate/v1",
+            "selection": "NOT_PROMOTED_ISSUE_107_EXPERIMENTAL",
+            "sizing_support": {
+              "canonical_key": "6|HJ|family=UNOPENED|rl=0|free=0|live=HJ,CO,BTN,SB,BB|allin=|hist=",
+              "contract": "CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1",
+              "decisions_sha256": "99ea18b24ca0e725000bddc2ee735e42b5b82badf3e3b5991d3809db96bc898d",
+              "empirical_nearest_rank_targets_bb": {
+                "p25": 2,
+                "p50": 3,
+                "p75": 3.5
+              },
+              "filters": {
+                "action": "RAISE",
+                "is_hero": false,
+                "jam": "excluded; evaluated separately by #106",
+                "split": "TRAIN",
+                "street": "preflop",
+                "structural_key": "v4_canonical_key exact"
+              },
+              "legal_grid_targets_bb": [
+                2,
+                3,
+                3.5
+              ],
+              "matching_population_decisions": 9773,
+              "model_node_id": "PF4_9ccbe901e605",
+              "model_population_decisions": 9474,
+              "observed_max_target_total_bb": 161,
+              "observed_min_target_total_bb": 2,
+              "observed_nonjam_raises": 704
+            },
+            "source_decision_schema": "poker-preflop-decision/v1",
+            "status": "EXPERIMENTAL"
+          },
+          "version": "hero-hj-unopened-100bb-169-v1"
+        },
+        "personal": {
+          "hands": {},
+          "kind": "personal",
+          "provenance": null,
+          "version": null
+        }
+      }
+    }
+  },
+  "defaults": {
+    "effective_stack_bb": 100,
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "table_size": 6
+  },
+  "schema": "poker-hero-range-repository/v1",
+  "source": {
+    "format": null,
+    "meta": null,
+    "preserved_verbatim": false,
+    "range_folder": null
+  },
+  "version": 1
+}

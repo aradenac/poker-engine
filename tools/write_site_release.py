@@ -32,7 +32,7 @@ RELEASE_PATH = ROOT / "site" / "RELEASE.json"
 ENGINE_PATH = ROOT / "user" / "releases" / "poker_range_equity_offline_multiway_v83.html"
 INDEX_PATH = ROOT / "site" / "index.html"
 CATALOG_PATH = ROOT / "site" / "packs" / "catalog.json"
-NAV_SOURCE = '<a href="./hero-ranges.html">Ranges Hero</a>'
+NAV_SOURCE = '<a href="./hero-ranges.html">Stratégie Hero</a>'
 NAV_TARGET = NAV_SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
 FUNCTIONAL_FILES = (
     INDEX_PATH,

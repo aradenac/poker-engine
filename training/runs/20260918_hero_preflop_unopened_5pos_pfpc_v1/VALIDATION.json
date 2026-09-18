@@ -1,0 +1,150 @@
+{
+  "binding_sha256": "44e1e4d9e5846f3f2e6cc0402848b35b0e9e69b0a34334981c8e961f523a6bb7",
+  "issue": 107,
+  "new_position_parity_checked_hands": 676,
+  "parity_checked_hands": 716,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "positions": {
+    "BTN": {
+      "continuation_support": {
+        "mode": "STRICT_HISTORICAL_SOURCE_NO_SUPPORT_CLOSURE"
+      },
+      "parity_checked_hands": 40,
+      "supported": 40,
+      "unsupported": 129
+    },
+    "CO": {
+      "continuation_support": {
+        "hero_future_actions": {
+          "decisions": 21728,
+          "exact_model_a_decisions": 21313,
+          "support_closure_by_street": {
+            "flop": 83,
+            "preflop": 124,
+            "river": 110,
+            "turn": 98
+          },
+          "support_closure_decisions": 415,
+          "support_closure_rate": 0.01909977908689249
+        },
+        "opponent_future_actions": {
+          "decisions": 80091,
+          "exact_model_a_decisions": 77975,
+          "support_closure_by_street": {
+            "flop": 220,
+            "preflop": 1460,
+            "river": 217,
+            "turn": 219
+          },
+          "support_closure_decisions": 2116,
+          "support_closure_rate": 0.02641994730993495
+        }
+      },
+      "parity_checked_hands": 169,
+      "supported": 169,
+      "unsupported": 0
+    },
+    "HJ": {
+      "continuation_support": {
+        "hero_future_actions": {
+          "decisions": 23550,
+          "exact_model_a_decisions": 22428,
+          "support_closure_by_street": {
+            "flop": 237,
+            "preflop": 248,
+            "river": 356,
+            "turn": 281
+          },
+          "support_closure_decisions": 1122,
+          "support_closure_rate": 0.04764331210191083
+        },
+        "opponent_future_actions": {
+          "decisions": 101798,
+          "exact_model_a_decisions": 98498,
+          "support_closure_by_street": {
+            "flop": 686,
+            "preflop": 1130,
+            "river": 785,
+            "turn": 699
+          },
+          "support_closure_decisions": 3300,
+          "support_closure_rate": 0.03241713982592978
+        }
+      },
+      "parity_checked_hands": 169,
+      "supported": 169,
+      "unsupported": 0
+    },
+    "LJ": {
+      "continuation_support": {
+        "hero_future_actions": {
+          "decisions": 26084,
+          "exact_model_a_decisions": 23991,
+          "support_closure_by_street": {
+            "flop": 489,
+            "preflop": 367,
+            "river": 670,
+            "turn": 567
+          },
+          "support_closure_decisions": 2093,
+          "support_closure_rate": 0.08024076061953687
+        },
+        "opponent_future_actions": {
+          "decisions": 125967,
+          "exact_model_a_decisions": 118588,
+          "support_closure_by_street": {
+            "flop": 1547,
+            "preflop": 2285,
+            "river": 1891,
+            "turn": 1656
+          },
+          "support_closure_decisions": 7379,
+          "support_closure_rate": 0.05857883413909992
+        }
+      },
+      "parity_checked_hands": 169,
+      "supported": 169,
+      "unsupported": 0
+    },
+    "SB": {
+      "continuation_support": {
+        "hero_future_actions": {
+          "decisions": 14858,
+          "exact_model_a_decisions": 14812,
+          "support_closure_by_street": {
+            "flop": 15,
+            "preflop": 13,
+            "river": 7,
+            "turn": 11
+          },
+          "support_closure_decisions": 46,
+          "support_closure_rate": 0.0030959752321981426
+        },
+        "opponent_future_actions": {
+          "decisions": 22692,
+          "exact_model_a_decisions": 22686,
+          "support_closure_by_street": {
+            "flop": 1,
+            "preflop": 1,
+            "river": 2,
+            "turn": 2
+          },
+          "support_closure_decisions": 6,
+          "support_closure_rate": 0.00026441036488630354
+        }
+      },
+      "parity_checked_hands": 169,
+      "supported": 169,
+      "unsupported": 0
+    }
+  },
+  "promotion_authorized": false,
+  "repository_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+  "run_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+  "schema": "poker-hero-pfpc-evidence-validation/v1",
+  "status": "PASS",
+  "supported_hand_slots": 716,
+  "test_consumed": false,
+  "unsupported_hand_slots": 129,
+  "validation_consumed": false
+}
