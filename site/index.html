@@ -1695,6 +1695,57 @@ function persistenceStatus(message,error=false,busy=false){
   if(localPersistenceDetail) localPersistenceDetail.textContent=message||"Les données restent enregistrées localement dans ce navigateur.";
   if(error&&localPersistenceDetails) localPersistenceDetails.open=true;
 }
+async function retryLocalPersistence(){
+  if(localPersistenceRetryBtn) localPersistenceRetryBtn.disabled=true;
+  if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Vérification de la sauvegarde…";
+  persistenceStatus("Vérification de l’écriture locale en cours…",false,true);
+  try{
+    await ensurePersistentBrowserStorage();
+    await localDbSet("prefs",currentLocalPrefs());
+    state.persistenceReady=true;
+    persistenceStatus("Sauvegarde locale vérifiée. Vos données restent enregistrées dans ce navigateur.");
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Sauvegarde locale vérifiée.";
+    return true;
+  }catch(err){
+    persistenceStatus(`La sauvegarde locale reste indisponible : ${err?.message||err}`,true);
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="La vérification a échoué. Vous pouvez réessayer.";
+    return false;
+  }finally{
+    if(localPersistenceRetryBtn) localPersistenceRetryBtn.disabled=false;
+  }
+}
+async function clearLocalPersistenceWithConfirmation(){
+  const confirmed=window.confirm("Effacer toutes les données enregistrées localement par Poker Range Equity sur ce navigateur ? Les Hand Histories, modèles, préférences et scores sauvegardés seront supprimés.");
+  if(!confirmed){
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Effacement annulé.";
+    return false;
+  }
+  if(localPersistenceClearBtn) localPersistenceClearBtn.disabled=true;
+  if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Effacement des données locales…";
+  const previousRestoring=state.restoringLocalState;
+  state.restoringLocalState=true;
+  if(state.persistPrefsTimer){clearTimeout(state.persistPrefsTimer);state.persistPrefsTimer=null;}
+  if(state.reviewPersistTimer){clearTimeout(state.reviewPersistTimer);state.reviewPersistTimer=null;}
+  if(state.hhWatchTimer){clearInterval(state.hhWatchTimer);state.hhWatchTimer=null;}
+  state.hhWatchHandles=[];state.hhWatchMeta=[];state.hhWatchChecking=false;
+  try{
+    await localDbClearAll();
+    if(localPersistenceStatus){
+      localPersistenceStatus.textContent="Données locales effacées";
+      localPersistenceStatus.className="local-persistence-chip";
+    }
+    if(localPersistenceDetail) localPersistenceDetail.textContent="Toutes les données enregistrées par l’application dans ce navigateur ont été effacées.";
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="Données effacées · rechargement de l’application…";
+    window.location.reload();
+    return true;
+  }catch(err){
+    state.restoringLocalState=previousRestoring;
+    persistenceStatus(`Impossible d’effacer les données locales : ${err?.message||err}`,true);
+    if(localPersistenceActionStatus) localPersistenceActionStatus.textContent="L’effacement a échoué. Les données existantes ont été conservées.";
+    if(localPersistenceClearBtn) localPersistenceClearBtn.disabled=false;
+    return false;
+  }
+}
 function currentLocalPrefs(){
   return {
     selectedHandId:state.selectedHand?.id||null,
@@ -1743,6 +1794,7 @@ async function persistPopulationModelSource(snapshot){
       populationModelStatus.textContent=`Impossible de sauvegarder le modèle population : ${err?.message||err}`;
       populationModelStatus.className="status error";
     }
+    persistenceStatus("Le modèle population n’a pas pu être enregistré localement.",true);
   }
 }
 async function persistPostflopModelSource(snapshot){
@@ -1757,6 +1809,7 @@ async function persistPostflopModelSource(snapshot){
       postflopModelStatus.textContent=`Impossible de sauvegarder le modèle postflop : ${err?.message||err}`;
       postflopModelStatus.className="status error";
     }
+    persistenceStatus("Le modèle postflop n’a pas pu être enregistré localement.",true);
   }
 }
 async function persistHHSources(records){
@@ -3027,7 +3080,7 @@ function schedulePersistReviewScores(delay=160){
   if(state.reviewPersistTimer)clearTimeout(state.reviewPersistTimer);
   state.reviewPersistTimer=setTimeout(async()=>{
     state.reviewPersistTimer=null;
-    try{await localDbSet("reviewScores",state.reviewScores||{});}catch(err){console.warn("Review score persistence failed",err);}
+    try{await localDbSet("reviewScores",state.reviewScores||{});}catch(err){console.warn("Review score persistence failed",err);persistenceStatus("Les scores de review n’ont pas pu être sauvegardés localement.",true);}
   },delay);
 }
 function scheduleReviewListRefresh(delay=90){
@@ -7456,6 +7509,8 @@ updateHHWatchCapabilityUi();
 window.addEventListener("focus",updateHHWatchCapabilityUi);
 document.addEventListener("keydown",handleReplayShortcut);
 replayerBackBtn?.addEventListener("click",returnToHandsPage);
+localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
+localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
 quickNavToggle?.addEventListener("click",toggleQuickNav);
