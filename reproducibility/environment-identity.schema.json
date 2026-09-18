@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poker-environment-identity/v1",
+  "title": "Poker Engine environment identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "expected", "locks", "identity_sha256"],
+  "properties": {
+    "schema": {"const": "poker-environment-identity/v1"},
+    "version": {"const": 1},
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["python", "node", "playwright", "browser", "os"],
+      "properties": {
+        "python": {"$ref": "#/$defs/versionIdentity"},
+        "node": {"$ref": "#/$defs/versionIdentity"},
+        "playwright": {"$ref": "#/$defs/versionIdentity"},
+        "browser": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "version": {"type": "string", "minLength": 1}
+          }
+        },
+        "os": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["distribution", "version", "architecture"],
+          "properties": {
+            "distribution": {"type": "string", "minLength": 1},
+            "version": {"type": "string", "minLength": 1},
+            "architecture": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "locks": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "path", "sha256"],
+        "properties": {
+          "role": {"enum": ["requirements_lock", "package_lock", "environment_lock", "os_lock"]},
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "container": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "image": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "versionIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": {"version": {"type": "string", "minLength": 1}}
+    }
+  }
+}
