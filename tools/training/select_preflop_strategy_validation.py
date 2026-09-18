@@ -69,6 +69,12 @@ def select_with_exposure_guard(
     missing = [environment_id for environment_id in expected if environment_id not in by_id]
 
     if blocked:
+        contract_version = str(run_manifest.get("contract_version") or "")
+        zero_exposure_outcome = (
+            "BLOCKED_NOT_A_PERFORMANCE_RESULT"
+            if contract_version == "2026-09-18.3"
+            else "BLOCKED_ZERO_CANDIDATE_EXPOSURE"
+        )
         performance_pass = {
             environment_id: bool(by_id[environment_id].get("gate", {}).get("pass"))
             for environment_id in by_id
@@ -79,7 +85,7 @@ def select_with_exposure_guard(
             "contract_version": run_manifest["contract_version"],
             "candidate_id": candidate_id,
             "environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS_AND_NONZERO_CANDIDATE_EXPOSURE",
-            "outcome": "BLOCKED_ZERO_CANDIDATE_EXPOSURE",
+            "outcome": zero_exposure_outcome,
             "frozen_finalist": None,
             "test_authorized": False,
             "test_used_for_selection": False,

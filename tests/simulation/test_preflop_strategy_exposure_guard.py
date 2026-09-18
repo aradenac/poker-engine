@@ -16,9 +16,9 @@ ENVIRONMENTS = [
 ]
 
 
-def run_manifest():
+def run_manifest(version="2026-09-17.2"):
     return {
-        "contract_version": "2026-09-17.2",
+        "contract_version": version,
         "identities": {"candidate_id": "candidate-1", "model_b_environment_ids": ENVIRONMENTS},
     }
 
@@ -56,6 +56,21 @@ def test_zero_exposure_blocks_without_waiting_for_missing_environment() -> None:
     validity = selection["candidate_exposure_validity"]
     assert validity["blocked_environments"] == [ENVIRONMENTS[0], ENVIRONMENTS[2]]
     assert validity["missing_environments"] == [ENVIRONMENTS[1]]
+
+
+
+def test_pfpc_zero_exposure_uses_frozen_nonperformance_outcome() -> None:
+    reports = [
+        report(ENVIRONMENTS[0], supported=0, unsupported=100),
+        report(ENVIRONMENTS[1], supported=0, unsupported=100),
+        report(ENVIRONMENTS[2], supported=0, unsupported=100),
+    ]
+    selection = select_with_exposure_guard(reports, run_manifest("2026-09-18.3"))
+    assert selection["outcome"] == "BLOCKED_NOT_A_PERFORMANCE_RESULT"
+    assert selection["performance_gate_interpretable"] is False
+    assert selection["test_authorized"] is False
+    assert selection["test_consumed"] is False
+    assert selection["promotion_authorized"] is False
 
 
 def test_positive_exposure_delegates_to_frozen_performance_gate() -> None:
