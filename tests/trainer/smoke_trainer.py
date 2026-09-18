@@ -246,19 +246,22 @@ async def main() -> None:
 
         # Desktop modal accessibility: focus enters the dialog, wraps on Tab/Shift+Tab,
         # Escape closes it, and focus returns to the trigger.
-        accessibility = await page.evaluate(
+        await page.evaluate(
             """() => {
                 const trigger=document.querySelector('#trainerOpenBtn');
                 const body=document.querySelector('#actionDetailModalBody');
                 trigger.focus();
                 body.innerHTML='<button id="a11yFirst" type="button">Premier</button><button id="a11yLast" type="button">Dernier</button>';
                 openAccessibleModal(actionDetailModal,{initialFocus:()=>actionDetailModalClose});
-                return {
-                    initial:document.activeElement?.id,
-                    open:actionDetailModal.classList.contains('open'),
-                    ariaHidden:actionDetailModal.getAttribute('aria-hidden')
-                };
             }"""
+        )
+        await page.wait_for_function("document.activeElement?.id === 'actionDetailModalClose'")
+        accessibility = await page.evaluate(
+            """() => ({
+                initial:document.activeElement?.id,
+                open:actionDetailModal.classList.contains('open'),
+                ariaHidden:actionDetailModal.getAttribute('aria-hidden')
+            })"""
         )
         assert accessibility["initial"] == "actionDetailModalClose", accessibility
         assert accessibility["open"] is True and accessibility["ariaHidden"] == "false", accessibility
