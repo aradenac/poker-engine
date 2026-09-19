@@ -16,6 +16,7 @@ from tests.packs.synthetic_pack_fixture import runtime_entry
 from tests.packs.smoke_manual_import import run_manual_import_smoke
 
 URL = "http://127.0.0.1:8765/packs.html"
+IDENTITY_PARITY = json.loads((ROOT / "tests/fixtures/packs/pack_identity_parity_v1.json").read_text(encoding="utf-8"))
 
 
 async def main() -> None:
@@ -28,7 +29,41 @@ async def main() -> None:
         page.on("pageerror", lambda exc: page_errors.append(str(exc)))
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
-        await page.wait_for_function("window.PokerPopulationPacks && document.querySelector('#catalog .pack-card')", timeout=45_000)
+        await page.wait_for_function("window.PokerPopulationPacks && window.PokerPackIdentity && document.querySelector('#catalog .pack-card')", timeout=45_000)
+        identity_parity = await page.evaluate(
+            """async fixture => {
+              const I=window.PokerPackIdentity;
+              const hashes=[];
+              for(const vector of fixture.sha256_vectors){
+                hashes.push({
+                  label:vector.label,
+                  actual:await I.sha256(vector.input),
+                  expected:vector.expected_sha256
+                });
+              }
+              const content=await I.contentIdentity('abc');
+              return {
+                hashes,
+                content_identity:content,
+                storage_id:I.storageId(fixture.storage_id.entry),
+                active_identity:I.packIdentity(fixture.active_record.input),
+                fallback_identity:I.packIdentity(null),
+                same_cases:fixture.same_identity_cases.map(row=>({
+                  label:row.label,
+                  actual:I.samePackIdentity(row.a,row.b),
+                  expected:row.expected
+                }))
+              };
+            }""",
+            IDENTITY_PARITY,
+        )
+        assert all(row["actual"] == row["expected"] for row in identity_parity["hashes"]), identity_parity
+        assert identity_parity["content_identity"]["sha256"] == IDENTITY_PARITY["sha256_vectors"][1]["expected_sha256"], identity_parity
+        assert identity_parity["content_identity"]["size_bytes"] == 3, identity_parity
+        assert identity_parity["storage_id"] == IDENTITY_PARITY["storage_id"]["expected"], identity_parity
+        assert identity_parity["active_identity"] == IDENTITY_PARITY["active_record"]["expected"], identity_parity
+        assert identity_parity["fallback_identity"] == IDENTITY_PARITY["fallback_expected"], identity_parity
+        assert all(row["actual"] == row["expected"] for row in identity_parity["same_cases"]), identity_parity
         await page.evaluate("() => navigator.serviceWorker.ready")
         if not await page.evaluate("() => Boolean(navigator.serviceWorker.controller)"):
             await page.reload(wait_until="domcontentloaded")
@@ -301,7 +336,7 @@ async def main() -> None:
 
         manual_override = await run_manual_import_smoke(page)
 
-        print(json.dumps({"production": result, "synthetic_test_only": synthetic, "manual_override": manual_override}, ensure_ascii=False, indent=2))
+        print(json.dumps({"identity_parity": identity_parity, "production": result, "synthetic_test_only": synthetic, "manual_override": manual_override}, ensure_ascii=False, indent=2))
         if page_errors:
             raise AssertionError(f"page errors: {page_errors}")
         if console_errors:
