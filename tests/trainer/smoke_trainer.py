@@ -4,9 +4,12 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from pathlib import Path
 from playwright.async_api import async_playwright
 
 URL = "http://127.0.0.1:8765/index.html"
+ROOT = Path(__file__).resolve().parents[2]
+KTS_ISO_FIXTURE = ROOT / "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt"
 
 
 def folded(text: str) -> str:
@@ -14,6 +17,7 @@ def folded(text: str) -> str:
 
 
 async def main() -> None:
+    kts_iso_raw = KTS_ISO_FIXTURE.read_text(encoding="utf-8")
     page_errors: list[str] = []
     console_errors: list[str] = []
     async with async_playwright() as p:
@@ -22,6 +26,35 @@ async def main() -> None:
         page.on("pageerror", lambda exc: page_errors.append(str(exc)))
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
+
+        shared_presentation = await page.evaluate(
+            """() => {
+                const api=window.PokerActionSizingEV;
+                const summary={
+                    schema:"decision-summary/v1",
+                    played:{label:"CALL",sizing:"call 2 BB",evBB:1.5},
+                    recommended:{label:"RAISE",sizing:"ajoute 5 BB",evBB:2.2},
+                    deltaEVBB:-0.7,lossEVBB:0.7,effectiveLossEVBB:0.65,withinNoise:false,
+                    alternatives:[
+                        {label:"RAISE",sizing:"ajoute 5 BB",evBB:2.2,recommended:true},
+                        {label:"CALL",sizing:"call 2 BB",evBB:1.5,recommended:false}
+                    ]
+                };
+                return {
+                    present:!!api,
+                    script:[...document.scripts].some(s=>String(s.getAttribute("src")||"").endsWith("action-sizing-ev.js")),
+                    semantics:api?.semantics||null,
+                    primary:api?.primarySummaryHtml(summary,{compact:true,escapeHtml,formatBB})||"",
+                    alternatives:api?.alternativesStripHtml(summary,{limit:2,escapeHtml,formatBB})||""
+                };
+            }"""
+        )
+        assert shared_presentation["present"] and shared_presentation["script"], shared_presentation
+        assert shared_presentation["semantics"]["selects_action"] is False, shared_presentation
+        assert shared_presentation["semantics"]["recomputes_ev"] is False, shared_presentation
+        assert shared_presentation["semantics"]["validator"] == "#299", shared_presentation
+        assert "Recommandé" in shared_presentation["primary"] and "RAISE" in shared_presentation["primary"], shared_presentation
+        assert "EV" in shared_presentation["alternatives"] and "CALL" in shared_presentation["alternatives"], shared_presentation
 
         # Product architecture exposes only the five stable top-level domains.
         product_architecture = await page.evaluate(
@@ -33,6 +66,8 @@ async def main() -> None:
                 })),
                 home:[...document.querySelectorAll('.product-home-actions > a,.product-home-actions > button')].map(x=>x.textContent.trim()),
                 packsInSettings:!!document.querySelector('#settingsSection a[href="./packs.html"]'),
+                advancedImportInSettings:document.querySelector('#advancedManualImportLink')?.getAttribute('href')||'',
+                legacyImportsHidden:!!document.querySelector('#rangesSection[hidden][data-legacy-import-surface="advanced-only"]'),
                 replayerPresent:!!document.querySelector('#replayerSection'),
                 equityComponents:['opponentsSection','cardsSection','rangeDisplaySection','equitySection'].every(id=>!!document.getElementById(id))
             })"""
@@ -42,7 +77,97 @@ async def main() -> None:
         assert product_architecture["nav"][2]["href"] == "./hero-ranges.html", product_architecture
         assert product_architecture["home"] == ["Review", "Training", "Strategy", "Equity Lab"], product_architecture
         assert product_architecture["packsInSettings"], product_architecture
+        assert product_architecture["advancedImportInSettings"] == "./manual-import.html", product_architecture
+        assert product_architecture["legacyImportsHidden"], product_architecture
         assert product_architecture["replayerPresent"] and product_architecture["equityComponents"], product_architecture
+
+        # #217 CENTRAL-UI consumes the merged advanced-import contract without duplicating it.
+        advanced_import_ui = await page.evaluate(
+            """async () => {
+                const API=window.PokerManualOverrides;
+                const clean=await API.inspect();
+                await refreshCentralManualOverrideState(clean);
+                const standard={
+                    cleanSchema:clean?.schema,
+                    active:clean?.active,
+                    status:clean?.configuration_status,
+                    restore:clean?.restore_action,
+                    noticeHidden:centralOverrideNotice.hidden
+                };
+                const active={
+                    schema:"poker-manual-override/v1",
+                    active:true,
+                    classification:"MANUAL_OVERRIDE",
+                    configuration_status:"NON_STANDARD",
+                    compatibility_status:"COMPATIBLE",
+                    roles_overridden:["model_a_preflop","model_a_postflop"],
+                    base_active_pack:{
+                        id:"smoke-pack-id",source:"ACTIVE_PACK",pack_id:"smoke-pack",
+                        pack_version:"2026.09.19.1",population_id:"smoke-pop",
+                        runtime_revision:"smoke-revision",engine_version:"v83"
+                    },
+                    restore_action:"RESTORE_ACTIVE_PACK"
+                };
+                await refreshCentralManualOverrideState(active);
+                const shown={
+                    hidden:centralOverrideNotice.hidden,
+                    badge:centralOverrideBadge.textContent,
+                    text:centralOverrideText.textContent,
+                    href:centralManualImportLink.getAttribute("href"),
+                    restoreDisabled:centralRestorePackBtn.disabled,
+                    loadAllowed:centralManualOverrideLoadAllowed(active)
+                };
+                const stale={...active,compatibility_status:"STALE_BASE_PACK"};
+                await refreshCentralManualOverrideState(stale);
+                const staleState={
+                    hidden:centralOverrideNotice.hidden,
+                    text:centralOverrideText.textContent,
+                    loadAllowed:centralManualOverrideLoadAllowed(stale)
+                };
+
+                const originalInspect=API.inspect,originalRestore=API.restoreActivePack;
+                let restoreCalls=0,current=active;
+                try{
+                    API.inspect=async()=>current;
+                    API.restoreActivePack=async()=>{
+                        restoreCalls++;
+                        current={...clean,active:false,classification:null,configuration_status:"STANDARD",compatibility_status:"COMPATIBLE",restore_action:"RESTORE_ACTIVE_PACK"};
+                        return current;
+                    };
+                    await refreshCentralManualOverrideState(active);
+                    const restored=await centralRestoreActivePack({reload:false});
+                    return {
+                        api:{schema:API.CONTRACT_SCHEMA,restoreAction:API.RESTORE_ACTION},
+                        standard,shown,staleState,
+                        restore:{
+                            calls:restoreCalls,active:restored.active,
+                            noticeHidden:centralOverrideNotice.hidden,
+                            status:centralOverrideStatus.textContent
+                        }
+                    };
+                } finally {
+                    API.inspect=originalInspect;
+                    API.restoreActivePack=originalRestore;
+                    await refreshCentralManualOverrideState(clean);
+                }
+            }"""
+        )
+        assert advanced_import_ui["api"] == {
+            "schema":"poker-manual-override/v1",
+            "restoreAction":"RESTORE_ACTIVE_PACK",
+        }, advanced_import_ui
+        assert advanced_import_ui["standard"]["cleanSchema"] == "poker-manual-override/v1", advanced_import_ui
+        assert advanced_import_ui["standard"]["active"] is False and advanced_import_ui["standard"]["status"] == "STANDARD", advanced_import_ui
+        assert advanced_import_ui["standard"]["restore"] == "RESTORE_ACTIVE_PACK" and advanced_import_ui["standard"]["noticeHidden"], advanced_import_ui
+        assert advanced_import_ui["shown"]["hidden"] is False, advanced_import_ui
+        assert advanced_import_ui["shown"]["badge"] == "MANUAL_OVERRIDE / NON_STANDARD", advanced_import_ui
+        assert "model_a_preflop" in advanced_import_ui["shown"]["text"] and "smoke-pack" in advanced_import_ui["shown"]["text"], advanced_import_ui
+        assert advanced_import_ui["shown"]["href"] == "./manual-import.html" and not advanced_import_ui["shown"]["restoreDisabled"], advanced_import_ui
+        assert advanced_import_ui["shown"]["loadAllowed"] is True, advanced_import_ui
+        assert advanced_import_ui["staleState"]["hidden"] is False and advanced_import_ui["staleState"]["loadAllowed"] is False, advanced_import_ui
+        assert "non appliqué au runtime" in advanced_import_ui["staleState"]["text"], advanced_import_ui
+        assert advanced_import_ui["restore"]["calls"] == 1 and advanced_import_ui["restore"]["active"] is False, advanced_import_ui
+        assert advanced_import_ui["restore"]["noticeHidden"] is True and "Pack actif restauré" in advanced_import_ui["restore"]["status"], advanced_import_ui
 
         # Review Inbox consumes the merged backend contract and exposes fail-closed deep-link resolution.
         review_inbox_ui = await page.evaluate(
@@ -74,6 +199,139 @@ async def main() -> None:
         assert review_inbox_ui["exact"]["exact"] is True and review_inbox_ui["exact"]["stepIndex"] == 3, review_inbox_ui
         assert review_inbox_ui["stale"]["exact"] is False and review_inbox_ui["stale"]["reason"] == "DECISION_NOT_FOUND", review_inbox_ui
         assert review_inbox_ui["filters"] and review_inbox_ui["summary"] and review_inbox_ui["secondaryCollapsed"], review_inbox_ui
+
+        # #311 Review surfaces Hero cards and actual settled result, never EV-derived.
+        review_actual_result = await page.evaluate(
+            """() => {
+                const cards=[parseCardCode("Ks"),parseCardCode("Ts")];
+                const won={id:"42",heroCards:cards,bigBlind:2,heroResult:{net:37}};
+                const lost={id:"43",heroCards:cards,bigBlind:2,heroResult:{net:-14}};
+                const unavailable={id:"44",heroCards:cards,bigBlind:null,heroResult:{net:9}};
+                const wonMeta=reviewHandDisplayMeta(won),lostMeta=reviewHandDisplayMeta(lost),unavailableMeta=reviewHandDisplayMeta(unavailable);
+                const savedHands=state.hhHands;
+                try{
+                    state.hhHands=[won];
+                    renderReviewDashboardModel({
+                        schema:PokerReviewDashboard.DASHBOARD_SCHEMA,state:"READY",scope_key:"smoke-311",
+                        metrics:{hands_loaded:1,decisions_to_review:1,total_ev_loss_bb:1.25,decisions_analyzed:1,source_refs:[]},
+                        top_leaks:[],
+                        priority:{
+                            hand:{hand_id:"42",total_loss_bb:1.25,status:"TO_REVIEW",status_label:"À revoir"},
+                            decision:{decision_id:"review:42:3",step_index:3,street:"FLOP",position:"BTN",spot_family:"SRP",action_played:"CALL",action_recommended:"RAISE",loss_bb:1.25}
+                        },
+                        ctas:{review:{enabled:false},leak:{enabled:false},training:{enabled:false}}
+                    });
+                    return {
+                        won:wonMeta,lost:lostMeta,unavailable:unavailableMeta,
+                        dashboard:{priority:reviewDashboardPriority.textContent,meta:reviewDashboardPriorityMeta.textContent}
+                    };
+                } finally {
+                    state.hhHands=savedHands;
+                    renderReviewDashboard();
+                }
+            }"""
+        )
+        assert review_actual_result["won"]["hero_cards"] == "K♠ T♠", review_actual_result
+        assert review_actual_result["won"]["result"]["state"] == "win" and "Gagné" in review_actual_result["won"]["result"]["text"], review_actual_result
+        assert review_actual_result["won"]["result"]["amount"].startswith("+") and ("18,50" in review_actual_result["won"]["result"]["amount"] or "18.50" in review_actual_result["won"]["result"]["amount"]), review_actual_result
+        assert review_actual_result["lost"]["result"]["state"] == "loss" and "Perdu" in review_actual_result["lost"]["result"]["text"], review_actual_result
+        assert "7,00" in review_actual_result["lost"]["result"]["amount"] or "7.00" in review_actual_result["lost"]["result"]["amount"], review_actual_result
+        assert review_actual_result["unavailable"]["result"]["state"] == "unavailable", review_actual_result
+        assert review_actual_result["unavailable"]["result"]["text"] == "Résultat réel indisponible", review_actual_result
+        assert all(x in review_actual_result["dashboard"]["priority"] for x in ["Main #42","K♠ T♠","Gagné","FLOP","BTN"]), review_actual_result
+        assert "perte EV" in review_actual_result["dashboard"]["meta"] and "CALL" in review_actual_result["dashboard"]["meta"] and "RAISE" in review_actual_result["dashboard"]["meta"], review_actual_result
+
+        # #323 Actor-aware replayer comment states consume existing contracts/support only.
+        replayer_comment_states = await page.evaluate(
+            """() => {
+                const evidence={
+                    phase:"PREFLOP",
+                    decision:{
+                        action:"RAISE",family:"VS_LIMPERS",
+                        preflop_context_v1:{schema:PokerPreflopContract.SCHEMA,family:"VS_LIMPERS"}
+                    }
+                };
+                const analyzed=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},{
+                    quality:"exact",node:{coverage:{population_decisions:37},context:{family:"VS_LIMPERS"}}
+                });
+                const insufficient=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},{
+                    quality:"exact",node:{coverage:{population_decisions:0},context:{family:"VS_LIMPERS"}}
+                });
+                const unavailable=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},null);
+                const heroCovered=replayHeroCommentState(0,{street:"Flop"},null,{
+                    canonicalDecision:{schema:"decision-summary/v1"}
+                });
+                const heroUncovered=replayHeroCommentState(0,{street:"Préflop"},null,{
+                    req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,observedEvidence:evidence
+                });
+                return {analyzed,insufficient,unavailable,heroCovered,heroUncovered};
+            }"""
+        )
+        assert replayer_comment_states["analyzed"]["actor_role"] == "OPPONENT", replayer_comment_states
+        assert replayer_comment_states["analyzed"]["state"] == "OPPONENT_ANALYZABLE" and replayer_comment_states["analyzed"]["support"] == 37, replayer_comment_states
+        assert replayer_comment_states["analyzed"]["source_contract"] == "poker-preflop-context/v1", replayer_comment_states
+        assert replayer_comment_states["insufficient"]["state"] == "OPPONENT_SUPPORT_INSUFFICIENT", replayer_comment_states
+        assert "Support insuffisant" in replayer_comment_states["insufficient"]["text"], replayer_comment_states
+        assert replayer_comment_states["unavailable"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", replayer_comment_states
+        assert "Analyse adverse non disponible" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
+        assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "HERO_COVERED", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_COUVERT", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["family"] == "VS_LIMPERS", replayer_comment_states
+        assert "Aucune recommandation EV validée" in replayer_comment_states["heroUncovered"]["text"], replayer_comment_states
+
+        # #323 canonical #321 KTs SB / 2 limpers / iso 4 BB / 3 calls browser smoke.
+        kts_replayer_comment = await page.evaluate(
+            """(raw) => {
+                const saved={
+                    selectedHand:state.selectedHand,replaySteps:state.replaySteps,hhMode:state.hhMode,
+                    populationTraceCache:state.populationTraceCache,postflopTraceCache:state.postflopTraceCache,
+                    populationRangeCache:state.populationRangeCache,postflopRangeCache:state.postflopRangeCache
+                };
+                try{
+                    const hand=parsePokerStarsHand(raw,"kts_sb_two_limp_iso4_three_calls.hand.txt");
+                    if(!hand)throw new Error("fixture #321 non parsée");
+                    const steps=makeReplaySteps(hand);
+                    state.selectedHand=hand;state.replaySteps=steps;state.hhMode=true;
+                    state.populationTraceCache=Object.create(null);state.postflopTraceCache=Object.create(null);
+                    state.populationRangeCache=Object.create(null);state.postflopRangeCache=Object.create(null);
+                    const heroIndex=steps.findIndex(s=>s.street==="Préflop"&&s.activePlayer===hand.heroName&&s.actionType==="raise");
+                    const bbIndex=steps.findIndex((s,i)=>i>heroIndex&&s.street==="Préflop"&&s.activePlayer==="BB"&&s.actionType==="call");
+                    if(heroIndex<0||bbIndex<0)throw new Error("steps #321 attendus introuvables");
+                    const heroStep=steps[heroIndex],bbStep=steps[bbIndex];
+                    const heroEvidence=replayObservedDecisionEvidence(heroIndex,heroStep);
+                    const bbEvidence=replayObservedDecisionEvidence(bbIndex,bbStep);
+                    const heroState=replayHeroCommentState(heroIndex,heroStep,null,{
+                        req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,canonicalDecision:null,
+                        observedEvidence:heroEvidence
+                    });
+                    const bbUnavailable=replayOpponentCommentStateFromEvidence(bbEvidence,bbStep,null);
+                    const bbFeed=actionAnalysisHtml(bbIndex,bbStep);
+                    const bbDetail=actionDetailModalInnerHtml(bbIndex,bbStep);
+                    return {
+                        hand:{id:hand.id,hero:hand.heroName,cards:reviewHeroCardsText(hand)},
+                        hero:{index:heroIndex,actor:heroStep.activePlayer,action:heroStep.actionType,evidence:heroEvidence,state:heroState},
+                        bb:{index:bbIndex,actor:bbStep.activePlayer,action:bbStep.actionType,evidence:bbEvidence,state:bbUnavailable,feed:bbFeed,detail:bbDetail}
+                    };
+                } finally {
+                    state.selectedHand=saved.selectedHand;state.replaySteps=saved.replaySteps;state.hhMode=saved.hhMode;
+                    state.populationTraceCache=saved.populationTraceCache;state.postflopTraceCache=saved.postflopTraceCache;
+                    state.populationRangeCache=saved.populationRangeCache;state.postflopRangeCache=saved.postflopRangeCache;
+                }
+            }""",
+            kts_iso_raw,
+        )
+        assert kts_replayer_comment["hand"] == {"id":"3210001","hero":"Hero","cards":"K♠ T♠"}, kts_replayer_comment
+        assert kts_replayer_comment["hero"]["actor"] == "Hero" and kts_replayer_comment["hero"]["action"] == "raise", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["evidence"]["decision"]["family"] == "VS_LIMPERS", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_COUVERT", kts_replayer_comment
+        assert "Aucune recommandation EV validée" in kts_replayer_comment["hero"]["state"]["text"], kts_replayer_comment
+        assert kts_replayer_comment["bb"]["actor"] == "BB" and kts_replayer_comment["bb"]["action"] == "call", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["evidence"]["decision"]["family"] == "VS_ISO", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["state"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", kts_replayer_comment
+        assert 'data-comment-actor="OPPONENT"' in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
+        assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
+        assert "alternative EV Hero" in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
+        assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
 
         exact_review_open = await page.evaluate(
             """() => {
@@ -187,6 +445,242 @@ async def main() -> None:
         assert all(dashboard_ui["messages"][name] for name in ["NO_HANDS","ANALYSIS_PENDING","ANALYSIS_INCOMPLETE","NO_SIGNIFICANT_LOSS","READY"]), dashboard_ui
         assert dashboard_ui["leakOpen"]["opened"] is True and dashboard_ui["leakFilter"] == "SRP|PFR|IP", dashboard_ui
         assert dashboard_ui["unsupported"]["opened"] is False and dashboard_ui["unsupported"]["reason"] == "UNSUPPORTED_LEAK_DIMENSION", dashboard_ui
+
+        # Model-B robustness UI consumes #260 summaries only and fails closed on identity/support mismatch.
+        robustness_ui = await page.evaluate(
+            """() => {
+                const UI=window.PokerModelBRobustnessUI;
+                const identity={...reviewInboxScopeInput()};
+                const decisionId="review:42:3";
+                const makeSummary=(status="robust")=>({
+                    schema:UI.SUMMARY_SCHEMA,
+                    decision_id:decisionId,
+                    status,
+                    nominal:{
+                        action:"JAM",sizing:1.6,ev_bb:2.4,advantage_bb:0.35,
+                        mc_ci95:[2.2,2.6],mc_ci95_width_bb:0.4
+                    },
+                    model_environment:{
+                        comparable:true,ev_span_bb:[1.7,2.4],max_regret_bb:0.05,
+                        worst_environment_regret:{environment_id:"fold-high",regret_bb:0.05},
+                        environment_count:3,missing_environment_ids:[],noncomparable_environment_ids:[],weighted:false
+                    },
+                    stability:{action:true,sizing:true,ranking:true},
+                    support:{all_environments_supported:true,unsupported_environment_count:0},
+                    shove_fragility:{applicable:true,kind:"SHOVE",fragile:false,affected_environments:[],nominal_advantage_bb:0.35,worst_environment_regret:{environment_id:"fold-high",regret_bb:0.05}},
+                    overbet_fragility:{applicable:true,kind:"OVERBET",fragile:false,affected_environments:[],nominal_advantage_bb:0.35,worst_environment_regret:{environment_id:"fold-high",regret_bb:0.05}},
+                    aggressive_fragility:null,
+                    detail_available:true
+                });
+                const envelope=summary=>({schema:UI.ENVELOPE_SCHEMA,identity:{...identity},summary});
+                const robust=UI.consumeEnvelope(envelope(makeSummary("robust")),{decision_id:decisionId,identity});
+
+                const sensitiveSummary=makeSummary("sensitive");
+                sensitiveSummary.stability={action:false,sizing:false,ranking:false};
+                sensitiveSummary.model_environment.max_regret_bb=0.65;
+                sensitiveSummary.model_environment.ev_span_bb=[0.9,2.4];
+                sensitiveSummary.shove_fragility={...sensitiveSummary.shove_fragility,fragile:true,affected_environments:["fold-high"]};
+                sensitiveSummary.overbet_fragility={...sensitiveSummary.overbet_fragility,fragile:true,affected_environments:["fold-low"]};
+                const sensitiveEnvelope=envelope(sensitiveSummary);
+                const sensitive=UI.consumeEnvelope(sensitiveEnvelope,{decision_id:decisionId,identity});
+
+                const falseRobustSummary=makeSummary("robust");
+                falseRobustSummary.support={all_environments_supported:false,unsupported_environment_count:1};
+                const falseRobust=UI.consumeEnvelope(envelope(falseRobustSummary),{decision_id:decisionId,identity});
+                const missing=UI.consumeEnvelope(null,{decision_id:decisionId,identity});
+                const mismatch=UI.consumeEnvelope(
+                    {schema:UI.ENVELOPE_SCHEMA,identity:{...identity,strategy_version:"wrong-version"},summary:makeSummary("robust")},
+                    {decision_id:decisionId,identity}
+                );
+                const wrongDecision=UI.consumeEnvelope(
+                    {schema:UI.ENVELOPE_SCHEMA,identity,summary:{...makeSummary("robust"),decision_id:"review:42:2"}},
+                    {decision_id:decisionId,identity}
+                );
+
+                const compact=modelBRobustnessCompactHtml(sensitive);
+                const detail=modelBRobustnessDetailHtml(sensitive);
+
+                const savedScores=state.reviewScores;
+                const savedMap=state.modelBRobustnessByDecision;
+                try{
+                    state.reviewScores={"42":{details:[{stepIndex:3}]}};
+                    state.modelBRobustnessByDecision=Object.create(null);
+                    const accepted=setModelBRobustnessEnvelope("42",3,sensitiveEnvelope);
+                    const stored=state.reviewScores["42"].details[0].model_b_robustness;
+                    const reviewView=modelBRobustnessViewForDecision("42",3);
+                    const rejected=setModelBRobustnessEnvelope("42",3,{
+                        schema:UI.ENVELOPE_SCHEMA,
+                        identity:{...identity,population_id:"other-pop"},
+                        summary:sensitiveSummary
+                    });
+                    return {
+                        schemas:{summary:UI.SUMMARY_SCHEMA,envelope:UI.ENVELOPE_SCHEMA,view:UI.VIEW_SCHEMA},
+                        robust:{status:robust.status,label:UI.statusLabel(robust)},
+                        sensitive:{status:sensitive.status,label:UI.statusLabel(sensitive),affected:UI.affectedEnvironmentIds(sensitive)},
+                        falseRobust:{status:falseRobust.status,failClosed:falseRobust.fail_closed,reason:falseRobust.reason},
+                        missing:{evidence:missing.evidence_status,status:missing.status,failClosed:missing.fail_closed},
+                        mismatch:{evidence:mismatch.evidence_status,reason:mismatch.reason},
+                        wrongDecision:{evidence:wrongDecision.evidence_status,reason:wrongDecision.reason},
+                        html:{compact,detail},
+                        setter:{
+                            accepted:accepted.accepted,
+                            storedSchema:stored?.schema,
+                            reviewStatus:reviewView.status,
+                            rejected:rejected.accepted,
+                            rejectReason:rejected.reason
+                        }
+                    };
+                } finally {
+                    state.reviewScores=savedScores;
+                    state.modelBRobustnessByDecision=savedMap;
+                }
+            }"""
+        )
+        assert robustness_ui["schemas"] == {
+            "summary": "hero-model-b-robustness-summary/v1",
+            "envelope": "hero-model-b-robustness-ui-envelope/v1",
+            "view": "hero-model-b-robustness-ui-view/v1",
+        }, robustness_ui
+        assert robustness_ui["robust"]["status"] == "robust" and "Robuste" in robustness_ui["robust"]["label"], robustness_ui
+        assert robustness_ui["sensitive"]["status"] == "sensitive" and "Sensible" in robustness_ui["sensitive"]["label"], robustness_ui
+        assert {"fold-high", "fold-low"}.issubset(set(robustness_ui["sensitive"]["affected"])), robustness_ui
+        assert robustness_ui["falseRobust"]["status"] == "insufficiently_supported" and robustness_ui["falseRobust"]["failClosed"], robustness_ui
+        assert robustness_ui["falseRobust"]["reason"] == "SUPPORT_OR_COMPARABILITY_INCOMPLETE", robustness_ui
+        assert robustness_ui["missing"] == {"evidence":"unavailable","status":"insufficiently_supported","failClosed":True}, robustness_ui
+        assert robustness_ui["mismatch"]["evidence"] == "unavailable" and robustness_ui["mismatch"]["reason"] == "IDENTITY_MISMATCH", robustness_ui
+        assert robustness_ui["wrongDecision"]["evidence"] == "unavailable" and robustness_ui["wrongDecision"]["reason"] == "DECISION_ID_MISMATCH", robustness_ui
+        assert "Sensible aux variantes Model B" in robustness_ui["html"]["compact"], robustness_ui
+        assert all(text in robustness_ui["html"]["detail"] for text in ["EV nominale","Incertitude Monte-Carlo","Incertitude Model B","Shove","Overbet","fold-high","pas un verdict de stratégie"]), robustness_ui
+        assert robustness_ui["setter"]["accepted"] is True and robustness_ui["setter"]["storedSchema"] == "hero-model-b-robustness-ui-envelope/v1", robustness_ui
+        assert robustness_ui["setter"]["reviewStatus"] == "sensitive", robustness_ui
+        assert robustness_ui["setter"]["rejected"] is False and robustness_ui["setter"]["rejectReason"] == "IDENTITY_MISMATCH", robustness_ui
+
+        # Leak -> Training consumes the merged target + selector contracts and fails closed.
+        targeted_training = await page.evaluate(
+            """() => {
+                const saved={
+                    targeted:trainerTargetClone(trainerState.targeted),
+                    mode:trainerState.mode,
+                    dashboard:state.reviewDashboardView,
+                    openTarget:window.trainerOpenTargetedSession
+                };
+                try{
+                    const identity={
+                        population_id:"smoke-pop",
+                        pack_id:"smoke-pack@1",
+                        strategy_id:"hero-custom",
+                        strategy_version:"app-v83@smoke",
+                        ev_reference:"review_score_policy_adjusted_incremental_bb"
+                    };
+                    const target=PokerLeakTrainingTarget.buildTrainingTarget({
+                        identity,
+                        context:{position:"BTN",street:"FLOP",spot_family:"SRP|PFA|IP"},
+                        source_pattern:{played_action:"CHECK",recommended_action:"BET"},
+                        source_leak:{
+                            dimension:"spot_family",key:"SRP|PFA|IP",decisions:3,total_loss_bb:4.2,
+                            source_refs:[{hand_id:"42",decision_id:"review:42:3"}]
+                        },
+                        minimum_support:{decisions:1,scenarios:1}
+                    });
+                    const hand={
+                        id:991,heroSeat:5,activeOppSeat:4,heroRole:"PFA",
+                        positions:["SB","BB","LJ","HJ","CO","BTN"],
+                        stacks:[100,100,100,100,97.5,97.5],streetPaid:[0,0,0,0,0,0],
+                        pot:6,currentBet:0,lastRaise:1,raises:0,street:"flop",boardCount:3,
+                        runout:[0,1,2,3,4],decisionNo:1
+                    };
+                    const detail={
+                        bestLabel:"BET",bestCostBB:3,chosenEV:0,bestEV:1,rawLossBB:1,lossBB:1,
+                        comparable:true,withinNoise:false,
+                        simContext:{potType:"SRP",preflopRole:"PFA",relativePosition:"IP"}
+                    };
+                    const descriptor=trainerTargetDescriptor(target,hand,detail,1);
+                    const plan=PokerLeakScenarioSelector.buildSessionPlan(target,[descriptor],{
+                        session_size:1,seed:"smoke-target",identity
+                    });
+                    const fallback=PokerLeakScenarioSelector.buildSessionPlan(target,[],{
+                        session_size:1,seed:"smoke-fallback",identity
+                    });
+
+                    trainerState.targeted.active=true;
+                    trainerState.targeted.baseTarget=trainerTargetClone(target);
+                    trainerState.targeted.target=trainerTargetClone(target);
+                    trainerState.targeted.requestedSize=1;
+                    trainerTargetHydrate(target);
+                    trainerTargetPosition.value="CO";
+                    trainerTargetAction.value="CHECK";
+                    trainerTargetSessionSize.value="1";
+                    const edited=trainerTargetBuildFromControls();
+
+                    const event=PokerLeakAnalyzer.buildDecisionEvent({
+                        hand_id:"trainer-smoke-1",decision_id:"trainer-smoke-d1",timestamp:"2026-09-19T00:00:00Z",
+                        ...identity,position:"BTN",street:"FLOP",spot_family:"SRP|PFA|IP",
+                        action_played:"CHECK",action_recommended:"BET",played_ev_bb:-1,best_ev_bb:0,
+                        support:{covered:true,source:"smoke"},comparability:{comparable:true}
+                    });
+                    trainerState.targeted.plan=plan;
+                    trainerState.targeted.fallback=null;
+                    trainerState.targeted.events=[event];
+                    trainerState.targeted.summary=PokerLeakScenarioSelector.summarizePlannedSession(
+                        plan,[event],{minimum_trend_decisions:2,minimum_long_term_spots:50}
+                    );
+                    trainerTargetRenderSummary();
+                    const summaryText=trainerTargetSummary.textContent;
+
+                    const calls=[];
+                    window.trainerOpenTargetedSession=t=>{calls.push(t);return Promise.resolve(null);};
+                    state.reviewDashboardView={ctas:{training:{enabled:true,reason:"TOP_LEAK_TARGET",target}}};
+                    const ctaResult=openReviewDashboardTraining();
+
+                    const modes=[];
+                    for(const mode of ["guided","training","test"]){trainerSetMode(mode);modes.push(trainerState.mode);}
+
+                    return {
+                        schemas:{
+                            target:target.schema,
+                            criteria:PokerLeakTrainingTarget.compileScenarioCriteria(target).schema,
+                            plan:plan.schema,
+                            runtimeSummary:trainerState.targeted.summary.schema
+                        },
+                        descriptor:{
+                            context:descriptor.context,policy:descriptor.policy,focus:descriptor.focus,
+                            identity:descriptor.identity,supported:descriptor.supported
+                        },
+                        plan:{ready:plan.ready,selected:plan.selection.length,target_id:plan.target_id},
+                        fallback:{ready:fallback.ready,code:fallback.fallback,selected:fallback.selection.length},
+                        edited:{position:edited.context.position,action:edited.source_pattern.recommended_action,target_id:edited.target_id},
+                        summaryText,
+                        cta:{result:ctaResult,calls:calls.map(t=>t.target_id)},
+                        modes,
+                        fields:["trainerTargetPosition","trainerTargetStreet","trainerTargetSpot","trainerTargetAction","trainerTargetSizing","trainerTargetJam","trainerTargetOverbet","trainerTargetSessionSize"].every(id=>!!document.getElementById(id))
+                    };
+                } finally {
+                    trainerState.targeted=saved.targeted;
+                    trainerState.mode=saved.mode;
+                    state.reviewDashboardView=saved.dashboard;
+                    window.trainerOpenTargetedSession=saved.openTarget;
+                    trainerRender();
+                }
+            }"""
+        )
+        assert targeted_training["schemas"]["target"] == "poker-leak-training-target/v1", targeted_training
+        assert targeted_training["schemas"]["criteria"] == "poker-training-scenario-criteria/v1", targeted_training
+        assert targeted_training["schemas"]["plan"] == "poker-leak-training-session-plan/v1", targeted_training
+        assert targeted_training["schemas"]["runtimeSummary"] == "poker-leak-training-runtime-summary/v1", targeted_training
+        assert targeted_training["descriptor"]["context"] == {"position":"BTN","street":"FLOP","spot_family":"SRP|PFA|IP"}, targeted_training
+        assert targeted_training["descriptor"]["policy"]["recommended_action"] == "BET", targeted_training
+        assert targeted_training["descriptor"]["identity"]["strategy_version"] == "app-v83@smoke", targeted_training
+        assert targeted_training["descriptor"]["supported"] is True, targeted_training
+        assert targeted_training["plan"]["ready"] is True and targeted_training["plan"]["selected"] == 1, targeted_training
+        assert targeted_training["fallback"] == {"ready":False,"code":"INSUFFICIENT_SUPPORTED_SCENARIOS","selected":0}, targeted_training
+        assert targeted_training["edited"]["position"] == "CO" and targeted_training["edited"]["action"] == "CHECK", targeted_training
+        assert targeted_training["edited"]["target_id"] != targeted_training["plan"]["target_id"], targeted_training
+        assert "1/1" in targeted_training["summaryText"] and "perte ΔEV ciblée" in targeted_training["summaryText"], targeted_training
+        assert "progression long terme non inférée" in targeted_training["summaryText"], targeted_training
+        assert targeted_training["cta"]["result"]["reason"] == "TARGET_RUNTIME_REQUESTED", targeted_training
+        assert targeted_training["cta"]["calls"] == [targeted_training["plan"]["target_id"]], targeted_training
+        assert targeted_training["modes"] == ["guided","training","test"], targeted_training
+        assert targeted_training["fields"], targeted_training
 
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(

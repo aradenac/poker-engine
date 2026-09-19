@@ -5,6 +5,7 @@ const assert=require('node:assert/strict');
 const Contract=require('../../src/preflop/contract.js');
 const Decision=require('../../src/preflop/decision.js');
 const Search=require('../../src/preflop/search.js');
+require('./test_iso_sizing_diagnostics.js');
 
 const POS=['LJ','HJ','CO','BTN','SB','BB'];
 const stacks=Object.fromEntries(POS.map(p=>[p,100]));

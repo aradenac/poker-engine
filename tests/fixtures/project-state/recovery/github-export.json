@@ -1,0 +1,52 @@
+{
+  "schema": "poker-recovery-github-export/v1",
+  "coverage": {
+    "comments_complete": true,
+    "open_issues_complete": true,
+    "open_pulls_complete": true,
+    "dispatch_issue": 225
+  },
+  "comments": [
+    {
+      "id": 1,
+      "created_at": "2026-09-19T00:00:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: A\nISSUE: #108\nSTATUS: CLAIMED\nBASE: aaaa\nBRANCH: agent-A/issue-108-recovery-fixture\nCONFLICT_GROUP: SCIENCE-FROZEN\nFILES_INTENT:\n- training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260915.json\nNOTES: fixture"
+    },
+    {
+      "id": 2,
+      "created_at": "2026-09-19T00:01:00Z",
+      "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: A\nISSUE: #108\nBASE/HEAD: aaaa / aaab\nPR: #901"
+    },
+    {
+      "id": 3,
+      "created_at": "2026-09-19T00:02:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nSTATUS: CLAIMED\nBASE: gggg\nBRANCH: agent-G/issue-206-recovery-fixture\nCONFLICT_GROUP: PROJECT-STATE\nFILES_INTENT:\n- tools/build_recovery_state.py\n- tests/test_recovery_state.py\nNOTES: fixture"
+    },
+    {
+      "id": 4,
+      "created_at": "2026-09-19T00:03:00Z",
+      "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nBASE/HEAD: gggg / ggg1\nPR: #902"
+    },
+    {
+      "id": 5,
+      "created_at": "2026-09-19T00:04:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: H\nISSUE: #211\nSTATUS: CLAIMED\nBASE: hhhh\nBRANCH: agent-H/issue-211-recovery-fixture\nCONFLICT_GROUP: CENTRAL-UI\nFILES_INTENT:\n- site/index.html\nNOTES: fixture"
+    }
+  ],
+  "issues": [
+    {"number": 108, "state": "open", "title": "Frozen validation", "labels": []},
+    {"number": 197, "state": "open", "title": "Model B", "labels": []},
+    {"number": 200, "state": "open", "title": "Analytics", "labels": []},
+    {"number": 203, "state": "open", "title": "Repro", "labels": []},
+    {"number": 206, "state": "open", "title": "Project state", "labels": []},
+    {"number": 211, "state": "open", "title": "Central UI", "labels": []},
+    {"number": 215, "state": "open", "title": "Hero editor", "labels": []},
+    {"number": 216, "state": "open", "title": "Packs UX", "labels": ["blocked"], "blocked_by": [108]}
+  ],
+  "pulls": [
+    {"number": 901, "state": "open", "title": "[A][#108] fixture", "head": "agent-A/issue-108-recovery-fixture", "base": "main"},
+    {"number": 902, "state": "open", "title": "[G][#206] fixture", "head": "agent-G/issue-206-recovery-fixture", "base": "main"},
+    {"number": 903, "state": "open", "title": "[H][#211] fixture", "head": "agent-H/issue-211-recovery-fixture", "base": "main"}
+  ],
+  "read_errors": []
+}

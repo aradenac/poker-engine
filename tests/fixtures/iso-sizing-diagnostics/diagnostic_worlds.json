@@ -1,0 +1,610 @@
+{
+  "alternatives": {
+    "ISO@4": [
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@4|BB|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@4|CO|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "BTN",
+            "posterior_ref_id": "posterior:ISO@4|BTN|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 0,
+        "world_fingerprint_sha256": "cb4c772f8ee4576fe2d549b2137f77cbdd15b0edc3fe3992eefa7c419cc5074e"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@4|BB|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@4|CO|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 1,
+        "world_fingerprint_sha256": "cd7d644001e6110b12b3069c0cd6d9bf7eac5398ac3ff61f5b95b803aac31a42"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@4|BB|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 2,
+        "world_fingerprint_sha256": "ab49cafff168037ace7485d4c80359e2dff5fe5fe4de64bbf180925aaad1508b"
+      },
+      {
+        "continuers": [
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@4|CO|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 3,
+        "world_fingerprint_sha256": "20e57c2f9132c6f84c2dbb6c893a432ebb964648ffcbb86f034492ecf210b91c"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BTN",
+            "posterior_ref_id": "posterior:ISO@4|BTN|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 4,
+        "world_fingerprint_sha256": "d53fc24572de794ca6d9216aa65fc3093bc12e8a2bc6a33acc68b70cf1595106"
+      },
+      {
+        "continuers": [],
+        "sample_index": 5,
+        "world_fingerprint_sha256": "cfed8b85b2f9a94fc819922b9016b03e32715ead804db0e1b53b67f2e0688b18"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@4|BB|3BET",
+            "response": "3BET"
+          }
+        ],
+        "sample_index": 6,
+        "world_fingerprint_sha256": "594ba03dfb04c487e3d882477177af3c5626917d8e44538b21a58256bd9f2710"
+      },
+      {
+        "continuers": [
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@4|CO|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "BTN",
+            "posterior_ref_id": "posterior:ISO@4|BTN|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 7,
+        "world_fingerprint_sha256": "5a1ad8ea6ce9e05160ae980e27ca11dff923d68036f5b1662e3a9c5066a0f351"
+      }
+    ],
+    "ISO@5": [
+      {
+        "continuers": [],
+        "sample_index": 0,
+        "world_fingerprint_sha256": "cb4c772f8ee4576fe2d549b2137f77cbdd15b0edc3fe3992eefa7c419cc5074e"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@5|BB|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 1,
+        "world_fingerprint_sha256": "cd7d644001e6110b12b3069c0cd6d9bf7eac5398ac3ff61f5b95b803aac31a42"
+      },
+      {
+        "continuers": [
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@5|CO|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 2,
+        "world_fingerprint_sha256": "ab49cafff168037ace7485d4c80359e2dff5fe5fe4de64bbf180925aaad1508b"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BTN",
+            "posterior_ref_id": "posterior:ISO@5|BTN|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 3,
+        "world_fingerprint_sha256": "20e57c2f9132c6f84c2dbb6c893a432ebb964648ffcbb86f034492ecf210b91c"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@5|BB|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 4,
+        "world_fingerprint_sha256": "d53fc24572de794ca6d9216aa65fc3093bc12e8a2bc6a33acc68b70cf1595106"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@5|BB|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@5|CO|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 5,
+        "world_fingerprint_sha256": "cfed8b85b2f9a94fc819922b9016b03e32715ead804db0e1b53b67f2e0688b18"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@5|BB|3BET",
+            "response": "3BET"
+          }
+        ],
+        "sample_index": 6,
+        "world_fingerprint_sha256": "594ba03dfb04c487e3d882477177af3c5626917d8e44538b21a58256bd9f2710"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@5|BB|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@5|CO|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "BTN",
+            "posterior_ref_id": "posterior:ISO@5|BTN|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 7,
+        "world_fingerprint_sha256": "5a1ad8ea6ce9e05160ae980e27ca11dff923d68036f5b1662e3a9c5066a0f351"
+      }
+    ],
+    "ISO@6": [
+      {
+        "continuers": [],
+        "sample_index": 0,
+        "world_fingerprint_sha256": "cb4c772f8ee4576fe2d549b2137f77cbdd15b0edc3fe3992eefa7c419cc5074e"
+      },
+      {
+        "continuers": [],
+        "sample_index": 1,
+        "world_fingerprint_sha256": "cd7d644001e6110b12b3069c0cd6d9bf7eac5398ac3ff61f5b95b803aac31a42"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@6|BB|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 2,
+        "world_fingerprint_sha256": "ab49cafff168037ace7485d4c80359e2dff5fe5fe4de64bbf180925aaad1508b"
+      },
+      {
+        "continuers": [
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@6|CO|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 3,
+        "world_fingerprint_sha256": "20e57c2f9132c6f84c2dbb6c893a432ebb964648ffcbb86f034492ecf210b91c"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BTN",
+            "posterior_ref_id": "posterior:ISO@6|BTN|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 4,
+        "world_fingerprint_sha256": "d53fc24572de794ca6d9216aa65fc3093bc12e8a2bc6a33acc68b70cf1595106"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@6|BB|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 5,
+        "world_fingerprint_sha256": "cfed8b85b2f9a94fc819922b9016b03e32715ead804db0e1b53b67f2e0688b18"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@6|BB|3BET",
+            "response": "3BET"
+          }
+        ],
+        "sample_index": 6,
+        "world_fingerprint_sha256": "594ba03dfb04c487e3d882477177af3c5626917d8e44538b21a58256bd9f2710"
+      },
+      {
+        "continuers": [
+          {
+            "position": "BB",
+            "posterior_ref_id": "posterior:ISO@6|BB|CALL",
+            "response": "CALL"
+          },
+          {
+            "position": "CO",
+            "posterior_ref_id": "posterior:ISO@6|CO|CALL",
+            "response": "CALL"
+          }
+        ],
+        "sample_index": 7,
+        "world_fingerprint_sha256": "5a1ad8ea6ce9e05160ae980e27ca11dff923d68036f5b1662e3a9c5066a0f351"
+      }
+    ]
+  },
+  "posterior_catalog": {
+    "posterior:ISO@4|BB|3BET": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|BB|3BET"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "public_action": {
+        "action": "3BET",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:BB:3BET"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-BB-3BET",
+      "ref_id": "posterior:ISO@4|BB|3BET",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|BB|3BET",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@4:BB:3BET"
+    },
+    "posterior:ISO@4|BB|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|BB|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:BB:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-BB-CALL",
+      "ref_id": "posterior:ISO@4|BB|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|BB|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@4:BB:CALL"
+    },
+    "posterior:ISO@4|BTN|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|BTN|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BTN",
+      "position": "BTN",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:BTN:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-BTN-CALL",
+      "ref_id": "posterior:ISO@4|BTN|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|BTN|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@4:BTN:CALL"
+    },
+    "posterior:ISO@4|CO|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|CO|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_CO",
+      "position": "CO",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:CO:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-CO-CALL",
+      "ref_id": "posterior:ISO@4|CO|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|CO|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@4:CO:CALL"
+    },
+    "posterior:ISO@5|BB|3BET": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|BB|3BET"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "public_action": {
+        "action": "3BET",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:BB:3BET"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-BB-3BET",
+      "ref_id": "posterior:ISO@5|BB|3BET",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|BB|3BET",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@5:BB:3BET"
+    },
+    "posterior:ISO@5|BB|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|BB|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:BB:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-BB-CALL",
+      "ref_id": "posterior:ISO@5|BB|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|BB|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@5:BB:CALL"
+    },
+    "posterior:ISO@5|BTN|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|BTN|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BTN",
+      "position": "BTN",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:BTN:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-BTN-CALL",
+      "ref_id": "posterior:ISO@5|BTN|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|BTN|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@5:BTN:CALL"
+    },
+    "posterior:ISO@5|CO|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|CO|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_CO",
+      "position": "CO",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:CO:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-CO-CALL",
+      "ref_id": "posterior:ISO@5|CO|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|CO|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@5:CO:CALL"
+    },
+    "posterior:ISO@6|BB|3BET": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|BB|3BET"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "public_action": {
+        "action": "3BET",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:BB:3BET"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-BB-3BET",
+      "ref_id": "posterior:ISO@6|BB|3BET",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|BB|3BET",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@6:BB:3BET"
+    },
+    "posterior:ISO@6|BB|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|BB|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:BB:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-BB-CALL",
+      "ref_id": "posterior:ISO@6|BB|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|BB|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@6:BB:CALL"
+    },
+    "posterior:ISO@6|BTN|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|BTN|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BTN",
+      "position": "BTN",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:BTN:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-BTN-CALL",
+      "ref_id": "posterior:ISO@6|BTN|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|BTN|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@6:BTN:CALL"
+    },
+    "posterior:ISO@6|CO|CALL": {
+      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|CO|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_CO",
+      "position": "CO",
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:CO:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-CO-CALL",
+      "ref_id": "posterior:ISO@6|CO|CALL",
+      "schema": "poker-opponent-posterior-range/v1",
+      "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|CO|CALL",
+      "status": "AVAILABLE",
+      "step_id": "synthetic:ISO@6:CO:CALL"
+    }
+  },
+  "provenance": {
+    "scientific_effect": "NONE_INTEGRATION_CONTRACT_ONLY",
+    "source": "issue-322-synthetic-worlds",
+    "synthetic_fixture": true
+  },
+  "schema": "poker-preflop-iso-sizing-diagnostic-worlds/v1",
+  "support_by_alternative": {
+    "ISO@4": {
+      "backoff_level": "EXACT",
+      "effective_sample_size": 480,
+      "observations": 600,
+      "quality": "HIGH",
+      "source": "synthetic-response-model-v1"
+    },
+    "ISO@5": {
+      "backoff_level": "EXACT",
+      "effective_sample_size": 430,
+      "observations": 540,
+      "quality": "HIGH",
+      "source": "synthetic-response-model-v1"
+    },
+    "ISO@6": {
+      "backoff_level": "POSITION",
+      "effective_sample_size": 120,
+      "observations": 210,
+      "quality": "MEDIUM",
+      "source": "synthetic-response-model-v1"
+    }
+  },
+  "synthetic_fixture": true
+}

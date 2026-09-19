@@ -1,0 +1,194 @@
+{
+  "action": "ISO",
+  "actor_contribution_bb": 0.5,
+  "alternatives": [
+    {
+      "action": "FOLD",
+      "confidence": 0.9,
+      "ev_bb": 0,
+      "id": "FOLD",
+      "incremental_cost_bb": 0,
+      "notes": "synthetic #322 fixture",
+      "sizing_origin": "no_chips",
+      "support": {
+        "backoff_level": "EXACT",
+        "observations": 200,
+        "source": "synthetic-iso-fixture"
+      },
+      "target_total_bb": null,
+      "uncertainty": {
+        "model": {
+          "lower_bb": -0.05,
+          "method": "synthetic-band",
+          "status": "ESTIMATED",
+          "upper_bb": 0.05
+        },
+        "monte_carlo": {
+          "method": "paired-crn-synthetic",
+          "samples": 0,
+          "standard_error_bb": 0
+        }
+      }
+    },
+    {
+      "action": "OVERLIMP",
+      "confidence": 0.9,
+      "ev_bb": 0.18,
+      "id": "OVERLIMP@1",
+      "incremental_cost_bb": 0.5,
+      "notes": "synthetic #322 fixture",
+      "sizing_origin": "synthetic-grid",
+      "support": {
+        "backoff_level": "EXACT",
+        "observations": 200,
+        "source": "synthetic-iso-fixture"
+      },
+      "target_total_bb": 1,
+      "uncertainty": {
+        "model": {
+          "lower_bb": 0.13,
+          "method": "synthetic-band",
+          "status": "ESTIMATED",
+          "upper_bb": 0.22999999999999998
+        },
+        "monte_carlo": {
+          "method": "paired-crn-synthetic",
+          "samples": 8,
+          "standard_error_bb": 0.03
+        }
+      }
+    },
+    {
+      "action": "ISO",
+      "confidence": 0.9,
+      "ev_bb": 0.31,
+      "id": "ISO@4",
+      "incremental_cost_bb": 3.5,
+      "notes": "synthetic #322 fixture",
+      "sizing_origin": "synthetic-grid",
+      "support": {
+        "backoff_level": "EXACT",
+        "observations": 200,
+        "source": "synthetic-iso-fixture"
+      },
+      "target_total_bb": 4,
+      "uncertainty": {
+        "model": {
+          "lower_bb": 0.26,
+          "method": "synthetic-band",
+          "status": "ESTIMATED",
+          "upper_bb": 0.36
+        },
+        "monte_carlo": {
+          "method": "paired-crn-synthetic",
+          "samples": 8,
+          "standard_error_bb": 0.025
+        }
+      }
+    },
+    {
+      "action": "ISO",
+      "confidence": 0.9,
+      "ev_bb": 0.36,
+      "id": "ISO@5",
+      "incremental_cost_bb": 4.5,
+      "notes": "synthetic #322 fixture",
+      "sizing_origin": "synthetic-grid",
+      "support": {
+        "backoff_level": "EXACT",
+        "observations": 200,
+        "source": "synthetic-iso-fixture"
+      },
+      "target_total_bb": 5,
+      "uncertainty": {
+        "model": {
+          "lower_bb": 0.31,
+          "method": "synthetic-band",
+          "status": "ESTIMATED",
+          "upper_bb": 0.41
+        },
+        "monte_carlo": {
+          "method": "paired-crn-synthetic",
+          "samples": 8,
+          "standard_error_bb": 0.02
+        }
+      }
+    },
+    {
+      "action": "ISO",
+      "confidence": 0.9,
+      "ev_bb": 0.34,
+      "id": "ISO@6",
+      "incremental_cost_bb": 5.5,
+      "notes": "synthetic #322 fixture",
+      "sizing_origin": "synthetic-grid",
+      "support": {
+        "backoff_level": "EXACT",
+        "observations": 200,
+        "source": "synthetic-iso-fixture"
+      },
+      "target_total_bb": 6,
+      "uncertainty": {
+        "model": {
+          "lower_bb": 0.29000000000000004,
+          "method": "synthetic-band",
+          "status": "ESTIMATED",
+          "upper_bb": 0.39
+        },
+        "monte_carlo": {
+          "method": "paired-crn-synthetic",
+          "samples": 8,
+          "standard_error_bb": 0.022
+        }
+      }
+    }
+  ],
+  "bet_to_bb": 5,
+  "confidence": 0.9,
+  "context_id": "synthetic:SB:two-limpers:KTs",
+  "ev_bb": 0.36,
+  "ev_reference": "decision_point_incremental_bb",
+  "incremental_cost_bb": 4.5,
+  "legal_actions": [
+    "FOLD",
+    "OVERLIMP",
+    "ISO"
+  ],
+  "notes": "synthetic #322 fold/overlimp/iso4/iso5/iso6 decision",
+  "population_id": "synthetic-population-v1",
+  "schema": "poker-preflop-decision/v1",
+  "search": {
+    "budget": 32,
+    "candidate_ids": [
+      "FOLD",
+      "OVERLIMP@1",
+      "ISO@4",
+      "ISO@5",
+      "ISO@6"
+    ],
+    "notes": "fixtures only",
+    "seed": "synthetic-322",
+    "sizing_grid_source": "synthetic-4-5-6-bb"
+  },
+  "selected_id": "ISO@5",
+  "status": "EXPERIMENTAL",
+  "support": {
+    "backoff_level": "EXACT",
+    "observations": 200,
+    "source": "synthetic-iso-fixture"
+  },
+  "target_total_bb": 5,
+  "uncertainty": {
+    "model": {
+      "lower_bb": 0.31,
+      "method": "synthetic-band",
+      "status": "ESTIMATED",
+      "upper_bb": 0.41
+    },
+    "monte_carlo": {
+      "method": "paired-crn-synthetic",
+      "samples": 8,
+      "standard_error_bb": 0.02
+    }
+  }
+}

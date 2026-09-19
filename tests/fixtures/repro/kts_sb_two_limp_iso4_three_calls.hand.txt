@@ -1,0 +1,21 @@
+PokerStars Hand #3210001: Hold'em No Limit (100/200) - 2026/09/19 11:00:00 CET
+Table 'KTs ISO Reference' 6-max Seat #1 is the button
+Seat 1: BTN (20000 in chips)
+Seat 2: Hero (20000 in chips)
+Seat 3: BB (20000 in chips)
+Seat 4: UTG (20000 in chips)
+Seat 5: HJ (20000 in chips)
+Seat 6: CO (20000 in chips)
+Hero: posts small blind 100
+BB: posts big blind 200
+*** HOLE CARDS ***
+Dealt to Hero [Ks Ts]
+UTG: folds
+HJ: folds
+CO: calls 200
+BTN: calls 200
+Hero: raises 600 to 800
+BB: calls 600
+CO: calls 600
+BTN: calls 600
+*** FLOP *** [2c 7d Qh]

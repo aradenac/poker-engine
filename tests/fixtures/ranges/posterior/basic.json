@@ -1,0 +1,48 @@
+{
+  "hand_id": "synthetic-KTs-iso",
+  "step_id": 4,
+  "public_state_fingerprint": "sha256:synthetic-public-state",
+  "player": "CO",
+  "position": "CO",
+  "identity": {
+    "population_id": "synthetic-population",
+    "model_id": "synthetic-posterior-source",
+    "model_version": "v1",
+    "source_id": "fixture:#320"
+  },
+  "moment": "AFTER_ACTION",
+  "public_action": {
+    "action": "CALL",
+    "source_step_id": 4,
+    "sizing": {
+      "semantic": "TARGET_TOTAL_BB",
+      "observed_size_bb": 4.0,
+      "target_total_bb": 4.0,
+      "pot_before_bb": 9.5,
+      "pot_fraction": null
+    }
+  },
+  "combos": [
+    ["As", "Ah"],
+    ["7c", "2d"],
+    ["Ks", "Qs"],
+    ["Ac", "Kc"]
+  ],
+  "weights": [9.0, 1.0, 3.0, 2.0],
+  "blockers_applied": [
+    {
+      "card": "2c",
+      "knowledge_scope": "PUBLIC",
+      "source_step_id": 3
+    }
+  ],
+  "source_observations": 120,
+  "backoff_level": "POSITION_ACTION",
+  "backoff_reason": null,
+  "provenance": {
+    "producer": "synthetic-test",
+    "contract_version": "poker-opponent-posterior-range/v1",
+    "source_artifact": "tests/fixtures/ranges/posterior/basic.json",
+    "source_fingerprint": "sha256:synthetic"
+  }
+}

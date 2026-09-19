@@ -6,15 +6,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 INDEX = (ROOT / "site/index.html").read_text(encoding="utf-8")
 TRAINER = (ROOT / "site/trainer.js").read_text(encoding="utf-8")
+SHARED = (ROOT / "site/action-sizing-ev.js").read_text(encoding="utf-8")
 
 
 def main() -> None:
     # Primary decision UX is explicitly EV-loss first.
-    assert 'function decisionQualityFromEV(summary)' in INDEX
-    primary = INDEX.split('function decisionPrimarySummaryHtml', 1)[1].split('function decisionAlternativesStripHtml', 1)[0]
-    assert primary.index('card("Perte EV"') < primary.index('card("Joué"')
+    assert 'function qualityFromEV(summary)' in SHARED
+    primary = SHARED.split('function primarySummaryHtml', 1)[1].split('function alternativesStripHtml', 1)[0]
+    assert primary.index("card('Perte EV'") < primary.index("card('Joué'")
     assert '`ΔEV ${deltaText} · ${qualityText}`' in primary
-    assert 'withinNoise' in INDEX.split('function decisionQualityFromEV', 1)[1].split('function decisionPrimarySummaryHtml', 1)[0]
+    assert 'withinNoise' in SHARED.split('function qualityFromEV', 1)[1].split('function primarySummaryHtml', 1)[0]
 
     # No heuristic /10 badge is rendered by feed or modal primary/advanced surfaces.
     feed = INDEX.split('function actionAnalysisHtml', 1)[1].split('function safeActionAnalysisHtml', 1)[0]
@@ -33,7 +34,7 @@ def main() -> None:
 
     # Trainer qualitative labels are derived from the shared EV/uncertainty helper.
     trainer_class = TRAINER.split('function trainerDecisionClass', 1)[1].split('function trainerRecordDecision', 1)[0]
-    assert 'decisionQualityFromEV' in trainer_class
+    assert 'TrainerActionSizingEV.qualityFromEV' in trainer_class
     assert 'loss<=.15' not in TRAINER
     assert 'loss<=.5' not in TRAINER
     assert 'loss<=0.15' not in TRAINER

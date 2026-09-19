@@ -1,0 +1,148 @@
+{
+  "schema": "poker-pack-cache-storage-identity-audit/v1",
+  "issue": 205,
+  "lane": "E",
+  "conflict_group": "PACKS-UX",
+  "base_sha": "bcf30a7ae2493472594fedc1e395187c83ca171c",
+  "measured_before_extraction": {
+    "consumers": [
+      "site/population-packs.js",
+      "site/population-pack-sw.js"
+    ],
+    "exact_duplicated_storage_literals": [
+      {
+        "symbol": "DB_NAME",
+        "value": "poker-population-packs-v1"
+      },
+      {
+        "symbol": "DB_VERSION",
+        "value": 2
+      },
+      {
+        "symbol": "PACK_STORE",
+        "value": "packs"
+      },
+      {
+        "symbol": "META_STORE",
+        "value": "meta"
+      },
+      {
+        "symbol": "TEST_PACK_STORE",
+        "value": "test_packs"
+      },
+      {
+        "symbol": "TEST_META_STORE",
+        "value": "test_meta"
+      },
+      {
+        "symbol": "ACTIVE_KEY",
+        "value": "active"
+      }
+    ],
+    "related_runtime_only_literals": [
+      {
+        "symbol": "PREVIOUS_KEY",
+        "value": "previous"
+      },
+      {
+        "symbol": "TEST_ACTIVE_KEY",
+        "value": "test_active"
+      },
+      {
+        "symbol": "TEST_PREVIOUS_KEY",
+        "value": "test_previous"
+      }
+    ],
+    "identity_dimensions": [
+      "population_id",
+      "pack_id",
+      "pack_version",
+      "runtime_revision",
+      "distribution namespace (production vs TEST_ONLY)"
+    ],
+    "duplicated_responsibilities": [
+      {
+        "responsibility": "indexeddb namespace identity",
+        "consumers": [
+          "site/population-packs.js",
+          "site/population-pack-sw.js"
+        ],
+        "decision": "EXTRACT",
+        "reason": "both must open the exact same DB/version and agree on production/test store names"
+      },
+      {
+        "responsibility": "active production pointer location",
+        "consumers": [
+          "site/population-packs.js",
+          "site/population-pack-sw.js"
+        ],
+        "decision": "EXTRACT",
+        "reason": "runtime writes and service worker reads the same meta store/key"
+      },
+      {
+        "responsibility": "pack storage key",
+        "consumers": [
+          "site/population-packs.js",
+          "site/pack-identity.js"
+        ],
+        "decision": "KEEP_EXISTING_SHARED_HELPER",
+        "reason": "already extracted by #285 as population::pack::version::runtime_revision"
+      },
+      {
+        "responsibility": "IndexedDB transaction implementation",
+        "consumers": [
+          "site/population-packs.js",
+          "site/population-pack-sw.js"
+        ],
+        "decision": "KEEP_SEPARATE",
+        "reason": "runtime mutates multiple stores and rollback metadata; service worker is read-only on active production state"
+      },
+      {
+        "responsibility": "request interception/cache serving",
+        "consumers": [
+          "site/population-pack-sw.js"
+        ],
+        "decision": "KEEP_LOCAL",
+        "reason": "single consumer"
+      }
+    ]
+  },
+  "extraction": {
+    "justified": true,
+    "module": "site/pack-identity.js",
+    "additions": [
+      "STORAGE_CONTRACT",
+      "storageNamespace(testOnly)",
+      "storageAddress(entry,{testOnly})"
+    ],
+    "real_consumers": [
+      "site/population-packs.js",
+      "site/population-pack-sw.js"
+    ],
+    "worker_compatibility": "pack-identity.js uses globalThis and is loaded in the service worker via importScripts"
+  },
+  "parity_and_isolation": {
+    "required": [
+      "production and service worker agree on DB/version/store/key names",
+      "storage id preserves population+pack+version+runtime_revision",
+      "TEST_ONLY uses a different object store/meta namespace",
+      "same logical id in production and TEST_ONLY remains isolated by store namespace",
+      "legacy MIXED and Zoom population identities do not collide",
+      "pack version and runtime revision changes produce distinct ids",
+      "rollback semantics unchanged",
+      "service worker never reads TEST_ONLY active pointer/store"
+    ]
+  },
+  "boundaries": {
+    "untouched": [
+      "site/index.html",
+      "site/trainer.js",
+      "#108",
+      "strategy",
+      "scientific workflows",
+      "catalogue promotion",
+      "real pack publication"
+    ],
+    "no_framework_or_bundler": true
+  }
+}

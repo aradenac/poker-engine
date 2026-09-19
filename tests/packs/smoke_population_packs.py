@@ -17,6 +17,7 @@ from tests.packs.smoke_manual_import import run_manual_import_smoke
 
 URL = "http://127.0.0.1:8765/packs.html"
 IDENTITY_PARITY = json.loads((ROOT / "tests/fixtures/packs/pack_identity_parity_v1.json").read_text(encoding="utf-8"))
+STORAGE_PARITY = json.loads((ROOT / "tests/fixtures/packs/pack_storage_identity_parity_v1.json").read_text(encoding="utf-8"))
 
 
 async def main() -> None:
@@ -64,6 +65,82 @@ async def main() -> None:
         assert identity_parity["active_identity"] == IDENTITY_PARITY["active_record"]["expected"], identity_parity
         assert identity_parity["fallback_identity"] == IDENTITY_PARITY["fallback_expected"], identity_parity
         assert all(row["actual"] == row["expected"] for row in identity_parity["same_cases"]), identity_parity
+        storage_parity = await page.evaluate(
+            """fixture => {
+              const I=window.PokerPackIdentity;
+              const P=window.PokerPopulationPacks;
+              const prod=I.storageNamespace(false);
+              const test=I.storageNamespace(true);
+              const addresses=Object.fromEntries(
+                Object.entries(fixture.entries).map(([name,entry])=>[
+                  name,
+                  {
+                    production:I.storageAddress(entry,{testOnly:false}),
+                    test_only:I.storageAddress(entry,{testOnly:true})
+                  }
+                ])
+              );
+              return {
+                production_namespace:{
+                  db_name:I.STORAGE_CONTRACT.db_name,
+                  db_version:I.STORAGE_CONTRACT.db_version,
+                  ...prod
+                },
+                test_only_namespace:{
+                  db_name:I.STORAGE_CONTRACT.db_name,
+                  db_version:I.STORAGE_CONTRACT.db_version,
+                  ...test
+                },
+                addresses,
+                runtime_constants:{
+                  db_name:P.DB_NAME,
+                  db_version:P.DB_VERSION,
+                  pack_store:P.PACK_STORE,
+                  meta_store:P.META_STORE,
+                  test_pack_store:P.TEST_PACK_STORE,
+                  test_meta_store:P.TEST_META_STORE,
+                  active_key:P.ACTIVE_KEY,
+                  previous_key:P.PREVIOUS_KEY,
+                  test_active_key:P.TEST_ACTIVE_KEY,
+                  test_previous_key:P.TEST_PREVIOUS_KEY
+                }
+              };
+            }""",
+            STORAGE_PARITY,
+        )
+        assert storage_parity["production_namespace"] == STORAGE_PARITY["expected"]["production_namespace"], storage_parity
+        assert storage_parity["test_only_namespace"] == STORAGE_PARITY["expected"]["test_only_namespace"], storage_parity
+        assert storage_parity["addresses"]["legacy"]["production"]["id"] == STORAGE_PARITY["expected"]["legacy_id"], storage_parity
+        assert storage_parity["addresses"]["zoom"]["production"]["id"] == STORAGE_PARITY["expected"]["zoom_id"], storage_parity
+
+        ids = {
+            storage_parity["addresses"]["legacy"]["production"]["id"],
+            storage_parity["addresses"]["zoom"]["production"]["id"],
+            storage_parity["addresses"]["zoom_next_version"]["production"]["id"],
+            storage_parity["addresses"]["zoom_next_revision"]["production"]["id"],
+        }
+        assert len(ids) == 4, storage_parity
+
+        zoom_prod = storage_parity["addresses"]["zoom"]["production"]
+        zoom_test = storage_parity["addresses"]["zoom"]["test_only"]
+        assert zoom_prod["id"] == zoom_test["id"], storage_parity
+        assert zoom_prod["pack_store"] != zoom_test["pack_store"], storage_parity
+        assert zoom_prod["meta_store"] != zoom_test["meta_store"], storage_parity
+        assert zoom_prod["active_key"] != zoom_test["active_key"], storage_parity
+
+        runtime = storage_parity["runtime_constants"]
+        expected_prod = STORAGE_PARITY["expected"]["production_namespace"]
+        expected_test = STORAGE_PARITY["expected"]["test_only_namespace"]
+        assert runtime["db_name"] == expected_prod["db_name"], storage_parity
+        assert runtime["db_version"] == expected_prod["db_version"], storage_parity
+        assert runtime["pack_store"] == expected_prod["pack_store"], storage_parity
+        assert runtime["meta_store"] == expected_prod["meta_store"], storage_parity
+        assert runtime["active_key"] == expected_prod["active_key"], storage_parity
+        assert runtime["previous_key"] == expected_prod["previous_key"], storage_parity
+        assert runtime["test_pack_store"] == expected_test["pack_store"], storage_parity
+        assert runtime["test_meta_store"] == expected_test["meta_store"], storage_parity
+        assert runtime["test_active_key"] == expected_test["active_key"], storage_parity
+        assert runtime["test_previous_key"] == expected_test["previous_key"], storage_parity
         await page.evaluate("() => navigator.serviceWorker.ready")
         if not await page.evaluate("() => Boolean(navigator.serviceWorker.controller)"):
             await page.reload(wait_until="domcontentloaded")
@@ -336,7 +413,7 @@ async def main() -> None:
 
         manual_override = await run_manual_import_smoke(page)
 
-        print(json.dumps({"identity_parity": identity_parity, "production": result, "synthetic_test_only": synthetic, "manual_override": manual_override}, ensure_ascii=False, indent=2))
+        print(json.dumps({"identity_parity": identity_parity, "storage_parity": storage_parity, "production": result, "synthetic_test_only": synthetic, "manual_override": manual_override}, ensure_ascii=False, indent=2))
         if page_errors:
             raise AssertionError(f"page errors: {page_errors}")
         if console_errors:

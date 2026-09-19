@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poker-opponent-posterior-range/v1",
+  "title": "Opponent posterior range runtime contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "reason",
+    "hand_id",
+    "step_id",
+    "public_state_fingerprint",
+    "player",
+    "position",
+    "identity",
+    "moment",
+    "public_action",
+    "exact_combo_weights",
+    "projection_169",
+    "blockers_applied",
+    "normalization",
+    "probability_mass",
+    "support",
+    "distribution_fingerprint",
+    "provenance"
+  ],
+  "properties": {
+    "schema": {
+      "const": "poker-opponent-posterior-range/v1"
+    },
+    "status": {
+      "enum": ["AVAILABLE", "UNSUPPORTED", "INVALID"]
+    },
+    "reason": {
+      "type": ["string", "null"]
+    },
+    "hand_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_id": {
+      "type": ["string", "integer"]
+    },
+    "public_state_fingerprint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "player": {
+      "type": "string",
+      "minLength": 1
+    },
+    "position": {
+      "type": "string",
+      "minLength": 1
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["population_id", "model_id", "model_version", "source_id"],
+      "properties": {
+        "population_id": {"type": "string", "minLength": 1},
+        "model_id": {"type": "string", "minLength": 1},
+        "model_version": {"type": "string", "minLength": 1},
+        "source_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "moment": {
+      "enum": ["BEFORE_ACTION", "AFTER_ACTION"]
+    },
+    "public_action": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "source_step_id", "sizing"],
+          "properties": {
+            "action": {"type": "string", "minLength": 1},
+            "source_step_id": {"type": ["string", "integer"]},
+            "sizing": {
+              "oneOf": [
+                {"type": "null"},
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "semantic",
+                    "observed_size_bb",
+                    "target_total_bb",
+                    "pot_before_bb",
+                    "pot_fraction"
+                  ],
+                  "properties": {
+                    "semantic": {
+                      "enum": [
+                        "INCREMENTAL_COST_BB",
+                        "TARGET_TOTAL_BB",
+                        "POT_FRACTION",
+                        "UNSPECIFIED"
+                      ]
+                    },
+                    "observed_size_bb": {"type": ["number", "null"], "minimum": 0},
+                    "target_total_bb": {"type": ["number", "null"], "minimum": 0},
+                    "pot_before_bb": {"type": ["number", "null"], "minimum": 0},
+                    "pot_fraction": {"type": ["number", "null"], "minimum": 0}
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "exact_combo_weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cards", "weight"],
+        "properties": {
+          "cards": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "pattern": "^[2-9TJQKA][shdc]$"
+            }
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "projection_169": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classes",
+        "full_combo_multiplicity",
+        "legal_combo_multiplicity"
+      ],
+      "properties": {
+        "classes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minProperties": 169,
+          "maxProperties": 169
+        },
+        "full_combo_multiplicity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minProperties": 169,
+          "maxProperties": 169
+        },
+        "legal_combo_multiplicity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minProperties": 169,
+          "maxProperties": 169
+        }
+      }
+    },
+    "blockers_applied": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["card", "knowledge_scope", "source_step_id"],
+        "properties": {
+          "card": {
+            "type": "string",
+            "pattern": "^[2-9TJQKA][shdc]$"
+          },
+          "knowledge_scope": {
+            "const": "PUBLIC"
+          },
+          "source_step_id": {
+            "type": ["string", "integer"]
+          }
+        }
+      }
+    },
+    "normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_mass",
+        "blocked_mass",
+        "retained_mass",
+        "output_mass",
+        "tolerance"
+      ],
+      "properties": {
+        "input_mass": {"type": "number", "minimum": 0},
+        "blocked_mass": {"type": "number", "minimum": 0},
+        "retained_mass": {"type": "number", "minimum": 0},
+        "output_mass": {"type": "number", "minimum": 0},
+        "tolerance": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "probability_mass": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1.000000001
+    },
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_observations",
+        "exact_combo_support",
+        "effective_support",
+        "entropy_nats",
+        "backoff"
+      ],
+      "properties": {
+        "source_observations": {"type": "integer", "minimum": 0},
+        "exact_combo_support": {"type": "integer", "minimum": 0},
+        "effective_support": {"type": "number", "minimum": 0},
+        "entropy_nats": {"type": "number", "minimum": 0},
+        "backoff": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "reason"],
+          "properties": {
+            "level": {"type": "string", "minLength": 1},
+            "reason": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "distribution_fingerprint": {
+      "type": ["string", "null"]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer",
+        "contract_version",
+        "source_artifact",
+        "source_fingerprint"
+      ],
+      "properties": {
+        "producer": {"type": "string", "minLength": 1},
+        "contract_version": {"type": "string", "minLength": 1},
+        "source_artifact": {"type": "string", "minLength": 1},
+        "source_fingerprint": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"moment": {"const": "BEFORE_ACTION"}}
+      },
+      "then": {
+        "properties": {"public_action": {"type": "null"}}
+      }
+    },
+    {
+      "if": {
+        "properties": {"moment": {"const": "AFTER_ACTION"}}
+      },
+      "then": {
+        "properties": {"public_action": {"type": "object"}}
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "AVAILABLE"}}
+      },
+      "then": {
+        "properties": {
+          "reason": {"type": "null"},
+          "exact_combo_weights": {"minItems": 1},
+          "probability_mass": {
+            "minimum": 0.999999999,
+            "maximum": 1.000000001
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": ["UNSUPPORTED", "INVALID"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason": {"type": "string", "minLength": 1},
+          "exact_combo_weights": {"maxItems": 0},
+          "probability_mass": {"const": 0},
+          "distribution_fingerprint": {"type": "null"}
+        }
+      }
+    }
+  ]
+}

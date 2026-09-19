@@ -18,6 +18,8 @@ const TRAINER_POSTFLOP_ORDER=["SB","BB","LJ","HJ","CO","BTN"];
 const TRAINER_HERO="Hero";
 const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};
 const TRAINER_REVIEW_CACHE_MAX=96;
+const TrainerActionSizingEV=window.PokerActionSizingEV;
+if(!TrainerActionSizingEV?.primarySummaryHtml||!TrainerActionSizingEV?.alternativesStripHtml||!TrainerActionSizingEV?.qualityFromEV)throw new Error("PokerActionSizingEV requis avant trainer.js.");
 const trainerWarmAssets={started:false,promise:null,population:null,modelA:null,modelB:null,heroRanges:null,startedAt:0,finishedAt:0,error:null};
 const trainerReviewCache={entries:new Map(),preModel:null,postModel:null,hits:0,misses:0,evictions:0};
 
@@ -27,7 +29,12 @@ const trainerState={
   pauseAfterDecision:false,busy:false,sizingTouched:false,
   perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false,cacheHits:0,cacheMisses:0},
   session:{hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)},
-  testLog:[]
+  testLog:[],
+  targeted:{
+    active:false,preparing:false,baseTarget:null,target:null,criteria:null,plan:null,pool:[],
+    currentIndex:-1,currentScenario:null,currentCompleted:false,events:[],summary:null,
+    requestedSize:5,fallback:null,lastError:"",attempts:0,evaluated:0,complete:false
+  }
 };
 
 const trainerPage=document.getElementById("trainerPage");
@@ -47,6 +54,21 @@ const trainerProfiles=document.getElementById("trainerProfiles");
 const trainerTestLog=document.getElementById("trainerTestLog");
 const trainerPopulationIdentity=document.getElementById("trainerPopulationIdentity");
 const trainerTechnicalIdentity=document.getElementById("trainerTechnicalIdentity");
+const trainerTargetPanel=document.getElementById("trainerTargetPanel");
+const trainerTargetIdentity=document.getElementById("trainerTargetIdentity");
+const trainerTargetPosition=document.getElementById("trainerTargetPosition");
+const trainerTargetStreet=document.getElementById("trainerTargetStreet");
+const trainerTargetSpot=document.getElementById("trainerTargetSpot");
+const trainerTargetAction=document.getElementById("trainerTargetAction");
+const trainerTargetSizing=document.getElementById("trainerTargetSizing");
+const trainerTargetJam=document.getElementById("trainerTargetJam");
+const trainerTargetOverbet=document.getElementById("trainerTargetOverbet");
+const trainerTargetSessionSize=document.getElementById("trainerTargetSessionSize");
+const trainerTargetApplyBtn=document.getElementById("trainerTargetApplyBtn");
+const trainerTargetClearBtn=document.getElementById("trainerTargetClearBtn");
+const trainerTargetSupport=document.getElementById("trainerTargetSupport");
+const trainerTargetSummarySection=document.getElementById("trainerTargetSummarySection");
+const trainerTargetSummary=document.getElementById("trainerTargetSummary");
 
 function trainerSleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function trainerClamp(x,a,b){return Math.max(a,Math.min(b,x));}
@@ -150,6 +172,270 @@ async function trainerEnsureModels(){
   }finally{trainerState.loading=false;trainerRender();}
 }
 
+function trainerTargetApis(){
+  const Target=window.PokerLeakTrainingTarget,Selector=window.PokerLeakScenarioSelector,Leak=window.PokerLeakAnalyzer;
+  if(!Target?.buildTrainingTarget||!Target?.compileScenarioCriteria||!Target?.scenarioMatchesCriteria)throw new Error("poker-leak-training-target/v1 indisponible.");
+  if(!Selector?.buildSessionPlan||!Selector?.summarizePlannedSession)throw new Error("poker-leak-training-session-plan/v1 indisponible.");
+  if(!Leak?.buildDecisionEvent)throw new Error("PokerLeakAnalyzer indisponible.");
+  return {Target,Selector,Leak};
+}
+function trainerTargetClone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function trainerTargetResetSessionCounters(){
+  trainerState.session={hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)};
+  trainerState.testLog=[];
+}
+function trainerTargetSameIdentity(a={},b={}){
+  return ["population_id","pack_id","strategy_id","strategy_version","ev_reference"].every(k=>String(a?.[k]??"")===String(b?.[k]??""));
+}
+function trainerTargetAssertCurrentIdentity(target){
+  const currentDashboard=typeof reviewDashboardBuild==="function"?reviewDashboardBuild():state.reviewDashboardView;
+  const currentTarget=currentDashboard?.ctas?.training?.target||null;
+  if(currentTarget?.identity&&!trainerTargetSameIdentity(currentTarget.identity,target.identity))throw new Error("Le contexte Review a changé : population/pack/stratégie/version/EV ne correspondent plus à ce ciblage.");
+}
+function trainerTargetIdentityText(target){
+  const id=target?.identity||{};
+  return `Population ${id.population_id||"—"} · pack ${id.pack_id||"—"} · stratégie ${id.strategy_id||"—"} · version ${id.strategy_version||"—"} · EV ${id.ev_reference||"—"}`;
+}
+function trainerTargetHydrate(target){
+  if(!target)return;
+  trainerTargetPanel.hidden=false;
+  trainerTargetSummarySection.hidden=false;
+  trainerTargetIdentity.textContent=trainerTargetIdentityText(target);
+  trainerTargetPosition.value=String(target.context?.position||"");
+  trainerTargetStreet.value=String(target.context?.street||"");
+  trainerTargetSpot.value=String(target.context?.spot_family||"");
+  trainerTargetAction.value=String(target.source_pattern?.recommended_action||"");
+  trainerTargetSizing.checked=target.source_pattern?.sizing_error===true;
+  trainerTargetJam.checked=target.source_pattern?.jam===true;
+  trainerTargetOverbet.checked=target.source_pattern?.overbet===true;
+  trainerTargetSessionSize.value=String(trainerState.targeted.requestedSize||5);
+}
+function trainerTargetBuildFromControls(){
+  const {Target}=trainerTargetApis(),base=trainerState.targeted.baseTarget;
+  if(!base)throw new Error("Aucun leak source n'est actif.");
+  const size=Math.max(1,Math.min(10,Number(trainerTargetSessionSize.value)||5));
+  trainerState.targeted.requestedSize=size;
+  return Target.buildTrainingTarget({
+    identity:trainerTargetClone(base.identity),
+    context:{
+      position:String(trainerTargetPosition.value||"").toUpperCase()||null,
+      street:String(trainerTargetStreet.value||"").toUpperCase()||null,
+      spot_family:String(trainerTargetSpot.value||"").trim().toUpperCase()||null
+    },
+    source_pattern:{
+      played_action:base.source_pattern?.played_action||null,
+      recommended_action:String(trainerTargetAction.value||"").toUpperCase()||null,
+      sizing_error:trainerTargetSizing.checked?true:null,
+      jam:trainerTargetJam.checked?true:null,
+      overbet:trainerTargetOverbet.checked?true:null
+    },
+    source_leak:trainerTargetClone(base.source_leak),
+    minimum_support:trainerTargetClone(base.minimum_support)
+  });
+}
+function trainerTargetHints(target){
+  const street=String(target?.context?.street||"").toUpperCase(),spot=String(target?.context?.spot_family||"").toUpperCase();
+  if(street==="PREFLOP")return {unsupported:"PREFLOP_NOT_MATERIALIZED_BY_CURRENT_TRAINER"};
+  const parts=spot?spot.split("|"):[];
+  if(parts.length&&parts[0]&&parts[0]!=="SRP")return {unsupported:"SPOT_FAMILY_NOT_MATERIALIZED_BY_CURRENT_TRAINER"};
+  return {
+    position:String(target?.context?.position||"").toUpperCase(),
+    preflopRole:["PFA","CALLER"].includes(parts[1])?parts[1]:"",
+    relativePosition:["IP","OOP"].includes(parts[2])?parts[2]:"",
+    preview:true,strict:true
+  };
+}
+function trainerTargetStreetRank(street){return ({FLOP:0,TURN:1,RIVER:2})[String(street||"").toUpperCase()]??-1;}
+function trainerTargetAdvancePreview(hand,target){
+  const desired=String(target?.context?.street||"").toUpperCase();
+  for(let guard=0;guard<40&&!hand.ended;guard++){
+    if(!hand.queue.length){trainerAdvanceStreetOrShowdown(hand);continue;}
+    const seat=hand.queue.shift();
+    if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
+    if(seat!==hand.heroSeat){trainerOpponentAct(hand);continue;}
+    hand.awaitingHero=true;hand.decisionNo++;
+    const current=String(hand.street||"").toUpperCase();
+    if(!desired||current===desired)return hand;
+    if(trainerTargetStreetRank(current)>trainerTargetStreetRank(desired))return null;
+    const toCall=trainerToCall(hand,hand.heroSeat),kind=toCall>1e-8?"CALL":"CHECK";
+    hand.awaitingHero=false;trainerApplyAction(hand,hand.heroSeat,kind,toCall);
+  }
+  return null;
+}
+function trainerTargetSpotFamily(detail,hand){
+  const sim=detail?.simContext||{},parts=[sim.potType,sim.preflopRole,sim.relativePosition].map(v=>String(v||"").toUpperCase()).filter(Boolean);
+  if(parts.length===3)return parts.join("|");
+  const heroPos=hand.positions[hand.heroSeat],oppPos=hand.positions[hand.activeOppSeat],relative=trainerPostRank(heroPos)>trainerPostRank(oppPos)?"IP":"OOP";
+  return `SRP|${hand.heroRole}|${relative}`;
+}
+function trainerTargetFocus(hand){
+  const toCall=trainerToCall(hand,hand.heroSeat),remaining=Number(hand.stacks[hand.heroSeat])||0;
+  const canAggress=remaining>toCall+1e-8&&hand.raises<2;
+  return {sizing_decision:canAggress,jam_available:canAggress,overbet_available:canAggress&&remaining>Number(hand.pot||0)+toCall+1e-8};
+}
+function trainerTargetDescriptor(target,hand,detail,attempt){
+  const {Target}=trainerTargetApis(),recommended=trainerRecommendationKind(hand,detail),chosen=Number(detail?.chosenEV),best=Number(detail?.bestEV);
+  const comparable=detail?.comparable!==false&&Number.isFinite(chosen)&&Number.isFinite(best),position=String(hand.positions[hand.heroSeat]||"").toUpperCase();
+  const board=hand.runout.slice(0,hand.boardCount).map(cardCode).join("-");
+  return {
+    schema:Target.SCENARIO_SCHEMA,
+    scenario_id:`trainer-target:${target.target_id}:${attempt}:${hand.id}:${hand.decisionNo}`,
+    identity:trainerTargetClone(target.identity),
+    context:{position,street:String(hand.street||"").toUpperCase(),spot_family:trainerTargetSpotFamily(detail,hand)},
+    policy:{recommended_action:recommended},
+    focus:trainerTargetFocus(hand),
+    supported:comparable,
+    support:{covered:comparable,reason:comparable?null:"NO_COMPARABLE_EV"},
+    diversity_key:`${position}|${hand.heroRole}|${board}`,
+    payload_key:`${hand.id}|${hand.decisionNo}`,
+    payload:{hand:trainerTargetClone(hand),recommendation:trainerTargetClone(detail)}
+  };
+}
+function trainerTargetSetSupport(text,kind=""){
+  if(!trainerTargetSupport)return;
+  trainerTargetSupport.textContent=text||"";
+  trainerTargetSupport.className=`tiny${kind?" "+kind:""}`;
+}
+async function trainerTargetMaterializePool(target,requestedSize){
+  const {Target}=trainerTargetApis(),criteria=Target.compileScenarioCriteria(target),hints=trainerTargetHints(target);
+  if(hints.unsupported)return {pool:[],criteria,attempts:0,evaluated:0,unsupported:hints.unsupported};
+  const required=Math.max(requestedSize,Number(target.minimum_support?.scenarios)||1),maxAttempts=Math.max(30,required*18),maxEvaluated=Math.max(14,required*6);
+  const pool=[];let matching=0,attempts=0,evaluated=0;
+  while(attempts<maxAttempts&&evaluated<maxEvaluated&&matching<required){
+    attempts++;
+    const hand=trainerBuildHand(hints);if(!hand)break;
+    const ready=trainerTargetAdvancePreview(hand,target);if(!ready||ready.ended)continue;
+    evaluated++;
+    trainerTargetSetSupport(`Qualification des spots… ${matching}/${required} supportés · ${evaluated} évalués`,"busy");
+    let detail=null;
+    try{
+      const ph=trainerPlaceholderLine(ready);
+      detail=await trainerTimedReviewText(trainerBuildReviewHH(ready,ph.line,ph.kind,0));
+    }catch(err){
+      pool.push({
+        schema:Target.SCENARIO_SCHEMA,scenario_id:`trainer-target:${target.target_id}:${attempts}:unsupported`,
+        identity:trainerTargetClone(target.identity),context:{position:ready.positions[ready.heroSeat],street:String(ready.street).toUpperCase(),spot_family:trainerTargetSpotFamily(null,ready)},
+        policy:{recommended_action:"UNKNOWN"},focus:trainerTargetFocus(ready),supported:false,support:{covered:false,reason:"ORACLE_UNAVAILABLE"},
+        payload:{hand:trainerTargetClone(ready),recommendation:{error:String(err?.message||err)}}
+      });
+      continue;
+    }
+    const descriptor=trainerTargetDescriptor(target,ready,detail,attempts);pool.push(descriptor);
+    if(Target.scenarioMatchesCriteria(descriptor,criteria))matching++;
+  }
+  return {pool,criteria,attempts,evaluated,unsupported:null};
+}
+function trainerTargetRenderSummary(){
+  const t=trainerState.targeted;
+  if(!t.active){trainerTargetPanel.hidden=true;trainerTargetSummarySection.hidden=true;return;}
+  trainerTargetPanel.hidden=false;trainerTargetSummarySection.hidden=false;
+  if(t.fallback){
+    const p=t.plan?.pool||{};
+    trainerTargetSummary.textContent=`${t.fallback} · ${p.matching_supported??0} spot(s) exact(s) pour ${p.requested_coverage_pct==null?t.requestedSize:t.plan.request.session_size} demandé(s) · aucune substitution silencieuse.`;
+    return;
+  }
+  if(!t.plan){trainerTargetSummary.textContent=t.preparing?"Préparation de la session ciblée…":"Aucun plan ciblé exécutable.";return;}
+  const s=t.summary?.summary;
+  if(!s){trainerTargetSummary.textContent=`0/${t.plan.selection.length} spot joué · perte ΔEV ciblée : — · le bilan sera calculé uniquement sur les décisions couvertes et comparables.`;return;}
+  const change=s.within_session_change;
+  const evolution=change?` · évolution descriptive ${trainerFmtBB(change.first_segment_avg_loss_bb)} → ${trainerFmtBB(change.second_segment_avg_loss_bb)} (Δ ${trainerFmtBB(change.delta_avg_loss_bb)})`:" · évolution : échantillon encore insuffisant";
+  const longTerm=t.summary.long_term_progression;
+  trainerTargetSummary.textContent=`${t.summary.spots_played}/${t.plan.selection.length} spot(s) joué(s) · couvert/comparable ${s.covered_comparable} · perte ΔEV ciblée ${trainerFmtBB(s.total_delta_ev_loss_bb)} · moyenne ${s.average_delta_ev_loss_bb==null?"—":trainerFmtBB(s.average_delta_ev_loss_bb)} · unsupported ${s.unsupported} · non-comparable ${s.non_comparable}${evolution} · progression long terme non inférée (${longTerm.reason}).`;
+}
+function trainerTargetLoadSelection(index){
+  const t=trainerState.targeted,row=t.plan?.selection?.[index],payload=row?.scenario?.payload;
+  if(!row||!payload?.hand){
+    t.complete=true;t.currentScenario=null;t.currentCompleted=false;
+    if(trainerState.hand)trainerState.hand.awaitingHero=false;
+    trainerRenderStatus("Session ciblée terminée.");trainerRender();return false;
+  }
+  t.currentIndex=index;t.currentScenario=row;t.currentCompleted=false;t.complete=false;
+  trainerState.hand=trainerTargetClone(payload.hand);trainerState.hand.preview=true;trainerState.hand.awaitingHero=true;
+  trainerState.recommendation=trainerTargetClone(payload.recommendation);trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerState.sizingTouched=false;
+  trainerRenderStatus(`Spot ciblé ${index+1}/${t.plan.selection.length} · ${row.context.position} · ${row.context.street} · ${row.context.spot_family}.`);
+  trainerRender();return true;
+}
+function trainerTargetNext(){
+  const t=trainerState.targeted;if(!t.active||!t.plan?.ready)return false;
+  const next=t.currentIndex+1;
+  if(next>=t.plan.selection.length){
+    t.complete=true;t.currentScenario=null;t.currentCompleted=false;trainerState.pauseAfterDecision=false;
+    if(trainerState.hand)trainerState.hand.awaitingHero=false;
+    trainerRenderStatus("Session ciblée terminée · bilan ΔEV disponible.");trainerRender();return false;
+  }
+  return trainerTargetLoadSelection(next);
+}
+function trainerTargetEvent(detail,row,actual){
+  const t=trainerState.targeted,selection=t.currentScenario,scenario=selection?.scenario,hand=trainerState.hand;
+  if(!t.active||!t.plan||!scenario||!hand)return null;
+  const {Leak,Selector}=trainerTargetApis(),chosen=Number(detail?.chosenEV),best=Number(detail?.bestEV),comparable=detail?.comparable!==false&&Number.isFinite(chosen)&&Number.isFinite(best);
+  const played=String(actual?.kind||row?.played||"UNKNOWN").toUpperCase(),recommended=String(scenario.policy?.recommended_action||"UNKNOWN").toUpperCase();
+  const cost=Number(actual?.cost)||0,potBefore=Math.max(.01,Number(hand.pot)||0),bestCost=Number(detail?.bestCostBB),rawLoss=Math.max(0,Number(detail?.rawLossBB)||0),effectiveLoss=Math.max(0,Number(row?.lossBB)||0);
+  const aggressive=["BET","RAISE"].includes(played),playedRatio=aggressive?cost/potBefore:null,allIn=cost>=Number(hand.stacks[hand.heroSeat]||0)-1e-8&&cost>0;
+  const event=Leak.buildDecisionEvent({
+    hand_id:`trainer-target-${hand.id}-${t.currentIndex+1}`,decision_id:`trainer-target:${hand.id}:${hand.decisionNo}`,timestamp:new Date(Date.now()+t.events.length).toISOString(),
+    ...trainerTargetClone(t.target.identity),position:scenario.context.position,street:scenario.context.street,spot_family:scenario.context.spot_family,context_id:t.target.target_id,
+    action_played:played,action_recommended:recommended,played_target_total_bb:(Number(hand.streetPaid[hand.heroSeat])||0)+cost,
+    recommended_target_total_bb:Number.isFinite(bestCost)?(Number(hand.streetPaid[hand.heroSeat])||0)+bestCost:null,
+    played_size_pot_ratio:playedRatio,recommended_size_pot_ratio:Number.isFinite(bestCost)&&["BET","RAISE"].includes(recommended)?bestCost/potBefore:null,
+    played_is_all_in:allIn,played_is_overbet:playedRatio!=null&&playedRatio>1,played_ev_bb:comparable?chosen:null,best_ev_bb:comparable?best:null,
+    uncertainty_bb:Math.max(0,rawLoss-effectiveLoss),attributed_loss_bb:comparable?effectiveLoss:null,within_noise:!!detail?.withinNoise,
+    sizing_error:played===recommended&&Number.isFinite(bestCost)&&Math.abs(bestCost-cost)>.05,
+    support:{covered:comparable,source:"trainer-targeted-runtime",reason:comparable?null:"NO_COMPARABLE_EV"},
+    comparability:{comparable,reason:comparable?null:"NO_COMPARABLE_EV"},notes:`target_id=${t.target.target_id}`
+  });
+  t.events.push(event);
+  t.summary=Selector.summarizePlannedSession(t.plan,t.events,{minimum_trend_decisions:4,minimum_long_term_spots:50});
+  trainerTargetRenderSummary();return event;
+}
+async function trainerPrepareTargetSession(target,{hydrate=false}={}){
+  const t=trainerState.targeted,{Selector}=trainerTargetApis();
+  t.active=true;t.preparing=true;t.target=trainerTargetClone(target);t.plan=null;t.pool=[];t.criteria=null;t.currentIndex=-1;t.currentScenario=null;t.currentCompleted=false;t.events=[];t.summary=null;t.fallback=null;t.lastError="";t.complete=false;
+  if(hydrate||!t.baseTarget){t.baseTarget=trainerTargetClone(target);trainerTargetHydrate(target);}
+  trainerTargetResetSessionCounters();trainerTargetRenderSummary();
+  try{
+    trainerTargetAssertCurrentIdentity(target);
+    if(!target.source_support?.sufficient)throw new Error("INSUFFICIENT_SOURCE_SUPPORT");
+    if(!await trainerEnsureModels())throw new Error(trainerState.error||"Trainer indisponible");
+    const materialized=await trainerTargetMaterializePool(target,t.requestedSize);
+    t.pool=materialized.pool;t.criteria=materialized.criteria;t.attempts=materialized.attempts;t.evaluated=materialized.evaluated;
+    const plan=Selector.buildSessionPlan(target,t.pool,{session_size:t.requestedSize,seed:target.target_id,identity:trainerTargetClone(target.identity)});
+    t.plan=plan;t.fallback=plan.fallback||materialized.unsupported||null;
+    if(!plan.ready){
+      t.fallback=plan.fallback||"INSUFFICIENT_SUPPORTED_SCENARIOS";
+      trainerState.hand=null;trainerState.recommendation=null;trainerState.feedback=null;trainerState.pauseAfterDecision=false;
+      const p=plan.pool||{};trainerTargetSetSupport(`${t.fallback} · exacts ${p.matching_supported??0}/${plan.request.effective_minimum_supported_scenarios} · ${p.rejected??0} rejeté(s) · aucun spot alternatif sélectionné.`,"error");
+      trainerRenderStatus("Session ciblée indisponible : support exact insuffisant.","error");trainerRender();return plan;
+    }
+    trainerTargetSetSupport(`Plan exact prêt · ${plan.pool.matching_supported} spot(s) supporté(s), ${plan.selection.length} sélectionné(s) · target ${plan.target_id}.`);
+    trainerTargetLoadSelection(0);return plan;
+  }catch(err){
+    t.lastError=String(err?.message||err);t.fallback=t.lastError==="INSUFFICIENT_SOURCE_SUPPORT"?"INSUFFICIENT_SOURCE_SUPPORT":"INSUFFICIENT_SUPPORTED_SCENARIOS";
+    trainerState.hand=null;trainerState.recommendation=null;trainerState.feedback=null;trainerState.pauseAfterDecision=false;
+    trainerTargetSetSupport(`${t.fallback} · ${t.lastError} · aucune substitution silencieuse.`,"error");
+    trainerRenderStatus(`Session ciblée indisponible : ${t.lastError}`,"error");trainerRender();return null;
+  }finally{t.preparing=false;trainerTargetRenderSummary();}
+}
+async function trainerOpenTargetedSession(target){
+  const {Target}=trainerTargetApis();
+  if(!target||target.schema!==Target.TARGET_SCHEMA)throw new Error("Descriptor poker-leak-training-target/v1 requis.");
+  trainerState.targeted.baseTarget=trainerTargetClone(target);trainerState.targeted.requestedSize=Math.max(1,Math.min(10,Number(trainerTargetSessionSize?.value)||5));
+  trainerTargetHydrate(target);
+  await trainerOpen({deferHand:true});
+  return trainerPrepareTargetSession(target,{hydrate:true});
+}
+window.trainerOpenTargetedSession=trainerOpenTargetedSession;
+async function trainerApplyTargetControls(){
+  if(!trainerState.targeted.active)return;
+  try{const target=trainerTargetBuildFromControls();await trainerPrepareTargetSession(target,{hydrate:false});}
+  catch(err){trainerTargetSetSupport(String(err?.message||err),"error");}
+}
+async function trainerClearTargeting(){
+  const t=trainerState.targeted;t.active=false;t.preparing=false;t.baseTarget=null;t.target=null;t.criteria=null;t.plan=null;t.pool=[];t.currentIndex=-1;t.currentScenario=null;t.currentCompleted=false;t.events=[];t.summary=null;t.fallback=null;t.lastError="";t.complete=false;
+  trainerTargetPanel.hidden=true;trainerTargetSummarySection.hidden=true;trainerState.hand=null;trainerState.recommendation=null;trainerState.feedback=null;trainerState.pauseAfterDecision=false;
+  trainerTargetResetSessionCounters();trainerRenderStatus("Ciblage désactivé · session Training générale.");trainerRender();await trainerNewHand();
+}
+
 function trainerKeyFor(cols,row){return !cols?.length?"ALL":cols.map(c=>String(row[c]??"NA")).join("|");}
 function trainerSelectNode(levels,row,minObs){
   let fallback=null;
@@ -211,20 +497,28 @@ function trainerSizingValues(ctx){
 function trainerSampleSizing(ctx){const v=trainerSizingValues(ctx);return v.length?v[trainerRandomInt(v.length)]:.66;}
 
 function trainerDraw(deck){if(!deck.length)throw new Error("Paquet vide");return deck.pop();}
-function trainerBuildHand(){
-  const dealer=trainerRandomInt(6),heroSeat=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
+function trainerBuildHand(hints={},depth=0){
+  if(depth>60)return null;
+  const desiredPosition=String(hints.position||"").toUpperCase(),desiredRole=String(hints.preflopRole||"").toUpperCase(),desiredRelative=String(hints.relativePosition||"").toUpperCase();
+  const dealer=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
+  const hintedSeat=desiredPosition?positions.indexOf(desiredPosition):-1,heroSeat=hintedSeat>=0?hintedSeat:trainerRandomInt(6);
   const heroPos=positions[heroSeat],heroRank=TRAINER_PREFLOP_ORDER.indexOf(heroPos);
   let heroRole=(heroRank<5&&heroRank>0)?(Math.random()<.5?"PFA":"CALLER"):(heroRank===0?"PFA":"CALLER");
+  if(["PFA","CALLER"].includes(desiredRole))heroRole=desiredRole;
   let candidates=[];
   if(heroRole==="PFA")candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r>heroRank);
   else candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r<heroRank);
-  if(!candidates.length||!trainerHeroRangeAvailable(heroRole,heroPos))return trainerBuildHand();
+  if(["IP","OOP"].includes(desiredRelative))candidates=candidates.filter(x=>{
+    const heroRelative=trainerPostRank(heroPos)>trainerPostRank(x.p)?"IP":"OOP";
+    return heroRelative===desiredRelative;
+  });
+  if(!candidates.length||!trainerHeroRangeAvailable(heroRole,heroPos))return hints.strict?null:trainerBuildHand(hints,depth+1);
   trainerState.handNo++;
   const oppSeat=candidates[trainerRandomInt(candidates.length)].s,oppPos=positions[oppSeat],pfaSeat=heroRole==="PFA"?heroSeat:oppSeat,callerSeat=heroRole==="CALLER"?heroSeat:oppSeat;
   const names=Array.from({length:6},(_,s)=>s===heroSeat?TRAINER_HERO:`Villain ${s+1}`),profiles=Array(6).fill(null);
   for(let s=0;s<6;s++)if(s!==heroSeat)profiles[s]=trainerSampleProfile();
   const hole=Array.from({length:6},()=>[]),blocked=new Set(),heroCards=trainerSampleHeroRangeCards(heroRole,heroPos,blocked);
-  if(!heroCards)return trainerBuildHand();hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
+  if(!heroCards)return hints.strict?null:trainerBuildHand(hints,depth+1);hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
   const oppRole=heroRole==="PFA"?"CALLER":"PFA",oppCards=trainerSampleRangeCards(profiles[oppSeat],oppPos,"SRP",oppRole,blocked);
   hole[oppSeat]=oppCards;for(const c of oppCards)blocked.add(c);
   const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);
@@ -236,17 +530,17 @@ function trainerBuildHand(){
   const id=990000000000+trainerState.handNo*100;
   const lines=[`PokerStars Hand #${id}: Hold'em No Limit (0.50/1.00) - 2026/09/12 14:00:00 CET`,`Table 'Trainer 6-max' 6-max Seat #${dealer+1} is the button`];
   for(let s=0;s<6;s++)lines.push(`Seat ${s+1}: ${names[s]} (100 in chips)`);
-  lines.push(`${names[sb]}: posts small blind 0.50`,`${names[bb]}: posts big blind 1.00`,`*** HOLE CARDS ***`,`Dealt to ${TRAINER_HERO} [${hole[heroSeat].map(cardCode).join(" ")}]`);
+  lines.push(`${names[sb]}: posts small blind 0.50`,`${names[bb]}: posts big blind 1.00`,"*** HOLE CARDS ***",`Dealt to ${TRAINER_HERO} [${hole[heroSeat].map(cardCode).join(" ")}]`);
   for(const pos of TRAINER_PREFLOP_ORDER){
     const s=trainerSeatForPosition({positions},pos),name=names[s];
     if(s===pfaSeat){const target=2.5,add=target-contrib[s];contrib[s]=target;lines.push(`${name}: raises 1.50 to 2.50`);lastAction[s]="RAISE 2,5 BB";stacks[s]-=add;}
     else if(s===callerSeat){const add=2.5-contrib[s];contrib[s]=2.5;lines.push(`${name}: calls ${trainerNum(add)}`);lastAction[s]=`CALL ${trainerNum(add)} BB`;stacks[s]-=add;}
     else{lines.push(`${name}: folds`);folded[s]=true;lastAction[s]="FOLD";}
   }
-  const pot=contrib.reduce((s,x)=>s+x,0);
+  const pot=contrib.reduce((sum,x)=>sum+x,0);
   lines.push(`*** FLOP *** [${runout.slice(0,3).map(cardCode).join(" ")}]`);
   const hand={id,dealerSeat:dealer,heroSeat,activeOppSeat:oppSeat,pfaSeat,callerSeat,heroRole,oppRole,positions,names,profiles,hole,runout,
-    stacks,folded,lastAction,pot,street:"flop",boardCount:3,streetPaid:Array(6).fill(0),currentBet:0,lastRaise:1,raises:0,queue:[],historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0};
+    stacks,folded,lastAction,pot,street:"flop",boardCount:3,streetPaid:Array(6).fill(0),currentBet:0,lastRaise:1,raises:0,queue:[],historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0,preview:!!hints.preview};
   trainerStartStreet(hand,"flop",false);return hand;
 }
 
@@ -299,7 +593,8 @@ function trainerOpponentAct(hand){
   }
 }
 function trainerEndHand(hand,winnerSeat,showdown){
-  hand.ended=true;hand.queue=[];hand.awaitingHero=false;hand.showdown=!!showdown;hand.winner=winnerSeat===null?"Partage":hand.names[winnerSeat];trainerState.session.hands++;
+  hand.ended=true;hand.queue=[];hand.awaitingHero=false;hand.showdown=!!showdown;hand.winner=winnerSeat===null?"Partage":hand.names[winnerSeat];
+  if(!hand.preview)trainerState.session.hands++;
 }
 function trainerShowdown(hand){
   const heroScore=handScore([...hand.hole[hand.heroSeat],...hand.runout]),oppScore=handScore([...hand.hole[hand.activeOppSeat],...hand.runout]);
@@ -381,7 +676,7 @@ function trainerActualLine(hand,kind,cost){
 }
 function trainerDecisionClass(detail){
   const rawLoss=Math.max(0,Number(detail?.rawLossBB??detail?.lossBB)||0),effectiveLoss=Math.max(0,Number(detail?.lossBB)||0);
-  const quality=decisionQualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
+  const quality=TrainerActionSizingEV.qualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
   return quality.key==="unknown"?"close":quality.key;
 }
 function trainerRecordDecision(detail,playedKind,playedCost){
@@ -445,7 +740,8 @@ function trainerReuseBestAsPlayed(rec){
 }
 async function trainerHeroAction(kind,cost=0){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero||trainerState.busy||trainerState.pauseAfterDecision)return;
-  const guide=trainerState.mode==="guided"&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null;
+  const targetReference=trainerState.targeted.active&&trainerState.targeted.currentScenario&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null;
+  const guide=targetReference||(trainerState.mode==="guided"&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null);
   trainerState.busy=true;hand.awaitingHero=false;trainerRenderStatus("Évaluation de votre décision…","busy");trainerRender();
   let detail=null,row=null,actual=null;
   try{
@@ -457,9 +753,19 @@ async function trainerHeroAction(kind,cost=0){
       detail=guide?trainerGuideAnchoredDetail(guide,played):played;
     }
     trainerState.recommendation=guide||detail;row=trainerRecordDecision(detail,actual.kind,actual.cost);
+    if(trainerState.targeted.active&&trainerState.targeted.currentScenario)trainerTargetEvent(detail,row,actual);
   }
   catch(err){trainerRenderStatus(`Décision jouée, mais verdict indisponible : ${err.message}`,"error");}
   trainerApplyAction(hand,hand.heroSeat,kind,cost);trainerState.feedback=detail?{detail,row}:null;trainerState.busy=false;
+  if(trainerState.targeted.active&&trainerState.targeted.currentScenario){
+    trainerState.targeted.currentCompleted=true;
+    if(trainerState.mode==="test"){
+      trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
+    }
+    trainerState.pauseAfterDecision=true;
+    const suffix=trainerState.perf.lastMs?` · dernier calcul ${trainerState.perf.lastMs.toFixed(0)} ms`:"";
+    trainerRenderStatus(`Spot ciblé terminé${suffix} · passez au spot suivant lorsque vous êtes prêt.`);trainerRender();return;
+  }
   if(hand.ended){trainerRenderStatus(`Main terminée · ${hand.winner}.`);trainerRender();return;}
   if(trainerState.mode==="test"){trainerState.feedback=null;trainerRender();await trainerAdvance();}
   else{trainerState.pauseAfterDecision=true;const suffix=trainerState.perf.lastMs?` · dernier calcul ${trainerState.perf.lastMs.toFixed(0)} ms`:"";trainerRenderStatus(`Feedback disponible${suffix}. Continuez lorsque vous êtes prêt.`);trainerRender();}
@@ -482,9 +788,20 @@ async function trainerAdvance(){
   if(hand.ended)trainerRenderStatus(`Main terminée · ${hand.winner}.`);
   trainerRender();
 }
-async function trainerContinue(){trainerState.pauseAfterDecision=false;trainerState.feedback=null;trainerRender();await trainerAdvance();}
+async function trainerContinue(){
+  if(trainerState.targeted.active&&trainerState.targeted.currentCompleted){
+    trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
+  }
+  trainerState.pauseAfterDecision=false;trainerState.feedback=null;trainerRender();await trainerAdvance();
+}
 async function trainerNewHand(){
-  if(trainerState.busy)return;if(!await trainerEnsureModels())return;
+  if(trainerState.busy||trainerState.targeted.preparing)return;
+  if(trainerState.targeted.active){
+    const t=trainerState.targeted;
+    if(t.fallback||t.complete||!t.plan?.ready){if(t.target)await trainerPrepareTargetSession(t.target,{hydrate:false});return;}
+    trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
+  }
+  if(!await trainerEnsureModels())return;
   trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();trainerRenderStatus("Nouvelle main · préflop SRP simulé, entraînement à partir du flop.");trainerRender();await trainerAdvance();
 }
 
@@ -519,15 +836,19 @@ function trainerRenderRecommendation(){
 }
 function trainerRenderFeedback(){
   if(!trainerFeedback)return;const f=trainerState.feedback,h=trainerState.hand;
+  if(trainerState.mode==="test"&&trainerState.targeted.active&&trainerState.targeted.complete){
+    const loss=trainerState.testLog.reduce((sum,x)=>sum+x.lossBB,0);trainerFeedback.className="trainer-feedback";
+    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan Test ciblé</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>. Le bilan ΔEV ciblé est affiché dans « Bilan ciblé ».</div>`;return;
+  }
   if(trainerState.mode==="test"&&!h?.ended){trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Mode Test</div><div class="trainer-feedback-body">Aucun feedback avant la fin de la main.</div>';return;}
   if(!f){
-    if(h?.ended&&trainerState.mode==="test"){const loss=trainerState.testLog.reduce((s,x)=>s+x.lossBB,0);trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan de la main</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>.</div>`;return;}
+    if(h?.ended&&trainerState.mode==="test"){const loss=trainerState.testLog.reduce((sum,x)=>sum+x.lossBB,0);trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan de la main</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>.</div>`;return;}
     trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Feedback</div><div class="trainer-feedback-body">Jouez une décision Hero pour obtenir le verdict.</div>';return;
   }
   const d=f.detail,r=f.row,summary=trainerDecisionCanonical(d,r);
-  const quality=summary?decisionQualityFromEV(summary):{key:r?.cls||"unknown",label:"Indéterminée",note:""};
+  const quality=summary?TrainerActionSizingEV.qualityFromEV(summary):{key:r?.cls||"unknown",label:"Indéterminée",note:""};
   const cls=quality.key==="unknown"?"close":quality.key,title=quality.label;
-  const primary=summary?`${decisionPrimarySummaryHtml(summary,{compact:true})}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
+  const primary=summary?`${TrainerActionSizingEV.primarySummaryHtml(summary,{compact:true,escapeHtml,formatBB})}${TrainerActionSizingEV.alternativesStripHtml(summary,{limit:4,escapeHtml,formatBB})}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
   const noise=r.withinNoise?" · dans le bruit Monte-Carlo":"";
   trainerFeedback.className=`trainer-feedback ${cls}`;
   trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV effective après incertitude : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>La catégorie affichée est dérivée uniquement de la perte EV et de l’incertitude du modèle.</div></div></details>`;
@@ -535,10 +856,15 @@ function trainerRenderFeedback(){
 function trainerSizingValue(){return Math.max(0,Number(document.getElementById("trainerSizingInput")?.value)||0);}
 function trainerSetSizing(x){const input=document.getElementById("trainerSizingInput");if(input)input.value=trainerNum(x);}
 function trainerRenderControls(){
-  if(!trainerControls)return;const h=trainerState.hand;
+  if(!trainerControls)return;const h=trainerState.hand,t=trainerState.targeted;
+  if(t.active&&t.complete){trainerControls.innerHTML='<div class="trainer-hand-ended">Session ciblée terminée · le bilan ΔEV est disponible dans le panneau latéral.</div>';return;}
   if(!h){trainerControls.innerHTML="";return;}
-  if(h.ended){trainerControls.innerHTML=`<div class="trainer-hand-ended">Main terminée · <b>${escapeHtml(h.winner)}</b>${h.showdown?" · showdown":""}. Cliquez sur « Nouvelle main » pour continuer.</div>`;return;}
-  if(trainerState.pauseAfterDecision){trainerControls.innerHTML='<div class="trainer-decision-box"><div class="trainer-decision-head"><div class="trainer-decision-title">Feedback</div><button type="button" id="trainerInlineContinue" class="primary">Continuer la main</button></div></div>';document.getElementById("trainerInlineContinue")?.addEventListener("click",trainerContinue);return;}
+  if(h.ended&&!t.active){trainerControls.innerHTML=`<div class="trainer-hand-ended">Main terminée · <b>${escapeHtml(h.winner)}</b>${h.showdown?" · showdown":""}. Cliquez sur « Nouvelle main » pour continuer.</div>`;return;}
+  if(trainerState.pauseAfterDecision){
+    const label=t.active?"Spot suivant":"Continuer la main";
+    trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div class="trainer-decision-title">Feedback</div><button type="button" id="trainerInlineContinue" class="primary">${label}</button></div></div>`;
+    document.getElementById("trainerInlineContinue")?.addEventListener("click",trainerContinue);return;
+  }
   if(!h.awaitingHero){trainerControls.innerHTML='<div class="trainer-decision-box"><div class="trainer-decision-title">Action adverse en cours…</div></div>';return;}
   const toCall=trainerToCall(h,h.heroSeat),legal=toCall>1e-8?["FOLD","CALL","RAISE"]:["CHECK","BET"],minAgg=toCall>1e-8?toCall+h.lastRaise:Math.max(1,.33*h.pot),recCost=Number(trainerState.recommendation?.bestCostBB);
   trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div><div class="trainer-decision-title">À vous · ${escapeHtml(h.positions[h.heroSeat])} · ${escapeHtml(h.street.toUpperCase())}</div><div class="trainer-context">Pot ${escapeHtml(trainerFmtBB(h.pot))} · ${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"} · stack ${escapeHtml(trainerFmtBB(h.stacks[h.heroSeat]))}</div></div></div><div class="trainer-actions">${legal.map(a=>`<button type="button" class="${a==="FOLD"?"danger secondary":a==="CHECK"||a==="CALL"?"secondary":"primary"}" data-trainer-action="${a}">${a}</button>`).join("")}<div class="trainer-sizing"><div class="field"><label for="trainerSizingInput">Coût ajouté / mise (BB)</label><input id="trainerSizingInput" type="number" min="0" step="0.1" value="${trainerNum(Number.isFinite(recCost)?recCost:minAgg)}"></div><div class="trainer-size-presets"><button type="button" class="secondary" data-size=".5">½ pot</button><button type="button" class="secondary" data-size=".75">¾ pot</button><button type="button" class="secondary" data-size="1">Pot</button><button type="button" class="secondary" data-size="allin">All-in</button></div></div></div></div>`;
@@ -555,13 +881,24 @@ function trainerRenderProfiles(){
   trainerProfiles.innerHTML=Array.from({length:6},(_,s)=>s===h.heroSeat?"":(()=>{const p=trainerProfileById(h.profiles[s]),c=p?.centroid||{};return `<div class="trainer-profile-row"><b>${escapeHtml(h.names[s])} · ${escapeHtml(h.positions[s])} · ${escapeHtml(trainerProfileSummary(h.profiles[s]))}</b><div class="trainer-profile-metrics">VPIP ${(100*Number(c.vpip||0)).toFixed(0)} % · PFR ${(100*Number(c.pfr||0)).toFixed(0)} % · Agg. postflop ${(100*Number(c.post_aggression_frequency||0)).toFixed(0)} %</div></div>`;})()).join("");
 }
 function trainerRenderTestLog(){
-  if(!trainerTestLog)return;if(trainerState.mode!=="test"){trainerTestLog.innerHTML="";return;}const h=trainerState.hand;if(!h?.ended){trainerTestLog.innerHTML='<div class="tiny">Les décisions resteront masquées jusqu’à la fin de la main.</div>';return;}trainerTestLog.innerHTML=trainerState.testLog.map(r=>`<div class="trainer-test-row">${escapeHtml(r.position)} · ${escapeHtml(r.street)} · joué ${escapeHtml(r.played)}${r.cost?` ${escapeHtml(trainerFmtBB(r.cost))}`:""}<br>Reco <b>${escapeHtml(r.bestLabel)}${r.bestCostBB!==null?` · ${escapeHtml(trainerFmtBB(r.bestCostBB))}`:""}</b> · perte ${escapeHtml(trainerFmtBB(r.lossBB))}</div>`).join("")||'<div class="tiny">Aucune décision Hero.</div>';
+  if(!trainerTestLog)return;if(trainerState.mode!=="test"){trainerTestLog.innerHTML="";return;}
+  const h=trainerState.hand,targetDone=trainerState.targeted.active&&trainerState.targeted.complete;
+  if(!targetDone&&!h?.ended){trainerTestLog.innerHTML='<div class="tiny">Les décisions resteront masquées jusqu’à la fin de la session.</div>';return;}
+  trainerTestLog.innerHTML=trainerState.testLog.map(r=>`<div class="trainer-test-row">${escapeHtml(r.position)} · ${escapeHtml(r.street)} · joué ${escapeHtml(r.played)}${r.cost?` ${escapeHtml(trainerFmtBB(r.cost))}`:""}<br>Reco <b>${escapeHtml(r.bestLabel)}${r.bestCostBB!==null?` · ${escapeHtml(trainerFmtBB(r.bestCostBB))}`:""}</b> · perte ${escapeHtml(trainerFmtBB(r.lossBB))}</div>`).join("")||'<div class="tiny">Aucune décision Hero.</div>';
 }
 function trainerRenderStatus(text,cls=""){if(!trainerStatus)return;trainerStatus.textContent=text||"";trainerStatus.className=`trainer-status${cls?` ${cls}`:""}`;}
-function trainerRender(){trainerRenderTable();trainerRenderControls();trainerRenderRecommendation();trainerRenderFeedback();trainerRenderStats();trainerRenderProfiles();trainerRenderTestLog();trainerNewHandBtn&&(trainerNewHandBtn.disabled=trainerState.busy||trainerState.loading);trainerContinueBtn&&(trainerContinueBtn.style.display=trainerState.pauseAfterDecision?"inline-block":"none");}
-
-async function trainerOpen(){
-  trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();if(await trainerEnsureModels()){if(!trainerState.hand)await trainerNewHand();}
+function trainerRender(){
+  trainerRenderTable();trainerRenderControls();trainerRenderRecommendation();trainerRenderFeedback();trainerRenderStats();trainerRenderProfiles();trainerRenderTestLog();trainerTargetRenderSummary();
+  if(trainerNewHandBtn){
+    trainerNewHandBtn.disabled=trainerState.busy||trainerState.loading||trainerState.targeted.preparing;
+    trainerNewHandBtn.textContent=trainerState.targeted.active?(trainerState.targeted.complete||trainerState.targeted.fallback?"Rejouer la session":"Spot suivant"):"Nouvelle main";
+  }
+  trainerContinueBtn&&(trainerContinueBtn.style.display=trainerState.pauseAfterDecision?"inline-block":"none");
+}
+async function trainerOpen(options={}){
+  const deferHand=options&&options.deferHand===true;
+  trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();
+  if(await trainerEnsureModels()){if(!deferHand&&!trainerState.hand)await trainerNewHand();}
 }
 function trainerClose(){trainerState.open=false;trainerPage?.classList.add("mode-hidden");trainerPage?.setAttribute("aria-hidden","true");document.body.classList.remove("trainer-view-open");if(quickNav)quickNav.style.display="";state.appView="main";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
 function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));const needGuide=mode==="guided"&&trainerState.hand?.awaitingHero&&!trainerState.recommendation&&!trainerState.busy;trainerRender();if(needGuide)void trainerComputeRecommendation();}
@@ -571,6 +908,8 @@ trainerNavLink?.addEventListener("click",e=>{e.preventDefault();e.stopImmediateP
 trainerBackBtn?.addEventListener("click",trainerClose);
 trainerNewHandBtn?.addEventListener("click",trainerNewHand);
 trainerContinueBtn?.addEventListener("click",trainerContinue);
+trainerTargetApplyBtn?.addEventListener("click",trainerApplyTargetControls);
+trainerTargetClearBtn?.addEventListener("click",trainerClearTargeting);
 document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.addEventListener("click",()=>trainerSetMode(b.dataset.trainerMode)));
 trainerScheduleWarmup();
 trainerRenderStatus("Ouvrez une session pour charger les modèles promus.");trainerRender();

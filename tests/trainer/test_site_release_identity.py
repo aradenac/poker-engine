@@ -29,6 +29,8 @@ def main() -> int:
         "site/analytics/review-inbox.js",
         "site/analytics/leak-training-target.js",
         "site/analytics/review-dashboard.js",
+        "site/analytics/model-b-robustness.js",
+        "site/training/leak-scenario-selector.js",
         "site/preflop-contract.js",
         "site/hero-ranges.html",
         "site/hero-ranges.js",
@@ -38,6 +40,7 @@ def main() -> int:
         "site/hero-compliance-replayer.js",
         "site/trainer.css",
         "site/trainer.js",
+        "site/action-sizing-ev.js",
     }
     assert assembled["assets_tree_git_sha"]
     assert release["publication_verification"]["status"] == "UNVERIFIED_LIVE"
