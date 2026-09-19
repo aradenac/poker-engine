@@ -1039,7 +1039,11 @@ function trainerRenderControls(){
     document.getElementById("trainerInlineContinue")?.addEventListener("click",trainerContinue);return;
   }
   if(!h.awaitingHero){trainerControls.innerHTML='<div class="trainer-decision-box"><div class="trainer-decision-title">Action adverse en cours…</div></div>';return;}
-  const toCall=trainerToCall(h,h.heroSeat),legal=toCall>1e-8?["FOLD","CALL","RAISE"]:["CHECK","BET"],minAgg=toCall>1e-8?toCall+h.lastRaise:Math.max(1,.33*h.pot),recCost=Number(trainerState.recommendation?.bestCostBB);
+  const view=h.core.legalView(h.names[h.heroSeat]),toCall=Number(view.to_call_bb)||0;
+  const legal=(view.legal_actions||[]).map(a=>a==="RAISE"&&toCall<=1e-8?"BET":a);
+  const minTarget=Number(view.min_raise_to_bb),paid=Number(view.actor_street_contribution_bb)||0;
+  const minAgg=Number.isFinite(minTarget)?Math.max(0,minTarget-paid):(toCall>1e-8?toCall+h.lastRaise:Math.max(1,.33*h.pot));
+  const recCost=Number(trainerState.recommendation?.bestCostBB);
   trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div><div class="trainer-decision-title">À vous · ${escapeHtml(h.positions[h.heroSeat])} · ${escapeHtml(h.street.toUpperCase())}</div><div class="trainer-context">Pot ${escapeHtml(trainerFmtBB(h.pot))} · ${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"} · stack ${escapeHtml(trainerFmtBB(h.stacks[h.heroSeat]))}</div></div></div><div class="trainer-actions">${legal.map(a=>`<button type="button" class="${a==="FOLD"?"danger secondary":a==="CHECK"||a==="CALL"?"secondary":"primary"}" data-trainer-action="${a}">${a}</button>`).join("")}<div class="trainer-sizing"><div class="field"><label for="trainerSizingInput">Coût ajouté / mise (BB)</label><input id="trainerSizingInput" type="number" min="0" step="0.1" value="${trainerNum(Number.isFinite(recCost)?recCost:minAgg)}"></div><div class="trainer-size-presets"><button type="button" class="secondary" data-size=".5">½ pot</button><button type="button" class="secondary" data-size=".75">¾ pot</button><button type="button" class="secondary" data-size="1">Pot</button><button type="button" class="secondary" data-size="allin">All-in</button></div></div></div></div>`;
   const sizingInput=document.getElementById("trainerSizingInput");sizingInput?.addEventListener("input",()=>{trainerState.sizingTouched=true;});
   trainerControls.querySelectorAll("[data-trainer-action]").forEach(b=>b.addEventListener("click",()=>trainerHeroAction(b.dataset.trainerAction,trainerGuidedClickCost(b.dataset.trainerAction))));
