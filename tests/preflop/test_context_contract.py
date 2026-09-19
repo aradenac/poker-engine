@@ -386,6 +386,10 @@ def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_with
     assert all(not row["contract_errors"] for row in posterior.values())
 
     validation = evaluate_issue339_validation(protocol, candidate, fit)
+    persisted_fit = json.loads((ROOT / "analysis/model_a_preflop_sizing_fit.json").read_text(encoding="utf-8"))
+    persisted_validation = json.loads((ROOT / "analysis/model_a_preflop_sizing_validation.json").read_text(encoding="utf-8"))
+    assert persisted_fit == fit
+    assert persisted_validation == validation
     assert validation["selection_split"] == "VALIDATION"
     assert validation["test_consumed"] is False
     assert validation["test_authorized"] is False
