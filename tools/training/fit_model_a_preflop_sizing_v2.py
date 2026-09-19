@@ -122,8 +122,9 @@ def select_prior_strength(
     ]
     scored_cells: list[tuple[Mapping[str, Any], Mapping[str, Any]]] = []
     for cell in report.get("revealed_hand_class_support") or []:
-        n = int(cell.get("revealed_observations") or 0)
-        if n < 1:
+        counts = (cell.get("actions") or {}).get("counts") or {}
+        supported_n = sum(max(0, int(counts.get(action) or 0)) for action in ACTIONS)
+        if supported_n < 1:
             continue
         key = support_context_key(v1._support_mapping(cell))
         marginal = marginal_nodes.get(key)
@@ -145,7 +146,8 @@ def select_prior_strength(
                 marginal["probabilities"],
                 tau,
             )
-            observations += int(cell.get("revealed_observations") or 0)
+            counts = (cell.get("actions") or {}).get("counts") or {}
+            observations += sum(max(0, int(counts.get(action) or 0)) for action in ACTIONS)
         scores.append({
             "prior_strength": tau,
             "log_marginal_likelihood_kernel": total,
@@ -190,7 +192,9 @@ def build_candidate(
     band_counts: collections.Counter[str] = collections.Counter()
     hand_nodes = 0
     for cell in report.get("revealed_hand_class_support") or []:
-        n = int(cell.get("revealed_observations") or 0)
+        counts = (cell.get("actions") or {}).get("counts") or {}
+        raw = {action: max(0, int(counts.get(action) or 0)) for action in ACTIONS}
+        n = sum(raw.values())
         if n < int(
             fit_protocol["candidate"]["hand_class"][
                 "minimum_revealed_observations_for_node"
@@ -201,8 +205,6 @@ def build_candidate(
         marginal = marginal_nodes.get(key)
         if marginal is None:
             continue
-        counts = (cell.get("actions") or {}).get("counts") or {}
-        raw = {action: max(0, int(counts.get(action) or 0)) for action in ACTIONS}
         denom = n + tau
         probabilities = {
             action: (
