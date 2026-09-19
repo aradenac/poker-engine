@@ -197,7 +197,9 @@
   .review-inbox-filter-grid .field{min-width:0}
   .review-inbox-notice{min-height:16px;margin:4px 0 7px;color:var(--muted);font-size:9px}
   .review-inbox-notice.warn{color:#f1c66d}
-  .review-inbox-row{display:grid;grid-template-columns:104px minmax(150px,1.1fr) minmax(190px,1.45fr) 150px;gap:10px;align-items:center;width:100%;text-align:left}
+  .review-inbox-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;width:100%;text-align:left}
+  .review-inbox-open{display:grid;grid-template-columns:104px minmax(150px,1.1fr) minmax(190px,1.45fr);gap:10px;align-items:center;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+  .review-inbox-open:hover,.review-inbox-open:focus{background:transparent;border-color:transparent;outline:2px solid rgba(92,225,185,.28);outline-offset:4px}
   .review-inbox-loss{font-size:10px;color:var(--muted)}
   .review-inbox-loss b{display:block;font-size:15px;color:#f1c66d;margin-top:2px}
   .review-inbox-spot strong,.review-inbox-decision strong{display:block;font-size:11px;color:var(--text)}
@@ -207,7 +209,11 @@
   .review-inbox-status-badge.incomplete{border-color:rgba(241,198,109,.38);color:#f1c66d}
   .review-inbox-reviewed-toggle{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:8px;white-space:nowrap}
   .review-inbox-reviewed-toggle input{width:auto}
-  @media(max-width:900px){.review-inbox-row{grid-template-columns:90px 1fr}.review-inbox-decision,.review-inbox-status{grid-column:2}}
+  @media(max-width:900px){
+    .review-inbox-row{grid-template-columns:minmax(0,1fr) 132px}
+    .review-inbox-open{grid-template-columns:90px 1fr}
+    .review-inbox-decision{grid-column:2}
+  }
   @media(max-width:760px){
     .hh-hand{grid-template-columns:96px minmax(0,1fr) 96px 78px}
     .hh-cards{display:none}
@@ -3267,8 +3273,8 @@ function reviewInboxFiltersInput(){
 function reviewInboxSortMode(){
   return ({review_desc:"EV_LOSS_DESC",status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"})[state.hhSort]||"EV_LOSS_DESC";
 }
-function reviewInboxQuery(){
-  const Inbox=window.PokerReviewInbox,inbox=reviewInboxBuild();
+function reviewInboxQuery(inbox=reviewInboxBuild()){
+  const Inbox=window.PokerReviewInbox;
   if(!Inbox?.queryInbox||!inbox)return null;
   try{return Inbox.queryInbox(inbox,reviewInboxFiltersInput(),reviewInboxSortMode());}
   catch(err){state.reviewInboxLastError=String(err?.message||err);return null;}
@@ -5391,8 +5397,9 @@ function handNetBB(hand){
   return Number.isFinite(bb)&&bb>0&&Number.isFinite(net) ? net/bb : NaN;
 }
 function visibleHistoryHands(){
-  const query=reviewInboxQuery(),inbox=query||reviewInboxBuild();
+  const inbox=reviewInboxBuild();
   if(inbox)syncReviewInboxFilterOptions(inbox);
+  const query=inbox?reviewInboxQuery(inbox):null;
   let items=query?.items||[];
   if(state.hhKnownOnly)items=items.filter(item=>{
     const hand=state.hhHands.find(h=>String(h.id)===String(item.hand_id));
@@ -5439,25 +5446,30 @@ function renderHistoryHands(){
   for(const h of hands){
     const item=byId.get(String(h.id));if(!item)continue;
     const decision=item.costliest_decision||item.primary_decision;
-    const b=document.createElement("button");
-    b.type="button";b.className="hh-hand review-inbox-row"+(state.selectedHand?.id===h.id?" selected":"");
-    b.dataset.handId=String(h.id);
-    if(item.deep_link?.decision_id)b.dataset.decisionId=String(item.deep_link.decision_id);
-    if(item.deep_link?.step_index!=null)b.dataset.stepIndex=String(item.deep_link.step_index);
+    const row=document.createElement("div");
+    row.className="hh-hand review-inbox-row"+(state.selectedHand?.id===h.id?" selected":"");
+    row.dataset.handId=String(h.id);
+    if(item.deep_link?.decision_id)row.dataset.decisionId=String(item.deep_link.decision_id);
+    if(item.deep_link?.step_index!=null)row.dataset.stepIndex=String(item.deep_link.step_index);
     const decisionLoss=Number(decision?.loss_bb)||0;
     const markers=[item.sizing_error?"sizing":null,item.jam?"jam":null,item.overbet?"overbet":null].filter(Boolean).join(" · ");
-    const coverage=`Couverture ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
+    const coverage=`Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
+    const incompleteReasons=item.status==="INCOMPLETE_ANALYSIS"?(item.coverage?.reasons||[]).join(" · "):"";
     const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
     const statusCls=item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
-    b.innerHTML=`<span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
-      <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}</small></span>
-      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")}</small></span>
-      <span class="review-inbox-status"><span class="review-inbox-status-badge${statusCls}">${escapeHtml(item.status_label)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label></span>`;
-    b.onclick=()=>openReviewInboxItem(item);
-    const toggle=b.querySelector("[data-review-inbox-reviewed]");
-    toggle?.addEventListener("click",ev=>ev.stopPropagation());
-    toggle?.addEventListener("change",ev=>{ev.stopPropagation();setReviewInboxReviewed(h.id,ev.currentTarget.checked);});
-    hhHandsEl.appendChild(b);
+    const open=document.createElement("button");
+    open.type="button";open.className="review-inbox-open";
+    open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
+    open.innerHTML=`<span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
+      <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}${incompleteReasons?` · ${escapeHtml(incompleteReasons)}`:""}</small></span>
+      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")}</small></span>`;
+    open.onclick=()=>openReviewInboxItem(item);
+    const status=document.createElement("span");
+    status.className="review-inbox-status";
+    status.innerHTML=`<span class="review-inbox-status-badge${statusCls}">${escapeHtml(item.status_label)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
+    status.querySelector("[data-review-inbox-reviewed]")?.addEventListener("change",ev=>setReviewInboxReviewed(h.id,ev.currentTarget.checked));
+    row.append(open,status);
+    hhHandsEl.appendChild(row);
   }
 }
 
