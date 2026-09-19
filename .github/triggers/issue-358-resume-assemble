@@ -1,7 +1,0 @@
-issue=358
-mode=assemble-only-reuse
-source_run_id=35455766353
-source_assemble_job_id=105941776472
-source_head_sha=c897d822971ccdb494acba1a75e382f9bbefd015
-reason=mechanical-import-wiring-only
-attempt=3
