@@ -1,0 +1,49 @@
+{
+  "schema": "poker-pack-storage-identity-parity/v1",
+  "entries": {
+    "legacy": {
+      "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+      "pack_id": "legacy-pack",
+      "pack_version": "1",
+      "runtime_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "zoom": {
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "pack_id": "zoom-pack",
+      "pack_version": "1",
+      "runtime_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "zoom_next_version": {
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "pack_id": "zoom-pack",
+      "pack_version": "2",
+      "runtime_revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "zoom_next_revision": {
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "pack_id": "zoom-pack",
+      "pack_version": "1",
+      "runtime_revision": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  },
+  "expected": {
+    "production_namespace": {
+      "db_name": "poker-population-packs-v1",
+      "db_version": 2,
+      "pack_store": "packs",
+      "meta_store": "meta",
+      "active_key": "active",
+      "previous_key": "previous"
+    },
+    "test_only_namespace": {
+      "db_name": "poker-population-packs-v1",
+      "db_version": 2,
+      "pack_store": "test_packs",
+      "meta_store": "test_meta",
+      "active_key": "test_active",
+      "previous_key": "test_previous"
+    },
+    "legacy_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1::legacy-pack::1::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "zoom_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1::zoom-pack::1::bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
+}

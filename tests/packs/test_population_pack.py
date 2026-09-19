@@ -20,6 +20,7 @@ from tests.packs.test_population_pack_preflight import PopulationPackPreflightTe
 from tests.packs.test_synthetic_population_pack import SyntheticPopulationPackIntegrationTests  # noqa: F401
 from tests.packs.test_manual_import_contract import ManualImportContractTests  # noqa: F401
 from tests.packs.test_pack_identity_extraction import PackIdentityExtractionTests  # noqa: F401
+from tests.packs.test_pack_storage_identity import PackStorageIdentityTests  # noqa: F401
 
 CONFIG = ROOT / "user/packs/legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1/pack.json"
 CANDIDATE = ROOT / "user/packs/pokerstars_nlhe_100-200_zoom_play_6max_v1/candidate.json"

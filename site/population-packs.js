@@ -1,21 +1,22 @@
 "use strict";
 (function(global){
-  const DB_NAME="poker-population-packs-v1";
-  const DB_VERSION=2;
-  const PACK_STORE="packs";
-  const META_STORE="meta";
-  const TEST_PACK_STORE="test_packs";
-  const TEST_META_STORE="test_meta";
-  const ACTIVE_KEY="active";
-  const PREVIOUS_KEY="previous";
-  const TEST_ACTIVE_KEY="test_active";
-  const TEST_PREVIOUS_KEY="test_previous";
+  const Identity=global.PokerPackIdentity;
+  if(!Identity)throw new Error("PokerPackIdentity requis avant population-packs.js.");
+  const {bytes,sha256,contentIdentity,storageId,storageNamespace,packIdentity,samePackIdentity}=Identity;
+  const PROD_STORAGE=storageNamespace(false),TEST_STORAGE=storageNamespace(true);
+  const DB_NAME=Identity.STORAGE_CONTRACT.db_name;
+  const DB_VERSION=Identity.STORAGE_CONTRACT.db_version;
+  const PACK_STORE=PROD_STORAGE.pack_store;
+  const META_STORE=PROD_STORAGE.meta_store;
+  const TEST_PACK_STORE=TEST_STORAGE.pack_store;
+  const TEST_META_STORE=TEST_STORAGE.meta_store;
+  const ACTIVE_KEY=PROD_STORAGE.active_key;
+  const PREVIOUS_KEY=PROD_STORAGE.previous_key;
+  const TEST_ACTIVE_KEY=TEST_STORAGE.active_key;
+  const TEST_PREVIOUS_KEY=TEST_STORAGE.previous_key;
   const CATALOG_SCHEMA="poker-population-catalog/v1";
   const RUNTIME_SCHEMA="poker-browser-runtime-pack/v1";
   const EXPORT_SCHEMA="poker-browser-runtime-pack-export/v1";
-  const Identity=global.PokerPackIdentity;
-  if(!Identity)throw new Error("PokerPackIdentity requis avant population-packs.js.");
-  const {bytes,sha256,contentIdentity,storageId,packIdentity,samePackIdentity}=Identity;
   const encoder=new TextEncoder(),decoder=new TextDecoder();
 
   function asUrlPath(url){return new URL(url,location.href).pathname;}

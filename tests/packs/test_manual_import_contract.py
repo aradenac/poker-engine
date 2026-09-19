@@ -27,8 +27,11 @@ class ManualImportContractTests(unittest.TestCase):
         manual = (ROOT / "site/manual-import.js").read_text(encoding="utf-8")
         packs = (ROOT / "site/population-packs.js").read_text(encoding="utf-8")
 
+        shared = (ROOT / "site/pack-identity.js").read_text(encoding="utf-8")
         self.assertIn('DB_NAME="PokerRangeEquityOffline"', manual)
-        self.assertIn('const DB_NAME="poker-population-packs-v1"', packs)
+        self.assertIn('const DB_NAME=Identity.STORAGE_CONTRACT.db_name', packs)
+        self.assertIn('db_name:"poker-population-packs-v1"', shared)
+        self.assertNotIn('PokerRangeEquityOffline', shared)
         self.assertIn('db.transaction(STORE,"readwrite")', manual)
         self.assertIn("Transaction override annulée", manual)
         self.assertIn("Activation atomique non vérifiée", manual)
