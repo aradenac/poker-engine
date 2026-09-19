@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-b-preflop-sensitivity-harness-request/v1",
+  "title": "Synthetic Model B preflop sensitivity harness request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "source_kind",
+    "synthetic_fixture",
+    "decision_ref",
+    "public_context",
+    "alternatives",
+    "information_boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "model-b-preflop-sensitivity-harness-request/v1"
+    },
+    "source_kind": {
+      "const": "SYNTHETIC_HARNESS_ONLY"
+    },
+    "synthetic_fixture": {
+      "const": true
+    },
+    "decision_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_schema",
+        "decision_id",
+        "context_id"
+      ],
+      "properties": {
+        "canonical_schema": {
+          "const": "poker-preflop-decision/v1"
+        },
+        "decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "public_context": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "synthetic_fixture",
+        "hero_position",
+        "hero_contribution_before_bb",
+        "pot_before_hero_action_bb",
+        "initial_sequence",
+        "limper_count",
+        "responders"
+      ],
+      "properties": {
+        "synthetic_fixture": {
+          "const": true
+        },
+        "hero_position": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hero_contribution_before_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pot_before_hero_action_bb": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "limper_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "initial_sequence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "position",
+              "action"
+            ],
+            "properties": {
+              "position": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responders": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "position",
+              "profile",
+              "contribution_bb",
+              "effective_stack_bb",
+              "family_no_callers",
+              "family_with_callers"
+            ],
+            "properties": {
+              "position": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profile": {
+                "type": [
+                  "integer",
+                  "string"
+                ]
+              },
+              "contribution_bb": {
+                "type": "number",
+                "minimum": 0
+              },
+              "effective_stack_bb": {
+                "type": "number",
+                "minimum": 0
+              },
+              "family_no_callers": {
+                "type": "string",
+                "minLength": 1
+              },
+              "family_with_callers": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "alternatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "alternative_id",
+          "action",
+          "target_total_bb",
+          "incremental_cost_bb"
+        ],
+        "properties": {
+          "alternative_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action": {
+            "enum": [
+              "FOLD",
+              "OVERLIMP",
+              "ISO"
+            ]
+          },
+          "target_total_bb": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "incremental_cost_bb": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "information_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hero_ev_consumed",
+        "model_a_consumed",
+        "recommendation_consumed",
+        "future_cards_consumed",
+        "opponent_hole_cards_consumed"
+      ],
+      "properties": {
+        "hero_ev_consumed": {
+          "const": false
+        },
+        "model_a_consumed": {
+          "const": false
+        },
+        "recommendation_consumed": {
+          "const": false
+        },
+        "future_cards_consumed": {
+          "const": false
+        },
+        "opponent_hole_cards_consumed": {
+          "const": false
+        }
+      }
+    }
+  }
+}
