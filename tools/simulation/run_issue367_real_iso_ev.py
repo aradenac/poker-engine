@@ -27,6 +27,13 @@ from tools.simulation.admitted_model_a_iso_provider import (  # noqa: E402
     VALIDATION_EVIDENCE_SHA256,
     Issue367ScientificProvider,
 )
+from tools.simulation.game_core import NoLimitHoldemState  # noqa: E402
+from tools.simulation.model_a_continuation import (  # noqa: E402
+    ModelAUnsupportedContext,
+    _position_map,
+    _preflop_decision,
+    _semantic_trace,
+)
 from tools.simulation.hero_preflop_iso_runner import run_hero_preflop_iso  # noqa: E402
 from tools.simulation.paired_adaptive_preflop_ev import AdaptiveBudget  # noqa: E402
 
@@ -198,6 +205,182 @@ def exact_support_view(protocol: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def exact_response_tree_support_audit(
+    provider: Issue367ScientificProvider,
+) -> dict[str, Any]:
+    snapshot, _ = canonical_state()
+    state = NoLimitHoldemState.from_snapshot(snapshot)
+    positions = _position_map(state)
+    hero = str(state.next_actor or "")
+    if positions.get(hero) != "SB":
+        raise ValueError("canonical #321 Hero must be SB")
+
+    state.apply_action(hero, "RAISE", target_total_bb=5.0)
+    bb = str(state.next_actor or "")
+    if positions.get(bb) != "BB":
+        raise ValueError("canonical #321 first ISO responder must be BB")
+
+    _, replay, history, _, _ = _semantic_trace(state)
+    if replay.to_snapshot(include_log=False) != state.to_snapshot(include_log=False):
+        raise ValueError("support audit semantic replay diverged")
+    bb_decision = _preflop_decision(state, bb, history)
+    bb_resolved = provider.opponent_policy._resolve_sizing(bb_decision, None)
+    bb_fold_probability = float(
+        (bb_resolved.get("probabilities") or {}).get("FOLD") or 0.0
+    )
+    if bb_fold_probability <= 0:
+        raise ValueError("support audit expected reachable BB fold branch")
+
+    state.apply_action(bb, "FOLD")
+    co = str(state.next_actor or "")
+    if positions.get(co) != "CO":
+        raise ValueError("canonical #321 second responder after BB fold must be CO")
+    _, replay, history, _, _ = _semantic_trace(state)
+    if replay.to_snapshot(include_log=False) != state.to_snapshot(include_log=False):
+        raise ValueError("support audit semantic replay diverged after BB fold")
+    co_decision = _preflop_decision(state, co, history)
+
+    missing = None
+    try:
+        provider.opponent_policy._resolve_sizing(co_decision, None)
+    except ModelAUnsupportedContext as exc:
+        missing = str(exc)
+
+    return {
+        "schema": "poker-issue367-exact-response-tree-support-audit/v1",
+        "candidate_id": CANDIDATE_ID,
+        "candidate_sha256": CANDIDATE_SHA256,
+        "target_total_bb": 5.0,
+        "nearest_price": False,
+        "first_responder": {
+            "position": "BB",
+            "family": bb_decision["family"],
+            "support_context_key": bb_resolved["support_context_key"],
+            "source_observations": int(bb_resolved["support"]),
+            "fold_probability": bb_fold_probability,
+            "status": "EXACT_SUPPORTED",
+        },
+        "reachable_missing_branch": {
+            "path": ["Hero:ISO@5", "BB:FOLD", "CO:DECISION"],
+            "position": "CO",
+            "family": co_decision["family"],
+            "target_total_bb": float(co_decision["target_total_bb"]),
+            "to_call_bb": float(co_decision["to_call_bb"]),
+            "limper_count": 2,
+            "caller_count": 0,
+            "reason": missing,
+            "status": (
+                "EXACT_SUPPORT_MISSING" if missing is not None else "EXACT_SUPPORTED"
+            ),
+        },
+        "complete_for_scientific_rollout": missing is None,
+    }
+
+
+def fail_closed_result(
+    protocol: Mapping[str, Any],
+    support_audit: Mapping[str, Any],
+) -> dict[str, Any]:
+    missing = support_audit["reachable_missing_branch"]
+    alternatives = []
+    for alt_id, action, target in [
+        ("FOLD", "FOLD", None),
+        ("OVERLIMP@1", "OVERLIMP", 1.0),
+        ("ISO@4", "ISO", 4.0),
+        ("ISO@5", "ISO", 5.0),
+        ("ISO@6", "ISO", 6.0),
+    ]:
+        if alt_id in {"ISO@4", "ISO@6"}:
+            support_status = "LEGAL_BUT_MODEL_UNSUPPORTED_EXACT_PRICE"
+        elif alt_id == "ISO@5":
+            support_status = "LEGAL_BUT_RESPONSE_TREE_EXACT_SUPPORT_INCOMPLETE"
+        else:
+            support_status = "NOT_EVALUATED_INCOMPLETE_COMPARISON_SET"
+        alternatives.append(
+            {
+                "alternative_id": alt_id,
+                "action": action,
+                "target_total_bb": target,
+                "ev_bb": None,
+                "uncertainty": None,
+                "delta_vs_best_paired": None,
+                "indifference_status": "NOT_COMPUTED_FAIL_CLOSED",
+                "support": {"status": support_status},
+                "diagnostic_status": "NOT_COMPUTED_FAIL_CLOSED",
+                "p_all_fold": None,
+                "p_1_caller": None,
+                "p_2_callers": None,
+                "p_3plus_callers": None,
+                "expected_callers": None,
+                "p_3bet_or_jam": None,
+                "continuing_positions": None,
+                "posterior_refs": None,
+            }
+        )
+
+    result = {
+        "schema": "poker-issue367-real-iso-ev-result/v1",
+        "issue": 367,
+        "parent_issue": 314,
+        "status": "FAIL_CLOSED_EXACT_SUPPORT_UNAVAILABLE",
+        "execution_valid": True,
+        "protocol_sha256": _sha256(DEFAULT_PROTOCOL),
+        "scenario": {
+            "fixture": "kts_sb_two_limp_iso4_three_calls_v1",
+            "hero_hand_class": "KTs",
+            "hero_exact_cards": list(protocol["scenario"]["hero_exact_cards"]),
+            "hero_position": "SB",
+            "limpers": 2,
+            "played_action": "ISO",
+            "played_target_total_bb": 4.0,
+        },
+        "model_a": copy.deepcopy(protocol["model_a"]),
+        "selection": {
+            "rule": "MAX_EV_POINT_ESTIMATE_ONLY",
+            "status": "NO_RECOMMENDATION_INCOMPLETE_EXACT_SUPPORT",
+            "selected_alternative_id": None,
+            "selected_action": None,
+            "selected_target_total_bb": None,
+            "selected_ev_bb": None,
+            "indifference_rule": protocol["selection"]["indifference_rule"],
+            "diagnostics_can_select": False,
+        },
+        "played_vs_recommended": {
+            "played_alternative_id": "ISO@4",
+            "recommended_alternative_id": None,
+            "reason": "complete exact-support comparison is unavailable",
+        },
+        "alternatives": alternatives,
+        "diagnostics": {
+            "status": "FAIL_CLOSED_BEFORE_ROLLOUT",
+            "support_audit": copy.deepcopy(dict(support_audit)),
+            "missing_exact_support": {
+                "position": missing["position"],
+                "family": missing["family"],
+                "target_total_bb": missing["target_total_bb"],
+                "to_call_bb": missing["to_call_bb"],
+                "limper_count": missing["limper_count"],
+                "caller_count": missing["caller_count"],
+                "reason": missing["reason"],
+            },
+            "caller_metrics": "NOT_COMPUTED",
+            "posterior_refs": "NOT_COMPUTED",
+        },
+        "runner_result": None,
+        "scientific_boundary": {
+            "test_consumed": False,
+            "test_authorized": False,
+            "model_b_consumed": False,
+            "promotion_performed": False,
+            "active_model_pointer_mutated": False,
+            "ui_modified": False,
+            "vs_limpers_generation_196": False,
+        },
+    }
+    result["result_sha256"] = _canonical_sha(result)
+    return result
+
+
 def _budget(protocol: Mapping[str, Any]) -> AdaptiveBudget:
     cfg = protocol["paired_adaptive_budget"]
     return AdaptiveBudget(
@@ -314,6 +497,33 @@ def summarize(result: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[st
 
 def summary_markdown(result: Mapping[str, Any]) -> str:
     selection = result["selection"]
+    if result.get("status") == "FAIL_CLOSED_EXACT_SUPPORT_UNAVAILABLE":
+        missing = result["diagnostics"]["missing_exact_support"]
+        return "\n".join(
+            [
+                "# Issue #367 — real #314 canonical KTs ISO EV",
+                "",
+                "- Status: **FAIL_CLOSED_EXACT_SUPPORT_UNAVAILABLE**.",
+                "- Recommendation: **none**; the exact-support comparison set is incomplete.",
+                "- Model A: admitted sizing-aware v2 from #352, explicit identity binding.",
+                "- Active Model A pointer: unchanged.",
+                "- TEST: unconsumed / unauthorized.",
+                "- Nearest-price/interpolation: forbidden / unused.",
+                "",
+                "## Exact support blocker",
+                "",
+                f"- Position: **{missing['position']}**.",
+                f"- Family: **{missing['family']}**.",
+                f"- Target: **{missing['target_total_bb']} BB**; to-call **{missing['to_call_bb']} BB**.",
+                f"- Limper/caller state: **{missing['limper_count']} / {missing['caller_count']}**.",
+                f"- Reason: {missing['reason']}",
+                "",
+                "The missing branch is reachable after Hero ISO 5 BB and BB folds. "
+                "No EV, caller diagnostics, posterior refs, or recommendation are manufactured.",
+                "",
+            ]
+        )
+
     lines = [
         "# Issue #367 — real #314 canonical KTs ISO EV",
         "",
@@ -379,6 +589,10 @@ def execute(protocol_path: Path) -> dict[str, Any]:
         expected_candidate_sha256=protocol["model_a"]["candidate_sha256"],
         expected_decision=protocol["model_a"]["admission_decision"],
     )
+    support_audit = exact_response_tree_support_audit(provider)
+    if support_audit["complete_for_scientific_rollout"] is not True:
+        return fail_closed_result(protocol, support_audit)
+
     result = run_hero_preflop_iso(
         state_snapshot=state,
         public_state_fingerprint=public_fingerprint,
