@@ -4321,6 +4321,99 @@ function replayObservedDecisionEvidence(stepIndex,step){
   }
   return null;
 }
+
+function preflopRuntimeCoreBeforeDecision(hand,ordinal){
+  const API=window.PokerNlheGameState;
+  if(!API?.NoLimitHoldemState||!hand)throw new Error("NoLimitHoldemState runtime indisponible.");
+  const players=(hand.players||[]).slice().sort((a,b)=>(Number(a.seat)||0)-(Number(b.seat)||0));
+  const seats=players.map(p=>p.name);
+  const buttonPlayer=players.find(p=>["BTN","SB_BTN"].includes(normalizePopulationPosition(p.hhPosition,players.length)))||players[0];
+  const stacks=Object.fromEntries(players.map(p=>[p.name,historyPlayerStackBB(hand,p.name)]));
+  if(Object.values(stacks).some(x=>!Number.isFinite(x)||x<=0))throw new Error("Stacks initiaux invalides pour le game core.");
+  const core=new API.NoLimitHoldemState({seats,button:buttonPlayer.name,stacks_bb:stacks,small_blind_bb:.5,big_blind_bb:1});
+  const trace=populationPreflopDecisionTrace(hand);
+  for(let i=0;i<ordinal;i++){
+    const d=trace[i],actor=d?.player;if(!actor)continue;
+    if(core.next_actor!==actor)throw new Error(`Game core / HH action-order mismatch: attendu ${core.next_actor}, reçu ${actor}`);
+    const a=String(d.action||"").toUpperCase();
+    if(a==="FOLD")core.applyAction(actor,"FOLD");
+    else if(a==="CHECK")core.applyAction(actor,"CHECK");
+    else if(a==="LIMP"||a==="CALL")core.applyAction(actor,"CALL");
+    else if(a==="RAISE"||a==="JAM"){
+      const target=Number(d.action_sizing_v1?.target_total_bb);
+      if(!Number.isFinite(target))throw new Error("Sizing préflop cible manquant.");
+      core.applyAction(actor,"RAISE",{target_total_bb:target});
+    }
+  }
+  return core;
+}
+function preflopRuntimePublicStateForEvidence(hand,evidence){
+  const ordinal=Number(evidence?.decision?.ordinal);
+  if(!Number.isInteger(ordinal)||ordinal<0)throw new Error("Ordinal préflop invalide.");
+  const core=preflopRuntimeCoreBeforeDecision(hand,ordinal),legal=core.legalView();
+  return {core,public_state:{snapshot:core.toSnapshot(),legal_view:legal}};
+}
+function preflopRuntimeDecisionForStep(stepIndex,step,cached,{observedEvidence=undefined}={}){
+  if(step?.street!=="Préflop"||replayActionActorRole(step)!=="HERO")return null;
+  const evidence=observedEvidence===undefined?replayObservedDecisionEvidence(stepIndex,step):observedEvidence;
+  if(!evidence?.decision)return null;
+  const runtime=window.PokerPreflopRuntime;if(!runtime)return null;
+  const ctx=evidence.decision.preflop_context_v1||{},family=String(evidence.decision.family||ctx.family||"UNKNOWN");
+  let pub;
+  try{pub=preflopRuntimePublicStateForEvidence(state.selectedHand,evidence).public_state;}
+  catch(err){
+    console.warn("Preflop public-state reconstruction failed",err);
+    return null;
+  }
+  const key=`${state.selectedHand?.id||""}:${evidence.decision.ordinal}:${cached?.status||"none"}:${actionEquityKey(stepIndex)||""}`;
+  if(state.preflopRuntimeDecisionCache[key])return state.preflopRuntimeDecisionCache[key];
+  let decision;
+  if(step.actionType==="call"&&cached?.status==="done"){
+    const req=requiredEquityInfo(stepIndex),eq=cached.equities||{},sources=actionVerdictSourceKeys(stepIndex),priorEq=eq[sources.prior];
+    const metrics=actionDecisionMetrics(priorEq,req,null);
+    if(req?.kind==="call"&&Number.isFinite(metrics.evBB)){
+      decision=runtime.buildCallFold({
+        public_state:pub,context_id:ctx.context_id,preflop_context:ctx,hero_position:evidence.decision.actor_position,
+        hand_id:String(state.selectedHand?.id||""),decision_id:`preflop:${state.selectedHand?.id||""}:${evidence.decision.ordinal}`,
+        call_ev_bb:Number(metrics.evBB),played_action:{action:"CALL",target_total_bb:Number(pub.snapshot.current_bet_bb)},
+        samples:Number(cached.trials||cached.samples||trialsSelect?.value||0),support_source:"active-reference-call-fold"
+      });
+    }
+  }
+  if(!decision){
+    decision=runtime.buildUnsupported({
+      public_state:pub,context_id:ctx.context_id,preflop_context:ctx,hero_position:evidence.decision.actor_position,
+      hand_id:String(state.selectedHand?.id||""),decision_id:`preflop:${state.selectedHand?.id||""}:${evidence.decision.ordinal}`,
+      played_action:{action:String(evidence.decision.action||step.actionType||"").toUpperCase(),target_total_bb:evidence.decision.action_sizing_v1?.target_total_bb??null},
+      reason:family==="VS_LIMPERS"?"SPOT_NON_COUVERT":"ACTIVE_REFERENCE_SCOPE_UNSUPPORTED"
+    });
+  }
+  runtime.assertRetainedReference(decision);
+  state.preflopRuntimeDecisionCache[key]=decision;
+  return decision;
+}
+function preflopDecisionSizingText(target){
+  const v=Number(target?.target_total_bb);return Number.isFinite(v)?`total ${formatBB(v)}`:"0 BB";
+}
+function preflopDecisionCompactHtml(decision){
+  if(!decision)return "";
+  const covered=window.PokerPreflopRuntime?.isCovered(decision);
+  if(!covered){
+    const family=escapeHtml(decision.facing_context||"UNKNOWN");
+    return `${actionCompactPillHtml("HERO · SPOT_NON_COUVERT","warn","actor-state")}${actionCompactPillHtml(`Aucune recommandation EV validée · ${family}`,"subtle","best-summary")}`;
+  }
+  const support=Number(decision.support?.observations)||0;
+  return `${actionCompactPillHtml("HERO · RECOMMANDATION_VALIDÉE","good","actor-state")}${actionCompactPillHtml(`${escapeHtml(decision.recommended_action)} · ${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))} · coût ${escapeHtml(formatBB(decision.incremental_cost_bb))} · EV ${escapeHtml(formatBB(decision.recommended_ev_bb))}`,"good","best-summary")}${actionCompactPillHtml(`support ${support.toLocaleString("fr-FR")} · ${escapeHtml(decision.support_tier)}`,"subtle","best-summary")}`;
+}
+function preflopDecisionDetailHtml(decision){
+  if(!decision)return "";
+  if(!window.PokerPreflopRuntime?.isCovered(decision)){
+    const reasons=(decision.reason_codes||[]).join(", ");
+    return `<div class="section"><div class="section-title">Préflop · SPOT_NON_COUVERT</div><div class="action-detail-point">Aucune recommandation EV n’est exposée pour ce contexte. <b>${escapeHtml(decision.facing_context||"UNKNOWN")}</b>.</div><div class="action-analysis-meta">Fail-closed : ${escapeHtml(reasons||"UNSUPPORTED")}. La candidate #108 n’est pas active.</div></div>`;
+  }
+  const rows=(decision.alternatives||[]).map(a=>`<tr><td><b>${escapeHtml(a.action)}</b></td><td>${escapeHtml(preflopDecisionSizingText(a.target_sizing))}</td><td style="text-align:right">${escapeHtml(formatBB(a.incremental_cost_bb))}</td><td style="text-align:right"><b>${escapeHtml(formatBB(a.ev_bb))}</b></td></tr>`).join("");
+  return `<div class="section"><div class="section-title">Décision préflop canonique</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Action <b>${escapeHtml(decision.recommended_action)}</b></span><span class="action-detail-chip">Cible <b>${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))}</b></span><span class="action-detail-chip">Coût <b>${escapeHtml(formatBB(decision.incremental_cost_bb))}</b></span><span class="action-detail-chip">EV <b>${escapeHtml(formatBB(decision.recommended_ev_bb))}</b></span><span class="action-detail-chip">Support <b>${Number(decision.support?.observations||0).toLocaleString("fr-FR")}</b></span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left">Action</th><th style="text-align:left">Sizing</th><th style="text-align:right">Coût</th><th style="text-align:right">EV</th></tr></thead><tbody>${rows}</tbody></table></div><div class="action-analysis-meta" style="margin-top:8px">Source : référence active conservée après #108 · candidate non activée · objet <code>poker-preflop-decision/v1</code> partagé sans recalcul par surface.</div></div>`;
+}
 function replayOpponentCommentStateFromEvidence(evidence,step,match){
   const observed=String(evidence?.decision?.action||step?.actionType||"").toUpperCase();
   if(!evidence)return {
