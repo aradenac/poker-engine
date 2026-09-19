@@ -17,11 +17,19 @@ from tools.simulation.admitted_model_a_iso_provider import (  # noqa: E402
     VALIDATION_EVIDENCE_SHA256,
     Issue367ProviderError,
     Issue367ScientificProvider,
+    _is_required_sizing_context,
     load_admitted_candidate,
 )
 from tools.preflop.model_a_sizing_likelihood import (  # noqa: E402
     canonical_candidate_sha256,
 )
+from tools.simulation.game_core import NoLimitHoldemState  # noqa: E402
+from tools.simulation.model_a_continuation import (  # noqa: E402
+    _position_map,
+    _preflop_decision,
+    _semantic_trace,
+)
+from tools.simulation.run_issue367_real_iso_ev import canonical_state  # noqa: E402
 
 
 def test_admitted_candidate_rebuild_is_exact_and_no_pointer_mutation():
@@ -95,6 +103,54 @@ def test_posterior_support_closure_is_explicit_no_information_only():
     assert audit["nearest_price"] is False
     assert audit["active_model_pointer_mutated"] is False
     assert audit["test_consumed"] is False
+
+
+def test_iso5_co_call_exact_support_and_posterior_identity_are_available():
+    snapshot, _ = canonical_state()
+    state = NoLimitHoldemState.from_snapshot(snapshot)
+    positions = _position_map(state)
+    hero = str(state.next_actor)
+    assert positions[hero] == "SB"
+
+    state.apply_action(hero, "RAISE", target_total_bb=5.0)
+    bb = str(state.next_actor)
+    assert positions[bb] == "BB"
+    state.apply_action(bb, "FOLD")
+
+    co = str(state.next_actor)
+    assert positions[co] == "CO"
+    trace, replay, history, _, _ = _semantic_trace(state)
+    assert replay.to_snapshot(include_log=False) == state.to_snapshot(include_log=False)
+    decision = _preflop_decision(state, co, history)
+    assert decision["family"] == "VS_ISO"
+    assert "aggressor_position" not in decision
+    assert _is_required_sizing_context(decision) is True
+
+    provider = Issue367ScientificProvider(hero_hole_cards=("Ks", "Ts"))
+    resolved = provider.opponent_policy._resolve_sizing(decision, None)
+    assert resolved["status"] == "RESOLVED"
+    assert resolved["node_id"]
+    assert int(resolved["support"]) > 0
+    assert resolved["support_context_key"].endswith(
+        "family=VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+    )
+
+    state.apply_action(co, "CALL")
+    ref_id, record = provider._posterior_after_action(
+        state,
+        alternative_id="ISO@5",
+        player=co,
+        response="CALL",
+        sample_index=0,
+    )
+    assert ref_id == "issue367:ISO@5:CO:CALL"
+    assert record["status"] == "AVAILABLE"
+    assert int(record["source_observations"]) > 0
+    assert record["position"] == "CO"
+    assert record["public_action"]["action"] == "CALL"
+    assert record["public_action"]["sizing"]["target_total_bb"] == 5.0
+    assert record["identity"]["model_id"] == CANDIDATE_ID
+    assert record["identity"]["model_version"] == CANDIDATE_SHA256
 
 
 def test_reference_descriptor_keeps_active_v5_pointer_external_to_candidate():
