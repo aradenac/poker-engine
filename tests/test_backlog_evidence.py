@@ -108,6 +108,29 @@ def test_normalize_merged_and_branches():
     ex=export(); ex['pulls']=[{'number':1,'state':'closed','merged_at':'x','head':'h'}]; ex['branches']=[{'name':'z'},'a']
     n=m.normalize_backlog_export(ex); assert n['pulls'][0]['state']=='MERGED'; assert n['branches']==['a','z']
 
+def test_live_adapter_reads_all_state_and_reuses_comment_reader():
+    page_calls=[]; comment_calls=[]
+    old_pages=m.recovery_module._github_get_pages; old_comments=m.fetch_github_comments
+    def fake_pages(repo,resource,params):
+        page_calls.append((resource,dict(params)))
+        if resource=='issues': return [{'number':45,'state':'open'}]
+        if resource=='pulls': return [{'number':1,'state':'closed','merged_at':'x'}]
+        if resource=='branches': return [{'name':'main'}]
+        raise AssertionError(resource)
+    def fake_comments(repo,issue):
+        comment_calls.append(issue); return []
+    m.recovery_module._github_get_pages=fake_pages; m.fetch_github_comments=fake_comments
+    try:
+        mf=manifest([{'issue':45,'capability_id':None,'expected_state':None,'source_refs':['#45'],'gaps':[]}])
+        cm={'capabilities':[{'id':'x','administrative':{'issue':109,'claimed_state':'PRODUCT_INTEGRATED'}}]}
+        out=m.fetch_live_export('aradenac/poker-engine',mf,cm,contract(),225)
+    finally:
+        m.recovery_module._github_get_pages=old_pages; m.fetch_github_comments=old_comments
+    assert page_calls==[('issues',{'state':'all'}),('pulls',{'state':'all'}),('branches',{})]
+    assert {45,109,225}.issubset(set(comment_calls))
+    assert out['coverage']['all_issues_complete'] is True
+    assert out['coverage']['branches_complete'] is True
+
 def main():
     cases=[v for k,v in sorted(globals().items()) if k.startswith('test_') and callable(v)]
     for case in cases: case()
