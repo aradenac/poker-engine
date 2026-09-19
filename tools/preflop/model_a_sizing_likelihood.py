@@ -84,6 +84,56 @@ def _decimal_token(value: float) -> str:
     return text if text else "0"
 
 
+def _history_support_features(history: Sequence[Mapping[str, Any]]) -> tuple[str | None, int, int]:
+    first_raise = next(
+        (i for i, row in enumerate(history) if str(row.get("action") or "").upper() in {"RAISE", "JAM"}),
+        None,
+    )
+    limper_end = len(history) if first_raise is None else first_raise
+    limpers = sum(
+        1
+        for row in history[:limper_end]
+        if str(row.get("action") or "").upper() == "LIMP"
+    )
+    callers = 0 if first_raise is None else sum(
+        1
+        for row in history[first_raise + 1 :]
+        if str(row.get("action") or "").upper() == "CALL"
+    )
+    aggressors = [
+        str(row.get("position") or "")
+        for row in history
+        if str(row.get("action") or "").upper() in {"RAISE", "JAM"}
+    ]
+    return (aggressors[-1] if aggressors else None), limpers, callers
+
+
+def support_context_key(context: Mapping[str, Any]) -> str:
+    """Exact #319 support key; no numeric-nearest fallback is permitted."""
+    history = list(context.get("history") or [])
+    aggressor, derived_limpers, derived_callers = _history_support_features(history)
+    target_raw = context.get("target_total_bb", context.get("current_price_bb"))
+    if target_raw is None:
+        raise SizingLikelihoodError("target_total_bb/current_price_bb is required for support key")
+    target = _finite_nonnegative(target_raw, "target_total_bb")
+    to_call = _finite_nonnegative(context.get("to_call_bb"), "to_call_bb")
+    limpers = _int_nonnegative(context.get("limper_count", derived_limpers), "limper_count")
+    callers = _int_nonnegative(context.get("caller_count", derived_callers), "caller_count")
+    payload = "|".join(
+        [
+            f"family={str(context.get('family') or '')}",
+            f"actor={str(context.get('actor_position') or '')}",
+            f"aggressor={str(context.get('aggressor_position') or aggressor or '')}",
+            f"limpers={limpers}",
+            f"callers={callers}",
+            f"target={_decimal_token(target)}",
+            f"call={_decimal_token(to_call)}",
+        ]
+    )
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:20]
+    return f"MAPSUP_{digest}:{payload}"
+
+
 def public_sizing_context(context: Mapping[str, Any]) -> dict[str, Any]:
     """Extract only public sizing/price features required by the candidate."""
     if not isinstance(context, Mapping):
@@ -140,12 +190,15 @@ def public_sizing_context(context: Mapping[str, Any]) -> dict[str, Any]:
     )
 
     structural = str(context.get("canonical_key") or canonical_key(context))
+    history = list(context.get("history") or [])
+    aggressor, _, _ = _history_support_features(history)
     projection = {
         "schema": PUBLIC_CONTEXT_SCHEMA,
         "state_timing": str(context.get("state_timing") or "BEFORE_ACTION"),
         "table_size": table_size,
         "actor_position": str(context["actor_position"]),
         "family": str(context["family"]),
+        "aggressor_position": context.get("aggressor_position", aggressor),
         "raise_level": raise_level,
         "structural_key": structural,
         "target_total_bb": target,
@@ -163,6 +216,7 @@ def public_sizing_context(context: Mapping[str, Any]) -> dict[str, Any]:
         },
     }
     projection["sizing_context_key"] = sizing_context_key(projection)
+    projection["support_context_key"] = support_context_key({**context, **projection})
     return projection
 
 
@@ -182,10 +236,16 @@ def sizing_context_key(public_context: Mapping[str, Any]) -> str:
     return f"MAPSIZ_{digest}:{payload}"
 
 
-def candidate_identity(*, population_id: str) -> dict[str, Any]:
+def candidate_identity(
+    *,
+    population_id: str,
+    fit_scope: str = "SCAFFOLD_ONLY_NO_FINAL_FIT",
+    data_scope: str = "SYNTHETIC_OR_TRAIN_ONLY",
+    source_report_hash: str | None = None,
+) -> dict[str, Any]:
     if not population_id:
         raise SizingLikelihoodError("population_id is required")
-    return {
+    identity = {
         "candidate_id": RUNTIME_CANDIDATE_ID,
         "model_family": MODEL_FAMILY,
         "status": CANDIDATE_STATUS,
@@ -193,9 +253,12 @@ def candidate_identity(*, population_id: str) -> dict[str, Any]:
         "feature_contract": PUBLIC_CONTEXT_SCHEMA,
         "likelihood_contract": SCHEMA,
         "active_model_replaced": False,
-        "fit_scope": "SCAFFOLD_ONLY_NO_FINAL_FIT",
-        "data_scope": "SYNTHETIC_OR_TRAIN_ONLY",
+        "fit_scope": str(fit_scope),
+        "data_scope": str(data_scope),
     }
+    if source_report_hash:
+        identity["source_report_hash"] = str(source_report_hash)
+    return identity
 
 
 def _normalized_probabilities(
@@ -293,12 +356,21 @@ def resolve_likelihood(
     """Resolve only exact-price nodes; hand-class may back off to same-price marginal."""
     validate_candidate(candidate)
     public_context = public_sizing_context(context)
-    key = public_context["sizing_context_key"]
+    sizing_key = public_context["sizing_context_key"]
+    support_key = public_context["support_context_key"]
     exact_price_nodes = [
         node
         for node in candidate["nodes"]
-        if isinstance(node, Mapping) and node.get("sizing_context_key") == key
+        if isinstance(node, Mapping)
+        and (
+            node.get("support_context_key") == support_key
+            or (
+                node.get("support_context_key") in (None, "")
+                and node.get("sizing_context_key") == sizing_key
+            )
+        )
     ]
+    key = support_key if any(node.get("support_context_key") for node in exact_price_nodes) else sizing_key
 
     hand = None if hand_class in (None, "") else str(hand_class)
     if hand is not None:
