@@ -1,0 +1,128 @@
+{
+  "schema": "poker-backlog-evidence-github-export/v1",
+  "coverage": {
+    "comments_complete": true,
+    "issues_complete": true,
+    "pulls_complete": true,
+    "branches_complete": true,
+    "dispatch_issue": 225
+  },
+  "comments": [
+    {
+      "id": 1,
+      "source_issue": 216,
+      "created_at": "2026-09-19T00:00:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: E\nISSUE: #216\nSTATUS: CLAIMED\nBASE: aaaa\nBRANCH: agent-E/issue-216-fixture\nCONFLICT_GROUP: PACKS-UX\nFILES_INTENT:\n- site/population-packs.js\nNOTES: fixture"
+    },
+    {
+      "id": 2,
+      "source_issue": 216,
+      "created_at": "2026-09-19T00:01:00Z",
+      "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: E\nISSUE: #216\nBASE/HEAD: aaaa / aaab\nPR: #910\nREMAINING_GAPS:\n- None"
+    },
+    {
+      "id": 3,
+      "source_issue": 216,
+      "created_at": "2026-09-19T00:02:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: E\nISSUE: #216\nSTATUS: RELEASED\nPR: #910\nRESULT: merged\nNEXT: none"
+    },
+    {
+      "id": 4,
+      "source_issue": 203,
+      "created_at": "2026-09-19T00:03:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: F\nISSUE: #203\nSTATUS: CLAIMED\nBASE: bbbb\nBRANCH: agent-F/issue-203-fixture\nCONFLICT_GROUP: REPRO\nFILES_INTENT:\n- tools/repro_ci_browser.py\nNOTES: fixture"
+    },
+    {
+      "id": 5,
+      "source_issue": 203,
+      "created_at": "2026-09-19T00:04:00Z",
+      "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: F\nISSUE: #203\nBASE/HEAD: bbbb / bbbc\nPR: #911\nREMAINING_GAPS:\n- mandatory CI enforcement is deferred until #108 is released"
+    },
+    {
+      "id": 6,
+      "source_issue": 203,
+      "created_at": "2026-09-19T00:05:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: F\nISSUE: #203\nSTATUS: RELEASED\nPR: #911\nRESULT: merged\nNEXT: deferred CI wiring"
+    },
+    {
+      "id": 7,
+      "source_issue": 206,
+      "created_at": "2026-09-19T00:06:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nSTATUS: CLAIMED\nBASE: cccc\nBRANCH: agent-G/issue-206-recovery-fixture\nCONFLICT_GROUP: PROJECT-STATE\nFILES_INTENT:\n- tools/build_recovery_state.py\nNOTES: fixture"
+    },
+    {
+      "id": 8,
+      "source_issue": 206,
+      "created_at": "2026-09-19T00:07:00Z",
+      "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nBASE/HEAD: cccc / cccd\nPR: #292\nREMAINING_GAPS:\n- mandatory CI invocation remains deferred"
+    },
+    {
+      "id": 9,
+      "source_issue": 206,
+      "created_at": "2026-09-19T00:08:00Z",
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nSTATUS: RELEASED\nPR: #292\nRESULT: merged\nNEXT: deferred CI wiring"
+    }
+  ],
+  "issues": [
+    {
+      "number": 109,
+      "state": "closed",
+      "title": "Historical preflop trainer",
+      "body": "",
+      "labels": []
+    },
+    {
+      "number": 203,
+      "state": "open",
+      "title": "Reproducibility",
+      "body": "",
+      "labels": [
+        "blocked"
+      ]
+    },
+    {
+      "number": 206,
+      "state": "open",
+      "title": "Project state",
+      "body": "",
+      "labels": []
+    },
+    {
+      "number": 216,
+      "state": "open",
+      "title": "Pack UX",
+      "body": "",
+      "labels": []
+    }
+  ],
+  "pulls": [
+    {
+      "number": 292,
+      "state": "closed",
+      "merged": true,
+      "title": "[G][#206] recovery",
+      "head": "agent-G/issue-206-recovery-fixture",
+      "base": "main"
+    },
+    {
+      "number": 910,
+      "state": "closed",
+      "merged": true,
+      "title": "[E][#216] done",
+      "head": "agent-E/issue-216-fixture",
+      "base": "main"
+    },
+    {
+      "number": 911,
+      "state": "closed",
+      "merged": true,
+      "title": "[F][#203] tranche",
+      "head": "agent-F/issue-203-fixture",
+      "base": "main"
+    }
+  ],
+  "branches": [
+    "main"
+  ],
+  "read_errors": []
+}
