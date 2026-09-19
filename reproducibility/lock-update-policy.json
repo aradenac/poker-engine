@@ -1,0 +1,148 @@
+{
+  "schema": "poker-engine-repro-lock-update-policy/v1",
+  "issue": 203,
+  "mode": "DRY_RUN_REVIEW_ONLY",
+  "managed_files": [
+    ".python-version",
+    ".node-version",
+    "requirements.in",
+    "requirements.lock.txt",
+    "package.json",
+    "package-lock.json",
+    "reproducibility/environment.lock.json",
+    "reproducibility/os-base.lock.json",
+    "reproducibility/container-base.lock.json",
+    "reproducibility/Dockerfile.science",
+    "reproducibility/system-packages.apt.txt",
+    "reproducibility/apt-snapshot.lock.json",
+    "reproducibility/system-packages.resolution.lock.json",
+    "reproducibility/ubuntu-snapshot.sources",
+    "reproducibility/browser-identity.lock.json"
+  ],
+  "components": {
+    "python_runtime": {
+      "required_changed_files": [
+        ".python-version",
+        "reproducibility/environment.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science"
+      ]
+    },
+    "python_dependencies": {
+      "required_changed_files": [
+        "requirements.lock.txt"
+      ]
+    },
+    "node_runtime": {
+      "required_changed_files": [
+        ".node-version",
+        "package.json",
+        "package-lock.json",
+        "reproducibility/environment.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science"
+      ]
+    },
+    "node_dependencies": {
+      "required_changed_files": [
+        "package.json",
+        "package-lock.json"
+      ]
+    },
+    "playwright_runtime": {
+      "required_changed_files": [
+        "requirements.in",
+        "requirements.lock.txt",
+        "reproducibility/environment.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/Dockerfile.science"
+      ]
+    },
+    "chromium_runtime": {
+      "required_changed_files": [
+        "reproducibility/environment.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/Dockerfile.science"
+      ]
+    },
+    "os_base": {
+      "required_changed_files": [
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json"
+      ]
+    },
+    "container_base": {
+      "required_changed_files": [
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science"
+      ]
+    },
+    "apt_snapshot": {
+      "required_changed_files": [
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/ubuntu-snapshot.sources",
+        "reproducibility/Dockerfile.science"
+      ]
+    },
+    "system_packages": {
+      "required_changed_files": [
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/system-packages.resolution.lock.json"
+      ]
+    }
+  },
+  "non_regression_matrix": {
+    "always": [
+      "python3 -m py_compile tools/repro_environment.py tools/repro_environment_identity.py tools/repro_container.py tools/repro_hardening.py tools/repro_lock_update.py",
+      "PYTHONPATH=. python3 tests/test_repro_environment.py",
+      "PYTHONPATH=. python3 tests/test_repro_environment_identity.py",
+      "PYTHONPATH=. python3 tests/test_repro_container.py",
+      "PYTHONPATH=. python3 tests/test_repro_hardening.py",
+      "PYTHONPATH=. python3 tests/test_repro_lock_update.py"
+    ],
+    "python_runtime": [
+      "PYTHONPATH=. python3 tests/test_repro_bootstrap.py"
+    ],
+    "node_runtime": [
+      "npm ci --offline --ignore-scripts"
+    ],
+    "node_dependencies": [
+      "npm ci --offline --ignore-scripts"
+    ],
+    "os_base": [
+      "python3 tools/repro_container.py validate"
+    ],
+    "container_base": [
+      "python3 tools/repro_container.py validate"
+    ],
+    "apt_snapshot": [
+      "python3 tools/repro_hardening.py validate"
+    ],
+    "system_packages": [
+      "python3 tools/repro_hardening.py validate"
+    ],
+    "python_dependencies": [
+      "PYTHONPATH=. python3 tests/test_repro_bootstrap.py"
+    ],
+    "playwright_runtime": [
+      "PYTHONPATH=. python3 tests/test_repro_ci_helpers.py",
+      "python3 tools/repro_hardening.py validate"
+    ],
+    "chromium_runtime": [
+      "PYTHONPATH=. python3 tests/test_repro_ci_helpers.py",
+      "python3 tools/repro_hardening.py validate"
+    ]
+  },
+  "review_requirements": [
+    "No managed lock update is applied automatically by this tool.",
+    "The candidate tree must pass every existing REPRO static contract before review.",
+    "Every changed semantic component must include its coupled files.",
+    "The machine-readable old-to-new plan and required non-regression matrix must be reviewed before commit.",
+    "Any Playwright/Chromium change is an environment identity change and must include upstream provenance; unavailable hashes must remain explicitly unpinned rather than invented.",
+    "Historical scientific runs are immutable and are never update targets."
+  ]
+}

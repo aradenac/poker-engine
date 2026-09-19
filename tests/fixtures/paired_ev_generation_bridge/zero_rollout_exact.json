@@ -1,0 +1,71 @@
+{
+  "alternatives": {
+    "ALT_CALL_EXACT_SYNTHETIC": {
+      "action": "CALL",
+      "sizing": {
+        "kind": "NONE",
+        "unit": null,
+        "value": null
+      }
+    }
+  },
+  "artifact_identity": {
+    "candidate_id": "SYNTHETIC_ARTIFACT_CANDIDATE_V1",
+    "code_sha": "8447ba28b30dab3d22fe975bd9eb4a6b3ecfd202",
+    "environment_identity_slot": "env:SYNTHETIC_BRIDGE_V1",
+    "generation_id": "SYNTHETIC_BRIDGE_GENERATION_V1",
+    "generation_parameters_slot": "params:SYNTHETIC_BRIDGE_V1",
+    "generator_version": "paired-ev-generation-bridge-synthetic/1",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "scientific_effect": "NONE_INTEGRATION_CONTRACT_ONLY",
+    "source_plan_sha256": "9d8ec725ef30e6c0352d0e43f6ac726dd3501c9ad2756e862a80c27f9165b8aa",
+    "source_train_audit_sha256": "cee9463b0a412ca28ad7f043a3e985744768fbb45e7cbd18d252b8ade2913b36"
+  },
+  "decision_binding": {
+    "context_id": "pfgen:v1:family=VS_LIMPERS:hero=CO:opener=NONE:lastagg=NONE:callers=0:limpers=1:jam=0:stack=B3_P50_P75",
+    "decision_id": "pfgen:v1:family=VS_LIMPERS:hero=CO:opener=NONE:lastagg=NONE:callers=0:limpers=1:jam=0:stack=B3_P50_P75|AKs",
+    "hand_class": "AKs"
+  },
+  "paired_result": {
+    "alternatives": {
+      "ALT_CALL_EXACT_SYNTHETIC": {
+        "ci_lower_bb": 0.125,
+        "ci_upper_bb": 0.125,
+        "eliminated_after_samples": null,
+        "ev_bb": 0.125,
+        "paired_delta_vs_selected": {
+          "ci_lower_bb": 0,
+          "ci_upper_bb": 0,
+          "delta_ev_bb": 0,
+          "samples": 8,
+          "standard_error_bb": 0,
+          "variance_bb2": 0
+        },
+        "rollouts": 0,
+        "samples": 8,
+        "standard_error_bb": 0,
+        "status": "SELECTED"
+      }
+    },
+    "mode": "paired_adaptive",
+    "pairwise_deltas": {},
+    "schema": "paired-adaptive-preflop-ev/v1",
+    "search": {
+      "adaptive": true,
+      "base_seed": "synthetic-bridge",
+      "batch_size": 8,
+      "confidence_z": 1.96,
+      "decision_id": "pfgen:v1:family=VS_LIMPERS:hero=CO:opener=NONE:lastagg=NONE:callers=0:limpers=1:jam=0:stack=B3_P50_P75|AKs",
+      "elimination_margin_bb": 0,
+      "initial_samples_per_alternative": 8,
+      "max_samples_per_alternative": 8,
+      "max_total_rollouts": 32,
+      "pairing_contract": "DECISION_SAMPLE_COMMON_RANDOM_NUMBERS_V1",
+      "rollout_budget_used": 0,
+      "world_fingerprints_sha256": {},
+      "worlds_materialized": 0
+    },
+    "selected_id": "ALT_CALL_EXACT_SYNTHETIC"
+  },
+  "schema": "poker-paired-ev-generation-bridge-request/v1"
+}
