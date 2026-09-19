@@ -62,28 +62,21 @@ jobs:
           python3 -m py_compile             tools/audit_population_pack_admission_real.py             tools/population_pack_admission.py             tools/population_pack_preflight.py             tests/audit/test_population_pack_admission_real.py
           PYTHONPATH=. python3 -m unittest -v tests/audit/test_population_pack_admission_real.py
 
-      - name: Run real admission audit twice deterministically
+      - name: Run and persist real admission audit twice deterministically
         run: |
           set -euo pipefail
-          rm -rf "$RUN_DIR/.generated" /tmp/issue350-a /tmp/issue350-b
-          mkdir -p "$RUN_DIR/.generated" /tmp/issue350-a /tmp/issue350-b
-          PYTHONPATH=. python3 tools/audit_population_pack_admission_real.py             --output-dir "$RUN_DIR/.generated"
-          cp -a "$RUN_DIR/.generated/." /tmp/issue350-a/
-          rm -rf "$RUN_DIR/.generated"
-          mkdir -p "$RUN_DIR/.generated"
-          PYTHONPATH=. python3 tools/audit_population_pack_admission_real.py             --output-dir "$RUN_DIR/.generated"
-          cp -a "$RUN_DIR/.generated/." /tmp/issue350-b/
+          rm -rf /tmp/issue350-a /tmp/issue350-b
+          mkdir -p /tmp/issue350-a /tmp/issue350-b
+          outputs="EVIDENCE_SET.json ADMISSION_RESOLUTION.json CANDIDATE_CONTRACT.json PREFLIGHT.json ADMISSION_MATRIX.json READ_ONLY_GUARD.json RESULT.json SUMMARY.md"
+          for file in $outputs; do rm -f "$RUN_DIR/$file"; done
+          PYTHONPATH=. python3 tools/audit_population_pack_admission_real.py \
+            --output-dir "$RUN_DIR"
+          for file in $outputs; do cp "$RUN_DIR/$file" "/tmp/issue350-a/$file"; done
+          PYTHONPATH=. python3 tools/audit_population_pack_admission_real.py \
+            --output-dir "$RUN_DIR"
+          for file in $outputs; do cp "$RUN_DIR/$file" "/tmp/issue350-b/$file"; done
           diff -ru /tmp/issue350-a /tmp/issue350-b
           echo "deterministic real admission audit: PASS"
-
-      - name: Persist audit evidence
-        run: |
-          set -euo pipefail
-          for file in             EVIDENCE_SET.json             ADMISSION_RESOLUTION.json             CANDIDATE_CONTRACT.json             PREFLIGHT.json             ADMISSION_MATRIX.json             READ_ONLY_GUARD.json             RESULT.json             SUMMARY.md
-          do
-            cp "$RUN_DIR/.generated/$file" "$RUN_DIR/$file"
-          done
-          rm -rf "$RUN_DIR/.generated"
 
       - name: Final DoD guards
         run: |
