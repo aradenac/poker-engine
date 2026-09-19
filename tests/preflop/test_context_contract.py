@@ -145,11 +145,12 @@ def test_context_builder_has_no_card_or_future_inputs():
 def test_public_price_projection_fields_are_present_and_consistent():
     for case in SIZING_FIXTURE["contexts"]:
         ctx = build_context(**case["input"])
+        public = public_sizing_context(ctx)
         for key, expected in case["expected"].items():
-            assert ctx[key] == expected, (case["name"], key, ctx[key], expected)
-        assert ctx["target_total_bb"] == ctx["current_price_bb"]
-        assert ctx["limper_count"] == len(set(ctx["limper_positions"]))
-        assert ctx["caller_count"] == len(set(ctx["caller_positions"]))
+            assert public[key] == expected, (case["name"], key, public[key], expected)
+        assert public["target_total_bb"] == ctx["current_price_bb"]
+        assert public["limper_count"] == len(set(ctx["limper_positions"]))
+        assert public["caller_count"] == len(set(ctx["caller_positions"]))
 
 
 def test_sizing_candidate_distinguishes_4bb_and_6bb_exactly():
@@ -294,7 +295,7 @@ def test_sizing_projection_is_public_only_and_fail_closed():
         raise AssertionError("private cards must be rejected by sizing projection")
 
     incomplete = dict(ctx)
-    incomplete.pop("target_total_bb")
+    incomplete.pop("current_price_bb")
     try:
         public_sizing_context(incomplete)
     except SizingLikelihoodError as exc:
