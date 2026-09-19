@@ -299,11 +299,12 @@
   ],
   "context_counts": {
     "comparison": {
-      "INSUFFICIENT_SUPPORT": 3559
+      "INSUFFICIENT_SUPPORT": 3157,
+      "SIMILAR": 2
     },
-    "not_fully_supported": 3559,
-    "supported": 0,
-    "total": 3559
+    "not_fully_supported": 3157,
+    "supported": 2,
+    "total": 3159
   },
   "domain_comparison_counts": {
     "CANDIDATE_DEGRADES": 1,
@@ -312,7 +313,13 @@
     "SIMILAR": 22
   },
   "evaluation_split": "VALIDATION",
-  "insufficiently_supported_contexts": 3559,
+  "hierarchy_comparison_counts": {
+    "CANDIDATE_DEGRADES": 1,
+    "CANDIDATE_IMPROVES": 32,
+    "INSUFFICIENT_SUPPORT": 4900,
+    "SIMILAR": 125
+  },
+  "insufficiently_supported_contexts": 3157,
   "interpretation": "Descriptive VALIDATION calibration only. CANDIDATE_IMPROVES/DEGRADES requires SUPPORTED context and a paired hand-cluster bootstrap CI for candidate-minus-reference log-loss that excludes zero. No promotion decision is made.",
   "issue": 272,
   "production_effect": "NONE",
@@ -600,5 +607,36 @@
     }
   ],
   "test_consumed": false,
-  "worst_candidate_calibration_contexts": []
+  "worst_candidate_calibration_contexts": [
+    {
+      "candidate_log_loss": 0.9584324166076279,
+      "context": {
+        "pot_type": "LIMPED",
+        "price_bucket": "P00_25",
+        "profile": 0,
+        "relative_position": "MIDDLE",
+        "sequence": "BET",
+        "spr_bucket": "SPR8_PLUS",
+        "street": "flop"
+      },
+      "context_id": "ctx-738d19bf5ff6359b",
+      "observations": 31,
+      "reference_log_loss": 1.0047117609758924
+    },
+    {
+      "candidate_log_loss": 0.8499135516475844,
+      "context": {
+        "pot_type": "LIMPED",
+        "price_bucket": "P25_50",
+        "profile": 0,
+        "relative_position": "OOP",
+        "sequence": "CHECK>BET",
+        "spr_bucket": "SPR8_PLUS",
+        "street": "flop"
+      },
+      "context_id": "ctx-90615fb203b8bd0d",
+      "observations": 34,
+      "reference_log_loss": 0.8999495016950857
+    }
+  ]
 }
