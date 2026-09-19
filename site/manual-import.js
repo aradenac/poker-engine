@@ -17,7 +17,14 @@
   const RESTORE_ACTION="RESTORE_ACTIVE_PACK";
   const Identity=global.PokerPackIdentity;
   if(!Identity)throw new Error("PokerPackIdentity requis avant manual-import.js.");
-  const {sha256,contentIdentity,packIdentity,samePackIdentity}=Identity;
+  const {sha256:sharedSha256,contentIdentity,packIdentity,samePackIdentity}=Identity;
+
+  async function sha256(value){
+    const input=value instanceof Uint8Array||value instanceof ArrayBuffer||ArrayBuffer.isView(value)
+      ? value
+      : String(value??"");
+    return sharedSha256(input);
+  }
 
   function openDb(){
     return new Promise((resolve,reject)=>{
