@@ -724,11 +724,80 @@ async function trainerReviewText(text){
     delete state.reviewScores[key];state.hhHands=saved.hhHands;state.selectedHand=saved.selectedHand;state.hhMode=saved.hhMode;state.replaySteps=saved.replaySteps;state.replayIndex=saved.replayIndex;state.populationTraceCache=saved.popTrace;state.populationRangeCache=saved.popRange;state.postflopTraceCache=saved.postTrace;state.postflopRangeCache=saved.postRange;state.actionEquityCache=saved.actionEq;state.seatEquityCache=saved.seatEq;state.preflopRuntimeDecisionCache=saved.preflopRuntime;
   }
 }
-function trainerPlaceholderLine(hand){const s=hand.heroSeat,toCall=trainerToCall(hand,s);return {kind:toCall>1e-8?"FOLD":"CHECK",line:trainerActionLine(hand,s,toCall>1e-8?"FOLD":"CHECK"),cost:0};}
+function trainerPreflopRuntimeInput(hand){
+  const runtime=window.PokerPreflopRuntime;
+  if(!runtime)throw new Error("PokerPreflopRuntime indisponible.");
+  const hero=hand.heroSeat,ctx=trainerPreflopContext(hand,hero),view=hand.core.legalView(hand.names[hero]);
+  return {runtime,ctx,view,public_state:{snapshot:hand.core.toSnapshot(),legal_view:view}};
+}
+function trainerPreflopScopeCovered(ctx,view){
+  const family=String(ctx?.family||"").toUpperCase();
+  return Number(view?.to_call_bb)>1e-8&&!["UNOPENED","VS_LIMPERS"].includes(family);
+}
+function trainerPreflopPlayedAction(actual,view){
+  if(!actual)return null;
+  const action=String(actual.kind||"").toUpperCase();
+  if(action==="FOLD")return {action:"FOLD"};
+  if(action==="CALL")return {action:"CALL",target_total_bb:Number(view.current_price_bb)};
+  if(action==="RAISE")return {action:"RAISE",target_total_bb:Number(actual.target)};
+  if(action==="CHECK")return {action:"CHECK"};
+  if(action==="BET")return {action:"RAISE",target_total_bb:Number(actual.target)};
+  return {action};
+}
+function trainerDetailFromPreflopDecision(decision,referenceCallEV=null){
+  const runtime=window.PokerPreflopRuntime,covered=runtime?.isCovered(decision);
+  const bestEV=Number(decision?.recommended_ev_bb),playedEV=Number(decision?.played_ev_bb),comparable=!!decision?.ev_comparable;
+  const loss=covered&&comparable&&Number.isFinite(bestEV)&&Number.isFinite(playedEV)?Math.max(0,bestEV-playedEV):0;
+  return {
+    preflopDecision:decision,referenceCallEV:Number.isFinite(Number(referenceCallEV))?Number(referenceCallEV):null,
+    bestLabel:covered?String(decision.recommended_action||"—"):"SPOT_NON_COUVERT",
+    bestCostBB:covered&&Number.isFinite(Number(decision.incremental_cost_bb))?Number(decision.incremental_cost_bb):null,
+    bestEV:covered&&Number.isFinite(bestEV)?bestEV:NaN,chosenEV:comparable&&Number.isFinite(playedEV)?playedEV:NaN,
+    lossBB:loss,rawLossBB:loss,withinNoise:false,comparable,unsupported:!covered
+  };
+}
+async function trainerComputePreflopReference(hand,actual=null,guide=null){
+  const started=performance.now(),{runtime,ctx,view,public_state}=trainerPreflopRuntimeInput(hand);
+  const common={public_state,context_id:ctx.context_id,preflop_context:ctx,hero_position:ctx.actor_position,
+    hand_id:String(hand.id),decision_id:`trainer-preflop:${hand.id}:${hand.decisionNo}`,
+    played_action:trainerPreflopPlayedAction(actual,view)};
+  if(!trainerPreflopScopeCovered(ctx,view)){
+    const decision=runtime.surfaceBundle(runtime.buildUnsupported({...common,reason:String(ctx.family)==="VS_LIMPERS"?"SPOT_NON_COUVERT":"ACTIVE_REFERENCE_SCOPE_UNSUPPORTED"})).trainer;
+    runtime.assertRetainedReference(decision);
+    const ms=performance.now()-started;trainerState.perf.lastMs=ms;trainerState.perf.totalMs+=ms;
+    return trainerDetailFromPreflopDecision(decision,null);
+  }
+  let callEV=Number(guide?.referenceCallEV);
+  if(Number.isFinite(callEV)){trainerState.perf.reused++;}
+  else{
+    const callCost=Number(view.to_call_bb),line=trainerActionLine(hand,hand.heroSeat,"CALL",callCost);
+    const reviewed=await trainerTimedReviewText(trainerBuildReviewHH(hand,line,"CALL",callCost));
+    const source=reviewed?.preflopDecision;
+    const callAlt=(source?.alternatives||[]).find(a=>String(a.action).toUpperCase()==="CALL");
+    callEV=Number(callAlt?.ev_bb);
+    if(!Number.isFinite(callEV))callEV=Number(reviewed?.chosenEV);
+    if(!Number.isFinite(callEV))throw new Error("EV CALL de la référence active indisponible.");
+  }
+  const decision=runtime.surfaceBundle(runtime.buildCallFold({...common,call_ev_bb:callEV,
+    hero_hand_class:cardsToNotation(hand.hole[hand.heroSeat]),samples:Number(trialsSelect?.value||0),support_source:"active-reference-call-fold"})).trainer;
+  runtime.assertRetainedReference(decision);
+  return trainerDetailFromPreflopDecision(decision,callEV);
+}
+function trainerPlaceholderLine(hand){
+  const s=hand.heroSeat,toCall=trainerToCall(hand,s);
+  return {kind:toCall>1e-8?"CALL":"CHECK",line:trainerActionLine(hand,s,toCall>1e-8?"CALL":"CHECK",toCall>1e-8?toCall:0),cost:toCall>1e-8?toCall:0};
+}
 async function trainerComputeRecommendation(){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero)return;
   trainerState.busy=true;trainerState.recommendation=null;trainerRenderStatus("Calcul de la recommandation…","busy");trainerRender();
-  try{const ph=trainerPlaceholderLine(hand),detail=await trainerTimedReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,0));trainerState.recommendation=detail;trainerRenderStatus(`À vous de jouer · calcul ${trainerState.perf.lastMs.toFixed(0)} ms.`);}
+  try{
+    const detail=hand.street==="preflop"
+      ?await trainerComputePreflopReference(hand)
+      :await (async()=>{const ph=trainerPlaceholderLine(hand);return trainerTimedReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,ph.cost));})();
+    trainerState.recommendation=detail;
+    const stateText=detail?.preflopDecision&&!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision)?" · SPOT_NON_COUVERT":"";
+    trainerRenderStatus(`À vous de jouer${stateText} · calcul ${trainerState.perf.lastMs.toFixed(0)} ms.`);
+  }
   catch(err){trainerRenderStatus(`Recommandation indisponible : ${err.message}`,"error");trainerState.recommendation={error:err.message};}
   finally{trainerState.busy=false;trainerRender();}
 }
