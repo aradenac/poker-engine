@@ -21,6 +21,18 @@ def archived_custom_bytes() -> bytes:
 
 async def main() -> None:
     errors: list[str] = []
+    html_source = (ROOT / "site/hero-ranges.html").read_text(encoding="utf-8")
+    app_source = (ROOT / "site/hero-ranges-app.js").read_text(encoding="utf-8")
+    visible_sources = html_source + "\n" + app_source
+    assert "Ranges Hero" not in visible_sources
+    assert ">Range source<" not in html_source
+    assert "ranges personnelles" not in visible_sources.casefold()
+    assert "range personnelle" not in visible_sources.casefold()
+    assert "range calculée" not in visible_sources.casefold()
+    assert "Stratégie Hero" in visible_sources
+    assert "Stratégie calculée" in visible_sources
+    assert "Stratégie personnelle" in visible_sources
+    assert "Range source importée" in visible_sources
     source_bytes = archived_custom_bytes()
     source = json.loads(source_bytes)
     async with async_playwright() as p:
