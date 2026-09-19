@@ -125,7 +125,7 @@ def audit(*, root: Path = ROOT) -> dict[str, Any]:
     if resolution["candidate_contract"]["components"]["application_release"] is not None:
         raise EngineArtifactAuditError("#370 must not provide application_release")
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=root / "tests/audit") as tmp:
         contract_path = Path(tmp) / "candidate.json"
         contract_path.write_text(
             json.dumps(resolution["candidate_contract"], indent=2, sort_keys=True) + "\n",
