@@ -18,7 +18,6 @@ from tools.training.validate_hero_preflop_generation import (
     validate_generation,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
 PLAN = ROOT / "analysis/hero_preflop_generation_plan.json"
 FIXTURE = ROOT / "tests/fixtures/hero_preflop_generation/valid"
 
