@@ -129,10 +129,11 @@ function cell(report,dimension,key){
   assert.ok(pos.metrics.fold_frequency.absolute_delta>.19);
   assert.ok(pos.metrics.raise_frequency.absolute_delta>.19);
   assert.ok(pos.distance.action_js_divergence>0);
-  assert.ok(report.ranking.some(x=>x.dimension==='position'&&x.context==='BTN'));
-  assert.equal(report.ranking[0].state,'DRIFTED');
-  assert.equal(report.ranking[0].support.baseline_decisions,60);
-  assert.equal(report.ranking[0].support.target_decisions,60);
+  const ranked=report.ranking.find(x=>x.dimension==='position'&&x.context==='BTN');
+  assert.ok(ranked);
+  assert.equal(ranked.state,'DRIFTED');
+  assert.equal(ranked.support.baseline_decisions,60);
+  assert.equal(ranked.support.target_decisions,60);
 }
 
 {
