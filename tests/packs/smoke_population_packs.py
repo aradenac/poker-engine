@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 from playwright.async_api import async_playwright
 
 from tests.packs.synthetic_pack_fixture import runtime_entry
+from tests.packs.smoke_manual_import import run_manual_import_smoke
 
 URL = "http://127.0.0.1:8765/packs.html"
 
@@ -298,7 +299,9 @@ async def main() -> None:
         assert synthetic["test_previous"] == synthetic["test_second"], synthetic
         assert synthetic["zip_bytes"] > 100, synthetic
 
-        print(json.dumps({"production": result, "synthetic_test_only": synthetic}, ensure_ascii=False, indent=2))
+        manual_override = await run_manual_import_smoke(page)
+
+        print(json.dumps({"production": result, "synthetic_test_only": synthetic, "manual_override": manual_override}, ensure_ascii=False, indent=2))
         if page_errors:
             raise AssertionError(f"page errors: {page_errors}")
         if console_errors:
