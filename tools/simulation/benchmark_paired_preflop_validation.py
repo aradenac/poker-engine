@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
+import multiprocessing
+import os
 from pathlib import Path
 from typing import Any
 
@@ -92,22 +95,8 @@ def selected_scenarios(manifest: dict[str, Any], count: int) -> list[dict[str, A
     return out
 
 
-def run_validation(
-    protocol_path: Path = DEFAULT_PROTOCOL,
-    corpus_path: Path = DEFAULT_CORPUS,
-) -> dict[str, Any]:
-    protocol = json.loads(Path(protocol_path).read_text(encoding="utf-8"))
-    corpus = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
-    if protocol.get("schema") != "poker-paired-adaptive-preflop-validation-protocol/v2":
-        raise ValueError("unexpected #338 protocol schema")
-    if protocol.get("phase") != "VALIDATION" or protocol.get("status") != "FROZEN_BEFORE_RESULTS":
-        raise ValueError("#338 protocol must be frozen VALIDATION")
-    boundaries = protocol.get("scientific_boundaries") or {}
-    if boundaries.get("test_consumed") is not False or boundaries.get("test_authorized") is not False:
-        raise ValueError("TEST must remain forbidden")
-
-    count = int((protocol.get("corpus") or {}).get("distinct_hands") or 0)
-    scenarios = selected_scenarios(corpus, count)
+def _evaluate_scenario(task: tuple[dict[str, Any], dict[str, Any], int]) -> dict[str, Any]:
+    scenario, protocol, decision_index = task
     budget_cfg = protocol["budget"]
     fixed_samples = int(budget_cfg["fixed_samples_per_non_exact_alternative"])
     initial = int(budget_cfg["paired_initial_samples_per_non_exact_alternative"])
@@ -124,51 +113,99 @@ def run_validation(
     hero_future = SupportClosedModelAContinuationPolicy(strict)
     hero_continuation = generation.FixedPopulationDerivedHeroContinuation(hero_future)
 
-    decisions = []
+    hero = str(scenario["hero"])
+    state = state_at_first_hero_preflop(str(scenario["raw_hand"]), hero)
+    hand_class = combo_class(tuple(scenario["hero_cards"]))
+    try:
+        raise_targets, sizing_support = generation.observed_raise_targets(strict, state, hero)
+    except ModelAUnsupportedContext as exc:
+        if "exposes no observed legal raise sizing" not in str(exc):
+            raise
+        raise_targets = []
+        sizing_support = {
+            "sources": [],
+            "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+            "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+            "reason": str(exc),
+        }
+    call_action, raise_action = generation.semantic_grid_labels(state)
+    candidates = build_candidates(
+        state,
+        actor=hero,
+        raise_targets_bb=raise_targets,
+        call_action=call_action,
+        raise_action=raise_action,
+        include_jam=True,
+        sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+    )
+    non_exact = sum(candidate.core_action != "FOLD" for candidate in candidates)
+    max_total = non_exact * maximum
+    context_id = f"validation:{scenario['hand_id']}:hero-preflop-0"
+    rollout = ModelAPreflopContinuationRollout(
+        opponent_policy=opponent,
+        hero_hole_cards=scenario["hero_cards"],
+        hero_continuation_policy=hero_continuation,
+    )
+
     fixed_rollouts = 0
     paired_rollouts = 0
-    fixed_stable = 0
-    paired_stable = 0
     deterministic_fixed = None
     deterministic_paired = None
-
-    for decision_index, scenario in enumerate(scenarios):
-        hero = str(scenario["hero"])
-        state = state_at_first_hero_preflop(str(scenario["raw_hand"]), hero)
-        hand_class = combo_class(tuple(scenario["hero_cards"]))
-        try:
-            raise_targets, sizing_support = generation.observed_raise_targets(strict, state, hero)
-        except ModelAUnsupportedContext as exc:
-            if "exposes no observed legal raise sizing" not in str(exc):
-                raise
-            raise_targets = []
-            sizing_support = {
-                "sources": [],
-                "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
-                "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
-                "reason": str(exc),
-            }
-        call_action, raise_action = generation.semantic_grid_labels(state)
-        candidates = build_candidates(
-            state,
+    block_rows = []
+    for seed in seed_blocks:
+        fixed = evaluate_preflop_grid(
+            NoLimitHoldemState.from_snapshot(state.to_snapshot()),
             actor=hero,
+            context_id=context_id,
+            population_id=protocol["population_id"],
             raise_targets_bb=raise_targets,
+            rollout=rollout,
+            samples_per_candidate=fixed_samples,
+            base_seed=seed,
             call_action=call_action,
             raise_action=raise_action,
             include_jam=True,
             sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+            status="EXPERIMENTAL",
         )
-        non_exact = sum(candidate.core_action != "FOLD" for candidate in candidates)
-        max_total = non_exact * maximum
-        context_id = f"validation:{scenario['hand_id']}:hero-preflop-0"
-        rollout = ModelAPreflopContinuationRollout(
-            opponent_policy=opponent,
-            hero_hole_cards=scenario["hero_cards"],
-            hero_continuation_policy=hero_continuation,
+        paired = evaluate_preflop_grid_paired(
+            NoLimitHoldemState.from_snapshot(state.to_snapshot()),
+            actor=hero,
+            context_id=context_id,
+            hand_class=hand_class,
+            population_id=protocol["population_id"],
+            raise_targets_bb=raise_targets,
+            rollout=rollout,
+            budget=AdaptiveBudget(
+                initial_samples_per_alternative=initial,
+                max_samples_per_alternative=maximum,
+                batch_size=batch,
+                max_total_rollouts=max_total,
+                confidence_z=float(budget_cfg["confidence_z"]),
+                elimination_margin_bb=float(budget_cfg["elimination_margin_bb"]),
+            ),
+            base_seed=seed,
+            call_action=call_action,
+            raise_action=raise_action,
+            include_jam=True,
+            sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+            status="EXPERIMENTAL",
+            require_materialized_common_world=True,
         )
-        block_rows = []
-        for seed in seed_blocks:
-            fixed = evaluate_preflop_grid(
+        fixed_rollouts += int(fixed["search"]["budget"])
+        paired_rollouts += int(paired["decision"]["search"]["budget"])
+        block_rows.append({
+            "seed": seed,
+            "fixed_selected_id": fixed["selected_id"],
+            "paired_selected_id": paired["decision"]["selected_id"],
+            "fixed_rollouts": int(fixed["search"]["budget"]),
+            "paired_rollouts": int(paired["decision"]["search"]["budget"]),
+            "paired_pairwise_deltas": paired["paired_result"]["pairwise_deltas"],
+            "paired_common_world_mode": paired["decision"]["search"]["common_world_mode"],
+        })
+
+        if decision_index == 0 and seed == seed_blocks[0]:
+            fixed_again = evaluate_preflop_grid(
                 NoLimitHoldemState.from_snapshot(state.to_snapshot()),
                 actor=hero,
                 context_id=context_id,
@@ -183,7 +220,7 @@ def run_validation(
                 sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                 status="EXPERIMENTAL",
             )
-            paired = evaluate_preflop_grid_paired(
+            paired_again = evaluate_preflop_grid_paired(
                 NoLimitHoldemState.from_snapshot(state.to_snapshot()),
                 actor=hero,
                 context_id=context_id,
@@ -207,59 +244,13 @@ def run_validation(
                 status="EXPERIMENTAL",
                 require_materialized_common_world=True,
             )
-            fixed_rollouts += int(fixed["search"]["budget"])
-            paired_rollouts += int(paired["decision"]["search"]["budget"])
-            block_rows.append({
-                "seed": seed,
-                "fixed_selected_id": fixed["selected_id"],
-                "paired_selected_id": paired["decision"]["selected_id"],
-                "fixed_rollouts": int(fixed["search"]["budget"]),
-                "paired_rollouts": int(paired["decision"]["search"]["budget"]),
-                "paired_pairwise_deltas": paired["paired_result"]["pairwise_deltas"],
-                "paired_common_world_mode": paired["decision"]["search"]["common_world_mode"],
-            })
+            deterministic_fixed = canonical(fixed) == canonical(fixed_again)
+            deterministic_paired = canonical(paired) == canonical(paired_again)
 
-            if decision_index == 0 and seed == seed_blocks[0]:
-                fixed_again = evaluate_preflop_grid(
-                    NoLimitHoldemState.from_snapshot(state.to_snapshot()),
-                    actor=hero,
-                    context_id=context_id,
-                    population_id=protocol["population_id"],
-                    raise_targets_bb=raise_targets,
-                    rollout=rollout,
-                    samples_per_candidate=fixed_samples,
-                    base_seed=seed,
-                    call_action=call_action,
-                    raise_action=raise_action,
-                    include_jam=True,
-                    sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
-                    status="EXPERIMENTAL",
-                )
-                paired_again = evaluate_preflop_grid_paired(
-                    NoLimitHoldemState.from_snapshot(state.to_snapshot()),
-                    actor=hero,
-                    context_id=context_id,
-                    hand_class=hand_class,
-                    population_id=protocol["population_id"],
-                    raise_targets_bb=raise_targets,
-                    rollout=rollout,
-                    budget=AdaptiveBudget(initial, maximum, batch, max_total),
-                    base_seed=seed,
-                    call_action=call_action,
-                    raise_action=raise_action,
-                    include_jam=True,
-                    sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
-                    status="EXPERIMENTAL",
-                    require_materialized_common_world=True,
-                )
-                deterministic_fixed = canonical(fixed) == canonical(fixed_again)
-                deterministic_paired = canonical(paired) == canonical(paired_again)
-
-        fixed_same = len({row["fixed_selected_id"] for row in block_rows}) == 1
-        paired_same = len({row["paired_selected_id"] for row in block_rows}) == 1
-        fixed_stable += int(fixed_same)
-        paired_stable += int(paired_same)
-        decisions.append({
+    fixed_same = len({row["fixed_selected_id"] for row in block_rows}) == 1
+    paired_same = len({row["paired_selected_id"] for row in block_rows}) == 1
+    return {
+        "decision": {
             "hand_id": str(scenario["hand_id"]),
             "hero": hero,
             "hand_class": hand_class,
@@ -269,17 +260,63 @@ def run_validation(
             "fixed_stable": fixed_same,
             "paired_stable": paired_same,
             "seed_blocks": block_rows,
-        })
+        },
+        "fixed_rollouts": fixed_rollouts,
+        "paired_rollouts": paired_rollouts,
+        "deterministic_fixed": deterministic_fixed,
+        "deterministic_paired": deterministic_paired,
+        "continuation_support": {
+            "opponent": opponent.aggregate_audit(),
+            "hero": hero_future.aggregate_audit(),
+        },
+    }
+
+
+def run_validation(
+    protocol_path: Path = DEFAULT_PROTOCOL,
+    corpus_path: Path = DEFAULT_CORPUS,
+) -> dict[str, Any]:
+    protocol = json.loads(Path(protocol_path).read_text(encoding="utf-8"))
+    corpus = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
+    if protocol.get("schema") != "poker-paired-adaptive-preflop-validation-protocol/v2":
+        raise ValueError("unexpected #338 protocol schema")
+    if protocol.get("phase") != "VALIDATION" or protocol.get("status") != "FROZEN_BEFORE_RESULTS":
+        raise ValueError("#338 protocol must be frozen VALIDATION")
+    boundaries = protocol.get("scientific_boundaries") or {}
+    if boundaries.get("test_consumed") is not False or boundaries.get("test_authorized") is not False:
+        raise ValueError("TEST must remain forbidden")
+
+    count = int((protocol.get("corpus") or {}).get("distinct_hands") or 0)
+    scenarios = selected_scenarios(corpus, count)
+    tasks = [(scenario, protocol, index) for index, scenario in enumerate(scenarios)]
+    workers = min(4, len(tasks), max(1, int(os.cpu_count() or 1)))
+    if workers > 1:
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=workers,
+            mp_context=multiprocessing.get_context("fork"),
+        ) as executor:
+            rows = list(executor.map(_evaluate_scenario, tasks))
+    else:
+        rows = [_evaluate_scenario(task) for task in tasks]
+
+    decisions = [row["decision"] for row in rows]
+    fixed_rollouts = sum(int(row["fixed_rollouts"]) for row in rows)
+    paired_rollouts = sum(int(row["paired_rollouts"]) for row in rows)
+    fixed_stable = sum(int(row["decision"]["fixed_stable"]) for row in rows)
+    paired_stable = sum(int(row["decision"]["paired_stable"]) for row in rows)
+    deterministic_fixed = rows[0]["deterministic_fixed"]
+    deterministic_paired = rows[0]["deterministic_paired"]
 
     n = len(decisions)
+    seed_count = len(protocol["comparison"]["seed_blocks"])
     fixed_rate = fixed_stable / n
     paired_rate = paired_stable / n
-    fixed_mean = fixed_rollouts / (n * len(seed_blocks))
-    paired_mean = paired_rollouts / (n * len(seed_blocks))
+    fixed_mean = fixed_rollouts / (n * seed_count)
+    paired_mean = paired_rollouts / (n * seed_count)
     materialized_common_worlds = all(
-        row["paired_common_world_mode"] == "MATERIALIZED_MODEL_A_HOLES_AND_BOARD"
+        block["paired_common_world_mode"] == "MATERIALIZED_MODEL_A_HOLES_AND_BOARD"
         for decision in decisions
-        for row in decision["seed_blocks"]
+        for block in decision["seed_blocks"]
     )
     passed = (
         deterministic_fixed is True
@@ -301,6 +338,12 @@ def run_validation(
             "sha256": sha256_path(corpus_path),
             "declared_split": corpus.get("split"),
             "distinct_hands": n,
+        },
+        "execution": {
+            "parallel_unit": "independent_validation_hand",
+            "workers": workers,
+            "result_order": "manifest_order",
+            "scientific_semantics_changed": False,
         },
         "metrics": {
             "fixed_stability": fixed_rate,
@@ -326,8 +369,10 @@ def run_validation(
             "ui_modified": False,
         },
         "continuation_support": {
-            "opponent": opponent.aggregate_audit(),
-            "hero": hero_future.aggregate_audit(),
+            "by_hand": {
+                row["decision"]["hand_id"]: row["continuation_support"]
+                for row in rows
+            },
         },
         "decisions": decisions,
     }
