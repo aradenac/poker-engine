@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Frozen TRAIN-fit / VALIDATION-only evaluation for issue #298."""
+"""Frozen TRAIN-fit / VALIDATION-only evaluation for issue #298.
+
+Final validation trigger after current-main refresh.
+"""
 from __future__ import annotations
 
 import argparse
