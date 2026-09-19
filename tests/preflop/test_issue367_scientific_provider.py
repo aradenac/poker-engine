@@ -78,6 +78,15 @@ def test_wrong_admission_decision_fails_closed_before_execution():
         raise AssertionError("mismatched admission decision must fail closed")
 
 
+def test_non_sizing_opponent_preflop_closure_is_frozen_and_never_nearest():
+    provider = Issue367ScientificProvider(hero_hole_cards=("Ks", "Ts"))
+    closure = provider.opponent_policy.non_sizing_reference
+    assert closure.policy_id == "model-a-reference-support-closed/v1"
+    assert closure.fallback_contract == "CHECK_THEN_CALL_THEN_FOLD_V1"
+    assert closure.identity["nearest_context_substitution"] is False
+    assert closure.identity["claim"] == "BENCHMARK_SUPPORT_CLOSURE_NOT_OPTIMIZED_HERO_STRATEGY"
+
+
 def test_reference_descriptor_keeps_active_v5_pointer_external_to_candidate():
     descriptor = json.loads(
         (
