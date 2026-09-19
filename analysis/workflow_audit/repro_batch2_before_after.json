@@ -1,0 +1,365 @@
+{
+  "base_sha": "b2fa125bc5da885d30e15f36a8bb17072f46ca18",
+  "branch": "n8n/issue-366-repro-env-batch2",
+  "dependency_provenance": {
+    "data_dependencies": "Actual repository file reads observed during verify using a Python audit hook, cross-checked against helper source. Browser identity is read as metadata; no browser helper or installation is invoked.",
+    "python_import_chain": [
+      "tools/repro_ci_environment.py",
+      "tools/repro_environment_identity.py",
+      "tools/repro_container.py",
+      "tools/repro_hardening.py",
+      "tools/repro_environment.py"
+    ]
+  },
+  "files_changed": [
+    ".github/workflows/full-hand-arena.yml",
+    ".github/workflows/model-b-card-aware-runtime.yml",
+    "tests/ci/test_repro_workflow_batch2.py",
+    "analysis/workflow_audit/repro_batch2_before_after.json"
+  ],
+  "issue": 366,
+  "local_tests": [
+    {
+      "command": "python3 tests/test_repro_ci_helpers.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_workflow_batch2.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/repro_ci_environment.py verify",
+      "exit_code": 2,
+      "report": {
+        "environment_identity_sha256": "cbee4f0d9318d09146d3079d9506ad29dcf37ae4483cd1b3959b998c24a38e2c",
+        "expected": {
+          "node": "22.14.0",
+          "python": "3.11.9"
+        },
+        "lock_sha256": {
+          "environment": "387b9393d6a9b1bc81fd0de552b73f53fe8124d2ded71fbfe518a8199d2ca609",
+          "node": "afb28a4d656c223665ed358b3b131a371c6999ffbf9196d76f6f7bc30e6f03b6",
+          "python": "c2a2c209c3a5205243686c211f646e57090e73fdf6841e7804bdc3aa9eafa4c6"
+        },
+        "observed": {
+          "node": null,
+          "python": "3.14.4"
+        },
+        "schema": "poker-repro-ci-environment-report/v1",
+        "status": "FAIL",
+        "violations": [
+          {
+            "expected": "3.11.9",
+            "observed": "3.14.4",
+            "rule": "PYTHON_VERSION_MISMATCH"
+          }
+        ]
+      },
+      "result": "FAIL"
+    },
+    {
+      "command": "python3 tests/test_github_workflow_audit.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_github_workflows.py --json /tmp/repro-batch2-workflow-audit.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "notes": [
+    "Local Python is 3.14.4; the unchanged helper correctly rejects it against 3.11.9. Runtime PASS remains to be obtained with Python 3.11.9. actionlint is unavailable locally.",
+    "The baseline is the parent of implementation commit 38638bc and includes the #361 migration. Protected workflow hashes were recalibrated against this parent and verified against the unchanged working files; migration baselines and workflow logic were preserved.",
+    "The contract test initially failed on three obsolete protected workflow hashes; after recalibration all four test methods passed. local_tests records the actual post-correction executions.",
+    "Branch was already selected by n8n; no checkout, commit, rebase, push or PR creation performed. Claude review and subsequent orchestration remain pending. No scientific test or validation was executed."
+  ],
+  "schema": "poker-repro-workflow-batch2-before-after/v1",
+  "scientific_commands_changed": false,
+  "scientific_gate_changed": false,
+  "verification_method": "Reverse only the approved setup/verify and path additions, then compare the entire workflow SHA-256 against the immutable base; mutation checks reject gate, command, permission and trigger removal.",
+  "version": 1,
+  "workflows": [
+    {
+      "after_sha256": "6997be3eae49b673e792dddb740bf6c5b8bf0230197f52f9476feae2744bc187",
+      "before_blob_sha": "69039087785fef4d9dd8a906a19aaef290885ac1",
+      "before_sha256": "3635255ff3de95e3cf734d15e0db7cf59a37d5664707f23ba6e95d6d6083d665",
+      "path": ".github/workflows/full-hand-arena.yml",
+      "permissions": {
+        "after": {
+          "actions": "read",
+          "contents": "read"
+        },
+        "before": {
+          "actions": "read",
+          "contents": "read"
+        }
+      },
+      "python_runtime": {
+        "after": {
+          "python-version-file": ".python-version",
+          "resolved_version": "3.11.9"
+        },
+        "before": {
+          "python-version": "3.11"
+        }
+      },
+      "repro_paths_added": [
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        ".python-version",
+        ".node-version",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "repro_verify_count": {
+        "after": 2,
+        "before": 0
+      },
+      "scientific_commands_changed": false,
+      "scientific_gate_changed": false,
+      "setup_python_count": {
+        "after": 2,
+        "before": 2
+      },
+      "trigger_configuration": {
+        "after": {
+          "pull_request": {
+            "paths": [
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              ".python-version",
+              ".node-version",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/environment.lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "tools/simulation/full_hand_scenarios.py",
+              "tools/simulation/full_hand_arena.py",
+              "tools/simulation/full_hand_benchmark.py",
+              "tools/simulation/model_b_public_reference.py",
+              "tests/simulation/test_full_hand_arena.py",
+              "tests/simulation/test_full_hand_arena_seeds.py",
+              "tests/simulation/test_full_hand_model_b_contract.py",
+              "tests/simulation/test_full_hand_paired_contract.py",
+              "tests/simulation/test_full_hand_scenarios_population.py",
+              "tools/simulation/game_core.py",
+              "tests/simulation/test_game_core.py",
+              "tests/simulation/test_game_core_consolidated_regressions.py",
+              "docs/full_hand_arena.md",
+              "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
+              ".github/workflows/full-hand-arena.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "before": {
+          "pull_request": {
+            "paths": [
+              "tools/simulation/full_hand_scenarios.py",
+              "tools/simulation/full_hand_arena.py",
+              "tools/simulation/full_hand_benchmark.py",
+              "tools/simulation/model_b_public_reference.py",
+              "tests/simulation/test_full_hand_arena.py",
+              "tests/simulation/test_full_hand_arena_seeds.py",
+              "tests/simulation/test_full_hand_model_b_contract.py",
+              "tests/simulation/test_full_hand_paired_contract.py",
+              "tests/simulation/test_full_hand_scenarios_population.py",
+              "tools/simulation/game_core.py",
+              "tests/simulation/test_game_core.py",
+              "tests/simulation/test_game_core_consolidated_regressions.py",
+              "docs/full_hand_arena.md",
+              "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
+              ".github/workflows/full-hand-arena.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        }
+      },
+      "triggers": {
+        "after": [
+          "pull_request",
+          "workflow_dispatch"
+        ],
+        "before": [
+          "pull_request",
+          "workflow_dispatch"
+        ]
+      }
+    },
+    {
+      "after_sha256": "eebb7aaac40596f6ae53daa1432aa7682b68423b1afa245bfbd8272a5157bd0b",
+      "before_blob_sha": "4d1252e1ef047829a48675ad30122855d1ac3d31",
+      "before_sha256": "d297c71f5bbaf087ff14f15e9b461d54a06446d396f5eb37e3bd9c1d115ae1a2",
+      "path": ".github/workflows/model-b-card-aware-runtime.yml",
+      "permissions": {
+        "after": {
+          "contents": "read"
+        },
+        "before": {
+          "contents": "read"
+        }
+      },
+      "python_runtime": {
+        "after": {
+          "python-version-file": ".python-version",
+          "resolved_version": "3.11.9"
+        },
+        "before": {
+          "python-version": "3.11"
+        }
+      },
+      "repro_paths_added": [
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        ".python-version",
+        ".node-version",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "repro_verify_count": {
+        "after": 1,
+        "before": 0
+      },
+      "scientific_commands_changed": false,
+      "scientific_gate_changed": false,
+      "setup_python_count": {
+        "after": 1,
+        "before": 1
+      },
+      "trigger_configuration": {
+        "after": {
+          "pull_request": {
+            "paths": [
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              ".python-version",
+              ".node-version",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/environment.lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "tools/simulation/model_b_card_aware_runtime.py",
+              "tools/training/independent_profiles/card_aware_behavior_fit.py",
+              "tests/simulation/test_model_b_card_aware_runtime.py",
+              "tests/training/test_card_aware_behavior_fit.py",
+              "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+              ".github/workflows/model-b-card-aware-runtime.yml"
+            ]
+          },
+          "push": {
+            "paths": [
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              ".python-version",
+              ".node-version",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/environment.lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "tools/simulation/model_b_card_aware_runtime.py",
+              "tools/training/independent_profiles/card_aware_behavior_fit.py",
+              "tests/simulation/test_model_b_card_aware_runtime.py",
+              "tests/training/test_card_aware_behavior_fit.py",
+              "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+              ".github/workflows/model-b-card-aware-runtime.yml"
+            ]
+          }
+        },
+        "before": {
+          "pull_request": {
+            "paths": [
+              "tools/simulation/model_b_card_aware_runtime.py",
+              "tools/training/independent_profiles/card_aware_behavior_fit.py",
+              "tests/simulation/test_model_b_card_aware_runtime.py",
+              "tests/training/test_card_aware_behavior_fit.py",
+              "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+              ".github/workflows/model-b-card-aware-runtime.yml"
+            ]
+          },
+          "push": {
+            "paths": [
+              "tools/simulation/model_b_card_aware_runtime.py",
+              "tools/training/independent_profiles/card_aware_behavior_fit.py",
+              "tests/simulation/test_model_b_card_aware_runtime.py",
+              "tests/training/test_card_aware_behavior_fit.py",
+              "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+              ".github/workflows/model-b-card-aware-runtime.yml"
+            ]
+          }
+        }
+      },
+      "triggers": {
+        "after": [
+          "push",
+          "pull_request"
+        ],
+        "before": [
+          "push",
+          "pull_request"
+        ]
+      }
+    }
+  ]
+}
