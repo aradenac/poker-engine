@@ -73,6 +73,21 @@ def _empty_layer(kind: str) -> dict[str, Any]:
     return {"kind": kind, "version": None, "provenance": None, "hands": {}}
 
 
+def _normalize_json_numbers(value: Any) -> Any:
+    """Canonicalize JSON numbers so JS parse/stringify round-trips keep hashes stable."""
+    if isinstance(value, float):
+        if value == 0:
+            return 0
+        if value.is_integer():
+            return int(value)
+        return value
+    if isinstance(value, list):
+        return [_normalize_json_numbers(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _normalize_json_numbers(item) for key, item in value.items()}
+    return value
+
+
 def _validate_base_repository(repo: Mapping[str, Any], population_id: str) -> None:
     if not isinstance(repo, Mapping) or repo.get("schema") != REPOSITORY_SCHEMA:
         fail("BASE_REPOSITORY_SCHEMA_MISMATCH", str(repo.get("schema") if isinstance(repo, Mapping) else type(repo)))
@@ -373,6 +388,8 @@ def import_generation(
             if existing_context != item["repository_context"]:
                 fail("REPOSITORY_CONTEXT_COLLISION", key)
         output["contexts"][key]["layers"]["calculated"] = copy.deepcopy(item["layer"])
+
+    output = _normalize_json_numbers(output)
 
     receipt = {
         "schema": IMPORT_SCHEMA,
