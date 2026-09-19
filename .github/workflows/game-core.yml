@@ -11,7 +11,6 @@ on:
       - 'tests/simulation/test_rollout_accounting.py'
       - 'docs/full_hand_game_core.md'
       - '.python-version'
-      - '.node-version'
       - 'requirements.lock.txt'
       - 'package-lock.json'
       - 'tools/repro_ci_environment.py'
