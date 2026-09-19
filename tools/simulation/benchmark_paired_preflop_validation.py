@@ -182,6 +182,7 @@ def run_validation(
                 include_jam=True,
                 sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                 status="EXPERIMENTAL",
+                require_materialized_common_world=True,
             )
             paired = evaluate_preflop_grid_paired(
                 NoLimitHoldemState.from_snapshot(state.to_snapshot()),
@@ -215,6 +216,7 @@ def run_validation(
                 "fixed_rollouts": int(fixed["search"]["budget"]),
                 "paired_rollouts": int(paired["decision"]["search"]["budget"]),
                 "paired_pairwise_deltas": paired["paired_result"]["pairwise_deltas"],
+                "paired_common_world_mode": paired["decision"]["search"]["common_world_mode"],
             })
 
             if decision_index == 0 and seed == seed_blocks[0]:
@@ -232,6 +234,7 @@ def run_validation(
                     include_jam=True,
                     sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                     status="EXPERIMENTAL",
+                    require_materialized_common_world=True,
                 )
                 paired_again = evaluate_preflop_grid_paired(
                     NoLimitHoldemState.from_snapshot(state.to_snapshot()),
@@ -273,9 +276,15 @@ def run_validation(
     paired_rate = paired_stable / n
     fixed_mean = fixed_rollouts / (n * len(seed_blocks))
     paired_mean = paired_rollouts / (n * len(seed_blocks))
+    materialized_common_worlds = all(
+        row["paired_common_world_mode"] == "MATERIALIZED_MODEL_A_HOLES_AND_BOARD"
+        for decision in decisions
+        for row in decision["seed_blocks"]
+    )
     passed = (
         deterministic_fixed is True
         and deterministic_paired is True
+        and materialized_common_worlds
         and paired_rate >= fixed_rate
         and paired_mean <= fixed_mean
     )
@@ -302,9 +311,10 @@ def run_validation(
             "paired_total_rollouts": paired_rollouts,
             "deterministic_fixed": deterministic_fixed,
             "deterministic_paired": deterministic_paired,
+            "materialized_common_worlds": materialized_common_worlds,
         },
         "acceptance": {
-            "rule": "paired_stability>=fixed_stability AND paired_mean_rollouts<=fixed_mean_rollouts AND deterministic",
+            "rule": "materialized common worlds AND paired_stability>=fixed_stability AND paired_mean_rollouts<=fixed_mean_rollouts AND deterministic",
             "pass": passed,
         },
         "scientific_boundaries": {
