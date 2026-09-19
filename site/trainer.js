@@ -834,9 +834,13 @@ function trainerRenderRecommendation(){
 }
 function trainerRenderFeedback(){
   if(!trainerFeedback)return;const f=trainerState.feedback,h=trainerState.hand;
+  if(trainerState.mode==="test"&&trainerState.targeted.active&&trainerState.targeted.complete){
+    const loss=trainerState.testLog.reduce((sum,x)=>sum+x.lossBB,0);trainerFeedback.className="trainer-feedback";
+    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan Test ciblé</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>. Le bilan ΔEV ciblé est affiché dans « Bilan ciblé ».</div>`;return;
+  }
   if(trainerState.mode==="test"&&!h?.ended){trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Mode Test</div><div class="trainer-feedback-body">Aucun feedback avant la fin de la main.</div>';return;}
   if(!f){
-    if(h?.ended&&trainerState.mode==="test"){const loss=trainerState.testLog.reduce((s,x)=>s+x.lossBB,0);trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan de la main</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>.</div>`;return;}
+    if(h?.ended&&trainerState.mode==="test"){const loss=trainerState.testLog.reduce((sum,x)=>sum+x.lossBB,0);trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan de la main</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>.</div>`;return;}
     trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Feedback</div><div class="trainer-feedback-body">Jouez une décision Hero pour obtenir le verdict.</div>';return;
   }
   const d=f.detail,r=f.row,summary=trainerDecisionCanonical(d,r);
@@ -850,10 +854,15 @@ function trainerRenderFeedback(){
 function trainerSizingValue(){return Math.max(0,Number(document.getElementById("trainerSizingInput")?.value)||0);}
 function trainerSetSizing(x){const input=document.getElementById("trainerSizingInput");if(input)input.value=trainerNum(x);}
 function trainerRenderControls(){
-  if(!trainerControls)return;const h=trainerState.hand;
+  if(!trainerControls)return;const h=trainerState.hand,t=trainerState.targeted;
+  if(t.active&&t.complete){trainerControls.innerHTML='<div class="trainer-hand-ended">Session ciblée terminée · le bilan ΔEV est disponible dans le panneau latéral.</div>';return;}
   if(!h){trainerControls.innerHTML="";return;}
-  if(h.ended){trainerControls.innerHTML=`<div class="trainer-hand-ended">Main terminée · <b>${escapeHtml(h.winner)}</b>${h.showdown?" · showdown":""}. Cliquez sur « Nouvelle main » pour continuer.</div>`;return;}
-  if(trainerState.pauseAfterDecision){trainerControls.innerHTML='<div class="trainer-decision-box"><div class="trainer-decision-head"><div class="trainer-decision-title">Feedback</div><button type="button" id="trainerInlineContinue" class="primary">Continuer la main</button></div></div>';document.getElementById("trainerInlineContinue")?.addEventListener("click",trainerContinue);return;}
+  if(h.ended&&!t.active){trainerControls.innerHTML=`<div class="trainer-hand-ended">Main terminée · <b>${escapeHtml(h.winner)}</b>${h.showdown?" · showdown":""}. Cliquez sur « Nouvelle main » pour continuer.</div>`;return;}
+  if(trainerState.pauseAfterDecision){
+    const label=t.active?"Spot suivant":"Continuer la main";
+    trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div class="trainer-decision-title">Feedback</div><button type="button" id="trainerInlineContinue" class="primary">${label}</button></div></div>`;
+    document.getElementById("trainerInlineContinue")?.addEventListener("click",trainerContinue);return;
+  }
   if(!h.awaitingHero){trainerControls.innerHTML='<div class="trainer-decision-box"><div class="trainer-decision-title">Action adverse en cours…</div></div>';return;}
   const toCall=trainerToCall(h,h.heroSeat),legal=toCall>1e-8?["FOLD","CALL","RAISE"]:["CHECK","BET"],minAgg=toCall>1e-8?toCall+h.lastRaise:Math.max(1,.33*h.pot),recCost=Number(trainerState.recommendation?.bestCostBB);
   trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div><div class="trainer-decision-title">À vous · ${escapeHtml(h.positions[h.heroSeat])} · ${escapeHtml(h.street.toUpperCase())}</div><div class="trainer-context">Pot ${escapeHtml(trainerFmtBB(h.pot))} · ${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"} · stack ${escapeHtml(trainerFmtBB(h.stacks[h.heroSeat]))}</div></div></div><div class="trainer-actions">${legal.map(a=>`<button type="button" class="${a==="FOLD"?"danger secondary":a==="CHECK"||a==="CALL"?"secondary":"primary"}" data-trainer-action="${a}">${a}</button>`).join("")}<div class="trainer-sizing"><div class="field"><label for="trainerSizingInput">Coût ajouté / mise (BB)</label><input id="trainerSizingInput" type="number" min="0" step="0.1" value="${trainerNum(Number.isFinite(recCost)?recCost:minAgg)}"></div><div class="trainer-size-presets"><button type="button" class="secondary" data-size=".5">½ pot</button><button type="button" class="secondary" data-size=".75">¾ pot</button><button type="button" class="secondary" data-size="1">Pot</button><button type="button" class="secondary" data-size="allin">All-in</button></div></div></div></div>`;
@@ -870,13 +879,24 @@ function trainerRenderProfiles(){
   trainerProfiles.innerHTML=Array.from({length:6},(_,s)=>s===h.heroSeat?"":(()=>{const p=trainerProfileById(h.profiles[s]),c=p?.centroid||{};return `<div class="trainer-profile-row"><b>${escapeHtml(h.names[s])} · ${escapeHtml(h.positions[s])} · ${escapeHtml(trainerProfileSummary(h.profiles[s]))}</b><div class="trainer-profile-metrics">VPIP ${(100*Number(c.vpip||0)).toFixed(0)} % · PFR ${(100*Number(c.pfr||0)).toFixed(0)} % · Agg. postflop ${(100*Number(c.post_aggression_frequency||0)).toFixed(0)} %</div></div>`;})()).join("");
 }
 function trainerRenderTestLog(){
-  if(!trainerTestLog)return;if(trainerState.mode!=="test"){trainerTestLog.innerHTML="";return;}const h=trainerState.hand;if(!h?.ended){trainerTestLog.innerHTML='<div class="tiny">Les décisions resteront masquées jusqu’à la fin de la main.</div>';return;}trainerTestLog.innerHTML=trainerState.testLog.map(r=>`<div class="trainer-test-row">${escapeHtml(r.position)} · ${escapeHtml(r.street)} · joué ${escapeHtml(r.played)}${r.cost?` ${escapeHtml(trainerFmtBB(r.cost))}`:""}<br>Reco <b>${escapeHtml(r.bestLabel)}${r.bestCostBB!==null?` · ${escapeHtml(trainerFmtBB(r.bestCostBB))}`:""}</b> · perte ${escapeHtml(trainerFmtBB(r.lossBB))}</div>`).join("")||'<div class="tiny">Aucune décision Hero.</div>';
+  if(!trainerTestLog)return;if(trainerState.mode!=="test"){trainerTestLog.innerHTML="";return;}
+  const h=trainerState.hand,targetDone=trainerState.targeted.active&&trainerState.targeted.complete;
+  if(!targetDone&&!h?.ended){trainerTestLog.innerHTML='<div class="tiny">Les décisions resteront masquées jusqu’à la fin de la session.</div>';return;}
+  trainerTestLog.innerHTML=trainerState.testLog.map(r=>`<div class="trainer-test-row">${escapeHtml(r.position)} · ${escapeHtml(r.street)} · joué ${escapeHtml(r.played)}${r.cost?` ${escapeHtml(trainerFmtBB(r.cost))}`:""}<br>Reco <b>${escapeHtml(r.bestLabel)}${r.bestCostBB!==null?` · ${escapeHtml(trainerFmtBB(r.bestCostBB))}`:""}</b> · perte ${escapeHtml(trainerFmtBB(r.lossBB))}</div>`).join("")||'<div class="tiny">Aucune décision Hero.</div>';
 }
 function trainerRenderStatus(text,cls=""){if(!trainerStatus)return;trainerStatus.textContent=text||"";trainerStatus.className=`trainer-status${cls?` ${cls}`:""}`;}
-function trainerRender(){trainerRenderTable();trainerRenderControls();trainerRenderRecommendation();trainerRenderFeedback();trainerRenderStats();trainerRenderProfiles();trainerRenderTestLog();trainerNewHandBtn&&(trainerNewHandBtn.disabled=trainerState.busy||trainerState.loading);trainerContinueBtn&&(trainerContinueBtn.style.display=trainerState.pauseAfterDecision?"inline-block":"none");}
-
-async function trainerOpen(){
-  trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();if(await trainerEnsureModels()){if(!trainerState.hand)await trainerNewHand();}
+function trainerRender(){
+  trainerRenderTable();trainerRenderControls();trainerRenderRecommendation();trainerRenderFeedback();trainerRenderStats();trainerRenderProfiles();trainerRenderTestLog();trainerTargetRenderSummary();
+  if(trainerNewHandBtn){
+    trainerNewHandBtn.disabled=trainerState.busy||trainerState.loading||trainerState.targeted.preparing;
+    trainerNewHandBtn.textContent=trainerState.targeted.active?(trainerState.targeted.complete||trainerState.targeted.fallback?"Rejouer la session":"Spot suivant"):"Nouvelle main";
+  }
+  trainerContinueBtn&&(trainerContinueBtn.style.display=trainerState.pauseAfterDecision?"inline-block":"none");
+}
+async function trainerOpen(options={}){
+  const deferHand=options&&options.deferHand===true;
+  trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();
+  if(await trainerEnsureModels()){if(!deferHand&&!trainerState.hand)await trainerNewHand();}
 }
 function trainerClose(){trainerState.open=false;trainerPage?.classList.add("mode-hidden");trainerPage?.setAttribute("aria-hidden","true");document.body.classList.remove("trainer-view-open");if(quickNav)quickNav.style.display="";state.appView="main";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
 function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));const needGuide=mode==="guided"&&trainerState.hand?.awaitingHero&&!trainerState.recommendation&&!trainerState.busy;trainerRender();if(needGuide)void trainerComputeRecommendation();}
@@ -886,6 +906,8 @@ trainerNavLink?.addEventListener("click",e=>{e.preventDefault();e.stopImmediateP
 trainerBackBtn?.addEventListener("click",trainerClose);
 trainerNewHandBtn?.addEventListener("click",trainerNewHand);
 trainerContinueBtn?.addEventListener("click",trainerContinue);
+trainerTargetApplyBtn?.addEventListener("click",trainerApplyTargetControls);
+trainerTargetClearBtn?.addEventListener("click",trainerClearTargeting);
 document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.addEventListener("click",()=>trainerSetMode(b.dataset.trainerMode)));
 trainerScheduleWarmup();
 trainerRenderStatus("Ouvrez une session pour charger les modèles promus.");trainerRender();
