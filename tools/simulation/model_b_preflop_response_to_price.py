@@ -361,3 +361,318 @@ class PreflopResponseToPriceModel:
             "performance_claim": "NOT_ALLOWED_SYNTHETIC_SCAFFOLD",
             "production_effect": "NONE",
         }
+
+
+# --- Issue #340 tranche 2A: empirical TRAIN fit + independent VALIDATION runtime ---
+
+EMPIRICAL_SCHEMA = "independent-opponent-model-b-preflop-response-to-price-2a/v1"
+EMPIRICAL_PREDICTION_SCHEMA = "model-b-preflop-response-to-price-2a-prediction/v1"
+EMPIRICAL_FAMILIES = (
+    "VS_LIMPERS",
+    "LIMPER_VS_ISO",
+    "LIMPER_VS_ISO_CALLERS",
+    "VS_ISO",
+    "VS_ISO_CALLERS",
+    "VS_RFI",
+    "VS_RFI_CALLERS",
+    "OPENER_OR_ISO_VS_3BET",
+    "CALLER_VS_SQUEEZE_OR_3BET",
+    "COLD_VS_3BET",
+)
+EMPIRICAL_LEVELS = (
+    ("profile","family","responder_position","raiser_position","sequence","limper_count","caller_count","target_exact","price_bin","stack_bin"),
+    ("family","responder_position","raiser_position","sequence","limper_count","caller_count","target_exact","price_bin","stack_bin"),
+    ("family","responder_position","raiser_position","limper_count","caller_count","target_exact","price_bin","stack_bin"),
+    ("family","responder_position","limper_count","caller_count","target_exact","price_bin","stack_bin"),
+    ("family","responder_position","limper_count","target_exact","price_bin"),
+    ("family","responder_position","target_exact","price_bin"),
+    ("family","target_exact","price_bin"),
+    ("family","target_bin","price_bin"),
+    ("family","target_bin"),
+    ("family",),
+)
+REFERENCE_LEVELS = (
+    ("profile","family","responder_position","raiser_position","sequence","limper_count","caller_count","stack_bin"),
+    ("family","responder_position","raiser_position","sequence","limper_count","caller_count","stack_bin"),
+    ("family","responder_position","raiser_position","limper_count","caller_count","stack_bin"),
+    ("family","responder_position","limper_count","caller_count","stack_bin"),
+    ("family","responder_position","limper_count","stack_bin"),
+    ("family","responder_position","stack_bin"),
+    ("family","responder_position"),
+    ("family",),
+)
+
+
+def _declared_empirical_bin(value: Any, bins: Sequence[Mapping[str, Any]]) -> str:
+    if value is None or not bins:
+        return "MISSING"
+    x = float(value)
+    if not math.isfinite(x):
+        return "MISSING"
+    for row in bins:
+        if x <= float(row["max_observed"]) + 1e-9:
+            return str(row["bin_id"])
+    return str(bins[-1]["bin_id"])
+
+
+def _family_bins(all_bins: Mapping[str, Any], family: str) -> Mapping[str, Any]:
+    bins = all_bins.get(family)
+    if not isinstance(bins, Mapping):
+        raise ValueError(f"#319 empirical bins missing for family {family!r}")
+    return bins
+
+
+def empirical_public_context(
+    raw: Mapping[str, Any],
+    *,
+    bin_proposals: Mapping[str, Any],
+) -> dict[str, Any]:
+    _assert_independent(raw)
+    required = (
+        "profile","family","responder_position","raiser_position","sequence",
+        "limper_count","caller_count","target_total_bb","facing_price_to_pot",
+        "effective_stack_bb",
+    )
+    missing = [name for name in required if raw.get(name) is None]
+    if missing:
+        raise ValueError(f"missing empirical preflop response features: {missing}")
+    family = str(raw["family"])
+    if family not in EMPIRICAL_FAMILIES:
+        raise ValueError(f"unsupported empirical preflop family: {family!r}")
+    bins = _family_bins(bin_proposals, family)
+    target = float(raw["target_total_bb"])
+    if not math.isfinite(target) or target < 0:
+        raise ValueError("target_total_bb must be finite and non-negative")
+    return {
+        "profile": str(raw["profile"]),
+        "family": family,
+        "responder_position": str(raw["responder_position"]),
+        "raiser_position": str(raw["raiser_position"]),
+        "sequence": str(raw["sequence"]),
+        "limper_count": int(raw["limper_count"]),
+        "caller_count": int(raw["caller_count"]),
+        "target_exact": format(target, ".6g"),
+        "target_bin": _declared_empirical_bin(target, bins.get("target_total_bb") or []),
+        "price_bin": _declared_empirical_bin(
+            raw["facing_price_to_pot"], bins.get("price_to_pot") or []
+        ),
+        "stack_bin": _declared_empirical_bin(
+            raw["effective_stack_bb"], bins.get("effective_stack_bb") or []
+        ),
+    }
+
+
+def build_train_artifact(
+    observations: Iterable[Mapping[str, Any]],
+    *,
+    bin_proposals: Mapping[str, Any],
+    source_report_hash: str,
+    reference_mode: bool = False,
+    min_observations: int = 20,
+    min_distinct_hands: int = 15,
+    alpha_per_action: float = 1.0,
+    model_version: str = "model_b_preflop_response_to_price_2a_20260919",
+) -> dict[str, Any]:
+    if min_observations <= 0 or min_distinct_hands <= 0:
+        raise ValueError("support thresholds must be positive")
+    alpha = float(alpha_per_action)
+    if not math.isfinite(alpha) or alpha <= 0:
+        raise ValueError("alpha_per_action must be positive finite")
+    levels_spec = REFERENCE_LEVELS if reference_mode else EMPIRICAL_LEVELS
+    counts = [defaultdict(Counter) for _ in levels_spec]
+    hands = [defaultdict(set) for _ in levels_spec]
+    total = 0
+    for raw in observations:
+        _assert_independent(raw)
+        if raw.get("source_split") != "TRAIN":
+            raise ValueError("empirical Model B fit accepts TRAIN rows only")
+        action = str(raw.get("action") or "").upper()
+        if action not in ACTIONS:
+            raise ValueError(f"unsupported empirical preflop response action: {action!r}")
+        hand_id = str(raw.get("hand_id") or "")
+        if not hand_id:
+            raise ValueError("empirical observation missing hand_id")
+        ctx = empirical_public_context(raw, bin_proposals=bin_proposals)
+        total += 1
+        for index, columns in enumerate(levels_spec):
+            key = _key(columns, ctx)
+            counts[index][key][action] += 1
+            hands[index][key].add(hand_id)
+    if not total:
+        raise ValueError("at least one TRAIN observation is required")
+
+    levels = []
+    for index, columns in enumerate(levels_spec):
+        data = {}
+        for key in sorted(counts[index]):
+            c = counts[index][key]
+            n = int(sum(c.values()))
+            h = len(hands[index][key])
+            data[key] = {
+                "observations": n,
+                "distinct_hands": h,
+                "action_counts": {action: int(c.get(action, 0)) for action in ACTIONS},
+                "support_state": (
+                    "SUPPORTED" if n >= min_observations and h >= min_distinct_hands
+                    else "SPARSE"
+                ),
+            }
+        levels.append({"index": index, "dimensions": list(columns), "data": data})
+
+    return {
+        "schema": EMPIRICAL_SCHEMA,
+        "model_version": model_version + ("_price_agnostic_reference" if reference_mode else "_candidate"),
+        "status": "CANDIDATE_NOT_PROMOTED",
+        "fit_split": "TRAIN",
+        "validation_consumed_for_fit": False,
+        "test_consumed": False,
+        "production_effect": "NONE",
+        "automatic_promotion": False,
+        "active_model_b_changed": False,
+        "reference_mode": bool(reference_mode),
+        "source_issue_319_report_hash": str(source_report_hash),
+        "alpha_per_action": alpha,
+        "thresholds": {
+            "min_observations": int(min_observations),
+            "min_distinct_hands": int(min_distinct_hands),
+        },
+        "feature_contract": {
+            "public_only": True,
+            "actions": list(ACTIONS),
+            "price_aware": not reference_mode,
+            "no_cross_family_pooling": True,
+            "nearest_context_heuristic": False,
+            "forbidden_features": sorted(FORBIDDEN_KEYS),
+        },
+        "training_counts": {"decisions": total},
+        "bin_proposals": dict(bin_proposals),
+        "levels": levels,
+    }
+
+
+def validate_train_artifact(document: Mapping[str, Any]) -> None:
+    if document.get("schema") != EMPIRICAL_SCHEMA:
+        raise ValueError("unsupported empirical preflop response schema")
+    if document.get("fit_split") != "TRAIN":
+        raise ValueError("empirical Model B must be fit on TRAIN")
+    if document.get("validation_consumed_for_fit") is not False:
+        raise ValueError("VALIDATION must not be consumed for fit")
+    if document.get("test_consumed") is not False:
+        raise ValueError("TEST consumption is forbidden")
+    if document.get("production_effect") != "NONE":
+        raise ValueError("candidate must have no production effect")
+    if document.get("automatic_promotion") is not False:
+        raise ValueError("automatic promotion is forbidden")
+    if document.get("active_model_b_changed") is not False:
+        raise ValueError("active Model B must remain unchanged")
+    contract = document.get("feature_contract") or {}
+    if contract.get("public_only") is not True:
+        raise ValueError("only public features are permitted")
+    if contract.get("no_cross_family_pooling") is not True:
+        raise ValueError("cross-family pooling is forbidden")
+    if contract.get("nearest_context_heuristic") is not False:
+        raise ValueError("nearest-context heuristic is forbidden")
+    expected = REFERENCE_LEVELS if document.get("reference_mode") else EMPIRICAL_LEVELS
+    actual = [tuple(level.get("dimensions") or ()) for level in document.get("levels") or []]
+    if actual != list(expected):
+        raise ValueError("empirical hierarchy differs from frozen contract")
+
+
+class EmpiricalPreflopResponseToPriceModel:
+    def __init__(self, document: Mapping[str, Any]) -> None:
+        self.document = dict(document)
+        validate_train_artifact(self.document)
+        self.alpha = float(self.document["alpha_per_action"])
+        self.min_observations = int(self.document["thresholds"]["min_observations"])
+        self.min_distinct_hands = int(self.document["thresholds"]["min_distinct_hands"])
+        self.bin_proposals = self.document["bin_proposals"]
+        self.identity = {
+            "schema": EMPIRICAL_SCHEMA,
+            "model_version": self.document["model_version"],
+            "artifact_sha256": artifact_sha256(self.document),
+            "reference_mode": bool(self.document["reference_mode"]),
+            "production_effect": "NONE",
+        }
+
+    def _supported(self, node: Mapping[str, Any]) -> bool:
+        return (
+            int(node.get("observations", 0)) >= self.min_observations
+            and int(node.get("distinct_hands", 0)) >= self.min_distinct_hands
+        )
+
+    def predict(self, **raw: Any) -> dict[str, Any]:
+        _assert_independent(raw)
+        ctx = empirical_public_context(raw, bin_proposals=self.bin_proposals)
+        failed = []
+        selected = None
+        for level in self.document["levels"]:
+            dims = tuple(level["dimensions"])
+            key = _key(dims, ctx)
+            node = (level.get("data") or {}).get(key)
+            if node is None:
+                failed.append({"level": int(level["index"]), "reason": "NO_TRAIN_NODE"})
+                continue
+            if self._supported(node):
+                selected = (level, key, node)
+                break
+            failed.append({
+                "level": int(level["index"]),
+                "reason": "SPARSE_TRAIN_NODE",
+                "support": {
+                    "observations": int(node["observations"]),
+                    "distinct_hands": int(node["distinct_hands"]),
+                },
+            })
+        if selected is None:
+            raise KeyError(f"no supported TRAIN node for family {ctx['family']!r}")
+        level, key, node = selected
+        counts = {
+            action: float((node.get("action_counts") or {}).get(action, 0))
+            for action in ACTIONS
+        }
+        posterior = {action: counts[action] + self.alpha for action in ACTIONS}
+        total = sum(posterior.values())
+        probabilities = {action: posterior[action] / total for action in ACTIONS}
+        uncertainty = {}
+        for action in ACTIONS:
+            a = posterior[action]
+            variance = a * (total - a) / (total * total * (total + 1.0))
+            sd = math.sqrt(max(0.0, variance))
+            mean = probabilities[action]
+            uncertainty[action] = {
+                "mean": mean,
+                "approx_95": [max(0.0, mean - 1.96 * sd), min(1.0, mean + 1.96 * sd)],
+            }
+        index = int(level["index"])
+        exact_supported = index == 0
+        used_empirical_bin = (not self.document["reference_mode"]) and index >= 7 and index <= 8
+        return {
+            "schema": EMPIRICAL_PREDICTION_SCHEMA,
+            "identity": self.identity,
+            "exact_context": ctx,
+            "selected_level": {
+                "index": index,
+                "dimensions": list(level["dimensions"]),
+                "key": key,
+            },
+            "effective_support": {
+                "observations": int(node["observations"]),
+                "distinct_hands": int(node["distinct_hands"]),
+                "source_split": "TRAIN",
+            },
+            "support_state": (
+                "EXACT_SUPPORTED" if exact_supported
+                else "DECLARED_EMPIRICAL_BIN_BACKOFF" if used_empirical_bin
+                else "DECLARED_CONTEXT_BACKOFF"
+            ),
+            "failed_finer_levels": failed,
+            "probabilities": probabilities,
+            "uncertainty": uncertainty,
+            "price_zone": {
+                "target_exact": ctx["target_exact"],
+                "target_bin": ctx["target_bin"],
+                "price_bin": ctx["price_bin"],
+                "stack_bin": ctx["stack_bin"],
+            },
+            "production_effect": "NONE",
+        }

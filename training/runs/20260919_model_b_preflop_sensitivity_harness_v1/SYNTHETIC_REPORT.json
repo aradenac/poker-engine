@@ -1,0 +1,1044 @@
+{
+  "candidate": {
+    "alternatives": [
+      {
+        "action": "FOLD",
+        "aggregate": null,
+        "alternative_id": "FOLD",
+        "incremental_cost_bb": 0.0,
+        "reason": "MODEL_B_RESPONSE_TO_PRICE_REQUIRES_HERO_AGGRESSION",
+        "responder_probabilities": null,
+        "status": "NOT_APPLICABLE",
+        "support": {
+          "nearest_price_substitution": false,
+          "non_identifiability": "NOT_APPLICABLE"
+        },
+        "target_total_bb": null
+      },
+      {
+        "action": "OVERLIMP",
+        "aggregate": null,
+        "alternative_id": "OVERLIMP@1",
+        "incremental_cost_bb": 0.5,
+        "reason": "MODEL_B_RESPONSE_TO_PRICE_REQUIRES_HERO_AGGRESSION",
+        "responder_probabilities": null,
+        "status": "NOT_APPLICABLE",
+        "support": {
+          "nearest_price_substitution": false,
+          "non_identifiability": "NOT_APPLICABLE"
+        },
+        "target_total_bb": 1.0
+      },
+      {
+        "action": "ISO",
+        "aggregate": {
+          "caller_partition_with_aggressive_terminal": {
+            "aggressive_terminal": 0.20816223887067498,
+            "all_fold": 0.044541855203619904,
+            "exactly_1_caller": 0.2726135398885487,
+            "exactly_2_callers": 0.386220827575618,
+            "three_plus_callers": 0.08846153846153845
+          },
+          "expected_continuers": 1.57984686735127,
+          "p_3bet_or_jam": 0.20816223887067498,
+          "p_all_fold": 0.044541855203619904
+        },
+        "alternative_id": "ISO@4",
+        "incremental_cost_bb": 3.5,
+        "modeling_boundary": {
+          "aggressive_response_is_terminal": true,
+          "reason": "#340 response-to-price covers the facing response; later response-to-3bet is intentionally not invented"
+        },
+        "responder_probabilities": [
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.275,
+              "FOLD": 0.625,
+              "JAM": 0.05,
+              "RAISE": 0.05
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BB",
+            "reach_probability": 1.0,
+            "selected_level_probability": {
+              "4": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.275,
+              "FOLD": 0.625,
+              "JAM": 0.05,
+              "RAISE": 0.05
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6342592592592592,
+              "FOLD": 0.2888176638176638,
+              "JAM": 0.04237891737891738,
+              "RAISE": 0.03454415954415954
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "CO",
+            "reach_probability": 0.9,
+            "selected_level_probability": {
+              "4": 0.6944444444444444,
+              "5": 0.3055555555555556
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5708333333333333,
+              "FOLD": 0.2599358974358974,
+              "JAM": 0.038141025641025644,
+              "RAISE": 0.03108974358974359
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6329691515661487,
+              "FOLD": 0.3201688942376684,
+              "JAM": 0.024818826399488608,
+              "RAISE": 0.022043127796694192
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BTN",
+            "reach_probability": 0.8307692307692307,
+            "selected_level_probability": {
+              "5": 0.2025462962962963,
+              "6": 0.7974537037037037
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.525851295147262,
+              "FOLD": 0.265986465982063,
+              "JAM": 0.020618717316498225,
+              "RAISE": 0.018312752323407483
+            }
+          }
+        ],
+        "status": "AVAILABLE",
+        "support": {
+          "backoff_states_observed": [
+            "DECLARED_CONTEXT_BACKOFF"
+          ],
+          "family_never_dropped": true,
+          "nearest_price_substitution": false,
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
+        },
+        "target_total_bb": 4.0
+      },
+      {
+        "action": "ISO",
+        "aggregate": {
+          "caller_partition_with_aggressive_terminal": {
+            "aggressive_terminal": 0.14833150132081166,
+            "all_fold": 0.06649723647848402,
+            "exactly_1_caller": 0.31442054233233746,
+            "exactly_2_callers": 0.39506890168654873,
+            "three_plus_callers": 0.07568181818181817
+          },
+          "expected_continuers": 1.536818825287804,
+          "p_3bet_or_jam": 0.14833150132081166,
+          "p_all_fold": 0.06649723647848402
+        },
+        "alternative_id": "ISO@5",
+        "incremental_cost_bb": 4.5,
+        "modeling_boundary": {
+          "aggressive_response_is_terminal": true,
+          "reason": "#340 response-to-price covers the facing response; later response-to-3bet is intentionally not invented"
+        },
+        "responder_probabilities": [
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.1875,
+              "FOLD": 0.765625,
+              "JAM": 0.03125,
+              "RAISE": 0.015625
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BB",
+            "reach_probability": 1.0,
+            "selected_level_probability": {
+              "4": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.1875,
+              "FOLD": 0.765625,
+              "JAM": 0.03125,
+              "RAISE": 0.015625
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6850530376084861,
+              "FOLD": 0.25558934797121874,
+              "JAM": 0.03270528892515392,
+              "RAISE": 0.02665232549514131
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "CO",
+            "reach_probability": 0.953125,
+            "selected_level_probability": {
+              "5": 0.8032786885245902,
+              "6": 0.19672131147540983
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.6529411764705884,
+              "FOLD": 0.24360859728506787,
+              "JAM": 0.03117222850678733,
+              "RAISE": 0.02540299773755656
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6112835712407055,
+              "FOLD": 0.3386564361183285,
+              "JAM": 0.034718572372369326,
+              "RAISE": 0.01534142026859654
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BTN",
+            "reach_probability": 0.8965497737556563,
+            "selected_level_probability": {
+              "6": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5480461474964041,
+              "FOLD": 0.3036223511827843,
+              "JAM": 0.0311269282055671,
+              "RAISE": 0.013754346870900668
+            }
+          }
+        ],
+        "status": "AVAILABLE",
+        "support": {
+          "backoff_states_observed": [
+            "DECLARED_CONTEXT_BACKOFF"
+          ],
+          "family_never_dropped": true,
+          "nearest_price_substitution": false,
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
+        },
+        "target_total_bb": 5.0
+      },
+      {
+        "action": "ISO",
+        "aggregate": {
+          "caller_partition_with_aggressive_terminal": {
+            "aggressive_terminal": 0.1555897020763004,
+            "all_fold": 0.13772616797191464,
+            "exactly_1_caller": 0.43027414048083096,
+            "exactly_2_callers": 0.22463803261425133,
+            "three_plus_callers": 0.051771956856702626
+          },
+          "expected_continuers": 1.2328652704910747,
+          "p_3bet_or_jam": 0.1555897020763004,
+          "p_all_fold": 0.13772616797191464
+        },
+        "alternative_id": "ISO@6",
+        "incremental_cost_bb": 5.5,
+        "modeling_boundary": {
+          "aggressive_response_is_terminal": true,
+          "reason": "#340 response-to-price covers the facing response; later response-to-3bet is intentionally not invented"
+        },
+        "responder_probabilities": [
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.2,
+              "FOLD": 0.7285714285714285,
+              "JAM": 0.02857142857142857,
+              "RAISE": 0.04285714285714286
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BB",
+            "reach_probability": 1.0,
+            "selected_level_probability": {
+              "5": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.2,
+              "FOLD": 0.7285714285714285,
+              "JAM": 0.02857142857142857,
+              "RAISE": 0.04285714285714286
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.496978629329403,
+              "FOLD": 0.45795589819171245,
+              "JAM": 0.024118814126183323,
+              "RAISE": 0.020946658352701094
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "CO",
+            "reach_probability": 0.9285714285714286,
+            "selected_level_probability": {
+              "6": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.46148015580587426,
+              "FOLD": 0.42524476260659017,
+              "JAM": 0.0223960416885988,
+              "RAISE": 0.0194504684703653
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.468911388385604,
+              "FOLD": 0.4833684905146953,
+              "JAM": 0.02074364185174052,
+              "RAISE": 0.026976479247959997
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BTN",
+            "reach_probability": 0.8867249184124646,
+            "selected_level_probability": {
+              "6": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.4157954126089002,
+              "FOLD": 0.42861488531479935,
+              "JAM": 0.018393904128561997,
+              "RAISE": 0.023920716360202873
+            }
+          }
+        ],
+        "status": "AVAILABLE",
+        "support": {
+          "backoff_states_observed": [
+            "DECLARED_CONTEXT_BACKOFF"
+          ],
+          "family_never_dropped": true,
+          "nearest_price_substitution": false,
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
+        },
+        "target_total_bb": 6.0
+      }
+    ],
+    "identity": {
+      "artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+      "model_version": "model_b_preflop_response_to_price_2a_20260919_candidate",
+      "production_effect": "NONE",
+      "reference_mode": false,
+      "schema": "independent-opponent-model-b-preflop-response-to-price-2a/v1"
+    },
+    "pairwise_sizing_deltas": [
+      {
+        "high_alternative_id": "ISO@5",
+        "high_minus_low": {
+          "aggregate": {
+            "expected_continuers": -0.04302804206346611,
+            "p_3bet_or_jam": -0.059830737549863316,
+            "p_all_fold": 0.021955381274864114
+          },
+          "responders": [
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.08750000000000002,
+                "FOLD": 0.140625,
+                "JAM": -0.018750000000000003,
+                "RAISE": -0.034375
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BB"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.02168558032544321,
+                "FOLD": 0.018487541880660097,
+                "JAM": 0.009899745972880718,
+                "RAISE": -0.006701707528097652
+              },
+              "high_minus_low_reach_probability": 0.06578054298642555,
+              "position": "BTN"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.05079377834922694,
+                "FOLD": -0.03322831584644503,
+                "JAM": -0.009673628453763461,
+                "RAISE": -0.00789183404901823
+              },
+              "high_minus_low_reach_probability": 0.05312499999999998,
+              "position": "CO"
+            }
+          ]
+        },
+        "high_target_total_bb": 5.0,
+        "low_alternative_id": "ISO@4",
+        "low_target_total_bb": 4.0,
+        "status": "AVAILABLE"
+      },
+      {
+        "high_alternative_id": "ISO@6",
+        "high_minus_low": {
+          "aggregate": {
+            "expected_continuers": -0.34698159686019525,
+            "p_3bet_or_jam": -0.05257253679437457,
+            "p_all_fold": 0.09318431276829474
+          },
+          "responders": [
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.07500000000000001,
+                "FOLD": 0.10357142857142854,
+                "JAM": -0.021428571428571432,
+                "RAISE": -0.007142857142857145
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BB"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.16405776318054477,
+                "FOLD": 0.1631995962770269,
+                "JAM": -0.004075184547748089,
+                "RAISE": 0.004933351451265805
+              },
+              "high_minus_low_reach_probability": 0.05595568764323389,
+              "position": "BTN"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.13728062992985618,
+                "FOLD": 0.16913823437404868,
+                "JAM": -0.018260103252734056,
+                "RAISE": -0.013597501191458448
+              },
+              "high_minus_low_reach_probability": 0.02857142857142858,
+              "position": "CO"
+            }
+          ]
+        },
+        "high_target_total_bb": 6.0,
+        "low_alternative_id": "ISO@4",
+        "low_target_total_bb": 4.0,
+        "status": "AVAILABLE"
+      },
+      {
+        "high_alternative_id": "ISO@6",
+        "high_minus_low": {
+          "aggregate": {
+            "expected_continuers": -0.30395355479672914,
+            "p_3bet_or_jam": 0.007258200755488747,
+            "p_all_fold": 0.07122893149343063
+          },
+          "responders": [
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.012500000000000011,
+                "FOLD": -0.03705357142857146,
+                "JAM": -0.0026785714285714295,
+                "RAISE": 0.027232142857142858
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BB"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.14237218285510156,
+                "FOLD": 0.1447120543963668,
+                "JAM": -0.013974930520628807,
+                "RAISE": 0.011635058979363457
+              },
+              "high_minus_low_reach_probability": -0.009824855343191663,
+              "position": "BTN"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": -0.18807440827908312,
+                "FOLD": 0.2023665502204937,
+                "JAM": -0.008586474798970595,
+                "RAISE": -0.005705667142440217
+              },
+              "high_minus_low_reach_probability": -0.024553571428571397,
+              "position": "CO"
+            }
+          ]
+        },
+        "high_target_total_bb": 6.0,
+        "low_alternative_id": "ISO@5",
+        "low_target_total_bb": 5.0,
+        "status": "AVAILABLE"
+      }
+    ]
+  },
+  "decision_ref": {
+    "canonical_schema": "poker-preflop-decision/v1",
+    "context_id": "synthetic:SB:two-limpers:KTs",
+    "decision_id": null
+  },
+  "future_issue_314_contract": {
+    "canonical_schema": "poker-preflop-decision/v1",
+    "consumed_fields_per_alternative": [
+      "id/alternative_id",
+      "action",
+      "target_total_bb",
+      "incremental_cost_bb"
+    ],
+    "explicitly_not_consumed": [
+      "ev_bb",
+      "uncertainty",
+      "confidence",
+      "support",
+      "selected_id",
+      "recommendations",
+      "Model A fields"
+    ],
+    "projection_function": "project_canonical_decision"
+  },
+  "input_request_sha256": "c4ba13679e866c1cd54562d40ad107f2a2ae9bf9a2fdb32a98494ae4d043faa3",
+  "issue_340_identity": {
+    "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+    "production_effect": "NONE",
+    "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+    "source_issue": 340,
+    "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "test_consumed_by_this_harness": false,
+    "upstream_validation_evidence_referenced": true,
+    "validation_data_consumed_by_this_harness": false,
+    "workflow_run_id": 35446229547
+  },
+  "reference_control": {
+    "alternatives": [
+      {
+        "action": "FOLD",
+        "aggregate": null,
+        "alternative_id": "FOLD",
+        "incremental_cost_bb": 0.0,
+        "reason": "MODEL_B_RESPONSE_TO_PRICE_REQUIRES_HERO_AGGRESSION",
+        "responder_probabilities": null,
+        "status": "NOT_APPLICABLE",
+        "support": {
+          "nearest_price_substitution": false,
+          "non_identifiability": "NOT_APPLICABLE"
+        },
+        "target_total_bb": null
+      },
+      {
+        "action": "OVERLIMP",
+        "aggregate": null,
+        "alternative_id": "OVERLIMP@1",
+        "incremental_cost_bb": 0.5,
+        "reason": "MODEL_B_RESPONSE_TO_PRICE_REQUIRES_HERO_AGGRESSION",
+        "responder_probabilities": null,
+        "status": "NOT_APPLICABLE",
+        "support": {
+          "nearest_price_substitution": false,
+          "non_identifiability": "NOT_APPLICABLE"
+        },
+        "target_total_bb": 1.0
+      },
+      {
+        "action": "ISO",
+        "aggregate": {
+          "caller_partition_with_aggressive_terminal": {
+            "aggressive_terminal": 0.184723567858516,
+            "all_fold": 0.10605228758169936,
+            "exactly_1_caller": 0.2210980392156863,
+            "exactly_2_callers": 0.394239138792772,
+            "three_plus_callers": 0.09388696655132642
+          },
+          "expected_continuers": 1.5526628219915413,
+          "p_3bet_or_jam": 0.184723567858516,
+          "p_all_fold": 0.10605228758169936
+        },
+        "alternative_id": "ISO@4",
+        "incremental_cost_bb": 3.5,
+        "modeling_boundary": {
+          "aggressive_response_is_terminal": true,
+          "reason": "#340 response-to-price covers the facing response; later response-to-3bet is intentionally not invented"
+        },
+        "responder_probabilities": [
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.23529411764705882,
+              "FOLD": 0.7176470588235294,
+              "JAM": 0.011764705882352941,
+              "RAISE": 0.03529411764705882
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BB",
+            "reach_probability": 1.0,
+            "selected_level_probability": {
+              "2": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.23529411764705882,
+              "FOLD": 0.7176470588235294,
+              "JAM": 0.011764705882352941,
+              "RAISE": 0.03529411764705882
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6177777777777779,
+              "FOLD": 0.3055144032921811,
+              "JAM": 0.03835390946502058,
+              "RAISE": 0.03835390946502058
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "CO",
+            "reach_probability": 0.9529411764705882,
+            "selected_level_probability": {
+              "2": 0.7530864197530864,
+              "3": 0.2469135802469136
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5887058823529412,
+              "FOLD": 0.2911372549019608,
+              "JAM": 0.03654901960784314,
+              "RAISE": 0.03654901960784314
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6182229889638151,
+              "FOLD": 0.3083926742385313,
+              "JAM": 0.035250158184150816,
+              "RAISE": 0.03813417861350281
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BTN",
+            "reach_probability": 0.879843137254902,
+            "selected_level_probability": {
+              "2": 0.6245320021394187,
+              "3": 0.2283829559636299,
+              "4": 0.14708504189695132
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5439392541330258,
+              "FOLD": 0.27133717800845836,
+              "JAM": 0.031014609765474817,
+              "RAISE": 0.0335520953479431
+            }
+          }
+        ],
+        "status": "AVAILABLE",
+        "support": {
+          "backoff_states_observed": [
+            "DECLARED_CONTEXT_BACKOFF"
+          ],
+          "family_never_dropped": true,
+          "nearest_price_substitution": false,
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
+        },
+        "target_total_bb": 4.0
+      },
+      {
+        "action": "ISO",
+        "aggregate": {
+          "caller_partition_with_aggressive_terminal": {
+            "aggressive_terminal": 0.184723567858516,
+            "all_fold": 0.10605228758169936,
+            "exactly_1_caller": 0.2210980392156863,
+            "exactly_2_callers": 0.394239138792772,
+            "three_plus_callers": 0.09388696655132642
+          },
+          "expected_continuers": 1.5526628219915413,
+          "p_3bet_or_jam": 0.184723567858516,
+          "p_all_fold": 0.10605228758169936
+        },
+        "alternative_id": "ISO@5",
+        "incremental_cost_bb": 4.5,
+        "modeling_boundary": {
+          "aggressive_response_is_terminal": true,
+          "reason": "#340 response-to-price covers the facing response; later response-to-3bet is intentionally not invented"
+        },
+        "responder_probabilities": [
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.23529411764705882,
+              "FOLD": 0.7176470588235294,
+              "JAM": 0.011764705882352941,
+              "RAISE": 0.03529411764705882
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BB",
+            "reach_probability": 1.0,
+            "selected_level_probability": {
+              "2": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.23529411764705882,
+              "FOLD": 0.7176470588235294,
+              "JAM": 0.011764705882352941,
+              "RAISE": 0.03529411764705882
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6177777777777779,
+              "FOLD": 0.3055144032921811,
+              "JAM": 0.03835390946502058,
+              "RAISE": 0.03835390946502058
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "CO",
+            "reach_probability": 0.9529411764705882,
+            "selected_level_probability": {
+              "2": 0.7530864197530864,
+              "3": 0.2469135802469136
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5887058823529412,
+              "FOLD": 0.2911372549019608,
+              "JAM": 0.03654901960784314,
+              "RAISE": 0.03654901960784314
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6182229889638151,
+              "FOLD": 0.3083926742385313,
+              "JAM": 0.035250158184150816,
+              "RAISE": 0.03813417861350281
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BTN",
+            "reach_probability": 0.879843137254902,
+            "selected_level_probability": {
+              "2": 0.6245320021394187,
+              "3": 0.2283829559636299,
+              "4": 0.14708504189695132
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5439392541330258,
+              "FOLD": 0.27133717800845836,
+              "JAM": 0.031014609765474817,
+              "RAISE": 0.0335520953479431
+            }
+          }
+        ],
+        "status": "AVAILABLE",
+        "support": {
+          "backoff_states_observed": [
+            "DECLARED_CONTEXT_BACKOFF"
+          ],
+          "family_never_dropped": true,
+          "nearest_price_substitution": false,
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
+        },
+        "target_total_bb": 5.0
+      },
+      {
+        "action": "ISO",
+        "aggregate": {
+          "caller_partition_with_aggressive_terminal": {
+            "aggressive_terminal": 0.184723567858516,
+            "all_fold": 0.10605228758169936,
+            "exactly_1_caller": 0.2210980392156863,
+            "exactly_2_callers": 0.394239138792772,
+            "three_plus_callers": 0.09388696655132642
+          },
+          "expected_continuers": 1.5526628219915413,
+          "p_3bet_or_jam": 0.184723567858516,
+          "p_all_fold": 0.10605228758169936
+        },
+        "alternative_id": "ISO@6",
+        "incremental_cost_bb": 5.5,
+        "modeling_boundary": {
+          "aggressive_response_is_terminal": true,
+          "reason": "#340 response-to-price covers the facing response; later response-to-3bet is intentionally not invented"
+        },
+        "responder_probabilities": [
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.23529411764705882,
+              "FOLD": 0.7176470588235294,
+              "JAM": 0.011764705882352941,
+              "RAISE": 0.03529411764705882
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BB",
+            "reach_probability": 1.0,
+            "selected_level_probability": {
+              "2": 1.0
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.23529411764705882,
+              "FOLD": 0.7176470588235294,
+              "JAM": 0.011764705882352941,
+              "RAISE": 0.03529411764705882
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6177777777777779,
+              "FOLD": 0.3055144032921811,
+              "JAM": 0.03835390946502058,
+              "RAISE": 0.03835390946502058
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "CO",
+            "reach_probability": 0.9529411764705882,
+            "selected_level_probability": {
+              "2": 0.7530864197530864,
+              "3": 0.2469135802469136
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5887058823529412,
+              "FOLD": 0.2911372549019608,
+              "JAM": 0.03654901960784314,
+              "RAISE": 0.03654901960784314
+            }
+          },
+          {
+            "conditional_action_probabilities": {
+              "CALL": 0.6182229889638151,
+              "FOLD": 0.3083926742385313,
+              "JAM": 0.035250158184150816,
+              "RAISE": 0.03813417861350281
+            },
+            "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+            "position": "BTN",
+            "reach_probability": 0.879843137254902,
+            "selected_level_probability": {
+              "2": 0.6245320021394187,
+              "3": 0.2283829559636299,
+              "4": 0.14708504189695132
+            },
+            "support_state_probability": {
+              "DECLARED_CONTEXT_BACKOFF": 1.0
+            },
+            "unconditional_action_event_probabilities": {
+              "CALL": 0.5439392541330258,
+              "FOLD": 0.27133717800845836,
+              "JAM": 0.031014609765474817,
+              "RAISE": 0.0335520953479431
+            }
+          }
+        ],
+        "status": "AVAILABLE",
+        "support": {
+          "backoff_states_observed": [
+            "DECLARED_CONTEXT_BACKOFF"
+          ],
+          "family_never_dropped": true,
+          "nearest_price_substitution": false,
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
+        },
+        "target_total_bb": 6.0
+      }
+    ],
+    "identity": {
+      "artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+      "model_version": "model_b_preflop_response_to_price_2a_20260919_price_agnostic_reference",
+      "production_effect": "NONE",
+      "reference_mode": true,
+      "schema": "independent-opponent-model-b-preflop-response-to-price-2a/v1"
+    },
+    "pairwise_sizing_deltas": [
+      {
+        "high_alternative_id": "ISO@5",
+        "high_minus_low": {
+          "aggregate": {
+            "expected_continuers": 0.0,
+            "p_3bet_or_jam": 0.0,
+            "p_all_fold": 0.0
+          },
+          "responders": [
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BB"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BTN"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "CO"
+            }
+          ]
+        },
+        "high_target_total_bb": 5.0,
+        "low_alternative_id": "ISO@4",
+        "low_target_total_bb": 4.0,
+        "status": "AVAILABLE"
+      },
+      {
+        "high_alternative_id": "ISO@6",
+        "high_minus_low": {
+          "aggregate": {
+            "expected_continuers": 0.0,
+            "p_3bet_or_jam": 0.0,
+            "p_all_fold": 0.0
+          },
+          "responders": [
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BB"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BTN"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "CO"
+            }
+          ]
+        },
+        "high_target_total_bb": 6.0,
+        "low_alternative_id": "ISO@4",
+        "low_target_total_bb": 4.0,
+        "status": "AVAILABLE"
+      },
+      {
+        "high_alternative_id": "ISO@6",
+        "high_minus_low": {
+          "aggregate": {
+            "expected_continuers": 0.0,
+            "p_3bet_or_jam": 0.0,
+            "p_all_fold": 0.0
+          },
+          "responders": [
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BB"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "BTN"
+            },
+            {
+              "high_minus_low_conditional_action_probability": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              },
+              "high_minus_low_reach_probability": 0.0,
+              "position": "CO"
+            }
+          ]
+        },
+        "high_target_total_bb": 6.0,
+        "low_alternative_id": "ISO@5",
+        "low_target_total_bb": 5.0,
+        "status": "AVAILABLE"
+      }
+    ],
+    "role": "price-agnostic #340 control; not an active-pointer mutation"
+  },
+  "report_sha256": "05b23bcce7ade7616dd42158ecda2d6703bb6e175a4aca478ebec23f144a4c5f",
+  "schema": "model-b-preflop-sensitivity-harness-report/v1",
+  "scope": {
+    "active_model_b_changed": false,
+    "automatic_promotion": false,
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "production_effect": "NONE",
+    "real_issue_314_consumed": false,
+    "recommendation_consumed": false,
+    "test_consumed": false,
+    "train_consumed": false,
+    "ui_modified": false,
+    "validation_consumed": false
+  },
+  "source_kind": "SYNTHETIC_HARNESS_ONLY",
+  "status": "SYNTHETIC_HARNESS_ONLY"
+}

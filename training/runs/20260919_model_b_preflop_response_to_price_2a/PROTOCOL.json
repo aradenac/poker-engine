@@ -1,0 +1,88 @@
+{
+  "schema": "model-b-preflop-response-to-price-2a-protocol/v1",
+  "issue": 340,
+  "parent_issue": 315,
+  "version": "2026-09-19.1",
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "source_issue_319": {
+    "summary_path": "analysis/preflop_sizing_support_train.json",
+    "full_report_path": "analysis/preflop_sizing_support_train.full.json.gz",
+    "report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "contract": "consume real TRAIN sizing/price empirical bins and provenance; never synthesize nearest price"
+  },
+  "profile_reference": {
+    "path": "training/runs/20260912_independent_profiles_v2/model/profiles.json",
+    "schema": "independent-opponent-profiles/v2",
+    "role": "TRAIN-derived public Model B profile labels; not Model A"
+  },
+  "split_contract": {
+    "fit": [
+      "TRAIN"
+    ],
+    "freeze_before": [
+      "VALIDATION"
+    ],
+    "evaluate": [
+      "VALIDATION"
+    ],
+    "forbidden": [
+      "TEST"
+    ],
+    "test_consumed": false
+  },
+  "method": {
+    "candidate_kind": "PUBLIC_PREFLOP_RESPONSE_TO_PRICE_SUPPORT_AWARE",
+    "reference_kind": "TRAIN_FITTED_PRICE_AGNOSTIC_PUBLIC_MODEL_B_BASELINE",
+    "actions": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "alpha_per_action": 1,
+    "min_observations": 20,
+    "min_distinct_hands": 15,
+    "thresholds_source": "frozen before VALIDATION; observation floor inherits #319 BACKOFF_RECOMMENDED boundary and adds conservative distinct-hand support",
+    "exact_price_first": true,
+    "empirical_bins_source": "#319",
+    "no_cross_family_pooling": true,
+    "nearest_context_heuristic": false,
+    "silent_pooling": false,
+    "model_a_features_allowed": false,
+    "hero_ev_or_recommendation_allowed": false
+  },
+  "paired_validation": {
+    "metric": "candidate_minus_reference_action_log_loss",
+    "pairing_unit": "hand_id",
+    "bootstrap_samples": 2000,
+    "seed": 20260919,
+    "interpretation": {
+      "ci95_upper_lt_zero": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION",
+      "ci95_lower_gt_zero": "VALIDATION_FAVORS_PRICE_AGNOSTIC_REFERENCE__NO_PROMOTION",
+      "otherwise": "VALIDATION_INCONCLUSIVE__NO_PROMOTION"
+    },
+    "model_selection_effect": "NONE"
+  },
+  "uncertainty": {
+    "action_probability": "Dirichlet/additive posterior normal approximation, 95 percent interval, TRAIN support only",
+    "sparse_contexts": "explicit failed finer levels and declared backoff reason",
+    "price_zone_reporting": "VALIDATION observed frequencies plus candidate mean probability and mean TRAIN-posterior interval"
+  },
+  "scientific_constraints": {
+    "hyperparameters_selected_on_validation": false,
+    "model_a_features_allowed": false,
+    "hero_ev_or_recommendation_allowed": false,
+    "hero_sizing_sensitivity_allowed": false,
+    "hero_sizing_sensitivity_dependency": "#314",
+    "automatic_promotion": false,
+    "active_model_b_change_allowed": false,
+    "registry_or_pointer_change_allowed": false,
+    "production_effect": "NONE",
+    "ui_change_allowed": false
+  },
+  "closure_contract": {
+    "tranche_2a_can_close_without_hero_sensitivity": true,
+    "parent_issue_315_remains_open_until_dependent_sensitivity_complete": true
+  }
+}

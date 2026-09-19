@@ -1,0 +1,168 @@
+{
+  "fit_split": "TRAIN",
+  "levels": [
+    {
+      "dimensions": [
+        "profile",
+        "family",
+        "responder_position",
+        "raiser_position",
+        "sequence",
+        "limper_count",
+        "caller_count",
+        "target_exact",
+        "price_bin",
+        "stack_bin"
+      ],
+      "level": 0,
+      "nodes": 16193,
+      "support_states": {
+        "SPARSE": 15839,
+        "SUPPORTED": 354
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "responder_position",
+        "raiser_position",
+        "sequence",
+        "limper_count",
+        "caller_count",
+        "target_exact",
+        "price_bin",
+        "stack_bin"
+      ],
+      "level": 1,
+      "nodes": 12265,
+      "support_states": {
+        "SPARSE": 11987,
+        "SUPPORTED": 278
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "responder_position",
+        "raiser_position",
+        "limper_count",
+        "caller_count",
+        "target_exact",
+        "price_bin",
+        "stack_bin"
+      ],
+      "level": 2,
+      "nodes": 10166,
+      "support_states": {
+        "SPARSE": 9871,
+        "SUPPORTED": 295
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "responder_position",
+        "limper_count",
+        "caller_count",
+        "target_exact",
+        "price_bin",
+        "stack_bin"
+      ],
+      "level": 3,
+      "nodes": 8110,
+      "support_states": {
+        "SPARSE": 7802,
+        "SUPPORTED": 308
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "responder_position",
+        "limper_count",
+        "target_exact",
+        "price_bin"
+      ],
+      "level": 4,
+      "nodes": 5488,
+      "support_states": {
+        "SPARSE": 5264,
+        "SUPPORTED": 224
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "responder_position",
+        "target_exact",
+        "price_bin"
+      ],
+      "level": 5,
+      "nodes": 4840,
+      "support_states": {
+        "SPARSE": 4622,
+        "SUPPORTED": 218
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "target_exact",
+        "price_bin"
+      ],
+      "level": 6,
+      "nodes": 2568,
+      "support_states": {
+        "SPARSE": 2416,
+        "SUPPORTED": 152
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "target_bin",
+        "price_bin"
+      ],
+      "level": 7,
+      "nodes": 121,
+      "support_states": {
+        "SPARSE": 18,
+        "SUPPORTED": 103
+      }
+    },
+    {
+      "dimensions": [
+        "family",
+        "target_bin"
+      ],
+      "level": 8,
+      "nodes": 37,
+      "support_states": {
+        "SUPPORTED": 37
+      }
+    },
+    {
+      "dimensions": [
+        "family"
+      ],
+      "level": 9,
+      "nodes": 10,
+      "support_states": {
+        "SUPPORTED": 10
+      }
+    }
+  ],
+  "nearest_context_heuristic": false,
+  "no_cross_family_pooling": true,
+  "schema": "model-b-preflop-response-to-price-2a-train-fit-audit/v1",
+  "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+  "test_consumed": false,
+  "thresholds": {
+    "min_distinct_hands": 15,
+    "min_observations": 20
+  },
+  "training_counts": {
+    "decisions": 57188
+  },
+  "validation_used_for_fit": false
+}

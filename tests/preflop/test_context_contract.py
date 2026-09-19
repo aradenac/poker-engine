@@ -19,6 +19,7 @@ from tools.preflop.model_a_sizing_likelihood import (  # noqa: E402
     make_synthetic_candidate,
     public_sizing_context,
     resolve_likelihood,
+    support_context_key,
 )
 
 from tools.preflop.context_contract import (  # noqa: E402
@@ -31,6 +32,13 @@ from tools.preflop.context_contract import (  # noqa: E402
     v5_runtime_signature,
 )
 from tools.training.audit_preflop_key_runtime_parity import runtime_signature  # noqa: E402
+from tools.training.fit_model_a_preflop_sizing import (  # noqa: E402
+    build_candidate as build_issue339_candidate,
+    evaluate_validation as evaluate_issue339_validation,
+    evaluate_kts_posterior as evaluate_issue339_kts_posterior,
+    load_protocol as load_issue339_protocol,
+    load_support_report as load_issue339_support_report,
+)
 from tools.repro_preflop_model_parity import (  # noqa: E402
     REPORT_PATH as MODEL_PARITY_REPORT_PATH,
     build_parity_report,
@@ -39,6 +47,31 @@ from tools.repro_preflop_model_parity import (  # noqa: E402
 
 FIXTURE = json.loads((ROOT / "tests/fixtures/preflop_contract_cases.json").read_text(encoding="utf-8"))
 SIZING_FIXTURE = json.loads((ROOT / "tests/fixtures/model_a_preflop_sizing_cases.json").read_text(encoding="utf-8"))
+
+
+def assert_json_semantically_equal(actual, expected, path="root"):
+    """Cross-Python reproducibility: exact structure/text, tolerant IEEE float leaves."""
+    if isinstance(actual, bool) or isinstance(expected, bool) or actual is None or expected is None:
+        assert actual == expected, (path, actual, expected)
+        return
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        assert set(actual) == set(expected), (path, sorted(actual), sorted(expected))
+        for key in sorted(actual):
+            if path == "root" and key == "evidence_sha256":
+                # The evidence hash binds the persisted canonical run. Floating-point
+                # leaves can differ by machine epsilon between Python 3.11/3.12.
+                continue
+            assert_json_semantically_equal(actual[key], expected[key], f"{path}.{key}")
+        return
+    if isinstance(actual, list) and isinstance(expected, list):
+        assert len(actual) == len(expected), (path, len(actual), len(expected))
+        for index, (left, right) in enumerate(zip(actual, expected)):
+            assert_json_semantically_equal(left, right, f"{path}[{index}]")
+        return
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        assert math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12), (path, actual, expected)
+        return
+    assert actual == expected, (path, actual, expected)
 
 
 def assert_expected(ctx, expected):
@@ -342,6 +375,55 @@ def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
     assert identity["active_model_replaced"]["const"] is False
     assert schema["properties"]["nearest_price_fallback"]["const"] is False
     assert schema["properties"]["backoff_policy"]["const"] == list(BACKOFF_POLICY)
+
+
+def test_aa_issue339_support_key_matches_319_dimensions_not_nearest_numeric_state():
+    four = build_context(**SIZING_FIXTURE["contexts"][0]["input"])
+    same_price = dict(four)
+    same_price["pot_before_bb"] = float(four["pot_before_bb"]) + 20.0
+    same_price["effective_stack_bb"] = float(four["effective_stack_bb"]) + 50.0
+    assert support_context_key(four) == support_context_key(same_price)
+
+    six = build_context(**SIZING_FIXTURE["contexts"][1]["input"])
+    assert support_context_key(four) != support_context_key(six)
+
+
+def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_without_test():
+    protocol = load_issue339_protocol()
+    _, report = load_issue339_support_report()
+    candidate, fit = build_issue339_candidate(protocol, report)
+    assert candidate["identity"]["fit_scope"] == "TRAIN_EMPIRICAL_FIT"
+    assert candidate["identity"]["data_scope"] == "CERTIFIED_TRAIN_ONLY"
+    assert candidate["identity"]["source_report_hash"] == "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+    assert fit["nodes"]["marginal_exact_price"] == 282
+    assert fit["nodes"]["identifiable_revealed_hand_class"] > 0
+    assert fit["test_consumed"] is False
+    support = {int(row["target_total_bb"]): int(row["observations"]) for row in fit["kts_sb_two_limpers_exact_price_support"]}
+    assert support == {4: 54, 5: 161, 6: 43}
+    fit["posterior_321"] = evaluate_issue339_kts_posterior(candidate)
+    from tools.training.fit_model_a_preflop_sizing import canonical_hash as _issue339_hash
+    fit["evidence_sha256"] = _issue339_hash({key: value for key, value in fit.items() if key != "evidence_sha256"})
+    posterior = {int(row["target_total_bb"]): row for row in fit["posterior_321"]["prices"]}
+    assert posterior[4]["after_status"] == "UNSUPPORTED"
+    assert posterior[5]["after_status"] == "AVAILABLE"
+    assert posterior[5]["source_observations"] == 45
+    assert posterior[6]["after_status"] == "UNSUPPORTED"
+    assert all(not row["contract_errors"] for row in posterior.values())
+
+    validation = evaluate_issue339_validation(protocol, candidate, fit)
+    persisted_fit = json.loads((ROOT / "analysis/model_a_preflop_sizing_fit.json").read_text(encoding="utf-8"))
+    persisted_validation = json.loads((ROOT / "analysis/model_a_preflop_sizing_validation.json").read_text(encoding="utf-8"))
+    assert persisted_fit == fit
+    assert_json_semantically_equal(validation, persisted_validation)
+    assert validation["selection_split"] == "VALIDATION"
+    assert validation["test_consumed"] is False
+    assert validation["test_authorized"] is False
+    assert validation["production_effect"] == "NONE"
+    assert validation["active_model_replaced"] is False
+    assert validation["model_b_consumed"] is False
+    assert validation["hero_ev_consumed"] is False
+    assert validation["ui_modified"] is False
+    print("ISSUE339_RESULT=" + json.dumps({"fit": fit, "validation": validation}, sort_keys=True, separators=(",", ":")))
 
 
 def test_canonical_321_model_a_b_public_context_parity():

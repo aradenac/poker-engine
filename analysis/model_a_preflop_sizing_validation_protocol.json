@@ -1,0 +1,121 @@
+{
+  "schema": "poker-model-a-preflop-sizing-validation-protocol/v1",
+  "issue": 339,
+  "parent_issue": 313,
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "frozen_at": "2026-09-19",
+  "population": {
+    "id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "hand_ids_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "split_counts": {
+      "TRAIN": 19016,
+      "VALIDATION": 2324,
+      "TEST": 2449
+    }
+  },
+  "train_support": {
+    "summary": "analysis/preflop_sizing_support_train.json",
+    "full_report": "analysis/preflop_sizing_support_train.full.json.gz",
+    "report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "exact_price_first": true,
+    "minimum_marginal_observations": 20,
+    "identifiable_marginal_observations": 50,
+    "minimum_revealed_hand_class_observations": 50,
+    "nearest_price_fallback": false
+  },
+  "reference": {
+    "id": "active-model-a-preflop-v5",
+    "path": "training/models/preflop_population_model_v5.json",
+    "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "runtime_matcher": "tools/training/evaluate_preflop_topology_candidate.py::find_closest",
+    "status": "ACTIVE_REFERENCE"
+  },
+  "candidate_fit": {
+    "id": "model-a-preflop-sizing-aware-candidate-v1",
+    "split": "TRAIN",
+    "hero_rows": "EXCLUDED",
+    "actions": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "limp_mapping": "LIMP -> CALL",
+    "exact_support_key": [
+      "family",
+      "actor_position",
+      "aggressor_position",
+      "limper_count",
+      "caller_count",
+      "target_total_bb",
+      "to_call_bb"
+    ],
+    "marginal_estimator": {
+      "method": "JEFFREYS_DIRICHLET",
+      "alpha_per_action": 0.5
+    },
+    "hand_class_estimator": {
+      "rule": "only actually revealed TRAIN rows; class node requires >=50 revealed observations in the same exact-price support cell",
+      "method": "SHRINK_REVEALED_CLASS_TO_EXACT_PRICE_MARGINAL",
+      "prior_strength": 40,
+      "reveal_bias": "MNAR; hand-conditioned evidence is reveal-selected and never used as marginal population evidence"
+    },
+    "unsupported": "UNRESOLVED",
+    "hyperparameter_selection": "NONE_ON_VALIDATION_SINGLE_FROZEN_CANDIDATE",
+    "active_pointer_mutation": "FORBIDDEN"
+  },
+  "posterior_acceptance": {
+    "contract": "poker-opponent-posterior-range/v1",
+    "fixture": "kts_sb_two_limp_iso4_three_calls_v1",
+    "exact_prices_bb": [
+      4,
+      5,
+      6
+    ],
+    "public_only": true,
+    "opponent_hidden_cards": "FORBIDDEN",
+    "future_cards": "FORBIDDEN",
+    "requirement": "4/5/6 remain distinct exact-price contexts; missing/low support fails closed"
+  },
+  "evaluation": {
+    "split": "VALIDATION",
+    "test_consumed": false,
+    "test_authorized": false,
+    "row_scope": "non-Hero preflop population decisions in #319 focus families, excluding CHECK, with an exact supported candidate price cell; reference and candidate scored on identical rows",
+    "primary": {
+      "metric": "multiclass_action_log_loss",
+      "paired_unit": "hand_id",
+      "bootstrap_samples": 5000,
+      "bootstrap_seed": 20260919,
+      "admission": "candidate-minus-reference paired 95% CI upper bound <= 0 with positive affected support"
+    },
+    "required_hand_conditioned": {
+      "metric": "multiclass_action_log_loss",
+      "scope": "same validation universe where known_hand_class is revealed and an identifiable candidate hand-class exact-price node exists",
+      "minimum_rows": 100,
+      "minimum_hands": 50,
+      "bootstrap_samples": 5000,
+      "bootstrap_seed": 20261919,
+      "admission": "candidate-minus-reference paired 95% CI upper bound <= 0",
+      "selection_bias": "MNAR_DIAGNOSTIC_REQUIRED"
+    },
+    "outcome_rule": "ADMIT_FOR_314 only when both frozen gates pass; otherwise RETAIN_ACTIVE_REFERENCE",
+    "test_rule": "TEST remains unconsumed and unauthorized by #339 regardless of VALIDATION result"
+  },
+  "publication": {
+    "production_effect": "NONE",
+    "automatic_promotion": "FORBIDDEN",
+    "active_reference_mutation": "FORBIDDEN",
+    "downstream_consumer": "#314",
+    "rejected_candidate": "persist evidence and leave active Model A unchanged"
+  },
+  "forbidden": [
+    "TEST",
+    "MODEL_B",
+    "HERO_EV",
+    "UI",
+    "#108"
+  ]
+}

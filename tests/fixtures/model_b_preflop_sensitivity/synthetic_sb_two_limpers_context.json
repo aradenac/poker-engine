@@ -1,0 +1,51 @@
+{
+  "schema": "model-b-preflop-sensitivity-public-context/v1",
+  "synthetic_fixture": true,
+  "scenario_id": "synthetic:SB:two-limpers:KTs",
+  "hero_position": "SB",
+  "hero_contribution_before_bb": 0.5,
+  "pot_before_hero_action_bb": 3.5,
+  "limper_count": 2,
+  "initial_sequence": [
+    {
+      "position": "CO",
+      "action": "LIMP"
+    },
+    {
+      "position": "BTN",
+      "action": "LIMP"
+    }
+  ],
+  "responders": [
+    {
+      "position": "BB",
+      "profile": 0,
+      "contribution_bb": 1,
+      "effective_stack_bb": 100,
+      "family_no_callers": "VS_ISO",
+      "family_with_callers": "VS_ISO_CALLERS"
+    },
+    {
+      "position": "CO",
+      "profile": 2,
+      "contribution_bb": 1,
+      "effective_stack_bb": 100,
+      "family_no_callers": "LIMPER_VS_ISO",
+      "family_with_callers": "LIMPER_VS_ISO_CALLERS"
+    },
+    {
+      "position": "BTN",
+      "profile": 1,
+      "contribution_bb": 1,
+      "effective_stack_bb": 100,
+      "family_no_callers": "LIMPER_VS_ISO",
+      "family_with_callers": "LIMPER_VS_ISO_CALLERS"
+    }
+  ],
+  "provenance": {
+    "issue": 344,
+    "compatible_future_consumer": "#314 canonical alternatives",
+    "values": "SYNTHETIC_ONLY",
+    "real_issue_314_consumed": false
+  }
+}
