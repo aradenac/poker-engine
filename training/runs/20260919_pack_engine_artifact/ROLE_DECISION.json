@@ -1,0 +1,31 @@
+{
+  "schema": "poker-pack-engine-role-decision/v1",
+  "issue": 370,
+  "parent_issue": 201,
+  "role": "engine",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "status": "ADMISSIBLE_FOR_PACK",
+  "decision_class": "RUNTIME_COMPATIBILITY_ONLY",
+  "artifact": {
+    "path": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+    "sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08"
+  },
+  "manifest": {
+    "path": "training/runs/20260919_pack_engine_artifact/ENGINE_ARTIFACT_MANIFEST.json",
+    "sha256": "34b7083e913a6657d119baccafb47f12d6b4866a161814777fb23104db2e6620"
+  },
+  "provenance": {
+    "path": "training/runs/20260919_pack_engine_artifact/PROVENANCE.json",
+    "sha256": "7262a6dc6a1df7d363312b5a731f76aa25710753e5adcb4152b1faf33a3ee781"
+  },
+  "reasons": [
+    "fresh distributable artifact materialized from #360-proven source subset",
+    "full content SHA-256 verified and embedded in immutable path",
+    "runtime dependency closure is self-contained",
+    "no MIXED_ZOOM_REGULAR bytes or lineage reused",
+    "target Zoom compatibility is explicit and source lineage is non-legacy"
+  ],
+  "scientific_performance_claim": false,
+  "test_consumed": false,
+  "production_effect": "NONE"
+}
