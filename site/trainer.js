@@ -18,6 +18,8 @@ const TRAINER_POSTFLOP_ORDER=["SB","BB","LJ","HJ","CO","BTN"];
 const TRAINER_HERO="Hero";
 const TRAINER_DELAYS={street:20,opponentThink:35,opponentSettle:25};
 const TRAINER_REVIEW_CACHE_MAX=96;
+const TrainerActionSizingEV=window.PokerActionSizingEV;
+if(!TrainerActionSizingEV?.primarySummaryHtml||!TrainerActionSizingEV?.alternativesStripHtml||!TrainerActionSizingEV?.qualityFromEV)throw new Error("PokerActionSizingEV requis avant trainer.js.");
 const trainerWarmAssets={started:false,promise:null,population:null,modelA:null,modelB:null,heroRanges:null,startedAt:0,finishedAt:0,error:null};
 const trainerReviewCache={entries:new Map(),preModel:null,postModel:null,hits:0,misses:0,evictions:0};
 
@@ -674,7 +676,7 @@ function trainerActualLine(hand,kind,cost){
 }
 function trainerDecisionClass(detail){
   const rawLoss=Math.max(0,Number(detail?.rawLossBB??detail?.lossBB)||0),effectiveLoss=Math.max(0,Number(detail?.lossBB)||0);
-  const quality=decisionQualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
+  const quality=TrainerActionSizingEV.qualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
   return quality.key==="unknown"?"close":quality.key;
 }
 function trainerRecordDecision(detail,playedKind,playedCost){
@@ -844,9 +846,9 @@ function trainerRenderFeedback(){
     trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Feedback</div><div class="trainer-feedback-body">Jouez une décision Hero pour obtenir le verdict.</div>';return;
   }
   const d=f.detail,r=f.row,summary=trainerDecisionCanonical(d,r);
-  const quality=summary?decisionQualityFromEV(summary):{key:r?.cls||"unknown",label:"Indéterminée",note:""};
+  const quality=summary?TrainerActionSizingEV.qualityFromEV(summary):{key:r?.cls||"unknown",label:"Indéterminée",note:""};
   const cls=quality.key==="unknown"?"close":quality.key,title=quality.label;
-  const primary=summary?`${decisionPrimarySummaryHtml(summary,{compact:true})}${decisionAlternativesStripHtml(summary,4)}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
+  const primary=summary?`${TrainerActionSizingEV.primarySummaryHtml(summary,{compact:true,escapeHtml,formatBB})}${TrainerActionSizingEV.alternativesStripHtml(summary,{limit:4,escapeHtml,formatBB})}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
   const noise=r.withinNoise?" · dans le bruit Monte-Carlo":"";
   trainerFeedback.className=`trainer-feedback ${cls}`;
   trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${primary}<div class="trainer-feedback-body">Perte EV effective après incertitude : <b>${escapeHtml(trainerFmtBB(r.lossBB))}</b>${noise}.</div><details class="action-advanced"><summary>Pourquoi ? / Détails avancés</summary><div class="action-advanced-body"><div class="trainer-feedback-body">Joué : <b>${escapeHtml(r.played)}${r.cost>0?` · ${escapeHtml(trainerFmtBB(r.cost))}`:""}</b><br>Recommandé : <b>${escapeHtml(trainerBestText(d))}</b><br>EV jouée : <b>${Number.isFinite(Number(d.chosenEV))?escapeHtml(trainerFmtBB(d.chosenEV)):"—"}</b> · meilleure EV : <b>${Number.isFinite(Number(d.bestEV))?escapeHtml(trainerFmtBB(d.bestEV)):"—"}</b><br>La catégorie affichée est dérivée uniquement de la perte EV et de l’incertitude du modèle.</div></div></details>`;

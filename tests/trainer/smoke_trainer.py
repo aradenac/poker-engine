@@ -23,6 +23,35 @@ async def main() -> None:
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
 
+        shared_presentation = await page.evaluate(
+            """() => {
+                const api=window.PokerActionSizingEV;
+                const summary={
+                    schema:"decision-summary/v1",
+                    played:{label:"CALL",sizing:"call 2 BB",evBB:1.5},
+                    recommended:{label:"RAISE",sizing:"ajoute 5 BB",evBB:2.2},
+                    deltaEVBB:-0.7,lossEVBB:0.7,effectiveLossEVBB:0.65,withinNoise:false,
+                    alternatives:[
+                        {label:"RAISE",sizing:"ajoute 5 BB",evBB:2.2,recommended:true},
+                        {label:"CALL",sizing:"call 2 BB",evBB:1.5,recommended:false}
+                    ]
+                };
+                return {
+                    present:!!api,
+                    script:[...document.scripts].some(s=>String(s.getAttribute("src")||"").endsWith("action-sizing-ev.js")),
+                    semantics:api?.semantics||null,
+                    primary:api?.primarySummaryHtml(summary,{compact:true,escapeHtml,formatBB})||"",
+                    alternatives:api?.alternativesStripHtml(summary,{limit:2,escapeHtml,formatBB})||""
+                };
+            }"""
+        )
+        assert shared_presentation["present"] and shared_presentation["script"], shared_presentation
+        assert shared_presentation["semantics"]["selects_action"] is False, shared_presentation
+        assert shared_presentation["semantics"]["recomputes_ev"] is False, shared_presentation
+        assert shared_presentation["semantics"]["validator"] == "#299", shared_presentation
+        assert "Recommandé" in shared_presentation["primary"] and "RAISE" in shared_presentation["primary"], shared_presentation
+        assert "EV" in shared_presentation["alternatives"] and "CALL" in shared_presentation["alternatives"], shared_presentation
+
         # Product architecture exposes only the five stable top-level domains.
         product_architecture = await page.evaluate(
             """() => ({

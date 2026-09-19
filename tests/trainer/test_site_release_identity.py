@@ -40,6 +40,7 @@ def main() -> int:
         "site/hero-compliance-replayer.js",
         "site/trainer.css",
         "site/trainer.js",
+        "site/action-sizing-ev.js",
     }
     assert assembled["assets_tree_git_sha"]
     assert release["publication_verification"]["status"] == "UNVERIFIED_LIVE"

@@ -1523,6 +1523,7 @@
 <script src="./pack-identity.js"></script>
 <script src="./population-packs.js"></script>
 <script src="./manual-import.js"></script>
+<script src="./action-sizing-ev.js"></script>
 <script src="./analytics/leak-analyzer.js"></script>
 <script src="./analytics/review-score-adapter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
@@ -4225,32 +4226,14 @@ function decisionCanonicalSummary(stepIndex,step,cached=null){
     alternatives:ordered.map(a=>normalize(a,a===best)).filter(Boolean)
   };
 }
-function decisionQualityFromEV(summary){
-  const rawLoss=Number(summary?.lossEVBB),effectiveLoss=Number(summary?.effectiveLossEVBB),withinNoise=!!summary?.withinNoise;
-  if(!Number.isFinite(rawLoss))return {key:"unknown",label:"Indéterminée",note:"ΔEV indisponible"};
-  if(rawLoss<=1e-9)return {key:"good",label:"Bonne",note:"meilleure EV"};
-  if(withinNoise||(Number.isFinite(effectiveLoss)&&effectiveLoss<=1e-9))return {key:"close",label:"Proche",note:"écart dans le bruit Monte-Carlo"};
-  return {key:"bad",label:"Erreur",note:"perte EV au-delà de l’incertitude"};
-}
+const DecisionActionSizingEV=window.PokerActionSizingEV;
+if(!DecisionActionSizingEV?.primarySummaryHtml||!DecisionActionSizingEV?.alternativesStripHtml||!DecisionActionSizingEV?.qualityFromEV)throw new Error("PokerActionSizingEV requis avant le runtime central.");
+function decisionQualityFromEV(summary){return DecisionActionSizingEV.qualityFromEV(summary);}
 function decisionPrimarySummaryHtml(summary,{compact=false}={}){
-  if(!summary)return "";
-  const p=summary.played||{},r=summary.recommended||{},delta=Number(summary.deltaEVBB),loss=Number(summary.lossEVBB),quality=decisionQualityFromEV(summary);
-  const deltaText=Number.isFinite(delta)?formatBB(delta):"—";
-  const lossText=Number.isFinite(loss)?formatBB(Math.max(0,loss)):"—";
-  const qualityText=quality.note?`${quality.label} · ${quality.note}`:quality.label;
-  const card=(k,v,s,cls="")=>`<div class="decision-primary-card ${cls}"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v||"—")}</div>${s?`<div class="s">${escapeHtml(s)}</div>`:""}</div>`;
-  return `<div class="decision-primary-grid${compact?" compact":""}" data-decision-summary-schema="decision-summary/v1">
-    ${card("Perte EV",lossText,`ΔEV ${deltaText} · ${qualityText}`,`delta quality-${quality.key}`)}
-    ${card("Joué",p.label,p.sizing,"played")}
-    ${card("Recommandé",r?.label||"—",r?.sizing||"—","recommended")}
-    ${card("EV jouée",Number.isFinite(Number(p.evBB))?formatBB(Number(p.evBB)):"—","EV finale retenue")}
-    ${card("Meilleure EV",Number.isFinite(Number(r?.evBB))?formatBB(Number(r.evBB)):"—","Meilleure alternative")}
-  </div>`;
+  return DecisionActionSizingEV.primarySummaryHtml(summary,{compact,escapeHtml,formatBB});
 }
 function decisionAlternativesStripHtml(summary,limit=3){
-  const xs=(summary?.alternatives||[]).slice().sort((a,b)=>Number(b.evBB)-Number(a.evBB)).slice(0,Math.max(1,limit));
-  if(!xs.length)return "";
-  return `<div class="decision-alt-strip"><span class="decision-alt-label">Alternatives</span>${xs.map(a=>`<span class="decision-alt-pill${a.recommended?" best":""}">${escapeHtml(a.label)} · ${escapeHtml(a.sizing||"—")} · EV ${Number.isFinite(Number(a.evBB))?escapeHtml(formatBB(a.evBB)):"—"}</span>`).join("")}</div>`;
+  return DecisionActionSizingEV.alternativesStripHtml(summary,{limit,escapeHtml,formatBB});
 }
 function actionSizingEVTableHtml(summary){
   const alts=(summary?.alternatives||[]).filter(a=>Number.isFinite(finalDecisionEV(a)));
