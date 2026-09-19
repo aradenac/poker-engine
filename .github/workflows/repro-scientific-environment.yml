@@ -1,0 +1,112 @@
+name: REPRO scientific environment guard
+
+on:
+  workflow_call:
+    outputs:
+      environment_identity_sha256:
+        description: Locked REPRO environment identity consumed by guarded scientific jobs
+        value: ${{ jobs.guard.outputs.environment_identity_sha256 }}
+  pull_request:
+    paths:
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.in'
+      - 'requirements.lock.txt'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'reproducibility/**'
+      - 'tools/repro_*.py'
+      - 'tests/test_repro_*.py'
+      - '.github/workflows/repro-scientific-environment.yml'
+      - '.github/workflows/continuous-training-cycle.yml'
+      - '.github/workflows/population-certification.yml'
+      - '.github/workflows/population-pack.yml'
+      - '.github/workflows/user-artifact-bundle.yml'
+      - '.github/workflows/plan-ingested-cycle.yml'
+      - '.github/workflows/materialize-certified-population.yml'
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.in'
+      - 'requirements.lock.txt'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'reproducibility/**'
+      - 'tools/repro_*.py'
+      - 'tests/test_repro_*.py'
+      - '.github/workflows/repro-scientific-environment.yml'
+      - '.github/workflows/continuous-training-cycle.yml'
+      - '.github/workflows/population-certification.yml'
+      - '.github/workflows/population-pack.yml'
+      - '.github/workflows/user-artifact-bundle.yml'
+      - '.github/workflows/plan-ingested-cycle.yml'
+      - '.github/workflows/materialize-certified-population.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repro-scientific-environment-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-24.04
+    outputs:
+      environment_identity_sha256: ${{ steps.identity.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          cache: 'npm'
+
+      - name: Verify locked runtime and materialize environment identity
+        id: identity
+        run: |
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py verify --require-node > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_environment.py identity --output /tmp/repro-environment-identity.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          value=json.load(open('/tmp/repro-environment-identity.json', encoding='utf-8'))
+          print('sha256='+value['identity_sha256'])
+          PY
+
+      - name: Reuse container and hardening validators
+        run: |
+          set -euo pipefail
+          python3 tools/repro_container.py validate
+          python3 tools/repro_hardening.py validate
+          python3 tools/repro_lock_update.py plan --candidate-root . --output /tmp/repro-lock-plan.json
+          python3 - <<'PY'
+          import json
+          plan=json.load(open('/tmp/repro-lock-plan.json', encoding='utf-8'))
+          assert plan['status']=='NO_CHANGE', plan
+          assert plan['violations']==[], plan
+          PY
+
+      - name: Enforce guarded scientific workflow topology
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tools/repro_ci_enforcement.py audit
+          PYTHONPATH=. python3 tests/test_repro_ci_enforcement.py
+
+      - name: Preserve REPRO guard evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repro-environment-${{ github.sha }}
+          path: |
+            /tmp/repro-ci-environment.json
+            /tmp/repro-environment-identity.json
+            /tmp/repro-lock-plan.json
+          if-no-files-found: error
+          retention-days: 30
