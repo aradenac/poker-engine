@@ -1,7 +1,7 @@
 {
   "schema": "model-b-observed-vs-simulated-calibration-protocol/v1",
   "issue": 272,
-  "version": "2026-09-19.1",
+  "version": "2026-09-19.2",
   "status": "FROZEN_BEFORE_ISSUE_272_EVALUATION",
   "purpose": "Measure observed VALIDATION behavior against reference Model B and the persisted #197 response-to-price candidate without promotion.",
   "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
@@ -23,7 +23,6 @@
     "street",
     "relative_position",
     "pot_type",
-    "preflop_role",
     "sequence",
     "price_bucket",
     "spr_bucket"
@@ -86,5 +85,58 @@
     "model_a_features_allowed": false,
     "silent_context_pooling_allowed": false,
     "issue_108_files_modified": false
+  },
+  "reference_row_conditioned_extra_dimensions": [
+    "preflop_role"
+  ],
+  "declared_backoff_levels": [
+    [
+      "profile",
+      "street",
+      "relative_position",
+      "pot_type",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "relative_position",
+      "pot_type",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "pot_type",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "price_bucket"
+    ],
+    [
+      "street"
+    ],
+    []
+  ],
+  "protocol_correction": {
+    "reason": "Initial diagnostic contract included reference-only preflop_role in the exact key, over-fragmenting contexts. Final contract now matches issue #197 candidate public context exactly.",
+    "initial_diagnostic_run": 35408684293,
+    "initial_diagnostic_evidence_used_for_final_conclusions": false
   }
 }
