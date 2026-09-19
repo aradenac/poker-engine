@@ -34,9 +34,9 @@ EXPORT_SCHEMA = "poker-backlog-evidence-github-export/v1"
 CATEGORIES = ("CLOSE_CANDIDATE", "KEEP_OPEN", "BLOCKED", "CONTRADICTION", "UNKNOWN")
 CATEGORY_PRIORITY = {
     "UNKNOWN": 0,
-    "KEEP_OPEN": 1,
-    "BLOCKED": 2,
-    "CLOSE_CANDIDATE": 3,
+    "CLOSE_CANDIDATE": 1,
+    "KEEP_OPEN": 2,
+    "BLOCKED": 3,
     "CONTRADICTION": 4,
 }
 BLOCKED_LABELS = {"blocked", "blocker", "blocked-by-dependency", "blocked by dependency"}
