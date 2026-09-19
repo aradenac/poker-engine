@@ -445,27 +445,27 @@ def build_backlog_report(
             refs.append({"kind": "pr", "pr": release_pr, "state": pull["state"], "merged": pull["merged"]})
 
         if release and pull and pull["merged"]:
-            if gap["state"] == "NONE":
-                _add_finding(
-                    findings, {"kind": "ISSUE", "issue": issue_number}, "CLOSE_CANDIDATE",
-                    "MERGED_RELEASED_NO_REMAINING_GAP",
-                    f"PR #{release_pr} is merged, RELEASED is persisted and latest worklog declares no remaining gap",
-                    refs,
-                )
-                continue
-            if gap["state"] == "BLOCKED":
-                _add_finding(
-                    findings, {"kind": "ISSUE", "issue": issue_number}, "BLOCKED",
-                    "MERGED_RELEASED_ONLY_DEFERRED_GAPS",
-                    "delivered tranche is RELEASED but every declared remaining gap is explicitly BLOCKED/DEFERRED",
-                    refs,
-                )
-                continue
             if gap["state"] == "ACTIVE":
                 _add_finding(
                     findings, {"kind": "ISSUE", "issue": issue_number}, "KEEP_OPEN",
                     "MERGED_RELEASED_WITH_ACTIVE_GAPS",
                     "latest worklog still declares an actionable remaining gap",
+                    refs,
+                )
+                continue
+            if blockers or gap["state"] == "BLOCKED":
+                _add_finding(
+                    findings, {"kind": "ISSUE", "issue": issue_number}, "BLOCKED",
+                    "MERGED_RELEASED_ONLY_DEFERRED_GAPS",
+                    "delivered tranche is RELEASED but remaining machine-readable evidence is explicitly BLOCKED/DEFERRED",
+                    refs,
+                )
+                continue
+            if gap["state"] == "NONE":
+                _add_finding(
+                    findings, {"kind": "ISSUE", "issue": issue_number}, "CLOSE_CANDIDATE",
+                    "MERGED_RELEASED_NO_REMAINING_GAP",
+                    f"PR #{release_pr} is merged, RELEASED is persisted and latest worklog declares no remaining gap",
                     refs,
                 )
                 continue
@@ -477,18 +477,18 @@ def build_backlog_report(
             )
             continue
 
-        if blockers or gap["state"] == "BLOCKED":
-            _add_finding(
-                findings, {"kind": "ISSUE", "issue": issue_number}, "BLOCKED",
-                "OPEN_ISSUE_EXPLICITLY_BLOCKED",
-                "all machine-readable remaining blocker evidence is explicit; no readiness is inferred",
-                refs,
-            )
-        elif gap["state"] == "ACTIVE":
+        if gap["state"] == "ACTIVE":
             _add_finding(
                 findings, {"kind": "ISSUE", "issue": issue_number}, "KEEP_OPEN",
                 "OPEN_ISSUE_ACTIVE_GAPS",
                 "latest worklog declares an actionable remaining gap",
+                refs,
+            )
+        elif blockers or gap["state"] == "BLOCKED":
+            _add_finding(
+                findings, {"kind": "ISSUE", "issue": issue_number}, "BLOCKED",
+                "OPEN_ISSUE_EXPLICITLY_BLOCKED",
+                "all machine-readable remaining blocker evidence is explicit; no readiness is inferred",
                 refs,
             )
         elif ("ISSUE", str(issue_number)) not in findings:
