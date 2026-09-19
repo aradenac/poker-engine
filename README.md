@@ -6,6 +6,10 @@ Dépôt persistant du moteur d'analyse et d'entraînement poker.
 
 Le plan produit et le graphe de dépendances sont pilotés par **l'issue #92 — Moteur NLHE 100/200 Zoom : préflop, ranges Hero et entraînement continu**. Les anciens tickets clos restent des acquis ; ils ne doivent pas être repris comme backlog actif parce qu'ils figurent encore dans un rapport historique.
 
+## Besoins produit détaillés
+
+- [Reviewer préflop : analyse d'iso-raise, sizing et évolution des ranges adverses](docs/reviewer-preflop-iso-analysis.md)
+
 ## Déploiement
 
 - [Ouvrir l'application de production](https://poker-engine.arad-chatgpt-compositeur-repas.workers.dev/)
