@@ -1,0 +1,172 @@
+{
+  "schema": "frontend-final-extraction-audit/v1",
+  "issue": 205,
+  "lane": "H",
+  "conflict_group": "CENTRAL-UI",
+  "measured_on_base": "4588ce1a74494715beb6884c73e60257a9008274",
+  "rules": {
+    "minimum_real_consumers": 2,
+    "requires_real_duplication": true,
+    "requires_concrete_functional_or_parity_benefit": true,
+    "cleanup_only_refactor_forbidden": true
+  },
+  "candidates": [
+    {
+      "id": "REPLAYER_PUBLIC_SNAPSHOT_RECONSTRUCTION",
+      "decision": "NO_EXTRACTION_REQUIRED",
+      "measurements": {
+        "canonical_replay_step_builder": {
+          "implementation": "site/index.html:function makeReplaySteps",
+          "implementation_count": 1,
+          "call_sites": [
+            "site/index.html:2987 loadReplayForSelectedHand",
+            "site/index.html:3833 buildReviewBatchPlan"
+          ],
+          "real_consumer_count": 2
+        },
+        "other_snapshot_builders": [
+          {
+            "implementation": "site/index.html:function actionScenarioSnapshot",
+            "responsibility": "analysis-worker scenario snapshot, not replay reconstruction"
+          },
+          {
+            "implementation": "site/index.html:function tableEquitySnapshotForStep",
+            "responsibility": "table-equity analysis snapshot, not replay reconstruction"
+          }
+        ],
+        "trainer_reconstruction_implementations": 0
+      },
+      "duplication_demonstrated": false,
+      "concrete_blocker_or_parity_gap": null,
+      "rationale": [
+        "The replay timeline reconstruction has one implementation even though its result has multiple consumers.",
+        "Other snapshot functions produce different analysis payloads and do not duplicate replay-step reconstruction.",
+        "trainer.js temporarily swaps/restores state.replaySteps for review execution but does not rebuild replay steps independently.",
+        "Extracting makeReplaySteps solely to reduce index.html size would be cleanup-only and violates #205."
+      ]
+    },
+    {
+      "id": "PREFLOP_GUIDANCE",
+      "decision": "NO_EXTRACTION_REQUIRED",
+      "measurements": {
+        "existing_guidance_module": {
+          "implementation": "src/preflop/guidance.js",
+          "public_responsibilities": [
+            "validatePublicSnapshot",
+            "buildGuidance",
+            "surfacePayload/surfaceBundle",
+            "cacheKey"
+          ],
+          "builder_implementation_count": 1
+        },
+        "canonical_adapter": {
+          "implementation": "src/training/preflop-decision-adapter.js",
+          "consumes_existing_guidance_module": true,
+          "adapter_specific_responsibilities": [
+            "normalizeSnapshot",
+            "validateGuidanceEvidence",
+            "validateGuidanceForAdapter"
+          ]
+        },
+        "central_ui_guidance_builder_count": 0,
+        "site_preflop_contract_guidance_builder_count": 0
+      },
+      "duplication_demonstrated": false,
+      "concrete_blocker_or_parity_gap": null,
+      "rationale": [
+        "Guidance is already isolated in a versioned module and consumed by the canonical preflop decision adapter.",
+        "The adapter validation/normalization functions are boundary-specific and are not duplicate guidance builders.",
+        "The remaining #195 product gap is runtime integration/admissible strategy state, not missing frontend extraction.",
+        "A new CENTRAL-UI guidance helper would duplicate an existing module instead of removing duplication."
+      ]
+    },
+    {
+      "id": "LEAK_ANALYZER_DECISION_AGGREGATION",
+      "decision": "NO_EXTRACTION_REQUIRED",
+      "measurements": {
+        "shared_module": {
+          "site_path": "site/analytics/leak-analyzer.js",
+          "source_path": "src/analytics/leak-analyzer.js",
+          "site_git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd",
+          "source_git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd",
+          "identical_content": true
+        },
+        "decision_event_consumers": [
+          "site/analytics/review-score-adapter.js -> Leak.buildDecisionEvent",
+          "site/trainer.js -> Leak.buildDecisionEvent"
+        ],
+        "decision_event_real_consumer_count": 2,
+        "aggregation_implementation": {
+          "symbol": "Leak.analyzeLeaks",
+          "implementation_count": 1,
+          "known_product_consumer": "site/analytics/review-dashboard.js"
+        }
+      },
+      "duplication_demonstrated": false,
+      "concrete_blocker_or_parity_gap": null,
+      "rationale": [
+        "Two independent product paths already reuse the shared buildDecisionEvent API instead of reimplementing it.",
+        "Leak aggregation itself has one implementation, analyzeLeaks, in the shared Leak Analyzer module.",
+        "The src/site copies are byte-identical distribution copies of the same module, not diverging independent implementations.",
+        "Further extraction would create another layer without removing a duplicated responsibility."
+      ]
+    },
+    {
+      "id": "RECOMMENDATION_CACHE_VERSIONING",
+      "decision": "NO_EXTRACTION_REQUIRED",
+      "measurements": {
+        "trainer_review_cache": {
+          "implementation": "site/trainer.js:trainerReviewCache*",
+          "storage": "bounded Map LRU",
+          "invalidation": "populationModel/postflopModel object identity",
+          "normalized_key": "hand history with trainer hand id normalized",
+          "direct_consumer": "trainerTimedReviewText",
+          "implementation_count": 1
+        },
+        "replayer_analysis_cache": {
+          "implementation": "site/index.html:actionEquityCache + actionEquityKey/replay signatures",
+          "storage": "object keyed by decision/scenario context",
+          "lifecycle": "queued/running/done/error worker computations",
+          "responsibility": "replayer action equity/postflop tree computation"
+        },
+        "population_trace_cache": {
+          "implementation": "site/index.html:populationTraceCache",
+          "responsibility": "population preflop trace memoization"
+        },
+        "postflop_trace_cache": {
+          "implementation": "site/index.html:postflopTraceCache",
+          "responsibility": "postflop trace memoization"
+        },
+        "shared_lru_implementation_candidates": 1
+      },
+      "duplication_demonstrated": false,
+      "concrete_blocker_or_parity_gap": null,
+      "rationale": [
+        "There are multiple caches but they cache different payloads with different keys, lifecycles and invalidation semantics.",
+        "Only trainerReviewCache implements a bounded LRU; there is no second real LRU consumer to justify a shared cache primitive.",
+        "reviewContextSignature/replayFastContextSignature are domain-specific identity signatures rather than duplicate versioning helpers.",
+        "No cache parity defect or stale-recommendation bug is currently demonstrated by #205; a generic cache abstraction would be cleanup-only."
+      ]
+    }
+  ],
+  "summary": {
+    "candidates_audited": 4,
+    "extraction_justified_count": 0,
+    "no_extraction_required_count": 4,
+    "decision": "NO_FURTHER_EXTRACTION_JUSTIFIED",
+    "runtime_files_changed": false,
+    "browser_smoke_required": false,
+    "reason_browser_smoke_not_required": "Audit-only closure: no site/index.html, site/trainer.js or static runtime asset changed."
+  },
+  "boundaries": {
+    "issue_108_consumed": false,
+    "test_consumed": false,
+    "model_b_fit_changed": false,
+    "hero_optimization_performed": false,
+    "pack_promotion_performed": false,
+    "strategy_or_numeric_behavior_changed": false,
+    "framework_or_bundler_refactor": false
+  },
+  "scientific_effect": "NONE_AUDIT_ONLY",
+  "closure_recommendation": "CLOSE_ISSUE_205"
+}
