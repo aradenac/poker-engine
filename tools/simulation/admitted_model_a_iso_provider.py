@@ -114,10 +114,22 @@ def _response_action(action: Any) -> str:
     return value
 
 
+def _sizing_aggressor_position(decision: Mapping[str, Any]) -> str:
+    explicit = str(decision.get("aggressor_position") or "").upper()
+    if explicit:
+        return explicit
+    aggressors = [
+        str(row.get("position") or "").upper()
+        for row in (decision.get("history") or [])
+        if str(row.get("action") or "").upper() in {"RAISE", "JAM"}
+    ]
+    return aggressors[-1] if aggressors else ""
+
+
 def _is_required_sizing_context(decision: Mapping[str, Any]) -> bool:
     return (
         str(decision.get("family") or "").upper() == "VS_ISO"
-        and str(decision.get("aggressor_position") or "").upper() == "SB"
+        and _sizing_aggressor_position(decision) == "SB"
     )
 
 
