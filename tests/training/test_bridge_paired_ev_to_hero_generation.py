@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.training.bridge_paired_ev_to_hero_generation import (
+    EXACT_DETERMINISTIC_COMPATIBLE,
     EXACT_ZERO_ROLLOUT,
     MEASURED_COMPATIBLE,
     REQUEST_SCHEMA,
@@ -151,6 +152,34 @@ def test_zero_rollout_exact_value_is_explicit_and_never_measured() -> None:
     assert result["evidence"]["ev_bb"] == 0.125
     assert result["strategy_cell"] is None
 
+
+
+def test_exact_zero_fold_can_materialize_without_becoming_measured() -> None:
+    request = exact_request()
+    selected = request["paired_result"]["selected_id"]
+    alt = request["paired_result"]["alternatives"][selected]
+    alt["ev_bb"] = 0.0
+    alt["standard_error_bb"] = 0.0
+    alt["ci_lower_bb"] = 0.0
+    alt["ci_upper_bb"] = 0.0
+    result = bridged(request)
+    assert result["bridge_state"] == EXACT_DETERMINISTIC_COMPATIBLE
+    cell = result["strategy_cell"]
+    assert cell["action"] == {"status": "EXACT_DETERMINISTIC", "value": "FOLD"}
+    assert cell["sizing"] == {"status": "EXACT_DETERMINISTIC", "kind": "NONE", "value": None, "unit": None}
+    assert cell["ev"] == {
+        "status": "EXACT_DETERMINISTIC",
+        "estimate_bb": 0.0,
+        "uncertainty": {
+            "method": "EXACT_DETERMINISTIC_ZERO",
+            "std_error_bb": 0.0,
+            "ci95_low_bb": 0.0,
+            "ci95_high_bb": 0.0,
+        },
+    }
+    assert cell["rollout"]["status"] == "EXACT_DETERMINISTIC"
+    assert cell["rollout"]["world_count"] == 0
+    assert cell["rollout"]["sample_count"] >= 1
 
 def test_rollout_and_uncertainty_accounting_fail_closed() -> None:
     bad = measured_request()
