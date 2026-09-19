@@ -55,10 +55,45 @@
     "container": {
       "type": "object",
       "additionalProperties": false,
-      "minProperties": 1,
+      "required": [
+        "base_image",
+        "definition",
+        "container_lock_sha256",
+        "system_packages_sha256",
+        "container_manifest_sha256",
+        "hermeticity_level",
+        "base_image_pinned",
+        "system_packages_fully_pinned"
+      ],
       "properties": {
-        "image": {"type": "string", "minLength": 1},
-        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        "base_image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "tag", "platform", "digest", "architecture", "os"],
+          "properties": {
+            "repository": {"type": "string", "minLength": 1},
+            "tag": {"type": "string", "minLength": 1},
+            "platform": {"const": "linux/amd64"},
+            "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+            "architecture": {"const": "x86_64"},
+            "os": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["distribution", "version"],
+              "properties": {
+                "distribution": {"const": "ubuntu"},
+                "version": {"const": "24.04"}
+              }
+            }
+          }
+        },
+        "definition": {"$ref": "#/$defs/hashedPath"},
+        "container_lock_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "system_packages_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "container_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "hermeticity_level": {"type": "string", "minLength": 1},
+        "base_image_pinned": {"const": true},
+        "system_packages_fully_pinned": {"type": "boolean"}
       }
     },
     "identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
@@ -69,6 +104,15 @@
       "additionalProperties": false,
       "required": ["version"],
       "properties": {"version": {"type": "string", "minLength": 1}}
+    },
+    "hashedPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
     }
   }
 }

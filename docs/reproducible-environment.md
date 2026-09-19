@@ -107,3 +107,130 @@ No current workflow is changed by this tranche. After #108 releases the frozen s
 5. keep historical runs on the explicit grandfather path only.
 
 `analysis/reproducibility/scientific-run-environment-audit.json` inventories the current Model A, Model B, Hero/PFPC, full-hand, validation/promotion, prospective and other scientific manifest families and their recommended future integration points.
+
+
+## Scientific reference container
+
+The reference container is a separate, local/non-CI reproducibility layer. It does not replace the existing host bootstrap, and no current workflow consumes it while #108 remains active.
+
+### Verified base image identity
+
+The versioned source is `reproducibility/container-base.lock.json`.
+
+- repository: `ubuntu`
+- informative tag: `24.04`
+- platform: `linux/amd64`
+- OS identity: Ubuntu 24.04 / x86_64
+- immutable amd64 manifest digest: `sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4`
+- multi-platform index digest recorded for provenance: `sha256:b3cc40b72b93588182b5410f723c7aaf142363311c2aa993d8a453ddcbb3ae15`
+- verification source: Docker Hub official `library/ubuntu:24.04` image detail page, recorded in the lock with the verification date.
+
+The Dockerfile uses the **manifest digest directly**:
+
+```Dockerfile
+FROM ubuntu@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4
+```
+
+A tag-only base, `:latest`, a malformed digest, a digest that disagrees with the recorded verification evidence, or a non-amd64 platform fails closed in `tools/repro_container.py`.
+
+### Runtime source pins
+
+The container contract keeps the existing runtime versions:
+
+- Python 3.11.9, built from the python.org source archive with SHA-256 `9b1e896523fc510691126c864406d9360a3d1e986acbda59cda57b5abda45b87`;
+- Node.js 22.14.0, installed from the official Linux x64 archive with SHA-256 `69b09dba5c8dcb05c4e4273a4340db1005abeafe3927efda2bc5b249e80437ec`;
+- Python dependencies from `requirements.lock.txt`;
+- Node dependencies from `package-lock.json`;
+- Playwright 1.55.0 and Chromium 140.0.7339.16, verified by the existing runtime checker.
+
+### System-package pinning and hermeticity
+
+The explicit apt package set is versioned in `reproducibility/system-packages.apt.txt`. The package **names** are fixed and reviewed, but there is currently no immutable Ubuntu apt snapshot and no exact version pin for every apt package.
+
+The contract therefore distinguishes:
+
+- `BASE_IMAGE_PINNED = true`;
+- `SYSTEM_PACKAGES_FULLY_PINNED = false`.
+
+The declared hermeticity level is:
+
+`BASE_IMAGE_PINNED_PARTIAL_SYSTEM_AND_BROWSER_FETCH`
+
+This is intentionally not described as fully hermetic. Two limits remain explicit:
+
+1. apt resolves package versions from the Ubuntu repositories available at build time;
+2. Playwright 1.55.0 selects the Chromium build/revision and the installed version is verified, but this repository does not independently pin the downloaded Chromium archive by SHA-256.
+
+### Local commands
+
+Validate the static contract before any build:
+
+```bash
+./scripts/repro-container.sh validate
+```
+
+Produce a deterministic content-addressed manifest:
+
+```bash
+./scripts/repro-container.sh manifest \
+  --output-dir .repro/container-manifests
+```
+
+Build the reference image:
+
+```bash
+./scripts/repro-container.sh build \
+  --image poker-engine-science:local
+```
+
+Inspect Docker identity and labels:
+
+```bash
+./scripts/repro-container.sh inspect \
+  --image poker-engine-science:local
+```
+
+Verify the built image against the versioned contract and execute the existing runtime verifier inside it:
+
+```bash
+./scripts/repro-container.sh verify \
+  --image poker-engine-science:local
+```
+
+`build`, `inspect` and `verify` fail closed if Docker is unavailable. There is no fallback to an unverified host image.
+
+### Content-addressed container identity
+
+The container manifest hashes:
+
+- the Dockerfile;
+- `container-base.lock.json`;
+- the explicit system-package list;
+- `environment.lock.json`;
+- `requirements.lock.txt`;
+- `package-lock.json`.
+
+Its canonical payload produces `manifest_sha256`. A Dockerfile change or any of these lock changes therefore changes the container identity.
+
+Future-run `environment_identity` now embeds:
+
+- base image repository/tag/platform/digest and OS architecture;
+- container definition path + SHA-256;
+- container lock SHA-256;
+- system-package-list SHA-256;
+- container manifest SHA-256;
+- hermeticity level and the explicit system-package pinning status.
+
+Historical run manifests remain untouched and continue to use the explicit grandfather path.
+
+### Post-#108 workflow use
+
+This tranche does **not** modify `.github/workflows/**`. After #108 releases the frozen workflow area, future scientific jobs can mechanically:
+
+1. validate the container contract;
+2. build or select the content-addressed reference image;
+3. run `verify` before scientific execution;
+4. inject the resulting versioned `environment_identity` into future run provenance;
+5. reject publication/promotion if the container or runtime identity diverges.
+
+Until that wiring exists, #203 remains OPEN.

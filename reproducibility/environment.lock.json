@@ -15,6 +15,11 @@
     "version_id": "24.04",
     "machine": "x86_64"
   },
+  "container": {
+    "lock": "reproducibility/container-base.lock.json",
+    "definition": "reproducibility/Dockerfile.science",
+    "system_packages": "reproducibility/system-packages.apt.txt"
+  },
   "manifest": {
     "schema": "poker-engine-runtime-environment/v2",
     "content_addressed": true
@@ -23,6 +28,8 @@
     "workflows_wired": false,
     "os_base_pinned": true,
     "os_packages_pinned": false,
+    "container_base_pinned": true,
+    "container_hermeticity": "BASE_IMAGE_PINNED_PARTIAL_SYSTEM_AND_BROWSER_FETCH",
     "note": "Local/non-CI phase. Scientific workflow integration remains deferred until the #107/#108 freeze is released."
   }
 }

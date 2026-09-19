@@ -26,6 +26,9 @@ def clone_repro_sources(destination: Path) -> Path:
         "package-lock.json",
         "reproducibility/environment.lock.json",
         "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/Dockerfile.science",
     ):
         source = ROOT / relative
         target = destination / relative
