@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poker-backlog-evidence-report.schema.json",
+  "title": "Poker backlog/evidence reconciliation report",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "source_of_truth",
+    "coverage",
+    "counts",
+    "findings",
+    "warnings",
+    "policy"
+  ],
+  "properties": {
+    "schema": {
+      "const": "poker-backlog-evidence-report/v1"
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "WARN"
+      ]
+    },
+    "source_of_truth": {
+      "type": "object",
+      "required": [
+        "human_dispatch_issue",
+        "capability_manifest",
+        "project_state_validator",
+        "claim_parser",
+        "recovery_builder"
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "comments_complete",
+        "issues_complete",
+        "pulls_complete",
+        "branches_complete",
+        "dispatch_issue"
+      ],
+      "properties": {
+        "comments_complete": {
+          "type": "boolean"
+        },
+        "issues_complete": {
+          "type": "boolean"
+        },
+        "pulls_complete": {
+          "type": "boolean"
+        },
+        "branches_complete": {
+          "type": "boolean"
+        },
+        "dispatch_issue": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "CLOSE_CANDIDATE",
+        "KEEP_OPEN",
+        "BLOCKED",
+        "CONTRADICTION",
+        "UNKNOWN"
+      ],
+      "properties": {
+        "CLOSE_CANDIDATE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "KEEP_OPEN": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "BLOCKED": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "CONTRADICTION": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "UNKNOWN": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "subject",
+          "category",
+          "codes",
+          "justification",
+          "source_refs"
+        ],
+        "properties": {
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "issue"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "ISSUE"
+                  },
+                  "issue": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "slot"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "LANE"
+                  },
+                  "slot": {
+                    "type": "string",
+                    "pattern": "^(?:[A-H]|UNKNOWN)$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "category": {
+            "enum": [
+              "CLOSE_CANDIDATE",
+              "KEEP_OPEN",
+              "BLOCKED",
+              "CONTRADICTION",
+              "UNKNOWN"
+            ]
+          },
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "justification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "github_mutation",
+        "automatic_close_reopen_merge",
+        "missing_proof"
+      ],
+      "properties": {
+        "github_mutation": {
+          "const": false
+        },
+        "automatic_close_reopen_merge": {
+          "const": false
+        },
+        "missing_proof": {
+          "const": "UNKNOWN"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
