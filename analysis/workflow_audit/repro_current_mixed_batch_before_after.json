@@ -1,0 +1,2338 @@
+{
+  "base_sha": "938c4af948f3246b04c8b211f834c26e16ea6fef",
+  "ci": {
+    "claude_review": "PENDING_ORCHESTRATOR",
+    "expected_pr_jobs": {
+      ".github/workflows/dataset-integrity.yml": {
+        "integrity": "RUN"
+      },
+      ".github/workflows/full-hand-protocol.yml": {
+        "validate": "RUN"
+      },
+      ".github/workflows/hero-range-pfc-context.yml": {
+        "contract": "RUN"
+      },
+      ".github/workflows/preflop-grid-evaluator.yml": {
+        "preflop-grid": "RUN"
+      },
+      ".github/workflows/preflop-policy169.yml": {
+        "contract": "RUN"
+      },
+      ".github/workflows/release-handoff-contract.yml": {
+        "contract": "RUN"
+      },
+      ".github/workflows/release-no-pending-snapshot-proof.yml": {
+        "contract": "RUN",
+        "prove-no-publication": "SKIPPED"
+      }
+    },
+    "note": "Existing dataset reconstruction steps remain unchanged; not executed locally. No PR or remote CI created by this worker.",
+    "observed": false,
+    "scientific_job_review": {
+      "dataset-integrity:integrity": "Existing dataset/candidate reconstructions run on PR.",
+      "hero-range-pfc-context:contract": "Existing context test reruns TRAIN/VALIDATION #339.",
+      "preflop-grid-evaluator:preflop-grid": "Existing test imports VALIDATION benchmark #338."
+    }
+  },
+  "files_changed": [
+    ".github/workflows/dataset-integrity.yml",
+    ".github/workflows/full-hand-protocol.yml",
+    ".github/workflows/hero-range-pfc-context.yml",
+    ".github/workflows/preflop-grid-evaluator.yml",
+    ".github/workflows/preflop-policy169.yml",
+    ".github/workflows/release-handoff-contract.yml",
+    ".github/workflows/release-no-pending-snapshot-proof.yml",
+    "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+    "tests/ci/test_repro_current_mixed_batch.py",
+    "tools/audit_repro_current_mixed_batch.py"
+  ],
+  "inventory_snapshot_base_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
+  "inventory_source": "analysis/workflow_audit/workflows.json",
+  "inventory_source_sha": "8285835c62d781a9487a1faad383684eb3d7138c",
+  "issue": 380,
+  "local_execution_observations": {
+    "disposition": "BLOCKED_PENDING_REVIEW: the historical context contract test reexecutes TRAIN fit and frozen VALIDATION #339. Its results matched persisted evidence, but this exceeds the requested local validation scope. The optional grid test batch was also interrupted when its imported #338 scientific VALIDATION benchmark was discovered. No scientific file or workflow business command was changed.",
+    "historical_issue338_validation_test_interrupted": true,
+    "historical_issue339_train_fit_and_validation_reexecuted": true,
+    "production_effect": "NONE",
+    "test_consumed": false
+  },
+  "local_tests": [
+    {
+      "command": "python3 tests/test_repro_ci_helpers.py",
+      "exit_code": 0,
+      "output_sha256": "ca76ae23d74a4f8311220fb98bf9133410292fe2127b0b3238e002043c23db77",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_current_mixed_batch.py",
+      "exit_code": 0,
+      "output_sha256": "fb2fe0b283090ec025048926e1a6c0484c394fba745a876ce19b357dd5fa8706",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/validate_project_state.py",
+      "exit_code": 0,
+      "output_sha256": "52fe06ed7031d6e61635cfb0df595e4d5660acfeaea4c6f30e702b3164f9ceee",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/validate_project_state.py --check-status",
+      "exit_code": 0,
+      "output_sha256": "28be4deda011bd841f64ea6d48dc1bd01051caee1dc828aea038a6ee46c7ee49",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_project_state.py",
+      "exit_code": 0,
+      "output_sha256": "f6b4edd015f13fd115a140836b96013e00236262dcb33bf911783606ac5b9026",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_github_workflows.py --json /tmp/workflow-audit.json",
+      "exit_code": 0,
+      "output_sha256": "bdd4a498e48380dae46f9da972ed57539cd6381dbe79ec3836c2da4bfc65ce71",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/datasets/test_build_hand_history_increment.py",
+      "exit_code": 0,
+      "output_sha256": "02dcda9851e2474344c95e5705fc83cdfebb1fdd52bc3b54d621f709d4ff2f9f",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_full_hand_protocol.py",
+      "exit_code": 0,
+      "output_sha256": "b58f03ce0051b53103455e59f908ed543bf750637c7c429bd886b6b01e12facc",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_preflop_strategy_benchmark.py",
+      "exit_code": 0,
+      "output_sha256": "666c64e7db66e09561711167c44d0656fc3d7b16a5b4838ba9a45182490b5c8d",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_promotion_gates.py",
+      "exit_code": 0,
+      "output_sha256": "2088ab87dfe944352320da954095b282ea5a08a7b6df749f2d3c6933e3e03961",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/preflop/test_context_contract.py",
+      "exit_code": 0,
+      "output_sha256": "4665683e611b66afb0dfe0df2dc1cd552ca8604e7956e289098a5b3c6f6f5769",
+      "result": "PASS",
+      "scope_deviation": "Reexecuted historical #339 TRAIN fit and frozen VALIDATION; persisted equality assertions passed; TEST not consumed."
+    },
+    {
+      "command": "python3 tests/simulation/test_preflop_policy_context.py",
+      "exit_code": 0,
+      "output_sha256": "de17a4cb21f805a30e3be90517a86a642a7196f7a1a44a561623a3618440be7b",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/simulation/test_hero_preflop_overlay.py",
+      "exit_code": 0,
+      "output_sha256": "2c80ffb41c7e5daa5ee6499e7cee36b0adae2476d850257d7418abbf6b2584eb",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_hero_policy_context_sources.py",
+      "exit_code": 0,
+      "output_sha256": "90082a31ee97d69a69eacd17f11abeb2b7470e1b65ec74bea5ad645df6dcbc7a",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hero_ranges/test_hero_range_repository.mjs",
+      "exit_code": 0,
+      "output_sha256": "50218b7fe79ab486ebe2fa39381931593ecc07114b6abd11a9b5d73ab4518f42",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_enrich_hero_range_context.py",
+      "exit_code": 0,
+      "output_sha256": "4037cd17a229e0315a897d71b3d03c7263df0b2347e0aad14b577cabdf628863",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_persisted_hero_pfc_binding.py",
+      "exit_code": 0,
+      "output_sha256": "ec0b5ed41b39a96fc7223420765acba38be05ead9d4fcd83fd99a40c87b2c8d8",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/simulation/test_preflop_grid_evaluator.py",
+      "disposition": "INTERRUPTED: imported test_paired_preflop_validation invokes the historical #338 scientific VALIDATION benchmark; stopped the optional test batch on discovery.",
+      "exit_code": 130,
+      "result": "FAIL"
+    },
+    {
+      "command": "python3 tools/audit_repro_current_mixed_batch.py --check",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "local_tests_environment": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "."
+  },
+  "local_tests_excluded": {
+    "dataset-integrity reconstruction commands": "Preserved byte-for-byte; not executed to avoid new scientific work.",
+    "tests/datasets/test_persisted_snapshot.py": "Reads real persisted scientific snapshots and runs coverage audits; not needed to verify this runtime-only migration."
+  },
+  "lock_sha256_consumed": {
+    "package-lock.json": "afb28a4d656c223665ed358b3b131a371c6999ffbf9196d76f6f7bc30e6f03b6",
+    "reproducibility/Dockerfile.science": "87b2df5fc523a64c7201ddb25889cab73121f0185c65a6b38cc7de5e401f8297",
+    "reproducibility/apt-snapshot.lock.json": "e8a755a1ccb171926d7cdeb5ccb4b040e6de0b969400c9c4b491260e27583023",
+    "reproducibility/browser-identity.lock.json": "761b762dffd28f70bd5ee6a09c5fbfda58fb15ad7ff61acf1402654b0adb77d4",
+    "reproducibility/container-base.lock.json": "5ce7df7364daee3c5e2463ee93fdc77fef6d4966a0eafcd8cfa02b727b4aa747",
+    "reproducibility/environment.lock.json": "387b9393d6a9b1bc81fd0de552b73f53fe8124d2ded71fbfe518a8199d2ca609",
+    "reproducibility/os-base.lock.json": "0a7ea47bffb7868619324cf7d8ee23560ee38623fa9f16ca07f3df7a7a7551b8",
+    "reproducibility/system-packages.apt.txt": "5a3e39d6f8c5afc5ecb95e107ab7bafbcc0b543f2a723a9cfe13ea04ebebf761",
+    "reproducibility/system-packages.resolution.lock.json": "f43de3d265a4f8954442b2044aecba097e2f5846be2ea67a87f3c338096c2c57",
+    "reproducibility/ubuntu-snapshot.sources": "002858768101158e434818faeb5ad12191ba20313fce4a404cd70f56e5e991ae",
+    "requirements.lock.txt": "c2a2c209c3a5205243686c211f646e57090e73fdf6841e7804bdc3aa9eafa4c6"
+  },
+  "node_version_trigger_exception": ".node-version is read by the shared identity helper for all jobs, but only the two Node workflows trigger on it, as required by #380.",
+  "permissions_assessment": "Write-job counts describe explicit workflow/job grants. Hero has no permissions declaration: repository defaults are unknown and unchanged.",
+  "runtime_versions": {
+    "node": "22.14.0",
+    "python": "3.11.9"
+  },
+  "schema": "poker-repro-current-mixed-batch/v1",
+  "scientific_commands_changed": false,
+  "scientific_gate_changed": false,
+  "test_consumed": false,
+  "totals": {
+    "after": {
+      "node_floating": 0,
+      "node_floating_setups": 0,
+      "node_implicit_jobs": 0,
+      "pr_executable_write_jobs": [],
+      "python_floating": 0,
+      "python_floating_setups": 0,
+      "python_implicit_jobs": 0,
+      "write_jobs": [
+        ".github/workflows/release-no-pending-snapshot-proof.yml:prove-no-publication"
+      ]
+    },
+    "before": {
+      "node_floating": 2,
+      "node_floating_setups": 1,
+      "node_implicit_jobs": 1,
+      "pr_executable_write_jobs": [],
+      "python_floating": 8,
+      "python_floating_setups": 7,
+      "python_implicit_jobs": 1,
+      "write_jobs": [
+        ".github/workflows/release-no-pending-snapshot-proof.yml:prove-no-publication"
+      ]
+    }
+  },
+  "workflow_paths": [
+    ".github/workflows/dataset-integrity.yml",
+    ".github/workflows/full-hand-protocol.yml",
+    ".github/workflows/hero-range-pfc-context.yml",
+    ".github/workflows/preflop-grid-evaluator.yml",
+    ".github/workflows/preflop-policy169.yml",
+    ".github/workflows/release-handoff-contract.yml",
+    ".github/workflows/release-no-pending-snapshot-proof.yml"
+  ],
+  "workflows": [
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ],
+        "push": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "909fc589612cb656130a3b5352deb4b23d964ea55a90bd5baee470f253b11d84",
+        "artifact_identities": {
+          "integrity": []
+        },
+        "blob_sha": "4c15a9a2e08afaea6b78ff5140b65de8452a23a4",
+        "business_steps": {
+          "integrity": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Verify exact sources, unseen IDs, splits and materialized payloads\n        run: |\n          python3 tests/datasets/test_build_hand_history_increment.py\n          python3 tests/datasets/test_persisted_snapshot.py",
+            "      - name: Reproduce the 2026-09-09 Model A decision and overlay artifacts\n        run: |\n          python3 tools/training/build_incremental_decisions_v2.py \\\n            --source training/runs/20260909_population_increment_v2/source/RoiDePiqueNique_training2_delta_after_v4v5.zip \\\n            --out /tmp/poker_population_increment_decisions_v2.jsonl \\\n            --summary /tmp/model-a-0909-summary.json\n          cmp /tmp/poker_population_increment_decisions_v2.jsonl \\\n            training/runs/20260909_population_increment_v2/data/poker_population_increment_decisions_v2.jsonl\n          python3 tools/training/build_population_increment_overlay_v2.py \\\n            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \\\n            --out /tmp/model-a-0909-overlay.json \\\n            --provenance-out /tmp/model-a-0909-overlay-provenance.json\n          cmp /tmp/model-a-0909-overlay.json \\\n            training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json",
+            "      - name: Rebuild and verify the persisted 2026-09-09 rejected postflop candidate\n        run: |\n          python3 tools/training/rebuild_postflop_increment_candidate.py \\\n            --baseline training/models/postflop_population_model_v5.json \\\n            --overlay /tmp/model-a-0909-overlay.json \\\n            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \\\n            --date 2026-09-09 \\\n            --source-label RoiDePiqueNique_training2.zip \\\n            --lineage-fingerprint 809862c9090110dfecf6382492158fa585a905c3c5e1991daeb5199937643814 \\\n            --out /tmp/postflop-v6-rebuilt.json\n          python3 - <<'PY'\n          import json, math\n          rebuilt=json.load(open('/tmp/postflop-v6-rebuilt.json'))\n          persisted=json.load(open('training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json'))\n          rn=rebuilt['nodes']; pn=persisted['nodes']\n          key=lambda n:n.get('canonical_key') or n.get('id')\n          assert len(rn)==len(pn)\n          assert [key(n) for n in rn]==[key(n) for n in pn]\n          for frozen in ('response_models','combo_policy_models','hand_policy_prior'):\n              assert rebuilt.get(frozen)==persisted.get(frozen), frozen\n          max_diff=0.0; changed=0\n          for r,p in zip(rn,pn):\n              k=key(r)\n              for field in ('context','population_observed','coverage','rank_population'):\n                  assert r.get(field)==p.get(field), (k,field)\n              rm=r['population_model']; pm=p['population_model']\n              assert rm.get('legal_actions')==pm.get('legal_actions'), k\n              assert rm.get('method')==pm.get('method'), k\n              assert set(rm['frequencies'])==set(pm['frequencies']), k\n              for action,x in rm['frequencies'].items():\n                  y=pm['frequencies'][action]; d=abs(float(x)-float(y)); max_diff=max(max_diff,d)\n                  changed += int(d != 0.0)\n                  assert math.isclose(float(x),float(y),rel_tol=0.0,abs_tol=1e-9), (k,action,x,y,d)\n          assert rebuilt['coverage']==persisted['coverage']\n          assert rebuilt['incremental_update']['train_population_rows_applied']==4651\n          assert rebuilt['incremental_update']['train_population_rows_skipped_no_exact_node']==45\n          assert rebuilt['incremental_update']['touched_nodes']==666\n          print(json.dumps({'status':'SEMANTICALLY_EQUIVALENT','nodes':len(rn),'changed_frequency_values':changed,'max_frequency_abs_diff':max_diff,'atol':1e-9},indent=2))\n          PY",
+            "      - name: Rebuild the 2026-09-12 Model A normalized increment\n        run: |\n          python3 tools/training/build_incremental_decisions_v2.py \\\n            --source training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip \\\n            --out /tmp/model-a-0912-decisions.jsonl \\\n            --summary /tmp/model-a-0912-summary.json\n          python3 tools/training/build_population_increment_overlay_v2.py \\\n            --decisions /tmp/model-a-0912-decisions.jsonl \\\n            --out /tmp/model-a-0912-overlay.json \\\n            --provenance-out /tmp/model-a-0912-overlay-provenance.json\n          python3 - <<'PY'\n          import collections, json\n          summary=json.load(open('/tmp/model-a-0912-summary.json'))\n          assert summary['source_unique_hands']==3268, summary\n          assert summary['parsed_hands']==3268, summary\n          assert summary['source_hand_ids_fingerprint_sha256']=='9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b'\n          assert summary['hands_by_split']=={'TRAIN':2606,'VALIDATION':320,'TEST':342}, summary['hands_by_split']\n          assert summary['rows_total']==42964, summary['rows_total']\n          counts=collections.Counter()\n          with open('/tmp/model-a-0912-decisions.jsonl') as f:\n              for line in f:\n                  row=json.loads(line)\n                  if row['split']=='TRAIN' and not row['is_hero']:\n                      counts[row['street'] if row['street']=='preflop' else 'postflop'] += 1\n          assert counts['preflop']==13774, counts\n          assert counts['postflop']==15962, counts\n          overlay=json.load(open('/tmp/model-a-0912-overlay.json'))\n          assert overlay['summary']['train_population_rows']==29736, overlay['summary']\n          print(json.dumps({'summary':summary,'train_population_rows':dict(counts)}, indent=2))\n          PY",
+            "      - name: Rebuild the 2026-09-12 preflop full-weight candidate\n        run: |\n          python3 tools/training/rebuild_preflop_increment_candidate.py \\\n            --baseline training/models/preflop_population_model_v5.json \\\n            --overlay /tmp/model-a-0912-overlay.json \\\n            --decisions /tmp/model-a-0912-decisions.jsonl \\\n            --date 2026-09-12 \\\n            --source-label selected_100_200.zip \\\n            --lineage-fingerprint 9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b \\\n            --out /tmp/model-a-0912-preflop-candidate.json\n          python3 - <<'PY'\n          import hashlib, json\n          base=json.load(open('training/models/preflop_population_model_v5.json'))\n          manifest=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json'))\n          obj=json.load(open('/tmp/model-a-0912-preflop-candidate.json'))\n          inc=obj['incremental_update']\n          assert inc['train_population_rows_applied']==9047, inc\n          assert inc['train_population_rows_skipped_no_exact_node']==4727, inc\n          assert inc['touched_nodes']==108, inc\n          assert inc['alpha_exact']==40, inc\n          assert obj.get('response_models')==base.get('response_models')\n          assert obj.get('revealed_policy_models')==base.get('revealed_policy_models')\n          assert obj.get('hand_grid')==base.get('hand_grid')\n          key=lambda n:n.get('canonical_key') or n.get('id')\n          bm={key(n):n for n in base['nodes']}; cm={key(n):n for n in obj['nodes']}\n          assert set(bm)==set(cm)\n          for k,b in bm.items():\n              c=cm[k]\n              assert c.get('context')==b.get('context'), k\n              assert c.get('continuous_population')==b.get('continuous_population'), k\n              for field in ('policy169_q_b64','response_model_key','continuous_adjustment','legal_actions'):\n                  assert (c.get('population_model') or {}).get(field)==(b.get('population_model') or {}).get(field), (k,field)\n          semantic={\n              'nodes':obj['nodes'],'coverage':obj['coverage'],'hand_grid':obj.get('hand_grid'),\n              'response_models':obj.get('response_models'),'revealed_policy_models':obj.get('revealed_policy_models'),\n          }\n          semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()\n          assert semantic_sha==manifest['preflop']['semantic_sha256'], (semantic_sha,manifest['preflop']['semantic_sha256'])\n          print(json.dumps({\n              'status':'REBUILT','byte_sha256':hashlib.sha256(open('/tmp/model-a-0912-preflop-candidate.json','rb').read()).hexdigest(),\n              'semantic_sha256':semantic_sha,\n              'historical_local_sha256_not_persisted':manifest['preflop']['historical_local_sha256_not_persisted'],\n              'incremental_update':inc},indent=2))\n          PY",
+            "      - name: Rebuild the 2026-09-12 postflop full-weight candidate\n        run: |\n          python3 tools/training/rebuild_postflop_increment_candidate.py \\\n            --baseline training/models/postflop_population_model_v5.json \\\n            --overlay /tmp/model-a-0912-overlay.json \\\n            --decisions /tmp/model-a-0912-decisions.jsonl \\\n            --date 2026-09-12 \\\n            --source-label selected_100_200.zip \\\n            --lineage-fingerprint 9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b \\\n            --model-version postflop_v6_20260912_full_weight_REJECTED \\\n            --out /tmp/model-a-0912-postflop-candidate.json\n          python3 - <<'PY'\n          import hashlib, json\n          p='/tmp/model-a-0912-postflop-candidate.json'\n          manifest=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json'))\n          obj=json.load(open(p))\n          inc=obj['incremental_update']\n          assert inc['train_population_rows_applied']==15804, inc\n          assert inc['train_population_rows_skipped_no_exact_node']==158, inc\n          assert inc['touched_nodes']==1116, inc\n          semantic={\n              'nodes':obj['nodes'],\n              'coverage':obj['coverage'],\n              'response_models':obj.get('response_models'),\n              'combo_policy_models':obj.get('combo_policy_models'),\n              'hand_policy_prior':obj.get('hand_policy_prior'),\n          }\n          semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()\n          byte_sha=hashlib.sha256(open(p,'rb').read()).hexdigest()\n          assert semantic_sha==manifest['postflop']['semantic_sha256'], (semantic_sha,manifest['postflop']['semantic_sha256'])\n          assert byte_sha==manifest['postflop']['generated_byte_sha256'], (byte_sha,manifest['postflop']['generated_byte_sha256'])\n          print(json.dumps({'status':'REBUILT','byte_sha256':byte_sha,'semantic_sha256':semantic_sha,'historical_local_sha256_not_persisted':manifest['postflop']['historical_local_sha256_not_persisted'],'incremental_update':inc},indent=2))\n          PY"
+          ]
+        },
+        "command_fingerprint": "7f6429f8b9e38378433b901fcb544f2abd96aa1acc4fa0e0f6fc1b9da7b73d1f",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "integrity": {
+            "env": "    env:\n      PYTHONDONTWRITEBYTECODE: '1'",
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify"
+            ],
+            "if": null,
+            "metadata_raw": "  integrity:\n    runs-on: ubuntu-latest\n    env:\n      PYTHONDONTWRITEBYTECODE: '1'",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": null,
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Persisted dataset integrity",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "training/registry.json",
+              "training/datasets/**",
+              "training/runs/20260909_population_increment_v2/**",
+              "training/runs/20260912_population_increment_cycle/**",
+              "tools/datasets/**",
+              "tools/training/**",
+              "tests/datasets/**",
+              "tests/training/**",
+              ".github/workflows/dataset-integrity.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "main"
+            ],
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "training/registry.json",
+              "training/datasets/**",
+              "training/runs/20260909_population_increment_v2/**",
+              "training/runs/20260912_population_increment_cycle/**",
+              "tools/datasets/**",
+              "tools/training/**",
+              "tests/datasets/**",
+              "tests/training/**",
+              ".github/workflows/dataset-integrity.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_fingerprint": "909fc589612cb656130a3b5352deb4b23d964ea55a90bd5baee470f253b11d84",
+        "artifact_identities": {
+          "integrity": []
+        },
+        "blob_sha": "6d49eab1c75816ccddb83260634041896347063e",
+        "business_steps": {
+          "integrity": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Verify exact sources, unseen IDs, splits and materialized payloads\n        run: |\n          python3 tests/datasets/test_build_hand_history_increment.py\n          python3 tests/datasets/test_persisted_snapshot.py",
+            "      - name: Reproduce the 2026-09-09 Model A decision and overlay artifacts\n        run: |\n          python3 tools/training/build_incremental_decisions_v2.py \\\n            --source training/runs/20260909_population_increment_v2/source/RoiDePiqueNique_training2_delta_after_v4v5.zip \\\n            --out /tmp/poker_population_increment_decisions_v2.jsonl \\\n            --summary /tmp/model-a-0909-summary.json\n          cmp /tmp/poker_population_increment_decisions_v2.jsonl \\\n            training/runs/20260909_population_increment_v2/data/poker_population_increment_decisions_v2.jsonl\n          python3 tools/training/build_population_increment_overlay_v2.py \\\n            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \\\n            --out /tmp/model-a-0909-overlay.json \\\n            --provenance-out /tmp/model-a-0909-overlay-provenance.json\n          cmp /tmp/model-a-0909-overlay.json \\\n            training/runs/20260909_population_increment_v2/artifacts/poker_population_increment_overlay_v2.json",
+            "      - name: Rebuild and verify the persisted 2026-09-09 rejected postflop candidate\n        run: |\n          python3 tools/training/rebuild_postflop_increment_candidate.py \\\n            --baseline training/models/postflop_population_model_v5.json \\\n            --overlay /tmp/model-a-0909-overlay.json \\\n            --decisions /tmp/poker_population_increment_decisions_v2.jsonl \\\n            --date 2026-09-09 \\\n            --source-label RoiDePiqueNique_training2.zip \\\n            --lineage-fingerprint 809862c9090110dfecf6382492158fa585a905c3c5e1991daeb5199937643814 \\\n            --out /tmp/postflop-v6-rebuilt.json\n          python3 - <<'PY'\n          import json, math\n          rebuilt=json.load(open('/tmp/postflop-v6-rebuilt.json'))\n          persisted=json.load(open('training/runs/20260909_population_increment_v2/models/postflop_population_model_v6_candidate_REJECTED.json'))\n          rn=rebuilt['nodes']; pn=persisted['nodes']\n          key=lambda n:n.get('canonical_key') or n.get('id')\n          assert len(rn)==len(pn)\n          assert [key(n) for n in rn]==[key(n) for n in pn]\n          for frozen in ('response_models','combo_policy_models','hand_policy_prior'):\n              assert rebuilt.get(frozen)==persisted.get(frozen), frozen\n          max_diff=0.0; changed=0\n          for r,p in zip(rn,pn):\n              k=key(r)\n              for field in ('context','population_observed','coverage','rank_population'):\n                  assert r.get(field)==p.get(field), (k,field)\n              rm=r['population_model']; pm=p['population_model']\n              assert rm.get('legal_actions')==pm.get('legal_actions'), k\n              assert rm.get('method')==pm.get('method'), k\n              assert set(rm['frequencies'])==set(pm['frequencies']), k\n              for action,x in rm['frequencies'].items():\n                  y=pm['frequencies'][action]; d=abs(float(x)-float(y)); max_diff=max(max_diff,d)\n                  changed += int(d != 0.0)\n                  assert math.isclose(float(x),float(y),rel_tol=0.0,abs_tol=1e-9), (k,action,x,y,d)\n          assert rebuilt['coverage']==persisted['coverage']\n          assert rebuilt['incremental_update']['train_population_rows_applied']==4651\n          assert rebuilt['incremental_update']['train_population_rows_skipped_no_exact_node']==45\n          assert rebuilt['incremental_update']['touched_nodes']==666\n          print(json.dumps({'status':'SEMANTICALLY_EQUIVALENT','nodes':len(rn),'changed_frequency_values':changed,'max_frequency_abs_diff':max_diff,'atol':1e-9},indent=2))\n          PY",
+            "      - name: Rebuild the 2026-09-12 Model A normalized increment\n        run: |\n          python3 tools/training/build_incremental_decisions_v2.py \\\n            --source training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip \\\n            --out /tmp/model-a-0912-decisions.jsonl \\\n            --summary /tmp/model-a-0912-summary.json\n          python3 tools/training/build_population_increment_overlay_v2.py \\\n            --decisions /tmp/model-a-0912-decisions.jsonl \\\n            --out /tmp/model-a-0912-overlay.json \\\n            --provenance-out /tmp/model-a-0912-overlay-provenance.json\n          python3 - <<'PY'\n          import collections, json\n          summary=json.load(open('/tmp/model-a-0912-summary.json'))\n          assert summary['source_unique_hands']==3268, summary\n          assert summary['parsed_hands']==3268, summary\n          assert summary['source_hand_ids_fingerprint_sha256']=='9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b'\n          assert summary['hands_by_split']=={'TRAIN':2606,'VALIDATION':320,'TEST':342}, summary['hands_by_split']\n          assert summary['rows_total']==42964, summary['rows_total']\n          counts=collections.Counter()\n          with open('/tmp/model-a-0912-decisions.jsonl') as f:\n              for line in f:\n                  row=json.loads(line)\n                  if row['split']=='TRAIN' and not row['is_hero']:\n                      counts[row['street'] if row['street']=='preflop' else 'postflop'] += 1\n          assert counts['preflop']==13774, counts\n          assert counts['postflop']==15962, counts\n          overlay=json.load(open('/tmp/model-a-0912-overlay.json'))\n          assert overlay['summary']['train_population_rows']==29736, overlay['summary']\n          print(json.dumps({'summary':summary,'train_population_rows':dict(counts)}, indent=2))\n          PY",
+            "      - name: Rebuild the 2026-09-12 preflop full-weight candidate\n        run: |\n          python3 tools/training/rebuild_preflop_increment_candidate.py \\\n            --baseline training/models/preflop_population_model_v5.json \\\n            --overlay /tmp/model-a-0912-overlay.json \\\n            --decisions /tmp/model-a-0912-decisions.jsonl \\\n            --date 2026-09-12 \\\n            --source-label selected_100_200.zip \\\n            --lineage-fingerprint 9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b \\\n            --out /tmp/model-a-0912-preflop-candidate.json\n          python3 - <<'PY'\n          import hashlib, json\n          base=json.load(open('training/models/preflop_population_model_v5.json'))\n          manifest=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json'))\n          obj=json.load(open('/tmp/model-a-0912-preflop-candidate.json'))\n          inc=obj['incremental_update']\n          assert inc['train_population_rows_applied']==9047, inc\n          assert inc['train_population_rows_skipped_no_exact_node']==4727, inc\n          assert inc['touched_nodes']==108, inc\n          assert inc['alpha_exact']==40, inc\n          assert obj.get('response_models')==base.get('response_models')\n          assert obj.get('revealed_policy_models')==base.get('revealed_policy_models')\n          assert obj.get('hand_grid')==base.get('hand_grid')\n          key=lambda n:n.get('canonical_key') or n.get('id')\n          bm={key(n):n for n in base['nodes']}; cm={key(n):n for n in obj['nodes']}\n          assert set(bm)==set(cm)\n          for k,b in bm.items():\n              c=cm[k]\n              assert c.get('context')==b.get('context'), k\n              assert c.get('continuous_population')==b.get('continuous_population'), k\n              for field in ('policy169_q_b64','response_model_key','continuous_adjustment','legal_actions'):\n                  assert (c.get('population_model') or {}).get(field)==(b.get('population_model') or {}).get(field), (k,field)\n          semantic={\n              'nodes':obj['nodes'],'coverage':obj['coverage'],'hand_grid':obj.get('hand_grid'),\n              'response_models':obj.get('response_models'),'revealed_policy_models':obj.get('revealed_policy_models'),\n          }\n          semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()\n          assert semantic_sha==manifest['preflop']['semantic_sha256'], (semantic_sha,manifest['preflop']['semantic_sha256'])\n          print(json.dumps({\n              'status':'REBUILT','byte_sha256':hashlib.sha256(open('/tmp/model-a-0912-preflop-candidate.json','rb').read()).hexdigest(),\n              'semantic_sha256':semantic_sha,\n              'historical_local_sha256_not_persisted':manifest['preflop']['historical_local_sha256_not_persisted'],\n              'incremental_update':inc},indent=2))\n          PY",
+            "      - name: Rebuild the 2026-09-12 postflop full-weight candidate\n        run: |\n          python3 tools/training/rebuild_postflop_increment_candidate.py \\\n            --baseline training/models/postflop_population_model_v5.json \\\n            --overlay /tmp/model-a-0912-overlay.json \\\n            --decisions /tmp/model-a-0912-decisions.jsonl \\\n            --date 2026-09-12 \\\n            --source-label selected_100_200.zip \\\n            --lineage-fingerprint 9eb753baed592b48d697ad6d00652612de6153e5033448f41983bccc9e31be2b \\\n            --model-version postflop_v6_20260912_full_weight_REJECTED \\\n            --out /tmp/model-a-0912-postflop-candidate.json\n          python3 - <<'PY'\n          import hashlib, json\n          p='/tmp/model-a-0912-postflop-candidate.json'\n          manifest=json.load(open('training/runs/20260912_population_increment_cycle/evaluation/model_a_candidate_rebuild_manifest.json'))\n          obj=json.load(open(p))\n          inc=obj['incremental_update']\n          assert inc['train_population_rows_applied']==15804, inc\n          assert inc['train_population_rows_skipped_no_exact_node']==158, inc\n          assert inc['touched_nodes']==1116, inc\n          semantic={\n              'nodes':obj['nodes'],\n              'coverage':obj['coverage'],\n              'response_models':obj.get('response_models'),\n              'combo_policy_models':obj.get('combo_policy_models'),\n              'hand_policy_prior':obj.get('hand_policy_prior'),\n          }\n          semantic_sha=hashlib.sha256(json.dumps(semantic,sort_keys=True,separators=(',',':')).encode()).hexdigest()\n          byte_sha=hashlib.sha256(open(p,'rb').read()).hexdigest()\n          assert semantic_sha==manifest['postflop']['semantic_sha256'], (semantic_sha,manifest['postflop']['semantic_sha256'])\n          assert byte_sha==manifest['postflop']['generated_byte_sha256'], (byte_sha,manifest['postflop']['generated_byte_sha256'])\n          print(json.dumps({'status':'REBUILT','byte_sha256':byte_sha,'semantic_sha256':semantic_sha,'historical_local_sha256_not_persisted':manifest['postflop']['historical_local_sha256_not_persisted'],'incremental_update':inc},indent=2))\n          PY"
+          ]
+        },
+        "command_fingerprint": "7f6429f8b9e38378433b901fcb544f2abd96aa1acc4fa0e0f6fc1b9da7b73d1f",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "integrity": {
+            "env": "    env:\n      PYTHONDONTWRITEBYTECODE: '1'",
+            "helper_calls": [],
+            "if": null,
+            "metadata_raw": "  integrity:\n    runs-on: ubuntu-latest\n    env:\n      PYTHONDONTWRITEBYTECODE: '1'",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": null,
+              "python": "implicit"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Persisted dataset integrity",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 1,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 1,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              "training/registry.json",
+              "training/datasets/**",
+              "training/runs/20260909_population_increment_v2/**",
+              "training/runs/20260912_population_increment_cycle/**",
+              "tools/datasets/**",
+              "tools/training/**",
+              "tests/datasets/**",
+              "tests/training/**",
+              ".github/workflows/dataset-integrity.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "main"
+            ],
+            "paths": [
+              "training/registry.json",
+              "training/datasets/**",
+              "training/runs/20260909_population_increment_v2/**",
+              "training/runs/20260912_population_increment_cycle/**",
+              "tools/datasets/**",
+              "tools/training/**",
+              "tests/datasets/**",
+              "tests/training/**",
+              ".github/workflows/dataset-integrity.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "path": ".github/workflows/dataset-integrity.yml"
+    },
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ],
+        "push": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "0bca5eb505c8fabbd4c8a076b3a3d93089a756635ce9aafd1f239da476b92c93",
+        "artifact_identities": {
+          "validate": []
+        },
+        "blob_sha": "c703b80e961084be5bc25bba5a4fe4c0e97381b9",
+        "business_steps": {
+          "validate": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Validate syntax and frozen protocol invariants\n        run: |\n          python3 -m py_compile \\\n            tools/training/validate_full_hand_protocol.py \\\n            tools/training/validate_preflop_strategy_benchmark.py \\\n            tests/training/test_full_hand_protocol.py \\\n            tests/training/test_preflop_strategy_benchmark.py\n          python3 tools/training/validate_full_hand_protocol.py\n          python3 tests/training/test_full_hand_protocol.py\n          python3 tools/training/validate_preflop_strategy_benchmark.py\n          python3 tests/training/test_preflop_strategy_benchmark.py",
+            "      - name: Preserve existing unified promotion-gate behavior\n        run: |\n          python3 tests/test_promotion_gates.py"
+          ]
+        },
+        "command_fingerprint": "6a02e2b4e714df5d9adb120b9db6cda8ba0e0cf03bc0894d3d0a2749f015ef16",
+        "concurrency": {},
+        "env": null,
+        "jobs": {
+          "validate": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify"
+            ],
+            "if": null,
+            "metadata_raw": "  validate:\n    runs-on: ubuntu-latest",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": null,
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Full-hand evaluation protocol",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "training/full_hand/**",
+              "training/populations/registry.json",
+              "training/datasets/NLHE_100-200/population_certification.json",
+              "training/PROMOTION_GATE_CONTRACT.json",
+              "tools/training/validate_full_hand_protocol.py",
+              "tools/training/validate_preflop_strategy_benchmark.py",
+              "tests/training/test_full_hand_protocol.py",
+              "tests/training/test_preflop_strategy_benchmark.py",
+              ".github/workflows/full-hand-protocol.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "main"
+            ],
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "training/full_hand/**",
+              "training/populations/registry.json",
+              "training/datasets/NLHE_100-200/population_certification.json",
+              "training/PROMOTION_GATE_CONTRACT.json",
+              "tools/training/validate_full_hand_protocol.py",
+              "tools/training/validate_preflop_strategy_benchmark.py",
+              "tests/training/test_full_hand_protocol.py",
+              "tests/training/test_preflop_strategy_benchmark.py",
+              ".github/workflows/full-hand-protocol.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_fingerprint": "0bca5eb505c8fabbd4c8a076b3a3d93089a756635ce9aafd1f239da476b92c93",
+        "artifact_identities": {
+          "validate": []
+        },
+        "blob_sha": "edb25e07c99582d123bb5ddeefdbab1328f6c350",
+        "business_steps": {
+          "validate": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Validate syntax and frozen protocol invariants\n        run: |\n          python3 -m py_compile \\\n            tools/training/validate_full_hand_protocol.py \\\n            tools/training/validate_preflop_strategy_benchmark.py \\\n            tests/training/test_full_hand_protocol.py \\\n            tests/training/test_preflop_strategy_benchmark.py\n          python3 tools/training/validate_full_hand_protocol.py\n          python3 tests/training/test_full_hand_protocol.py\n          python3 tools/training/validate_preflop_strategy_benchmark.py\n          python3 tests/training/test_preflop_strategy_benchmark.py",
+            "      - name: Preserve existing unified promotion-gate behavior\n        run: |\n          python3 tests/test_promotion_gates.py"
+          ]
+        },
+        "command_fingerprint": "6a02e2b4e714df5d9adb120b9db6cda8ba0e0cf03bc0894d3d0a2749f015ef16",
+        "concurrency": {},
+        "env": null,
+        "jobs": {
+          "validate": {
+            "env": null,
+            "helper_calls": [],
+            "if": null,
+            "metadata_raw": "  validate:\n    runs-on: ubuntu-latest",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": null,
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Full-hand evaluation protocol",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 1,
+        "python_floating_setups": 1,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              "training/full_hand/**",
+              "training/populations/registry.json",
+              "training/datasets/NLHE_100-200/population_certification.json",
+              "training/PROMOTION_GATE_CONTRACT.json",
+              "tools/training/validate_full_hand_protocol.py",
+              "tools/training/validate_preflop_strategy_benchmark.py",
+              "tests/training/test_full_hand_protocol.py",
+              "tests/training/test_preflop_strategy_benchmark.py",
+              ".github/workflows/full-hand-protocol.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "main"
+            ],
+            "paths": [
+              "training/full_hand/**",
+              "training/populations/registry.json",
+              "training/datasets/NLHE_100-200/population_certification.json",
+              "training/PROMOTION_GATE_CONTRACT.json",
+              "tools/training/validate_full_hand_protocol.py",
+              "tools/training/validate_preflop_strategy_benchmark.py",
+              "tests/training/test_full_hand_protocol.py",
+              "tests/training/test_preflop_strategy_benchmark.py",
+              ".github/workflows/full-hand-protocol.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "path": ".github/workflows/full-hand-protocol.yml"
+    },
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          },
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".node-version"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "9c3db7ed1cce8df12edec61d232adb8221842b83b727325cb8e3155d8cc00af8",
+        "artifact_identities": {
+          "contract": []
+        },
+        "blob_sha": "e141e4662212837c8abadb472132a4fa85d1effa",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Compile context, overlay and source-merge contracts\n        run: |\n          python3 -m py_compile \\\n            tools/preflop/policy_context.py \\\n            tools/simulation/hero_preflop_overlay.py \\\n            tools/training/enrich_hero_range_context.py \\\n            tools/training/materialize_hero_pfc_source.py \\\n            tools/training/merge_hero_policy_context_sources.py",
+            "      - name: Validate canonical exact context contract\n        run: PYTHONPATH=. python3 tests/preflop/test_context_contract.py",
+            "      - name: Validate bucketed policy context and overlay binding\n        run: |\n          PYTHONPATH=. python3 tests/simulation/test_preflop_policy_context.py\n          PYTHONPATH=. python3 tests/simulation/test_hero_preflop_overlay.py",
+            "      - name: Validate PFC source materialization and PFPC merge\n        run: PYTHONPATH=. python3 tests/training/test_hero_policy_context_sources.py",
+            "      - name: Validate Hero repository PFC identity\n        run: node tests/hero_ranges/test_hero_range_repository.mjs",
+            "      - name: Validate identity-only run enrichment\n        run: PYTHONPATH=. python3 tests/training/test_enrich_hero_range_context.py",
+            "      - name: Validate persisted #107 PFC handoff\n        run: PYTHONPATH=. python3 tests/training/test_persisted_hero_pfc_binding.py",
+            "      - name: Validate persisted PFC-keyed Hero repository\n        run: |\n          node - <<'JS'\n          const fs=require('fs');\n          const H=require('./site/hero-ranges.js');\n          const path='training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json';\n          const repo=JSON.parse(fs.readFileSync(path,'utf8'));\n          H.validateRepository(repo);\n          const stats=H.repositoryStats(repo);\n          if(stats.contexts!==1||stats.calculated_defined_hands!==40||stats.personal_defined_hands!==0){\n            throw new Error(JSON.stringify(stats));\n          }\n          const key=Object.keys(repo.contexts)[0];\n          if(!key.endsWith('|PFC_0e01f7d1a1da491b'))throw new Error(key);\n          console.log(stats);\n          JS"
+          ]
+        },
+        "command_fingerprint": "66e2fc50884193b33a44fa6465f1f16f53a237d608b2b1542394c1bb4ad2d4ce",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "hero-range-pfc-context-${{ github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify --require-node"
+            ],
+            "if": null,
+            "metadata_raw": "  contract:\n    runs-on: ubuntu-latest",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [
+              "      - uses: actions/setup-node@v4\n        with:\n          node-version-file: '.node-version'"
+            ],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": ".node-version",
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate Hero range PFC/PFPC context binding",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": null,
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              ".node-version",
+              "site/hero-ranges.js",
+              "tools/preflop/context_contract.py",
+              "tools/preflop/policy_context.py",
+              "tools/simulation/hero_preflop_overlay.py",
+              "tools/training/generate_hero_range_decisions.py",
+              "tools/training/enrich_hero_range_context.py",
+              "tools/training/materialize_hero_pfc_source.py",
+              "tools/training/merge_hero_policy_context_sources.py",
+              "tests/hero_ranges/test_hero_range_repository.mjs",
+              "tests/preflop/test_context_contract.py",
+              "tests/simulation/test_preflop_policy_context.py",
+              "tests/simulation/test_hero_preflop_overlay.py",
+              "tests/training/test_enrich_hero_range_context.py",
+              "tests/training/test_persisted_hero_pfc_binding.py",
+              "tests/training/test_hero_policy_context_sources.py",
+              "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/**",
+              ".github/workflows/hero-range-pfc-context.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "issue-107-canonical-pfc-generator-sol",
+              "issue-107-policy-context-sol",
+              "issue-107-unopened-multiposition-sol"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_fingerprint": "9c3db7ed1cce8df12edec61d232adb8221842b83b727325cb8e3155d8cc00af8",
+        "artifact_identities": {
+          "contract": []
+        },
+        "blob_sha": "5c18e3ac8375b039dff0b0f9be463de8aec78522",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Compile context, overlay and source-merge contracts\n        run: |\n          python3 -m py_compile \\\n            tools/preflop/policy_context.py \\\n            tools/simulation/hero_preflop_overlay.py \\\n            tools/training/enrich_hero_range_context.py \\\n            tools/training/materialize_hero_pfc_source.py \\\n            tools/training/merge_hero_policy_context_sources.py",
+            "      - name: Validate canonical exact context contract\n        run: PYTHONPATH=. python3 tests/preflop/test_context_contract.py",
+            "      - name: Validate bucketed policy context and overlay binding\n        run: |\n          PYTHONPATH=. python3 tests/simulation/test_preflop_policy_context.py\n          PYTHONPATH=. python3 tests/simulation/test_hero_preflop_overlay.py",
+            "      - name: Validate PFC source materialization and PFPC merge\n        run: PYTHONPATH=. python3 tests/training/test_hero_policy_context_sources.py",
+            "      - name: Validate Hero repository PFC identity\n        run: node tests/hero_ranges/test_hero_range_repository.mjs",
+            "      - name: Validate identity-only run enrichment\n        run: PYTHONPATH=. python3 tests/training/test_enrich_hero_range_context.py",
+            "      - name: Validate persisted #107 PFC handoff\n        run: PYTHONPATH=. python3 tests/training/test_persisted_hero_pfc_binding.py",
+            "      - name: Validate persisted PFC-keyed Hero repository\n        run: |\n          node - <<'JS'\n          const fs=require('fs');\n          const H=require('./site/hero-ranges.js');\n          const path='training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/HERO_RANGE_REPOSITORY_PFC.json';\n          const repo=JSON.parse(fs.readFileSync(path,'utf8'));\n          H.validateRepository(repo);\n          const stats=H.repositoryStats(repo);\n          if(stats.contexts!==1||stats.calculated_defined_hands!==40||stats.personal_defined_hands!==0){\n            throw new Error(JSON.stringify(stats));\n          }\n          const key=Object.keys(repo.contexts)[0];\n          if(!key.endsWith('|PFC_0e01f7d1a1da491b'))throw new Error(key);\n          console.log(stats);\n          JS"
+          ]
+        },
+        "command_fingerprint": "66e2fc50884193b33a44fa6465f1f16f53a237d608b2b1542394c1bb4ad2d4ce",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "hero-range-pfc-context-${{ github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [],
+            "if": null,
+            "metadata_raw": "  contract:\n    runs-on: ubuntu-latest",
+            "needs": null,
+            "node_floating": 1,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": "implicit",
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate Hero range PFC/PFPC context binding",
+        "node_floating": 1,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 1,
+        "permissions": null,
+        "pr_executable_write_jobs": [],
+        "python_floating": 1,
+        "python_floating_setups": 1,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              "site/hero-ranges.js",
+              "tools/preflop/context_contract.py",
+              "tools/preflop/policy_context.py",
+              "tools/simulation/hero_preflop_overlay.py",
+              "tools/training/generate_hero_range_decisions.py",
+              "tools/training/enrich_hero_range_context.py",
+              "tools/training/materialize_hero_pfc_source.py",
+              "tools/training/merge_hero_policy_context_sources.py",
+              "tests/hero_ranges/test_hero_range_repository.mjs",
+              "tests/preflop/test_context_contract.py",
+              "tests/simulation/test_preflop_policy_context.py",
+              "tests/simulation/test_hero_preflop_overlay.py",
+              "tests/training/test_enrich_hero_range_context.py",
+              "tests/training/test_persisted_hero_pfc_binding.py",
+              "tests/training/test_hero_policy_context_sources.py",
+              "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/**",
+              ".github/workflows/hero-range-pfc-context.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "issue-107-canonical-pfc-generator-sol",
+              "issue-107-policy-context-sol",
+              "issue-107-unopened-multiposition-sol"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "path": ".github/workflows/hero-range-pfc-context.yml"
+    },
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          },
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".node-version"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "fb0eceaaefeb7a0d53ced2f47e40e14c945c675ec72c21244483e43a7cbf9317",
+        "artifact_identities": {
+          "preflop-grid": []
+        },
+        "blob_sha": "ae18388ae29fa786b8ae9a6b0fa773ed5c2fca53",
+        "business_steps": {
+          "preflop-grid": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Syntax\n        run: |\n          python3 -m py_compile tools/simulation/preflop_grid_evaluator.py tests/simulation/test_preflop_grid_evaluator.py\n          node --check src/preflop/decision.js",
+            "      - name: Preflop grid evaluator contract\n        run: PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py",
+            "      - name: Preserve shared rules core\n        run: PYTHONPATH=. python3 tests/simulation/test_game_core.py",
+            "      - name: Preserve canonical decision contract\n        run: node tests/preflop/test_decision_contract.js"
+          ]
+        },
+        "command_fingerprint": "fbdc8ee1b42e8c3040ce04645fbc226ae159a27a9bdbebaa5c34580fa96f65a0",
+        "concurrency": {},
+        "env": null,
+        "jobs": {
+          "preflop-grid": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify --require-node"
+            ],
+            "if": null,
+            "metadata_raw": "  preflop-grid:\n    runs-on: ubuntu-24.04",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [
+              "      - uses: actions/setup-node@v4\n        with:\n          node-version-file: '.node-version'"
+            ],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": ".node-version",
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate preflop grid evaluator",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              ".node-version",
+              "tools/simulation/preflop_grid_evaluator.py",
+              "tools/simulation/game_core.py",
+              "src/preflop/decision.js",
+              "tests/simulation/test_preflop_grid_evaluator.py",
+              "tests/simulation/test_game_core.py",
+              "tests/preflop/test_decision_contract.js",
+              "docs/preflop-grid-evaluator.md",
+              ".github/workflows/preflop-grid-evaluator.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_fingerprint": "fb0eceaaefeb7a0d53ced2f47e40e14c945c675ec72c21244483e43a7cbf9317",
+        "artifact_identities": {
+          "preflop-grid": []
+        },
+        "blob_sha": "91d6dff83f734659d530cf9d0df096c59ce2c5b4",
+        "business_steps": {
+          "preflop-grid": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Syntax\n        run: |\n          python3 -m py_compile tools/simulation/preflop_grid_evaluator.py tests/simulation/test_preflop_grid_evaluator.py\n          node --check src/preflop/decision.js",
+            "      - name: Preflop grid evaluator contract\n        run: PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py",
+            "      - name: Preserve shared rules core\n        run: PYTHONPATH=. python3 tests/simulation/test_game_core.py",
+            "      - name: Preserve canonical decision contract\n        run: node tests/preflop/test_decision_contract.js"
+          ]
+        },
+        "command_fingerprint": "fbdc8ee1b42e8c3040ce04645fbc226ae159a27a9bdbebaa5c34580fa96f65a0",
+        "concurrency": {},
+        "env": null,
+        "jobs": {
+          "preflop-grid": {
+            "env": null,
+            "helper_calls": [],
+            "if": null,
+            "metadata_raw": "  preflop-grid:\n    runs-on: ubuntu-24.04",
+            "needs": null,
+            "node_floating": 1,
+            "node_setup": [
+              "      - uses: actions/setup-node@v4\n        with:\n          node-version: '22'"
+            ],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": "22",
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate preflop grid evaluator",
+        "node_floating": 1,
+        "node_floating_setups": 1,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 1,
+        "python_floating_setups": 1,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              "tools/simulation/preflop_grid_evaluator.py",
+              "tools/simulation/game_core.py",
+              "src/preflop/decision.js",
+              "tests/simulation/test_preflop_grid_evaluator.py",
+              "tests/simulation/test_game_core.py",
+              "tests/preflop/test_decision_contract.js",
+              "docs/preflop-grid-evaluator.md",
+              ".github/workflows/preflop-grid-evaluator.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "path": ".github/workflows/preflop-grid-evaluator.yml"
+    },
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "9c3db7ed1cce8df12edec61d232adb8221842b83b727325cb8e3155d8cc00af8",
+        "artifact_identities": {
+          "contract": []
+        },
+        "blob_sha": "ac88ac3e3ea20b6036fcf5e639aafdf8bdc3896f",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Compile candidate path\n        run: |\n          python3 -m py_compile \\\n            tools/training/preflop_policy169.py \\\n            tools/training/rebuild_preflop_increment_candidate.py \\\n            tools/training/build_certified_population_decisions.py \\\n            tools/training/evaluate_preflop_policy169_candidate.py \\\n            tests/training/test_preflop_policy169.py \\\n            tests/training/test_preflop_policy169_rebuild.py \\\n            tests/training/test_evaluate_preflop_policy169_candidate.py",
+            "      - name: Policy representation contract\n        run: python3 tests/training/test_preflop_policy169.py",
+            "      - name: Rebuild/runtime consumption contract\n        run: python3 tests/training/test_preflop_policy169_rebuild.py",
+            "      - name: Frozen VALIDATION and protected TEST contract\n        run: python3 tests/training/test_evaluate_preflop_policy169_candidate.py"
+          ]
+        },
+        "command_fingerprint": "05375012529ed9634da000d6d099649d7c073ac65f635c4bfe0bb25f5e7a1fc1",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "preflop-policy169-${{ github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify"
+            ],
+            "if": null,
+            "metadata_raw": "  contract:\n    runs-on: ubuntu-latest",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": null,
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate preflop policy169 refit",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "tools/training/preflop_policy169.py",
+              "tools/training/rebuild_preflop_increment_candidate.py",
+              "tools/training/build_certified_population_decisions.py",
+              "tools/training/evaluate_preflop_policy169_candidate.py",
+              "training/runs/20260915_preflop_policy169_refit/PROTOCOL.json",
+              "tests/training/test_preflop_policy169.py",
+              "tests/training/test_preflop_policy169_rebuild.py",
+              "tests/training/test_evaluate_preflop_policy169_candidate.py",
+              ".github/workflows/preflop-policy169.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_fingerprint": "9c3db7ed1cce8df12edec61d232adb8221842b83b727325cb8e3155d8cc00af8",
+        "artifact_identities": {
+          "contract": []
+        },
+        "blob_sha": "ee7e8f3910d29d7e9c00d1bec339f335762715e6",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Compile candidate path\n        run: |\n          python3 -m py_compile \\\n            tools/training/preflop_policy169.py \\\n            tools/training/rebuild_preflop_increment_candidate.py \\\n            tools/training/build_certified_population_decisions.py \\\n            tools/training/evaluate_preflop_policy169_candidate.py \\\n            tests/training/test_preflop_policy169.py \\\n            tests/training/test_preflop_policy169_rebuild.py \\\n            tests/training/test_evaluate_preflop_policy169_candidate.py",
+            "      - name: Policy representation contract\n        run: python3 tests/training/test_preflop_policy169.py",
+            "      - name: Rebuild/runtime consumption contract\n        run: python3 tests/training/test_preflop_policy169_rebuild.py",
+            "      - name: Frozen VALIDATION and protected TEST contract\n        run: python3 tests/training/test_evaluate_preflop_policy169_candidate.py"
+          ]
+        },
+        "command_fingerprint": "05375012529ed9634da000d6d099649d7c073ac65f635c4bfe0bb25f5e7a1fc1",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "preflop-policy169-${{ github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [],
+            "if": null,
+            "metadata_raw": "  contract:\n    runs-on: ubuntu-latest",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-latest",
+            "runtime_versions": {
+              "node": null,
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate preflop policy169 refit",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 1,
+        "python_floating_setups": 1,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              "tools/training/preflop_policy169.py",
+              "tools/training/rebuild_preflop_increment_candidate.py",
+              "tools/training/build_certified_population_decisions.py",
+              "tools/training/evaluate_preflop_policy169_candidate.py",
+              "training/runs/20260915_preflop_policy169_refit/PROTOCOL.json",
+              "tests/training/test_preflop_policy169.py",
+              "tests/training/test_preflop_policy169_rebuild.py",
+              "tests/training/test_evaluate_preflop_policy169_candidate.py",
+              ".github/workflows/preflop-policy169.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "write_jobs": []
+      },
+      "path": ".github/workflows/preflop-policy169.yml"
+    },
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "9c3db7ed1cce8df12edec61d232adb8221842b83b727325cb8e3155d8cc00af8",
+        "artifact_identities": {
+          "contract": []
+        },
+        "blob_sha": "033ade3b219dc22b6bb89b7cc132ccbc0d9bcc2e",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Compile handoff validator and builder\n        run: |\n          python3 -m py_compile \\\n            tools/validate_release_handoff.py \\\n            tools/training/build_release_handoff.py \\\n            tools/training/build_promote_release_handoff.py \\\n            tools/training/finalize_cycle_release.py \\\n            tools/training/verify_live_release.py \\\n            tests/test_release_handoff.py \\\n            tests/training/test_build_release_handoff.py \\\n            tests/training/test_build_promote_release_handoff.py \\\n            tests/training/test_finalize_cycle_release.py \\\n            tests/training/test_verify_live_release.py",
+            "      - name: Smoke standalone handoff builder CLIs\n        run: |\n          python3 tools/training/build_release_handoff.py --help >/dev/null\n          python3 tools/training/build_promote_release_handoff.py --help >/dev/null\n          python3 tools/training/finalize_cycle_release.py --help >/dev/null",
+            "      - name: Exercise release state machine and no-publication handoff builder\n        run: |\n          PYTHONPATH=. python3 tests/test_release_handoff.py\n          PYTHONPATH=. python3 tests/training/test_build_release_handoff.py\n          PYTHONPATH=. python3 tests/training/test_build_promote_release_handoff.py\n          PYTHONPATH=. python3 tests/training/test_finalize_cycle_release.py\n          PYTHONPATH=. python3 tests/training/test_verify_live_release.py",
+            "      - name: Prove contract workflow has no publication side effect\n        run: |\n          python3 - <<'PY'\n          from pathlib import Path\n          text=Path('.github/workflows/release-handoff-contract.yml').read_text()\n          marker='      - name: Prove contract workflow has no publication side effect'\n          before=text.split(marker,1)[0]\n          forbidden=['wrangler deploy','git push','gh release create','cloudflare']\n          found=[token for token in forbidden if token.lower() in before.lower()]\n          assert not found, found\n          print('release-handoff contract CI is publication-free')\n          PY"
+          ]
+        },
+        "command_fingerprint": "7342eb66c3178a787281838d57ba05cad8130f28d78771b868b7fd0fea50b30b",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "release-handoff-contract-${{ github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify"
+            ],
+            "if": null,
+            "metadata_raw": "  contract:\n    runs-on: ubuntu-24.04",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": null,
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate release handoff contract",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              "training/automation/RELEASE_HANDOFF_CONTRACT.json",
+              "tools/validate_release_handoff.py",
+              "tools/training/build_release_handoff.py",
+              "tools/training/build_promote_release_handoff.py",
+              "tools/training/finalize_cycle_release.py",
+              "tools/training/verify_live_release.py",
+              "tests/test_release_handoff.py",
+              "tests/training/test_build_release_handoff.py",
+              "tests/training/test_build_promote_release_handoff.py",
+              "tests/training/test_finalize_cycle_release.py",
+              "tests/training/test_verify_live_release.py",
+              ".github/workflows/release-handoff-contract.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "issue-113-release-handoff-contract-sol",
+              "issue-113-no-publication-handoff-sol"
+            ]
+          }
+        },
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_fingerprint": "9c3db7ed1cce8df12edec61d232adb8221842b83b727325cb8e3155d8cc00af8",
+        "artifact_identities": {
+          "contract": []
+        },
+        "blob_sha": "3be2598ccfc2fc2e85da162f572241fff8aa649c",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Compile handoff validator and builder\n        run: |\n          python3 -m py_compile \\\n            tools/validate_release_handoff.py \\\n            tools/training/build_release_handoff.py \\\n            tools/training/build_promote_release_handoff.py \\\n            tools/training/finalize_cycle_release.py \\\n            tools/training/verify_live_release.py \\\n            tests/test_release_handoff.py \\\n            tests/training/test_build_release_handoff.py \\\n            tests/training/test_build_promote_release_handoff.py \\\n            tests/training/test_finalize_cycle_release.py \\\n            tests/training/test_verify_live_release.py",
+            "      - name: Smoke standalone handoff builder CLIs\n        run: |\n          python3 tools/training/build_release_handoff.py --help >/dev/null\n          python3 tools/training/build_promote_release_handoff.py --help >/dev/null\n          python3 tools/training/finalize_cycle_release.py --help >/dev/null",
+            "      - name: Exercise release state machine and no-publication handoff builder\n        run: |\n          PYTHONPATH=. python3 tests/test_release_handoff.py\n          PYTHONPATH=. python3 tests/training/test_build_release_handoff.py\n          PYTHONPATH=. python3 tests/training/test_build_promote_release_handoff.py\n          PYTHONPATH=. python3 tests/training/test_finalize_cycle_release.py\n          PYTHONPATH=. python3 tests/training/test_verify_live_release.py",
+            "      - name: Prove contract workflow has no publication side effect\n        run: |\n          python3 - <<'PY'\n          from pathlib import Path\n          text=Path('.github/workflows/release-handoff-contract.yml').read_text()\n          marker='      - name: Prove contract workflow has no publication side effect'\n          before=text.split(marker,1)[0]\n          forbidden=['wrangler deploy','git push','gh release create','cloudflare']\n          found=[token for token in forbidden if token.lower() in before.lower()]\n          assert not found, found\n          print('release-handoff contract CI is publication-free')\n          PY"
+          ]
+        },
+        "command_fingerprint": "7342eb66c3178a787281838d57ba05cad8130f28d78771b868b7fd0fea50b30b",
+        "concurrency": {
+          "cancel_in_progress": true,
+          "group": "release-handoff-contract-${{ github.ref }}"
+        },
+        "env": null,
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [],
+            "if": null,
+            "metadata_raw": "  contract:\n    runs-on: ubuntu-24.04",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": null,
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          }
+        },
+        "name": "name: Validate release handoff contract",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 1,
+        "python_floating_setups": 1,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              "training/automation/RELEASE_HANDOFF_CONTRACT.json",
+              "tools/validate_release_handoff.py",
+              "tools/training/build_release_handoff.py",
+              "tools/training/build_promote_release_handoff.py",
+              "tools/training/finalize_cycle_release.py",
+              "tools/training/verify_live_release.py",
+              "tests/test_release_handoff.py",
+              "tests/training/test_build_release_handoff.py",
+              "tests/training/test_build_promote_release_handoff.py",
+              "tests/training/test_finalize_cycle_release.py",
+              "tests/training/test_verify_live_release.py",
+              ".github/workflows/release-handoff-contract.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "issue-113-release-handoff-contract-sol",
+              "issue-113-no-publication-handoff-sol"
+            ]
+          }
+        },
+        "write_jobs": []
+      },
+      "path": ".github/workflows/release-handoff-contract.yml"
+    },
+    {
+      "added_repro_paths": {
+        "pull_request": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ],
+        "push": [
+          {
+            "justification": "Exact runtime version selector",
+            "path": ".python-version"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_ci_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment_identity.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_container.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_hardening.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "tools/repro_environment.py"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/environment.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "requirements.lock.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "package-lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/os-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/container-base.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/Dockerfile.science"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.apt.txt"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/apt-snapshot.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/system-packages.resolution.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/browser-identity.lock.json"
+          },
+          {
+            "justification": "Transitive verify/identity source; no dependency installation",
+            "path": "reproducibility/ubuntu-snapshot.sources"
+          }
+        ]
+      },
+      "after": {
+        "artifact_fingerprint": "81d4d309df00116c78acdde4d9b40a8716c5e8860a6846139b72e3499ac5b0b5",
+        "artifact_identities": {
+          "contract": [],
+          "prove-no-publication": []
+        },
+        "blob_sha": "7dae778efb955de87aa7edeb8f36c528375fff48",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Validate release handoff tooling\n        run: |\n          set -euo pipefail\n          python3 tools/training/finalize_cycle_release.py --help >/dev/null\n          python3 tools/validate_release_handoff.py --help >/dev/null\n          PYTHONPATH=. python3 tests/training/test_finalize_cycle_release.py",
+            "      - name: Prove PR path has no publication side effect\n        run: |\n          set -euo pipefail\n          python3 - <<'PY'\n          import os\n          assert os.environ['GITHUB_EVENT_NAME']=='pull_request'\n          print('PR path executes contract tests only')\n          PY"
+          ],
+          "prove-no-publication": [
+            "      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0",
+            "      - name: Prove current target population has no pending snapshot\n        run: |\n          set -euo pipefail\n          mkdir -p /tmp/issue113\n          PYTHONPATH=. python3 tools/training/plan_snapshot_cycle.py \\\n            --population \"$POPULATION_ID\" \\\n            > /tmp/issue113/DECISION.json\n          python3 - <<'PY'\n          import json\n          import os\n          from pathlib import Path\n\n          decision=json.loads(Path('/tmp/issue113/DECISION.json').read_text(encoding='utf-8'))\n          assert decision['status']=='NO_PENDING_SNAPSHOT', decision\n          assert decision['population_id']==os.environ['POPULATION_ID']\n          assert decision['dataset']==os.environ['POPULATION_ID']\n          print(json.dumps(decision,indent=2,sort_keys=True))\n          PY",
+            "      - name: Route actual NO_PENDING_SNAPSHOT to verified no-publication handoff\n        run: |\n          set -euo pipefail\n          PYTHONPATH=. python3 tools/training/finalize_cycle_release.py \\\n            --population-id \"$POPULATION_ID\" \\\n            --cycle-run-id \"$RESULT_RUN_ID\" \\\n            --cycle-decision /tmp/issue113/DECISION.json \\\n            --snapshot-sha256 \"$BASELINE_ARCHIVE_SHA256\" \\\n            --source-commit-sha \"$GITHUB_SHA\" \\\n            --reason 'No pending snapshot exists for the certified target population; production remains unchanged.' \\\n            --out /tmp/issue113/RELEASE_HANDOFF.json\n          python3 tools/validate_release_handoff.py \\\n            --handoff /tmp/issue113/RELEASE_HANDOFF.json \\\n            > /tmp/issue113/VALIDATION.json\n          python3 - <<'PY'\n          import json\n          from pathlib import Path\n\n          handoff=json.loads(Path('/tmp/issue113/RELEASE_HANDOFF.json').read_text(encoding='utf-8'))\n          validation=json.loads(Path('/tmp/issue113/VALIDATION.json').read_text(encoding='utf-8'))\n          assert handoff['outcome']=='NO_OP'\n          assert handoff['state']=='VERIFIED_NO_PUBLICATION'\n          assert handoff['promotion_authorized'] is False\n          assert handoff['deployment']=={'attempted':False}\n          assert handoff['production_after']==handoff['production_before']\n          assert validation['status']=='PASS'\n          assert validation['delivered'] is True\n          print(json.dumps(handoff,indent=2,sort_keys=True))\n          PY",
+            "      - name: Persist immutable proof on a dedicated evidence branch\n        run: |\n          set -euo pipefail\n          python3 - <<'PY'\n          import hashlib\n          import json\n          import os\n          import shutil\n          from pathlib import Path\n\n          src=Path('/tmp/issue113')\n          dest=Path('training/runs')/os.environ['RESULT_RUN_ID']\n          assert not dest.exists(), f'immutable result already exists: {dest}'\n          dest.mkdir(parents=True)\n          for name in ('DECISION.json','RELEASE_HANDOFF.json','VALIDATION.json'):\n              shutil.copy2(src/name,dest/name)\n\n          def sha(path):\n              return hashlib.sha256(Path(path).read_bytes()).hexdigest()\n\n          handoff=json.loads((dest/'RELEASE_HANDOFF.json').read_text(encoding='utf-8'))\n          result={\n              'schema':'poker-release-no-pending-proof/v1',\n              'issue':113,\n              'run_id':os.environ['RESULT_RUN_ID'],\n              'population_id':os.environ['POPULATION_ID'],\n              'source_commit_sha':os.environ['GITHUB_SHA'],\n              'decision':'NO_OP',\n              'state':'VERIFIED_NO_PUBLICATION',\n              'delivered':True,\n              'promotion_authorized':False,\n              'deployment_attempted':False,\n              'snapshot_sha256':handoff['snapshot_sha256'],\n              'production_before':handoff['production_before'],\n              'production_after':handoff['production_after'],\n              'artifact_sha256':{\n                  'DECISION.json':sha(dest/'DECISION.json'),\n                  'RELEASE_HANDOFF.json':sha(dest/'RELEASE_HANDOFF.json'),\n                  'VALIDATION.json':sha(dest/'VALIDATION.json'),\n              },\n          }\n          assert result['production_before']==result['production_after']\n          (dest/'RESULT.json').write_text(\n              json.dumps(result,indent=2,sort_keys=True)+'\\n',\n              encoding='utf-8',\n          )\n          print(json.dumps(result,indent=2,sort_keys=True))\n          PY\n          git config user.name 'poker-engine evidence bot'\n          git config user.email 'evidence-bot@users.noreply.github.com'\n          if git ls-remote --exit-code --heads origin \"$RESULT_BRANCH\" >/dev/null 2>&1; then\n            echo \"Immutable #113 evidence branch already exists; refusing overwrite.\"\n            exit 1\n          fi\n          git switch -c \"$RESULT_BRANCH\"\n          git add \"training/runs/$RESULT_RUN_ID\"\n          test -n \"$(git status --porcelain)\"\n          git commit -m \"Persist issue #113 no-pending release proof\"\n          git push --set-upstream origin \"$RESULT_BRANCH\""
+          ]
+        },
+        "command_fingerprint": "646bd2e61ae35bb2244f46c46b36fde32c7b802bef2047a7f9f73b02c6fd9e8f",
+        "concurrency": {
+          "cancel_in_progress": false,
+          "group": "release-no-pending-snapshot-proof-20260918"
+        },
+        "env": "env:\n  POPULATION_ID: pokerstars_nlhe_100-200_zoom_play_6max_v1\n  BASELINE_ARCHIVE_SHA256: 2cff4b858a9f4597ee1296c5a7ca7b9432cb38b081458f609097fd319f84632e\n  RESULT_RUN_ID: 20260918_release_no_pending_snapshot_v1\n  RESULT_BRANCH: evidence/issue-113-no-pending-release-20260918",
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify"
+            ],
+            "if": "    if: github.event_name == 'pull_request'",
+            "metadata_raw": "  contract:\n    if: github.event_name == 'pull_request'\n    runs-on: ubuntu-24.04",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": null,
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          },
+          "prove-no-publication": {
+            "env": null,
+            "helper_calls": [
+              "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify"
+            ],
+            "if": "    if: >-\n      github.event_name == 'push' &&\n      github.ref_name == 'execute/issue-113-no-pending-release-20260918'",
+            "metadata_raw": "  prove-no-publication:\n    if: >-\n      github.event_name == 'push' &&\n      github.ref_name == 'execute/issue-113-no-pending-release-20260918'\n    permissions:\n      contents: write\n    runs-on: ubuntu-24.04\n    timeout-minutes: 20",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": "    permissions:\n      contents: write",
+            "python_floating": 0,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": null,
+              "python": ".python-version"
+            },
+            "strategy": null,
+            "timeout-minutes": "    timeout-minutes: 20"
+          }
+        },
+        "name": "name: Prove no-pending-snapshot release handoff",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 0,
+        "python_floating_setups": 0,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              ".github/workflows/release-no-pending-snapshot-proof.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "execute/issue-113-no-pending-release-20260918"
+            ],
+            "paths": [
+              ".python-version",
+              "tools/repro_ci_environment.py",
+              "tools/repro_environment_identity.py",
+              "tools/repro_container.py",
+              "tools/repro_hardening.py",
+              "tools/repro_environment.py",
+              "reproducibility/environment.lock.json",
+              "requirements.lock.txt",
+              "package-lock.json",
+              "reproducibility/os-base.lock.json",
+              "reproducibility/container-base.lock.json",
+              "reproducibility/Dockerfile.science",
+              "reproducibility/system-packages.apt.txt",
+              "reproducibility/apt-snapshot.lock.json",
+              "reproducibility/system-packages.resolution.lock.json",
+              "reproducibility/browser-identity.lock.json",
+              "reproducibility/ubuntu-snapshot.sources",
+              ".github/triggers/issue-113-no-pending-release-20260918"
+            ]
+          }
+        },
+        "write_jobs": [
+          "prove-no-publication"
+        ]
+      },
+      "before": {
+        "artifact_fingerprint": "81d4d309df00116c78acdde4d9b40a8716c5e8860a6846139b72e3499ac5b0b5",
+        "artifact_identities": {
+          "contract": [],
+          "prove-no-publication": []
+        },
+        "blob_sha": "715d391e3e811dc92a8baee649f0f8e64dfe935c",
+        "business_steps": {
+          "contract": [
+            "      - uses: actions/checkout@v4",
+            "      - name: Validate release handoff tooling\n        run: |\n          set -euo pipefail\n          python3 tools/training/finalize_cycle_release.py --help >/dev/null\n          python3 tools/validate_release_handoff.py --help >/dev/null\n          PYTHONPATH=. python3 tests/training/test_finalize_cycle_release.py",
+            "      - name: Prove PR path has no publication side effect\n        run: |\n          set -euo pipefail\n          python3 - <<'PY'\n          import os\n          assert os.environ['GITHUB_EVENT_NAME']=='pull_request'\n          print('PR path executes contract tests only')\n          PY"
+          ],
+          "prove-no-publication": [
+            "      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0",
+            "      - name: Prove current target population has no pending snapshot\n        run: |\n          set -euo pipefail\n          mkdir -p /tmp/issue113\n          PYTHONPATH=. python3 tools/training/plan_snapshot_cycle.py \\\n            --population \"$POPULATION_ID\" \\\n            > /tmp/issue113/DECISION.json\n          python3 - <<'PY'\n          import json\n          import os\n          from pathlib import Path\n\n          decision=json.loads(Path('/tmp/issue113/DECISION.json').read_text(encoding='utf-8'))\n          assert decision['status']=='NO_PENDING_SNAPSHOT', decision\n          assert decision['population_id']==os.environ['POPULATION_ID']\n          assert decision['dataset']==os.environ['POPULATION_ID']\n          print(json.dumps(decision,indent=2,sort_keys=True))\n          PY",
+            "      - name: Route actual NO_PENDING_SNAPSHOT to verified no-publication handoff\n        run: |\n          set -euo pipefail\n          PYTHONPATH=. python3 tools/training/finalize_cycle_release.py \\\n            --population-id \"$POPULATION_ID\" \\\n            --cycle-run-id \"$RESULT_RUN_ID\" \\\n            --cycle-decision /tmp/issue113/DECISION.json \\\n            --snapshot-sha256 \"$BASELINE_ARCHIVE_SHA256\" \\\n            --source-commit-sha \"$GITHUB_SHA\" \\\n            --reason 'No pending snapshot exists for the certified target population; production remains unchanged.' \\\n            --out /tmp/issue113/RELEASE_HANDOFF.json\n          python3 tools/validate_release_handoff.py \\\n            --handoff /tmp/issue113/RELEASE_HANDOFF.json \\\n            > /tmp/issue113/VALIDATION.json\n          python3 - <<'PY'\n          import json\n          from pathlib import Path\n\n          handoff=json.loads(Path('/tmp/issue113/RELEASE_HANDOFF.json').read_text(encoding='utf-8'))\n          validation=json.loads(Path('/tmp/issue113/VALIDATION.json').read_text(encoding='utf-8'))\n          assert handoff['outcome']=='NO_OP'\n          assert handoff['state']=='VERIFIED_NO_PUBLICATION'\n          assert handoff['promotion_authorized'] is False\n          assert handoff['deployment']=={'attempted':False}\n          assert handoff['production_after']==handoff['production_before']\n          assert validation['status']=='PASS'\n          assert validation['delivered'] is True\n          print(json.dumps(handoff,indent=2,sort_keys=True))\n          PY",
+            "      - name: Persist immutable proof on a dedicated evidence branch\n        run: |\n          set -euo pipefail\n          python3 - <<'PY'\n          import hashlib\n          import json\n          import os\n          import shutil\n          from pathlib import Path\n\n          src=Path('/tmp/issue113')\n          dest=Path('training/runs')/os.environ['RESULT_RUN_ID']\n          assert not dest.exists(), f'immutable result already exists: {dest}'\n          dest.mkdir(parents=True)\n          for name in ('DECISION.json','RELEASE_HANDOFF.json','VALIDATION.json'):\n              shutil.copy2(src/name,dest/name)\n\n          def sha(path):\n              return hashlib.sha256(Path(path).read_bytes()).hexdigest()\n\n          handoff=json.loads((dest/'RELEASE_HANDOFF.json').read_text(encoding='utf-8'))\n          result={\n              'schema':'poker-release-no-pending-proof/v1',\n              'issue':113,\n              'run_id':os.environ['RESULT_RUN_ID'],\n              'population_id':os.environ['POPULATION_ID'],\n              'source_commit_sha':os.environ['GITHUB_SHA'],\n              'decision':'NO_OP',\n              'state':'VERIFIED_NO_PUBLICATION',\n              'delivered':True,\n              'promotion_authorized':False,\n              'deployment_attempted':False,\n              'snapshot_sha256':handoff['snapshot_sha256'],\n              'production_before':handoff['production_before'],\n              'production_after':handoff['production_after'],\n              'artifact_sha256':{\n                  'DECISION.json':sha(dest/'DECISION.json'),\n                  'RELEASE_HANDOFF.json':sha(dest/'RELEASE_HANDOFF.json'),\n                  'VALIDATION.json':sha(dest/'VALIDATION.json'),\n              },\n          }\n          assert result['production_before']==result['production_after']\n          (dest/'RESULT.json').write_text(\n              json.dumps(result,indent=2,sort_keys=True)+'\\n',\n              encoding='utf-8',\n          )\n          print(json.dumps(result,indent=2,sort_keys=True))\n          PY\n          git config user.name 'poker-engine evidence bot'\n          git config user.email 'evidence-bot@users.noreply.github.com'\n          if git ls-remote --exit-code --heads origin \"$RESULT_BRANCH\" >/dev/null 2>&1; then\n            echo \"Immutable #113 evidence branch already exists; refusing overwrite.\"\n            exit 1\n          fi\n          git switch -c \"$RESULT_BRANCH\"\n          git add \"training/runs/$RESULT_RUN_ID\"\n          test -n \"$(git status --porcelain)\"\n          git commit -m \"Persist issue #113 no-pending release proof\"\n          git push --set-upstream origin \"$RESULT_BRANCH\""
+          ]
+        },
+        "command_fingerprint": "646bd2e61ae35bb2244f46c46b36fde32c7b802bef2047a7f9f73b02c6fd9e8f",
+        "concurrency": {
+          "cancel_in_progress": false,
+          "group": "release-no-pending-snapshot-proof-20260918"
+        },
+        "env": "env:\n  POPULATION_ID: pokerstars_nlhe_100-200_zoom_play_6max_v1\n  BASELINE_ARCHIVE_SHA256: 2cff4b858a9f4597ee1296c5a7ca7b9432cb38b081458f609097fd319f84632e\n  RESULT_RUN_ID: 20260918_release_no_pending_snapshot_v1\n  RESULT_BRANCH: evidence/issue-113-no-pending-release-20260918",
+        "jobs": {
+          "contract": {
+            "env": null,
+            "helper_calls": [],
+            "if": "    if: github.event_name == 'pull_request'",
+            "metadata_raw": "  contract:\n    if: github.event_name == 'pull_request'\n    runs-on: ubuntu-24.04",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": null,
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": null,
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": null
+          },
+          "prove-no-publication": {
+            "env": null,
+            "helper_calls": [],
+            "if": "    if: >-\n      github.event_name == 'push' &&\n      github.ref_name == 'execute/issue-113-no-pending-release-20260918'",
+            "metadata_raw": "  prove-no-publication:\n    if: >-\n      github.event_name == 'push' &&\n      github.ref_name == 'execute/issue-113-no-pending-release-20260918'\n    permissions:\n      contents: write\n    runs-on: ubuntu-24.04\n    timeout-minutes: 20",
+            "needs": null,
+            "node_floating": 0,
+            "node_setup": [],
+            "permissions": "    permissions:\n      contents: write",
+            "python_floating": 1,
+            "python_setup": [
+              "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'"
+            ],
+            "runs-on": "    runs-on: ubuntu-24.04",
+            "runtime_versions": {
+              "node": null,
+              "python": "3.11"
+            },
+            "strategy": null,
+            "timeout-minutes": "    timeout-minutes: 20"
+          }
+        },
+        "name": "name: Prove no-pending-snapshot release handoff",
+        "node_floating": 0,
+        "node_floating_setups": 0,
+        "node_implicit_jobs": 0,
+        "permissions": "permissions:\n  contents: read",
+        "pr_executable_write_jobs": [],
+        "python_floating": 2,
+        "python_floating_setups": 2,
+        "python_implicit_jobs": 0,
+        "triggers": {
+          "pull_request": {
+            "paths": [
+              ".github/workflows/release-no-pending-snapshot-proof.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "execute/issue-113-no-pending-release-20260918"
+            ],
+            "paths": [
+              ".github/triggers/issue-113-no-pending-release-20260918"
+            ]
+          }
+        },
+        "write_jobs": [
+          "prove-no-publication"
+        ]
+      },
+      "path": ".github/workflows/release-no-pending-snapshot-proof.yml"
+    }
+  ],
+  "write_surface_expanded": false
+}
