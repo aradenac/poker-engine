@@ -234,3 +234,174 @@ This tranche does **not** modify `.github/workflows/**`. After #108 releases the
 5. reject publication/promotion if the container or runtime identity diverges.
 
 Until that wiring exists, #203 remains OPEN.
+
+
+## Non-CI hardening: Ubuntu snapshot and browser identity
+
+This tranche strengthens the scientific reference container without changing any GitHub Actions workflow.
+
+### APT snapshot identity
+
+Ubuntu 24.04 supports the official Ubuntu Snapshot Service natively. The reference container pins the snapshot ID:
+
+`20260918T000000Z`
+
+Versioned inputs:
+
+- `reproducibility/ubuntu-snapshot.sources`
+- `reproducibility/apt-snapshot.lock.json`
+- `reproducibility/system-packages.resolution.lock.json`
+
+The sources file pins the Ubuntu `noble`, `noble-updates` and `noble-security` pockets to the same timestamp. The snapshot lock also records architecture, repositories/components, source-file SHA-256 and official-service provenance.
+
+The direct package resolution lock has one machine-readable entry for every requested package with:
+
+- `requested_package`
+- `resolved_version`
+- `source`
+- `snapshot_status`
+- `verification_status`
+
+At this stage `resolved_version` is deliberately `null`. No package version was guessed or copied from an unrelated resolver. Instead the build/verify path resolves the package candidate from the pinned snapshot, verifies that the candidate is actually sourced from `snapshot.ubuntu.com/ubuntu/20260918T000000Z`, and requires the installed version to equal that candidate.
+
+Therefore:
+
+- snapshot identity: **pinned and verifiable**
+- source/repository identity: **pinned and verified**
+- architecture: **pinned and verified**
+- exact installed-vs-snapshot-candidate equality: **verified at build/runtime**
+- exact direct-package versions pre-expanded into the versioned lock: **not yet available**
+
+The contract consequently remains:
+
+`SYSTEM_PACKAGES_FULLY_PINNED=false`
+
+and uses the pinning level:
+
+`OFFICIAL_SNAPSHOT_PINNED_RUNTIME_RESOLUTION`
+
+This is stronger than live-archive resolution, but it is not represented as a fully enumerated package lock.
+
+### Playwright / Chromium identity
+
+For Playwright 1.55.0, the versioned upstream metadata identifies:
+
+- browser: Chromium
+- version: `140.0.7339.16`
+- Playwright revision: `1187`
+- Ubuntu 24.04 x64 archive path: `builds/chromium/1187/chromium-linux.zip`
+
+The provenance is recorded in `reproducibility/browser-identity.lock.json`, including the exact upstream `browsers.json` Git blob and the Playwright registry source used to derive the archive path and official CDN mirrors.
+
+Playwright 1.55.0 metadata does not provide a trustworthy archive SHA-256 that this repository can independently verify. The contract therefore keeps:
+
+`BROWSER_ARCHIVE_SHA_PINNED=false`
+
+No archive digest is invented.
+
+The local verifier still records and verifies the installed browser independently:
+
+- Playwright package version;
+- Chromium version;
+- revision inferred from the installed Playwright browser directory;
+- expected executable path;
+- SHA-256 fingerprint of the installed Chromium executable.
+
+Because no independently verified expected executable SHA is currently versioned, the binary SHA is reported as a runtime fingerprint rather than promoted to a false immutable expectation.
+
+### Derived hermeticity
+
+The hermeticity level is computed from versioned evidence rather than copied from a free-form label.
+
+Current evidence:
+
+- base image digest pinned: yes
+- system package snapshot pinned: yes
+- all exact system package versions pre-expanded: no
+- browser archive SHA pinned: no
+
+Current derived level:
+
+`BASE_IMAGE_PINNED`
+
+Higher levels become possible only when their evidence is actually present:
+
+- `BASE_AND_SYSTEM_PACKAGES_PINNED`
+- `BASE_SYSTEM_BROWSER_PINNED`
+
+A missing base-image digest falls back to `PARTIAL`.
+
+### Machine-readable verification
+
+Validate the versioned hardening contract:
+
+```bash
+python3 tools/repro_hardening.py validate
+```
+
+Render the expected apt/browser identity:
+
+```bash
+python3 tools/repro_hardening.py expected
+```
+
+Compare the observed local/container runtime against the contract:
+
+```bash
+python3 tools/repro_hardening.py verify
+```
+
+The verifier emits deterministic JSON with `PASS`, `WARN` or `FAIL`, expected/observed identity, violations and explicit limitation warnings.
+
+It fails on, among other cases:
+
+- wrong snapshot ID or APT sources identity;
+- package absent;
+- package architecture mismatch;
+- installed version different from the candidate resolved from the pinned snapshot;
+- candidate repository not proven to be the expected Ubuntu snapshot;
+- Playwright / Chromium / revision mismatch;
+- wrong executable identity;
+- missing installed-binary fingerprint;
+- archive or binary SHA mismatch whenever a verified expected hash is available;
+- any existing Python / Node / Playwright / Chromium / OS runtime mismatch.
+
+The full reference-container check remains:
+
+```bash
+./scripts/repro-container.sh verify --image poker-engine-science:local
+```
+
+That command validates the image labels/base digest, the existing runtime identity, and the new apt/browser hardening contract.
+
+### Content addressing
+
+The container manifest now includes SHA-256 identities for:
+
+- Dockerfile;
+- base image/container lock;
+- requested system package list;
+- apt snapshot lock;
+- system-package resolution lock;
+- Ubuntu snapshot sources;
+- browser identity lock;
+- Python and Node dependency locks.
+
+It also embeds the apt snapshot identity, browser archive identity, browser binary expectation and derived hermeticity. Future `environment_identity` embeds the same hardening identity.
+
+Consequently, changing the base digest, Dockerfile, snapshot/source identity, package-resolution lock or browser-identity lock changes both:
+
+- container `manifest_sha256`;
+- future-run `environment_identity.identity_sha256`.
+
+Historical scientific run artifacts remain immutable and use the existing explicit grandfather path.
+
+### Remaining boundary
+
+This tranche still makes no change to `.github/workflows/**`. #203 remains OPEN until post-#108 workflow enforcement consumes and verifies the reference container/environment identity.
+
+The remaining technical gaps are explicit rather than hidden:
+
+1. exact APT package versions are not pre-expanded into the repository lock, despite the immutable snapshot identity and runtime candidate equality check;
+2. the Playwright Chromium archive SHA-256 is not independently pinned because no verified upstream SHA-256 was available from the version metadata used here;
+3. a full Docker build/inspect should still be recorded on a Docker-capable host if the execution host used for this tranche does not provide Docker.
