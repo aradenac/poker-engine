@@ -1,0 +1,212 @@
+{
+  "alternatives": [
+    {
+      "action": "FOLD",
+      "alternative_id": "FOLD",
+      "continuing_positions": null,
+      "delta_vs_best_paired": null,
+      "diagnostic_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "ev_bb": null,
+      "expected_callers": null,
+      "indifference_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "p_1_caller": null,
+      "p_2_callers": null,
+      "p_3bet_or_jam": null,
+      "p_3plus_callers": null,
+      "p_all_fold": null,
+      "posterior_refs": null,
+      "support": {
+        "status": "NOT_EVALUATED_INCOMPLETE_COMPARISON_SET"
+      },
+      "target_total_bb": null,
+      "uncertainty": null
+    },
+    {
+      "action": "OVERLIMP",
+      "alternative_id": "OVERLIMP@1",
+      "continuing_positions": null,
+      "delta_vs_best_paired": null,
+      "diagnostic_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "ev_bb": null,
+      "expected_callers": null,
+      "indifference_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "p_1_caller": null,
+      "p_2_callers": null,
+      "p_3bet_or_jam": null,
+      "p_3plus_callers": null,
+      "p_all_fold": null,
+      "posterior_refs": null,
+      "support": {
+        "status": "NOT_EVALUATED_INCOMPLETE_COMPARISON_SET"
+      },
+      "target_total_bb": 1,
+      "uncertainty": null
+    },
+    {
+      "action": "ISO",
+      "alternative_id": "ISO@4",
+      "continuing_positions": null,
+      "delta_vs_best_paired": null,
+      "diagnostic_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "ev_bb": null,
+      "expected_callers": null,
+      "indifference_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "p_1_caller": null,
+      "p_2_callers": null,
+      "p_3bet_or_jam": null,
+      "p_3plus_callers": null,
+      "p_all_fold": null,
+      "posterior_refs": null,
+      "support": {
+        "status": "LEGAL_BUT_MODEL_UNSUPPORTED_EXACT_PRICE"
+      },
+      "target_total_bb": 4,
+      "uncertainty": null
+    },
+    {
+      "action": "ISO",
+      "alternative_id": "ISO@5",
+      "continuing_positions": null,
+      "delta_vs_best_paired": null,
+      "diagnostic_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "ev_bb": null,
+      "expected_callers": null,
+      "indifference_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "p_1_caller": null,
+      "p_2_callers": null,
+      "p_3bet_or_jam": null,
+      "p_3plus_callers": null,
+      "p_all_fold": null,
+      "posterior_refs": null,
+      "support": {
+        "status": "LEGAL_BUT_RESPONSE_TREE_EXACT_SUPPORT_INCOMPLETE"
+      },
+      "target_total_bb": 5,
+      "uncertainty": null
+    },
+    {
+      "action": "ISO",
+      "alternative_id": "ISO@6",
+      "continuing_positions": null,
+      "delta_vs_best_paired": null,
+      "diagnostic_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "ev_bb": null,
+      "expected_callers": null,
+      "indifference_status": "NOT_COMPUTED_FAIL_CLOSED",
+      "p_1_caller": null,
+      "p_2_callers": null,
+      "p_3bet_or_jam": null,
+      "p_3plus_callers": null,
+      "p_all_fold": null,
+      "posterior_refs": null,
+      "support": {
+        "status": "LEGAL_BUT_MODEL_UNSUPPORTED_EXACT_PRICE"
+      },
+      "target_total_bb": 6,
+      "uncertainty": null
+    }
+  ],
+  "diagnostics": {
+    "caller_metrics": "NOT_COMPUTED",
+    "missing_exact_support": {
+      "caller_count": 0,
+      "family": "LIMPER_VS_ISO",
+      "limper_count": 2,
+      "position": "CO",
+      "reason": "required admitted sizing-aware v2 exact-price support missing: MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+      "target_total_bb": 5,
+      "to_call_bb": 4
+    },
+    "posterior_refs": "NOT_COMPUTED",
+    "status": "FAIL_CLOSED_BEFORE_ROLLOUT",
+    "support_audit": {
+      "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "complete_for_scientific_rollout": false,
+      "first_responder": {
+        "family": "VS_ISO",
+        "fold_probability": 0.7978723404255319,
+        "position": "BB",
+        "source_observations": 45,
+        "status": "EXACT_SUPPORTED",
+        "support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      "nearest_price": false,
+      "reachable_missing_branch": {
+        "caller_count": 0,
+        "family": "LIMPER_VS_ISO",
+        "limper_count": 2,
+        "path": [
+          "Hero:ISO@5",
+          "BB:FOLD",
+          "CO:DECISION"
+        ],
+        "position": "CO",
+        "reason": "required admitted sizing-aware v2 exact-price support missing: MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+        "status": "EXACT_SUPPORT_MISSING",
+        "target_total_bb": 5,
+        "to_call_bb": 4
+      },
+      "schema": "poker-issue367-exact-response-tree-support-audit/v1",
+      "target_total_bb": 5
+    }
+  },
+  "execution_valid": true,
+  "issue": 367,
+  "model_a": {
+    "active_model_pointer_mutation": false,
+    "admission_decision": "ADMIT_CANDIDATE",
+    "admission_status_for_runner": "ADMITTED_FOR_SIZING_EV",
+    "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "fit_evidence_path": "analysis/model_a_preflop_sizing_v2_fit.json",
+    "fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+    "nearest_price": false,
+    "required_scope": "VS_ISO_AGGRESSOR_SB_EXACT_PRICE",
+    "validation_evidence_path": "analysis/model_a_preflop_sizing_v2_validation.json",
+    "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+    "validation_protocol_sha256": "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2"
+  },
+  "parent_issue": 314,
+  "played_vs_recommended": {
+    "played_alternative_id": "ISO@4",
+    "reason": "complete exact-support comparison is unavailable",
+    "recommended_alternative_id": null
+  },
+  "protocol_sha256": "e78caebd7195e0a3af23113b35866da6bce98ffe9385f4479dbb45ec7a42ad46",
+  "result_sha256": "b2e2715670c1c5ab83f336bced939f8003df688a60f6b05f8546408377eaf2e8",
+  "runner_result": null,
+  "scenario": {
+    "fixture": "kts_sb_two_limp_iso4_three_calls_v1",
+    "hero_exact_cards": [
+      "Ks",
+      "Ts"
+    ],
+    "hero_hand_class": "KTs",
+    "hero_position": "SB",
+    "limpers": 2,
+    "played_action": "ISO",
+    "played_target_total_bb": 4
+  },
+  "schema": "poker-issue367-real-iso-ev-result/v1",
+  "scientific_boundary": {
+    "active_model_pointer_mutated": false,
+    "model_b_consumed": false,
+    "promotion_performed": false,
+    "test_authorized": false,
+    "test_consumed": false,
+    "ui_modified": false,
+    "vs_limpers_generation_196": false
+  },
+  "selection": {
+    "diagnostics_can_select": false,
+    "indifference_rule": "PAIRED_CI95_INCLUDES_ZERO",
+    "rule": "MAX_EV_POINT_ESTIMATE_ONLY",
+    "selected_action": null,
+    "selected_alternative_id": null,
+    "selected_ev_bb": null,
+    "selected_target_total_bb": null,
+    "status": "NO_RECOMMENDATION_INCOMPLETE_EXACT_SUPPORT"
+  },
+  "status": "FAIL_CLOSED_EXACT_SUPPORT_UNAVAILABLE"
+}

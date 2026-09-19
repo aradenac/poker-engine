@@ -1,0 +1,61 @@
+{
+  "schema": "poker-issue367-binding-correction/v1",
+  "issue": 367,
+  "parent_issue": 314,
+  "failed_observable_run_id": 35459272822,
+  "failure": "posterior unavailable after ISO@5 CO CALL: posterior support identity is invalid",
+  "diagnosis": {
+    "original_binding_bug": [
+      "provider required literal family VS_ISO and explicit aggressor_position=SB",
+      "_preflop_decision stores the aggressor in public history and classifies original limpers as LIMPER_VS_ISO / LIMPER_VS_ISO_CALLERS",
+      "therefore admitted v2 was not bound to all canonical first responses to Hero ISO"
+    ],
+    "corrected_binding": [
+      "derive aggressor from public preflop history exactly as #319 support key does",
+      "bind only canonical first-response families VS_ISO, VS_ISO_CALLERS, LIMPER_VS_ISO, LIMPER_VS_ISO_CALLERS",
+      "no nearest-price, interpolation, or context substitution"
+    ],
+    "exact_support_audit": {
+      "BB@ISO5": {
+        "status": "EXACT_SUPPORTED",
+        "source_observations": 45
+      },
+      "reachable_path": [
+        "Hero:ISO@5",
+        "BB:FOLD",
+        "CO:DECISION"
+      ],
+      "CO@ISO5": {
+        "family": "LIMPER_VS_ISO",
+        "support_context_suffix": "family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+        "status": "EXACT_SUPPORT_MISSING"
+      },
+      "conclusion": "full scientific ISO@5 response tree is not supported by admitted Model A v2"
+    }
+  },
+  "remediation": "fail closed before Monte Carlo and persist a no-recommendation RESULT/SUMMARY",
+  "frozen_science_unchanged": {
+    "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "admission_decision": "ADMIT_CANDIDATE",
+    "seeds": true,
+    "budget": true,
+    "exact_support_grid": true,
+    "selection_rule": true,
+    "indifference_rule": true,
+    "model_identity": true
+  },
+  "implementation_blobs": {
+    "provider": "69757f98249984fbbc8cdd1dd9bfb3da6c4b40cf",
+    "executor": "1bb1f1239e2f20ae0089173d1cde48ba51dc4d86",
+    "observable_workflow": "00f133d22f93c5089bd6098ebc265f03fb94547a",
+    "contract_workflow": "fe32287155f719224a707abf9c46e9262105b3a4"
+  },
+  "scientific_boundary": {
+    "test_consumed": false,
+    "model_b_consumed": false,
+    "promotion_performed": false,
+    "active_model_pointer_mutated": false,
+    "ui_modified": false
+  }
+}
