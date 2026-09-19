@@ -1,12 +1,7 @@
 name: Build independent Model B features
 
 on:
-  push:
-    paths:
-      - 'tools/training/independent_profiles/**'
-      - 'tests/independent_profiles/**'
-      - 'training/datasets/NLHE_100-200/**/*.zip'
-      - '.github/workflows/model-b-features.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

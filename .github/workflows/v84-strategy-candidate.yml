@@ -2,14 +2,6 @@ name: Evaluate v84 strategy candidate
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - issue-40-v84-strategy-20260913
-    paths:
-      - 'tools/patch_v83_to_v84.py'
-      - 'tools/simulation/strategy_candidate_report.py'
-      - 'tests/simulation/test_strategy_candidate_report.py'
-      - '.github/workflows/v84-strategy-candidate.yml'
 
 permissions:
   contents: write

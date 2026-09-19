@@ -1,0 +1,775 @@
+{
+  "aggregate": {
+    "artifact_identity_changed": false,
+    "automatic_triggers_removed": {
+      "pull_request": 1,
+      "push": 15,
+      "workflow_run": 0
+    },
+    "current_or_frozen_workflows_modified": 0,
+    "estimated_avoided_run_candidates": {
+      "distinct_workflows": 15,
+      "method": "#242 snapshot job counts and cost scores summed once per migrated workflow; event subscriptions are potential runs, not observed runs or billed minutes. Branch/path filters still limit matching events.",
+      "snapshot_jobs": 26,
+      "snapshot_structural_cost_proxy": 210,
+      "workflow_event_subscriptions": 16
+    },
+    "historical_candidates_examined": 15,
+    "scientific_commands_changed": false,
+    "workflows_migrated_manual_only": 15
+  },
+  "allowlist": [
+    ".github/workflows/finalize-training-cycle.yml",
+    ".github/workflows/model-b-build.yml",
+    ".github/workflows/model-b-conditioned-runtime.yml",
+    ".github/workflows/model-b-evaluation.yml",
+    ".github/workflows/model-b-features.yml",
+    ".github/workflows/model-b-profile-selection.yml",
+    ".github/workflows/model-b-response-v3.yml",
+    ".github/workflows/preflop-strategy-support-closed.yml",
+    ".github/workflows/preflop-strategy-validation-support-closed.yml",
+    ".github/workflows/preflop-strategy-validation-v2.yml",
+    ".github/workflows/promotion-gate-final.yml",
+    ".github/workflows/strategic-benchmark-v3.yml",
+    ".github/workflows/strategy-candidate-v84.yml",
+    ".github/workflows/unseen-preflop-context-audit.yml",
+    ".github/workflows/v84-strategy-candidate.yml"
+  ],
+  "base_sha": "9684381f236d13af205adae1ad71983c429cb82f",
+  "issue": 373,
+  "schema": "poker-engine-historical-workflow-quarantine/v1",
+  "source_inventory_sha": "8285835c62d781a9487a1faad383684eb3d7138c",
+  "source_inventory_sha256": "58994e7bb5ff362c629ccfbd7ba33ca5477c958ae0604830af869dac4448c0b8",
+  "workflows": [
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "ba33a4d6f5c188721146245580797bfd1b8f264e",
+        "concurrency_fingerprint": "b757ddd8ad0bfb1c05ee8d226f888a189a1d8766c45e18817e61c694f8c584d7",
+        "jobs_fingerprint": "65575653afff78acb918aa56a50a3a665adb2282affef5ab239fa5d7d7448a9b",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "dc62964556f2420c1458bcc1e696bf9e03e568f35f86fa3117b689011418477b",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "ee176a0db38296c16bb354d9370e8923a4217dda",
+        "concurrency_fingerprint": "b757ddd8ad0bfb1c05ee8d226f888a189a1d8766c45e18817e61c694f8c584d7",
+        "jobs_fingerprint": "65575653afff78acb918aa56a50a3a665adb2282affef5ab239fa5d7d7448a9b",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-42-final-training-state-20260914"
+            ],
+            "paths": [
+              "tools/finalize_training_cycle.py",
+              "training/gates/20260912_*.json",
+              "training/registry.json",
+              "training/runs/20260912_population_increment_cycle/**",
+              "training/runs/20260913_strategy_candidate_v84/**",
+              "training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json",
+              ".github/workflows/finalize-training-cycle.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "dc62964556f2420c1458bcc1e696bf9e03e568f35f86fa3117b689011418477b",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/finalize-training-cycle.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "b573d052ee80cb85fffdb6f854c66c1dc99175f2f59c1bfcc92919070daa8bf2",
+        "blob_sha": "69f995e98f6f27927a5e2af507fbe44a99b0d43d",
+        "concurrency_fingerprint": "61a5d45d1db564be148508c8134eddd90e0d3c1efcc08a40f4ea022a6446e0b8",
+        "jobs_fingerprint": "7d4c75549a627e4641b80286c82984e5beefd16485501c5df497a447f77b9899",
+        "permissions_fingerprint": "e8f2263b0413f25128aa11d16dd3ae0ef6b0c660fb5b1dc08fe71e0a7daabb4b",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "c4c925dd95bf970ee8c97785f5192e7255f334ab058b4b4c2419e18cae609e1d",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "b573d052ee80cb85fffdb6f854c66c1dc99175f2f59c1bfcc92919070daa8bf2",
+        "blob_sha": "7aa5dc5a6bb71bda7f4f5fb771729e4d797c2bd3",
+        "concurrency_fingerprint": "61a5d45d1db564be148508c8134eddd90e0d3c1efcc08a40f4ea022a6446e0b8",
+        "jobs_fingerprint": "7d4c75549a627e4641b80286c82984e5beefd16485501c5df497a447f77b9899",
+        "permissions_fingerprint": "e8f2263b0413f25128aa11d16dd3ae0ef6b0c660fb5b1dc08fe71e0a7daabb4b",
+        "trigger_configuration": {
+          "push": {
+            "branches_ignore": [
+              "main"
+            ],
+            "paths": [
+              "tools/training/independent_profiles/build_model_b.py",
+              "tools/training/independent_profiles/summarize_model_b.py",
+              "tests/independent_profiles/test_build_model_b.py",
+              "training/runs/20260912_independent_profiles_v2/features/**",
+              "training/datasets/NLHE_100-200/**/*.zip",
+              ".github/workflows/model-b-build.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "c4c925dd95bf970ee8c97785f5192e7255f334ab058b4b4c2419e18cae609e1d",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/model-b-build.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "5ffecff6c4f2082b8cbc4fe86e00f2a37cea59e9",
+        "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "jobs_fingerprint": "6e01b671af5fd90908ae20280934d915b423f4a79f41b75ed44e5ca1584d0b52",
+        "permissions_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "d1a86b2d88f735cacd2b8805676cd799b1054f30575be1a16fad2c17ca7cf438",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "8df3a7d00d7f746f2b036d3bd6b1c615ef01bb48",
+        "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "jobs_fingerprint": "6e01b671af5fd90908ae20280934d915b423f4a79f41b75ed44e5ca1584d0b52",
+        "permissions_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "trigger_configuration": {
+          "push": {
+            "paths": [
+              "tools/simulation/model_b_conditioned_runtime.py",
+              "tools/simulation/sequential_postflop_conditioned.py",
+              "tests/simulation/test_model_b_conditioned_runtime.py",
+              "training/runs/20260913_model_b_response_v3/**",
+              ".github/workflows/model-b-conditioned-runtime.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "d1a86b2d88f735cacd2b8805676cd799b1054f30575be1a16fad2c17ca7cf438",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/model-b-conditioned-runtime.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "8c37ae7f0265349faa9b21089724e168e17729a8",
+        "concurrency_fingerprint": "d2001d81d450b132195d7fe81e29a9bc977ba95b6c0a52e1f22e7a7057905433",
+        "jobs_fingerprint": "48d9f68b0f6f02430ebd6b54b1c11db98538babf1dfbfe61c2d598f6c2f12acf",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "99656ca09d3052cdd8449dced8900543a77036b0bda720498dda6abd0652a603",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "7b3e28017ab91f12a97ab970941e3772a320089b",
+        "concurrency_fingerprint": "d2001d81d450b132195d7fe81e29a9bc977ba95b6c0a52e1f22e7a7057905433",
+        "jobs_fingerprint": "48d9f68b0f6f02430ebd6b54b1c11db98538babf1dfbfe61c2d598f6c2f12acf",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches_ignore": [
+              "main"
+            ],
+            "paths": [
+              "tools/training/independent_profiles/**",
+              "tests/independent_profiles/**",
+              "training/runs/20260912_independent_profiles_v2/features/**",
+              "training/runs/20260912_independent_profiles_v2/model/**",
+              "training/runs/20260912_independent_profiles_v2/evaluation/profile_count_selection.json",
+              "training/runs/20260912_population_increment_cycle/evaluation/model_b_refit_selection.json",
+              "training/datasets/NLHE_100-200/**/*.zip",
+              "training/PROMOTION_GATE_CONTRACT.json",
+              ".github/workflows/model-b-evaluation.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "99656ca09d3052cdd8449dced8900543a77036b0bda720498dda6abd0652a603",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/model-b-evaluation.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "ca32f56066a2b0077da9d53578f3a3a3f911bf13",
+        "concurrency_fingerprint": "dd6b0ab03923398232b0501532cb0aea01c29f4939d6c11079268c9490d1e67b",
+        "jobs_fingerprint": "a15d16afccbecbe9cc59f89405f59fb8ec74de4ffee43295e374ccf331b0e874",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "1fda1e69e4d932d571840f5172c57f61aad40f1f4146d5fe6c539ca9719e3931",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "69e63f068c12282d4c5556a2c2497d4939ec33ea",
+        "concurrency_fingerprint": "dd6b0ab03923398232b0501532cb0aea01c29f4939d6c11079268c9490d1e67b",
+        "jobs_fingerprint": "a15d16afccbecbe9cc59f89405f59fb8ec74de4ffee43295e374ccf331b0e874",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "paths": [
+              "tools/training/independent_profiles/**",
+              "tests/independent_profiles/**",
+              "training/datasets/NLHE_100-200/**/*.zip",
+              ".github/workflows/model-b-features.yml"
+            ]
+          }
+        },
+        "trigger_insensitive_sha": "1fda1e69e4d932d571840f5172c57f61aad40f1f4146d5fe6c539ca9719e3931",
+        "triggers": [
+          "push"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/model-b-features.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "258fd71e4db64141852ba550a29d1f4177d45bfa",
+        "concurrency_fingerprint": "358cf7c0dda51a20508c6bda0fbf34b40e5c714f0eb06ed7c9dd8c84d18a65d7",
+        "jobs_fingerprint": "1d2c8d2b63d73f2115198e4bb1061917782b5f085e6bee8db279eea010a7242c",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "e9a412d1aadb91fffea9f03a3efe954d2b4aa2b4cc703691b29499daa7b77a9f",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "d2a661581be7cfb3ba3b2ac004147fcaadc9f836",
+        "concurrency_fingerprint": "358cf7c0dda51a20508c6bda0fbf34b40e5c714f0eb06ed7c9dd8c84d18a65d7",
+        "jobs_fingerprint": "1d2c8d2b63d73f2115198e4bb1061917782b5f085e6bee8db279eea010a7242c",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "paths": [
+              "tools/training/independent_profiles/select_profile_count.py",
+              "tools/training/independent_profiles/build_model_b.py",
+              "tools/training/independent_profiles/evaluate_model_b.py",
+              "training/runs/20260912_independent_profiles_v2/features/**",
+              "training/datasets/NLHE_100-200/**/*.zip",
+              ".github/workflows/model-b-profile-selection.yml"
+            ]
+          }
+        },
+        "trigger_insensitive_sha": "e9a412d1aadb91fffea9f03a3efe954d2b4aa2b4cc703691b29499daa7b77a9f",
+        "triggers": [
+          "push"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/model-b-profile-selection.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "0d6f73f0c7d9e6e5ae520f1db694889fcac08d5a",
+        "concurrency_fingerprint": "f30ab355d2258aa3eaf6f21e1fc723892be5c3e725a8a3caec97ab3bea7a1f37",
+        "jobs_fingerprint": "763ae5e670d285ed51e275529a41e0d681977d1866bfe719b813dc6d7ab5f131",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "0b434f6f2bf815aca0bd9fbefa5498e4da73b4786c434bcf038ba3e2c514d7cc",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "b78af46275b74c7362aa6cb7d19c84f3284eb4d1",
+        "concurrency_fingerprint": "f30ab355d2258aa3eaf6f21e1fc723892be5c3e725a8a3caec97ab3bea7a1f37",
+        "jobs_fingerprint": "763ae5e670d285ed51e275529a41e0d681977d1866bfe719b813dc6d7ab5f131",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches_ignore": [
+              "main"
+            ],
+            "paths": [
+              "tools/training/independent_profiles/build_model_b.py",
+              "tools/training/independent_profiles/conditioned_response_candidate.py",
+              "tools/training/independent_profiles/audit_response_conditioning.py",
+              "tests/independent_profiles/test_conditioned_response_candidate.py",
+              "tests/independent_profiles/test_french_button_position.py",
+              ".github/workflows/model-b-response-v3.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "0b434f6f2bf815aca0bd9fbefa5498e4da73b4786c434bcf038ba3e2c514d7cc",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/model-b-response-v3.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "6dbf0c9e82c8921d0140ea8d3d995f2839002390",
+        "concurrency_fingerprint": "a7213a829e00acc2e2833b5161e7152226a0fcc9ba97c72f9628a73c6a4b1f0e",
+        "jobs_fingerprint": "4ff055f19a01e6132dc2c68ec2a8b5d17327e32fe9aad42165778026c76e024e",
+        "permissions_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "e3530cfe22e1df27285afc8a2f3509f968da8b7fdfc60d9ef287421154f5dbb5",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "42e07d58eb89ab433b61173ae2acf3d9aa80e16c",
+        "concurrency_fingerprint": "a7213a829e00acc2e2833b5161e7152226a0fcc9ba97c72f9628a73c6a4b1f0e",
+        "jobs_fingerprint": "4ff055f19a01e6132dc2c68ec2a8b5d17327e32fe9aad42165778026c76e024e",
+        "permissions_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "trigger_configuration": {
+          "pull_request": {
+            "paths": [
+              "training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json",
+              "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917_SUPPORT_CLOSED.json",
+              "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260918_PFPC.json",
+              "training/runs/20260917_preflop_strategy_validation_v2_blocked/RESULT.json",
+              "training/runs/20260917_preflop_strategy_validation_support_closed_zero_exposure/RESULT.json",
+              "tools/simulation/reference_support_closure.py",
+              "tools/simulation/preflop_strategy_benchmark_v2.py",
+              "tools/simulation/preflop_strategy_benchmark_support_closed.py",
+              "tools/training/select_preflop_strategy_validation.py",
+              "tools/training/validate_preflop_strategy_benchmark_support_closed.py",
+              "tools/training/validate_preflop_strategy_benchmark_pfpc.py",
+              "tests/simulation/test_reference_support_closure.py",
+              "tests/simulation/test_preflop_strategy_support_closed.py",
+              "tests/simulation/test_preflop_strategy_exposure_guard.py",
+              "tests/training/test_preflop_strategy_benchmark_pfpc.py",
+              ".github/workflows/preflop-strategy-support-closed.yml",
+              ".github/workflows/preflop-strategy-validation-support-closed.yml"
+            ]
+          },
+          "push": {
+            "branches": [
+              "issue-108-support-closure-sol",
+              "issue-108-candidate-exposure-gate-sol"
+            ]
+          }
+        },
+        "trigger_insensitive_sha": "e3530cfe22e1df27285afc8a2f3509f968da8b7fdfc60d9ef287421154f5dbb5",
+        "triggers": [
+          "pull_request",
+          "push"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/preflop-strategy-support-closed.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "dbc6d830e946bc2da3ff197842e215e9149178b2816d756be259e5caf662dad7",
+        "blob_sha": "83cf03b66befb5c289c359741a034cec0efbd6dd",
+        "concurrency_fingerprint": "116f080118c6b4aacb3fc89d197e1c635a0c901f302941e4244c2ffbeb5b0aaa",
+        "jobs_fingerprint": "50fad96492e73c5e2bf9d2e6ee0f423984a2c177d0bee7cfe0b924101781921d",
+        "permissions_fingerprint": "10475fb7d0b43c3392ebc0bb214295b8b60f8c9fb9ec418b6d935d61a99c0d54",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "e4eda3ff204bf0d4db5480384a3bd511b26b0e0e3ff363879cd5574fe6d7c7f1",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "dbc6d830e946bc2da3ff197842e215e9149178b2816d756be259e5caf662dad7",
+        "blob_sha": "3a2fcfe294964f77961007f6ba63895009ce6b82",
+        "concurrency_fingerprint": "116f080118c6b4aacb3fc89d197e1c635a0c901f302941e4244c2ffbeb5b0aaa",
+        "jobs_fingerprint": "50fad96492e73c5e2bf9d2e6ee0f423984a2c177d0bee7cfe0b924101781921d",
+        "permissions_fingerprint": "10475fb7d0b43c3392ebc0bb214295b8b60f8c9fb9ec418b6d935d61a99c0d54",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-108-validation-run-v2-sol"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "e4eda3ff204bf0d4db5480384a3bd511b26b0e0e3ff363879cd5574fe6d7c7f1",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "f60583e6e4b77690c3c183cd9c0927aab86db87a3959cf4719c42171d5c29c2b",
+        "blob_sha": "c50923ce563fecdf1357cea68937cfdf983611ee",
+        "concurrency_fingerprint": "2d97b12815eaf8feb0589cd48b0282bcd3de0dd7c1bdcc21f118334165f64999",
+        "jobs_fingerprint": "1af855a4529057b1c45e98622b811bdbfedf46592ec403057521014e05568340",
+        "permissions_fingerprint": "10475fb7d0b43c3392ebc0bb214295b8b60f8c9fb9ec418b6d935d61a99c0d54",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "d3e6b4c336037a92340adbdbf0041bbcdc44df426ba334d99ad57f9eb4168003",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "f60583e6e4b77690c3c183cd9c0927aab86db87a3959cf4719c42171d5c29c2b",
+        "blob_sha": "59da02dbbb6ca89c9f44c4f6568c87a8e896b8df",
+        "concurrency_fingerprint": "2d97b12815eaf8feb0589cd48b0282bcd3de0dd7c1bdcc21f118334165f64999",
+        "jobs_fingerprint": "1af855a4529057b1c45e98622b811bdbfedf46592ec403057521014e05568340",
+        "permissions_fingerprint": "10475fb7d0b43c3392ebc0bb214295b8b60f8c9fb9ec418b6d935d61a99c0d54",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-108-validation-run-v1-sol"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "d3e6b4c336037a92340adbdbf0041bbcdc44df426ba334d99ad57f9eb4168003",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/preflop-strategy-validation-v2.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "07dc2092806bf86ba41515f5d31bcb2d191da4a4",
+        "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "jobs_fingerprint": "a5f95b917ef7323aa0998969f8facff9a7f539a23ad183615197b2a57c7b287c",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "29aa663bf539984961c0b4b0ebfc16f1c79aeb816d2c33c0da41a0356dfdcfff",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+        "blob_sha": "f8eae0bfce86e18e25e8e23c8ebde7e7ac4a6992",
+        "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "jobs_fingerprint": "a5f95b917ef7323aa0998969f8facff9a7f539a23ad183615197b2a57c7b287c",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-41-unified-promotion-gate-final"
+            ],
+            "paths": [
+              "training/gates/20260912_evidence.json",
+              "training/PROMOTION_GATE_CONTRACT.json",
+              "tools/evaluate_promotion_gates.py",
+              "tests/test_promotion_gates.py",
+              ".github/workflows/promotion-gate-final.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "29aa663bf539984961c0b4b0ebfc16f1c79aeb816d2c33c0da41a0356dfdcfff",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/promotion-gate-final.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "782016eae0c6b7ba77a4f21dee55ae7b962821d89542530ab4391f637437fb8c",
+        "blob_sha": "cf683d53fcaed1d4cc685b25f038e1366e441901",
+        "concurrency_fingerprint": "f08b7a58b043c7ef86a65de97925744af44ede4e3c764cd01770d58c1e0c09fc",
+        "jobs_fingerprint": "c1fd5915e54a3393cb8558babda2e09ed808c44ed6ac10519383fd8b4979bd8a",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "3ae07b3bc97ed564012d6dbfd1988b1f8ec6732a9e54d061032fca8deb0cf367",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "782016eae0c6b7ba77a4f21dee55ae7b962821d89542530ab4391f637437fb8c",
+        "blob_sha": "4002ab9a98d0defda1020ae4a384633f313ef50d",
+        "concurrency_fingerprint": "f08b7a58b043c7ef86a65de97925744af44ede4e3c764cd01770d58c1e0c09fc",
+        "jobs_fingerprint": "c1fd5915e54a3393cb8558babda2e09ed808c44ed6ac10519383fd8b4979bd8a",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-39-strategic-benchmark-v3-20260913"
+            ],
+            "paths": [
+              "tools/simulation/retarget_scenario_manifest.py",
+              "tools/simulation/conditioned_baseline_runner.py",
+              "tools/simulation/conditioned_baseline_report.py",
+              "tools/simulation/environment_drift_report.py",
+              "tests/simulation/test_environment_drift_report.py",
+              "training/runs/20260913_model_b_response_v3/**",
+              ".github/workflows/strategic-benchmark-v3.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "3ae07b3bc97ed564012d6dbfd1988b1f8ec6732a9e54d061032fca8deb0cf367",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/strategic-benchmark-v3.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "9a0e9a8907299c383d15176885c5f2ca5b83edcf77d2ff9e5d0f7ea3bc957c60",
+        "blob_sha": "39f6d63a0f6d3955749a1f24b1d37cd342529809",
+        "concurrency_fingerprint": "25c086abe7a0e4b2cbb885113482c0d1739521b23ee51e862df502f4a49dc972",
+        "jobs_fingerprint": "6a7e6465fd5965ca160a35b438793415887ef9103e0aee58f48dea6e610e9a52",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "95657383e6c86139e39e72704a0394b1c18e729000570eb11178181611c50337",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "9a0e9a8907299c383d15176885c5f2ca5b83edcf77d2ff9e5d0f7ea3bc957c60",
+        "blob_sha": "78e36d597d7604d640427a90f1d1695bae1f02b3",
+        "concurrency_fingerprint": "25c086abe7a0e4b2cbb885113482c0d1739521b23ee51e862df502f4a49dc972",
+        "jobs_fingerprint": "6a7e6465fd5965ca160a35b438793415887ef9103e0aee58f48dea6e610e9a52",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-40-strategy-selection-20260913"
+            ],
+            "paths": [
+              "training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json",
+              "tools/simulation/strategy_candidate_gate.py",
+              "tools/simulation/conditioned_baseline_runner.py",
+              "tests/simulation/test_strategy_candidate_gate.py",
+              "tests/simulation/test_conditioned_baseline_runner.py",
+              ".github/workflows/strategy-candidate-v84.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "95657383e6c86139e39e72704a0394b1c18e729000570eb11178181611c50337",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/strategy-candidate-v84.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "651e3b53d7aca0add58f61845299d86ae80175f83a260a1ec84792ab70183974",
+        "blob_sha": "c1a78f1dd2cda7a3acf3059a907509395b8f5f73",
+        "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "jobs_fingerprint": "83499b0ce81f7e5a10bdf1642bc17d13603fd4d3c1eb7ba4762213f70d9f87cf",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "76f66250b11c4f556c06528e696c6aec4614838784a3ccf37577fa4d8478a257",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "651e3b53d7aca0add58f61845299d86ae80175f83a260a1ec84792ab70183974",
+        "blob_sha": "0e81401134b8f43c28646f9f6555cc1ce3835ac0",
+        "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "jobs_fingerprint": "83499b0ce81f7e5a10bdf1642bc17d13603fd4d3c1eb7ba4762213f70d9f87cf",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-61-unseen-preflop-analysis"
+            ],
+            "paths": [
+              "tools/training/analyze_unseen_preflop_contexts.py",
+              "tests/training/test_analyze_unseen_preflop_contexts.py",
+              ".github/workflows/unseen-preflop-context-audit.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "76f66250b11c4f556c06528e696c6aec4614838784a3ccf37577fa4d8478a257",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/unseen-preflop-context-audit.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    },
+    {
+      "after": {
+        "artifacts_fingerprint": "cc972165c76b9d8de8194cd9f56b5127a794c540f7de804d9f9e64138e69e348",
+        "blob_sha": "4dd7182a30a7b1056456714ee59f9e6217b822ea",
+        "concurrency_fingerprint": "67decc14fecbfbb6c011d099849028cd1a50e8e737242208945f135f314a3968",
+        "jobs_fingerprint": "bf873c5d04319943352fb311434483901de728dafcc54f94cfcf42eb4a21202e",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "1bc97a6b63eb224c6e82bbfbd170932a04da776c1bade8cc8a661846db6707c3",
+        "triggers": [
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "before": {
+        "artifacts_fingerprint": "cc972165c76b9d8de8194cd9f56b5127a794c540f7de804d9f9e64138e69e348",
+        "blob_sha": "94bbc2a4e679880e25ec365e6d3e4ef5e9db1412",
+        "concurrency_fingerprint": "67decc14fecbfbb6c011d099849028cd1a50e8e737242208945f135f314a3968",
+        "jobs_fingerprint": "bf873c5d04319943352fb311434483901de728dafcc54f94cfcf42eb4a21202e",
+        "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+        "trigger_configuration": {
+          "push": {
+            "branches": [
+              "issue-40-v84-strategy-20260913"
+            ],
+            "paths": [
+              "tools/patch_v83_to_v84.py",
+              "tools/simulation/strategy_candidate_report.py",
+              "tests/simulation/test_strategy_candidate_report.py",
+              ".github/workflows/v84-strategy-candidate.yml"
+            ]
+          },
+          "workflow_dispatch": {}
+        },
+        "trigger_insensitive_sha": "1bc97a6b63eb224c6e82bbfbd170932a04da776c1bade8cc8a661846db6707c3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ],
+        "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "disposition": "MIGRATED_MANUAL_ONLY",
+      "lifecycle_before": "historical_candidate",
+      "path": ".github/workflows/v84-strategy-candidate.yml",
+      "reason": "Only automatic triggers removed; all non-trigger bytes and existing dispatch configuration preserved."
+    }
+  ]
+}

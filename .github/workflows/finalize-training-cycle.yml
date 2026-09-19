@@ -2,17 +2,6 @@ name: Finalize 2026-09-12 training cycle
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - issue-42-final-training-state-20260914
-    paths:
-      - 'tools/finalize_training_cycle.py'
-      - 'training/gates/20260912_*.json'
-      - 'training/registry.json'
-      - 'training/runs/20260912_population_increment_cycle/**'
-      - 'training/runs/20260913_strategy_candidate_v84/**'
-      - 'training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'
-      - '.github/workflows/finalize-training-cycle.yml'
 
 permissions:
   contents: write

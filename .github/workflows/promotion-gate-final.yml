@@ -2,15 +2,6 @@ name: Final unified promotion gate
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - issue-41-unified-promotion-gate-final
-    paths:
-      - 'training/gates/20260912_evidence.json'
-      - 'training/PROMOTION_GATE_CONTRACT.json'
-      - 'tools/evaluate_promotion_gates.py'
-      - 'tests/test_promotion_gates.py'
-      - '.github/workflows/promotion-gate-final.yml'
 
 permissions:
   contents: write

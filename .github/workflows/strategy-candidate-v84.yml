@@ -2,16 +2,6 @@ name: Protected v84 strategy candidate selection
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - issue-40-strategy-selection-20260913
-    paths:
-      - 'training/strategy/STRATEGY_CANDIDATE_CONTRACT_20260913.json'
-      - 'tools/simulation/strategy_candidate_gate.py'
-      - 'tools/simulation/conditioned_baseline_runner.py'
-      - 'tests/simulation/test_strategy_candidate_gate.py'
-      - 'tests/simulation/test_conditioned_baseline_runner.py'
-      - '.github/workflows/strategy-candidate-v84.yml'
 
 permissions:
   contents: write
