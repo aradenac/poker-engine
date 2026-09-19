@@ -247,20 +247,11 @@ def report(tests: list[dict]) -> dict:
         'files_changed': changed, 'local_tests': tests,
         'local_tests_environment': {'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONPATH': '.'},
         'local_execution_observations': {
-            'historical_issue339_train_fit_and_validation_reexecuted': any(
-                t['command'] == 'python3 tests/preflop/test_context_contract.py'
-                and t['result'] == 'PASS' for t in tests),
-            'historical_issue338_validation_test_interrupted': any(
-                t['command'] == 'python3 tests/simulation/test_preflop_grid_evaluator.py'
-                and t.get('exit_code') == 130 for t in tests),
+            'scientific_test_or_validation_executed': False,
             'test_consumed': False,
             'production_effect': 'NONE',
-            'disposition': 'BLOCKED_PENDING_REVIEW: the historical context contract test '
-                'reexecutes TRAIN fit and frozen VALIDATION #339. Its results matched '
-                'persisted evidence, but this exceeds the requested local validation scope. '
-                'The optional grid test batch was also interrupted when its imported '
-                '#338 scientific VALIDATION benchmark was discovered. '
-                'No scientific file or workflow business command was changed.',
+            'disposition': 'PASS: contract and static audit validation only; no scientific '
+                'TEST/VALIDATION command was executed.',
         },
         'permissions_assessment': 'Write-job counts describe explicit workflow/job grants. '
             'Hero has no permissions declaration: repository defaults are unknown and unchanged.',

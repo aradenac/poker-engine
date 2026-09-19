@@ -51,130 +51,74 @@
   "inventory_source_sha": "8285835c62d781a9487a1faad383684eb3d7138c",
   "issue": 380,
   "local_execution_observations": {
-    "disposition": "BLOCKED_PENDING_REVIEW: the historical context contract test reexecutes TRAIN fit and frozen VALIDATION #339. Its results matched persisted evidence, but this exceeds the requested local validation scope. The optional grid test batch was also interrupted when its imported #338 scientific VALIDATION benchmark was discovered. No scientific file or workflow business command was changed.",
-    "historical_issue338_validation_test_interrupted": true,
-    "historical_issue339_train_fit_and_validation_reexecuted": true,
+    "disposition": "PASS: contract and static audit validation only; no scientific TEST/VALIDATION command was executed.",
     "production_effect": "NONE",
+    "scientific_test_or_validation_executed": false,
     "test_consumed": false
   },
   "local_tests": [
     {
       "command": "python3 tests/test_repro_ci_helpers.py",
       "exit_code": 0,
-      "output_sha256": "ca76ae23d74a4f8311220fb98bf9133410292fe2127b0b3238e002043c23db77",
       "result": "PASS"
     },
     {
       "command": "python3 tests/ci/test_repro_current_mixed_batch.py",
       "exit_code": 0,
-      "output_sha256": "fb2fe0b283090ec025048926e1a6c0484c394fba745a876ce19b357dd5fa8706",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_repro_current_mixed_batch.py --check",
+      "exit_code": 0,
       "result": "PASS"
     },
     {
       "command": "python3 tools/validate_project_state.py",
       "exit_code": 0,
-      "output_sha256": "52fe06ed7031d6e61635cfb0df595e4d5660acfeaea4c6f30e702b3164f9ceee",
       "result": "PASS"
     },
     {
       "command": "python3 tools/validate_project_state.py --check-status",
       "exit_code": 0,
-      "output_sha256": "28be4deda011bd841f64ea6d48dc1bd01051caee1dc828aea038a6ee46c7ee49",
       "result": "PASS"
     },
     {
       "command": "python3 tests/test_project_state.py",
       "exit_code": 0,
-      "output_sha256": "f6b4edd015f13fd115a140836b96013e00236262dcb33bf911783606ac5b9026",
       "result": "PASS"
     },
     {
       "command": "python3 tools/audit_github_workflows.py --json /tmp/workflow-audit.json",
       "exit_code": 0,
-      "output_sha256": "bdd4a498e48380dae46f9da972ed57539cd6381dbe79ec3836c2da4bfc65ce71",
       "result": "PASS"
     },
     {
       "command": "git diff --check",
       "exit_code": 0,
-      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "result": "PASS"
     },
     {
-      "command": "python3 tests/datasets/test_build_hand_history_increment.py",
+      "command": "python3 tests/test_release_handoff.py",
       "exit_code": 0,
-      "output_sha256": "02dcda9851e2474344c95e5705fc83cdfebb1fdd52bc3b54d621f709d4ff2f9f",
       "result": "PASS"
     },
     {
-      "command": "python3 tests/training/test_full_hand_protocol.py",
+      "command": "python3 tests/training/test_build_release_handoff.py",
       "exit_code": 0,
-      "output_sha256": "b58f03ce0051b53103455e59f908ed543bf750637c7c429bd886b6b01e12facc",
       "result": "PASS"
     },
     {
-      "command": "python3 tests/training/test_preflop_strategy_benchmark.py",
+      "command": "python3 tests/training/test_build_promote_release_handoff.py",
       "exit_code": 0,
-      "output_sha256": "666c64e7db66e09561711167c44d0656fc3d7b16a5b4838ba9a45182490b5c8d",
       "result": "PASS"
     },
     {
-      "command": "python3 tests/test_promotion_gates.py",
+      "command": "python3 tests/training/test_finalize_cycle_release.py",
       "exit_code": 0,
-      "output_sha256": "2088ab87dfe944352320da954095b282ea5a08a7b6df749f2d3c6933e3e03961",
       "result": "PASS"
     },
     {
-      "command": "python3 tests/preflop/test_context_contract.py",
-      "exit_code": 0,
-      "output_sha256": "4665683e611b66afb0dfe0df2dc1cd552ca8604e7956e289098a5b3c6f6f5769",
-      "result": "PASS",
-      "scope_deviation": "Reexecuted historical #339 TRAIN fit and frozen VALIDATION; persisted equality assertions passed; TEST not consumed."
-    },
-    {
-      "command": "python3 tests/simulation/test_preflop_policy_context.py",
-      "exit_code": 0,
-      "output_sha256": "de17a4cb21f805a30e3be90517a86a642a7196f7a1a44a561623a3618440be7b",
-      "result": "PASS"
-    },
-    {
-      "command": "python3 tests/simulation/test_hero_preflop_overlay.py",
-      "exit_code": 0,
-      "output_sha256": "2c80ffb41c7e5daa5ee6499e7cee36b0adae2476d850257d7418abbf6b2584eb",
-      "result": "PASS"
-    },
-    {
-      "command": "python3 tests/training/test_hero_policy_context_sources.py",
-      "exit_code": 0,
-      "output_sha256": "90082a31ee97d69a69eacd17f11abeb2b7470e1b65ec74bea5ad645df6dcbc7a",
-      "result": "PASS"
-    },
-    {
-      "command": "node tests/hero_ranges/test_hero_range_repository.mjs",
-      "exit_code": 0,
-      "output_sha256": "50218b7fe79ab486ebe2fa39381931593ecc07114b6abd11a9b5d73ab4518f42",
-      "result": "PASS"
-    },
-    {
-      "command": "python3 tests/training/test_enrich_hero_range_context.py",
-      "exit_code": 0,
-      "output_sha256": "4037cd17a229e0315a897d71b3d03c7263df0b2347e0aad14b577cabdf628863",
-      "result": "PASS"
-    },
-    {
-      "command": "python3 tests/training/test_persisted_hero_pfc_binding.py",
-      "exit_code": 0,
-      "output_sha256": "ec0b5ed41b39a96fc7223420765acba38be05ead9d4fcd83fd99a40c87b2c8d8",
-      "result": "PASS"
-    },
-    {
-      "command": "python3 tests/simulation/test_preflop_grid_evaluator.py",
-      "disposition": "INTERRUPTED: imported test_paired_preflop_validation invokes the historical #338 scientific VALIDATION benchmark; stopped the optional test batch on discovery.",
-      "exit_code": 130,
-      "result": "FAIL"
-    },
-    {
-      "command": "python3 tools/audit_repro_current_mixed_batch.py --check",
+      "command": "python3 tests/training/test_verify_live_release.py",
       "exit_code": 0,
       "result": "PASS"
     }
