@@ -25,6 +25,7 @@ from tools.preflop.model_a_sizing_likelihood import (  # noqa: E402
 )
 from tools.simulation.game_core import NoLimitHoldemState  # noqa: E402
 from tools.simulation.model_a_continuation import (  # noqa: E402
+    ModelAUnsupportedContext,
     _position_map,
     _preflop_decision,
     _semantic_trace,
@@ -105,7 +106,7 @@ def test_posterior_support_closure_is_explicit_no_information_only():
     assert audit["test_consumed"] is False
 
 
-def test_iso5_co_call_exact_support_and_posterior_identity_are_available():
+def test_iso5_co_exact_support_absence_fails_closed_without_nearest_price():
     snapshot, _ = canonical_state()
     state = NoLimitHoldemState.from_snapshot(snapshot)
     positions = _position_map(state)
@@ -115,42 +116,48 @@ def test_iso5_co_call_exact_support_and_posterior_identity_are_available():
     state.apply_action(hero, "RAISE", target_total_bb=5.0)
     bb = str(state.next_actor)
     assert positions[bb] == "BB"
-    state.apply_action(bb, "FOLD")
 
+    # The first responder has admitted exact 5 BB support.
+    trace, replay, history, _, _ = _semantic_trace(state)
+    assert replay.to_snapshot(include_log=False) == state.to_snapshot(include_log=False)
+    bb_decision = _preflop_decision(state, bb, history)
+    assert bb_decision["family"] == "VS_ISO"
+    assert _is_required_sizing_context(bb_decision) is True
+
+    provider = Issue367ScientificProvider(hero_hole_cards=("Ks", "Ts"))
+    bb_resolved = provider.opponent_policy._resolve_sizing(bb_decision, None)
+    assert bb_resolved["status"] == "RESOLVED"
+    assert bb_resolved["node_id"]
+    assert int(bb_resolved["support"]) == 45
+    assert bb_resolved["support_context_key"].endswith(
+        "family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+    )
+
+    # A reachable continuation after BB folds has no admitted v2 exact cell.
+    state.apply_action(bb, "FOLD")
     co = str(state.next_actor)
     assert positions[co] == "CO"
     trace, replay, history, _, _ = _semantic_trace(state)
     assert replay.to_snapshot(include_log=False) == state.to_snapshot(include_log=False)
-    decision = _preflop_decision(state, co, history)
-    assert decision["family"] == "LIMPER_VS_ISO"
-    assert "aggressor_position" not in decision
-    assert _is_required_sizing_context(decision) is True
+    co_decision = _preflop_decision(state, co, history)
+    assert co_decision["family"] == "LIMPER_VS_ISO"
+    assert "aggressor_position" not in co_decision
+    assert _is_required_sizing_context(co_decision) is True
 
-    provider = Issue367ScientificProvider(hero_hole_cards=("Ks", "Ts"))
-    resolved = provider.opponent_policy._resolve_sizing(decision, None)
-    assert resolved["status"] == "RESOLVED"
-    assert resolved["node_id"]
-    assert int(resolved["support"]) > 0
-    assert resolved["support_context_key"].endswith(
-        "family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+    expected_key = (
+        "family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|"
+        "callers=0|target=5|call=4"
     )
+    try:
+        provider.opponent_policy._resolve_sizing(co_decision, None)
+    except ModelAUnsupportedContext as exc:
+        message = str(exc)
+        assert "exact-price support missing" in message
+        assert expected_key in message
+    else:
+        raise AssertionError("missing CO exact support must fail closed")
 
-    state.apply_action(co, "CALL")
-    ref_id, record = provider._posterior_after_action(
-        state,
-        alternative_id="ISO@5",
-        player=co,
-        response="CALL",
-        sample_index=0,
-    )
-    assert ref_id == "issue367:ISO@5:CO:CALL"
-    assert record["status"] == "AVAILABLE"
-    assert int(record["source_observations"]) > 0
-    assert record["position"] == "CO"
-    assert record["public_action"]["action"] == "CALL"
-    assert record["public_action"]["sizing"]["target_total_bb"] == 5.0
-    assert record["identity"]["model_id"] == CANDIDATE_ID
-    assert record["identity"]["model_version"] == CANDIDATE_SHA256
+    assert provider.opponent_policy.sizing_candidate["nearest_price_fallback"] is False
 
 
 def test_reference_descriptor_keeps_active_v5_pointer_external_to_candidate():
