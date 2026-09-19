@@ -2,16 +2,6 @@ name: Build independent Model B candidate
 
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - main
-    paths:
-      - 'tools/training/independent_profiles/build_model_b.py'
-      - 'tools/training/independent_profiles/summarize_model_b.py'
-      - 'tests/independent_profiles/test_build_model_b.py'
-      - 'training/runs/20260912_independent_profiles_v2/features/**'
-      - 'training/datasets/NLHE_100-200/**/*.zip'
-      - '.github/workflows/model-b-build.yml'
 
 permissions:
   contents: read

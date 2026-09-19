@@ -2,13 +2,6 @@ name: Audit unseen preflop exact contexts
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - issue-61-unseen-preflop-analysis
-    paths:
-      - 'tools/training/analyze_unseen_preflop_contexts.py'
-      - 'tests/training/test_analyze_unseen_preflop_contexts.py'
-      - '.github/workflows/unseen-preflop-context-audit.yml'
 
 permissions:
   contents: write

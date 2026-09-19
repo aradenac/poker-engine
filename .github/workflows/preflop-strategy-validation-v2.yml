@@ -2,9 +2,6 @@ name: Execute preflop strategy VALIDATION v2
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'issue-108-validation-run-v1-sol'
 
 permissions:
   contents: read

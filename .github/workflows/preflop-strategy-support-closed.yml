@@ -1,29 +1,7 @@
 name: Validate preflop strategy support-closed replacement
 
 on:
-  pull_request:
-    paths:
-      - 'training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json'
-      - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917_SUPPORT_CLOSED.json'
-      - 'training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260918_PFPC.json'
-      - 'training/runs/20260917_preflop_strategy_validation_v2_blocked/RESULT.json'
-      - 'training/runs/20260917_preflop_strategy_validation_support_closed_zero_exposure/RESULT.json'
-      - 'tools/simulation/reference_support_closure.py'
-      - 'tools/simulation/preflop_strategy_benchmark_v2.py'
-      - 'tools/simulation/preflop_strategy_benchmark_support_closed.py'
-      - 'tools/training/select_preflop_strategy_validation.py'
-      - 'tools/training/validate_preflop_strategy_benchmark_support_closed.py'
-      - 'tools/training/validate_preflop_strategy_benchmark_pfpc.py'
-      - 'tests/simulation/test_reference_support_closure.py'
-      - 'tests/simulation/test_preflop_strategy_support_closed.py'
-      - 'tests/simulation/test_preflop_strategy_exposure_guard.py'
-      - 'tests/training/test_preflop_strategy_benchmark_pfpc.py'
-      - '.github/workflows/preflop-strategy-support-closed.yml'
-      - '.github/workflows/preflop-strategy-validation-support-closed.yml'
-  push:
-    branches:
-      - 'issue-108-support-closure-sol'
-      - 'issue-108-candidate-exposure-gate-sol'
+  workflow_dispatch:
 
 concurrency:
   group: preflop-strategy-support-closed-${{ github.ref }}

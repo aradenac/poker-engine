@@ -2,19 +2,6 @@ name: Evaluate independent Model B holdout
 
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - main
-    paths:
-      - 'tools/training/independent_profiles/**'
-      - 'tests/independent_profiles/**'
-      - 'training/runs/20260912_independent_profiles_v2/features/**'
-      - 'training/runs/20260912_independent_profiles_v2/model/**'
-      - 'training/runs/20260912_independent_profiles_v2/evaluation/profile_count_selection.json'
-      - 'training/runs/20260912_population_increment_cycle/evaluation/model_b_refit_selection.json'
-      - 'training/datasets/NLHE_100-200/**/*.zip'
-      - 'training/PROMOTION_GATE_CONTRACT.json'
-      - '.github/workflows/model-b-evaluation.yml'
 
 permissions:
   contents: write

@@ -1,14 +1,7 @@
 name: Select independent Model B profile count
 
 on:
-  push:
-    paths:
-      - 'tools/training/independent_profiles/select_profile_count.py'
-      - 'tools/training/independent_profiles/build_model_b.py'
-      - 'tools/training/independent_profiles/evaluate_model_b.py'
-      - 'training/runs/20260912_independent_profiles_v2/features/**'
-      - 'training/datasets/NLHE_100-200/**/*.zip'
-      - '.github/workflows/model-b-profile-selection.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

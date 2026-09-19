@@ -2,16 +2,6 @@ name: Model B response-conditioned v3
 
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - main
-    paths:
-      - 'tools/training/independent_profiles/build_model_b.py'
-      - 'tools/training/independent_profiles/conditioned_response_candidate.py'
-      - 'tools/training/independent_profiles/audit_response_conditioning.py'
-      - 'tests/independent_profiles/test_conditioned_response_candidate.py'
-      - 'tests/independent_profiles/test_french_button_position.py'
-      - '.github/workflows/model-b-response-v3.yml'
 
 permissions:
   contents: write

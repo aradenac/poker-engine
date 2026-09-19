@@ -2,17 +2,6 @@ name: Paired v83 strategic benchmark v2 vs v3
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - issue-39-strategic-benchmark-v3-20260913
-    paths:
-      - 'tools/simulation/retarget_scenario_manifest.py'
-      - 'tools/simulation/conditioned_baseline_runner.py'
-      - 'tools/simulation/conditioned_baseline_report.py'
-      - 'tools/simulation/environment_drift_report.py'
-      - 'tests/simulation/test_environment_drift_report.py'
-      - 'training/runs/20260913_model_b_response_v3/**'
-      - '.github/workflows/strategic-benchmark-v3.yml'
 
 permissions:
   contents: write
