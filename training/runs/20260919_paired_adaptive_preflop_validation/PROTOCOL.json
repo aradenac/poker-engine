@@ -1,0 +1,52 @@
+{
+  "schema": "poker-paired-adaptive-preflop-validation-protocol/v1",
+  "issue": 338,
+  "parent_issue": 198,
+  "phase": "VALIDATION",
+  "status": "FROZEN_BEFORE_RESULTS",
+  "source_main_sha": "07fdf75484abcbf0433d95f64b67e35de7960216",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "comparison": {
+    "baseline": "fixed_historical",
+    "candidate": "paired_adaptive",
+    "common_decision_grid_required": true,
+    "same_rollout_continuation_required": true,
+    "same_validation_decisions_required": true
+  },
+  "corpus": {
+    "split": "VALIDATION",
+    "source": "certified NLHE 100-200 population validation decisions",
+    "test_split_forbidden": true,
+    "synthetic_evidence_not_accepted_as_performance_evidence": true,
+    "selection": "deterministic decision ordering by stable decision_id; no post-result filtering"
+  },
+  "budget": {
+    "fixed_samples_per_non_exact_alternative": 64,
+    "paired_initial_samples_per_non_exact_alternative": 16,
+    "paired_max_samples_per_non_exact_alternative": 64,
+    "paired_batch_size": 8,
+    "paired_max_total_rollouts_rule": "never exceed fixed_historical total non-exact rollout cost for the same decision",
+    "confidence_z": 1.96,
+    "elimination_margin_bb": 0.0
+  },
+  "metrics": {
+    "primary_stability": "selected alternative agreement across deterministic reruns and adjacent seed blocks",
+    "secondary": [
+      "paired EV deltas and CI95",
+      "rollout cost",
+      "world fingerprint determinism",
+      "fixed historical byte-semantic reproducibility"
+    ],
+    "acceptance": "paired_adaptive stability >= fixed_historical stability with mean rollout cost <= fixed_historical"
+  },
+  "scientific_boundaries": {
+    "train_consumed": false,
+    "validation_consumed": true,
+    "test_consumed": false,
+    "promotion_authorized": false,
+    "model_a_modified": false,
+    "model_b_modified": false,
+    "ui_modified": false,
+    "rejected_issue_108_candidate_promoted": false
+  }
+}
