@@ -1,0 +1,21 @@
+{
+  "activation_state": "INACTIVE_CANDIDATE_METADATA_ONLY",
+  "candidate_repository_sha256": "9c3f80b28426726935b078f754f2266f24b8f5d64c2c4094de6647b1b7b5bb18",
+  "generated_part_count": 176,
+  "generated_parts_combined_sha256": "a185c9c82f6bdac003e437ebfa1715b6a3692a096821c468a7f1b0f58f54a75c",
+  "inputs_combined_sha256": "c040985aa1f11bc61b471f605c8d3f50afbb1de236abaff9e02b090c8e88e53a",
+  "issue": 358,
+  "manifest_sha256": "6f36a105ef18e2eadbd6f0a4ceb91bd79e9f22b882e2a493e7869dc44596c257",
+  "reason": "MECHANICAL_IMPORT_WIRING_ONLY",
+  "resume_head_sha": "8d34bfbaf3192bd1f655409cfcaccf7d76d7d66e",
+  "reused_generated_shards": true,
+  "reused_inputs": true,
+  "schema": "poker-hero-preflop-assemble-resume/v1",
+  "scientific_parameters_changed": false,
+  "shards_recomputed": false,
+  "source_assemble_job_id": 105941776472,
+  "source_head_sha": "c897d822971ccdb494acba1a75e382f9bbefd015",
+  "source_run_id": 35455766353,
+  "test_consumed": false,
+  "validation_consumed": false
+}

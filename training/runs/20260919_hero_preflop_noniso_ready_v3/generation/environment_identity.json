@@ -1,0 +1,38 @@
+{
+  "code_sha": "c897d822971ccdb494acba1a75e382f9bbefd015",
+  "game_core": "tools.simulation.game_core.NoLimitHoldemState",
+  "paired_engine": "tools.simulation.paired_preflop_grid_evaluator.evaluate_preflop_grid_paired",
+  "python_version": "3.11.16",
+  "runner_arch": "X64",
+  "runner_os": "Linux",
+  "schema": "poker-hero-preflop-generation-environment/v1",
+  "scientific_effect": "REAL_GENERATION_EXPERIMENTAL_NO_PROMOTION",
+  "slot_id": "env:ISSUE358_NONISO_V3",
+  "sources": [
+    {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    {
+      "path": "training/models/postflop_population_model_v5.json",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    },
+    {
+      "path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+      "sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d"
+    },
+    {
+      "path": "tools/simulation/paired_preflop_grid_evaluator.py",
+      "sha256": "eebc527540c7f16b868ed37ca13d06ed8e85530c3bf78e7652cd3bb8aa09c5c7"
+    },
+    {
+      "path": "tools/simulation/paired_adaptive_preflop_ev.py",
+      "sha256": "c9a4833f7dbf06c2d7bdc25b6ac4c8a409d25bbf95e26fb49112898d4c937ccb"
+    },
+    {
+      "path": "tools/simulation/game_core.py",
+      "sha256": "540b38f4b50bf967b17aca6d9c4e3eed42549ec9b60335664d3cf262cd3cb2b7"
+    }
+  ],
+  "test_consumed": false
+}

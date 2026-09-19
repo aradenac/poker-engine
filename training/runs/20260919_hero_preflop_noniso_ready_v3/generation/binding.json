@@ -1,0 +1,117 @@
+{
+  "bindings": [
+    {
+      "artifact_path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "artifact_sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50",
+      "stack_bucket": "B2_P25_P50"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "artifact_sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50",
+      "stack_bucket": "B2_P25_P50"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "artifact_sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50",
+      "stack_bucket": "B2_P25_P50"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "artifact_sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50",
+      "stack_bucket": "B2_P25_P50"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "artifact_sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50",
+      "stack_bucket": "B2_P25_P50"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "artifact_sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50",
+      "stack_bucket": "B2_P25_P50"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-004-VS_RFI-B3_P50_P75.json",
+      "artifact_sha256": "710b43606ba8ce8f718313f35bbfbd1d2f90d4309a77fa86c7131db75de4a489",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-004-VS_RFI-B3_P50_P75",
+      "stack_bucket": "B3_P50_P75"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-004-VS_RFI-B3_P50_P75.json",
+      "artifact_sha256": "710b43606ba8ce8f718313f35bbfbd1d2f90d4309a77fa86c7131db75de4a489",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-004-VS_RFI-B3_P50_P75",
+      "stack_bucket": "B3_P50_P75"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-004-VS_RFI-B3_P50_P75.json",
+      "artifact_sha256": "710b43606ba8ce8f718313f35bbfbd1d2f90d4309a77fa86c7131db75de4a489",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-004-VS_RFI-B3_P50_P75",
+      "stack_bucket": "B3_P50_P75"
+    },
+    {
+      "artifact_path": "shards/ISSUE358-GEN-004-VS_RFI-B3_P50_P75.json",
+      "artifact_sha256": "710b43606ba8ce8f718313f35bbfbd1d2f90d4309a77fa86c7131db75de4a489",
+      "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "shard_id": "ISSUE358-GEN-004-VS_RFI-B3_P50_P75",
+      "stack_bucket": "B3_P50_P75"
+    }
+  ],
+  "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+  "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+  "lookup_policy": {
+    "fallback_states": [
+      "EXACT_GENERATED",
+      "EXACT_INCUMBENT_FALLBACK",
+      "EXACT_UNAVAILABLE"
+    ],
+    "mode": "EXACT_CONTEXT_ONLY",
+    "nearest_context_allowed": false
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "schema": "poker-hero-preflop-generation-binding/v1"
+}

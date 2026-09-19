@@ -1,0 +1,15 @@
+{
+  "candidate_repository_sha256": "9c3f80b28426726935b078f754f2266f24b8f5d64c2c4094de6647b1b7b5bb18",
+  "execution": "NOT_RUN_NO_ACTIVATION_OR_PROMOTION_IN_ISSUE_358",
+  "generated_contexts": 10,
+  "issue": 358,
+  "promotion_authorized": false,
+  "protocol_frozen_before_generation_results": true,
+  "protocol_path": "training/protocols/issue358_hero_preflop_noniso_validation_v3.json",
+  "protocol_sha256": "c92e24eaed94c36fc9405b982ff4139d712b71ae7106da09e56e863f75a9f455",
+  "reason": "#196 requires full-hand VALIDATION before promotion; #358 explicitly forbids activation/promotion, so no performance selection is made in this slice.",
+  "schema": "poker-hero-preflop-validation-disposition/v1",
+  "test_authorized": false,
+  "test_consumed": false,
+  "validation_consumed": false
+}
