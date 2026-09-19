@@ -1,0 +1,82 @@
+name: Execute issue 367 real ISO EV observable
+
+on:
+  pull_request:
+    paths:
+      - '.github/triggers/issue-367-observable-execute'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-367-real-iso-ev-observable-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Revalidate frozen scientific boundary
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tests/preflop/test_issue367_scientific_provider.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('training/runs/20260919_issue367_real_iso_ev_v1/PROTOCOL.json')
+          v=json.loads(p.read_text(encoding='utf-8'))
+          assert v['status']=='FROZEN_BEFORE_REAL_EXECUTION'
+          assert v['model_a']['candidate_id']=='model-a-preflop-sizing-aware-candidate-v2'
+          assert v['model_a']['candidate_sha256']=='9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19'
+          assert v['model_a']['admission_decision']=='ADMIT_CANDIDATE'
+          assert v['model_a']['active_model_pointer_mutation'] is False
+          assert v['scientific_boundary']['test_consumed'] is False
+          assert v['scientific_boundary']['model_b_consumed'] is False
+          assert v['exact_support_grid']['nearest_price'] is False
+          assert v['selection']['rule']=='MAX_EV_POINT_ESTIMATE_ONLY'
+          print('issue #367 observable frozen preflight: PASS')
+          PY
+      - name: Execute frozen real canonical KTs #314 search
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue367
+          PYTHONPATH=. python3 tools/simulation/run_issue367_real_iso_ev.py \
+            --protocol training/runs/20260919_issue367_real_iso_ev_v1/PROTOCOL.json \
+            --output /tmp/issue367/RESULT.json \
+            --summary /tmp/issue367/SUMMARY.md \
+            --print-marker
+      - name: Verify frozen-result boundaries
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/issue367/RESULT.json').read_text(encoding='utf-8'))
+          assert r['schema']=='poker-issue367-real-iso-ev-result/v1'
+          assert r['selection']['rule']=='MAX_EV_POINT_ESTIMATE_ONLY'
+          assert r['scientific_boundary']['test_consumed'] is False
+          assert r['scientific_boundary']['model_b_consumed'] is False
+          assert r['scientific_boundary']['promotion_performed'] is False
+          assert r['scientific_boundary']['active_model_pointer_mutated'] is False
+          assert r['scientific_boundary']['ui_modified'] is False
+          assert r['scientific_boundary']['vs_limpers_generation_196'] is False
+          assert r['runner_result']['information_boundary']['nearest_price_used'] is False
+          assert r['runner_result']['posterior_binding']['posterior_schema']=='poker-opponent-posterior-range/v1'
+          comparable=[x for x in r['alternatives'] if x['comparable'] and x['ev_bb'] is not None]
+          selected=next(x for x in comparable if x['alternative_id']==r['selection']['selected_alternative_id'])
+          assert selected['ev_bb']==max(x['ev_bb'] for x in comparable)
+          print('issue #367 observable result boundary: PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-367-real-iso-ev-observable-${{ github.sha }}
+          path: |
+            /tmp/issue367/RESULT.json
+            /tmp/issue367/SUMMARY.md
+          if-no-files-found: error
+          retention-days: 30
