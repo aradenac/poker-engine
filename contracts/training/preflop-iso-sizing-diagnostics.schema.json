@@ -1,0 +1,456 @@
+{
+  "$defs": {
+    "bridge": {
+      "additionalProperties": false,
+      "properties": {
+        "paired_decision_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "pairing_contract": {
+          "const": "DECISION_SAMPLE_COMMON_RANDOM_NUMBERS_V1"
+        },
+        "same_worlds_for_ev_and_diagnostics": {
+          "const": true
+        },
+        "source_mode": {
+          "enum": [
+            "paired_adaptive",
+            "paired_fixed"
+          ]
+        },
+        "source_schema": {
+          "const": "paired-adaptive-preflop-ev/v1"
+        },
+        "world_fingerprint_match": {
+          "const": "EXACT_SAMPLE_INDEX_AND_SHA256"
+        }
+      },
+      "required": [
+        "source_schema",
+        "source_mode",
+        "pairing_contract",
+        "paired_decision_id",
+        "same_worlds_for_ev_and_diagnostics",
+        "world_fingerprint_match"
+      ],
+      "type": "object"
+    },
+    "callerPartition": {
+      "additionalProperties": false,
+      "properties": {
+        "all_fold": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "exactly_1_caller": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "exactly_2_callers": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "three_plus_callers": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "all_fold",
+        "exactly_1_caller",
+        "exactly_2_callers",
+        "three_plus_callers"
+      ],
+      "type": "object"
+    },
+    "decisionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_schema": {
+          "const": "poker-preflop-decision/v1"
+        },
+        "context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "canonical_schema",
+        "decision_id",
+        "context_id"
+      ],
+      "type": "object"
+    },
+    "diagnosticAlternative": {
+      "additionalProperties": false,
+      "description": "No action/sizing/incremental-cost/EV/uncertainty fields by design; alternative_id resolves those from poker-preflop-decision/v1.",
+      "properties": {
+        "alternative_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "caller_partition": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/callerPartition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "continuing_positions": {
+          "oneOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/positionProbability"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_callers": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p_3bet_or_jam": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "posterior_refs": {
+          "oneOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/posteriorResponseRef"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "sample_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "AVAILABLE",
+            "NOT_APPLICABLE",
+            "UNSUPPORTED"
+          ]
+        },
+        "support": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/support"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "world_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "alternative_id",
+        "status",
+        "caller_partition",
+        "expected_callers",
+        "p_3bet_or_jam",
+        "continuing_positions",
+        "posterior_refs",
+        "sample_count",
+        "world_count",
+        "support",
+        "provenance"
+      ],
+      "type": "object"
+    },
+    "positionProbability": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "probability": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "position",
+        "probability"
+      ],
+      "type": "object"
+    },
+    "posteriorRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "hand_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "model_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "model_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "moment": {
+          "const": "AFTER_ACTION"
+        },
+        "player": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "population_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "public_state_fingerprint": {
+          "pattern": "^preflop-public:",
+          "type": "string"
+        },
+        "range_contract_schema": {
+          "description": "Future #320 posterior contract schema identifier; intentionally not const until #320 lands.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "ref_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "response_action": {
+          "enum": [
+            "CALL",
+            "3BET",
+            "JAM"
+          ]
+        },
+        "status": {
+          "enum": [
+            "AVAILABLE",
+            "UNSUPPORTED"
+          ]
+        },
+        "step_id": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref_id",
+        "range_contract_schema",
+        "hand_id",
+        "step_id",
+        "public_state_fingerprint",
+        "player",
+        "position",
+        "moment",
+        "response_action",
+        "population_id",
+        "model_id",
+        "model_version",
+        "artifact_sha256",
+        "status"
+      ],
+      "type": "object"
+    },
+    "posteriorResponseRef": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "ref": {
+          "$ref": "#/$defs/posteriorRef"
+        },
+        "response": {
+          "enum": [
+            "CALL",
+            "3BET",
+            "JAM"
+          ]
+        },
+        "response_probability": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "position",
+        "response",
+        "response_probability",
+        "ref"
+      ],
+      "type": "object"
+    },
+    "provenance": {
+      "additionalProperties": true,
+      "properties": {
+        "same_worlds_as_ev": {
+          "type": "boolean"
+        },
+        "scientific_effect": {
+          "const": "NONE_INTEGRATION_CONTRACT_ONLY"
+        }
+      },
+      "required": [
+        "scientific_effect",
+        "same_worlds_as_ev"
+      ],
+      "type": "object"
+    },
+    "support": {
+      "additionalProperties": false,
+      "properties": {
+        "backoff_level": {
+          "enum": [
+            "EXACT",
+            "POSITION",
+            "FAMILY",
+            "POPULATION",
+            "UNSUPPORTED"
+          ]
+        },
+        "effective_sample_size": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "observations": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "quality": {
+          "enum": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "UNSUPPORTED"
+          ]
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "observations",
+        "effective_sample_size",
+        "backoff_level",
+        "quality",
+        "source"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://poker-engine.local/contracts/training/preflop-iso-sizing-diagnostics.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Explanatory caller/posterior diagnostics keyed to canonical poker-preflop-decision/v1 alternatives. Action, sizing, incremental cost, EV and uncertainty are intentionally not duplicated here; consumers resolve them from the canonical decision by alternative_id. Diagnostics never select an alternative.",
+  "properties": {
+    "alternatives": {
+      "items": {
+        "$ref": "#/$defs/diagnosticAlternative"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "bridge": {
+      "$ref": "#/$defs/bridge"
+    },
+    "decision_ref": {
+      "$ref": "#/$defs/decisionRef"
+    },
+    "information_boundary": {
+      "additionalProperties": false,
+      "properties": {
+        "future_cards_consumed": {
+          "const": false
+        },
+        "opponent_hole_cards_consumed": {
+          "const": false
+        }
+      },
+      "required": [
+        "future_cards_consumed",
+        "opponent_hole_cards_consumed"
+      ],
+      "type": "object"
+    },
+    "schema": {
+      "const": "poker-preflop-iso-sizing-diagnostics/v1"
+    },
+    "selection_contract": {
+      "additionalProperties": false,
+      "properties": {
+        "diagnostics_can_select": {
+          "const": false
+        },
+        "mode": {
+          "const": "CANONICAL_MAX_EV_ONLY"
+        }
+      },
+      "required": [
+        "mode",
+        "diagnostics_can_select"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "decision_ref",
+    "selection_contract",
+    "bridge",
+    "information_boundary",
+    "alternatives"
+  ],
+  "title": "Hero preflop iso-sizing explanatory diagnostics",
+  "type": "object"
+}

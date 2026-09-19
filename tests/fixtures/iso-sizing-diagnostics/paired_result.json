@@ -1,0 +1,87 @@
+{
+  "alternatives": {
+    "FOLD": {
+      "ci_lower_bb": 0,
+      "ci_upper_bb": 0,
+      "eliminated_after_samples": null,
+      "ev_bb": 0,
+      "paired_delta_vs_selected": {},
+      "rollouts": 0,
+      "samples": 8,
+      "standard_error_bb": 0,
+      "status": "RETAINED_TO_BUDGET"
+    },
+    "ISO@4": {
+      "ci_lower_bb": 0.261,
+      "ci_upper_bb": 0.359,
+      "eliminated_after_samples": null,
+      "ev_bb": 0.31,
+      "paired_delta_vs_selected": {},
+      "rollouts": 8,
+      "samples": 8,
+      "standard_error_bb": 0.025,
+      "status": "RETAINED_TO_BUDGET"
+    },
+    "ISO@5": {
+      "ci_lower_bb": 0.3208,
+      "ci_upper_bb": 0.3992,
+      "eliminated_after_samples": null,
+      "ev_bb": 0.36,
+      "paired_delta_vs_selected": {},
+      "rollouts": 8,
+      "samples": 8,
+      "standard_error_bb": 0.02,
+      "status": "SELECTED"
+    },
+    "ISO@6": {
+      "ci_lower_bb": 0.29688,
+      "ci_upper_bb": 0.38312,
+      "eliminated_after_samples": null,
+      "ev_bb": 0.34,
+      "paired_delta_vs_selected": {},
+      "rollouts": 8,
+      "samples": 8,
+      "standard_error_bb": 0.022,
+      "status": "RETAINED_TO_BUDGET"
+    },
+    "OVERLIMP@1": {
+      "ci_lower_bb": 0.1212,
+      "ci_upper_bb": 0.2388,
+      "eliminated_after_samples": null,
+      "ev_bb": 0.18,
+      "paired_delta_vs_selected": {},
+      "rollouts": 8,
+      "samples": 8,
+      "standard_error_bb": 0.03,
+      "status": "RETAINED_TO_BUDGET"
+    }
+  },
+  "mode": "paired_fixed",
+  "pairwise_deltas": {},
+  "schema": "paired-adaptive-preflop-ev/v1",
+  "search": {
+    "adaptive": false,
+    "base_seed": "synthetic-322",
+    "batch_size": 8,
+    "confidence_z": 1.96,
+    "decision_id": "synthetic:SB:two-limpers:KTs",
+    "elimination_margin_bb": 0,
+    "initial_samples_per_alternative": 8,
+    "max_samples_per_alternative": 8,
+    "max_total_rollouts": 32,
+    "pairing_contract": "DECISION_SAMPLE_COMMON_RANDOM_NUMBERS_V1",
+    "rollout_budget_used": 32,
+    "world_fingerprints_sha256": {
+      "0": "cb4c772f8ee4576fe2d549b2137f77cbdd15b0edc3fe3992eefa7c419cc5074e",
+      "1": "cd7d644001e6110b12b3069c0cd6d9bf7eac5398ac3ff61f5b95b803aac31a42",
+      "2": "ab49cafff168037ace7485d4c80359e2dff5fe5fe4de64bbf180925aaad1508b",
+      "3": "20e57c2f9132c6f84c2dbb6c893a432ebb964648ffcbb86f034492ecf210b91c",
+      "4": "d53fc24572de794ca6d9216aa65fc3093bc12e8a2bc6a33acc68b70cf1595106",
+      "5": "cfed8b85b2f9a94fc819922b9016b03e32715ead804db0e1b53b67f2e0688b18",
+      "6": "594ba03dfb04c487e3d882477177af3c5626917d8e44538b21a58256bd9f2710",
+      "7": "5a1ad8ea6ce9e05160ae980e27ca11dff923d68036f5b1662e3a9c5066a0f351"
+    },
+    "worlds_materialized": 8
+  },
+  "selected_id": "ISO@5"
+}
