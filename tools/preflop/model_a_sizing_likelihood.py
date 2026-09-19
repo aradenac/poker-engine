@@ -24,6 +24,8 @@ from tools.preflop.context_contract import EPS, canonical_key
 SCHEMA = "poker-model-a-preflop-sizing-likelihood/v1"
 PUBLIC_CONTEXT_SCHEMA = "poker-model-a-preflop-sizing-public-context/v1"
 RUNTIME_CANDIDATE_ID = "model-a-preflop-sizing-aware-candidate-v1"
+RUNTIME_CANDIDATE_V2_ID = "model-a-preflop-sizing-aware-candidate-v2"
+CANDIDATE_IDS = (RUNTIME_CANDIDATE_ID, RUNTIME_CANDIDATE_V2_ID)
 MODEL_FAMILY = "MODEL_A_PREFLOP"
 CANDIDATE_STATUS = "CANDIDATE_ONLY_NOT_ACTIVE"
 BACKOFF_POLICY = (
@@ -242,11 +244,14 @@ def candidate_identity(
     fit_scope: str = "SCAFFOLD_ONLY_NO_FINAL_FIT",
     data_scope: str = "SYNTHETIC_OR_TRAIN_ONLY",
     source_report_hash: str | None = None,
+    candidate_id: str = RUNTIME_CANDIDATE_ID,
 ) -> dict[str, Any]:
     if not population_id:
         raise SizingLikelihoodError("population_id is required")
+    if candidate_id not in CANDIDATE_IDS:
+        raise SizingLikelihoodError("unsupported sizing-aware candidate_id")
     identity = {
-        "candidate_id": RUNTIME_CANDIDATE_ID,
+        "candidate_id": candidate_id,
         "model_family": MODEL_FAMILY,
         "status": CANDIDATE_STATUS,
         "population_id": str(population_id),
@@ -330,7 +335,7 @@ def validate_candidate(candidate: Mapping[str, Any]) -> None:
     identity = candidate.get("identity")
     if not isinstance(identity, Mapping):
         raise SizingLikelihoodError("candidate identity is required")
-    if identity.get("candidate_id") != RUNTIME_CANDIDATE_ID:
+    if identity.get("candidate_id") not in CANDIDATE_IDS:
         raise SizingLikelihoodError("unexpected candidate identity")
     if identity.get("model_family") != MODEL_FAMILY:
         raise SizingLikelihoodError("candidate must be Model-A preflop")
