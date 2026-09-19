@@ -1,0 +1,56 @@
+{
+  "schema": "model-b-preflop-response-to-price-feature-contract/v1",
+  "issue": 315,
+  "tranche": 1,
+  "status": "SCAFFOLD_SYNTHETIC_ONLY",
+  "allowed_input_features": [
+    "profile",
+    "family",
+    "responder_position",
+    "raiser_position",
+    "sequence",
+    "limper_count",
+    "hero_raise_size_bb",
+    "facing_price_to_pot",
+    "effective_stack_bb"
+  ],
+  "derived_public_features": [
+    "limper_count_bucket",
+    "raise_size_bucket",
+    "price_bucket",
+    "effective_stack_bucket"
+  ],
+  "actions": [
+    "FOLD",
+    "CALL",
+    "RAISE",
+    "JAM"
+  ],
+  "families": [
+    "ISO_OVER_LIMPERS",
+    "VS_RFI"
+  ],
+  "forbidden_features": [
+    "model_a",
+    "model_a_policy",
+    "model_a_ev",
+    "model_a_recommendation",
+    "hero_ev",
+    "hero_recommendation",
+    "recommended_action",
+    "recommended_sizing"
+  ],
+  "source_policy": {
+    "builder_allowed_source_kind": "SYNTHETIC_FIXTURE",
+    "real_train_fit_allowed": false,
+    "validation_allowed": false,
+    "test_allowed": false
+  },
+  "scientific_constraints": {
+    "performance_claim_allowed": false,
+    "active_model_b_change_allowed": false,
+    "automatic_promotion": false,
+    "production_effect": "NONE",
+    "issue_108_files_modified": false
+  }
+}
