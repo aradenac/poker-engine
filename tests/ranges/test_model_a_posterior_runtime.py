@@ -284,7 +284,7 @@ def test_contract_identity_support_projection_and_call_sizing_are_validated():
     assert record["support"]["source_observations"] > 0
     assert record["support"]["backoff"]["level"] == "EXACT_NODE_HISTORY"
     assert "PF_bb_call_iso" in record["provenance"]["source_artifact"]
-    assert record["probability_mass"] == 1.0
+    assert abs(float(record["probability_mass"]) - 1.0) < 1e-9
     assert len(record["projection_169"]["classes"]) == 169
     assert record["public_action"]["action"] == "CALL"
     assert record["public_action"]["sizing"]["semantic"] == "INCREMENTAL_COST_BB"
