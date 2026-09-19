@@ -156,6 +156,19 @@ def test_all_mass_blocked_is_unsupported_not_uniform_fallback() -> None:
         raise AssertionError("all-blocked range must fail closed")
 
 
+
+def test_distribution_fingerprint_is_idempotent_across_1326_reprojection() -> None:
+    combos = all_combos()
+    weights = [float(i + 1) for i in range(len(combos))]
+    first = posterior.project_exact_combo_weights(combos, weights)
+    second = posterior.project_exact_combo_weights(
+        [row["cards"] for row in first["exact_combo_weights"]],
+        [row["weight"] for row in first["exact_combo_weights"]],
+    )
+    assert first["distribution_fingerprint"] == second["distribution_fingerprint"]
+    assert math.isclose(second["probability_mass"], 1.0)
+
+
 def test_available_record_validates_and_has_deterministic_fingerprint() -> None:
     a = posterior.build_available_record(
         combos=[["As", "Ah"], ["7c", "2d"], ["Ks", "Qs"]],
