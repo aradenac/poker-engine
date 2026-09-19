@@ -5,9 +5,12 @@ import copy
 import hashlib
 import json
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 
 from tools.training.validate_hero_preflop_generation import (
     ContractError,
