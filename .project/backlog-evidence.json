@@ -1,0 +1,39 @@
+{
+  "schema": "poker-backlog-evidence/v1",
+  "issues": [
+    {
+      "issue": 45,
+      "capability_id": "assembled_static_application",
+      "expected_state": "LIVE",
+      "source_refs": [
+        "#45",
+        ".project/capabilities.json",
+        "site/RELEASE.json"
+      ],
+      "gaps": [
+        {
+          "id": "canonical-live-verification",
+          "status": "OPEN",
+          "source_ref": "#45",
+          "detail": "Canonical production verification remains explicitly tracked by issue #45."
+        }
+      ]
+    },
+    {
+      "issue": 206,
+      "capability_id": null,
+      "expected_state": null,
+      "source_refs": [
+        "#206"
+      ],
+      "gaps": [
+        {
+          "id": "mandatory-ci-project-state-check",
+          "status": "DEFERRED",
+          "source_ref": "#206",
+          "detail": "The mandatory CI invocation remains explicitly deferred while workflow-sensitive ownership is handled outside this tranche."
+        }
+      ]
+    }
+  ]
+}
