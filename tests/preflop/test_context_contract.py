@@ -41,7 +41,9 @@ from tools.training.fit_model_a_preflop_sizing import (  # noqa: E402
 )
 from tools.training.fit_model_a_preflop_sizing_v2 import (  # noqa: E402
     build_candidate as build_issue352_candidate,
+    evaluate_validation as evaluate_issue352_validation,
     load_fit_protocol as load_issue352_fit_protocol,
+    load_validation_protocol as load_issue352_validation_protocol,
 )
 from tools.repro_preflop_model_parity import (  # noqa: E402
     REPORT_PATH as MODEL_PARITY_REPORT_PATH,
@@ -473,6 +475,44 @@ def test_ac_issue352_train_only_hierarchical_fit_is_deterministic_and_no_nearest
     assert all(not row["contract_errors"] for row in posterior.values())
 
     print("ISSUE352_TRAIN_RESULT=" + json.dumps(fit, sort_keys=True, separators=(",", ":")))
+
+
+def test_ad_issue352_frozen_validation_compares_active_339_and_v2_without_test():
+    fit_protocol = load_issue352_fit_protocol()
+    _, report = load_issue339_support_report()
+    candidate, fit = build_issue352_candidate(fit_protocol, report)
+
+    persisted_fit = json.loads(
+        (ROOT / "analysis/model_a_preflop_sizing_v2_fit.json").read_text(encoding="utf-8")
+    )
+    assert_json_semantically_equal(fit, persisted_fit)
+
+    protocol = load_issue352_validation_protocol(fit)
+    validation = evaluate_issue352_validation(protocol, candidate, fit)
+    assert validation["selection_split"] == "VALIDATION"
+    assert validation["test_consumed"] is False
+    assert validation["test_authorized"] is False
+    assert validation["active_model_replaced"] is False
+    assert validation["automatic_promotion"] is False
+    assert validation["model_b_consumed"] is False
+    assert validation["hero_ev_consumed"] is False
+    assert validation["ui_modified"] is False
+    assert validation["issue_314_real_optimization"] is False
+    assert set(validation["metrics"]["global_exact_price"]["model_logloss"]) == {
+        "active_v5",
+        "candidate_339",
+        "candidate_v2",
+    }
+    assert set(validation["metrics"]["hand_conditioned"]["model_logloss"]) == {
+        "active_v5",
+        "candidate_339",
+        "candidate_v2",
+        "v2_exact_price_marginal",
+    }
+    print(
+        "ISSUE352_VALIDATION_RESULT="
+        + json.dumps(validation, sort_keys=True, separators=(",", ":"))
+    )
 
 
 def test_canonical_321_model_a_b_public_context_parity():
