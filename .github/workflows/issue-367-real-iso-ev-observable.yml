@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: issue-367-real-iso-ev-observable-${{ github.event.pull_request.number }}
+  group: issue-367-real-iso-ev-observable-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
