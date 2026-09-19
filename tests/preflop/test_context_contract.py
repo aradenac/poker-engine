@@ -11,6 +11,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from tools.preflop.model_a_sizing_likelihood import (  # noqa: E402
+    BACKOFF_POLICY,
+    CANDIDATE_STATUS,
+    SizingLikelihoodError,
+    canonical_candidate_sha256,
+    make_synthetic_candidate,
+    public_sizing_context,
+    resolve_likelihood,
+)
+
 from tools.preflop.context_contract import (  # noqa: E402
     PROBABILITY_SCHEMA,
     SCHEMA,
@@ -23,6 +33,7 @@ from tools.preflop.context_contract import (  # noqa: E402
 from tools.training.audit_preflop_key_runtime_parity import runtime_signature  # noqa: E402
 
 FIXTURE = json.loads((ROOT / "tests/fixtures/preflop_contract_cases.json").read_text(encoding="utf-8"))
+SIZING_FIXTURE = json.loads((ROOT / "tests/fixtures/model_a_preflop_sizing_cases.json").read_text(encoding="utf-8"))
 
 
 def assert_expected(ctx, expected):
@@ -128,6 +139,196 @@ def test_context_builder_has_no_card_or_future_inputs():
     params = set(inspect.signature(build_context).parameters)
     for forbidden in ("cards", "hole_cards", "board", "showdown", "future_actions", "known_cards"):
         assert forbidden not in params
+
+
+
+def test_public_price_projection_fields_are_present_and_consistent():
+    for case in SIZING_FIXTURE["contexts"]:
+        ctx = build_context(**case["input"])
+        public = public_sizing_context(ctx)
+        for key, expected in case["expected"].items():
+            assert public[key] == expected, (case["name"], key, public[key], expected)
+        assert public["target_total_bb"] == ctx["current_price_bb"]
+        assert public["limper_count"] == len(set(ctx["limper_positions"]))
+        assert public["caller_count"] == len(set(ctx["caller_positions"]))
+
+
+def test_sizing_candidate_distinguishes_4bb_and_6bb_exactly():
+    four, six = SIZING_FIXTURE["contexts"]
+    four_ctx = build_context(**four["input"])
+    six_ctx = build_context(**six["input"])
+    rows = [
+        {
+            "node_id": "KTs@4",
+            "context": four_ctx,
+            "hand_class": "KTs",
+            "probabilities": four["probabilities"],
+            "support": 20,
+        },
+        {
+            "node_id": "marginal@4",
+            "context": four_ctx,
+            "hand_class": None,
+            "probabilities": four["marginal_probabilities"],
+            "support": 100,
+        },
+        {
+            "node_id": "KTs@6",
+            "context": six_ctx,
+            "hand_class": "KTs",
+            "probabilities": six["probabilities"],
+            "support": 18,
+        },
+    ]
+    candidate = make_synthetic_candidate(
+        population_id=SIZING_FIXTURE["population_id"],
+        rows=rows,
+    )
+    r4 = resolve_likelihood(candidate=candidate, context=four_ctx, hand_class="KTs")
+    r6 = resolve_likelihood(candidate=candidate, context=six_ctx, hand_class="KTs")
+    assert r4["status"] == r6["status"] == "RESOLVED"
+    assert r4["backoff_level"] == r6["backoff_level"] == BACKOFF_POLICY[0]
+    assert r4["sizing_context_key"] != r6["sizing_context_key"]
+    assert r4["probabilities"] != r6["probabilities"]
+    assert r4["public_context"]["target_total_bb"] == 4
+    assert r6["public_context"]["target_total_bb"] == 6
+
+
+def test_sizing_backoff_is_hand_to_marginal_at_same_exact_price_only():
+    four, six = SIZING_FIXTURE["contexts"]
+    four_ctx = build_context(**four["input"])
+    six_ctx = build_context(**six["input"])
+    candidate = make_synthetic_candidate(
+        population_id=SIZING_FIXTURE["population_id"],
+        rows=[
+            {
+                "node_id": "marginal@4",
+                "context": four_ctx,
+                "hand_class": None,
+                "probabilities": four["marginal_probabilities"],
+                "support": 100,
+            },
+            {
+                "node_id": "KTs@6",
+                "context": six_ctx,
+                "hand_class": "KTs",
+                "probabilities": six["probabilities"],
+                "support": 18,
+            },
+        ],
+    )
+    result = resolve_likelihood(candidate=candidate, context=four_ctx, hand_class="Q9s")
+    assert result["status"] == "RESOLVED"
+    assert result["backoff_level"] == BACKOFF_POLICY[1]
+    assert result["node_id"] == "marginal@4"
+
+
+def test_no_nearest_price_fallback_for_5bb_between_4bb_and_6bb():
+    four, six = SIZING_FIXTURE["contexts"]
+    four_ctx = build_context(**four["input"])
+    six_ctx = build_context(**six["input"])
+    five_input = json.loads(json.dumps(four["input"]))
+    five_input["contribution_bb_by_position"]["SB"] = 5
+    five_input["current_price_bb"] = 5
+    five_input["pot_before_bb"] = 8
+    five_input["min_raise_to_bb"] = 9
+    five_ctx = build_context(**five_input)
+    candidate = make_synthetic_candidate(
+        population_id=SIZING_FIXTURE["population_id"],
+        rows=[
+            {
+                "node_id": "KTs@4",
+                "context": four_ctx,
+                "hand_class": "KTs",
+                "probabilities": four["probabilities"],
+                "support": 20,
+            },
+            {
+                "node_id": "KTs@6",
+                "context": six_ctx,
+                "hand_class": "KTs",
+                "probabilities": six["probabilities"],
+                "support": 18,
+            },
+        ],
+    )
+    result = resolve_likelihood(candidate=candidate, context=five_ctx, hand_class="KTs")
+    assert result["status"] == "UNRESOLVED"
+    assert result["backoff_level"] == "UNRESOLVED"
+    assert result["reason_code"] == "EXACT_PRICE_UNSUPPORTED_NO_NEAREST_PRICE"
+    assert result["probabilities"] is None
+
+
+def test_candidate_identity_is_explicit_non_active_and_deterministic():
+    four = SIZING_FIXTURE["contexts"][0]
+    ctx = build_context(**four["input"])
+    candidate = make_synthetic_candidate(
+        population_id=SIZING_FIXTURE["population_id"],
+        rows=[
+            {
+                "node_id": "KTs@4",
+                "context": ctx,
+                "hand_class": "KTs",
+                "probabilities": four["probabilities"],
+                "support": 20,
+            }
+        ],
+    )
+    assert candidate["identity"]["status"] == CANDIDATE_STATUS
+    assert candidate["identity"]["model_family"] == "MODEL_A_PREFLOP"
+    assert candidate["identity"]["active_model_replaced"] is False
+    assert candidate["nearest_price_fallback"] is False
+    assert canonical_candidate_sha256(candidate) == canonical_candidate_sha256(candidate)
+
+
+def test_sizing_projection_is_public_only_and_fail_closed():
+    four = SIZING_FIXTURE["contexts"][0]
+    ctx = build_context(**four["input"])
+    assert public_sizing_context(ctx)["information_boundary"]["public_only"] is True
+    contaminated = dict(ctx)
+    contaminated["hole_cards"] = ["Ks", "Ts"]
+    try:
+        public_sizing_context(contaminated)
+    except SizingLikelihoodError as exc:
+        assert "private" in str(exc).lower() or "card" in str(exc).lower()
+    else:
+        raise AssertionError("private cards must be rejected by sizing projection")
+
+    incomplete = dict(ctx)
+    incomplete.pop("current_price_bb")
+    try:
+        public_sizing_context(incomplete)
+    except SizingLikelihoodError as exc:
+        assert "missing public sizing fields" in str(exc)
+    else:
+        raise AssertionError("missing price fields must fail closed")
+
+
+def test_v5_projection_ignores_new_sizing_candidate_fields():
+    base = build_context(**SIZING_FIXTURE["contexts"][0]["input"])
+    changed = dict(base)
+    changed["target_total_bb"] = 999
+    changed["price_to_pot_ratio"] = 999
+    changed["pot_odds"] = 0.999
+    changed["limper_count"] = 99
+    changed["caller_count"] = 99
+    assert v5_runtime_signature(base) == v5_runtime_signature(changed)
+
+
+
+def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
+    schema = json.loads(
+        (ROOT / "contracts/training/model-a-preflop-sizing-likelihood.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert schema["properties"]["schema"]["const"] == "poker-model-a-preflop-sizing-likelihood/v1"
+    identity = schema["properties"]["identity"]["properties"]
+    assert identity["model_family"]["const"] == "MODEL_A_PREFLOP"
+    assert identity["status"]["const"] == "CANDIDATE_ONLY_NOT_ACTIVE"
+    assert identity["active_model_replaced"]["const"] is False
+    assert schema["properties"]["nearest_price_fallback"]["const"] is False
+    assert schema["properties"]["backoff_policy"]["const"] == list(BACKOFF_POLICY)
 
 
 if __name__ == "__main__":
