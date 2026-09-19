@@ -1,0 +1,138 @@
+{
+  "schema": "poker-pack-loader-identity-audit/v1",
+  "issue": 205,
+  "lane": "E",
+  "conflict_group": "PACKS-UX",
+  "base_sha": "274bc33734f9523312415149b96cff62fe797c09",
+  "scope": [
+    "site/population-packs.js",
+    "site/manual-import.js",
+    "tools/validate_population_pack.py",
+    "tools/population_pack_candidate.py",
+    "tools/population_pack_preflight.py",
+    "tests/packs/**"
+  ],
+  "measured_duplication": {
+    "javascript_function_counts": {
+      "site/population-packs.js": 49,
+      "site/manual-import.js": 31
+    },
+    "exact_function_name_overlap": [
+      "bytes",
+      "hex",
+      "sha256",
+      "openDb"
+    ],
+    "responsibility_overlap": [
+      {
+        "responsibility": "content_sha256",
+        "consumers": [
+          "site/population-packs.js",
+          "site/manual-import.js"
+        ],
+        "before": [
+          "local bytes/hex/sha256",
+          "local bytes/hex/sha256"
+        ],
+        "decision": "EXTRACT"
+      },
+      {
+        "responsibility": "pack_population_identity",
+        "consumers": [
+          "site/population-packs.js",
+          "site/manual-import.js"
+        ],
+        "before": [
+          "storageId plus manual-override target id/population comparison",
+          "packIdentity plus samePackIdentity"
+        ],
+        "decision": "EXTRACT_PARITY_BOUNDARY"
+      },
+      {
+        "responsibility": "indexeddb_open",
+        "consumers": [
+          "site/population-packs.js",
+          "site/manual-import.js"
+        ],
+        "before": [
+          "poker-population-packs-v1 multi-store DB",
+          "PokerRangeEquityOffline kv DB"
+        ],
+        "decision": "KEEP_SEPARATE",
+        "reason": "same helper name but different database version/store/transaction ownership; sharing would blur atomicity boundaries"
+      },
+      {
+        "responsibility": "role_schema_validation",
+        "consumers": [
+          "site/population-packs.js",
+          "site/manual-import.js",
+          "tools/validate_population_pack.py"
+        ],
+        "decision": "KEEP_SEPARATE",
+        "reason": "runtime pack descriptors, legacy manual files and production archive contracts intentionally accept different schemas/roles and preserve different fail-closed errors"
+      },
+      {
+        "responsibility": "compatibility_validation",
+        "consumers": [
+          "site/population-packs.js",
+          "site/manual-import.js"
+        ],
+        "decision": "KEEP_CONSUMER_SPECIFIC",
+        "reason": "pack compatibility is checked against RELEASE.json while manual compatibility is checked against the exact active pack plus optional declarations"
+      },
+      {
+        "responsibility": "python_pack_tooling",
+        "consumers": [
+          "tools/validate_population_pack.py",
+          "tools/population_pack_candidate.py",
+          "tools/population_pack_preflight.py"
+        ],
+        "decision": "NO_CROSS_LANGUAGE_EXTRACTION",
+        "reason": "browser static JS cannot directly share Python validation code; parity belongs in deterministic fixtures/tests, not a bundler/runtime bridge"
+      }
+    ]
+  },
+  "extraction": {
+    "justified": true,
+    "module": "site/pack-identity.js",
+    "real_consumers": [
+      "site/population-packs.js",
+      "site/manual-import.js"
+    ],
+    "responsibilities": [
+      "byte normalization for content hashing",
+      "SHA-256 content identity",
+      "content byte-size identity",
+      "canonical pack storage id",
+      "active/fallback pack identity projection",
+      "pack+population identity equality"
+    ],
+    "deliberately_not_extracted": [
+      "IndexedDB ownership/transactions",
+      "ZIP parsing",
+      "catalog/runtime-entry schema validation",
+      "legacy Model A/range schema validation",
+      "release compatibility policy",
+      "manual override lifecycle"
+    ]
+  },
+  "invariants": [
+    "no strategy or numerical result changes",
+    "no promotion or production pointer changes",
+    "site remains static and script-based",
+    "existing PokerPopulationPacks.sha256/storageId API retained",
+    "existing PokerManualOverrides.sha256 and _test.packIdentity API retained",
+    "error policy remains consumer-owned"
+  ],
+  "parity_plan": {
+    "snapshot": "tests/fixtures/packs/pack_identity_parity_v1.json",
+    "checks": [
+      "known SHA-256 vectors",
+      "storage id exact string parity",
+      "active pack identity projection parity",
+      "embedded fallback identity parity",
+      "same/different population identity parity",
+      "browser pack/manual smoke remains green"
+    ]
+  }
+}
