@@ -1123,7 +1123,7 @@
       <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
       <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
     </div>
-    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>Ouvrir Training</button></div>
+    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
     <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
   </section>
   <div class="actions product-home-actions" aria-label="Accès directs">
@@ -1408,12 +1408,35 @@
           <button id="trainerContinueBtn" type="button" class="secondary" style="display:none">Continuer</button>
           <div id="trainerStatus" class="trainer-status" aria-live="polite"></div>
         </div>
+        <section id="trainerTargetPanel" class="trainer-note" hidden>
+          <div class="trainer-section-title">Session ciblée · Leak → Training</div>
+          <div id="trainerTargetIdentity" class="tiny"></div>
+          <div class="row" style="margin-top:8px">
+            <div class="field"><label for="trainerTargetPosition">Position</label><select id="trainerTargetPosition"><option value="">Toutes</option><option>LJ</option><option>HJ</option><option>CO</option><option>BTN</option><option>SB</option><option>BB</option></select></div>
+            <div class="field"><label for="trainerTargetStreet">Street</label><select id="trainerTargetStreet"><option value="">Toutes</option><option value="PREFLOP">Préflop</option><option value="FLOP">Flop</option><option value="TURN">Turn</option><option value="RIVER">River</option></select></div>
+            <div class="field"><label for="trainerTargetSpot">Spot family</label><input id="trainerTargetSpot" type="text" placeholder="SRP|PFA|IP"></div>
+            <div class="field"><label for="trainerTargetAction">Action recommandée</label><select id="trainerTargetAction"><option value="">Toutes</option><option>FOLD</option><option>CHECK</option><option>CALL</option><option>BET</option><option>RAISE</option></select></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <label class="hh-filter-check"><input id="trainerTargetSizing" type="checkbox"> décision de sizing</label>
+            <label class="hh-filter-check"><input id="trainerTargetJam" type="checkbox"> jam disponible</label>
+            <label class="hh-filter-check"><input id="trainerTargetOverbet" type="checkbox"> overbet disponible</label>
+            <div class="field" style="max-width:150px"><label for="trainerTargetSessionSize">Spots</label><input id="trainerTargetSessionSize" type="number" min="1" max="10" step="1" value="5"></div>
+            <button id="trainerTargetApplyBtn" type="button" class="primary" style="width:auto">Appliquer le filtre</button>
+            <button id="trainerTargetClearBtn" type="button" class="secondary" style="width:auto">Quitter le ciblage</button>
+          </div>
+          <div id="trainerTargetSupport" class="tiny" style="margin-top:7px" aria-live="polite"></div>
+        </section>
         <div id="trainerTable"></div>
         <div id="trainerControls"></div>
       </section>
       <aside class="trainer-side">
         <div id="trainerRecommendation"></div>
         <div id="trainerFeedback"></div>
+        <section id="trainerTargetSummarySection" hidden>
+          <div class="trainer-section-title">Bilan ciblé</div>
+          <div id="trainerTargetSummary" class="trainer-note"></div>
+        </section>
         <section>
           <div class="trainer-section-title">Session</div>
           <div id="trainerStats"></div>
@@ -1464,6 +1487,7 @@
 <script src="./analytics/review-score-adapter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
 <script src="./analytics/leak-training-target.js"></script>
+<script src="./training/leak-scenario-selector.js"></script>
 <script src="./analytics/review-dashboard.js"></script>
 <script src="./preflop-contract.js"></script>
 <script>
@@ -3400,8 +3424,9 @@ function openReviewDashboardLeak(){
 function openReviewDashboardTraining(){
   const cta=state.reviewDashboardView?.ctas?.training;
   if(!cta?.enabled||!cta.target)return {opened:false,reason:cta?.reason||"NO_TRAINING_TARGET"};
-  trainerOpenBtn?.click();
-  return {opened:true,reason:"SUPPORTED_TARGET_AVAILABLE",target_id:cta.target.target_id||null};
+  if(typeof window.trainerOpenTargetedSession!=="function")return {opened:false,reason:"TRAINER_TARGET_RUNTIME_UNAVAILABLE"};
+  window.trainerOpenTargetedSession(cta.target);
+  return {opened:true,reason:"TARGET_RUNTIME_REQUESTED",target_id:cta.target.target_id||null};
 }
 
 function reviewInboxFiltersInput(){
