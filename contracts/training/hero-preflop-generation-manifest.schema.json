@@ -211,7 +211,8 @@
     "generation_scope": {
       "enum": [
         "FULL_READY_PLAN",
-        "SYNTHETIC_FIXTURE_SUBSET"
+        "SYNTHETIC_FIXTURE_SUBSET",
+        "AUTHORIZED_READY_SUBSET"
       ]
     },
     "generator_version": {
