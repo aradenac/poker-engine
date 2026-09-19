@@ -348,7 +348,7 @@ function trainerTargetLoadSelection(index){
     trainerRenderStatus("Session ciblée terminée.");trainerRender();return false;
   }
   t.currentIndex=index;t.currentScenario=row;t.currentCompleted=false;t.complete=false;
-  trainerState.hand=trainerTargetClone(payload.hand);trainerState.hand.preview=false;trainerState.hand.awaitingHero=true;
+  trainerState.hand=trainerTargetClone(payload.hand);trainerState.hand.preview=true;trainerState.hand.awaitingHero=true;
   trainerState.recommendation=trainerTargetClone(payload.recommendation);trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerState.sizingTouched=false;
   trainerRenderStatus(`Spot ciblé ${index+1}/${t.plan.selection.length} · ${row.context.position} · ${row.context.street} · ${row.context.spot_family}.`);
   trainerRender();return true;
@@ -738,7 +738,8 @@ function trainerReuseBestAsPlayed(rec){
 }
 async function trainerHeroAction(kind,cost=0){
   const hand=trainerState.hand;if(!hand||hand.ended||!hand.awaitingHero||trainerState.busy||trainerState.pauseAfterDecision)return;
-  const guide=trainerState.mode==="guided"&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null;
+  const targetReference=trainerState.targeted.active&&trainerState.targeted.currentScenario&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null;
+  const guide=targetReference||(trainerState.mode==="guided"&&trainerState.recommendation&&!trainerState.recommendation.error?trainerState.recommendation:null);
   trainerState.busy=true;hand.awaitingHero=false;trainerRenderStatus("Évaluation de votre décision…","busy");trainerRender();
   let detail=null,row=null,actual=null;
   try{
@@ -750,9 +751,19 @@ async function trainerHeroAction(kind,cost=0){
       detail=guide?trainerGuideAnchoredDetail(guide,played):played;
     }
     trainerState.recommendation=guide||detail;row=trainerRecordDecision(detail,actual.kind,actual.cost);
+    if(trainerState.targeted.active&&trainerState.targeted.currentScenario)trainerTargetEvent(detail,row,actual);
   }
   catch(err){trainerRenderStatus(`Décision jouée, mais verdict indisponible : ${err.message}`,"error");}
   trainerApplyAction(hand,hand.heroSeat,kind,cost);trainerState.feedback=detail?{detail,row}:null;trainerState.busy=false;
+  if(trainerState.targeted.active&&trainerState.targeted.currentScenario){
+    trainerState.targeted.currentCompleted=true;
+    if(trainerState.mode==="test"){
+      trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
+    }
+    trainerState.pauseAfterDecision=true;
+    const suffix=trainerState.perf.lastMs?` · dernier calcul ${trainerState.perf.lastMs.toFixed(0)} ms`:"";
+    trainerRenderStatus(`Spot ciblé terminé${suffix} · passez au spot suivant lorsque vous êtes prêt.`);trainerRender();return;
+  }
   if(hand.ended){trainerRenderStatus(`Main terminée · ${hand.winner}.`);trainerRender();return;}
   if(trainerState.mode==="test"){trainerState.feedback=null;trainerRender();await trainerAdvance();}
   else{trainerState.pauseAfterDecision=true;const suffix=trainerState.perf.lastMs?` · dernier calcul ${trainerState.perf.lastMs.toFixed(0)} ms`:"";trainerRenderStatus(`Feedback disponible${suffix}. Continuez lorsque vous êtes prêt.`);trainerRender();}
@@ -775,9 +786,20 @@ async function trainerAdvance(){
   if(hand.ended)trainerRenderStatus(`Main terminée · ${hand.winner}.`);
   trainerRender();
 }
-async function trainerContinue(){trainerState.pauseAfterDecision=false;trainerState.feedback=null;trainerRender();await trainerAdvance();}
+async function trainerContinue(){
+  if(trainerState.targeted.active&&trainerState.targeted.currentCompleted){
+    trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
+  }
+  trainerState.pauseAfterDecision=false;trainerState.feedback=null;trainerRender();await trainerAdvance();
+}
 async function trainerNewHand(){
-  if(trainerState.busy)return;if(!await trainerEnsureModels())return;
+  if(trainerState.busy||trainerState.targeted.preparing)return;
+  if(trainerState.targeted.active){
+    const t=trainerState.targeted;
+    if(t.fallback||t.complete||!t.plan?.ready){if(t.target)await trainerPrepareTargetSession(t.target,{hydrate:false});return;}
+    trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
+  }
+  if(!await trainerEnsureModels())return;
   trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();trainerRenderStatus("Nouvelle main · préflop SRP simulé, entraînement à partir du flop.");trainerRender();await trainerAdvance();
 }
 
