@@ -1033,58 +1033,115 @@ async def main() -> None:
         assert seats == 6, f"expected 6 trainer seats, got {seats}"
         assert await page.locator("#trainerTable .seat.hero").count() == 1
 
+        # Real preflop can legitimately end before Hero receives an action. Start a
+        # fresh hand until the browser exposes a live Hero decision.
+        for _ in range(8):
+            if await page.evaluate("!!trainerState.hand?.awaitingHero"):
+                break
+            await page.evaluate("trainerNewHand()")
+        assert await page.evaluate("!!trainerState.hand?.awaitingHero"), "no live Hero decision after 8 real-preflop hands"
+
         # Hero must be dealt from the persisted Custom range for this exact role/position.
         hero_range = await page.evaluate(
-            "() => { const h=trainerState.hand, p=h.positions[h.heroSeat], n=cardsToNotation(h.hole[h.heroSeat]); return {role:h.heroRole, position:p, notation:n, frequency:Number(trainerState.heroRanges?.ranges?.[h.heroRole]?.[p]?.[n]||0)}; }"
+            "() => { const h=trainerState.hand, p=h.positions[h.heroSeat], n=cardsToNotation(h.hole[h.heroSeat]); return {role:h.heroRole, position:p, notation:n, frequency:Number(trainerState.heroRanges?.ranges?.[h.heroRole]?.[p]?.[n]||0), street:h.street, boardCount:h.boardCount}; }"
         )
         assert hero_range["frequency"] > 0, hero_range
         assert not (hero_range["role"] == "CALLER" and hero_range["position"] == "BB"), hero_range
+        assert hero_range["street"] == "preflop" and hero_range["boardCount"] == 0, hero_range
 
-        # Wait until Model A has produced the pending Hero recommendation and the action UI is live.
         await page.wait_for_function(
             "document.querySelector('#trainerStatus')?.textContent.includes('À vous de jouer') && document.querySelectorAll('#trainerControls [data-trainer-action]').length > 0",
             timeout=90_000,
         )
 
-        # Default Training mode must hide the answer until Hero acts.
+        # Default Training mode hides the answer until Hero acts.
         rec_text = await page.locator("#trainerRecommendation").inner_text()
         assert "réponse masquée" in folded(rec_text), rec_text
 
-        # Switching to Guided mid-decision must compute a real recommendation.
+        # Guided consumes the canonical preflop object. Depending on the real history,
+        # the decision is either covered by retained CALL/FOLD or explicitly fail-closed.
         await page.click('[data-trainer-mode="guided"]')
         await page.wait_for_function(
-            "trainerState.recommendation && !trainerState.recommendation.error && trainerRecommendationKind(trainerState.hand, trainerState.recommendation)",
+            "trainerState.recommendation && !trainerState.recommendation.error && trainerState.recommendation.preflopDecision",
             timeout=90_000,
         )
         guided = await page.locator("#trainerRecommendation").inner_text()
-        assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
         guide = await page.evaluate(
-            "() => ({label: trainerState.recommendation.bestLabel, cost: Number(trainerState.recommendation.bestCostBB), ev: Number(trainerState.recommendation.bestEV), kind: trainerRecommendationKind(trainerState.hand, trainerState.recommendation)})"
+            """() => {
+                const r=trainerState.recommendation,d=r?.preflopDecision;
+                return {
+                    schema:d?.schema,covered:!!PokerPreflopRuntime.isCovered(d),
+                    family:d?.facing_context||"",label:r?.bestLabel,
+                    cost:Number(r?.bestCostBB),ev:Number(r?.bestEV),
+                    kind:trainerRecommendationKind(trainerState.hand,r),
+                    latencyMs:Number(trainerState.perf.lastMs),
+                    candidateActive:PokerPreflopRuntime.REFERENCE.candidate_activated
+                };
+            }"""
         )
-        assert guide["kind"] in {"FOLD", "CHECK", "CALL", "BET", "RAISE"}, guide
-        action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
-        assert await action.count(), f"guided action button missing: {guide}"
-        await action.first.click()
+        assert guide["schema"] == "poker-preflop-decision/v1" and guide["candidateActive"] is False, guide
+        assert guide["latencyMs"] >= 0, guide
 
+        if guide["covered"]:
+            assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
+            assert guide["kind"] in {"FOLD", "CALL"}, guide
+            action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
+            assert await action.count(), f"guided action button missing: {guide}"
+        else:
+            assert "spot_non_couvert" in folded(guided), guided
+            assert guide["kind"] == "", guide
+            action = page.locator('#trainerControls [data-trainer-action="CHECK"], #trainerControls [data-trainer-action="FOLD"], #trainerControls [data-trainer-action="CALL"]').first
+            assert await action.count(), f"no legal fail-closed action: {guide}"
+
+        await action.click()
         await page.wait_for_function(
             "document.querySelector('#trainerFeedback .trainer-feedback-title') && !document.querySelector('#trainerFeedback .trainer-feedback-title').textContent.includes('Feedback')",
             timeout=90_000,
         )
         feedback = await page.locator("#trainerFeedback").inner_text()
-        assert "recommandé" in folded(feedback) and "perte ev" in folded(feedback), feedback
         verdict = await page.evaluate(
-            "() => ({label: trainerState.feedback?.detail?.bestLabel, cost: Number(trainerState.feedback?.detail?.bestCostBB), ev: Number(trainerState.feedback?.detail?.bestEV), chosen: Number(trainerState.feedback?.detail?.chosenEV), loss: Number(trainerState.feedback?.row?.lossBB), reused: Number(trainerState.perf.reused)})"
+            """() => {
+                const d=trainerState.feedback?.detail?.preflopDecision;
+                return {
+                    schema:d?.schema,covered:!!PokerPreflopRuntime.isCovered(d),
+                    label:trainerState.feedback?.detail?.bestLabel,
+                    cost:Number(trainerState.feedback?.detail?.bestCostBB),
+                    ev:Number(trainerState.feedback?.detail?.bestEV),
+                    chosen:Number(trainerState.feedback?.detail?.chosenEV),
+                    loss:Number(trainerState.feedback?.row?.lossBB),
+                    comparable:!!d?.ev_comparable,
+                    reused:Number(trainerState.perf.reused),
+                    latencyMs:Number(trainerState.perf.lastMs)
+                };
+            }"""
         )
-        assert verdict["label"] == guide["label"], (guide, verdict)
-        if guide["cost"] == guide["cost"]:
-            assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
-        assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
-        assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
-        assert verdict["reused"] >= 1, (guide, verdict)
+        assert verdict["schema"] == "poker-preflop-decision/v1", verdict
+        if guide["covered"]:
+            assert verdict["covered"] is True and verdict["label"] == guide["label"], (guide, verdict)
+            if guide["cost"] == guide["cost"]:
+                assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
+            assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+            assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
+            assert verdict["reused"] >= 1, (guide, verdict)
+            assert "recommandé" in folded(feedback), feedback
+        else:
+            assert verdict["covered"] is False and verdict["comparable"] is False, verdict
+            assert "spot" in folded(feedback) and "non couvert" in folded(feedback), feedback
+            assert "aucune recommandation ev" in folded(feedback), feedback
+
         stats = await page.locator("#trainerStats").inner_text()
         assert "décisions" in folded(stats)
         decision_value = await page.locator("#trainerStats .trainer-stat").nth(1).locator(".v").inner_text()
         assert int(decision_value.strip()) >= 1
+
+        # Training/Test modes remain reachable and keep recommendations hidden.
+        await page.evaluate("trainerState.pauseAfterDecision=false; trainerState.feedback=null")
+        await page.click('[data-trainer-mode="test"]')
+        test_mode = await page.locator("#trainerRecommendation").inner_text()
+        assert "mode test" in folded(test_mode) and "réponse masquée" in folded(test_mode), test_mode
+        await page.click('[data-trainer-mode="training"]')
+        training_mode = await page.locator("#trainerRecommendation").inner_text()
+        assert "décidez" in folded(training_mode) and "réponse masquée" in folded(training_mode), training_mode
 
         # Trainer must not destroy the analyser navigation when returning.
         await page.click("#trainerBackBtn")
