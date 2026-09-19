@@ -1,0 +1,462 @@
+{
+  "records": {
+    "posterior:ISO@4|BB|3BET": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|BB|3BET"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|BB|3BET"
+      },
+      "public_action": {
+        "action": "3BET",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:BB:3BET"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-BB-3BET",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@4:BB:3BET",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@4|BB|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|BB|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|BB|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:BB:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-BB-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@4:BB:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@4|BTN|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|BTN|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BTN",
+      "position": "BTN",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|BTN|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:BTN:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-BTN-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@4:BTN:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@4|CO|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@4|CO|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_CO",
+      "position": "CO",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@4|CO|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@4:CO:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-4-CO-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@4:CO:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@5|BB|3BET": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|BB|3BET"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|BB|3BET"
+      },
+      "public_action": {
+        "action": "3BET",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:BB:3BET"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-BB-3BET",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@5:BB:3BET",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@5|BB|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|BB|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|BB|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:BB:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-BB-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@5:BB:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@5|BTN|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|BTN|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BTN",
+      "position": "BTN",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|BTN|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:BTN:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-BTN-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@5:BTN:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@5|CO|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@5|CO|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_CO",
+      "position": "CO",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@5|CO|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@5:CO:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-5-CO-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@5:CO:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@6|BB|3BET": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|BB|3BET"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|BB|3BET"
+      },
+      "public_action": {
+        "action": "3BET",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:BB:3BET"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-BB-3BET",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@6:BB:3BET",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@6|BB|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|BB|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BB",
+      "position": "BB",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|BB|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:BB:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-BB-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@6:BB:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@6|BTN|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|BTN|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_BTN",
+      "position": "BTN",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|BTN|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:BTN:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-BTN-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@6:BTN:CALL",
+      "weights": [
+        1
+      ]
+    },
+    "posterior:ISO@6|CO|CALL": {
+      "backoff_level": "EXACT",
+      "backoff_reason": null,
+      "blockers_applied": [],
+      "combos": [
+        [
+          "2s",
+          "3s"
+        ]
+      ],
+      "hand_id": "SYNTHETIC-HAND-322",
+      "identity": {
+        "model_id": "synthetic-model-a-v1",
+        "model_version": "synthetic-322",
+        "population_id": "synthetic-population-v1",
+        "source_id": "synthetic-source:posterior:ISO@6|CO|CALL"
+      },
+      "moment": "AFTER_ACTION",
+      "player": "VILLAIN_CO",
+      "position": "CO",
+      "provenance": {
+        "contract_version": "poker-opponent-posterior-range/v1",
+        "producer": "issue-332-synthetic-fixture",
+        "source_artifact": "tests/fixtures/iso-sizing-diagnostics/posterior_records_source.json",
+        "source_fingerprint": "synthetic-source-fingerprint:posterior:ISO@6|CO|CALL"
+      },
+      "public_action": {
+        "action": "CALL",
+        "sizing": null,
+        "source_step_id": "synthetic:ISO@6:CO:CALL"
+      },
+      "public_state_fingerprint": "preflop-public:synthetic-ISO-6-CO-CALL",
+      "source_observations": 100,
+      "step_id": "synthetic:ISO@6:CO:CALL",
+      "weights": [
+        1
+      ]
+    }
+  },
+  "schema": "poker-opponent-posterior-range-fixture-sources/v1",
+  "synthetic_fixture": true
+}

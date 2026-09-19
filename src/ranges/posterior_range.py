@@ -133,7 +133,15 @@ def _finite_nonnegative(value: Any, label: str) -> float:
 
 
 def _distribution_fingerprint(exact_rows: Sequence[dict[str, Any]]) -> str:
-    payload = [{"cards": list(row["cards"]), "weight": float(row["weight"])} for row in exact_rows]
+    # Fingerprints are identities for the contract-level distribution, not for
+    # incidental IEEE-754 summation noise. Re-projecting an already normalized
+    # 1326-combo distribution can change only the last few float bits because
+    # normalization sums in deterministic-but-not-bit-idempotent arithmetic.
+    # Canonicalize tighter than the contract's 1e-9 validation tolerance.
+    payload = [
+        {"cards": list(row["cards"]), "weight": format(float(row["weight"]), ".12g")}
+        for row in exact_rows
+    ]
     raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     return "sha256:" + hashlib.sha256(raw).hexdigest()
 

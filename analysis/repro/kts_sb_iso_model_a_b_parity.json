@@ -1,0 +1,322 @@
+{
+  "schema": "poker-engine-kts-model-a-b-public-parity/v1",
+  "status": "PASS",
+  "issue": 333,
+  "source_fixture": {
+    "issue": 321,
+    "scenario_id": "kts_sb_two_limp_iso4_three_calls_v1",
+    "schema": "poker-engine-kts-sb-iso-reference/v1",
+    "public_timeline_sha256": "51585a3dc55fd3ffb8aea8961249ddc97c032ebd3c85f566febfe5b5b2bd0b7b",
+    "used_directly": true,
+    "new_kts_fixture_created": false
+  },
+  "extractors": {
+    "model_a": {
+      "issue": 313,
+      "callable": "tools.preflop.model_a_sizing_likelihood.public_sizing_context",
+      "schema": "poker-model-a-preflop-sizing-public-context/v1"
+    },
+    "model_b": {
+      "issue": 315,
+      "callable": "tools.simulation.model_b_preflop_response_to_price.public_context",
+      "representation": "BUCKETED_PUBLIC_CONTEXT"
+    },
+    "shared_public_adapter": "tools.preflop.context_contract.build_context"
+  },
+  "decisions": [
+    {
+      "snapshot_id": "before_bb_call",
+      "actor": "BB",
+      "canonical_public": {
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 7,
+        "price_to_pot": 0.428571429,
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO",
+        "limper_positions": [
+          "CO",
+          "BTN"
+        ],
+        "caller_positions": [],
+        "effective_stack_bb": 100
+      },
+      "model_a": {
+        "schema": "poker-model-a-preflop-sizing-public-context/v1",
+        "actor_position": "BB",
+        "family": "VS_ISO",
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 7,
+        "price_to_pot_ratio": 0.428571429,
+        "pot_odds": 0.3,
+        "effective_stack_bb": 100,
+        "limper_count": 2,
+        "caller_count": 0,
+        "information_boundary": {
+          "public_only": true,
+          "future_cards_consumed": false,
+          "opponent_hole_cards_consumed": false
+        }
+      },
+      "model_b_input": {
+        "profile": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+        "family": "ISO_OVER_LIMPERS",
+        "responder_position": "BB",
+        "raiser_position": "SB",
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO",
+        "limper_count": 2,
+        "hero_raise_size_bb": 4,
+        "facing_price_to_pot": 0.428571429,
+        "effective_stack_bb": 100
+      },
+      "model_b": {
+        "profile": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+        "family": "ISO_OVER_LIMPERS",
+        "responder_position": "BB",
+        "raiser_position": "SB",
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO",
+        "limper_count_bucket": "L2",
+        "raise_size_bucket": "S3_4P5",
+        "price_bucket": "P25_50",
+        "effective_stack_bucket": "E80_150"
+      },
+      "checks": {
+        "actor_position": true,
+        "target_total_bb": true,
+        "to_call_bb": true,
+        "pot_before_bb": true,
+        "price_to_pot": true,
+        "pot_odds": true,
+        "limper_count": true,
+        "caller_count": true,
+        "effective_stack_bb": true,
+        "model_a_family": true,
+        "sequence": true,
+        "model_b_exact_input_from_model_a": true,
+        "model_b_family_mapping": true,
+        "model_b_raise_size_bucket": true,
+        "model_b_price_bucket": true,
+        "model_b_effective_stack_bucket": true,
+        "model_b_limper_bucket": true,
+        "preflop_board_not_consumed": true,
+        "model_a_information_boundary": true,
+        "adapter_inputs_public_only": true
+      },
+      "status": "PASS"
+    },
+    {
+      "snapshot_id": "before_co_call",
+      "actor": "CO",
+      "canonical_public": {
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 10,
+        "price_to_pot": 0.3,
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO>BB_CALL",
+        "limper_positions": [
+          "CO",
+          "BTN"
+        ],
+        "caller_positions": [
+          "BB"
+        ],
+        "effective_stack_bb": 100
+      },
+      "model_a": {
+        "schema": "poker-model-a-preflop-sizing-public-context/v1",
+        "actor_position": "CO",
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 10,
+        "price_to_pot_ratio": 0.3,
+        "pot_odds": 0.230769231,
+        "effective_stack_bb": 100,
+        "limper_count": 2,
+        "caller_count": 1,
+        "information_boundary": {
+          "public_only": true,
+          "future_cards_consumed": false,
+          "opponent_hole_cards_consumed": false
+        }
+      },
+      "model_b_input": {
+        "profile": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+        "family": "ISO_OVER_LIMPERS",
+        "responder_position": "CO",
+        "raiser_position": "SB",
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO>BB_CALL",
+        "limper_count": 2,
+        "hero_raise_size_bb": 4,
+        "facing_price_to_pot": 0.3,
+        "effective_stack_bb": 100
+      },
+      "model_b": {
+        "profile": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+        "family": "ISO_OVER_LIMPERS",
+        "responder_position": "CO",
+        "raiser_position": "SB",
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO>BB_CALL",
+        "limper_count_bucket": "L2",
+        "raise_size_bucket": "S3_4P5",
+        "price_bucket": "P25_50",
+        "effective_stack_bucket": "E80_150"
+      },
+      "checks": {
+        "actor_position": true,
+        "target_total_bb": true,
+        "to_call_bb": true,
+        "pot_before_bb": true,
+        "price_to_pot": true,
+        "pot_odds": true,
+        "limper_count": true,
+        "caller_count": true,
+        "effective_stack_bb": true,
+        "model_a_family": true,
+        "sequence": true,
+        "model_b_exact_input_from_model_a": true,
+        "model_b_family_mapping": true,
+        "model_b_raise_size_bucket": true,
+        "model_b_price_bucket": true,
+        "model_b_effective_stack_bucket": true,
+        "model_b_limper_bucket": true,
+        "preflop_board_not_consumed": true,
+        "model_a_information_boundary": true,
+        "adapter_inputs_public_only": true
+      },
+      "status": "PASS"
+    },
+    {
+      "snapshot_id": "before_btn_call",
+      "actor": "BTN",
+      "canonical_public": {
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 13,
+        "price_to_pot": 0.230769231,
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO>BB_CALL>CO_CALL",
+        "limper_positions": [
+          "CO",
+          "BTN"
+        ],
+        "caller_positions": [
+          "CO",
+          "BB"
+        ],
+        "effective_stack_bb": 100
+      },
+      "model_a": {
+        "schema": "poker-model-a-preflop-sizing-public-context/v1",
+        "actor_position": "BTN",
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 13,
+        "price_to_pot_ratio": 0.230769231,
+        "pot_odds": 0.1875,
+        "effective_stack_bb": 100,
+        "limper_count": 2,
+        "caller_count": 2,
+        "information_boundary": {
+          "public_only": true,
+          "future_cards_consumed": false,
+          "opponent_hole_cards_consumed": false
+        }
+      },
+      "model_b_input": {
+        "profile": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+        "family": "ISO_OVER_LIMPERS",
+        "responder_position": "BTN",
+        "raiser_position": "SB",
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO>BB_CALL>CO_CALL",
+        "limper_count": 2,
+        "hero_raise_size_bb": 4,
+        "facing_price_to_pot": 0.230769231,
+        "effective_stack_bb": 100
+      },
+      "model_b": {
+        "profile": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+        "family": "ISO_OVER_LIMPERS",
+        "responder_position": "BTN",
+        "raiser_position": "SB",
+        "sequence": "CO_LIMP>BTN_LIMP>SB_ISO>BB_CALL>CO_CALL",
+        "limper_count_bucket": "L2",
+        "raise_size_bucket": "S3_4P5",
+        "price_bucket": "P00_25",
+        "effective_stack_bucket": "E80_150"
+      },
+      "checks": {
+        "actor_position": true,
+        "target_total_bb": true,
+        "to_call_bb": true,
+        "pot_before_bb": true,
+        "price_to_pot": true,
+        "pot_odds": true,
+        "limper_count": true,
+        "caller_count": true,
+        "effective_stack_bb": true,
+        "model_a_family": true,
+        "sequence": true,
+        "model_b_exact_input_from_model_a": true,
+        "model_b_family_mapping": true,
+        "model_b_raise_size_bucket": true,
+        "model_b_price_bucket": true,
+        "model_b_effective_stack_bucket": true,
+        "model_b_limper_bucket": true,
+        "preflop_board_not_consumed": true,
+        "model_a_information_boundary": true,
+        "adapter_inputs_public_only": true
+      },
+      "status": "PASS"
+    }
+  ],
+  "representation_differences": {
+    "family": {
+      "model_a": "actor-relative PFC family (VS_ISO / LIMPER_VS_ISO_CALLERS)",
+      "model_b": "scenario response family ISO_OVER_LIMPERS",
+      "compatibility": "COMPATIBLE_SAME_CANONICAL_ISO_OVER_TWO_LIMPERS"
+    },
+    "price": {
+      "model_a": "exact price_to_pot_ratio",
+      "model_b": "price_bucket derived from the exact Model-A/public ratio",
+      "compatibility": "COMPATIBLE_BUCKETED_REPRESENTATION"
+    },
+    "profile": {
+      "canonical_321": "NOT_DEFINED",
+      "model_b_adapter": "CANONICAL_FIXTURE_PROFILE_UNSPECIFIED",
+      "parity_assertion": false
+    }
+  },
+  "legacy_scaffold_fixture_audit": {
+    "status": "DOCUMENTED_NOT_PARITY_SOURCE",
+    "model_a_scaffold_fixture": {
+      "path": "tests/fixtures/model_a_preflop_sizing_cases.json",
+      "legacy_limper_positions": [
+        "LJ",
+        "HJ"
+      ],
+      "canonical_limper_positions": [
+        "CO",
+        "BTN"
+      ],
+      "difference": "LEGACY_SYNTHETIC_SEATS_DIFFER_FROM_CANONICAL_321"
+    },
+    "model_b_scaffold_fixture": {
+      "path": "tests/fixtures/model_b_preflop_response_to_price/scenario_4bb_vs_6bb.json",
+      "legacy_4bb_facing_price_to_pot": {
+        "BB": 0.55,
+        "CO": 0.55,
+        "BTN": 0.55
+      },
+      "canonical_4bb_facing_price_to_pot": {
+        "BB": 0.428571429,
+        "CO": 0.3,
+        "BTN": 0.230769231
+      },
+      "difference": "LEGACY_SYNTHETIC_PRICE_INPUTS_DIFFER_FROM_CANONICAL_321"
+    },
+    "used_to_build_parity_rows": false
+  },
+  "violations": [],
+  "report_sha256": "063cca1fedf8d9852756d4f7addc90b2b108dc7b8acede9c5ea52a6732aa94d3"
+}

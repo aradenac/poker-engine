@@ -4,6 +4,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const childProcess=require('node:child_process');
 const Decision=require('../../src/preflop/decision.js');
 const D=require('../../src/preflop/iso-sizing-diagnostics.js');
 
@@ -76,21 +77,30 @@ function testCallerPartitionsAndExpectedCallers(){
     assert.equal(row.continuing_positions.reduce((s,x)=>s+x.probability,0),row.expected_callers);
   }
 }
-function testPosteriorReferencesMirrorIssue320Identity(){
+function testPosteriorReferencesBindFinalIssue320Identity(){
   const artifact=build();
   const row=byId(artifact,'ISO@5');
   assert(row.posterior_refs.length>=4);
   for(const entry of row.posterior_refs){
     const ref=entry.ref;
-    for(const key of ['hand_id','step_id','public_state_fingerprint','player','position','moment','response_action','population_id','model_id','model_version','artifact_sha256','status']){
-      assert(ref[key],key+' required for #320-compatible exact posterior reference');
+    assert.equal(ref.schema,'poker-opponent-posterior-range/v1');
+    for(const key of ['hand_id','step_id','public_state_fingerprint','player','position','identity','moment','public_action','status','distribution_fingerprint','source_fingerprint']){
+      assert.notEqual(ref[key],undefined,key+' required for final #320 reference');
     }
+    assert.deepEqual(Object.keys(ref.identity).sort(),['model_id','model_version','population_id','source_id']);
     assert.equal(ref.moment,'AFTER_ACTION');
     assert.match(ref.public_state_fingerprint,/^preflop-public:/);
-    assert.match(ref.artifact_sha256,/^[a-f0-9]{64}$/);
+    assert.match(ref.distribution_fingerprint,/^sha256:[a-f0-9]{64}$/);
     assert.equal(ref.position,entry.position);
-    assert.equal(ref.response_action,entry.response);
+    assert.equal(ref.public_action.action,entry.response);
   }
+}
+function testFinalPosterior320ValidatorBinding(){
+  childProcess.execFileSync(
+    'python3',
+    [path.resolve(__dirname,'test_iso_sizing_posterior_binding.py')],
+    {cwd:path.resolve(__dirname,'../..'),stdio:'inherit'}
+  );
 }
 function testBridgeRequiresExactSamePairedWorldFingerprint(){
   const bad=worlds();
@@ -135,7 +145,8 @@ const tests=[
   testResolvedViewUsesCanonicalFieldsAndSelection,
   testFoldAndOverlimpAreExplicitlyNotApplicable,
   testCallerPartitionsAndExpectedCallers,
-  testPosteriorReferencesMirrorIssue320Identity,
+  testPosteriorReferencesBindFinalIssue320Identity,
+  testFinalPosterior320ValidatorBinding,
   testBridgeRequiresExactSamePairedWorldFingerprint,
   testBridgeRequiresSameCanonicalAndPairedEv,
   testPartitionAndPosteriorTamperingFailsClosed,

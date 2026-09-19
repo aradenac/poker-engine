@@ -31,6 +31,11 @@ from tools.preflop.context_contract import (  # noqa: E402
     v5_runtime_signature,
 )
 from tools.training.audit_preflop_key_runtime_parity import runtime_signature  # noqa: E402
+from tools.repro_preflop_model_parity import (  # noqa: E402
+    REPORT_PATH as MODEL_PARITY_REPORT_PATH,
+    build_parity_report,
+    verify_persisted_report,
+)
 
 FIXTURE = json.loads((ROOT / "tests/fixtures/preflop_contract_cases.json").read_text(encoding="utf-8"))
 SIZING_FIXTURE = json.loads((ROOT / "tests/fixtures/model_a_preflop_sizing_cases.json").read_text(encoding="utf-8"))
@@ -316,6 +321,14 @@ def test_v5_projection_ignores_new_sizing_candidate_fields():
 
 
 
+def test_iso_sizing_final_posterior_binding_contract():
+    subprocess.run(
+        ["node", str(ROOT / "tests/preflop/test_iso_sizing_diagnostics.js")],
+        cwd=ROOT,
+        check=True,
+    )
+
+
 def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
     schema = json.loads(
         (ROOT / "contracts/training/model-a-preflop-sizing-likelihood.schema.json").read_text(
@@ -329,6 +342,54 @@ def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
     assert identity["active_model_replaced"]["const"] is False
     assert schema["properties"]["nearest_price_fallback"]["const"] is False
     assert schema["properties"]["backoff_policy"]["const"] == list(BACKOFF_POLICY)
+
+
+def test_canonical_321_model_a_b_public_context_parity():
+    report = build_parity_report(ROOT)
+    assert report["status"] == "PASS", report["violations"]
+    assert report["source_fixture"]["scenario_id"] == "kts_sb_two_limp_iso4_three_calls_v1"
+    assert report["source_fixture"]["used_directly"] is True
+    assert report["source_fixture"]["new_kts_fixture_created"] is False
+    assert verify_persisted_report(ROOT) == []
+
+    persisted = json.loads(MODEL_PARITY_REPORT_PATH.read_text(encoding="utf-8"))
+    assert persisted == report
+
+    by_actor = {row["actor"]: row for row in report["decisions"]}
+    expected = {
+        "BB": (7.0, 0.428571429, "P25_50", "VS_ISO", 0),
+        "CO": (10.0, 0.3, "P25_50", "LIMPER_VS_ISO_CALLERS", 1),
+        "BTN": (13.0, 0.230769231, "P00_25", "LIMPER_VS_ISO_CALLERS", 2),
+    }
+    for actor, (pot, ratio, bucket, family, callers) in expected.items():
+        row = by_actor[actor]
+        assert row["status"] == "PASS"
+        assert all(row["checks"].values()), (actor, row["checks"])
+        assert row["canonical_public"]["target_total_bb"] == 4.0
+        assert row["canonical_public"]["to_call_bb"] == 3.0
+        assert row["canonical_public"]["pot_before_bb"] == pot
+        assert row["canonical_public"]["price_to_pot"] == ratio
+        assert row["model_a"]["price_to_pot_ratio"] == ratio
+        assert row["model_a"]["effective_stack_bb"] == 100.0
+        assert row["model_a"]["limper_count"] == 2
+        assert row["model_a"]["caller_count"] == callers
+        assert row["model_a"]["family"] == family
+        assert row["model_b_input"]["facing_price_to_pot"] == ratio
+        assert row["model_b"]["price_bucket"] == bucket
+        assert row["model_b"]["raise_size_bucket"] == "S3_4P5"
+        assert row["model_b"]["effective_stack_bucket"] == "E80_150"
+        assert row["model_b"]["limper_count_bucket"] == "L2"
+
+    legacy = report["legacy_scaffold_fixture_audit"]
+    assert legacy["status"] == "DOCUMENTED_NOT_PARITY_SOURCE"
+    assert legacy["used_to_build_parity_rows"] is False
+    assert legacy["model_a_scaffold_fixture"]["legacy_limper_positions"] == ["LJ", "HJ"]
+    assert legacy["model_a_scaffold_fixture"]["canonical_limper_positions"] == ["CO", "BTN"]
+    assert legacy["model_b_scaffold_fixture"]["legacy_4bb_facing_price_to_pot"] == {
+        "BB": 0.55,
+        "CO": 0.55,
+        "BTN": 0.55,
+    }
 
 
 if __name__ == "__main__":
