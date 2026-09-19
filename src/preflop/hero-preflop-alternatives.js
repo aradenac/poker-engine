@@ -109,6 +109,13 @@
       pending_positions:(legal.remaining_to_act||[]).map(player=>positionByPlayer[player]),
       raise_reopened:legal.raise_reopened
     });
+    const hasAggression=history.some(row=>row.action==='RAISE'||row.action==='JAM');
+    const hasLimp=history.some(row=>row.action==='LIMP');
+    if(!hasAggression&&!hasLimp&&context.family!=='UNOPENED'){
+      context.family='UNOPENED';
+      context.canonical_key=Contract.canonicalKey(context);
+      context.context_id=Contract.contextId(context);
+    }
     return {context,legal,position_by_player:positionByPlayer};
   }
 
