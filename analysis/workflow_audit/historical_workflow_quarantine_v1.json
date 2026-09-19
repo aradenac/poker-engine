@@ -35,7 +35,7 @@
     ".github/workflows/unseen-preflop-context-audit.yml",
     ".github/workflows/v84-strategy-candidate.yml"
   ],
-  "base_sha": "9684381f236d13af205adae1ad71983c429cb82f",
+  "base_sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
   "issue": 373,
   "schema": "poker-engine-historical-workflow-quarantine/v1",
   "source_inventory_sha": "8285835c62d781a9487a1faad383684eb3d7138c",
