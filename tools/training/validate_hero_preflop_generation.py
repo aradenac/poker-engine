@@ -247,6 +247,8 @@ def validate_generation(
         fail("CONTEXT_COUNT_MISMATCH", "manifest context_count differs from expected scope")
     if int(manifest.get("expected_hand_classes_per_context") or 0) != 169:
         fail("HAND_CLASS_CONTRACT_MISMATCH", "expected 169 hand classes per context")
+    if manifest.get("hand_class_order_id") != HAND_ORDER_ID:
+        fail("HAND_CLASS_CONTRACT_MISMATCH", f"hand_class_order_id must be {HAND_ORDER_ID}")
     if manifest.get("expected_context_ids") != expected_ids:
         fail("CONTEXT_ORDER_MISMATCH", "expected_context_ids must exactly follow generation scope/order")
 
@@ -382,6 +384,19 @@ def validate_generation(
                 rollout = cell.get("rollout") or {}
                 if rollout.get("status") != "SYNTHETIC_PLACEHOLDER" or int(rollout.get("sample_count") or 0) != 0 or int(rollout.get("world_count") or 0) != 0:
                     fail("SYNTHETIC_FIXTURE_HAS_ROLLOUT", f"{context_id} {hand}")
+            else:
+                action = cell.get("action") or {}
+                sizing = cell.get("sizing") or {}
+                ev = cell.get("ev") or {}
+                rollout = cell.get("rollout") or {}
+                if action.get("status") != "MEASURED" or action.get("value") not in {"FOLD", "CHECK", "CALL", "BET", "RAISE", "SHOVE"}:
+                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} action")
+                if sizing.get("status") != "MEASURED" or sizing.get("kind") == "SYNTHETIC_PLACEHOLDER":
+                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} sizing")
+                if ev.get("status") != "MEASURED" or not isinstance(ev.get("estimate_bb"), (int, float)):
+                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} EV")
+                if rollout.get("status") != "MEASURED" or int(rollout.get("sample_count") or 0) < 1 or int(rollout.get("world_count") or 0) < 1:
+                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} rollout")
             cells_by_context[context_id].append(cell)
 
     if actual_shard_contexts != set(expected_ids):

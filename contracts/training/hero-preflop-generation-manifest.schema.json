@@ -218,6 +218,9 @@
       "minLength": 1,
       "type": "string"
     },
+    "hand_class_order_id": {
+      "const": "poker-hand-class-169-matrix-row-major-v1"
+    },
     "immutability": {
       "additionalProperties": false,
       "properties": {
@@ -312,6 +315,7 @@
     "context_count",
     "expected_hand_classes_per_context",
     "shard_count",
+    "hand_class_order_id",
     "plan_projection",
     "expected_context_ids",
     "artifacts",

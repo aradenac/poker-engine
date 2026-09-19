@@ -2,6 +2,47 @@
   "$defs": {
     "action": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "enum": [
+                  "FOLD",
+                  "CHECK",
+                  "CALL",
+                  "BET",
+                  "RAISE",
+                  "SHOVE"
+                ]
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "status": {
           "enum": [
@@ -128,6 +169,40 @@
     },
     "ev": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_bb": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_bb": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "estimate_bb": {
           "type": [
@@ -403,6 +478,48 @@
     },
     "rollout": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sample_count": {
+                "const": 0
+              },
+              "world_count": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sample_count": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "world_count": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "sample_count": {
           "minimum": 0,
@@ -428,6 +545,51 @@
     },
     "sizing": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              },
+              "unit": {
+                "const": null
+              },
+              "value": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "NONE",
+                  "FIXED_BB",
+                  "POT_FRACTION",
+                  "ALL_IN"
+                ]
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "kind": {
           "enum": [

@@ -92,6 +92,7 @@
   },
   "generation_scope": "SYNTHETIC_FIXTURE_SUBSET",
   "generator_version": "hero-preflop-generation-contract-fixture/1",
+  "hand_class_order_id": "poker-hand-class-169-matrix-row-major-v1",
   "immutability": {
     "content_addressed": true,
     "correction_policy": "NEW_GENERATION_ID",
