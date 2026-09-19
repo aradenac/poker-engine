@@ -113,6 +113,81 @@ async def main() -> None:
         assert exact_review_open["replayIndex"] == 3, exact_review_open
         assert exact_review_open["calls"] == [["select", "42", False], ["step", 3], ["open", True]], exact_review_open
 
+        # Review Dashboard is the useful home and renders only backend-provided metrics/CTAs.
+        dashboard_ui = await page.evaluate(
+            """() => {
+                const savedView=state.reviewDashboardView;
+                const savedFilters={...state.reviewInboxFilters};
+                try{
+                    const base={
+                        schema:PokerReviewDashboard.DASHBOARD_SCHEMA,
+                        scope_key:"scope-smoke",
+                        metrics:{
+                            hands_loaded:12,decisions_to_review:4,total_ev_loss_bb:6.5,
+                            decisions_analyzed:20,review_coverage_pct:90,
+                            source_refs:[{hand_id:"42",decision_id:"review:42:3"}]
+                        },
+                        top_leaks:[{dimension:"spot_family",key:"SRP|PFR|IP",decisions:3,hands:2,total_loss_bb:4.2}],
+                        priority:{
+                            hand:{hand_id:"42",total_loss_bb:3,status:"TO_REVIEW",status_label:"À revoir"},
+                            decision:{decision_id:"review:42:3",step_index:3,street:"FLOP",position:"BTN",spot_family:"SRP|PFR|IP",action_played:"CHECK",action_recommended:"BET",loss_bb:3}
+                        },
+                        ctas:{
+                            review:{enabled:true,target:{schema:PokerReviewInbox.DEEP_LINK_SCHEMA,hand_id:"42",decision_id:"review:42:3",step_index:3}},
+                            leak:{enabled:true,target:{scope_key:"scope-smoke",dimension:"spot_family",key:"SRP|PFR|IP"}},
+                            training:{enabled:true,reason:"TOP_LEAK_TARGET",target:{target_id:"leak-target:smoke"}}
+                        }
+                    };
+                    renderReviewDashboardModel({...base,state:"READY"});
+                    const ready={
+                        schema:PokerReviewDashboard.DASHBOARD_SCHEMA,
+                        state:reviewDashboardState.textContent,
+                        hands:reviewDashboardHands.textContent,
+                        decisions:reviewDashboardDecisions.textContent,
+                        loss:reviewDashboardLoss.textContent,
+                        leak:reviewDashboardLeak.textContent,
+                        priority:reviewDashboardPriority.textContent,
+                        priorityMeta:reviewDashboardPriorityMeta.textContent,
+                        reviewVisible:!reviewDashboardReviewBtn.hidden,
+                        leakVisible:!reviewDashboardLeakBtn.hidden,
+                        trainingVisible:!reviewDashboardTrainingBtn.hidden,
+                        importVisible:!reviewDashboardImportBtn.hidden,
+                        trace:reviewDashboardTrace.textContent
+                    };
+                    renderReviewDashboardModel({...base,state:"READY",ctas:{...base.ctas,training:{enabled:false,reason:"INSUFFICIENT_SOURCE_SUPPORT",target:{target_id:"leak-target:smoke"}}}});
+                    const gatedTrainingHidden=reviewDashboardTrainingBtn.hidden;
+                    const messages={};
+                    for(const stateName of ["NO_HANDS","ANALYSIS_PENDING","ANALYSIS_INCOMPLETE","NO_SIGNIFICANT_LOSS","READY"]){
+                        messages[stateName]=reviewDashboardStateMessage({state:stateName});
+                    }
+                    state.reviewDashboardView={...base,state:"READY"};
+                    const leakOpen=openReviewDashboardLeak();
+                    const leakFilter=state.reviewInboxFilters.spot_family;
+                    state.reviewDashboardView={...base,state:"READY",ctas:{...base.ctas,leak:{enabled:true,target:{scope_key:"scope-smoke",dimension:"position",key:"BTN"}}}};
+                    const unsupported=openReviewDashboardLeak();
+                    return {ready,gatedTrainingHidden,messages,leakOpen,leakFilter,unsupported};
+                } finally {
+                    state.reviewInboxFilters=savedFilters;
+                    state.reviewDashboardView=savedView;
+                    renderReviewDashboard();
+                }
+            }"""
+        )
+        assert dashboard_ui["ready"]["schema"] == "poker-review-dashboard/v1", dashboard_ui
+        assert dashboard_ui["ready"]["state"] == "READY", dashboard_ui
+        assert dashboard_ui["ready"]["hands"] == "12" and dashboard_ui["ready"]["decisions"] == "4", dashboard_ui
+        assert "6,50" in dashboard_ui["ready"]["loss"] or "6.50" in dashboard_ui["ready"]["loss"], dashboard_ui
+        assert dashboard_ui["ready"]["leak"] == "SRP|PFR|IP", dashboard_ui
+        assert "Main #42" in dashboard_ui["ready"]["priority"] and "FLOP" in dashboard_ui["ready"]["priority"], dashboard_ui
+        assert "CHECK" in dashboard_ui["ready"]["priorityMeta"] and "BET" in dashboard_ui["ready"]["priorityMeta"], dashboard_ui
+        assert dashboard_ui["ready"]["reviewVisible"] and dashboard_ui["ready"]["leakVisible"] and dashboard_ui["ready"]["trainingVisible"], dashboard_ui
+        assert not dashboard_ui["ready"]["importVisible"], dashboard_ui
+        assert "1 décision" in dashboard_ui["ready"]["trace"], dashboard_ui
+        assert dashboard_ui["gatedTrainingHidden"] is True, dashboard_ui
+        assert all(dashboard_ui["messages"][name] for name in ["NO_HANDS","ANALYSIS_PENDING","ANALYSIS_INCOMPLETE","NO_SIGNIFICANT_LOSS","READY"]), dashboard_ui
+        assert dashboard_ui["leakOpen"]["opened"] is True and dashboard_ui["leakFilter"] == "SRP|PFR|IP", dashboard_ui
+        assert dashboard_ui["unsupported"]["opened"] is False and dashboard_ui["unsupported"]["reason"] == "UNSUPPORTED_LEAK_DIMENSION", dashboard_ui
+
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(
             "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"

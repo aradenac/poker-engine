@@ -72,6 +72,13 @@ class PersistedSnapshotTests(unittest.TestCase):
             check=True,
         )
 
+    def test_hero_preflop_generation_repository_adapter(self):
+        subprocess.run(
+            [sys.executable, str(ROOT / 'tests/training/test_import_hero_preflop_generation.py')],
+            cwd=ROOT,
+            check=True,
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
