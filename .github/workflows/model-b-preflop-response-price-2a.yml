@@ -23,7 +23,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: model-b-preflop-response-price-2a-340
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
