@@ -2,15 +2,15 @@
   "schema": "model-b-preflop-sensitivity-harness-run-provenance/v1",
   "issue": 344,
   "parent_issue": 315,
-  "workflow_run_id": 35447369354,
+  "workflow_run_id": 35447517682,
   "workflow_name": "Model B preflop sensitivity synthetic harness",
-  "validated_source_head": "c37dd3f6d1395aeee6af4e6125c70b7ff89e3a5f",
-  "persisted_evidence_commit": "98caebfa84b50393f3a18760b28a792b496cc36e",
+  "validated_source_head": "bb5c00785f075013d5bf937bce9e32a0abac8e5b",
+  "persisted_evidence_commit": "49e5f660ab570d0f684a9a07496965163ea2ce41",
   "workflow_conclusion": "success",
   "artifact": {
-    "id": 10585820500,
+    "id": 10585866170,
     "name": "issue-344-model-b-preflop-sensitivity-harness",
-    "zip_sha256": "7d751d337ce8d8e41b634eef093ff3c1a5a68dacea9d3cb89ebbf5f4945e4e76"
+    "zip_sha256": "7689975fcb28d2001f1d105f155b46dac247863c00f254a0558de9cb958a7684"
   },
   "evidence": {
     "report_sha256": "05b23bcce7ade7616dd42158ecda2d6703bb6e175a4aca478ebec23f144a4c5f",
@@ -19,10 +19,11 @@
     "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
     "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
     "out_of_domain_extrapolation": false,
+    "out_of_domain_sizing_fail_closed": true,
     "real_issue_314_consumed": false,
     "validation_consumed": false,
     "test_consumed": false,
     "production_effect": "NONE"
   },
-  "note": "Final user-authored provenance after fail-closed empirical-domain hardening and deterministic synthetic evidence persistence; no real #314 sensitivity was executed."
+  "note": "Final provenance after empirical-domain hardening and deterministic evidence persistence. Real #314 sensitivity remains unexecuted."
 }
