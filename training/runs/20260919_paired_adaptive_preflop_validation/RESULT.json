@@ -1,0 +1,749 @@
+{
+  "acceptance": {
+    "pass": true,
+    "rule": "materialized common worlds AND paired_stability>=fixed_stability AND paired_mean_rollouts<=fixed_mean_rollouts AND deterministic"
+  },
+  "continuation_support": {
+    "by_hand": {
+      "261495039668": {
+        "hero": {
+          "decisions": 161,
+          "exact_model_a_decisions": 161,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 0,
+            "river": 0,
+            "turn": 0
+          },
+          "support_closure_decisions": 0,
+          "support_closure_rate": 0,
+          "support_closure_reasons": {}
+        },
+        "opponent": {
+          "decisions": 161,
+          "exact_model_a_decisions": 112,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 48,
+            "river": 0,
+            "turn": 1
+          },
+          "support_closure_decisions": 49,
+          "support_closure_rate": 0.30434782608695654,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 1,
+            "missing exact preflop Model-A node": 48
+          }
+        }
+      },
+      "261678333669": {
+        "hero": {
+          "decisions": 143,
+          "exact_model_a_decisions": 138,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 1,
+            "preflop": 0,
+            "river": 3,
+            "turn": 1
+          },
+          "support_closure_decisions": 5,
+          "support_closure_rate": 0.03496503496503497,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 3,
+            "missing exact postflop Model-A node in prior history": 2
+          }
+        },
+        "opponent": {
+          "decisions": 564,
+          "exact_model_a_decisions": 415,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 1,
+            "preflop": 144,
+            "river": 3,
+            "turn": 1
+          },
+          "support_closure_decisions": 149,
+          "support_closure_rate": 0.2641843971631206,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 3,
+            "missing exact postflop Model-A node in prior history": 2,
+            "missing exact preflop Model-A node": 144
+          }
+        }
+      },
+      "261778078319": {
+        "hero": {
+          "decisions": 129,
+          "exact_model_a_decisions": 129,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 0,
+            "river": 0,
+            "turn": 0
+          },
+          "support_closure_decisions": 0,
+          "support_closure_rate": 0,
+          "support_closure_reasons": {}
+        },
+        "opponent": {
+          "decisions": 525,
+          "exact_model_a_decisions": 496,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 28,
+            "river": 0,
+            "turn": 1
+          },
+          "support_closure_decisions": 29,
+          "support_closure_rate": 0.05523809523809524,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 1,
+            "missing exact preflop Model-A node": 28
+          }
+        }
+      },
+      "261778463647": {
+        "hero": {
+          "decisions": 161,
+          "exact_model_a_decisions": 161,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 0,
+            "river": 0,
+            "turn": 0
+          },
+          "support_closure_decisions": 0,
+          "support_closure_rate": 0,
+          "support_closure_reasons": {}
+        },
+        "opponent": {
+          "decisions": 170,
+          "exact_model_a_decisions": 170,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 0,
+            "river": 0,
+            "turn": 0
+          },
+          "support_closure_decisions": 0,
+          "support_closure_rate": 0,
+          "support_closure_reasons": {}
+        }
+      },
+      "261781337105": {
+        "hero": {
+          "decisions": 206,
+          "exact_model_a_decisions": 190,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 2,
+            "preflop": 2,
+            "river": 6,
+            "turn": 6
+          },
+          "support_closure_decisions": 16,
+          "support_closure_rate": 0.07766990291262135,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 6,
+            "missing exact postflop Model-A node in prior history": 2,
+            "missing exact preflop Model-A node": 2,
+            "missing exact preflop Model-A node in prior history": 6
+          }
+        },
+        "opponent": {
+          "decisions": 1247,
+          "exact_model_a_decisions": 1150,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 10,
+            "preflop": 46,
+            "river": 24,
+            "turn": 17
+          },
+          "support_closure_decisions": 97,
+          "support_closure_rate": 0.07778668805132317,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 21,
+            "missing exact postflop Model-A node in prior history": 17,
+            "missing exact preflop Model-A node": 46,
+            "missing exact preflop Model-A node in prior history": 13
+          }
+        }
+      },
+      "261785049323": {
+        "hero": {
+          "decisions": 106,
+          "exact_model_a_decisions": 106,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 0,
+            "preflop": 0,
+            "river": 0,
+            "turn": 0
+          },
+          "support_closure_decisions": 0,
+          "support_closure_rate": 0,
+          "support_closure_reasons": {}
+        },
+        "opponent": {
+          "decisions": 497,
+          "exact_model_a_decisions": 452,
+          "fallback_contract": "CHECK_THEN_CALL_THEN_FOLD_V1",
+          "nearest_context_substitution": false,
+          "range_posterior": "DELEGATED_EXACT_MODEL_A",
+          "support_closure_by_street": {
+            "flop": 2,
+            "preflop": 34,
+            "river": 5,
+            "turn": 4
+          },
+          "support_closure_decisions": 45,
+          "support_closure_rate": 0.09054325955734406,
+          "support_closure_reasons": {
+            "missing exact postflop Model-A node": 4,
+            "missing exact postflop Model-A node in prior history": 7,
+            "missing exact preflop Model-A node": 34
+          }
+        }
+      }
+    }
+  },
+  "corpus": {
+    "declared_split": "VALIDATION",
+    "distinct_hands": 6,
+    "path": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json",
+    "sha256": "4034996c13baf94508d5cfd73a2147ef8072557405e12fad9ddfad538343311c"
+  },
+  "decisions": [
+    {
+      "candidate_ids": [
+        "FOLD",
+        "LIMP@1BB",
+        "SHOVE@578.985BB"
+      ],
+      "context_id": "validation:261781337105:hero-preflop-0",
+      "fixed_stable": true,
+      "hand_class": "AA",
+      "hand_id": "261781337105",
+      "hero": "RoiDePiqueNique",
+      "paired_stable": true,
+      "seed_blocks": [
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "SHOVE@578.985BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "FOLD__minus__LIMP@1BB": {
+              "ci_lower_bb": -634.205768868,
+              "ci_upper_bb": 207.92224646,
+              "delta_ev_bb": -213.141761204,
+              "samples": 4,
+              "standard_error_bb": 214.828575339,
+              "variance_bb2": 184605.2671285
+            },
+            "FOLD__minus__SHOVE@578.985BB": {
+              "ci_lower_bb": -1125.543319642,
+              "ci_upper_bb": -235.162930358,
+              "delta_ev_bb": -680.353125,
+              "samples": 4,
+              "standard_error_bb": 227.137854409,
+              "variance_bb2": 206366.419622396
+            },
+            "LIMP@1BB__minus__SHOVE@578.985BB": {
+              "ci_lower_bb": -464.60298092,
+              "ci_upper_bb": 26.563475863,
+              "delta_ev_bb": -219.019752528,
+              "samples": 12,
+              "standard_error_bb": 125.297565506,
+              "variance_bb2": 188393.759060094
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "SHOVE@578.985BB",
+          "seed": 33801
+        },
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "SHOVE@578.985BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "FOLD__minus__LIMP@1BB": {
+              "ci_lower_bb": -183.874730838,
+              "ci_upper_bb": 8.922967335,
+              "delta_ev_bb": -87.475881752,
+              "samples": 12,
+              "standard_error_bb": 49.183086268,
+              "variance_bb2": 29027.711698614
+            },
+            "FOLD__minus__SHOVE@578.985BB": {
+              "ci_lower_bb": -470.079196415,
+              "ci_upper_bb": 12.061279749,
+              "delta_ev_bb": -229.008958333,
+              "samples": 12,
+              "standard_error_bb": 122.99501943,
+              "variance_bb2": 181533.29765393
+            },
+            "LIMP@1BB__minus__SHOVE@578.985BB": {
+              "ci_lower_bb": -355.559950621,
+              "ci_upper_bb": 72.493797458,
+              "delta_ev_bb": -141.533076582,
+              "samples": 12,
+              "standard_error_bb": 109.197384714,
+              "variance_bb2": 143088.82594046
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "SHOVE@578.985BB",
+          "seed": 33802
+        }
+      ],
+      "sizing_support": {
+        "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+        "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+        "reason": "exact preflop node exposes no observed legal raise sizing",
+        "sources": []
+      }
+    },
+    {
+      "candidate_ids": [
+        "FOLD",
+        "CALL@5BB",
+        "SHOVE@77.05BB"
+      ],
+      "context_id": "validation:261495039668:hero-preflop-0",
+      "fixed_stable": false,
+      "hand_class": "KQo",
+      "hand_id": "261495039668",
+      "hero": "RoiDePiqueNique",
+      "paired_stable": false,
+      "seed_blocks": [
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "SHOVE@77.05BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "CALL@5BB__minus__FOLD": {
+              "ci_lower_bb": -5.034126061,
+              "ci_upper_bb": 2.927922011,
+              "delta_ev_bb": -1.053102025,
+              "samples": 12,
+              "standard_error_bb": 2.031134712,
+              "variance_bb2": 49.506098626
+            },
+            "CALL@5BB__minus__SHOVE@77.05BB": {
+              "ci_lower_bb": -43.659732145,
+              "ci_upper_bb": 35.381778095,
+              "delta_ev_bb": -4.138977025,
+              "samples": 12,
+              "standard_error_bb": 20.163650571,
+              "variance_bb2": 4878.873652307
+            },
+            "FOLD__minus__SHOVE@77.05BB": {
+              "ci_lower_bb": -44.260099958,
+              "ci_upper_bb": 38.088349958,
+              "delta_ev_bb": -3.085875,
+              "samples": 12,
+              "standard_error_bb": 21.007257632,
+              "variance_bb2": 5295.658478369
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "SHOVE@77.05BB",
+          "seed": 33801
+        },
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "CALL@5BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "CALL@5BB__minus__FOLD": {
+              "ci_lower_bb": -11.212001154,
+              "ci_upper_bb": 9.431288728,
+              "delta_ev_bb": -0.890356213,
+              "samples": 12,
+              "standard_error_bb": 5.266145378,
+              "variance_bb2": 332.787445715
+            },
+            "CALL@5BB__minus__SHOVE@77.05BB": {
+              "ci_lower_bb": -33.855348693,
+              "ci_upper_bb": 38.077636266,
+              "delta_ev_bb": 2.111143787,
+              "samples": 12,
+              "standard_error_bb": 18.350251265,
+              "variance_bb2": 4040.78065782
+            },
+            "FOLD__minus__SHOVE@77.05BB": {
+              "ci_lower_bb": -40.167404851,
+              "ci_upper_bb": 46.170404851,
+              "delta_ev_bb": 3.0015,
+              "samples": 12,
+              "standard_error_bb": 22.024951454,
+              "variance_bb2": 5821.181838818
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "FOLD",
+          "seed": 33802
+        }
+      ],
+      "sizing_support": {
+        "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+        "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+        "reason": "exact preflop node exposes no observed legal raise sizing",
+        "sources": []
+      }
+    },
+    {
+      "candidate_ids": [
+        "CHECK",
+        "SHOVE@557.265BB"
+      ],
+      "context_id": "validation:261778463647:hero-preflop-0",
+      "fixed_stable": false,
+      "hand_class": "Q9o",
+      "hand_id": "261778463647",
+      "hero": "RoiDePiqueNique",
+      "paired_stable": false,
+      "seed_blocks": [
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "SHOVE@557.265BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "CHECK__minus__SHOVE@557.265BB": {
+              "ci_lower_bb": -23.726942855,
+              "ci_upper_bb": 13.730563546,
+              "delta_ev_bb": -4.998189654,
+              "samples": 12,
+              "standard_error_bb": 9.555486327,
+              "variance_bb2": 1095.687827313
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "SHOVE@557.265BB",
+          "seed": 33801
+        },
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "CHECK",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "CHECK__minus__SHOVE@557.265BB": {
+              "ci_lower_bb": -10.164770871,
+              "ci_upper_bb": 26.665011054,
+              "delta_ev_bb": 8.250120091,
+              "samples": 12,
+              "standard_error_bb": 9.395352532,
+              "variance_bb2": 1059.271790372
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "CHECK",
+          "seed": 33802
+        }
+      ],
+      "sizing_support": {
+        "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+        "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+        "reason": "exact preflop node exposes no observed legal raise sizing",
+        "sources": []
+      }
+    },
+    {
+      "candidate_ids": [
+        "FOLD",
+        "LIMP@1BB",
+        "SHOVE@269.82BB"
+      ],
+      "context_id": "validation:261778078319:hero-preflop-0",
+      "fixed_stable": false,
+      "hand_class": "QTo",
+      "hand_id": "261778078319",
+      "hero": "RoiDePiqueNique",
+      "paired_stable": false,
+      "seed_blocks": [
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "FOLD",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "FOLD__minus__LIMP@1BB": {
+              "ci_lower_bb": -2.697339948,
+              "ci_upper_bb": 4.985680586,
+              "delta_ev_bb": 1.144170319,
+              "samples": 8,
+              "standard_error_bb": 1.959954218,
+              "variance_bb2": 30.731364286
+            },
+            "FOLD__minus__SHOVE@269.82BB": {
+              "ci_lower_bb": -175.886112442,
+              "ci_upper_bb": -0.16443209,
+              "delta_ev_bb": -88.025272266,
+              "samples": 8,
+              "standard_error_bb": 44.826959274,
+              "variance_bb2": 16075.650221719
+            },
+            "LIMP@1BB__minus__SHOVE@269.82BB": {
+              "ci_lower_bb": -176.796035206,
+              "ci_upper_bb": -1.542849964,
+              "delta_ev_bb": -89.169442585,
+              "samples": 8,
+              "standard_error_bb": 44.707445215,
+              "variance_bb2": 15990.045261079
+            }
+          },
+          "paired_rollouts": 16,
+          "paired_selected_id": "SHOVE@269.82BB",
+          "seed": 33801
+        },
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "SHOVE@269.82BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "FOLD__minus__LIMP@1BB": {
+              "ci_lower_bb": -4.008036053,
+              "ci_upper_bb": 9.636728507,
+              "delta_ev_bb": 2.814346227,
+              "samples": 12,
+              "standard_error_bb": 3.480807286,
+              "variance_bb2": 145.392232329
+            },
+            "FOLD__minus__SHOVE@269.82BB": {
+              "ci_lower_bb": -44.134557995,
+              "ci_upper_bb": 78.86174525,
+              "delta_ev_bb": 17.363593628,
+              "samples": 12,
+              "standard_error_bb": 31.376607971,
+              "variance_bb2": 11813.898332873
+            },
+            "LIMP@1BB__minus__SHOVE@269.82BB": {
+              "ci_lower_bb": -44.991322058,
+              "ci_upper_bb": 74.089816859,
+              "delta_ev_bb": 14.549247401,
+              "samples": 12,
+              "standard_error_bb": 30.37784156,
+              "variance_bb2": 11073.759094398
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "FOLD",
+          "seed": 33802
+        }
+      ],
+      "sizing_support": {
+        "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+        "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+        "reason": "exact preflop node exposes no observed legal raise sizing",
+        "sources": []
+      }
+    },
+    {
+      "candidate_ids": [
+        "CHECK",
+        "SHOVE@156.68BB"
+      ],
+      "context_id": "validation:261678333669:hero-preflop-0",
+      "fixed_stable": false,
+      "hand_class": "AKo",
+      "hand_id": "261678333669",
+      "hero": "RoiDePiqueNique",
+      "paired_stable": true,
+      "seed_blocks": [
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "SHOVE@156.68BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "CHECK__minus__SHOVE@156.68BB": {
+              "ci_lower_bb": -124.727112034,
+              "ci_upper_bb": 92.217539276,
+              "delta_ev_bb": -16.254786379,
+              "samples": 12,
+              "standard_error_bb": 55.343023293,
+              "variance_bb2": 36754.202726968
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "SHOVE@156.68BB",
+          "seed": 33801
+        },
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "CHECK",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "CHECK__minus__SHOVE@156.68BB": {
+              "ci_lower_bb": -158.512253321,
+              "ci_upper_bb": 88.203195366,
+              "delta_ev_bb": -35.154528978,
+              "samples": 12,
+              "standard_error_bb": 62.937614461,
+              "variance_bb2": 47533.719768249
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "SHOVE@156.68BB",
+          "seed": 33802
+        }
+      ],
+      "sizing_support": {
+        "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+        "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+        "reason": "exact preflop node exposes no observed legal raise sizing",
+        "sources": []
+      }
+    },
+    {
+      "candidate_ids": [
+        "FOLD",
+        "OVERLIMP@1BB",
+        "SHOVE@2797.81BB"
+      ],
+      "context_id": "validation:261785049323:hero-preflop-0",
+      "fixed_stable": true,
+      "hand_class": "J8s",
+      "hand_id": "261785049323",
+      "hero": "RoiDePiqueNique",
+      "paired_stable": false,
+      "seed_blocks": [
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "OVERLIMP@1BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "FOLD__minus__OVERLIMP@1BB": {
+              "ci_lower_bb": -2.910022929,
+              "ci_upper_bb": 39.841455185,
+              "delta_ev_bb": 18.465716128,
+              "samples": 12,
+              "standard_error_bb": 10.905989315,
+              "variance_bb2": 1427.287235235
+            },
+            "FOLD__minus__SHOVE@2797.81BB": {
+              "ci_lower_bb": -4.568479051,
+              "ci_upper_bb": 90.483251847,
+              "delta_ev_bb": 42.957386398,
+              "samples": 12,
+              "standard_error_bb": 24.247890535,
+              "variance_bb2": 7055.52234492
+            },
+            "OVERLIMP@1BB__minus__SHOVE@2797.81BB": {
+              "ci_lower_bb": -20.564175129,
+              "ci_upper_bb": 69.547515669,
+              "delta_ev_bb": 24.49167027,
+              "samples": 12,
+              "standard_error_bb": 22.987676224,
+              "variance_bb2": 6341.199098207
+            }
+          },
+          "paired_rollouts": 24,
+          "paired_selected_id": "FOLD",
+          "seed": 33801
+        },
+        {
+          "fixed_rollouts": 24,
+          "fixed_selected_id": "OVERLIMP@1BB",
+          "paired_common_world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+          "paired_pairwise_deltas": {
+            "FOLD__minus__OVERLIMP@1BB": {
+              "ci_lower_bb": -14.55717091,
+              "ci_upper_bb": 1.250241138,
+              "delta_ev_bb": -6.653464886,
+              "samples": 4,
+              "standard_error_bb": 4.032503073,
+              "variance_bb2": 65.044324149
+            },
+            "FOLD__minus__SHOVE@2797.81BB": {
+              "ci_lower_bb": -247.8366,
+              "ci_upper_bb": -163.2234,
+              "delta_ev_bb": -205.53,
+              "samples": 4,
+              "standard_error_bb": 21.585,
+              "variance_bb2": 1863.6489
+            },
+            "OVERLIMP@1BB__minus__SHOVE@2797.81BB": {
+              "ci_lower_bb": -244.33469751,
+              "ci_upper_bb": -153.418372718,
+              "delta_ev_bb": -198.876535114,
+              "samples": 4,
+              "standard_error_bb": 23.192939998,
+              "variance_bb2": 2151.649862987
+            }
+          },
+          "paired_rollouts": 8,
+          "paired_selected_id": "SHOVE@2797.81BB",
+          "seed": 33802
+        }
+      ],
+      "sizing_support": {
+        "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+        "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+        "reason": "exact preflop node exposes no observed legal raise sizing",
+        "sources": []
+      }
+    }
+  ],
+  "execution": {
+    "parallel_unit": "independent_validation_hand",
+    "result_order": "manifest_order",
+    "scientific_semantics_changed": false,
+    "workers": 4
+  },
+  "issue": 338,
+  "metrics": {
+    "deterministic_fixed": true,
+    "deterministic_paired": true,
+    "fixed_mean_rollouts": 24,
+    "fixed_stability": 0.3333333333333333,
+    "fixed_total_rollouts": 288,
+    "materialized_common_worlds": true,
+    "paired_mean_rollouts": 22,
+    "paired_stability": 0.3333333333333333,
+    "paired_total_rollouts": 264
+  },
+  "phase": "VALIDATION",
+  "protocol": {
+    "path": "training/runs/20260919_paired_adaptive_preflop_validation/PROTOCOL_V2.json",
+    "sha256": "574826ed50d27ab072f1235b38e34330cba5f9ba523c482acd10f3e2e470dc69"
+  },
+  "schema": "poker-paired-adaptive-preflop-validation-result/v1",
+  "scientific_boundaries": {
+    "model_a_modified": false,
+    "model_b_modified": false,
+    "promotion_authorized": false,
+    "test_authorized": false,
+    "test_consumed": false,
+    "ui_modified": false
+  }
+}
