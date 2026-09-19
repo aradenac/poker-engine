@@ -963,6 +963,21 @@ function trainerRenderTable(){
   const h=trainerState.hand;if(!trainerTable)return;if(!h){trainerTable.innerHTML='<div class="trainer-note">Cliquez sur « Nouvelle main » pour commencer.</div>';return;}
   trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · ${escapeHtml(trainerPotType(h))} · ${escapeHtml(`Hero ${h.heroRole||"en décision"}`)} · stratégie Hero Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
+function trainerPreflopTargetText(target){
+  const v=Number(target?.target_total_bb);return Number.isFinite(v)?`total ${trainerFmtBB(v)}`:"0 BB";
+}
+function trainerPreflopDecisionSummaryHtml(decision){
+  const covered=window.PokerPreflopRuntime?.isCovered(decision);
+  if(!covered){
+    return `<div class="trainer-feedback-body"><b>SPOT_NON_COUVERT</b> · aucune recommandation EV validée pour <b>${escapeHtml(decision?.facing_context||"UNKNOWN")}</b>. La candidate #108 reste inactive.</div>`;
+  }
+  const support=Number(decision.support?.observations)||0;
+  const rows=(decision.alternatives||[]).map(a=>`<div class="trainer-feedback-body"><b>${escapeHtml(a.action)}</b> · ${escapeHtml(trainerPreflopTargetText(a.target_sizing))} · coût ${escapeHtml(trainerFmtBB(a.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(a.ev_bb))}</b></div>`).join("");
+  const played=decision.ev_comparable
+    ?`EV jouée <b>${escapeHtml(trainerFmtBB(decision.played_ev_bb))}</b> · perte EV <b>${escapeHtml(trainerFmtBB(Math.max(0,Number(decision.recommended_ev_bb)-Number(decision.played_ev_bb))))}</b>.`
+    :decision.played_action?`Action jouée <b>${escapeHtml(decision.played_action)}</b> non évaluée par cette référence : aucun ΔEV inventé.`:"";
+  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>`;
+}
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";
   const label=String(rec.bestLabel||"—"),kind=trainerRecommendationKind(trainerState.hand,rec),upper=label.toUpperCase();
@@ -975,6 +990,14 @@ function trainerRenderRecommendation(){
   const canShow=trainerState.mode==="guided";
   if(trainerState.busy&&!rec){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Analyse</div><div class="trainer-rec-main">Calcul…</div>';return;}
   if(!canShow){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">${trainerState.mode==="test"?"Mode Test":"Décidez d'abord"}</div><div class="trainer-rec-main">Réponse masquée</div><div class="trainer-rec-ev">${trainerState.mode==="test"?"Le bilan apparaît en fin de main.":"Le feedback apparaît après votre action."}</div>`;return;}
+  if(rec?.preflopDecision){
+    const d=rec.preflopDecision,covered=window.PokerPreflopRuntime?.isCovered(d);
+    trainerRecommendation.className=`trainer-recommendation${covered?"":" hidden-answer"}`;
+    trainerRecommendation.innerHTML=covered
+      ?`<div class="trainer-rec-label">Action recommandée · référence active #108 conservée</div><div class="trainer-rec-main">${escapeHtml(d.recommended_action)} · ${escapeHtml(trainerPreflopTargetText(d.recommended_target_sizing))}</div><div class="trainer-rec-ev">Coût ${escapeHtml(trainerFmtBB(d.incremental_cost_bb))} · EV ${escapeHtml(trainerFmtBB(d.recommended_ev_bb))} · support ${Number(d.support?.observations||0).toLocaleString("fr-FR")}</div>`
+      :`<div class="trainer-rec-label">Préflop</div><div class="trainer-rec-main">SPOT_NON_COUVERT</div><div class="trainer-rec-ev">Aucune recommandation EV validée · candidate #108 inactive.</div>`;
+    return;
+  }
   trainerRecommendation.className="trainer-recommendation";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · EV finale</div><div class="trainer-rec-main">${escapeHtml(trainerBestText(rec))}</div><div class="trainer-rec-ev">EV ${Number.isFinite(Number(rec?.bestEV))?escapeHtml(trainerFmtBB(rec.bestEV)):"—"}</div>`;
 }
 function trainerRenderFeedback(){
@@ -988,7 +1011,14 @@ function trainerRenderFeedback(){
     if(h?.ended&&trainerState.mode==="test"){const loss=trainerState.testLog.reduce((sum,x)=>sum+x.lossBB,0);trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML=`<div class="trainer-feedback-title">Bilan de la main</div><div class="trainer-feedback-body">${trainerState.testLog.length} décision(s) · perte EV cumulée <b>${escapeHtml(trainerFmtBB(loss))}</b>.</div>`;return;}
     trainerFeedback.className="trainer-feedback";trainerFeedback.innerHTML='<div class="trainer-feedback-title">Feedback</div><div class="trainer-feedback-body">Jouez une décision Hero pour obtenir le verdict.</div>';return;
   }
-  const d=f.detail,r=f.row,summary=trainerDecisionCanonical(d,r);
+  const d=f.detail,r=f.row;
+  if(d?.preflopDecision){
+    const covered=window.PokerPreflopRuntime?.isCovered(d.preflopDecision),comparable=!!d.preflopDecision.ev_comparable;
+    trainerFeedback.className=`trainer-feedback ${covered?(comparable?(r.cls==="poor"?"poor":r.cls==="good"?"good":"close"):"close"):"close"}`;
+    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${covered?(comparable?"Décision préflop évaluée":"Référence partielle · action non comparable"):"Spot préflop non couvert"}</div>${trainerPreflopDecisionSummaryHtml(d.preflopDecision)}`;
+    return;
+  }
+  const summary=trainerDecisionCanonical(d,r);
   const quality=summary?TrainerActionSizingEV.qualityFromEV(summary):{key:r?.cls||"unknown",label:"Indéterminée",note:""};
   const cls=quality.key==="unknown"?"close":quality.key,title=quality.label;
   const primary=summary?`${TrainerActionSizingEV.primarySummaryHtml(summary,{compact:true,escapeHtml,formatBB})}${TrainerActionSizingEV.alternativesStripHtml(summary,{limit:4,escapeHtml,formatBB})}`:`<div class="trainer-feedback-body">Verdict détaillé indisponible.</div>`;
