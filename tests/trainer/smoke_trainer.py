@@ -23,6 +23,27 @@ async def main() -> None:
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
 
+        # Product architecture exposes only the five stable top-level domains.
+        product_architecture = await page.evaluate(
+            """() => ({
+                nav:[...document.querySelectorAll('#quickNav a')].map(a=>({
+                    text:a.textContent.trim(),
+                    href:a.getAttribute('href'),
+                    domain:a.dataset.productDomain||''
+                })),
+                home:[...document.querySelectorAll('.product-home-actions > a,.product-home-actions > button')].map(x=>x.textContent.trim()),
+                packsInSettings:!!document.querySelector('#settingsSection a[href="./packs.html"]'),
+                replayerPresent:!!document.querySelector('#replayerSection'),
+                equityComponents:['opponentsSection','cardsSection','rangeDisplaySection','equitySection'].every(id=>!!document.getElementById(id))
+            })"""
+        )
+        assert [x["text"] for x in product_architecture["nav"]] == ["Review", "Training", "Strategy", "Equity Lab", "Settings"], product_architecture
+        assert [x["domain"] for x in product_architecture["nav"]] == ["review", "training", "strategy", "equity-lab", "settings"], product_architecture
+        assert product_architecture["nav"][2]["href"] == "./hero-ranges.html", product_architecture
+        assert product_architecture["home"] == ["Review", "Training", "Strategy", "Equity Lab"], product_architecture
+        assert product_architecture["packsInSettings"], product_architecture
+        assert product_architecture["replayerPresent"] and product_architecture["equityComponents"], product_architecture
+
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(
             "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"
@@ -288,8 +309,8 @@ async def main() -> None:
         )
         assert desktop_font >= 10, desktop_font
 
-        await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
-        await page.click("#trainerOpenBtn")
+        await page.wait_for_selector('#quickNav [data-product-domain="training"]', timeout=10_000)
+        await page.click('#quickNav [data-product-domain="training"]')
 
         await page.wait_for_function(
             "document.querySelector('#trainerStatus')?.textContent.includes('Trainer prêt') || document.querySelector('#trainerStatus')?.textContent.includes('À vous de jouer') || document.querySelector('#trainerStatus')?.textContent.includes('Nouvelle main')",
@@ -360,6 +381,7 @@ async def main() -> None:
         assert await page.locator("#trainerPage").is_hidden()
 
         snapshot = {
+            "product_architecture": product_architecture,
             "replayer_hand_classes": hand_classes,
             "delta_ev_quality_contract": quality_contract,
             "prior_posterior_information_boundary": information_boundary,
