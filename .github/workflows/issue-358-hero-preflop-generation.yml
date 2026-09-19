@@ -1,0 +1,220 @@
+name: Generate issue 358 Hero preflop non-ISO candidate
+
+on:
+  push:
+    branches:
+      - execute/issue-358-hero-preflop-generation-noniso
+    paths:
+      - .github/triggers/issue-358-generate
+
+permissions:
+  contents: write
+
+concurrency:
+  group: issue-358-hero-preflop-generation
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax and frozen contract checks
+        run: |
+          python -m py_compile tools/training/generate_hero_preflop_noniso.py
+          python -m py_compile tools/training/bridge_paired_ev_to_hero_generation.py
+          python -m py_compile tools/training/validate_hero_preflop_generation.py
+          PYTHONPATH=. python tests/training/test_issue358_generation_contract.py
+          PYTHONPATH=. python tests/training/test_bridge_paired_ev_to_hero_generation.py
+          PYTHONPATH=. python tests/simulation/test_paired_preflop_grid_integration.py
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          for path in [
+              Path("training/protocols/issue358_hero_preflop_noniso_generation_v3.json"),
+              Path("training/protocols/issue358_hero_preflop_noniso_validation_v3.json"),
+          ]:
+              data=json.loads(path.read_text())
+              assert data["status"].startswith("FROZEN")
+              print(path, hashlib.sha256(path.read_bytes()).hexdigest())
+          PY
+
+  prepare:
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Materialize certified decision rows
+        run: |
+          mkdir -p issue358-inputs
+          python tools/training/build_certified_population_decisions.py             --certification training/datasets/NLHE_100-200/population_certification.json             --out issue358-inputs/certified_decisions.jsonl             --summary issue358-inputs/certified_decisions_summary.json
+      - name: Freeze execution inputs before any rollout
+        run: |
+          python tools/training/generate_hero_preflop_noniso.py prepare             --code-sha "$GITHUB_SHA"             --scope-output issue358-inputs/scope.json             --representatives-output issue358-inputs/representatives.json             --environment-output issue358-inputs/environment_identity.json             --parameters-output issue358-inputs/generation_parameters.json             --matrix-output issue358-inputs/matrix.json
+          python - <<'PY'
+          import json
+          scope=json.load(open("issue358-inputs/scope.json"))
+          reps=json.load(open("issue358-inputs/representatives.json"))
+          assert scope["eligible_context_count"] == 22
+          assert scope["eligible_group_counts"] == {"RFI_CALLERS_SQUEEZE":8,"VS_RFI":14}
+          assert len(reps["representatives"]) + len(reps["missing_contexts"]) == 22
+          assert scope["test_consumed"] is False
+          PY
+      - id: matrix
+        name: Export deterministic matrix
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          value=json.load(open("issue358-inputs/matrix.json"))
+          print("matrix="+json.dumps(value,separators=(",",":")))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue358-inputs
+          path: issue358-inputs/
+          retention-days: 7
+
+  generate:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 64
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue358-inputs
+          path: issue358-inputs
+      - name: Generate paired/adaptive hand shard
+        env:
+          CONTEXT_ID: ${{ matrix.context_id }}
+          HAND_SHARD_INDEX: ${{ matrix.hand_shard_index }}
+          HAND_SHARD_COUNT: ${{ matrix.hand_shard_count }}
+        run: |
+          mkdir -p part
+          python tools/training/generate_hero_preflop_noniso.py generate-part             --representatives issue358-inputs/representatives.json             --decisions issue358-inputs/certified_decisions.jsonl             --parameters issue358-inputs/generation_parameters.json             --context-id "$CONTEXT_ID"             --hand-shard-index "$HAND_SHARD_INDEX"             --hand-shard-count "$HAND_SHARD_COUNT"             --code-sha "$GITHUB_SHA"             --output "part/part-${{ matrix.context_index }}-${{ matrix.hand_shard_index }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue358-part-${{ matrix.context_index }}-${{ matrix.hand_shard_index }}
+          path: part/*.json
+          retention-days: 7
+
+  assemble:
+    needs: [prepare, generate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: issue358-inputs
+          path: issue358-inputs
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: issue358-part-*
+          path: issue358-parts
+          merge-multiple: true
+      - name: Assemble immutable #277 generation
+        run: |
+          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v3"
+          GEN_ROOT="$RUN_ROOT/generation"
+          python tools/training/generate_hero_preflop_noniso.py assemble             --scope issue358-inputs/scope.json             --representatives issue358-inputs/representatives.json             --parameters issue358-inputs/generation_parameters.json             --environment issue358-inputs/environment_identity.json             --parts-dir issue358-parts             --output-root "$GEN_ROOT"             --code-sha "$GITHUB_SHA"
+          cp issue358-inputs/scope.json "$RUN_ROOT/SCOPE.json"
+          cp issue358-inputs/representatives.json "$RUN_ROOT/REPRESENTATIVES.json"
+          cp issue358-inputs/certified_decisions_summary.json "$RUN_ROOT/CERTIFIED_DECISIONS_SUMMARY.json"
+      - name: Import candidate through #287 without activation
+        run: |
+          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v3"
+          cat > "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json" <<'JSON'
+          {
+            "schema":"poker-hero-range-repository/v1",
+            "version":1,
+            "defaults":{"population_id":"pokerstars_nlhe_100-200_zoom_play_6max_v1","table_size":6,"effective_stack_bb":100},
+            "source":{"format":"issue-358-empty-base","preserved_verbatim":false,"range_folder":null,"meta":{"purpose":"inactive candidate import only"}},
+            "contexts":{}
+          }
+          JSON
+          python tools/training/import_hero_preflop_generation.py             --generation-root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json             --base-repository "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json"             --output "$RUN_ROOT/HERO_RANGE_REPOSITORY_CANDIDATE_INACTIVE.json"             --receipt-output "$RUN_ROOT/IMPORT_RECEIPT.json"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("training/runs/20260919_hero_preflop_noniso_ready_v3")
+          receipt=json.loads((root/"IMPORT_RECEIPT.json").read_text())
+          assert receipt["active_hand_count"] == 0
+          assert receipt["activation_state"] == "INACTIVE_CANDIDATE_METADATA_ONLY"
+          assert receipt["nearest_context_allowed"] is False
+          assert all(row["family"] not in {"VS_LIMPERS","VS_ISO","VS_ISO_CALLERS","LIMPER_VS_ISO","LIMPER_VS_ISO_CALLERS"} for row in receipt["contexts"])
+          PY
+      - name: Persist frozen VALIDATION disposition and TEST boundary
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root=Path("training/runs/20260919_hero_preflop_noniso_ready_v3")
+          protocol=Path("training/protocols/issue358_hero_preflop_noniso_validation_v3.json")
+          receipt=json.loads((root/"IMPORT_RECEIPT.json").read_text())
+          generation=json.loads((root/"generation/GENERATION_RESULT.json").read_text())
+          result={
+            "schema":"poker-hero-preflop-validation-disposition/v1",
+            "issue":358,
+            "protocol_path":str(protocol),
+            "protocol_sha256":hashlib.sha256(protocol.read_bytes()).hexdigest(),
+            "protocol_frozen_before_generation_results":True,
+            "execution":"NOT_RUN_NO_ACTIVATION_OR_PROMOTION_IN_ISSUE_358",
+            "reason":"#196 requires full-hand VALIDATION before promotion; #358 explicitly forbids activation/promotion, so no performance selection is made in this slice.",
+            "candidate_repository_sha256":receipt["repository_sha256"],
+            "generated_contexts":generation["scope"]["generated_context_count"],
+            "validation_consumed":False,
+            "test_consumed":False,
+            "test_authorized":False,
+            "promotion_authorized":False
+          }
+          (root/"VALIDATION_DISPOSITION.json").write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+          PY
+      - name: Revalidate immutable artifact and inactive import
+        run: |
+          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v3"
+          python tools/training/validate_hero_preflop_generation.py             --root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json
+          PYTHONPATH=. python tests/training/test_import_hero_preflop_generation.py
+          PYTHONPATH=. python tests/training/test_issue358_generation_contract.py
+          PYTHONPATH=. python tests/training/test_bridge_paired_ev_to_hero_generation.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue358-final-generation
+          path: training/runs/20260919_hero_preflop_noniso_ready_v3/
+          retention-days: 30
+      - name: Commit immutable generation evidence to execution branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add training/runs/20260919_hero_preflop_noniso_ready_v3
+          git commit -m "[D][#358] Persist immutable non-ISO Hero generation evidence"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
