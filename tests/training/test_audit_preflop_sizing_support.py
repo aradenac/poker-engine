@@ -200,6 +200,8 @@ def main():
     else:
         raise AssertionError("Hero population row must fail closed")
 
+    schema = json.loads((ROOT / "contracts/analytics/preflop-sizing-support.schema.json").read_text(encoding="utf-8"))
+    assert schema["oneOf"] == [{"$ref": "#/$defs/fullReport"}, {"$ref": "#/$defs/summaryReport"}]
     encoded = json.dumps(a, sort_keys=True)
     assert '"test_consumed": false' in encoded
     print("Certified TRAIN preflop sizing/price support audit contract: PASS")
