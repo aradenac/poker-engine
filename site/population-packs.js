@@ -186,7 +186,7 @@
   }
   async function rollback({fetchImpl=fetch}={}){
     const old=await metaGet(PREVIOUS_KEY,META_STORE);if(!old)throw new Error("Aucune génération précédente disponible.");
-    const target=await idbGet(PACK_STORE,old);if(!target)throw new Error("La génération précédente n'est plus installée.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);
+    const target=await idbGet(PACK_STORE,old);if(!target)throw new Error("La génération précédente n'est plus installée.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);await assertManualOverrideAllowsTarget(target);
     const cur=await metaGet(ACTIVE_KEY,META_STORE);await metaSetPair(old,cur);return target;
   }
   async function rollbackTestOnly({fetchImpl=fetch}={}){
