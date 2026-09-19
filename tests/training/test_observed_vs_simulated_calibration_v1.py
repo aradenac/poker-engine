@@ -13,7 +13,9 @@ sys.path.insert(0, str(ROOT))
 from tools.training.independent_profiles.evaluate_observed_vs_simulated_calibration_v1 import (  # noqa: E402
     ACTIONS,
     EXACT_CONTEXT_DIMENSIONS,
+    HIERARCHY,
     _groups_by_exact_context,
+    _hierarchy_groups,
     _paired_logloss_bootstrap,
     action_support_state,
     calibrate_rows,
@@ -113,6 +115,9 @@ class SplitSafetyTests(unittest.TestCase):
         self.assertFalse(protocol["split_contract"]["test_consumed"])
         self.assertFalse(protocol["scientific_constraints"]["active_model_b_change_allowed"])
         self.assertEqual(protocol["scientific_constraints"]["production_effect"], "NONE")
+        self.assertEqual(protocol["context_dimensions"], list(EXACT_CONTEXT_DIMENSIONS))
+        self.assertEqual(protocol["declared_backoff_levels"], [list(level) for level in HIERARCHY])
+        self.assertEqual(protocol["reference_row_conditioned_extra_dimensions"], ["preflop_role"])
 
     def test_candidate_197_forbids_model_a_recommendation_and_ev_features(self):
         source = json.loads(
@@ -148,6 +153,26 @@ class ContextIsolationTests(unittest.TestCase):
         r = row("h", "CALL")
         key = context_key(r)
         self.assertEqual(len(key), len(EXACT_CONTEXT_DIMENSIONS))
+
+    def test_reference_only_preflop_role_does_not_change_issue_197_exact_context(self):
+        a = row("a", "CALL", role="PFA")
+        b = row("b", "CALL", role="CALLER")
+        self.assertEqual(context_key(a), context_key(b))
+
+    def test_declared_issue_197_hierarchy_is_explicit(self):
+        rows = [
+            row("a", "CALL", street="flop", price=0.4),
+            row("b", "CALL", street="flop", price=0.8),
+            row("c", "CALL", street="turn", price=0.4),
+        ]
+        street_groups = _hierarchy_groups(rows, ("street",))
+        self.assertEqual(
+            [(ctx["street"], len(group)) for ctx, group in street_groups],
+            [("flop", 2), ("turn", 1)],
+        )
+        global_groups = _hierarchy_groups(rows, ())
+        self.assertEqual(len(global_groups), 1)
+        self.assertEqual(len(global_groups[0][1]), 3)
 
     def test_contexts_are_not_silently_pooled(self):
         rows = [
