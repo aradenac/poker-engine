@@ -41,12 +41,29 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "EXACT_DETERMINISTIC"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "const": "FOLD"
+              }
+            }
+          }
         }
       ],
       "properties": {
         "status": {
           "enum": [
             "MEASURED",
+            "EXACT_DETERMINISTIC",
             "SYNTHETIC_PLACEHOLDER"
           ]
         },
@@ -201,6 +218,38 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "EXACT_DETERMINISTIC"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_bb": {
+                "const": 0
+              },
+              "uncertainty": {
+                "properties": {
+                  "method": {
+                    "const": "EXACT_DETERMINISTIC_ZERO"
+                  },
+                  "std_error_bb": {
+                    "const": 0
+                  },
+                  "ci95_low_bb": {
+                    "const": 0
+                  },
+                  "ci95_high_bb": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
         }
       ],
       "properties": {
@@ -213,6 +262,7 @@
         "status": {
           "enum": [
             "MEASURED",
+            "EXACT_DETERMINISTIC",
             "SYNTHETIC_PLACEHOLDER"
           ]
         },
@@ -518,6 +568,26 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "EXACT_DETERMINISTIC"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sample_count": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "world_count": {
+                "const": 0
+              }
+            }
+          }
         }
       ],
       "properties": {
@@ -528,6 +598,7 @@
         "status": {
           "enum": [
             "MEASURED",
+            "EXACT_DETERMINISTIC",
             "SYNTHETIC_PLACEHOLDER"
           ]
         },
@@ -588,6 +659,28 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "EXACT_DETERMINISTIC"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "NONE"
+              },
+              "unit": {
+                "const": null
+              },
+              "value": {
+                "const": null
+              }
+            }
+          }
         }
       ],
       "properties": {
@@ -603,6 +696,7 @@
         "status": {
           "enum": [
             "MEASURED",
+            "EXACT_DETERMINISTIC",
             "SYNTHETIC_PLACEHOLDER"
           ]
         },
