@@ -13,7 +13,7 @@
     "status": "CANDIDATE_ONLY_NOT_ACTIVE"
   },
   "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
-  "evidence_sha256": "b7f4fba15f18a8d5f2cbf1b3a5262d8f2d5a342105374899e5023b573a7c0151",
+  "evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
   "fit_protocol": {
     "path": "analysis/model_a_preflop_sizing_v2_fit_protocol.json",
     "sha256": "e324e403af0c0f97bcc504aed5ea97e7fb3bf38b57c502ec256420ed48d11a9e",
@@ -217,7 +217,7 @@
     "objective": "MAXIMIZE_SUM_DIRICHLET_MULTINOMIAL_LOG_MARGINAL_LIKELIHOOD",
     "prior_weight_summary": {
       "maximum": 0.5,
-      "mean": 0.37864763129817247,
+      "mean": 0.378647631298,
       "minimum": 0.012658227848101266
     },
     "reveal_bias": "MNAR_REVEAL_SELECTED",
