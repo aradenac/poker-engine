@@ -15,6 +15,28 @@ on:
       - 'tests/packs/**'
       - 'user/packs/**'
       - 'wrangler.jsonc'
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_ci_browser.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
+      - 'analysis/workflow_audit/helper_consumers.json'
+      - 'analysis/workflow_audit/repro_population_pack_catalog_before_after.json'
+      - 'tests/ci/test_repro_population_pack_catalog.py'
       - '.github/workflows/population-pack-catalog.yml'
   workflow_dispatch:
 
@@ -32,7 +54,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version-file: '.python-version'
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - name: Verify locked REPRO runtime
+        run: python3 tools/repro_ci_environment.py verify --require-node
+      - name: REPRO population pack catalogue anti-bypass contract
+        run: PYTHONPATH=. python3 tests/ci/test_repro_population_pack_catalog.py
       - name: Patch product navigation idempotently
         run: |
           python3 tools/patches/apply_pack_manager_link.py
@@ -80,17 +109,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version-file: '.python-version'
       - name: Assemble static site
         run: |
           python3 tools/patches/apply_pack_manager_link.py
           python3 tools/write_pack_catalog.py
           python3 tools/write_deployment_metadata.py
           python3 tools/write_site_release.py
-      - name: Install browser runtime
+      - name: Install locked browser runtime
         run: |
-          python3 -m pip install --user playwright
-          python3 -m playwright install --with-deps chromium
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json
       - name: Serve static application
         run: |
           python3 -m http.server 8765 --directory site >/tmp/population-pack-http.log 2>&1 &
