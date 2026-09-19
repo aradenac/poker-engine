@@ -394,9 +394,13 @@ class Issue367OpponentPolicy(ModelAContinuationPolicy):
             else:
                 node = exact_preflop_node(self.reference.preflop_model, decision)
                 if node is None:
-                    raise ModelAUnsupportedContext(
-                        "missing exact non-sizing preflop support node"
-                    )
+                    # A legality-only support-closure step has no learned support
+                    # identity.  It is intentionally omitted; later exact sizing
+                    # response nodes still provide the posterior support identity.
+                    self.posterior_support_closure[
+                        "preflop_non_sizing_support_metadata_omitted"
+                    ] += 1
+                    continue
                 node_id = str(node.get("id") or "")
                 support = int(
                     (node.get("coverage") or {}).get("population_decisions") or 0
