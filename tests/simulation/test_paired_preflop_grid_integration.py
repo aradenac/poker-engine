@@ -146,9 +146,16 @@ class RealGridIntegrationTests(unittest.TestCase):
             result, artifact_identity=self.identity(), plan_path=self.PLAN
         )
         self.assertEqual(
-            bridged["bridge_state"], "EXACT_ZERO_ROLLOUT_NON_MATERIALIZABLE"
+            bridged["bridge_state"], "EXACT_DETERMINISTIC_COMPATIBLE"
         )
-        self.assertIsNone(bridged["strategy_cell"])
+        cell = bridged["strategy_cell"]
+        self.assertEqual(cell["action"], {"status": "EXACT_DETERMINISTIC", "value": "FOLD"})
+        self.assertEqual(cell["sizing"], {"status": "EXACT_DETERMINISTIC", "kind": "NONE", "value": None, "unit": None})
+        self.assertEqual(cell["ev"]["status"], "EXACT_DETERMINISTIC")
+        self.assertEqual(cell["ev"]["estimate_bb"], 0.0)
+        self.assertEqual(cell["rollout"]["status"], "EXACT_DETERMINISTIC")
+        self.assertEqual(cell["rollout"]["world_count"], 0)
+        self.assertGreaterEqual(cell["rollout"]["sample_count"], 1)
         self.assertEqual(bridged["evidence"]["rollouts"], 0)
 
 
