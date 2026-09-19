@@ -244,6 +244,50 @@ async def main() -> None:
         assert "annulé" in folded(local_persistence["eraseStatus"]), local_persistence
         assert local_persistence["detailsOpenAfterCancel"] is False, local_persistence
 
+        # Desktop modal accessibility: focus enters the dialog, wraps on Tab/Shift+Tab,
+        # Escape closes it, and focus returns to the trigger.
+        await page.evaluate(
+            """() => {
+                const trigger=document.querySelector('#trainerOpenBtn');
+                const body=document.querySelector('#actionDetailModalBody');
+                trigger.focus();
+                body.innerHTML='<button id="a11yFirst" type="button">Premier</button><button id="a11yLast" type="button">Dernier</button>';
+                openAccessibleModal(actionDetailModal,{initialFocus:()=>actionDetailModalClose});
+            }"""
+        )
+        await page.wait_for_function("document.activeElement?.id === 'actionDetailModalClose'")
+        accessibility = await page.evaluate(
+            """() => ({
+                initial:document.activeElement?.id,
+                open:actionDetailModal.classList.contains('open'),
+                ariaHidden:actionDetailModal.getAttribute('aria-hidden')
+            })"""
+        )
+        assert accessibility["initial"] == "actionDetailModalClose", accessibility
+        assert accessibility["open"] is True and accessibility["ariaHidden"] == "false", accessibility
+
+        await page.keyboard.press("Shift+Tab")
+        assert await page.evaluate("document.activeElement?.id") == "a11yLast"
+        await page.keyboard.press("Tab")
+        assert await page.evaluate("document.activeElement?.id") == "actionDetailModalClose"
+        await page.keyboard.press("Escape")
+        await page.wait_for_function("!document.querySelector('#actionDetailModal').classList.contains('open')")
+        await page.wait_for_function("document.activeElement?.id === 'trainerOpenBtn'")
+        assert await page.evaluate("document.activeElement?.id") == "trainerOpenBtn"
+
+        desktop_font = await page.evaluate(
+            """() => {
+                const host=document.createElement('div');
+                host.className='decision-primary-card';
+                host.innerHTML='<span class="k" id="a11yFontProbe">Probe</span>';
+                document.body.appendChild(host);
+                const size=parseFloat(getComputedStyle(host.querySelector('#a11yFontProbe')).fontSize);
+                host.remove();
+                return size;
+            }"""
+        )
+        assert desktop_font >= 10, desktop_font
+
         await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
         await page.click("#trainerOpenBtn")
 
@@ -322,6 +366,8 @@ async def main() -> None:
             "hh_import_ux": hh_import_ux,
             "review_context": review_context,
             "local_persistence": local_persistence,
+            "desktop_accessibility": accessibility,
+            "desktop_font_px": desktop_font,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,
