@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import unittest
+from pathlib import Path
 
 from tools.simulation.game_core import NoLimitHoldemState
 from tools.simulation.model_a_continuation import (
@@ -140,6 +142,17 @@ class ModelAContinuationTests(unittest.TestCase):
         info = policy.action_probabilities(state, actor="BTN", hole_cards=["Ad", "Qc"])
         self.assertEqual(info["semantic_context"]["canonical_key"], "flop|2|2|IP|SRP|PFA|BET")
         self.assertEqual(info["probabilities"], {"RAISE": 1.0})
+
+
+    def test_issue_312_runtime_adapter_contract_on_321_fixture(self):
+        root = Path(__file__).resolve().parents[2]
+        path = root / "tests" / "ranges" / "test_model_a_posterior_runtime.py"
+        spec = importlib.util.spec_from_file_location("test_model_a_posterior_runtime", path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.main()
 
 
 if __name__ == "__main__":
