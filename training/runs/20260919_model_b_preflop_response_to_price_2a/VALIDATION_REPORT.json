@@ -1,0 +1,4643 @@
+{
+  "active_model_b_changed": false,
+  "automatic_promotion": false,
+  "candidate_actions": {
+    "accuracy": 0.6285106382978723,
+    "brier": 0.4851603461542093,
+    "ece_confidence": 0.016609756082316098,
+    "log_loss": 0.817261953953171,
+    "mean_predicted_frequency": {
+      "CALL": 0.3721441088006604,
+      "FOLD": 0.5378627406260311,
+      "JAM": 0.02716902263439182,
+      "RAISE": 0.0628241279389185
+    },
+    "n": 7050,
+    "observed_frequency": {
+      "CALL": 0.3849645390070922,
+      "FOLD": 0.5483687943262411,
+      "JAM": 0.01347517730496454,
+      "RAISE": 0.05319148936170213
+    },
+    "reliability": {
+      "3": {
+        "accuracy": 0.46464646464646464,
+        "confidence": 0.3771614874596606,
+        "n": 99
+      },
+      "4": {
+        "accuracy": 0.47132867132867134,
+        "confidence": 0.464212083607477,
+        "n": 715
+      },
+      "5": {
+        "accuracy": 0.5499405469678954,
+        "confidence": 0.5496247831815247,
+        "n": 1682
+      },
+      "6": {
+        "accuracy": 0.6364456472710871,
+        "confidence": 0.65017114829733,
+        "n": 2217
+      },
+      "7": {
+        "accuracy": 0.6901408450704225,
+        "confidence": 0.729327630740016,
+        "n": 1704
+      },
+      "8": {
+        "accuracy": 0.8422876949740035,
+        "confidence": 0.8346376224053864,
+        "n": 577
+      },
+      "9": {
+        "accuracy": 0.8928571428571429,
+        "confidence": 0.9142943268079551,
+        "n": 56
+      }
+    },
+    "support_state_counts": {
+      "DECLARED_CONTEXT_BACKOFF": 2633,
+      "DECLARED_EMPIRICAL_BIN_BACKOFF": 745,
+      "EXACT_SUPPORTED": 3672
+    }
+  },
+  "candidate_identity": {
+    "artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+    "model_version": "model_b_preflop_response_to_price_2a_20260919_candidate",
+    "path": "model/candidate.json",
+    "production_effect": "NONE",
+    "reference_mode": false,
+    "schema": "independent-opponent-model-b-preflop-response-to-price-2a/v1"
+  },
+  "comparability": {
+    "candidate_adds_price_sizing_conditioning": true,
+    "family_never_dropped": true,
+    "hero_ev_or_recommendation_consumed": false,
+    "model_a_features_consumed": false,
+    "nearest_context_heuristic": false,
+    "same_action_taxonomy": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "same_validation_rows": true
+  },
+  "dataset": {
+    "evaluation_split": "VALIDATION",
+    "fit_split": "TRAIN",
+    "reserved_holdout": "TEST_NOT_CONSUMED",
+    "test_consumed": false,
+    "train_decisions": 57188,
+    "train_hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+    "train_hands": 19016,
+    "validation_decisions": 7050,
+    "validation_hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+    "validation_hands": 2324
+  },
+  "decision": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION",
+  "issue": 340,
+  "paired_action_log_loss": {
+    "bootstrap_samples": 2000,
+    "ci95": [
+      -0.021591781086061964,
+      -0.008750343131744455
+    ],
+    "cluster_unit": "hand_id",
+    "decisions": 7050,
+    "hands": 2074,
+    "metric": "candidate_minus_reference_action_log_loss",
+    "observed": -0.015301900266235525,
+    "probability_candidate_better": 1.0,
+    "seed": 20260919
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "price_zone_validation": [
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.6680326478449963,
+          0.8580533916418701
+        ],
+        "FOLD": [
+          0.09954081765664184,
+          0.27271818967275935
+        ],
+        "JAM": [
+          0.0,
+          0.05079310099256403
+        ],
+        "RAISE": [
+          0.0,
+          0.07094084103237672
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7630430197434336,
+        "FOLD": 0.18612950366470063,
+        "JAM": 0.019556996828696906,
+        "RAISE": 0.03127047976316918
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.8947368421052632,
+        "FOLD": 0.10526315789473684,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 10,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 9
+      },
+      "target_bin": "B1",
+      "validation_n": 19
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2600498180569417,
+          0.5177279597208361
+        ],
+        "FOLD": [
+          0.40525689537534326,
+          0.6688171786987309
+        ],
+        "JAM": [
+          0.0,
+          0.08694819392098385
+        ],
+        "RAISE": [
+          0.0,
+          0.08694819392098385
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3888888888888889,
+        "FOLD": 0.5370370370370371,
+        "JAM": 0.037037037037037035,
+        "RAISE": 0.037037037037037035
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 1.0,
+        "FOLD": 0.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4
+      },
+      "target_bin": "B1",
+      "validation_n": 4
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.3064706098106014,
+          0.5662566629166711
+        ],
+        "FOLD": [
+          0.3419642228752156,
+          0.6034903225793299
+        ],
+        "JAM": [
+          0.004710745810027853,
+          0.14074379964451758
+        ],
+        "RAISE": [
+          0.0,
+          0.05317603257966276
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.4363636363636364,
+        "FOLD": 0.4727272727272727,
+        "JAM": 0.07272727272727274,
+        "RAISE": 0.018181818181818184
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.7142857142857143,
+        "FOLD": 0.2857142857142857,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 7
+      },
+      "target_bin": "B2",
+      "validation_n": 7
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.3864660097560657,
+          0.6505710272809714
+        ],
+        "FOLD": [
+          0.29524092908217997,
+          0.5566109227696717
+        ],
+        "JAM": [
+          0.0,
+          0.08694819392098385
+        ],
+        "RAISE": [
+          0.0,
+          0.05414877114332452
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5185185185185184,
+        "FOLD": 0.42592592592592593,
+        "JAM": 0.037037037037037035,
+        "RAISE": 0.018518518518518517
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.2,
+        "FOLD": 0.8,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 10
+      },
+      "target_bin": "B2",
+      "validation_n": 10
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.20922448646502387,
+          0.420912499836346
+        ],
+        "FOLD": [
+          0.4769393938549134,
+          0.7011427979259085
+        ],
+        "JAM": [
+          0.010941629151513116,
+          0.1260446722183499
+        ],
+        "RAISE": [
+          0.0,
+          0.06459028711785177
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3150684931506849,
+        "FOLD": 0.589041095890411,
+        "JAM": 0.0684931506849315,
+        "RAISE": 0.0273972602739726
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.125,
+        "FOLD": 0.875,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 8
+      },
+      "target_bin": "B2",
+      "validation_n": 8
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2488971696431069,
+          0.3844361636902264
+        ],
+        "FOLD": [
+          0.5689127658210567,
+          0.708865011956721
+        ],
+        "JAM": [
+          0.007181958345567063,
+          0.0594847083210996
+        ],
+        "RAISE": [
+          0.0,
+          0.02638217442719691
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.31666666666666665,
+        "FOLD": 0.6388888888888888,
+        "JAM": 0.03333333333333333,
+        "RAISE": 0.011111111111111112
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.5,
+        "FOLD": 0.5,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B3",
+      "validation_n": 2
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2584262367711354,
+          0.5415737632288646
+        ],
+        "FOLD": [
+          0.41195714134936195,
+          0.6991539697617494
+        ],
+        "JAM": [
+          0.0,
+          0.06482039590963459
+        ],
+        "RAISE": [
+          0.0,
+          0.06482039590963459
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.4000000000000001,
+        "FOLD": 0.5555555555555556,
+        "JAM": 0.022222222222222223,
+        "RAISE": 0.022222222222222223
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.6666666666666666,
+        "FOLD": 0.3333333333333333,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B3",
+      "validation_n": 3
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.14893318097654673,
+          0.33824630620294044
+        ],
+        "FOLD": [
+          0.5765775861184028,
+          0.7823967728559562
+        ],
+        "JAM": [
+          0.010090054659306492,
+          0.11811507354582171
+        ],
+        "RAISE": [
+          0.0,
+          0.037628600353962524
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.24358974358974358,
+        "FOLD": 0.6794871794871795,
+        "JAM": 0.0641025641025641,
+        "RAISE": 0.01282051282051282
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B3",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.13644851523706672,
+          0.3733554063315608
+        ],
+        "FOLD": [
+          0.5385374583763864,
+          0.7947958749569467
+        ],
+        "JAM": [
+          0.0,
+          0.09197477204109579
+        ],
+        "RAISE": [
+          0.0,
+          0.09197477204109579
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2549019607843137,
+        "FOLD": 0.6666666666666666,
+        "JAM": 0.03921568627450981,
+        "RAISE": 0.03921568627450981
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.42857142857142855,
+        "FOLD": 0.42857142857142855,
+        "JAM": 0.14285714285714285,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 7
+      },
+      "target_bin": "B3",
+      "validation_n": 7
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1588627708835477,
+          0.2782956990618075
+        ],
+        "FOLD": [
+          0.7037648787968189,
+          0.8262897660119242
+        ],
+        "JAM": [
+          0.0,
+          0.02595174341211667
+        ],
+        "RAISE": [
+          0.0,
+          0.016116495746280747
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2185792349726776,
+        "FOLD": 0.7650273224043715,
+        "JAM": 0.01092896174863388,
+        "RAISE": 0.00546448087431694
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 1.0,
+        "FOLD": 0.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1588627708835477,
+          0.2782956990618075
+        ],
+        "FOLD": [
+          0.7037648787968189,
+          0.8262897660119242
+        ],
+        "JAM": [
+          0.0,
+          0.02595174341211667
+        ],
+        "RAISE": [
+          0.0,
+          0.016116495746280747
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2185792349726776,
+        "FOLD": 0.7650273224043715,
+        "JAM": 0.01092896174863388,
+        "RAISE": 0.00546448087431694
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 1.0,
+        "FOLD": 0.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.013667370535511217,
+          0.25299929613115546
+        ],
+        "FOLD": [
+          0.6591894432110085,
+          0.9408105567889915
+        ],
+        "JAM": [
+          0.0,
+          0.09652400457442431
+        ],
+        "RAISE": [
+          0.0,
+          0.09652400457442431
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.13333333333333333,
+        "FOLD": 0.8,
+        "JAM": 0.03333333333333333,
+        "RAISE": 0.03333333333333333
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.2,
+        "FOLD": 0.8,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 5
+      },
+      "target_bin": "B4",
+      "validation_n": 5
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.14464735286447625,
+          0.28182323537081805
+        ],
+        "FOLD": [
+          0.6936747826909783,
+          0.835736982014904
+        ],
+        "JAM": [
+          0.0,
+          0.03486280719213852
+        ],
+        "RAISE": [
+          0.0,
+          0.02165912376665126
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.21323529411764702,
+        "FOLD": 0.7647058823529416,
+        "JAM": 0.014705882352941178,
+        "RAISE": 0.007352941176470589
+      },
+      "family": "CALLER_VS_SQUEEZE_OR_3BET",
+      "observed_frequency": {
+        "CALL": 0.21739130434782608,
+        "FOLD": 0.782608695652174,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 23
+      },
+      "target_bin": "B4",
+      "validation_n": 23
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.16258932262673537,
+          0.4223313735898963
+        ],
+        "FOLD": [
+          0.497379376273446,
+          0.7728890362040522
+        ],
+        "JAM": [
+          0.00012072161496308391,
+          0.09386651187942724
+        ],
+        "RAISE": [
+          0.0,
+          0.08862032861635516
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.29246034810831584,
+        "FOLD": 0.6351342062387492,
+        "JAM": 0.03788175359772428,
+        "RAISE": 0.03452369205521079
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.3684210526315789,
+        "FOLD": 0.631578947368421,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 30,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 8
+      },
+      "target_bin": "B1",
+      "validation_n": 38
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.08959740982774153,
+          0.31430566384277403
+        ],
+        "FOLD": [
+          0.587328120656603,
+          0.8417823038026585
+        ],
+        "JAM": [
+          0.0006702933952743359,
+          0.1298931394169192
+        ],
+        "RAISE": [
+          0.0,
+          0.0638343142532186
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.20195153683525777,
+        "FOLD": 0.7145552122296307,
+        "JAM": 0.0615709871523825,
+        "RAISE": 0.021922263782728896
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.15384615384615385,
+        "FOLD": 0.8461538461538461,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 9,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4
+      },
+      "target_bin": "B1",
+      "validation_n": 13
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.04896517481900209,
+          0.22222126585896398
+        ],
+        "FOLD": [
+          0.7150118709511356,
+          0.9121067731166611
+        ],
+        "JAM": [
+          0.0,
+          0.049611126733734634
+        ],
+        "RAISE": [
+          0.0,
+          0.07968938229507938
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.13559322033898305,
+        "FOLD": 0.8135593220338981,
+        "JAM": 0.01694915254237288,
+        "RAISE": 0.03389830508474576
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.42857142857142855,
+        "FOLD": 0.5714285714285714,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 7
+      },
+      "target_bin": "B2",
+      "validation_n": 7
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.11575148740852671,
+          0.2694525942241263
+        ],
+        "FOLD": [
+          0.6783946017188691,
+          0.8454574390974577
+        ],
+        "JAM": [
+          0.0,
+          0.042537419446284405
+        ],
+        "RAISE": [
+          0.0007333881917875372,
+          0.06230270802918543
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.19260204081632654,
+        "FOLD": 0.7619260204081632,
+        "JAM": 0.016517857142857147,
+        "RAISE": 0.028954081632653065
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.14285714285714285,
+        "FOLD": 0.7857142857142857,
+        "JAM": 0.07142857142857142,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 3,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 11
+      },
+      "target_bin": "B2",
+      "validation_n": 14
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.15806724070974879,
+          0.3363147817621614
+        ],
+        "FOLD": [
+          0.6262462290047938,
+          0.8119560181862174
+        ],
+        "JAM": [
+          0.0,
+          0.05309291467014521
+        ],
+        "RAISE": [
+          0.0,
+          0.03301235810443071
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.24719101123595505,
+        "FOLD": 0.7191011235955056,
+        "JAM": 0.02247191011235955,
+        "RAISE": 0.011235955056179775
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.2727272727272727,
+        "FOLD": 0.7272727272727273,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 11
+      },
+      "target_bin": "B2",
+      "validation_n": 11
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.0,
+          0.21971467330082559
+        ],
+        "FOLD": [
+          0.6820333258756522,
+          0.9608238169814906
+        ],
+        "JAM": [
+          0.0,
+          0.10325737540906679
+        ],
+        "RAISE": [
+          0.0,
+          0.10325737540906679
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.10714285714285714,
+        "FOLD": 0.8214285714285714,
+        "JAM": 0.03571428571428571,
+        "RAISE": 0.03571428571428571
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B3",
+      "validation_n": 2
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.0,
+          0.0783806470555559
+        ],
+        "FOLD": [
+          0.8247143145994572,
+          0.9752856854005428
+        ],
+        "JAM": [
+          0.0,
+          0.10469378242602695
+        ],
+        "RAISE": [
+          0.0,
+          0.04879335123831963
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.03333333333333333,
+        "FOLD": 0.9,
+        "JAM": 0.05000000000000001,
+        "RAISE": 0.016666666666666666
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.3333333333333333,
+        "JAM": 0.3333333333333333,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B3",
+      "validation_n": 3
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.07861693972702313,
+          0.1786930017934446
+        ],
+        "FOLD": [
+          0.7743253660210597,
+          0.8864933474292331
+        ],
+        "JAM": [
+          0.0040609802550024415,
+          0.05441855190874024
+        ],
+        "RAISE": [
+          0.0,
+          0.027763620241073747
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.12865497076023397,
+        "FOLD": 0.8304093567251463,
+        "JAM": 0.029239766081871343,
+        "RAISE": 0.011695906432748537
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.2222222222222222,
+        "FOLD": 0.7222222222222222,
+        "JAM": 0.05555555555555555,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 18
+      },
+      "target_bin": "B3",
+      "validation_n": 18
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.005016773016802506,
+          0.14592662320961258
+        ],
+        "FOLD": [
+          0.8022824967497734,
+          0.971302408910604
+        ],
+        "JAM": [
+          0.0,
+          0.055157759534596604
+        ],
+        "RAISE": [
+          0.0,
+          0.055157759534596604
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.07547169811320754,
+        "FOLD": 0.8867924528301887,
+        "JAM": 0.018867924528301886,
+        "RAISE": 0.018867924528301886
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B3",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.05265074827688291,
+          0.11569942007328546
+        ],
+        "FOLD": [
+          0.8647755919804742,
+          0.9332042059993239
+        ],
+        "JAM": [
+          0.0003805556222466911,
+          0.026555471313780242
+        ],
+        "RAISE": [
+          0.0,
+          0.009944147293147904
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.08417508417508418,
+        "FOLD": 0.898989898989899,
+        "JAM": 0.013468013468013467,
+        "RAISE": 0.003367003367003367
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 0.5,
+        "JAM": 0.5,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B4",
+      "validation_n": 2
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.05265074827688291,
+          0.11569942007328546
+        ],
+        "FOLD": [
+          0.8647755919804742,
+          0.9332042059993239
+        ],
+        "JAM": [
+          0.0003805556222466911,
+          0.026555471313780242
+        ],
+        "RAISE": [
+          0.0,
+          0.009944147293147904
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.08417508417508418,
+        "FOLD": 0.898989898989899,
+        "JAM": 0.013468013468013467,
+        "RAISE": 0.003367003367003367
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.0,
+          0.19320090725853364
+        ],
+        "FOLD": [
+          0.7198657752723793,
+          0.9676342247276207
+        ],
+        "JAM": [
+          0.0,
+          0.09061493136320109
+        ],
+        "RAISE": [
+          0.0,
+          0.09061493136320109
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.09375,
+        "FOLD": 0.84375,
+        "JAM": 0.03125,
+        "RAISE": 0.03125
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.14285714285714285,
+        "FOLD": 0.8571428571428571,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 7
+      },
+      "target_bin": "B4",
+      "validation_n": 7
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.04968321526219222,
+          0.11831678473780773
+        ],
+        "FOLD": [
+          0.8582349655594647,
+          0.9337650344405357
+        ],
+        "JAM": [
+          0.0004769609087175823,
+          0.03152303909128241
+        ],
+        "RAISE": [
+          0.0,
+          0.011808702469869646
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.08400000000000002,
+        "FOLD": 0.8960000000000005,
+        "JAM": 0.01600000000000001,
+        "RAISE": 0.004000000000000003
+      },
+      "family": "COLD_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 25
+      },
+      "target_bin": "B4",
+      "validation_n": 25
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.7620242835468053,
+          0.9554891834567099
+        ],
+        "FOLD": [
+          0.014303787207065504,
+          0.14677072534146238
+        ],
+        "JAM": [
+          6.254844349417747e-05,
+          0.08120231593535872
+        ],
+        "RAISE": [
+          0.001117037369289205,
+          0.08353733819034143
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.8588963463540755,
+        "FOLD": 0.07605570497420552,
+        "JAM": 0.03166066279487243,
+        "RAISE": 0.033387285876846425
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.8658536585365854,
+        "FOLD": 0.13414634146341464,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 81,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B1",
+      "validation_n": 82
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.6231766553375553,
+          0.898987660458908
+        ],
+        "FOLD": [
+          0.05220857326585843,
+          0.2921798638803272
+        ],
+        "JAM": [
+          0.0,
+          0.09831502415553241
+        ],
+        "RAISE": [
+          0.0,
+          0.08807805429102153
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7610821578982315,
+        "FOLD": 0.1716977178616688,
+        "JAM": 0.03651703886423584,
+        "RAISE": 0.030703085375863748
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.875,
+        "FOLD": 0.0625,
+        "JAM": 0.0,
+        "RAISE": 0.0625
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 14,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B1",
+      "validation_n": 16
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5099830573580577,
+          0.7975584516916593
+        ],
+        "FOLD": [
+          0.1473420272939404,
+          0.41681304184157225
+        ],
+        "JAM": [
+          6.275744247235388e-05,
+          0.0829638920062719
+        ],
+        "RAISE": [
+          0.0,
+          0.08954597950415244
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.653770754524859,
+        "FOLD": 0.2820775345677565,
+        "JAM": 0.030102514954271062,
+        "RAISE": 0.034049195953113814
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.8059701492537313,
+        "FOLD": 0.19402985074626866,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 67
+      },
+      "target_bin": "B2",
+      "validation_n": 67
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5323160833303617,
+          0.7989339166696384
+        ],
+        "FOLD": [
+          0.13797740552937296,
+          0.3870225944706271
+        ],
+        "JAM": [
+          0.0,
+          0.09520258329064772
+        ],
+        "RAISE": [
+          0.0,
+          0.08037538197648911
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.665625,
+        "FOLD": 0.2625,
+        "JAM": 0.040625,
+        "RAISE": 0.03125
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.7,
+        "FOLD": 0.3,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 10
+      },
+      "target_bin": "B2",
+      "validation_n": 10
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.67666779517745,
+          0.7477695038579197
+        ],
+        "FOLD": [
+          0.2290655767249986,
+          0.29826561298561227
+        ],
+        "JAM": [
+          0.002970626777558452,
+          0.01953741180765055
+        ],
+        "RAISE": [
+          0.004013619626523166,
+          0.021709853042287123
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7122186495176849,
+        "FOLD": 0.26366559485530544,
+        "JAM": 0.011254019292604502,
+        "RAISE": 0.012861736334405145
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B2",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.4033610940557807,
+          0.7123366099932471
+        ],
+        "FOLD": [
+          0.22643908011431735,
+          0.5277395748398647
+        ],
+        "JAM": [
+          0.0,
+          0.08771215385958597
+        ],
+        "RAISE": [
+          0.0,
+          0.08921493769127925
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5578488520245135,
+        "FOLD": 0.3770893274770908,
+        "JAM": 0.03207063825514832,
+        "RAISE": 0.032991182243247104
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.5227272727272727,
+        "FOLD": 0.4772727272727273,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 44
+      },
+      "target_bin": "B3",
+      "validation_n": 44
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.38530878858980694,
+          0.6614289627438488
+        ],
+        "FOLD": [
+          0.27326841998504897,
+          0.5449631587122953
+        ],
+        "JAM": [
+          0.0009950685377046787,
+          0.0877133463285523
+        ],
+        "RAISE": [
+          1.409271659345852e-05,
+          0.08095845727712397
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5233688756668281,
+        "FOLD": 0.409115789348672,
+        "JAM": 0.036120256917816826,
+        "RAISE": 0.03139507806668292
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.5660377358490566,
+        "FOLD": 0.41509433962264153,
+        "JAM": 0.0,
+        "RAISE": 0.018867924528301886
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 50,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B3",
+      "validation_n": 53
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.31413095812569086,
+          0.5320228880281552
+        ],
+        "FOLD": [
+          0.41552748853717664,
+          0.6357545627448747
+        ],
+        "JAM": [
+          0.0,
+          0.08086869780413475
+        ],
+        "RAISE": [
+          0.0,
+          0.037628600353962524
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.4230769230769231,
+        "FOLD": 0.5256410256410257,
+        "JAM": 0.038461538461538464,
+        "RAISE": 0.012820512820512822
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.6666666666666666,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B3",
+      "validation_n": 3
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.15492994894429366,
+          0.372619518331201
+        ],
+        "FOLD": [
+          0.5421649512386781,
+          0.7762520959454924
+        ],
+        "JAM": [
+          0.0,
+          0.09493358438496037
+        ],
+        "RAISE": [
+          0.0,
+          0.07754506750798083
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.26377473363774734,
+        "FOLD": 0.6592085235920853,
+        "JAM": 0.04398782343987823,
+        "RAISE": 0.03302891933028919
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.4,
+        "FOLD": 0.6,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 1,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4
+      },
+      "target_bin": "B4",
+      "validation_n": 5
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.24855772751578822,
+          0.3488511367233859
+        ],
+        "FOLD": [
+          0.624670424136002,
+          0.7262056631169796
+        ],
+        "JAM": [
+          0.006500909994983341,
+          0.03804887104227378
+        ],
+        "RAISE": [
+          0.0,
+          0.014995713326111175
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.29867172754720667,
+        "FOLD": 0.6754380436264912,
+        "JAM": 0.02075289717137153,
+        "RAISE": 0.005137331654930263
+      },
+      "family": "LIMPER_VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.27710843373493976,
+        "FOLD": 0.6987951807228916,
+        "JAM": 0.024096385542168676,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 12,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 71
+      },
+      "target_bin": "B4",
+      "validation_n": 83
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.8093823882301021,
+          0.9656176955165054
+        ],
+        "FOLD": [
+          0.003062382969448117,
+          0.09501083406788675
+        ],
+        "JAM": [
+          1.797660588367361e-06,
+          0.056897699446034386
+        ],
+        "RAISE": [
+          0.00484939782050482,
+          0.09870250432908496
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.887925134105297,
+        "FOLD": 0.04425192241007659,
+        "JAM": 0.020706336542816665,
+        "RAISE": 0.04711660694180915
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.9397590361445783,
+        "FOLD": 0.024096385542168676,
+        "JAM": 0.0,
+        "RAISE": 0.03614457831325301
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 82,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B1",
+      "validation_n": 83
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.7797980317569578,
+          0.9530933478676094
+        ],
+        "FOLD": [
+          0.00145595953116619,
+          0.11083821758741656
+        ],
+        "JAM": [
+          0.0,
+          0.06614016007563253
+        ],
+        "RAISE": [
+          0.004550325280805847,
+          0.11147466276903772
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.8664456898122836,
+        "FOLD": 0.05374749407690906,
+        "JAM": 0.025731273920174963,
+        "RAISE": 0.054075542190632396
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.8,
+        "FOLD": 0.1,
+        "JAM": 0.1,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 10
+      },
+      "target_bin": "B1",
+      "validation_n": 10
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.6374068285277528,
+          0.8547790243080051
+        ],
+        "FOLD": [
+          0.10702992104080121,
+          0.3091384035715461
+        ],
+        "JAM": [
+          0.0,
+          0.050005470144044356
+        ],
+        "RAISE": [
+          0.0,
+          0.07064152617667459
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7460929264178792,
+        "FOLD": 0.20808416230617366,
+        "JAM": 0.017112539052766752,
+        "RAISE": 0.02871037222318057
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.8125,
+        "FOLD": 0.1875,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 12,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4
+      },
+      "target_bin": "B2",
+      "validation_n": 16
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.6141948177819831,
+          0.8695123896182289
+        ],
+        "FOLD": [
+          0.08116576789087623,
+          0.31241418110103414
+        ],
+        "JAM": [
+          0.0,
+          0.08005506395767743
+        ],
+        "RAISE": [
+          0.0,
+          0.08383196587107346
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7418536037001058,
+        "FOLD": 0.19665607600820043,
+        "JAM": 0.029607529917959105,
+        "RAISE": 0.031882790373734364
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.8076923076923077,
+        "FOLD": 0.19230769230769232,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 52
+      },
+      "target_bin": "B2",
+      "validation_n": 52
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5412896311151794,
+          0.8379116783280658
+        ],
+        "FOLD": [
+          0.07682605194933265,
+          0.3359477334050978
+        ],
+        "JAM": [
+          0.0,
+          0.12232315341139818
+        ],
+        "RAISE": [
+          0.0,
+          0.12097542169760256
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6896006547216225,
+        "FOLD": 0.2063868926772153,
+        "JAM": 0.05231421804002449,
+        "RAISE": 0.05169823456113777
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.7,
+        "FOLD": 0.3,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 20
+      },
+      "target_bin": "B2",
+      "validation_n": 20
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5825757448466468,
+          0.6525593902884884
+        ],
+        "FOLD": [
+          0.32623268511464876,
+          0.3953889365069728
+        ],
+        "JAM": [
+          0.006151711579779392,
+          0.02357801814995034
+        ],
+        "RAISE": [
+          0.0008582250351164382,
+          0.012655288478397076
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6175675675675676,
+        "FOLD": 0.3608108108108108,
+        "JAM": 0.014864864864864866,
+        "RAISE": 0.006756756756756757
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 1.0,
+        "FOLD": 0.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B3",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.43609861380796555,
+          0.7128547857336691
+        ],
+        "FOLD": [
+          0.23098994085178268,
+          0.5011834739686909
+        ],
+        "JAM": [
+          0.0,
+          0.07373127569854707
+        ],
+        "RAISE": [
+          0.0,
+          0.08022726873226198
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5744766997708172,
+        "FOLD": 0.3660867074102369,
+        "JAM": 0.027881970970206265,
+        "RAISE": 0.03155462184873949
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.6,
+        "FOLD": 0.35,
+        "JAM": 0.05,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 20
+      },
+      "target_bin": "B3",
+      "validation_n": 20
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.43602142519185727,
+          0.7226743602509788
+        ],
+        "FOLD": [
+          0.21226450429551602,
+          0.48921874405625754
+        ],
+        "JAM": [
+          6.647853535727638e-05,
+          0.09332851572173445
+        ],
+        "RAISE": [
+          0.0,
+          0.08445843511126835
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5793478927214184,
+        "FOLD": 0.3507416241758868,
+        "JAM": 0.037685412359616886,
+        "RAISE": 0.032225070743077934
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.68,
+        "FOLD": 0.32,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 75
+      },
+      "target_bin": "B3",
+      "validation_n": 75
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.48294264084584027,
+          0.7158668829636834
+        ],
+        "FOLD": [
+          0.22817304131001406,
+          0.45342036528339247
+        ],
+        "JAM": [
+          0.0,
+          0.09407343530887816
+        ],
+        "RAISE": [
+          0.0,
+          0.04381355555807533
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5994047619047618,
+        "FOLD": 0.34079670329670325,
+        "JAM": 0.044848901098901106,
+        "RAISE": 0.0149496336996337
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.5,
+        "FOLD": 0.375,
+        "JAM": 0.125,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 14,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B3",
+      "validation_n": 16
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.18835976256227271,
+          0.5164300712598191
+        ],
+        "FOLD": [
+          0.38395346947322273,
+          0.726451657060936
+        ],
+        "JAM": [
+          0.0,
+          0.14152434718404935
+        ],
+        "RAISE": [
+          0.0,
+          0.09430568585996646
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3523949169110459,
+        "FOLD": 0.5552025632670794,
+        "JAM": 0.05980956518590926,
+        "RAISE": 0.032592954635965385
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.6666666666666666,
+        "FOLD": 0.3333333333333333,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 5,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 6
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.45835046851862693,
+          0.7083604545672441
+        ],
+        "FOLD": [
+          0.24550069743558278,
+          0.48989669986692513
+        ],
+        "JAM": [
+          0.0002412527492804385,
+          0.07335899857914281
+        ],
+        "RAISE": [
+          0.0,
+          0.05548202296861751
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5833554615429355,
+        "FOLD": 0.367698698651254,
+        "JAM": 0.02988694120450629,
+        "RAISE": 0.019058898601304334
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3870967741935484,
+        "FOLD": 0.5483870967741935,
+        "JAM": 0.03225806451612903,
+        "RAISE": 0.03225806451612903
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 22,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 9
+      },
+      "target_bin": "B4",
+      "validation_n": 31
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.32733662325076074,
+          0.5036302317078082
+        ],
+        "FOLD": [
+          0.4503194831571534,
+          0.6279605221272937
+        ],
+        "JAM": [
+          0.002247389426008729,
+          0.052229066311688596
+        ],
+        "RAISE": [
+          0.0007815468361105299,
+          0.049931187779779965
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.4154834274792848,
+        "FOLD": 0.5391400026422231,
+        "JAM": 0.02362399505029221,
+        "RAISE": 0.021752574828199873
+      },
+      "family": "LIMPER_VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.475,
+        "FOLD": 0.5,
+        "JAM": 0.0,
+        "RAISE": 0.025
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 19,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 21
+      },
+      "target_bin": "B4",
+      "validation_n": 40
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.6259235462828262,
+          0.8356719437562066
+        ],
+        "FOLD": [
+          0.0023992219080788916,
+          0.0999087156327476
+        ],
+        "JAM": [
+          0.003667244313105669,
+          0.1065993340332455
+        ],
+        "RAISE": [
+          0.07878174507259307,
+          0.254509112417325
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7307977450195163,
+        "FOLD": 0.04912999450295771,
+        "JAM": 0.05342683173256673,
+        "RAISE": 0.16664542874495913
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.6818181818181818,
+        "FOLD": 0.0,
+        "JAM": 0.045454545454545456,
+        "RAISE": 0.2727272727272727
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 20,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B1",
+      "validation_n": 22
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5903253260372108,
+          0.8935456417047248
+        ],
+        "FOLD": [
+          0.012879034777700915,
+          0.24518548135133134
+        ],
+        "JAM": [
+          0.0,
+          0.14963647598373891
+        ],
+        "RAISE": [
+          0.0,
+          0.14963647598373891
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.7419354838709676,
+        "FOLD": 0.12903225806451613,
+        "JAM": 0.06451612903225806,
+        "RAISE": 0.06451612903225806
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 1.0,
+        "FOLD": 0.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B1",
+      "validation_n": 3
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.4941977321972938,
+          0.8183022678027062
+        ],
+        "FOLD": [
+          0.0,
+          0.19320090725853362
+        ],
+        "JAM": [
+          0.012161284314399626,
+          0.2378387156856004
+        ],
+        "RAISE": [
+          0.012161284314399626,
+          0.2378387156856004
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.65625,
+        "FOLD": 0.09375,
+        "JAM": 0.125,
+        "RAISE": 0.125
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.75,
+        "FOLD": 0.25,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4
+      },
+      "target_bin": "B2",
+      "validation_n": 4
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5120805022548849,
+          0.7224873989796831
+        ],
+        "FOLD": [
+          0.06165275366660839,
+          0.20995218460499654
+        ],
+        "JAM": [
+          0.052254608485027616,
+          0.19465897176188593
+        ],
+        "RAISE": [
+          0.052254608485027616,
+          0.19465897176188593
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6172839506172839,
+        "FOLD": 0.13580246913580243,
+        "JAM": 0.12345679012345678,
+        "RAISE": 0.12345679012345678
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.7142857142857143,
+        "FOLD": 0.14285714285714285,
+        "JAM": 0.14285714285714285,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 7
+      },
+      "target_bin": "B2",
+      "validation_n": 7
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5878597528012169,
+          0.80344459502487
+        ],
+        "FOLD": [
+          0.06245982027228347,
+          0.22739525219148463
+        ],
+        "JAM": [
+          0.011729619229176605,
+          0.13319791700270744
+        ],
+        "RAISE": [
+          0.020947414273334464,
+          0.1529656292049264
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6956521739130435,
+        "FOLD": 0.14492753623188406,
+        "JAM": 0.07246376811594203,
+        "RAISE": 0.08695652173913043
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.5,
+        "FOLD": 0.25,
+        "JAM": 0.125,
+        "RAISE": 0.125
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 8
+      },
+      "target_bin": "B2",
+      "validation_n": 8
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.3907525241747653,
+          0.6730772630592773
+        ],
+        "FOLD": [
+          0.06389278461019299,
+          0.2765327473047006
+        ],
+        "JAM": [
+          0.08017514162775867,
+          0.30280358177649663
+        ],
+        "RAISE": [
+          0.019156720637936817,
+          0.19360923680887174
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.5319148936170213,
+        "FOLD": 0.1702127659574468,
+        "JAM": 0.19148936170212763,
+        "RAISE": 0.10638297872340426
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.6666666666666666,
+        "FOLD": 0.3333333333333333,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 6
+      },
+      "target_bin": "B3",
+      "validation_n": 6
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5438256440550403,
+          0.7387830515971335
+        ],
+        "FOLD": [
+          0.061986526754395754,
+          0.19888303846299557
+        ],
+        "JAM": [
+          0.04543499547789926,
+          0.17195630886992677
+        ],
+        "RAISE": [
+          0.0536226849373699,
+          0.1855077498452388
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6413043478260869,
+        "FOLD": 0.13043478260869565,
+        "JAM": 0.10869565217391304,
+        "RAISE": 0.11956521739130434
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.5,
+        "FOLD": 0.3333333333333333,
+        "JAM": 0.0,
+        "RAISE": 0.16666666666666666
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 6
+      },
+      "target_bin": "B3",
+      "validation_n": 6
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5448086545782035,
+          0.6904854630688554
+        ],
+        "FOLD": [
+          0.25896589519911023,
+          0.39985763421265447
+        ],
+        "JAM": [
+          0.015318481996261103,
+          0.07879916506256243
+        ],
+        "RAISE": [
+          0.0,
+          0.017344142939258653
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6176470588235294,
+        "FOLD": 0.32941176470588235,
+        "JAM": 0.047058823529411764,
+        "RAISE": 0.0058823529411764705
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.0,
+        "JAM": 0.3333333333333333,
+        "RAISE": 0.3333333333333333
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B4",
+      "validation_n": 3
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5448086545782035,
+          0.6904854630688553
+        ],
+        "FOLD": [
+          0.25896589519911023,
+          0.3998576342126544
+        ],
+        "JAM": [
+          0.0153184819962611,
+          0.07879916506256245
+        ],
+        "RAISE": [
+          0.0,
+          0.017344142939258653
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6176470588235294,
+        "FOLD": 0.32941176470588235,
+        "JAM": 0.047058823529411764,
+        "RAISE": 0.0058823529411764705
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.5,
+        "FOLD": 0.375,
+        "JAM": 0.125,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 8
+      },
+      "target_bin": "B4",
+      "validation_n": 8
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.5286669939427374,
+          0.6881162228404795
+        ],
+        "FOLD": [
+          0.26513966475087175,
+          0.42017502056381356
+        ],
+        "JAM": [
+          0.009210802417028398,
+          0.07470528149905553
+        ],
+        "RAISE": [
+          0.0,
+          0.020603785293772405
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.6083916083916084,
+        "FOLD": 0.34265734265734255,
+        "JAM": 0.041958041958041974,
+        "RAISE": 0.006993006993006993
+      },
+      "family": "OPENER_OR_ISO_VS_3BET",
+      "observed_frequency": {
+        "CALL": 0.5714285714285714,
+        "FOLD": 0.42857142857142855,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 14
+      },
+      "target_bin": "B4",
+      "validation_n": 14
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.25242924510334386,
+          0.525116384274762
+        ],
+        "FOLD": [
+          0.3822690702692649,
+          0.6632056586753922
+        ],
+        "JAM": [
+          0.00024246821444245278,
+          0.09141589227742543
+        ],
+        "RAISE": [
+          0.002010649498076957,
+          0.11338878276980666
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3887728146890527,
+        "FOLD": 0.5227373644723289,
+        "JAM": 0.03723693374408663,
+        "RAISE": 0.05125288709453207
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.4277456647398844,
+        "FOLD": 0.49710982658959535,
+        "JAM": 0.023121387283236993,
+        "RAISE": 0.05202312138728324
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 169,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4
+      },
+      "target_bin": "B1",
+      "validation_n": 173
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.13036680032395367,
+          0.3974077481770771
+        ],
+        "FOLD": [
+          0.5159809647039084,
+          0.8034551702956386
+        ],
+        "JAM": [
+          0.0,
+          0.07559721858682132
+        ],
+        "RAISE": [
+          0.0009231340071423598,
+          0.11671410070472012
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.26388727425051534,
+        "FOLD": 0.6597180674997734,
+        "JAM": 0.026053291830307294,
+        "RAISE": 0.05034136641940383
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.3488372093023256,
+        "FOLD": 0.627906976744186,
+        "JAM": 0.023255813953488372,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 41,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B1",
+      "validation_n": 43
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1187756960893763,
+          0.3898625435415638
+        ],
+        "FOLD": [
+          0.5012867267219412,
+          0.7987536594878445
+        ],
+        "JAM": [
+          0.0,
+          0.08083483882555605
+        ],
+        "RAISE": [
+          0.004608962708059935,
+          0.14509359706245706
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2543191198154702,
+        "FOLD": 0.650020193104893,
+        "JAM": 0.027888417788033526,
+        "RAISE": 0.06777226929160332
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.17647058823529413,
+        "FOLD": 0.7647058823529411,
+        "JAM": 0.058823529411764705,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 34
+      },
+      "target_bin": "B1",
+      "validation_n": 34
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.167409737667756,
+          0.4400362371204784
+        ],
+        "FOLD": [
+          0.4415928554218937,
+          0.7330851424585987
+        ],
+        "JAM": [
+          0.00017745173568255255,
+          0.09830775419183531
+        ],
+        "RAISE": [
+          0.0007878905293832268,
+          0.1441519333384545
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.30372298739411724,
+        "FOLD": 0.5873389989402461,
+        "JAM": 0.040256239949013235,
+        "RAISE": 0.0686817737166233
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.375,
+        "FOLD": 0.5625,
+        "JAM": 0.0,
+        "RAISE": 0.0625
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 14,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B2",
+      "validation_n": 16
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.16278511856147052,
+          0.4366098034812085
+        ],
+        "FOLD": [
+          0.4636940926930358,
+          0.7562790993577511
+        ],
+        "JAM": [
+          2.0706433849027858e-05,
+          0.09209523010824465
+        ],
+        "RAISE": [
+          0.002617163525515613,
+          0.1206706351134824
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2996974610213395,
+        "FOLD": 0.6099865960253933,
+        "JAM": 0.03631657764997554,
+        "RAISE": 0.053999365303291635
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.3561643835616438,
+        "FOLD": 0.6027397260273972,
+        "JAM": 0.0136986301369863,
+        "RAISE": 0.0273972602739726
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 73
+      },
+      "target_bin": "B2",
+      "validation_n": 73
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1271680664311433,
+          0.39765260465010716
+        ],
+        "FOLD": [
+          0.5104776164213175,
+          0.8044258629623927
+        ],
+        "JAM": [
+          0.0,
+          0.09548402656360278
+        ],
+        "RAISE": [
+          0.00010738287508443831,
+          0.10567151633736512
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.26241033554062504,
+        "FOLD": 0.6574517396918547,
+        "JAM": 0.03690937109757337,
+        "RAISE": 0.04322855366994629
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.19767441860465115,
+        "FOLD": 0.7906976744186046,
+        "JAM": 0.0,
+        "RAISE": 0.011627906976744186
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 86
+      },
+      "target_bin": "B2",
+      "validation_n": 86
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.11967187383252688,
+          0.3642243922112353
+        ],
+        "FOLD": [
+          0.5512568671829151,
+          0.8236309714220285
+        ],
+        "JAM": [
+          0.0,
+          0.09769398010013364
+        ],
+        "RAISE": [
+          0.0,
+          0.08469445129918049
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.24154344700397326,
+        "FOLD": 0.6874439193024718,
+        "JAM": 0.03930140051850577,
+        "RAISE": 0.03171123317504897
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.3157894736842105,
+        "FOLD": 0.6052631578947368,
+        "JAM": 0.05263157894736842,
+        "RAISE": 0.02631578947368421
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 38
+      },
+      "target_bin": "B3",
+      "validation_n": 38
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.11774160107185443,
+          0.3975836705077145
+        ],
+        "FOLD": [
+          0.5186188560168088,
+          0.8208243796258742
+        ],
+        "JAM": [
+          0.0,
+          0.08684952768418794
+        ],
+        "RAISE": [
+          0.0,
+          0.1061932123263685
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2575985605036158,
+        "FOLD": 0.6697216178213412,
+        "JAM": 0.030768282960983485,
+        "RAISE": 0.04191153871405933
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.25,
+        "FOLD": 0.725,
+        "JAM": 0.0,
+        "RAISE": 0.025
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 40
+      },
+      "target_bin": "B3",
+      "validation_n": 40
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.07657348972483641,
+          0.3163140491835458
+        ],
+        "FOLD": [
+          0.5549514631004502,
+          0.8462776695782623
+        ],
+        "JAM": [
+          0.0,
+          0.12806627346921293
+        ],
+        "RAISE": [
+          0.0,
+          0.12010921195790115
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.19435962419155697,
+        "FOLD": 0.7006145663393563,
+        "JAM": 0.0545293630272622,
+        "RAISE": 0.050496446441824584
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.2222222222222222,
+        "FOLD": 0.7777777777777778,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 18
+      },
+      "target_bin": "B3",
+      "validation_n": 18
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.053197781365624405,
+          0.3459230977552547
+        ],
+        "FOLD": [
+          0.514988679967626,
+          0.8555607705818244
+        ],
+        "JAM": [
+          0.0,
+          0.11539377786654145
+        ],
+        "RAISE": [
+          0.0,
+          0.16854216106594316
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.19956043956043956,
+        "FOLD": 0.6852747252747252,
+        "JAM": 0.0421978021978022,
+        "RAISE": 0.07296703296703297
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.6,
+        "FOLD": 0.4,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 4,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 5
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.07479794356089986,
+          0.2734910554097678
+        ],
+        "FOLD": [
+          0.6306063292447299,
+          0.867912500901094
+        ],
+        "JAM": [
+          0.0007323912492188709,
+          0.07871532979690399
+        ],
+        "RAISE": [
+          0.00013410765199349967,
+          0.10628952936405053
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.1724304814956612,
+        "FOLD": 0.7492594150729119,
+        "JAM": 0.031088892830903436,
+        "RAISE": 0.04722121060052342
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.21052631578947367,
+        "FOLD": 0.7368421052631579,
+        "JAM": 0.05263157894736842,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 18,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 19
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.09425194326711846,
+          0.20920402044745243
+        ],
+        "FOLD": [
+          0.7321998479937898,
+          0.8633648688358445
+        ],
+        "JAM": [
+          0.008033099501756747,
+          0.06557885531839175
+        ],
+        "RAISE": [
+          0.0017461551037733828,
+          0.03994024091878402
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.15172798185728523,
+        "FOLD": 0.7977823584148173,
+        "JAM": 0.033845757588396176,
+        "RAISE": 0.016643902139500878
+      },
+      "family": "VS_ISO",
+      "observed_frequency": {
+        "CALL": 0.1504424778761062,
+        "FOLD": 0.8495575221238938,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 44,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 69
+      },
+      "target_bin": "B4",
+      "validation_n": 113
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2547663895569439,
+          0.5489304717719085
+        ],
+        "FOLD": [
+          0.36394412643157675,
+          0.6665010896964536
+        ],
+        "JAM": [
+          0.0,
+          0.07888607813986102
+        ],
+        "RAISE": [
+          0.003744505433186489,
+          0.12389022225918987
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.40184843066442605,
+        "FOLD": 0.5152226080640152,
+        "JAM": 0.027244571502348658,
+        "RAISE": 0.05568438976921004
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.625,
+        "FOLD": 0.3333333333333333,
+        "JAM": 0.0,
+        "RAISE": 0.041666666666666664
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 21,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B1",
+      "validation_n": 24
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2642035195839801,
+          0.5130013650835911
+        ],
+        "FOLD": [
+          0.3975848006025652,
+          0.6522733466775631
+        ],
+        "JAM": [
+          0.0,
+          0.10854455600240343
+        ],
+        "RAISE": [
+          0.0,
+          0.08127609706288717
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.38860244233378566,
+        "FOLD": 0.5249290736400641,
+        "JAM": 0.051881090415690154,
+        "RAISE": 0.03458739361046009
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.36363636363636365,
+        "FOLD": 0.5454545454545454,
+        "JAM": 0.09090909090909091,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 8,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B1",
+      "validation_n": 11
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.13583781800953745,
+          0.48060780533263764
+        ],
+        "FOLD": [
+          0.4349108305054295,
+          0.7979804161789208
+        ],
+        "JAM": [
+          0.0,
+          0.10875578229990535
+        ],
+        "RAISE": [
+          0.0,
+          0.10875578229990535
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.30822281167108756,
+        "FOLD": 0.6164456233421751,
+        "JAM": 0.0376657824933687,
+        "RAISE": 0.0376657824933687
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.2,
+        "FOLD": 0.8,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 4,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B1",
+      "validation_n": 5
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2015234882611806,
+          0.5448613838189084
+        ],
+        "FOLD": [
+          0.3395633204049439,
+          0.6943632646896056
+        ],
+        "JAM": [
+          0.0,
+          0.16953437371734503
+        ],
+        "RAISE": [
+          0.0,
+          0.09820197540859328
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3731924360400445,
+        "FOLD": 0.5169632925472748,
+        "JAM": 0.07591768631813126,
+        "RAISE": 0.0339265850945495
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 4
+      },
+      "target_bin": "B2",
+      "validation_n": 4
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.13448359767732146,
+          0.40349026206993743
+        ],
+        "FOLD": [
+          0.5053521189277809,
+          0.7958303876734449
+        ],
+        "JAM": [
+          0.0,
+          0.07648238724622371
+        ],
+        "RAISE": [
+          0.0006702088415996565,
+          0.12285351054342748
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2689869298736294,
+        "FOLD": 0.6505912533006131,
+        "JAM": 0.026373235412644278,
+        "RAISE": 0.05404858141311343
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.2857142857142857,
+        "FOLD": 0.6190476190476191,
+        "JAM": 0.047619047619047616,
+        "RAISE": 0.047619047619047616
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 21
+      },
+      "target_bin": "B2",
+      "validation_n": 21
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.0,
+          0.2546418142421649
+        ],
+        "FOLD": [
+          0.5301577021276167,
+          0.88650896453905
+        ],
+        "JAM": [
+          0.0,
+          0.11999858154744109
+        ],
+        "RAISE": [
+          0.0,
+          0.2546418142421649
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.125,
+        "FOLD": 0.7083333333333334,
+        "JAM": 0.041666666666666664,
+        "RAISE": 0.125
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.6666666666666666,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B2",
+      "validation_n": 3
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.049135692368120265,
+          0.3675309742985464
+        ],
+        "FOLD": [
+          0.5301577021276167,
+          0.88650896453905
+        ],
+        "JAM": [
+          0.0,
+          0.11999858154744109
+        ],
+        "RAISE": [
+          0.0,
+          0.11999858154744109
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.20833333333333334,
+        "FOLD": 0.7083333333333334,
+        "JAM": 0.041666666666666664,
+        "RAISE": 0.041666666666666664
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 1.0,
+        "FOLD": 0.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 2
+      },
+      "target_bin": "B3",
+      "validation_n": 2
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.15493857263232233,
+          0.4215642014361924
+        ],
+        "FOLD": [
+          0.5000659483130333,
+          0.7810672891337418
+        ],
+        "JAM": [
+          0.0,
+          0.09745611906831902
+        ],
+        "RAISE": [
+          0.0,
+          0.08346366958423211
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2882513870342573,
+        "FOLD": 0.6405666187233875,
+        "JAM": 0.03964553391565242,
+        "RAISE": 0.03153646032670266
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3684210526315789,
+        "FOLD": 0.5789473684210527,
+        "JAM": 0.05263157894736842,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 19
+      },
+      "target_bin": "B3",
+      "validation_n": 19
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1465061149058567,
+          0.42386425546451373
+        ],
+        "FOLD": [
+          0.5055523444552211,
+          0.7981513592484826
+        ],
+        "JAM": [
+          0.0,
+          0.09496452018744195
+        ],
+        "RAISE": [
+          0.0,
+          0.07528486652084634
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.28518518518518515,
+        "FOLD": 0.6518518518518519,
+        "JAM": 0.037037037037037035,
+        "RAISE": 0.025925925925925925
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.1,
+        "FOLD": 0.9,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 10
+      },
+      "target_bin": "B3",
+      "validation_n": 10
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1974618206502548,
+          0.30453021122225515
+        ],
+        "FOLD": [
+          0.6446795277158064,
+          0.7577109105312057
+        ],
+        "JAM": [
+          0.007558978267228362,
+          0.04821791416305052
+        ],
+        "RAISE": [
+          0.0026685099670365336,
+          0.03717212748316267
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.250996015936255,
+        "FOLD": 0.701195219123506,
+        "JAM": 0.027888446215139442,
+        "RAISE": 0.0199203187250996
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1974618206502548,
+          0.30453021122225515
+        ],
+        "FOLD": [
+          0.6446795277158064,
+          0.7577109105312057
+        ],
+        "JAM": [
+          0.007558978267228362,
+          0.04821791416305052
+        ],
+        "RAISE": [
+          0.0026685099670365336,
+          0.03717212748316267
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.250996015936255,
+        "FOLD": 0.701195219123506,
+        "JAM": 0.027888446215139442,
+        "RAISE": 0.0199203187250996
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.0,
+        "FOLD": 1.0,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 1
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2446497903970463,
+          0.5020493438020879
+        ],
+        "FOLD": [
+          0.3569968446353262,
+          0.6220074843690029
+        ],
+        "JAM": [
+          0.007737472387621106,
+          0.1527603631102144
+        ],
+        "RAISE": [
+          0.0,
+          0.11877764031521738
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3733495670995671,
+        "FOLD": 0.48950216450216455,
+        "JAM": 0.08024891774891776,
+        "RAISE": 0.05689935064935066
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.2,
+        "FOLD": 0.8,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 8,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B4",
+      "validation_n": 10
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.14533477425543076,
+          0.40385061235197867
+        ],
+        "FOLD": [
+          0.5089568832953082,
+          0.7827428202471048
+        ],
+        "JAM": [
+          0.0,
+          0.10401822905044361
+        ],
+        "RAISE": [
+          0.0,
+          0.09176706681845681
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2745926933037047,
+        "FOLD": 0.6458498517712067,
+        "JAM": 0.04347552519316181,
+        "RAISE": 0.036081929731926914
+      },
+      "family": "VS_ISO_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.20833333333333334,
+        "FOLD": 0.7916666666666666,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 15,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 9
+      },
+      "target_bin": "B4",
+      "validation_n": 24
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.15609065350347098,
+          0.3471386033533138
+        ],
+        "FOLD": [
+          0.19523709056321614,
+          0.3877031655827456
+        ],
+        "JAM": [
+          0.023726436998135664,
+          0.1525527750026857
+        ],
+        "RAISE": [
+          0.3081639253658271,
+          0.46623284596029935
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.24764671117613263,
+        "FOLD": 0.2874393722700887,
+        "JAM": 0.08206168379661716,
+        "RAISE": 0.3828522327571615
+      },
+      "family": "VS_LIMPERS",
+      "observed_frequency": {
+        "CALL": 0.2814070351758794,
+        "FOLD": 0.23115577889447236,
+        "JAM": 0.08542713567839195,
+        "RAISE": 0.4020100502512563
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 123,
+        "EXACT_SUPPORTED": 76
+      },
+      "target_bin": "B1",
+      "validation_n": 199
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.3317808687692731,
+          0.537817579959131
+        ],
+        "FOLD": [
+          0.3689013732981404,
+          0.5743225736067074
+        ],
+        "JAM": [
+          0.00028016804927201867,
+          0.05433872060457002
+        ],
+        "RAISE": [
+          0.02203585045676306,
+          0.12484142413625475
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.43479922436420204,
+        "FOLD": 0.4716119734524247,
+        "JAM": 0.02205463301082408,
+        "RAISE": 0.07153416917254936
+      },
+      "family": "VS_LIMPERS",
+      "observed_frequency": {
+        "CALL": 0.4520057306590258,
+        "FOLD": 0.4799426934097421,
+        "JAM": 0.0064469914040114614,
+        "RAISE": 0.06160458452722063
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 27,
+        "EXACT_SUPPORTED": 1369
+      },
+      "target_bin": "B1",
+      "validation_n": 1396
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.28937583248588455,
+          0.4008666859451541
+        ],
+        "FOLD": [
+          0.5188155269543228,
+          0.635290084915555
+        ],
+        "JAM": [
+          0.0013716382403497628,
+          0.025680316129494056
+        ],
+        "RAISE": [
+          0.036869668997458346,
+          0.09439090677222474
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.34512125921551995,
+        "FOLD": 0.5770528059349326,
+        "JAM": 0.012319383673843772,
+        "RAISE": 0.06550655117570024
+      },
+      "family": "VS_LIMPERS",
+      "observed_frequency": {
+        "CALL": 0.34121274409044194,
+        "FOLD": 0.5837615621788284,
+        "JAM": 0.005652620760534429,
+        "RAISE": 0.06937307297019528
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "EXACT_SUPPORTED": 1946
+      },
+      "target_bin": "B1",
+      "validation_n": 1946
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.22000795365258094,
+          0.4848180264714325
+        ],
+        "FOLD": [
+          0.4296109227428487,
+          0.7032524782292803
+        ],
+        "JAM": [
+          0.00044406848437048257,
+          0.08439325837863952
+        ],
+        "RAISE": [
+          0.0034659846293969257,
+          0.10768707803097498
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3524129900620062,
+        "FOLD": 0.5664317004860644,
+        "JAM": 0.03306957846458645,
+        "RAISE": 0.04808573098734292
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.38247011952191234,
+        "FOLD": 0.545816733067729,
+        "JAM": 0.02390438247011952,
+        "RAISE": 0.04780876494023904
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 131,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 4,
+        "EXACT_SUPPORTED": 116
+      },
+      "target_bin": "B1",
+      "validation_n": 251
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.18183258748524594,
+          0.4780201673928067
+        ],
+        "FOLD": [
+          0.41975295216786646,
+          0.7323125567605939
+        ],
+        "JAM": [
+          0.00023495419172792564,
+          0.10393855101472092
+        ],
+        "RAISE": [
+          0.004536345550048757,
+          0.12274454409300191
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.32982579911369464,
+        "FOLD": 0.5760327544642303,
+        "JAM": 0.04074570521817718,
+        "RAISE": 0.05339574120389801
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.41228070175438597,
+        "FOLD": 0.5526315789473685,
+        "JAM": 0.008771929824561403,
+        "RAISE": 0.02631578947368421
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 102,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1,
+        "EXACT_SUPPORTED": 11
+      },
+      "target_bin": "B2",
+      "validation_n": 114
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.18572527350000076,
+          0.4634255077375268
+        ],
+        "FOLD": [
+          0.4431957790547586,
+          0.7372508444800218
+        ],
+        "JAM": [
+          2.542801878667787e-05,
+          0.0833226207014209
+        ],
+        "RAISE": [
+          0.0027814264738801843,
+          0.12517726000605875
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.32457539061876384,
+        "FOLD": 0.5902233117673903,
+        "JAM": 0.02970043152540865,
+        "RAISE": 0.05550086608843729
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.2835820895522388,
+        "FOLD": 0.7014925373134329,
+        "JAM": 0.014925373134328358,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 52,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 8,
+        "EXACT_SUPPORTED": 7
+      },
+      "target_bin": "B2",
+      "validation_n": 67
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.12278525282280935,
+          0.3700071861715255
+        ],
+        "FOLD": [
+          0.54782480657611,
+          0.8162579882377764
+        ],
+        "JAM": [
+          0.0002580150018942251,
+          0.08588063157778221
+        ],
+        "RAISE": [
+          0.0011786208769704917,
+          0.09270652491691769
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.24630921694884828,
+        "FOLD": 0.6820413974069437,
+        "JAM": 0.033553052772613806,
+        "RAISE": 0.038096332871594404
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.33974358974358976,
+        "FOLD": 0.6025641025641025,
+        "JAM": 0.03205128205128205,
+        "RAISE": 0.02564102564102564
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 51,
+        "EXACT_SUPPORTED": 105
+      },
+      "target_bin": "B2",
+      "validation_n": 156
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.21371346732802496,
+          0.44737596977492566
+        ],
+        "FOLD": [
+          0.4788597611100524,
+          0.7222367592432247
+        ],
+        "JAM": [
+          0.0,
+          0.07327461198873962
+        ],
+        "RAISE": [
+          0.0026242520491118328,
+          0.0839626338277767
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3305447185514753,
+        "FOLD": 0.6005482601766386,
+        "JAM": 0.030813660712309364,
+        "RAISE": 0.03809336055957679
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.4864864864864865,
+        "FOLD": 0.43243243243243246,
+        "JAM": 0.05405405405405406,
+        "RAISE": 0.02702702702702703
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 37
+      },
+      "target_bin": "B3",
+      "validation_n": 37
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1237667715991148,
+          0.3819527393696091
+        ],
+        "FOLD": [
+          0.4823166815021092,
+          0.7699289793899623
+        ],
+        "JAM": [
+          0.0,
+          0.10929787081696382
+        ],
+        "RAISE": [
+          0.00550340066192876,
+          0.15601076847886902
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.25260455402363124,
+        "FOLD": 0.6261228304460359,
+        "JAM": 0.04527548433982691,
+        "RAISE": 0.075997131190506
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.3469387755102041,
+        "FOLD": 0.6122448979591837,
+        "JAM": 0.02040816326530612,
+        "RAISE": 0.02040816326530612
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 49
+      },
+      "target_bin": "B3",
+      "validation_n": 49
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.10694809411958241,
+          0.39647395727129536
+        ],
+        "FOLD": [
+          0.4889800463442455,
+          0.8083356163821287
+        ],
+        "JAM": [
+          0.0,
+          0.11727418445552892
+        ],
+        "RAISE": [
+          0.003325935132481702,
+          0.12595444766639657
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.25165380204654336,
+        "FOLD": 0.6486578313631872,
+        "JAM": 0.04660981304603228,
+        "RAISE": 0.053078553544237274
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.19387755102040816,
+        "FOLD": 0.8061224489795918,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 67,
+        "EXACT_SUPPORTED": 31
+      },
+      "target_bin": "B3",
+      "validation_n": 98
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.14561549192828122,
+          0.4236838664764202
+        ],
+        "FOLD": [
+          0.4837011982381464,
+          0.7826672980073007
+        ],
+        "JAM": [
+          0.0,
+          0.08877586546205894
+        ],
+        "RAISE": [
+          0.0006433173795035762,
+          0.1160847266053922
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.28464967920235074,
+        "FOLD": 0.6331842481227238,
+        "JAM": 0.03312283319349942,
+        "RAISE": 0.04904323948142616
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.2972972972972973,
+        "FOLD": 0.6756756756756757,
+        "JAM": 0.0,
+        "RAISE": 0.02702702702702703
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 35,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B3",
+      "validation_n": 37
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.24088081298903993,
+          0.4800797358960372
+        ],
+        "FOLD": [
+          0.4368450989338684,
+          0.6841840605858572
+        ],
+        "JAM": [
+          0.0025948153677920935,
+          0.10122523976531414
+        ],
+        "RAISE": [
+          0.0,
+          0.07050506380310931
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3604802744425386,
+        "FOLD": 0.5605145797598627,
+        "JAM": 0.04929674099485419,
+        "RAISE": 0.02970840480274442
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.4,
+        "FOLD": 0.6,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 9,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B4",
+      "validation_n": 10
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.16235012940521856,
+          0.4253409177424338
+        ],
+        "FOLD": [
+          0.48927896884556615,
+          0.7683941910197337
+        ],
+        "JAM": [
+          8.295019879408366e-05,
+          0.10165404520995402
+        ],
+        "RAISE": [
+          0.0,
+          0.09021772654361422
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2938455235738261,
+        "FOLD": 0.62883657993265,
+        "JAM": 0.041954016273972744,
+        "RAISE": 0.035363880219550975
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.625,
+        "JAM": 0.0,
+        "RAISE": 0.041666666666666664
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 21,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B4",
+      "validation_n": 24
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.14678214360557457,
+          0.23136431876128735
+        ],
+        "FOLD": [
+          0.7321158645233162,
+          0.8225321033945187
+        ],
+        "JAM": [
+          0.007058237796698211,
+          0.035166576040235605
+        ],
+        "RAISE": [
+          0.002713904446864139,
+          0.029886697750415765
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.18907323118343164,
+        "FOLD": 0.777323983958922,
+        "JAM": 0.019174254893030176,
+        "RAISE": 0.014428529964619883
+      },
+      "family": "VS_RFI",
+      "observed_frequency": {
+        "CALL": 0.15217391304347827,
+        "FOLD": 0.822463768115942,
+        "JAM": 0.014492753623188406,
+        "RAISE": 0.010869565217391304
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 72,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 204
+      },
+      "target_bin": "B4",
+      "validation_n": 276
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.30819755919782643,
+          0.5979624838316532
+        ],
+        "FOLD": [
+          0.3167943980020415,
+          0.6090770451215076
+        ],
+        "JAM": [
+          0.0002307952610517347,
+          0.09321238698088496
+        ],
+        "RAISE": [
+          0.003767722118541313,
+          0.10833525426546459
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.4530800215147398,
+        "FOLD": 0.46293572156177487,
+        "JAM": 0.03683731493511557,
+        "RAISE": 0.04714694198836986
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.49333333333333335,
+        "FOLD": 0.4533333333333333,
+        "JAM": 0.013333333333333334,
+        "RAISE": 0.04
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 75
+      },
+      "target_bin": "B1",
+      "validation_n": 75
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2407220533130171,
+          0.5262626631466061
+        ],
+        "FOLD": [
+          0.39113528039464207,
+          0.6831549246637368
+        ],
+        "JAM": [
+          0.0,
+          0.08580285976601583
+        ],
+        "RAISE": [
+          0.0009544734651114236,
+          0.10612433789823539
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.38349235822981165,
+        "FOLD": 0.5371451025291895,
+        "JAM": 0.03337021267979413,
+        "RAISE": 0.045992326561204826
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3055555555555556,
+        "FOLD": 0.6666666666666666,
+        "JAM": 0.0,
+        "RAISE": 0.027777777777777776
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 36
+      },
+      "target_bin": "B1",
+      "validation_n": 36
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.17676129412784697,
+          0.47591881452660806
+        ],
+        "FOLD": [
+          0.41034866722951474,
+          0.7265319897353285
+        ],
+        "JAM": [
+          0.0,
+          0.10691163589380555
+        ],
+        "RAISE": [
+          0.0035268918543535015,
+          0.13703824325011144
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.32634005432722757,
+        "FOLD": 0.5684403284824215,
+        "JAM": 0.04289165946252688,
+        "RAISE": 0.06232795772782411
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.2653061224489796,
+        "FOLD": 0.6938775510204082,
+        "JAM": 0.0,
+        "RAISE": 0.04081632653061224
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 42,
+        "EXACT_SUPPORTED": 7
+      },
+      "target_bin": "B1",
+      "validation_n": 49
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.28048317819165486,
+          0.5163396487181264
+        ],
+        "FOLD": [
+          0.41263600322839333,
+          0.6549710434495898
+        ],
+        "JAM": [
+          0.0006652995793185366,
+          0.07546857889850977
+        ],
+        "RAISE": [
+          0.0014088592927752966,
+          0.08298238317526767
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.39841141345489056,
+        "FOLD": 0.5338035233389915,
+        "JAM": 0.031618948333318575,
+        "RAISE": 0.036166114872799186
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.46938775510204084,
+        "FOLD": 0.4897959183673469,
+        "JAM": 0.02040816326530612,
+        "RAISE": 0.02040816326530612
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 46,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B2",
+      "validation_n": 49
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.24506118091350487,
+          0.5239536387916871
+        ],
+        "FOLD": [
+          0.39619282766772307,
+          0.6830000618471197
+        ],
+        "JAM": [
+          0.00013194804113699,
+          0.08831638622823376
+        ],
+        "RAISE": [
+          0.001598807761132882,
+          0.09696586418661764
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.38450740985259585,
+        "FOLD": 0.5395964447574213,
+        "JAM": 0.03528043817721654,
+        "RAISE": 0.04061570721276615
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3698630136986301,
+        "FOLD": 0.589041095890411,
+        "JAM": 0.0,
+        "RAISE": 0.0410958904109589
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 71,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B2",
+      "validation_n": 73
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.19213951893817133,
+          0.47006103706605074
+        ],
+        "FOLD": [
+          0.435073839601071,
+          0.7265128025257477
+        ],
+        "JAM": [
+          8.802069095875278e-06,
+          0.07988266221387233
+        ],
+        "RAISE": [
+          0.003792500445806119,
+          0.1268640436663986
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.33110027800211095,
+        "FOLD": 0.5807933210634091,
+        "JAM": 0.029289735632164863,
+        "RAISE": 0.0588166653023148
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.22727272727272727,
+        "FOLD": 0.6818181818181818,
+        "JAM": 0.0,
+        "RAISE": 0.09090909090909091
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 43,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1
+      },
+      "target_bin": "B2",
+      "validation_n": 44
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.14172786398143405,
+          0.44889967409783016
+        ],
+        "FOLD": [
+          0.43026539564787114,
+          0.7618975626311421
+        ],
+        "JAM": [
+          0.00011526501960481571,
+          0.1154836333438686
+        ],
+        "RAISE": [
+          0.0007331906410485953,
+          0.1445056287161803
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.2953137690396321,
+        "FOLD": 0.5960814791395068,
+        "JAM": 0.045464053078639884,
+        "RAISE": 0.0631406987422213
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.22950819672131148,
+        "FOLD": 0.7704918032786885,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 56,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 1,
+        "EXACT_SUPPORTED": 4
+      },
+      "target_bin": "B2",
+      "validation_n": 61
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.2629719933109463,
+          0.4664397713949359
+        ],
+        "FOLD": [
+          0.4599184012755108,
+          0.6694933634303716
+        ],
+        "JAM": [
+          0.002301879545678738,
+          0.0918157675131448
+        ],
+        "RAISE": [
+          0.0,
+          0.055565683153201574
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.36470588235294116,
+        "FOLD": 0.5647058823529411,
+        "JAM": 0.047058823529411764,
+        "RAISE": 0.023529411764705882
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.6666666666666666,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 6
+      },
+      "target_bin": "B3",
+      "validation_n": 6
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.19053984451021228,
+          0.5143228667207239
+        ],
+        "FOLD": [
+          0.3826316549257717,
+          0.719741154330889
+        ],
+        "JAM": [
+          0.0,
+          0.14138575173120543
+        ],
+        "RAISE": [
+          0.0,
+          0.1043653861514763
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3524313556154681,
+        "FOLD": 0.5511864046283306,
+        "JAM": 0.058908662376895654,
+        "RAISE": 0.037473577379305886
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.46153846153846156,
+        "FOLD": 0.5384615384615384,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 13
+      },
+      "target_bin": "B3",
+      "validation_n": 13
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.18505029924501953,
+          0.46453006305883754
+        ],
+        "FOLD": [
+          0.43604771831332045,
+          0.7339040672502001
+        ],
+        "JAM": [
+          0.0014729255568591397,
+          0.1093931500900894
+        ],
+        "RAISE": [
+          0.0,
+          0.10496312658991053
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.3247901811519286,
+        "FOLD": 0.5849758927817603,
+        "JAM": 0.046843498507279244,
+        "RAISE": 0.04339042755903193
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.27586206896551724,
+        "FOLD": 0.7241379310344828,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 29
+      },
+      "target_bin": "B3",
+      "validation_n": 29
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1760796302068351,
+          0.429587515324487
+        ],
+        "FOLD": [
+          0.48016546155447326,
+          0.750584803083737
+        ],
+        "JAM": [
+          0.0,
+          0.08753553549192256
+        ],
+        "RAISE": [
+          0.0006964126528161888,
+          0.10405095004372449
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.30283357276566103,
+        "FOLD": 0.615375132319105,
+        "JAM": 0.03598466992354938,
+        "RAISE": 0.04580662499168442
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.07692307692307693,
+        "FOLD": 0.6923076923076923,
+        "JAM": 0.15384615384615385,
+        "RAISE": 0.07692307692307693
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 13
+      },
+      "target_bin": "B3",
+      "validation_n": 13
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.060934505996204175,
+          0.3398252280968632
+        ],
+        "FOLD": [
+          0.5784434590630634,
+          0.8878433405570695
+        ],
+        "JAM": [
+          0.0,
+          0.09620097811434723
+        ],
+        "RAISE": [
+          0.0,
+          0.09620097811434723
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.20037986704653368,
+        "FOLD": 0.7331433998100664,
+        "JAM": 0.0332383665716999,
+        "RAISE": 0.0332383665716999
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.3333333333333333,
+        "FOLD": 0.6666666666666666,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B1",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 6,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 3
+      },
+      "target_bin": "B4",
+      "validation_n": 9
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.1227172197455974,
+          0.31553049313265735
+        ],
+        "FOLD": [
+          0.6100218480020071,
+          0.8234756889438054
+        ],
+        "JAM": [
+          0.0,
+          0.06113975060189971
+        ],
+        "RAISE": [
+          0.0,
+          0.08832015261752135
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.21912385643912735,
+        "FOLD": 0.7167487684729065,
+        "JAM": 0.02392681210415201,
+        "RAISE": 0.0402005629838142
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.16666666666666666,
+        "FOLD": 0.8333333333333334,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B2",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 3,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 9
+      },
+      "target_bin": "B4",
+      "validation_n": 12
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.13222850801582645,
+          0.36720011819924286
+        ],
+        "FOLD": [
+          0.5530491043495822,
+          0.8081012037569976
+        ],
+        "JAM": [
+          0.00019974366142764099,
+          0.0955258932393698
+        ],
+        "RAISE": [
+          0.0,
+          0.0761780405146328
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.24971431310753478,
+        "FOLD": 0.6805751540532897,
+        "JAM": 0.04059457843071769,
+        "RAISE": 0.029115954408457642
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.36,
+        "FOLD": 0.64,
+        "JAM": 0.0,
+        "RAISE": 0.0
+      },
+      "price_bin": "B3",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 23,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 2
+      },
+      "target_bin": "B4",
+      "validation_n": 25
+    },
+    {
+      "candidate_mean_approx_95": {
+        "CALL": [
+          0.13417447071998723,
+          0.2626909869037714
+        ],
+        "FOLD": [
+          0.6857802617282648,
+          0.8293750381307545
+        ],
+        "JAM": [
+          0.0013363945123446932,
+          0.04827002296410418
+        ],
+        "RAISE": [
+          0.0036058246104061996,
+          0.0495802034832049
+        ]
+      },
+      "candidate_mean_probability": {
+        "CALL": 0.19784061350635604,
+        "FOLD": 0.7575776499295097,
+        "JAM": 0.02152140564219068,
+        "RAISE": 0.02306033092194356
+      },
+      "family": "VS_RFI_CALLERS",
+      "observed_frequency": {
+        "CALL": 0.2727272727272727,
+        "FOLD": 0.6727272727272727,
+        "JAM": 0.05454545454545454,
+        "RAISE": 0.0
+      },
+      "price_bin": "B4",
+      "support_state_counts": {
+        "DECLARED_CONTEXT_BACKOFF": 22,
+        "DECLARED_EMPIRICAL_BIN_BACKOFF": 33
+      },
+      "target_bin": "B4",
+      "validation_n": 55
+    }
+  ],
+  "production_effect": "NONE",
+  "profile_reference": {
+    "path": "training/runs/20260912_independent_profiles_v2/model/profiles.json",
+    "role": "TRAIN-derived public Model B profile labels only",
+    "schema": "independent-opponent-profiles/v2",
+    "sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea"
+  },
+  "reference_actions": {
+    "accuracy": 0.6224113475177305,
+    "brier": 0.4966209859102003,
+    "ece_confidence": 0.02469326288827625,
+    "log_loss": 0.8325638542194049,
+    "mean_predicted_frequency": {
+      "CALL": 0.37055024463420266,
+      "FOLD": 0.5386563648119357,
+      "JAM": 0.027552183991291505,
+      "RAISE": 0.06324120656257008
+    },
+    "n": 7050,
+    "observed_frequency": {
+      "CALL": 0.3849645390070922,
+      "FOLD": 0.5483687943262411,
+      "JAM": 0.01347517730496454,
+      "RAISE": 0.05319148936170213
+    },
+    "reliability": {
+      "3": {
+        "accuracy": 0.47619047619047616,
+        "confidence": 0.37627920884605787,
+        "n": 105
+      },
+      "4": {
+        "accuracy": 0.4793741109530583,
+        "confidence": 0.4624496251609167,
+        "n": 703
+      },
+      "5": {
+        "accuracy": 0.5666867833433916,
+        "confidence": 0.5509809617913906,
+        "n": 1657
+      },
+      "6": {
+        "accuracy": 0.633099463475031,
+        "confidence": 0.6513616236376834,
+        "n": 2423
+      },
+      "7": {
+        "accuracy": 0.6965879265091863,
+        "confidence": 0.7328114637798041,
+        "n": 1905
+      },
+      "8": {
+        "accuracy": 0.7821011673151751,
+        "confidence": 0.8304253225408902,
+        "n": 257
+      }
+    },
+    "support_state_counts": {
+      "DECLARED_CONTEXT_BACKOFF": 2322,
+      "EXACT_SUPPORTED": 4728
+    }
+  },
+  "reference_identity": {
+    "artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+    "kind": "TRAIN_FITTED_PRICE_AGNOSTIC_PUBLIC_MODEL_B_BASELINE",
+    "model_version": "model_b_preflop_response_to_price_2a_20260919_price_agnostic_reference",
+    "path": "model/price_agnostic_reference.json",
+    "production_effect": "NONE",
+    "reason": "the retained Model B has no preflop action-response artifact directly comparable to #340",
+    "reference_mode": true,
+    "schema": "independent-opponent-model-b-preflop-response-to-price-2a/v1"
+  },
+  "schema": "model-b-preflop-response-to-price-2a-validation/v1",
+  "source_issue_319": {
+    "bin_proposals_consumed": true,
+    "provenance": {
+      "archives": [
+        {
+          "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+          "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+          "unique_hands": 27164
+        },
+        {
+          "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+          "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+          "unique_hands": 11896
+        }
+      ],
+      "certification_path": "training/datasets/NLHE_100-200/population_certification.json",
+      "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+      "certified_hands": 23789,
+      "certified_split_counts": {
+        "TEST": 2449,
+        "TRAIN": 19016,
+        "VALIDATION": 2324
+      },
+      "decision_parser": "tools/training/increment_decisions.py::decision_rows(include_preflop_context_v1=True)",
+      "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+      "train_hand_count": 19016,
+      "train_hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8"
+    },
+    "report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "summary_path": "analysis/preflop_sizing_support_train.json"
+  },
+  "status": "COMPLETE",
+  "test_consumed": false
+}
