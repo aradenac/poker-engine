@@ -497,62 +497,69 @@ function trainerSizingValues(ctx){
 function trainerSampleSizing(ctx){const v=trainerSizingValues(ctx);return v.length?v[trainerRandomInt(v.length)]:.66;}
 
 function trainerDraw(deck){if(!deck.length)throw new Error("Paquet vide");return deck.pop();}
+function trainerCoreSeat(hand,name){return hand.names.indexOf(name);}
+function trainerSyncFromCore(hand){
+  const snap=hand.core.toSnapshot(),idx=name=>trainerCoreSeat(hand,name);
+  hand.stacks=hand.names.map(n=>Number(snap.stacks_bb[n])||0);
+  hand.folded=hand.names.map(n=>!!snap.folded[n]);
+  hand.streetPaid=hand.names.map(n=>Number(snap.street_committed_bb[n])||0);
+  hand.pot=Number(hand.core.pot_bb)||0;hand.currentBet=Number(snap.current_bet_bb)||0;hand.lastRaise=Number(snap.last_full_raise_bb)||1;
+  hand.street=String(snap.street||"preflop");hand.boardCount=hand.runout.length;
+  hand.queue=(snap.pending||[]).map(idx).filter(x=>x>=0);
+  hand.raises=(snap.action_log||[]).filter(x=>x.street===hand.street&&x.action==="RAISE").length;
+}
 function trainerBuildHand(hints={},depth=0){
   if(depth>60)return null;
+  const Game=window.PokerNlheGameState;
+  if(!Game?.NoLimitHoldemState)throw new Error("NoLimitHoldemState navigateur indisponible.");
   const desiredPosition=String(hints.position||"").toUpperCase(),desiredRole=String(hints.preflopRole||"").toUpperCase(),desiredRelative=String(hints.relativePosition||"").toUpperCase();
   const dealer=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
   const hintedSeat=desiredPosition?positions.indexOf(desiredPosition):-1,heroSeat=hintedSeat>=0?hintedSeat:trainerRandomInt(6);
   const heroPos=positions[heroSeat],heroRank=TRAINER_PREFLOP_ORDER.indexOf(heroPos);
   let heroRole=(heroRank<5&&heroRank>0)?(Math.random()<.5?"PFA":"CALLER"):(heroRank===0?"PFA":"CALLER");
   if(["PFA","CALLER"].includes(desiredRole))heroRole=desiredRole;
-  let candidates=[];
-  if(heroRole==="PFA")candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r>heroRank);
-  else candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r<heroRank);
+  let candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat);
   if(["IP","OOP"].includes(desiredRelative))candidates=candidates.filter(x=>{
-    const heroRelative=trainerPostRank(heroPos)>trainerPostRank(x.p)?"IP":"OOP";
-    return heroRelative===desiredRelative;
+    const heroRelative=trainerPostRank(heroPos)>trainerPostRank(x.p)?"IP":"OOP";return heroRelative===desiredRelative;
   });
   if(!candidates.length||!trainerHeroRangeAvailable(heroRole,heroPos))return hints.strict?null:trainerBuildHand(hints,depth+1);
   trainerState.handNo++;
-  const oppSeat=candidates[trainerRandomInt(candidates.length)].s,oppPos=positions[oppSeat],pfaSeat=heroRole==="PFA"?heroSeat:oppSeat,callerSeat=heroRole==="CALLER"?heroSeat:oppSeat;
+  const oppSeat=candidates[trainerRandomInt(candidates.length)].s;
   const names=Array.from({length:6},(_,s)=>s===heroSeat?TRAINER_HERO:`Villain ${s+1}`),profiles=Array(6).fill(null);
   for(let s=0;s<6;s++)if(s!==heroSeat)profiles[s]=trainerSampleProfile();
   const hole=Array.from({length:6},()=>[]),blocked=new Set(),heroCards=trainerSampleHeroRangeCards(heroRole,heroPos,blocked);
-  if(!heroCards)return hints.strict?null:trainerBuildHand(hints,depth+1);hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
-  const oppRole=heroRole==="PFA"?"CALLER":"PFA",oppCards=trainerSampleRangeCards(profiles[oppSeat],oppPos,"SRP",oppRole,blocked);
-  hole[oppSeat]=oppCards;for(const c of oppCards)blocked.add(c);
-  const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);
-  for(let s=0;s<6;s++)if(s!==heroSeat&&s!==oppSeat){hole[s]=[trainerDraw(remaining),trainerDraw(remaining)];}
-  const used=new Set(hole.flat()),boardDeck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!used.has(c))),runout=Array.from({length:5},()=>trainerDraw(boardDeck));
-
-  const contrib=Array(6).fill(0),stacks=Array(6).fill(100),folded=Array(6).fill(false),lastAction=Array(6).fill("");
-  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;stacks[sb]-=.5;stacks[bb]-=1;
-  const id=990000000000+trainerState.handNo*100;
+  if(!heroCards)return hints.strict?null:trainerBuildHand(hints,depth+1);
+  hole[heroSeat]=heroCards;heroCards.forEach(c=>blocked.add(c));
+  const deck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c)));
+  for(let s=0;s<6;s++)if(s!==heroSeat){hole[s]=[trainerDraw(deck),trainerDraw(deck)];}
+  const used=new Set(hole.flat()),boardDeck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!used.has(c))),runout=[];
+  const stacksByName=Object.fromEntries(names.map(n=>[n,100]));
+  const core=new Game.NoLimitHoldemState({seats:names,button:names[dealer],stacks_bb:stacksByName,small_blind_bb:.5,big_blind_bb:1});
+  const sb=names.indexOf(core.small_blind_player),bb=names.indexOf(core.big_blind_player),id=990000000000+trainerState.handNo*100;
   const lines=[`PokerStars Hand #${id}: Hold'em No Limit (0.50/1.00) - 2026/09/12 14:00:00 CET`,`Table 'Trainer 6-max' 6-max Seat #${dealer+1} is the button`];
   for(let s=0;s<6;s++)lines.push(`Seat ${s+1}: ${names[s]} (100 in chips)`);
   lines.push(`${names[sb]}: posts small blind 0.50`,`${names[bb]}: posts big blind 1.00`,"*** HOLE CARDS ***",`Dealt to ${TRAINER_HERO} [${hole[heroSeat].map(cardCode).join(" ")}]`);
-  for(const pos of TRAINER_PREFLOP_ORDER){
-    const s=trainerSeatForPosition({positions},pos),name=names[s];
-    if(s===pfaSeat){const target=2.5,add=target-contrib[s];contrib[s]=target;lines.push(`${name}: raises 1.50 to 2.50`);lastAction[s]="RAISE 2,5 BB";stacks[s]-=add;}
-    else if(s===callerSeat){const add=2.5-contrib[s];contrib[s]=2.5;lines.push(`${name}: calls ${trainerNum(add)}`);lastAction[s]=`CALL ${trainerNum(add)} BB`;stacks[s]-=add;}
-    else{lines.push(`${name}: folds`);folded[s]=true;lastAction[s]="FOLD";}
-  }
-  const pot=contrib.reduce((sum,x)=>sum+x,0);
-  lines.push(`*** FLOP *** [${runout.slice(0,3).map(cardCode).join(" ")}]`);
-  const hand={id,dealerSeat:dealer,heroSeat,activeOppSeat:oppSeat,pfaSeat,callerSeat,heroRole,oppRole,positions,names,profiles,hole,runout,
-    stacks,folded,lastAction,pot,street:"flop",boardCount:3,streetPaid:Array(6).fill(0),currentBet:0,lastRaise:1,raises:0,queue:[],historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0,preview:!!hints.preview};
-  trainerStartStreet(hand,"flop",false);return hand;
+  const hand={id,dealerSeat:dealer,heroSeat,activeOppSeat:oppSeat,pfaSeat:null,callerSeat:null,heroRole,oppRole:heroRole==="PFA"?"CALLER":"PFA",
+    positions,names,profiles,hole,boardDeck,runout,core,stacks:Array(6).fill(100),folded:Array(6).fill(false),lastAction:Array(6).fill(""),
+    pot:0,street:"preflop",boardCount:0,streetPaid:Array(6).fill(0),currentBet:1,lastRaise:1,raises:0,queue:[],preflopHistory:[],
+    historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0,preview:!!hints.preview};
+  trainerSyncFromCore(hand);return hand;
 }
 
 function trainerPostRank(pos){return TRAINER_POSTFLOP_ORDER.indexOf(pos);}
 function trainerStartStreet(hand,street,appendMarker=true){
-  hand.street=street;hand.streetPaid=Array(6).fill(0);hand.currentBet=0;hand.lastRaise=1;hand.raises=0;
-  if(street==="turn"){hand.boardCount=4;if(appendMarker)hand.historyLines.push(`*** TURN *** [${hand.runout.slice(0,3).map(cardCode).join(" ")}] [${cardCode(hand.runout[3])}]`);}
-  if(street==="river"){hand.boardCount=5;if(appendMarker)hand.historyLines.push(`*** RIVER *** [${hand.runout.slice(0,4).map(cardCode).join(" ")}] [${cardCode(hand.runout[4])}]`);}
-  const a=hand.heroSeat,b=hand.activeOppSeat,first=trainerPostRank(hand.positions[a])<trainerPostRank(hand.positions[b])?a:b,second=first===a?b:a;hand.queue=[first,second];
+  const target=String(street||"").toLowerCase(),current=String(hand.core.street||"").toLowerCase();
+  const expected={preflop:"flop",flop:"turn",turn:"river"}[current];
+  if(target!==expected)throw new Error(`Transition de street invalide : ${current} -> ${target}`);
+  const drawCount=current==="preflop"?3:1,cards=Array.from({length:drawCount},()=>trainerDraw(hand.boardDeck));
+  hand.runout.push(...cards);hand.core.advanceStreet(cards.map(cardCode));trainerSyncFromCore(hand);
+  if(!appendMarker)return;
+  if(target==="flop")hand.historyLines.push(`*** FLOP *** [${hand.runout.slice(0,3).map(cardCode).join(" ")}]`);
+  else if(target==="turn")hand.historyLines.push(`*** TURN *** [${hand.runout.slice(0,3).map(cardCode).join(" ")}] [${cardCode(hand.runout[3])}]`);
+  else if(target==="river")hand.historyLines.push(`*** RIVER *** [${hand.runout.slice(0,4).map(cardCode).join(" ")}] [${cardCode(hand.runout[4])}]`);
 }
-function trainerToCall(hand,seat){return Math.max(0,Number(hand.currentBet)-Number(hand.streetPaid[seat]||0));}
-function trainerOther(hand,seat){return seat===hand.heroSeat?hand.activeOppSeat:hand.heroSeat;}
+function trainerToCall(hand,seat){return Math.min(Number(hand.stacks[seat]||0),Math.max(0,Number(hand.currentBet)-Number(hand.streetPaid[seat]||0)));}
+function trainerOther(hand,seat){return hand.names.map((_,s)=>s).find(s=>s!==seat&&!hand.folded[s])??hand.heroSeat;}
 function trainerActionLine(hand,seat,kind,cost=0,target=null,raiseInc=null){
   const name=hand.names[seat],allin=cost>=hand.stacks[seat]-1e-8&&cost>0?" and is all-in":"";
   if(kind==="FOLD")return `${name}: folds`;
@@ -561,35 +568,95 @@ function trainerActionLine(hand,seat,kind,cost=0,target=null,raiseInc=null){
   if(kind==="BET")return `${name}: bets ${trainerNum(cost)}${allin}`;
   return `${name}: raises ${trainerNum(raiseInc)} to ${trainerNum(target)}${allin}`;
 }
+function trainerCoreLiveSeats(hand){return hand.names.map((_,s)=>s).filter(s=>!hand.folded[s]);}
+function trainerPreflopAlias(hand,coreAction,allIn=false){
+  if(coreAction==="CALL")return hand.preflopRaiseLevel>0?"CALL":"LIMP";
+  if(coreAction==="RAISE")return allIn?"JAM":"RAISE";
+  return coreAction;
+}
 function trainerApplyAction(hand,seat,kind,requestedCost=0){
-  kind=String(kind).toUpperCase();const paid=Number(hand.streetPaid[seat]||0),toCall=trainerToCall(hand,seat),remaining=Number(hand.stacks[seat]||0),other=trainerOther(hand,seat);let cost=0,target=paid,raiseInc=0;
-  if(kind==="FOLD"){hand.historyLines.push(trainerActionLine(hand,seat,"FOLD"));hand.folded[seat]=true;hand.lastAction[seat]="FOLD";trainerEndHand(hand,other,false);return;}
-  if(kind==="CHECK"){if(toCall>1e-8)kind="CALL";else{hand.historyLines.push(trainerActionLine(hand,seat,"CHECK"));hand.lastAction[seat]="CHECK";return;}}
-  if(kind==="CALL"){cost=Math.min(toCall,remaining);hand.historyLines.push(trainerActionLine(hand,seat,"CALL",cost));hand.stacks[seat]-=cost;hand.streetPaid[seat]+=cost;hand.pot+=cost;hand.lastAction[seat]=`CALL ${trainerFmtBB(cost)}`;hand.queue=[];return;}
-  if(kind==="BET"&&toCall>1e-8)kind="RAISE";
-  if(kind==="BET"){
-    cost=trainerClamp(Number(requestedCost)||Math.max(1,.5*hand.pot),Math.min(1,remaining),remaining);target=paid+cost;
-    hand.historyLines.push(trainerActionLine(hand,seat,"BET",cost,target,cost));hand.stacks[seat]-=cost;hand.streetPaid[seat]=target;hand.pot+=cost;hand.currentBet=target;hand.lastRaise=cost;hand.raises++;hand.lastAction[seat]=`BET ${trainerFmtBB(cost)}`;hand.queue=[other];return;
+  kind=String(kind||"").toUpperCase();
+  const actor=hand.names[seat],view=hand.core.legalView(actor),paid=Number(view.actor_street_contribution_bb)||0,toCall=Number(view.to_call_bb)||0,remaining=Number(view.actor_remaining_bb)||0;
+  const beforeStreet=hand.street,beforePrice=Number(view.current_price_bb)||0;
+  let coreAction=kind,lineKind=kind,cost=0,target=null,raiseInc=0;
+  if(kind==="BET")coreAction="RAISE";
+  if(kind==="CHECK"&&toCall>1e-8){coreAction="CALL";lineKind="CALL";}
+  if(coreAction==="CALL"){cost=Math.min(toCall,remaining);lineKind="CALL";}
+  else if(coreAction==="RAISE"){
+    const minTarget=Number(view.min_raise_to_bb),maxTarget=Number(view.max_raise_to_bb);
+    const fallback=Math.max(Number.isFinite(minTarget)?minTarget:beforePrice+1,paid+toCall+Math.max(hand.lastRaise,1));
+    target=Math.min(maxTarget,Math.max(Number.isFinite(minTarget)?minTarget:0,paid+(Number(requestedCost)||fallback-paid)));
+    if(!(target>beforePrice+1e-8)){coreAction=toCall>1e-8?"CALL":"CHECK";lineKind=coreAction;cost=coreAction==="CALL"?Math.min(toCall,remaining):0;}
+    else{cost=target-paid;raiseInc=target-beforePrice;if(kind!=="BET")lineKind="RAISE";}
   }
-  const minTarget=hand.currentBet+Math.max(hand.lastRaise,1),maxTarget=paid+remaining;target=Math.min(maxTarget,Math.max(minTarget,paid+(Number(requestedCost)||toCall+hand.lastRaise)));
-  if(target<=hand.currentBet+1e-8){trainerApplyAction(hand,seat,"CALL",toCall);return;}
-  cost=target-paid;raiseInc=target-hand.currentBet;hand.historyLines.push(trainerActionLine(hand,seat,"RAISE",cost,target,raiseInc));hand.stacks[seat]-=cost;hand.streetPaid[seat]=target;hand.pot+=cost;hand.currentBet=target;hand.lastRaise=raiseInc;hand.raises++;hand.lastAction[seat]=`RAISE à ${trainerFmtBB(target)}`;hand.queue=[other];
+  const allIn=cost>=remaining-1e-8&&cost>0;
+  const line=trainerActionLine(hand,seat,lineKind,cost,target,raiseInc);
+  if(coreAction==="RAISE")hand.core.applyAction(actor,"RAISE",{target_total_bb:target});else hand.core.applyAction(actor,coreAction);
+  hand.historyLines.push(line);
+  if(beforeStreet==="preflop"){
+    const alias=trainerPreflopAlias(hand,coreAction,allIn);
+    hand.preflopHistory.push({position:hand.positions[seat],action:alias});
+    if(coreAction==="RAISE")hand.preflopRaiseLevel++;
+  }
+  hand.lastAction[seat]=coreAction==="RAISE"?`RAISE à ${trainerFmtBB(target)}`:coreAction==="CALL"?`CALL ${trainerFmtBB(cost)}`:coreAction;
+  trainerSyncFromCore(hand);
+  const live=trainerCoreLiveSeats(hand);if(live.length===1)trainerEndHand(hand,live[0],false);
 }
-
-function trainerOpponentContext(hand){
-  const s=hand.activeOppSeat,toCall=trainerToCall(hand,s),relative=trainerPostRank(hand.positions[s])>trainerPostRank(hand.positions[hand.heroSeat])?"IP":"OOP";
-  return {profile:hand.profiles[s],street:hand.street,mode:toCall>1e-8?"FACING":"FREE",relative_position:relative,pot_type:"SRP",preflop_role:hand.oppRole,can_raise:hand.raises<2&&hand.stacks[s]>toCall+Math.max(hand.lastRaise,1)};
+function trainerPreflopContext(hand,seat){
+  const contract=window.PokerPreflopContract,snap=hand.core.toSnapshot(),view=hand.core.legalView(hand.names[seat]),tableSize=hand.names.length;
+  const live=[],allIn=[],contrib={},stacks={};
+  for(let s=0;s<hand.names.length;s++){
+    const pos=contract.normalizePosition(hand.positions[s],tableSize),name=hand.names[s];
+    if(!snap.folded[name])live.push(pos);if(snap.all_in[name])allIn.push(pos);
+    contrib[pos]=Number(snap.street_committed_bb[name])||0;stacks[pos]=(Number(snap.stacks_bb[name])||0)+(Number(snap.street_committed_bb[name])||0);
+  }
+  return contract.buildContext({table_size:tableSize,actor_position:hand.positions[seat],live_positions:live,all_in_positions:allIn,
+    history:hand.preflopHistory,raise_level:hand.preflopRaiseLevel,contribution_bb_by_position:contrib,stack_bb_by_position:stacks,
+    pot_before_bb:hand.core.pot_bb,current_price_bb:view.current_price_bb,min_raise_to_bb:view.min_raise_to_bb,raise_reopened:view.raise_reopened,
+    pending_positions:view.remaining_to_act.map(n=>hand.positions[trainerCoreSeat(hand,n)])});
 }
-function trainerOpponentAct(hand){
-  const s=hand.activeOppSeat,ctx=trainerOpponentContext(hand),toCall=trainerToCall(hand,s),action=trainerSampleOpponentAction(ctx);
-  if(action==="FOLD")trainerApplyAction(hand,s,"FOLD");
-  else if(action==="CHECK")trainerApplyAction(hand,s,"CHECK");
-  else if(action==="CALL")trainerApplyAction(hand,s,"CALL");
+function trainerPreflopOpponentAct(hand,seat){
+  const ctx=trainerPreflopContext(hand,seat),view=hand.core.legalView(hand.names[seat]);
+  const match=typeof findClosestPopulationNode==="function"?findClosestPopulationNode({...ctx,action:"",actor_start_stack_bb:(Number(view.actor_remaining_bb)||0)+(Number(view.actor_street_contribution_bb)||0),pot_before_bb:hand.core.pot_bb,action_add_bb:0}):null;
+  const raw=match?.node?.population_model?.frequencies||{},legal=new Set(ctx.legal_actions||[]),actions=[],weights=[];
+  for(const [a,w] of Object.entries(raw)){if(legal.has(a)&&Number(w)>0){actions.push(a);weights.push(Number(w));}}
+  let sampled=actions.length?trainerWeightedChoice(actions,weights):(view.to_call_bb>1e-8?"FOLD":"CHECK");
+  if(sampled==="LIMP")sampled="CALL";
+  if(sampled==="JAM"){
+    const maxTarget=Number(view.max_raise_to_bb),cost=maxTarget-Number(view.actor_street_contribution_bb||0);trainerApplyAction(hand,seat,"RAISE",cost);return;
+  }
+  if(sampled==="RAISE"){
+    const stats=match?.node?.continuous_population?.action_add_bb||match?.node?.continuous_all?.action_add_bb||{};
+    const empirical=Number(stats.median),minTarget=Number(view.min_raise_to_bb),maxTarget=Number(view.max_raise_to_bb),paid=Number(view.actor_street_contribution_bb)||0;
+    const target=Math.min(maxTarget,Math.max(Number.isFinite(minTarget)?minTarget:0,Number.isFinite(empirical)&&empirical>0?paid+empirical:(Number.isFinite(minTarget)?minTarget:maxTarget)));
+    trainerApplyAction(hand,seat,"RAISE",Math.max(0,target-paid));return;
+  }
+  trainerApplyAction(hand,seat,sampled);
+}
+function trainerPotType(hand){return hand.preflopRaiseLevel<=0?"LIMPED":hand.preflopRaiseLevel===1?"SRP":hand.preflopRaiseLevel===2?"3BP":"4BP_PLUS";}
+function trainerFinalizePreflopRoles(hand){
+  const raises=(hand.core.action_log||[]).filter(x=>x.street==="preflop"&&x.action==="RAISE");
+  if(raises.length){hand.pfaSeat=trainerCoreSeat(hand,raises[raises.length-1].player);}
+  const live=trainerCoreLiveSeats(hand),others=live.filter(s=>s!==hand.pfaSeat);
+  hand.callerSeat=others[0]??null;hand.activeOppSeat=live.find(s=>s!==hand.heroSeat)??hand.activeOppSeat;
+  hand.heroRole=hand.heroSeat===hand.pfaSeat?"PFA":(hand.preflopRaiseLevel===0&&hand.positions[hand.heroSeat]==="BB"?"BB_CHECK":"CALLER");
+  hand.oppRole=hand.activeOppSeat===hand.pfaSeat?"PFA":(hand.preflopRaiseLevel===0&&hand.positions[hand.activeOppSeat]==="BB"?"BB_CHECK":"CALLER");
+}
+function trainerOpponentContext(hand,seat){
+  const toCall=trainerToCall(hand,seat),relative=trainerPostRank(hand.positions[seat])>trainerPostRank(hand.positions[hand.heroSeat])?"IP":"OOP";
+  const view=hand.core.legalView(hand.names[seat]);
+  return {profile:hand.profiles[seat],street:hand.street,mode:toCall>1e-8?"FACING":"FREE",relative_position:relative,pot_type:trainerPotType(hand),preflop_role:seat===hand.pfaSeat?"PFA":"CALLER",can_raise:view.legal_actions.includes("RAISE")};
+}
+function trainerOpponentAct(hand,seat){
+  if(hand.street==="preflop"){trainerPreflopOpponentAct(hand,seat);return;}
+  const ctx=trainerOpponentContext(hand,seat),toCall=trainerToCall(hand,seat),action=trainerSampleOpponentAction(ctx);
+  if(action==="FOLD")trainerApplyAction(hand,seat,"FOLD");
+  else if(action==="CHECK")trainerApplyAction(hand,seat,"CHECK");
+  else if(action==="CALL")trainerApplyAction(hand,seat,"CALL");
   else{
     const ratio=trainerSampleSizing({...ctx,action:ctx.mode==="FACING"?"RAISE":"BET"}),pot0=hand.pot;
-    let cost=Math.max(1,ratio*pot0);
-    if(ctx.mode==="FACING")cost=Math.max(cost,toCall+hand.lastRaise);
-    trainerApplyAction(hand,s,ctx.mode==="FACING"?"RAISE":"BET",cost);
+    let cost=Math.max(1,ratio*pot0);if(ctx.mode==="FACING")cost=Math.max(cost,toCall+hand.lastRaise);
+    trainerApplyAction(hand,seat,ctx.mode==="FACING"?"RAISE":"BET",cost);
   }
 }
 function trainerEndHand(hand,winnerSeat,showdown){
@@ -597,14 +664,13 @@ function trainerEndHand(hand,winnerSeat,showdown){
   if(!hand.preview)trainerState.session.hands++;
 }
 function trainerShowdown(hand){
-  const heroScore=handScore([...hand.hole[hand.heroSeat],...hand.runout]),oppScore=handScore([...hand.hole[hand.activeOppSeat],...hand.runout]);
-  trainerEndHand(hand,heroScore===oppScore?null:(heroScore>oppScore?hand.heroSeat:hand.activeOppSeat),true);
+  const live=trainerCoreLiveSeats(hand);if(!live.length){trainerEndHand(hand,null,true);return;}
+  const scores=live.map(s=>({s,score:handScore([...hand.hole[s],...hand.runout])})),best=Math.max(...scores.map(x=>x.score)),winners=scores.filter(x=>x.score===best);
+  trainerEndHand(hand,winners.length===1?winners[0].s:null,true);
 }
 function trainerAdvanceStreetOrShowdown(hand){
-  if(hand.stacks[hand.heroSeat]<=1e-8||hand.stacks[hand.activeOppSeat]<=1e-8){
-    if(hand.street==="flop"){trainerStartStreet(hand,"turn",true);trainerStartStreet(hand,"river",true);}else if(hand.street==="turn")trainerStartStreet(hand,"river",true);
-    trainerShowdown(hand);return;
-  }
+  const live=trainerCoreLiveSeats(hand);if(live.length<=1){trainerEndHand(hand,live[0]??null,false);return;}
+  if(hand.street==="preflop"){trainerFinalizePreflopRoles(hand);trainerStartStreet(hand,"flop",true);return;}
   if(hand.street==="flop"){trainerStartStreet(hand,"turn",true);return;}
   if(hand.street==="turn"){trainerStartStreet(hand,"river",true);return;}
   trainerShowdown(hand);
