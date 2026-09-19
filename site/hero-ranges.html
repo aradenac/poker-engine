@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Éditeur de ranges Hero</title>
+<title>Stratégie Hero · éditeur</title>
 <link rel="stylesheet" href="./hero-ranges.css">
 </head>
 <body>
@@ -11,21 +11,21 @@
   <header class="topbar">
     <div>
       <a class="back" href="./index.html">← Analyseur</a>
-      <h1>Ranges Hero</h1>
-      <p>Répertoire personnel préflop · 169 classes · actions, fréquences et sizings.</p>
+      <h1>Stratégie Hero</h1>
+      <p>Stratégie préflop personnelle et calculée · 169 classes · actions, fréquences et sizings.</p>
     </div>
     <div class="top-actions">
-      <label class="button secondary" for="heroRangeImport">Importer JSON</label>
+      <label class="button secondary" for="heroRangeImport">Importer une source JSON</label>
       <input id="heroRangeImport" type="file" accept=".json,application/json">
-      <button id="heroRangeExport" class="button">Exporter</button>
+      <button id="heroRangeExport" class="button">Exporter la stratégie</button>
     </div>
   </header>
 
   <section class="panel source-panel">
-    <div class="panel-head"><h2>Source importée</h2><span id="sourceBadge" class="badge">aucune</span></div>
-    <div id="sourceStatus" class="status">Importez un range-folder existant ou un dépôt Hero v1. Le document source est conservé verbatim.</div>
+    <div class="panel-head"><h2>Range source importée</h2><span id="sourceBadge" class="badge">aucune</span></div>
+    <div id="sourceStatus" class="status">Importez une range source existante ou un dépôt Hero v1. La range source importée est conservée verbatim.</div>
     <div class="source-browser">
-      <label>Range source<select id="sourceRangeSelect"></select></label>
+      <label>Range source importée<select id="sourceRangeSelect"></select></label>
       <label>Position source<select id="sourcePositionSelect"></select></label>
       <div id="sourceHandDetail" class="source-detail">Sélectionnez une case pour voir les actions brutes de la source.</div>
     </div>
@@ -46,12 +46,12 @@
     <section class="panel grid-panel">
       <div class="panel-head"><h2>Grille 169</h2><span id="gridSummary" class="badge"></span></div>
       <div class="legend">
-        <span class="dot calculated-only"></span>calculée seule
+        <span class="dot calculated-only"></span>stratégie calculée seule
         <span class="dot identical"></span>identique
-        <span class="dot personal-only"></span>personnelle seule
+        <span class="dot personal-only"></span>stratégie personnelle seule
         <span class="dot action-mismatch"></span>désaccord action
         <span class="dot sizing-mismatch"></span>désaccord sizing
-        <span class="dot source"></span>source importée
+        <span class="dot source"></span>range source importée
       </div>
       <div class="selection-toolbar">
         <div>
@@ -81,15 +81,15 @@
       <label>Notes<textarea id="handNotes" rows="3" placeholder="Optionnel"></textarea></label>
       <div class="editor-actions">
         <button id="saveHand" class="button">Enregistrer la sélection</button>
-        <button id="undefineHand" class="button danger">Retirer l’override personnel</button>
+        <button id="undefineHand" class="button danger">Retirer la stratégie personnelle</button>
       </div>
       <div id="handStatus" class="status"></div>
     </aside>
   </section>
 
   <section class="panel repository-panel">
-    <div class="panel-head"><h2>Répertoire</h2><span id="repositoryStats" class="badge"></span></div>
-    <p class="hint">Les ranges personnelles et les résultats calculés ont une provenance distincte. Une édition personnelle ne réécrit jamais la couche calculée.</p>
+    <div class="panel-head"><h2>Répertoire de stratégie Hero</h2><span id="repositoryStats" class="badge"></span></div>
+    <p class="hint">La stratégie personnelle et la stratégie calculée ont une provenance distincte. Une édition personnelle ne réécrit jamais la stratégie calculée.</p>
     <pre id="contextList" class="context-list"></pre>
   </section>
 </main>
