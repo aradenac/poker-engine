@@ -75,6 +75,44 @@ async def main() -> None:
         assert review_inbox_ui["stale"]["exact"] is False and review_inbox_ui["stale"]["reason"] == "DECISION_NOT_FOUND", review_inbox_ui
         assert review_inbox_ui["filters"] and review_inbox_ui["summary"] and review_inbox_ui["secondaryCollapsed"], review_inbox_ui
 
+        exact_review_open = await page.evaluate(
+            """() => {
+                const saved={
+                    hhHands:state.hhHands, reviewScores:state.reviewScores, replaySteps:state.replaySteps,
+                    replayIndex:state.replayIndex, selectedHand:state.selectedHand, hhMode:state.hhMode,
+                    select:window.selectHistoryHandById, setIndex:window.setReplayIndexAndRecalculate,
+                    open:window.openReplayerPage, exportText:replayerExportStatus?.textContent||""
+                };
+                const calls=[];
+                try{
+                    state.hhHands=[{id:"42"}];
+                    state.reviewScores={"42":{details:[{stepIndex:3}]}};
+                    state.replaySteps=[];state.replayIndex=0;state.selectedHand=null;state.hhMode=false;
+                    window.selectHistoryHandById=(id,opts)=>{
+                        calls.push(["select",id,opts?.open]);
+                        state.selectedHand=state.hhHands[0];state.hhMode=true;
+                        state.replaySteps=[{},{},{},{actionType:"call"}];
+                    };
+                    window.setReplayIndexAndRecalculate=(idx)=>{state.replayIndex=idx;calls.push(["step",idx]);};
+                    window.openReplayerPage=(opts)=>calls.push(["open",opts?.scrollTop]);
+                    const result=openReviewInboxDeepLink({
+                        schema:PokerReviewInbox.DEEP_LINK_SCHEMA,
+                        hand_id:"42",decision_id:"review:42:3",step_index:3
+                    });
+                    return {result,calls,replayIndex:state.replayIndex};
+                } finally {
+                    state.hhHands=saved.hhHands;state.reviewScores=saved.reviewScores;state.replaySteps=saved.replaySteps;
+                    state.replayIndex=saved.replayIndex;state.selectedHand=saved.selectedHand;state.hhMode=saved.hhMode;
+                    window.selectHistoryHandById=saved.select;window.setReplayIndexAndRecalculate=saved.setIndex;
+                    window.openReplayerPage=saved.open;
+                    if(replayerExportStatus)replayerExportStatus.textContent=saved.exportText;
+                }
+            }"""
+        )
+        assert exact_review_open["result"]["exact"] is True, exact_review_open
+        assert exact_review_open["replayIndex"] == 3, exact_review_open
+        assert exact_review_open["calls"] == [["select", "42", False], ["step", 3], ["open", True]], exact_review_open
+
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(
             "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"
