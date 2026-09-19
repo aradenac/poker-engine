@@ -182,7 +182,6 @@ def run_validation(
                 include_jam=True,
                 sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                 status="EXPERIMENTAL",
-                require_materialized_common_world=True,
             )
             paired = evaluate_preflop_grid_paired(
                 NoLimitHoldemState.from_snapshot(state.to_snapshot()),
@@ -206,6 +205,7 @@ def run_validation(
                 include_jam=True,
                 sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                 status="EXPERIMENTAL",
+                require_materialized_common_world=True,
             )
             fixed_rollouts += int(fixed["search"]["budget"])
             paired_rollouts += int(paired["decision"]["search"]["budget"])
@@ -234,7 +234,6 @@ def run_validation(
                     include_jam=True,
                     sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                     status="EXPERIMENTAL",
-                    require_materialized_common_world=True,
                 )
                 paired_again = evaluate_preflop_grid_paired(
                     NoLimitHoldemState.from_snapshot(state.to_snapshot()),
@@ -251,6 +250,7 @@ def run_validation(
                     include_jam=True,
                     sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
                     status="EXPERIMENTAL",
+                    require_materialized_common_world=True,
                 )
                 deterministic_fixed = canonical(fixed) == canonical(fixed_again)
                 deterministic_paired = canonical(paired) == canonical(paired_again)
