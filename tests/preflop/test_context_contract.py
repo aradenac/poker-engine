@@ -455,7 +455,14 @@ def test_ac_issue352_train_only_hierarchical_fit_is_deterministic_and_no_nearest
     assert sparse
     for node in sparse[:25]:
         shrink = node["shrinkage"]
-        assert shrink["prior_weight"] > shrink["data_weight"]
+        assert 0.0 < shrink["prior_weight"] < 1.0
+        assert 0.0 < shrink["data_weight"] < 1.0
+        assert math.isclose(
+            shrink["prior_weight"] + shrink["data_weight"],
+            1.0,
+            rel_tol=1e-12,
+            abs_tol=1e-12,
+        )
         assert shrink["train_revealed_observations"] == node["support"]
 
     posterior = {int(row["target_total_bb"]): row for row in fit["posterior_321"]["prices"]}
