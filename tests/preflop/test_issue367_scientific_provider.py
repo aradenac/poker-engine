@@ -122,7 +122,7 @@ def test_iso5_co_call_exact_support_and_posterior_identity_are_available():
     trace, replay, history, _, _ = _semantic_trace(state)
     assert replay.to_snapshot(include_log=False) == state.to_snapshot(include_log=False)
     decision = _preflop_decision(state, co, history)
-    assert decision["family"] == "VS_ISO"
+    assert decision["family"] == "LIMPER_VS_ISO"
     assert "aggressor_position" not in decision
     assert _is_required_sizing_context(decision) is True
 
@@ -132,7 +132,7 @@ def test_iso5_co_call_exact_support_and_posterior_identity_are_available():
     assert resolved["node_id"]
     assert int(resolved["support"]) > 0
     assert resolved["support_context_key"].endswith(
-        "family=VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+        "family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
     )
 
     state.apply_action(co, "CALL")
