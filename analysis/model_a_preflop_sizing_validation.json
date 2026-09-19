@@ -1,0 +1,101 @@
+{
+  "active_model_replaced": false,
+  "coverage": {
+    "exact_price_candidate_rows": 9854,
+    "hand_conditioned_rows": 32,
+    "reference_runtime_fallback_rows_on_candidate_universe": 0,
+    "unresolved_no_exact_supported_price_cell": 1636,
+    "validation_population_rows_in_scope": 11490
+  },
+  "evidence_sha256": "b5759ff4c8ef8cd0c095c121e684fc6fb705a747d6d557bea4b17f467b0c0a94",
+  "gate": {
+    "hand_ci95_upper_le_zero": false,
+    "hand_support_minimum_met": false,
+    "primary_ci95_upper_le_zero": true
+  },
+  "hero_ev_consumed": false,
+  "inputs": {
+    "candidate_sha256": "53cc87600c6748b5ae8e53b32c8b6770b2bd881e0f5e23be07fdf363ad4103ee",
+    "reference": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "support_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "validation": {
+      "archives": [
+        {
+          "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+          "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+          "unique_hands": 27164
+        },
+        {
+          "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+          "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+          "unique_hands": 11896
+        }
+      ],
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands": 2324,
+      "hands_parsed": 2324,
+      "population_preflop_rows_in_scope": 11490,
+      "split": "VALIDATION"
+    }
+  },
+  "issue": 339,
+  "issue_108_consumed": false,
+  "metrics": {
+    "all_supported_rows": {
+      "affected_rows": 9854,
+      "candidate_logloss": 0.9020224565434601,
+      "delta_candidate_minus_reference": -0.024331438815363038,
+      "hands": 2323,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.029462034201539623,
+          -0.019354168492510804
+        ],
+        "hands": 2323,
+        "mean": -0.02433143881536302,
+        "probability_candidate_better": 1,
+        "samples": 5000,
+        "seed": 20260919
+      },
+      "reference_logloss": 0.9263538953588232,
+      "rows": 9854
+    },
+    "identifiable_revealed_hand_rows": {
+      "affected_rows": 32,
+      "candidate_logloss": 0.8339186704104382,
+      "delta_candidate_minus_reference": 0.16365081812555293,
+      "hands": 32,
+      "paired_bootstrap": {
+        "ci95": [
+          0.10501577931240491,
+          0.21570942373227556
+        ],
+        "hands": 32,
+        "mean": 0.16365081812555293,
+        "probability_candidate_better": 0,
+        "samples": 5000,
+        "seed": 20261919
+      },
+      "reference_logloss": 0.6702678522848853,
+      "rows": 32
+    }
+  },
+  "model_b_consumed": false,
+  "outcome": "RETAIN_ACTIVE_REFERENCE",
+  "phase": "VALIDATION",
+  "production_effect": "NONE",
+  "protocol": {
+    "path": "analysis/model_a_preflop_sizing_validation_protocol.json",
+    "sha256": "177285f03158e1fce0e9d07bdf895dbbeef39dd0f3a6827107579c352be602d5",
+    "status": "FROZEN_BEFORE_VALIDATION"
+  },
+  "reason": "frozen VALIDATION gate not established; retain active Model A reference",
+  "schema": "poker-model-a-preflop-sizing-validation/v1",
+  "selection_split": "VALIDATION",
+  "test_authorized": false,
+  "test_consumed": false,
+  "ui_modified": false
+}

@@ -54,10 +54,20 @@
           "const": false
         },
         "fit_scope": {
-          "const": "SCAFFOLD_ONLY_NO_FINAL_FIT"
+          "enum": [
+            "SCAFFOLD_ONLY_NO_FINAL_FIT",
+            "TRAIN_EMPIRICAL_FIT"
+          ]
         },
         "data_scope": {
-          "const": "SYNTHETIC_OR_TRAIN_ONLY"
+          "enum": [
+            "SYNTHETIC_OR_TRAIN_ONLY",
+            "CERTIFIED_TRAIN_ONLY"
+          ]
+        },
+        "source_report_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       }
     },
@@ -187,6 +197,16 @@
               "const": false
             }
           }
+        },
+        "aggressor_position": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "support_context_key": {
+          "type": "string",
+          "pattern": "^MAPSUP_"
         }
       }
     },
@@ -236,6 +256,38 @@
         "support_class": {
           "type": "string",
           "minLength": 1
+        },
+        "support_context_key": {
+          "type": "string",
+          "pattern": "^MAPSUP_"
+        },
+        "source_report_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "support_denominator": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reveal_bias": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "reveal_selected": {
+              "type": "boolean"
+            },
+            "reveal_fraction": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "fit_method": {
+          "type": "string"
         }
       }
     }
