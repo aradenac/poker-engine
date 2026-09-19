@@ -1,0 +1,634 @@
+{
+  "allowlist": [
+    ".github/workflows/hero-calculated-range-export.yml",
+    ".github/workflows/ingest-artifacts.yml",
+    ".github/workflows/model-b-reveal-aware.yml",
+    ".github/workflows/postflop-response-refit.yml",
+    ".github/workflows/preflop-search.yml",
+    "analysis/workflow_audit/active_workflow_dag_v2.json",
+    "analysis/workflow_audit/residual_repro_dag_before_after.json",
+    "docs/ci-workflow-dag.md",
+    "tests/ci/test_residual_repro_dag.py",
+    "tools/audit_active_workflow_dag.py",
+    "tools/audit_residual_repro_dag.py"
+  ],
+  "already_repro_strong": 5,
+  "base_sha": "ac208d26cbf3f16b498fd5333ad3b7c4fa58355b",
+  "blocked": 0,
+  "files_changed": [
+    ".github/workflows/hero-calculated-range-export.yml",
+    ".github/workflows/ingest-artifacts.yml",
+    ".github/workflows/model-b-reveal-aware.yml",
+    ".github/workflows/postflop-response-refit.yml",
+    ".github/workflows/preflop-search.yml",
+    "analysis/workflow_audit/active_workflow_dag_v2.json",
+    "analysis/workflow_audit/residual_repro_dag_before_after.json",
+    "docs/ci-workflow-dag.md",
+    "tests/ci/test_residual_repro_dag.py",
+    "tools/audit_active_workflow_dag.py",
+    "tools/audit_residual_repro_dag.py"
+  ],
+  "inventory_base_blob_sha": "8285835c62d781a9487a1faad383684eb3d7138c",
+  "inventory_source": "analysis/workflow_audit/workflows.json",
+  "issue": 382,
+  "local_tests": [
+    {
+      "command": "python3 tests/test_repro_ci_helpers.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_residual_repro_dag.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_residual_repro_dag.py --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_active_workflow_dag.py --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/validate_project_state.py",
+      "note": "Existing project-state administrative warning only; no errors.",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/validate_project_state.py --check-status",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_project_state.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_github_workflows.py --json /tmp/workflows.json",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/datasets/test_build_hand_history_increment.py",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/preflop/test_decision_contract.js && node tests/preflop/test_search.js",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hero_ranges/test_calculated_range_export.mjs && node tests/hero_ranges/test_hero_range_repository.mjs && node tests/hero_ranges/test_squeeze_range_export.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_generate_hero_range_decisions.py && python3 tests/training/test_certified_preflop_sizing_evidence.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/training/test_reveal_aware_ranges.py",
+      "result": "PASS"
+    },
+    {
+      "command": "postflop contract fixture functions from five tests/training modules",
+      "note": "Fixture-only contract tests; no refit workflow, corpus run, or scientific TEST split consumed.",
+      "result": "PASS"
+    }
+  ],
+  "parent_issue": 204,
+  "schema": "poker-residual-repro-dag-audit/v1",
+  "scientific_behavior_unchanged": true,
+  "test_consumed": false,
+  "workflows": [
+    {
+      "added_trigger_paths": [],
+      "after": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "f0fa905743d8d4202b95894f9724db91fbbb2434",
+        "concurrency_raw": "concurrency:\n  group: continuous-training-cycle-${{ github.ref }}\n  cancel-in-progress: false",
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "safety-contract",
+          "run-committed-cycle"
+        ],
+        "normalized_scientific_sha256": "9516dc6252f51fd7429ed24a415866d1f45ea74050223ad2c39c2f4b739588c5",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "f0fa905743d8d4202b95894f9724db91fbbb2434",
+        "concurrency_raw": "concurrency:\n  group: continuous-training-cycle-${{ github.ref }}\n  cancel-in-progress: false",
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "safety-contract",
+          "run-committed-cycle"
+        ],
+        "normalized_scientific_sha256": "9516dc6252f51fd7429ed24a415866d1f45ea74050223ad2c39c2f4b739588c5",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "disposition": "ALREADY_REPRO_STRONG",
+      "path": ".github/workflows/continuous-training-cycle.yml"
+    },
+    {
+      "added_trigger_paths": [
+        ".python-version",
+        ".node-version",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "after": {
+        "artifact_actions": [],
+        "blob_sha": "3aa25d6d4dc05a1f097f1f358e2310330d511d03",
+        "concurrency_raw": "concurrency:\n  group: artifact-ingest-${{ github.ref }}\n  cancel-in-progress: false",
+        "has_pull_request": false,
+        "jobs": [
+          "ingest"
+        ],
+        "normalized_scientific_sha256": "58edb06f974404e11aa7139863e63e09df60c04b53f9387da7bd1376238e9bae",
+        "permissions_raw": "permissions:\n  contents: write",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": [
+          "ingest"
+        ]
+      },
+      "before": {
+        "artifact_actions": [],
+        "blob_sha": "d13e5a29963a64997a881583248040b472d19db3",
+        "concurrency_raw": "concurrency:\n  group: artifact-ingest-${{ github.ref }}\n  cancel-in-progress: false",
+        "has_pull_request": false,
+        "jobs": [
+          "ingest"
+        ],
+        "normalized_scientific_sha256": "58edb06f974404e11aa7139863e63e09df60c04b53f9387da7bd1376238e9bae",
+        "permissions_raw": "permissions:\n  contents: write",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 0,
+        "verify_calls": 0,
+        "write_jobs": [
+          "ingest"
+        ]
+      },
+      "disposition": "MIGRATE_PYTHON_REPRO",
+      "path": ".github/workflows/ingest-artifacts.yml"
+    },
+    {
+      "added_trigger_paths": [],
+      "after": {
+        "artifact_actions": [],
+        "blob_sha": "c61f73c9a9601a12b00fbb418e5b75aebcca073f",
+        "concurrency_raw": "concurrency:\n  group: materialize-certified-population-${{ github.ref }}\n  cancel-in-progress: true",
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "contract",
+          "materialize-zoom-baseline"
+        ],
+        "normalized_scientific_sha256": "b560e997c20b5f2e43ceb0a800695ac135691a0f96f4566a5da3aeccbd088efa",
+        "permissions_raw": "permissions:\n  contents: write",
+        "pr_reachable_write_jobs": [
+          "repro-environment",
+          "contract"
+        ],
+        "setup_node": 0,
+        "setup_python": 2,
+        "verify_calls": 1,
+        "write_jobs": [
+          "repro-environment",
+          "contract",
+          "materialize-zoom-baseline"
+        ]
+      },
+      "before": {
+        "artifact_actions": [],
+        "blob_sha": "c61f73c9a9601a12b00fbb418e5b75aebcca073f",
+        "concurrency_raw": "concurrency:\n  group: materialize-certified-population-${{ github.ref }}\n  cancel-in-progress: true",
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "contract",
+          "materialize-zoom-baseline"
+        ],
+        "normalized_scientific_sha256": "b560e997c20b5f2e43ceb0a800695ac135691a0f96f4566a5da3aeccbd088efa",
+        "permissions_raw": "permissions:\n  contents: write",
+        "pr_reachable_write_jobs": [
+          "repro-environment",
+          "contract"
+        ],
+        "setup_node": 0,
+        "setup_python": 2,
+        "verify_calls": 1,
+        "write_jobs": [
+          "repro-environment",
+          "contract",
+          "materialize-zoom-baseline"
+        ]
+      },
+      "disposition": "ALREADY_REPRO_STRONG",
+      "path": ".github/workflows/materialize-certified-population.yml"
+    },
+    {
+      "added_trigger_paths": [],
+      "after": {
+        "artifact_actions": [],
+        "blob_sha": "816cc286f550aadbb0cdf2be990b43023079a81b",
+        "concurrency_raw": "concurrency:\n  group: plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}\n  cancel-in-progress: false",
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "planner-contract",
+          "plan-and-materialize"
+        ],
+        "normalized_scientific_sha256": "0b1d9816a17604f4f76e46390a4aeb11522947e8977b31a854322435a00f4de8",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": [
+          "plan-and-materialize"
+        ]
+      },
+      "before": {
+        "artifact_actions": [],
+        "blob_sha": "816cc286f550aadbb0cdf2be990b43023079a81b",
+        "concurrency_raw": "concurrency:\n  group: plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}\n  cancel-in-progress: false",
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "planner-contract",
+          "plan-and-materialize"
+        ],
+        "normalized_scientific_sha256": "0b1d9816a17604f4f76e46390a4aeb11522947e8977b31a854322435a00f4de8",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": [
+          "plan-and-materialize"
+        ]
+      },
+      "disposition": "ALREADY_REPRO_STRONG",
+      "path": ".github/workflows/plan-ingested-cycle.yml"
+    },
+    {
+      "added_trigger_paths": [],
+      "after": {
+        "artifact_actions": [
+          "uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "0b275b042b41be044cd363e43e455b20b77b1c21",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "certify"
+        ],
+        "normalized_scientific_sha256": "a1d0ce23c35f5240a6d8b97446994574e62711f55a40a030cd518d7939bd10b1",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [
+          "uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "0b275b042b41be044cd363e43e455b20b77b1c21",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "certify"
+        ],
+        "normalized_scientific_sha256": "a1d0ce23c35f5240a6d8b97446994574e62711f55a40a030cd518d7939bd10b1",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "disposition": "ALREADY_REPRO_STRONG",
+      "path": ".github/workflows/population-certification.yml"
+    },
+    {
+      "added_trigger_paths": [
+        ".python-version",
+        ".node-version",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "after": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "a1fe3033479c610aa218aacb03d50d1254b27917",
+        "concurrency_raw": "concurrency:\n  group: postflop-continuation-${{ github.ref }}\n  cancel-in-progress: true",
+        "has_pull_request": true,
+        "jobs": [
+          "refit"
+        ],
+        "normalized_scientific_sha256": "a9601e1e7c0552eb4e0636cf45dd24a2a323b1d1627896e808fcd7a95a399d7a",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "07307e2d6dea53bce1c241f01a4c34c45ddd3efd",
+        "concurrency_raw": "concurrency:\n  group: postflop-continuation-${{ github.ref }}\n  cancel-in-progress: true",
+        "has_pull_request": true,
+        "jobs": [
+          "refit"
+        ],
+        "normalized_scientific_sha256": "a9601e1e7c0552eb4e0636cf45dd24a2a323b1d1627896e808fcd7a95a399d7a",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 0,
+        "verify_calls": 0,
+        "write_jobs": []
+      },
+      "disposition": "MIGRATE_PYTHON_REPRO",
+      "path": ".github/workflows/postflop-response-refit.yml"
+    },
+    {
+      "added_trigger_paths": [
+        ".python-version",
+        ".node-version",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "after": {
+        "artifact_actions": [],
+        "blob_sha": "2efeb4ad0a95a719c2aa1f20d1a364b5122cc3e2",
+        "concurrency_raw": "concurrency:\n  group: preflop-search-${{ github.ref }}\n  cancel-in-progress: true",
+        "has_pull_request": true,
+        "jobs": [
+          "contract"
+        ],
+        "normalized_scientific_sha256": "ac23799281176b333bdc0d159aa9018a58af05770d3cdba7338ac2840ea612eb",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 1,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [],
+        "blob_sha": "2cd2d8a1b8b9441a72e6e2b94b7bcb05b4b9a668",
+        "concurrency_raw": "concurrency:\n  group: preflop-search-${{ github.ref }}\n  cancel-in-progress: true",
+        "has_pull_request": true,
+        "jobs": [
+          "contract"
+        ],
+        "normalized_scientific_sha256": "ac23799281176b333bdc0d159aa9018a58af05770d3cdba7338ac2840ea612eb",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 1,
+        "setup_python": 0,
+        "verify_calls": 0,
+        "write_jobs": []
+      },
+      "disposition": "MIGRATE_PYTHON_NODE_REPRO",
+      "path": ".github/workflows/preflop-search.yml"
+    },
+    {
+      "added_trigger_paths": [],
+      "after": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "1ca29c457954b94bd8b15b21f2eab9ead9ddd680",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "build-and-verify"
+        ],
+        "normalized_scientific_sha256": "ef0c0b6c53e77752b20a264618c4618ebee987f794b8503eacb7e6b9a2072ee8",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "1ca29c457954b94bd8b15b21f2eab9ead9ddd680",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "repro-environment",
+          "build-and-verify"
+        ],
+        "normalized_scientific_sha256": "ef0c0b6c53e77752b20a264618c4618ebee987f794b8503eacb7e6b9a2072ee8",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "disposition": "ALREADY_REPRO_STRONG",
+      "path": ".github/workflows/user-artifact-bundle.yml"
+    },
+    {
+      "added_trigger_paths": [
+        ".python-version",
+        ".node-version",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "after": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "95baf8419249dbc1968a509edd23347939303c3a",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "calculated-range-contract"
+        ],
+        "normalized_scientific_sha256": "f36e8729e0a8e3709a811b049ea63a5acbcab28e23913cf7f68aa7bd121d670a",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 1,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [
+          "- uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "6d8cabc97732056df1165f1358aca19dd32f63b6",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "calculated-range-contract"
+        ],
+        "normalized_scientific_sha256": "f36e8729e0a8e3709a811b049ea63a5acbcab28e23913cf7f68aa7bd121d670a",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 1,
+        "setup_python": 1,
+        "verify_calls": 0,
+        "write_jobs": []
+      },
+      "disposition": "MIGRATE_PYTHON_NODE_REPRO",
+      "path": ".github/workflows/hero-calculated-range-export.yml"
+    },
+    {
+      "added_trigger_paths": [
+        ".python-version",
+        ".node-version",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources"
+      ],
+      "after": {
+        "artifact_actions": [
+          "uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "2062adfb7c181075609befba025aad7e4151f515",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "validation"
+        ],
+        "normalized_scientific_sha256": "e0f4607d612e7c0eb5ce587c058c3b3cf2697308876ee34bd3f666e64049c937",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 1,
+        "write_jobs": []
+      },
+      "before": {
+        "artifact_actions": [
+          "uses: actions/upload-artifact@v4"
+        ],
+        "blob_sha": "215e0f2282ced825c76c7784db95dc8d86935670",
+        "concurrency_raw": null,
+        "has_pull_request": true,
+        "jobs": [
+          "validation"
+        ],
+        "normalized_scientific_sha256": "e0f4607d612e7c0eb5ce587c058c3b3cf2697308876ee34bd3f666e64049c937",
+        "permissions_raw": "permissions:\n  contents: read",
+        "pr_reachable_write_jobs": [],
+        "setup_node": 0,
+        "setup_python": 1,
+        "verify_calls": 0,
+        "write_jobs": []
+      },
+      "disposition": "MIGRATE_PYTHON_REPRO",
+      "path": ".github/workflows/model-b-reveal-aware.yml"
+    }
+  ],
+  "workflows_audited": 10,
+  "workflows_migrated": 5,
+  "write_surface_expanded": false
+}

@@ -3,6 +3,24 @@ name: Validate preflop action sizing search
 on:
   push:
     paths:
+      - '.python-version'
+      - '.node-version'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
       - 'src/preflop/contract.js'
       - 'src/preflop/decision.js'
       - 'src/preflop/search.js'
@@ -14,6 +32,24 @@ on:
       - '.github/workflows/preflop-search.yml'
   pull_request:
     paths:
+      - '.python-version'
+      - '.node-version'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
       - 'src/preflop/contract.js'
       - 'src/preflop/decision.js'
       - 'src/preflop/search.js'
@@ -36,9 +72,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: '.node-version'
+      - name: Verify locked REPRO environment
+        run: python3 tools/repro_ci_environment.py verify --require-node
       - name: Syntax
         run: |
           node --check src/preflop/search.js
