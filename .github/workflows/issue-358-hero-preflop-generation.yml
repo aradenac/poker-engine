@@ -30,9 +30,9 @@ jobs:
           python -m py_compile tools/training/generate_hero_preflop_noniso.py
           python -m py_compile tools/training/bridge_paired_ev_to_hero_generation.py
           python -m py_compile tools/training/validate_hero_preflop_generation.py
-          python tests/training/test_issue358_generation_contract.py
-          python tests/training/test_bridge_paired_ev_to_hero_generation.py
-          python tests/simulation/test_paired_preflop_grid_integration.py
+          PYTHONPATH=. python tests/training/test_issue358_generation_contract.py
+          PYTHONPATH=. python tests/training/test_bridge_paired_ev_to_hero_generation.py
+          PYTHONPATH=. python tests/simulation/test_paired_preflop_grid_integration.py
           python - <<'PY'
           import hashlib, json
           from pathlib import Path
@@ -203,9 +203,9 @@ jobs:
         run: |
           RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v1"
           python tools/training/validate_hero_preflop_generation.py             --root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json
-          python tests/training/test_import_hero_preflop_generation.py
-          python tests/training/test_issue358_generation_contract.py
-          python tests/training/test_bridge_paired_ev_to_hero_generation.py
+          PYTHONPATH=. python tests/training/test_import_hero_preflop_generation.py
+          PYTHONPATH=. python tests/training/test_issue358_generation_contract.py
+          PYTHONPATH=. python tests/training/test_bridge_paired_ev_to_hero_generation.py
       - uses: actions/upload-artifact@v4
         with:
           name: issue358-final-generation
