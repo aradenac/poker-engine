@@ -1,0 +1,37 @@
+{
+  "active_model_b_changed": false,
+  "artifacts": {
+    "candidate": "model/candidate.json",
+    "protocol": "PROTOCOL.json",
+    "reference": "model/price_agnostic_reference.json",
+    "summary": "SUMMARY.json",
+    "train_fit_audit": "TRAIN_FIT_AUDIT.json",
+    "validation_report": "VALIDATION_REPORT.json"
+  },
+  "automatic_promotion": false,
+  "decision": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION",
+  "hero_sensitivity_blocked_by": "#314",
+  "hero_sensitivity_run": false,
+  "issue": 340,
+  "parent_issue_315_should_remain_open": true,
+  "production_effect": "NONE",
+  "schema": "model-b-preflop-response-to-price-2a-result/v1",
+  "scientific_dod": {
+    "active_model_b_unchanged": true,
+    "automatic_promotion_disabled": true,
+    "four_action_response_taxonomy": true,
+    "hero_ev_or_recommendation_not_consumed": true,
+    "hero_sensitivity_deferred": true,
+    "issue_319_support_consumed_with_provenance": true,
+    "model_b_independent_from_model_a": true,
+    "paired_validation_vs_reference_persisted": true,
+    "price_zone_uncertainty_persisted": true,
+    "protocol_frozen_before_validation": true,
+    "reproducible_train_fit": true,
+    "sparse_and_absent_finer_support_explicit": true,
+    "support_aware_backoff_preserves_family": true,
+    "test_unconsumed": true
+  },
+  "status": "COMPLETE",
+  "test_consumed": false
+}

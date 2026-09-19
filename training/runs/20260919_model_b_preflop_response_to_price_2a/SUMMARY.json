@@ -1,0 +1,35 @@
+{
+  "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+  "candidate_log_loss": 0.817261953953171,
+  "candidate_support_state_counts": {
+    "DECLARED_CONTEXT_BACKOFF": 2633,
+    "DECLARED_EMPIRICAL_BIN_BACKOFF": 745,
+    "EXACT_SUPPORTED": 3672
+  },
+  "decision": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION",
+  "issue": 340,
+  "paired_candidate_minus_reference": {
+    "bootstrap_samples": 2000,
+    "ci95": [
+      -0.021591781086061964,
+      -0.008750343131744455
+    ],
+    "cluster_unit": "hand_id",
+    "decisions": 7050,
+    "hands": 2074,
+    "metric": "candidate_minus_reference_action_log_loss",
+    "observed": -0.015301900266235525,
+    "probability_candidate_better": 1.0,
+    "seed": 20260919
+  },
+  "price_zones": 112,
+  "production_effect": "NONE",
+  "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+  "reference_log_loss": 0.8325638542194049,
+  "schema": "model-b-preflop-response-to-price-2a-summary/v1",
+  "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+  "status": "COMPLETE",
+  "test_consumed": false,
+  "train_decisions": 57188,
+  "validation_decisions": 7050
+}
