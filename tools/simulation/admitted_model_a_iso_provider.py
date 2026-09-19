@@ -202,6 +202,7 @@ class Issue367OpponentPolicy(ModelAContinuationPolicy):
     ) -> None:
         self.sizing_candidate = copy.deepcopy(dict(candidate))
         self.reference = frozen_reference
+        self.non_sizing_reference = SupportClosedModelAReferencePolicy(frozen_reference)
         super().__init__(
             frozen_reference.preflop_model,
             frozen_reference.postflop_model,
@@ -444,11 +445,21 @@ class Issue367OpponentPolicy(ModelAContinuationPolicy):
                 self.postflop_support_closure[str(exc)] += 1
                 return self._passive_postflop_fallback(state, actor, str(exc))
 
+        trace, replay, preflop_history, _, _ = _semantic_trace(state)
+        del trace
+        if replay.to_snapshot(include_log=False) != state.to_snapshot(include_log=False):
+            raise AssertionError("semantic replay diverged from public game state")
+        semantic_context = _preflop_decision(state, actor, preflop_history)
+        if not _is_required_sizing_context(semantic_context):
+            return dict(
+                self.non_sizing_reference.decide(
+                    state, seed_parts=tuple(seed_parts), **context
+                )
+            )
+
         info = self.action_probabilities(state, **context)
         if info.get("source") != "ADMITTED_MODEL_A_V2_EXACT_PRICE":
-            return self.reference.decide(
-                state, seed_parts=tuple(seed_parts), **context
-            )
+            raise AssertionError("required VS_ISO context did not bind admitted v2")
         probabilities = dict(info["probabilities"])
         semantic = str(
             weighted_choice(
@@ -542,6 +553,7 @@ class Issue367ScientificProvider:
         self._posterior_cache: dict[tuple[str, str, str], dict[str, Any]] = {}
         self._posterior_variants: dict[tuple[str, str, str], set[str]] = collections.defaultdict(set)
         self._support_closure_by_alt: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
+        self._preflop_support_closure_by_alt: dict[str, collections.Counter[str]] = collections.defaultdict(collections.Counter)
 
     def metadata(self) -> dict[str, Any]:
         return {
@@ -708,6 +720,14 @@ class Issue367ScientificProvider:
                     actor=actor,
                     hole_cards=holes[actor],
                 )
+                closure = decision.get("benchmark_reference_support_closure")
+                if (
+                    closure
+                    and before_street == "preflop"
+                    and actor != hero
+                ):
+                    reason = str(closure.get("reason") or "UNSPECIFIED")
+                    self._preflop_support_closure_by_alt[alt_id][reason] += 1
                 first_response = (
                     before_street == "preflop"
                     and str(alternative.get("action") or "").upper() == "ISO"
@@ -791,8 +811,15 @@ class Issue367ScientificProvider:
             alt: dict(sorted(counter.items()))
             for alt, counter in sorted(self._support_closure_by_alt.items())
         }
+        preflop_closure = {
+            alt: dict(sorted(counter.items()))
+            for alt, counter in sorted(
+                self._preflop_support_closure_by_alt.items()
+            )
+        }
         return {
             "posterior_distribution_variants": variants,
+            "preflop_non_sizing_support_closure_by_alternative": preflop_closure,
             "postflop_support_closure_by_alternative": closure,
             "posterior_ref_policy": (
                 "FIRST_DETERMINISTIC_SAMPLE_PER_ALTERNATIVE_POSITION_RESPONSE;"
