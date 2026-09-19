@@ -1,0 +1,265 @@
+{
+  "schema": "poker-hero-preflop-alternative-fixtures/v1",
+  "issue": 353,
+  "canonical_fixture_reference": {
+    "issue": 321,
+    "scenario_id": "kts_sb_two_limp_iso4_three_calls_v1",
+    "path": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+    "requested_raise_targets_bb": [
+      4,
+      5,
+      6,
+      6.0001
+    ],
+    "expected_semantic_actions": [
+      "FOLD",
+      "OVERLIMP",
+      "ISO"
+    ],
+    "exact_supported_targets_bb": [
+      4,
+      5,
+      6
+    ],
+    "exact_unsupported_targets_bb": [
+      6.0001
+    ]
+  },
+  "generic_scenarios": [
+    {
+      "id": "unopened_rfi",
+      "setup": {
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "stacks_bb": {
+          "BTN": 100,
+          "SB": 100,
+          "BB": 100,
+          "LJ": 100,
+          "HJ": 100,
+          "CO": 100
+        }
+      },
+      "pre_actions": [
+        {
+          "player": "LJ",
+          "action": "FOLD"
+        },
+        {
+          "player": "HJ",
+          "action": "FOLD"
+        }
+      ],
+      "actor": "CO",
+      "requested_raise_targets_bb": [
+        2.5,
+        3,
+        3.1
+      ],
+      "exact_support": [
+        {
+          "target_total_bb": 2.5,
+          "observations": 100
+        },
+        {
+          "target_total_bb": 3,
+          "observations": 80
+        }
+      ],
+      "expected_raise_action": "OPEN",
+      "expected_call_action": "LIMP"
+    },
+    {
+      "id": "facing_rfi",
+      "setup": {
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "stacks_bb": {
+          "BTN": 100,
+          "SB": 100,
+          "BB": 100,
+          "LJ": 100,
+          "HJ": 100,
+          "CO": 100
+        }
+      },
+      "pre_actions": [
+        {
+          "player": "LJ",
+          "action": "FOLD"
+        },
+        {
+          "player": "HJ",
+          "action": "FOLD"
+        },
+        {
+          "player": "CO",
+          "action": "RAISE",
+          "target_total_bb": 2.5
+        }
+      ],
+      "actor": "BTN",
+      "requested_raise_targets_bb": [
+        7.5,
+        8,
+        8.1
+      ],
+      "exact_support": [
+        {
+          "target_total_bb": 7.5,
+          "observations": 60
+        },
+        {
+          "target_total_bb": 8,
+          "observations": 40
+        }
+      ],
+      "expected_raise_action": "3BET",
+      "expected_call_action": "CALL"
+    },
+    {
+      "id": "squeeze_candidate",
+      "setup": {
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "stacks_bb": {
+          "BTN": 100,
+          "SB": 100,
+          "BB": 100,
+          "LJ": 100,
+          "HJ": 100,
+          "CO": 100
+        }
+      },
+      "pre_actions": [
+        {
+          "player": "LJ",
+          "action": "RAISE",
+          "target_total_bb": 2.5
+        },
+        {
+          "player": "HJ",
+          "action": "CALL"
+        },
+        {
+          "player": "CO",
+          "action": "FOLD"
+        }
+      ],
+      "actor": "BTN",
+      "requested_raise_targets_bb": [
+        9,
+        10,
+        10.1
+      ],
+      "exact_support": [
+        {
+          "target_total_bb": 9,
+          "observations": 55
+        },
+        {
+          "target_total_bb": 10,
+          "observations": 30
+        }
+      ],
+      "expected_raise_action": "SQUEEZE",
+      "expected_call_action": "CALL"
+    },
+    {
+      "id": "facing_3bet",
+      "setup": {
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "stacks_bb": {
+          "BTN": 100,
+          "SB": 100,
+          "BB": 100,
+          "LJ": 100,
+          "HJ": 100,
+          "CO": 100
+        }
+      },
+      "pre_actions": [
+        {
+          "player": "LJ",
+          "action": "FOLD"
+        },
+        {
+          "player": "HJ",
+          "action": "FOLD"
+        },
+        {
+          "player": "CO",
+          "action": "RAISE",
+          "target_total_bb": 2.5
+        },
+        {
+          "player": "BTN",
+          "action": "RAISE",
+          "target_total_bb": 8
+        },
+        {
+          "player": "SB",
+          "action": "FOLD"
+        },
+        {
+          "player": "BB",
+          "action": "FOLD"
+        }
+      ],
+      "actor": "CO",
+      "requested_raise_targets_bb": [
+        18,
+        20,
+        20.1
+      ],
+      "exact_support": [
+        {
+          "target_total_bb": 18,
+          "observations": 52
+        },
+        {
+          "target_total_bb": 20,
+          "observations": 27
+        }
+      ],
+      "expected_raise_action": "4BET",
+      "expected_call_action": "CALL"
+    }
+  ],
+  "boundaries": {
+    "ev": false,
+    "model_a_fit": false,
+    "model_b_fit": false,
+    "test": false,
+    "ui": false
+  }
+}
