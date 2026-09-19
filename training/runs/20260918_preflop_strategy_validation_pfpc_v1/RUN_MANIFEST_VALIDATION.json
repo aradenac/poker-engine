@@ -1,0 +1,44 @@
+{
+  "budgets": {
+    "bootstrap_samples": 5000,
+    "certified_validation_hands": 2324,
+    "master_seed": 20260917,
+    "rollouts_per_base_hand": 2,
+    "simulatable_validation_hands": 2324,
+    "simulated_scenarios_per_policy_environment": 4648
+  },
+  "contract_version": "2026-09-18.3",
+  "identities": {
+    "candidate_artifact_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+    "candidate_binding_schema": "poker-hero-policy-context-binding/v1",
+    "candidate_binding_sha256": "44e1e4d9e5846f3f2e6cc0402848b35b0e9e69b0a34334981c8e961f523a6bb7",
+    "candidate_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+    "candidate_source_commit_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4",
+    "code_commit_sha": "86acd4ee1f43eb5507028eb1916d42953775da6a",
+    "dataset_population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "model_b_base_artifact_sha256": "fc54f874220fdd8ec42ad69c3eff4d3235296f15f7e22ca4a5bb1837b97636ca",
+    "model_b_environment_ids": [
+      "model-b-public-reference-nominal-v1",
+      "model-b-public-reference-lower-aggression-v1",
+      "model-b-public-reference-higher-aggression-v1"
+    ],
+    "model_b_sensitivity_descriptor_sha256": "e97c74636621da3d109717b4b2883f15d6d38f06bada457840618975959e8bd0",
+    "reference_descriptor_sha256": "9e55bf86bef43bdde64f0749a5da8969caf2dee69f582abc5e9e73ba0884f6fe",
+    "scenario_manifest_sha256": "23c325579f861a09aa6bb3bbfbc27a7aedf245c6c5cc9ea446f251b4198535ee"
+  },
+  "phase": "VALIDATION",
+  "results_inspected": false,
+  "schema": "poker-preflop-strategy-benchmark-run/v2",
+  "selection_boundary": {
+    "candidate_frozen_before_validation": true,
+    "scenario_manifest_frozen_before_policy_results": true,
+    "test_consumed": false,
+    "test_visible": false
+  },
+  "test_data_read": false,
+  "thresholds": {
+    "environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+    "test_ci95_lower_bb_per_100": 0,
+    "validation_ci95_lower_bb_per_100": 0
+  }
+}

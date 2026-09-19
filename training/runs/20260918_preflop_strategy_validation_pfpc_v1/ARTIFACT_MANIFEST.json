@@ -1,0 +1,26 @@
+{
+  "RUN_MANIFEST_VALIDATION.json": {
+    "sha256": "0f04cfd3a53e115d8f4a69e75091dee451e51f417d5470f48b0a18d803bf7eae",
+    "size_bytes": 2023
+  },
+  "SCENARIOS_VALIDATION.json": {
+    "sha256": "23c325579f861a09aa6bb3bbfbc27a7aedf245c6c5cc9ea446f251b4198535ee",
+    "size_bytes": 9340358
+  },
+  "VALIDATION_SELECTION.json": {
+    "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223",
+    "size_bytes": 4402
+  },
+  "model-b-public-reference-higher-aggression-v1.json": {
+    "sha256": "0414fc894567b41aa6fdaaf0f444289a293ba9825faa85886b4a9458eb23a7f8",
+    "size_bytes": 10888036
+  },
+  "model-b-public-reference-lower-aggression-v1.json": {
+    "sha256": "5ba3fea91a3a5ff19bb7cc5df47e92d758de65888d97c7c2588f8ed96b0c4714",
+    "size_bytes": 10804579
+  },
+  "model-b-public-reference-nominal-v1.json": {
+    "sha256": "772368b496ee3ce6b379fc34d5ed5c2817472d28bc61f844e9d45fd63a3b5f5c",
+    "size_bytes": 10840587
+  }
+}

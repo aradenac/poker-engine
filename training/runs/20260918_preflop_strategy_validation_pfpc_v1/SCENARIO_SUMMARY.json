@@ -1,0 +1,22 @@
+{
+  "eligibility": {
+    "certified_split_hands": 2324,
+    "eligible_template_ids_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+    "excluded_before_simulation": 0,
+    "simulatable_certified_templates": 2324,
+    "source_audit": {
+      "eligible": 3073,
+      "players_2": 8,
+      "players_3": 39,
+      "players_4": 115,
+      "players_5": 257,
+      "players_6": 2654
+    }
+  },
+  "phase": "VALIDATION",
+  "scenario_count": 4648,
+  "scenario_manifest_sha256": "23c325579f861a09aa6bb3bbfbc27a7aedf245c6c5cc9ea446f251b4198535ee",
+  "scenario_manifest_size_bytes": 9340358,
+  "schema": "poker-preflop-strategy-scenario-summary/v1",
+  "split": "VALIDATION"
+}
