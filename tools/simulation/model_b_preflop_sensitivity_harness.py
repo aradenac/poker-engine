@@ -629,3 +629,56 @@ def write_report(path: Path, report: Mapping[str, Any]) -> None:
         json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+
+
+def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--decision", type=Path, required=True)
+    parser.add_argument("--context", type=Path, required=True)
+    parser.add_argument("--candidate", type=Path, required=True)
+    parser.add_argument("--reference", type=Path, required=True)
+    parser.add_argument("--summary", type=Path, required=True)
+    parser.add_argument("--result", type=Path, required=True)
+    parser.add_argument("--provenance", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--request-output", type=Path)
+    args = parser.parse_args()
+
+    decision = load_json(args.decision)
+    context = load_json(args.context)
+    request = project_canonical_decision(decision, context=context)
+    report = run_harness(
+        request,
+        candidate_doc=load_json(args.candidate),
+        reference_doc=load_json(args.reference),
+        summary=load_json(args.summary),
+        result=load_json(args.result),
+        provenance=load_json(args.provenance),
+    )
+    if args.request_output:
+        write_report(args.request_output, request)
+    write_report(args.output, report)
+    print(json.dumps({
+        "schema": report["schema"],
+        "status": report["status"],
+        "report_sha256": report["report_sha256"],
+        "issue_340_identity": report["issue_340_identity"],
+        "candidate_alternatives": [
+            {
+                "alternative_id": row["alternative_id"],
+                "status": row["status"],
+                "target_total_bb": row.get("target_total_bb"),
+                "aggregate": row.get("aggregate"),
+                "support": row.get("support"),
+            }
+            for row in report["candidate"]["alternatives"]
+        ],
+        "scope": report["scope"],
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
