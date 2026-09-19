@@ -170,7 +170,7 @@ flowchart LR
 | `scientific-run-identity` | code/data/model/env fingerprints | cohérence #203 + runs | append-only, aucune réécriture historique |
 | `release-contract` | validations de handoff/promotion | simplifie orchestration release | ne rend aucun gate optionnel |
 
-Aucune de ces briques n'est créée dans la phase audit afin d'éviter un changement fonctionnel d'Actions avant la libération de #107/#108.
+La phase audit #242 ne créait aucune de ces briques. La tranche non-CI suivante prépare uniquement les deux helpers techniques ci-dessous, sans modifier ni faire consommer aucun workflow tant que #108 reste gelé.
 
 ## Métriques avant/après
 
@@ -210,3 +210,81 @@ python3 tools/audit_github_workflows.py --json /tmp/workflows.json
 ```
 
 Les tests dédiés couvrent parsing des paths, jobs/needs, concurrency, artefacts, coût et dépendances `workflow_run`.
+
+
+## Helpers REPRO préparés hors workflows
+
+Cette tranche prépare deux helpers versionnés. Ils ne sont **pas encore appelés par GitHub Actions** : la migration effective reste bloquée jusqu'à la libération de #108. La preuve machine-readable des consommateurs futurs est `analysis/workflow_audit/helper_consumers.json`.
+
+| Helper préparé | Contrat | Consommateurs futurs vérifiés dans les workflows actuels | Ce qu'il centralise |
+|---|---|---|---|
+| `tools/repro_ci_environment.py` | `poker-repro-ci-environment-helper/v1` | `population-pack-catalog.yml`, `full-hand-arena.yml`, `model-b-card-aware-runtime.yml` | versions exactes #203, hashes de locks, bootstrap pip/npm optionnel, vérification runtime et émission `environment_identity` |
+| `tools/repro_ci_browser.py` | `poker-repro-ci-browser-helper/v1` | `trainer-smoke.yml`, `hero-range-editor.yml`, `hero-range-compliance.yml`, `population-pack-catalog.yml` | installation Chromium via Playwright, option `--with-deps` conservant le comportement inline actuel, puis vérification Playwright/Chromium/revision/exécutable/SHA binaire |
+
+Chaque helper a donc au moins deux consommateurs futurs **réellement observés**. Aucun helper d'artefact n'est extrait dans cette tranche : les 39 uploads / 40 downloads mesurés ont des conventions de noms et de fan-in/fan-out suffisamment variées pour nécessiter un contrat plus étroit avant factorisation.
+
+### Contrats d'entrée/sortie
+
+Environnement :
+
+```bash
+python3 tools/repro_ci_environment.py plan --python-deps
+python3 tools/repro_ci_environment.py verify
+python3 tools/repro_ci_environment.py identity --output /tmp/environment_identity.json
+```
+
+Le helper lit uniquement les sources #203 versionnées. Il ne choisit pas lui-même une version de Python/Node : les futurs jobs devront utiliser `.python-version` / `.node-version` dans leurs actions de setup, puis le helper échoue si le runtime observé diffère.
+
+Navigateur :
+
+```bash
+python3 tools/repro_ci_browser.py plan
+python3 tools/repro_ci_browser.py install
+python3 tools/repro_ci_browser.py verify
+```
+
+Le mode d'installation par défaut conserve le `--with-deps chromium` des blocs inline existants. Le contrat navigateur continue d'exposer explicitement `BROWSER_ARCHIVE_SHA_PINNED=false`; le SHA-256 du binaire installé est une preuve runtime et n'est pas transformé en faux hash d'archive.
+
+Les commandes `plan` et `verify` produisent du JSON stable, exploitable ultérieurement comme preuve de job ou artefact.
+
+### DAG de migration post-#108
+
+Traits pointillés : migration future préparée, **pas une dépendance active aujourd'hui**.
+
+```mermaid
+flowchart LR
+  ENV[repro_ci_environment.py]
+  BROWSER[repro_ci_browser.py]
+
+  PACK[population-pack-catalog]
+  FH[full-hand-arena]
+  MBR[model-b-card-aware-runtime]
+  TRAINER[trainer-smoke]
+  HEROE[hero-range-editor]
+  HEROC[hero-range-compliance]
+
+  ENV -.-> PACK
+  ENV -.-> FH
+  ENV -.-> MBR
+
+  BROWSER -.-> PACK
+  BROWSER -.-> TRAINER
+  BROWSER -.-> HEROE
+  BROWSER -.-> HEROC
+```
+
+Après dégel de #108, la migration devra conserver les noms de jobs, gates et artefacts existants et mesurer le before/after avant toute consolidation supplémentaire.
+
+### Validation locale de la tranche
+
+```bash
+python3 -m py_compile \
+  tools/repro_ci_environment.py \
+  tools/repro_ci_browser.py \
+  tests/test_repro_ci_helpers.py
+
+PYTHONPATH=. python3 tests/test_repro_ci_helpers.py
+
+python3 tools/repro_ci_environment.py plan --python-deps --node-deps
+python3 tools/repro_ci_browser.py plan
+```
