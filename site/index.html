@@ -4449,6 +4449,13 @@ function replayOpponentCommentState(stepIndex,step){
   return replayOpponentCommentStateFromEvidence(evidence,step,match);
 }
 function replayHeroCommentState(stepIndex,step,cached,{canonicalDecision=null,req=null,priorMetrics=null,decisionSummary=null,observedEvidence=undefined}={}){
+  if(canonicalDecision?.schema==="poker-preflop-decision/v1")return {
+    actor_role:"HERO",
+    state:canonicalDecision.recommendation_admissibility?.admissible?"HERO_COVERED":"SPOT_NON_COUVERT",
+    text:canonicalDecision.recommendation_admissibility?.admissible?"Recommandation EV validée":"Aucune recommandation EV validée pour ce contexte",
+    family:String(canonicalDecision.facing_context||""),
+    source_contract:"poker-preflop-decision/v1"
+  };
   if(canonicalDecision?.schema==="decision-summary/v1")return {
     actor_role:"HERO",state:"HERO_COVERED",text:"Recommandation EV validée",family:"",source_contract:"decision-summary/v1"
   };
@@ -4544,7 +4551,10 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
-  const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
+  const canonicalDecision=step.street==="Préflop"
+    ?preflopRuntimeDecisionForStep(stepIndex,step,cached)
+    :(decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null);
+  if(canonicalDecision?.schema==="poker-preflop-decision/v1")return preflopDecisionDetailHtml(canonicalDecision);
   const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
@@ -4628,8 +4638,13 @@ function actionAnalysisHtml(stepIndex,step){
   const priorEq=eq[sources.prior],priorTree=trees.prior||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
-  const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
+  const canonicalDecision=step.street==="Préflop"
+    ?preflopRuntimeDecisionForStep(stepIndex,step,cached)
+    :decisionCanonicalSummary(stepIndex,step,cached);
   const heroState=replayHeroCommentState(stepIndex,step,cached,{canonicalDecision,req,priorMetrics,decisionSummary});
+  if(canonicalDecision?.schema==="poker-preflop-decision/v1"){
+    return `<div class="action-analysis decision-summary-feed" data-comment-actor="HERO" data-comment-state="${escapeHtml(heroState.state)}"><div class="action-analysis-compact"><div class="action-compact-row">${preflopDecisionCompactHtml(canonicalDecision)}</div></div></div>`;
+  }
   if(canonicalDecision){
     const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
     return `<div class="action-analysis decision-summary-feed" data-comment-actor="HERO" data-comment-state="${escapeHtml(heroState.state)}">${actionCompactPillHtml("HERO · RECOMMANDATION_VALIDÉE","good","actor-state")}${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}${modelBRobustnessCompactHtml(robustness)}</div>`;
