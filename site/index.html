@@ -1538,7 +1538,7 @@
 <script src="./training/leak-scenario-selector.js"></script>
 <script src="./analytics/review-dashboard.js"></script>
 <script src="./analytics/model-b-robustness.js"></script>
-<script src="./preflop-contract.js"></script>
+<script src="./preflop-contract.js"></script>\n<script src="./preflop-decision.js"></script>\n<script src="./preflop-guidance.js"></script>\n<script src="./training/preflop-decision-adapter.js"></script>\n<script src="./training/nlhe-game-state.js"></script>\n<script src="./training/preflop-runtime.js"></script>
 <script>
 "use strict";
 
@@ -1557,7 +1557,7 @@ const state = {
   populationNodeIndex:null,
   populationPolicyCache:Object.create(null),
   populationTraceCache:Object.create(null),
-  populationRangeCache:Object.create(null),
+  populationRangeCache:Object.create(null),\n  preflopRuntimeDecisionCache:Object.create(null),
   postflopModel:null,
   postflopModelMeta:null,
   postflopNodeIndex:null,
