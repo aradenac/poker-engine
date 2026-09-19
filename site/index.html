@@ -251,6 +251,15 @@
   .product-identity{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 5px}
   .product-identity-chip{display:inline-flex;gap:5px;align-items:baseline;padding:4px 7px;border:1px solid var(--border);border-radius:999px;background:#0f1729;color:var(--muted);font-size:9px}
   .product-identity-chip b{color:var(--text);font-size:10px}
+  .central-override-notice{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0 9px;padding:7px 9px;border:1px solid rgba(241,198,109,.32);border-radius:9px;background:rgba(241,198,109,.045);color:#dbc995;font-size:9px;line-height:1.35}
+  .central-override-notice[hidden]{display:none}
+  .central-override-badge{display:inline-flex;padding:3px 6px;border:1px solid rgba(241,198,109,.42);border-radius:999px;background:rgba(241,198,109,.075);font-weight:950;letter-spacing:.035em;color:#f1d994;white-space:nowrap}
+  .central-override-text{min-width:180px;flex:1 1 320px}
+  .central-override-notice a{color:var(--accent2);font-weight:850;text-decoration:none;white-space:nowrap}
+  .central-override-notice a:hover,.central-override-notice a:focus{text-decoration:underline}
+  .central-override-notice button{width:auto;padding:5px 8px;font-size:9px}
+  .central-override-status{width:100%;min-height:0;color:var(--muted);font-size:8.5px}
+  .central-override-status.error{color:#ffb0b0}
   .runtime-identity{margin:0 0 8px;width:max-content;max-width:100%}
   .runtime-identity>summary{cursor:pointer;list-style:none;color:var(--muted);font-size:9px;font-weight:750}
   .runtime-identity>summary::-webkit-details-marker{display:none}
@@ -1132,6 +1141,13 @@
     <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
     <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
   </div>
+  <div id="centralOverrideNotice" class="central-override-notice" hidden aria-live="polite">
+    <span id="centralOverrideBadge" class="central-override-badge">MANUAL_OVERRIDE / NON_STANDARD</span>
+    <span id="centralOverrideText" class="central-override-text">Configuration manuelle avancée active.</span>
+    <a id="centralManualImportLink" href="./manual-import.html">Outils avancés / Import manuel</a>
+    <button id="centralRestorePackBtn" type="button" class="secondary">Revenir au pack actif</button>
+    <span id="centralOverrideStatus" class="central-override-status"></span>
+  </div>
   <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
     <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">NO_HANDS</span></div>
     <div class="review-dashboard-metrics">
@@ -1155,7 +1171,7 @@
   </div>
   <section id="settingsSection" class="product-settings" aria-label="Settings">
   <div class="product-settings-title">Settings</div>
-  <div class="product-settings-links"><a href="./packs.html">Packs de population</a></div>
+  <div class="product-settings-links"><a href="./packs.html">Packs de population</a><a id="advancedManualImportLink" href="./manual-import.html">Outils avancés / Import manuel</a></div>
   <details id="runtimeIdentityDetails" class="runtime-identity">
     <summary>Identité du produit</summary>
     <div class="runtime-identity-grid">
@@ -1188,7 +1204,7 @@
       <div id="equityLabTitle" class="domain-title">Equity Lab</div>
       <div class="domain-sub">Configurer une situation, une range adverse et calculer l’équité sans dépendre des mains importées.</div>
     </div>
-    <section id="rangesSection" class="panel wide">
+    <section id="rangesSection" class="panel wide" hidden aria-hidden="true" data-legacy-import-surface="advanced-only">
       <h2>Sources et modèles</h2>
       <label class="filelabel" for="fileInput">Choisir un fichier JSON</label>
       <input id="fileInput" type="file" accept=".json,application/json">
@@ -1504,6 +1520,9 @@
   </div>
 </div>
 
+<script src="./pack-identity.js"></script>
+<script src="./population-packs.js"></script>
+<script src="./manual-import.js"></script>
 <script src="./analytics/leak-analyzer.js"></script>
 <script src="./analytics/review-score-adapter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
@@ -1549,6 +1568,7 @@ const state = {
   hhKnownOnly:false,
   reviewScores:Object.create(null),
   modelBRobustnessByDecision:Object.create(null),
+  manualOverrideContract:null,
   reviewInboxUserMetadataByScope:Object.create(null),
   reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""},
   reviewInboxView:null,
@@ -1631,6 +1651,8 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       reviewDashboardPriority=$("reviewDashboardPriority"), reviewDashboardPriorityMeta=$("reviewDashboardPriorityMeta"),
       reviewDashboardImportBtn=$("reviewDashboardImportBtn"), reviewDashboardReviewBtn=$("reviewDashboardReviewBtn"), reviewDashboardLeakBtn=$("reviewDashboardLeakBtn"), reviewDashboardTrainingBtn=$("reviewDashboardTrainingBtn"), reviewDashboardTrace=$("reviewDashboardTrace"),
       activePopulationIdentity=$("activePopulationIdentity"), activeStrategyIdentity=$("activeStrategyIdentity"),
+      centralOverrideNotice=$("centralOverrideNotice"), centralOverrideBadge=$("centralOverrideBadge"), centralOverrideText=$("centralOverrideText"),
+      centralManualImportLink=$("centralManualImportLink"), centralRestorePackBtn=$("centralRestorePackBtn"), centralOverrideStatus=$("centralOverrideStatus"),
       runtimeIdentityDetails=$("runtimeIdentityDetails"), runtimeAppVersion=$("runtimeAppVersion"), runtimeEngineVersion=$("runtimeEngineVersion"),
       runtimeModelAIdentity=$("runtimeModelAIdentity"), runtimeModelBIdentity=$("runtimeModelBIdentity"),
       runtimeRevisionIdentity=$("runtimeRevisionIdentity"), runtimeHashIdentity=$("runtimeHashIdentity"),
@@ -1864,6 +1886,9 @@ function updateProductIdentityUi(){
   let population="";
   if(typeof trainerState!=="undefined"&&trainerState?.populationId) population=String(trainerState.populationId);
   else if(state.populationModelMeta?.name) population=compactIdentityName(state.populationModelMeta.name);
+  const packIdentity=state.manualOverrideContract?.base_active_pack||null;
+  if(!population&&packIdentity?.population_id)population=String(packIdentity.population_id);
+  if(!population&&packIdentity?.id==="embedded-fallback")population="fallback embarqué";
   if(activePopulationIdentity) activePopulationIdentity.textContent=population||"non chargée";
   if(activeStrategyIdentity) activeStrategyIdentity.textContent="Custom";
   if(runtimeModelAIdentity){
@@ -1894,6 +1919,71 @@ async function loadRuntimeReleaseIdentity(){
   }
   updateProductIdentityUi();
 }
+
+function centralManualOverrideApi(){
+  const api=window.PokerManualOverrides;
+  return api?.inspect&&api?.restoreActivePack?api:null;
+}
+function centralManualOverrideLoadAllowed(contract){
+  return contract?.schema==="poker-manual-override/v1" &&
+    contract.active===true &&
+    contract.classification==="MANUAL_OVERRIDE" &&
+    contract.configuration_status==="NON_STANDARD" &&
+    contract.compatibility_status==="COMPATIBLE";
+}
+function centralPackIdentityText(pack){
+  if(pack?.id==="embedded-fallback")return "fallback embarqué";
+  const parts=[pack?.pack_id,pack?.pack_version,pack?.population_id].filter(Boolean).map(String);
+  return parts.length?parts.join(" · "):"pack actif";
+}
+async function refreshCentralManualOverrideState(contract=null){
+  const api=centralManualOverrideApi();
+  try{
+    const next=contract||await api?.inspect?.()||null;
+    state.manualOverrideContract=next;
+    const active=next?.active===true;
+    if(centralOverrideNotice)centralOverrideNotice.hidden=!active;
+    if(active){
+      if(centralOverrideBadge)centralOverrideBadge.textContent="MANUAL_OVERRIDE / NON_STANDARD";
+      const roles=(next.roles_overridden||[]).map(String);
+      const compatible=centralManualOverrideLoadAllowed(next);
+      const base=centralPackIdentityText(next.base_active_pack);
+      if(centralOverrideText)centralOverrideText.textContent=`Override manuel actif · ${roles.length?roles.join(", "):"source avancée"} · base ${base} · ${next.compatibility_status||"état inconnu"}${compatible?"":" · non appliqué au runtime"}.`;
+      if(centralRestorePackBtn)centralRestorePackBtn.disabled=false;
+    }else{
+      if(centralOverrideText)centralOverrideText.textContent="";
+      if(centralRestorePackBtn)centralRestorePackBtn.disabled=true;
+      if(centralOverrideStatus){centralOverrideStatus.textContent="";centralOverrideStatus.className="central-override-status";}
+    }
+    updateProductIdentityUi();
+    return next;
+  }catch(err){
+    state.manualOverrideContract=null;
+    if(centralOverrideNotice)centralOverrideNotice.hidden=true;
+    if(centralRestorePackBtn)centralRestorePackBtn.disabled=true;
+    console.warn("Manual override state unavailable",err);
+    updateProductIdentityUi();
+    return null;
+  }
+}
+async function centralRestoreActivePack({reload=true}={}){
+  const api=centralManualOverrideApi();
+  if(!api)throw new Error("Contrat RESTORE_ACTIVE_PACK indisponible.");
+  if(centralRestorePackBtn)centralRestorePackBtn.disabled=true;
+  if(centralOverrideStatus){centralOverrideStatus.textContent="RESTORE_ACTIVE_PACK…";centralOverrideStatus.className="central-override-status";}
+  try{
+    const restored=await api.restoreActivePack();
+    await refreshCentralManualOverrideState(restored);
+    if(centralOverrideStatus){centralOverrideStatus.textContent="Pack actif restauré. Les overrides manuels ne sont plus actifs.";centralOverrideStatus.className="central-override-status";}
+    if(reload)window.location.reload();
+    return restored;
+  }catch(err){
+    if(centralOverrideStatus){centralOverrideStatus.textContent=err?.message||String(err);centralOverrideStatus.className="central-override-status error";}
+    if(centralRestorePackBtn)centralRestorePackBtn.disabled=false;
+    throw err;
+  }
+}
+window.centralRestoreActivePack=centralRestoreActivePack;
 
 const LOCAL_DB_NAME="PokerRangeEquityOffline";
 const LOCAL_DB_VERSION=1;
@@ -8074,6 +8164,9 @@ async function restoreLocalState(){
     persistenceStatus("Restauration des données enregistrées dans ce navigateur…",false,true);
     await openLocalDb();
 
+    const overrideContract=await centralManualOverrideApi()?.inspect?.().catch(()=>null)||null;
+    state.manualOverrideContract=overrideContract;
+    const manualOverrideAllowed=centralManualOverrideLoadAllowed(overrideContract);
     const [prefs,rangeSource,populationModelSource,postflopModelSource,hhSources,reviewScores,reviewInboxUserMetadataByScope]=await Promise.all([
       localDbGet("prefs").catch(()=>null),
       localDbGet("rangeSource").catch(()=>null),
@@ -8095,16 +8188,18 @@ async function restoreLocalState(){
       updateQuickNavUi();
     }
 
-    if(rangeSource?.content){
+    // Legacy JSON snapshots are runtime inputs only under the explicit, compatible
+    // MANUAL_OVERRIDE/NON_STANDARD contract. Standard startup never silently reuses them.
+    if(manualOverrideAllowed&&rangeSource?.content){
       await applyRangeSourceSnapshot(rangeSource,{persist:false,restored:true});
     }
 
-    if(populationModelSource?.content){
+    if(manualOverrideAllowed&&populationModelSource?.content){
       await applyPopulationModelSnapshot(populationModelSource,{persist:false,restored:true});
     }else{
       populationModelUi();
     }
-    if(postflopModelSource?.content){
+    if(manualOverrideAllowed&&postflopModelSource?.content){
       await applyPostflopModelSnapshot(postflopModelSource,{persist:false,restored:true});
     }else{
       postflopModelUi();
@@ -8147,6 +8242,7 @@ async function restoreLocalState(){
     updateCalcReady();
     if(state.hhMode&&state.selectedHand) scheduleAutoCalculate(120);
     if(state.appView!=="replayer")scheduleBackgroundReviewScoring(250);
+    await refreshCentralManualOverrideState(state.manualOverrideContract);
   }
 }
 
@@ -8158,10 +8254,12 @@ updateRangeEditionUi();
 updateHistoryUi();
 updateHHWatchCapabilityUi();
 window.addEventListener("focus",updateHHWatchCapabilityUi);
+window.addEventListener("focus",()=>{void refreshCentralManualOverrideState();});
 document.addEventListener("keydown",handleReplayShortcut);
 replayerBackBtn?.addEventListener("click",returnToHandsPage);
 localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
 localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
+centralRestorePackBtn?.addEventListener("click",()=>{void centralRestoreActivePack().catch(()=>{});});
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
 reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
