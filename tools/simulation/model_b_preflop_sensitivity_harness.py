@@ -204,7 +204,7 @@ def validate_request(request: Mapping[str, Any]) -> None:
             if raw.get("target_total_bb") is not None or float(raw.get("incremental_cost_bb", -1)) != 0:
                 raise ValueError(f"{alternative_id} FOLD sizing contract invalid")
 
-    forbidden = _forbidden_keys(request)
+    forbidden = _forbidden_keys(context) + _forbidden_keys(alternatives, "$.alternatives")
     if forbidden:
         raise ValueError(f"forbidden Model A/EV/recommendation feature injected: {forbidden}")
 
