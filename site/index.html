@@ -220,7 +220,26 @@
     .hh-review{min-width:88px}
     .hh-review .split{display:none}
   }
-  .product-home-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .product-home-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+  .review-dashboard{margin:12px 0 10px;padding:16px;border:1px solid var(--border);border-radius:16px;background:rgba(19,26,45,.96);box-shadow:var(--shadow)}
+  .review-dashboard-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .review-dashboard-title{font-size:18px;font-weight:950}
+  .review-dashboard-state{display:inline-flex;padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:9px;font-weight:900}
+  .review-dashboard-message{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.45}
+  .review-dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin-top:12px}
+  .review-dashboard-metric{padding:10px;border:1px solid var(--border);border-radius:10px;background:#0f1729}
+  .review-dashboard-metric span{display:block;color:var(--muted);font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+  .review-dashboard-metric b{display:block;margin-top:4px;font-size:18px}
+  .review-dashboard-focus{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .review-dashboard-card{padding:10px;border:1px solid var(--border);border-radius:10px;background:#0d1627;min-height:78px}
+  .review-dashboard-card>span{display:block;color:var(--muted);font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+  .review-dashboard-card strong{display:block;margin-top:4px;font-size:12px}
+  .review-dashboard-card small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
+  .review-dashboard-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .review-dashboard-actions button{width:auto}
+  .review-dashboard-trace{margin-top:7px;color:var(--muted);font-size:8px}
+  .review-dashboard[aria-busy="true"]{opacity:.78}
+  @media(max-width:760px){.review-dashboard-metrics{grid-template-columns:repeat(2,minmax(120px,1fr))}.review-dashboard-focus{grid-template-columns:1fr}}
   .product-settings{margin:8px 0 12px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#0d1627}
   .product-settings-title{font-size:11px;font-weight:900;color:var(--text);margin-bottom:6px}
   .product-settings-links{display:flex;gap:10px;flex-wrap:wrap;margin:3px 0 7px;font-size:10px}
@@ -1086,17 +1105,32 @@
   <a href="#settingsSection" data-product-domain="settings">Settings</a>
 </nav>
 <div id="mainPage" class="wrap">
-  <h1>Poker Range Equity</h1>
-  <div class="sub">Review · Training · Strategy · Equity Lab — autonome et hors ligne.</div>
-  <div class="actions product-home-actions" style="margin:-10px 0 14px">
+  <h1>Review</h1>
+  <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
+  <div class="product-identity" aria-label="Contexte actif">
+    <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
+    <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
+  </div>
+  <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
+    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">NO_HANDS</span></div>
+    <div class="review-dashboard-metrics">
+      <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
+      <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
+      <div class="review-dashboard-metric"><span>Perte EV totale</span><b id="reviewDashboardLoss">0,00 BB</b></div>
+      <div class="review-dashboard-metric"><span>Décisions analysées</span><b id="reviewDashboardAnalyzed">0</b></div>
+    </div>
+    <div class="review-dashboard-focus">
+      <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
+      <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
+    </div>
+    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>Ouvrir Training</button></div>
+    <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
+  </section>
+  <div class="actions product-home-actions" aria-label="Accès directs">
     <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
     <button id="trainerOpenBtn" type="button" class="primary">Training</button>
     <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
     <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
-  </div>
-  <div class="product-identity" aria-label="Contexte actif">
-    <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
-    <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
   </div>
   <section id="settingsSection" class="product-settings" aria-label="Settings">
   <div class="product-settings-title">Settings</div>
@@ -1429,6 +1463,8 @@
 <script src="./analytics/leak-analyzer.js"></script>
 <script src="./analytics/review-score-adapter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
+<script src="./analytics/leak-training-target.js"></script>
+<script src="./analytics/review-dashboard.js"></script>
 <script src="./preflop-contract.js"></script>
 <script>
 "use strict";
@@ -1469,6 +1505,8 @@ const state = {
   reviewInboxUserMetadataByScope:Object.create(null),
   reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""},
   reviewInboxView:null,
+  reviewDashboardView:null,
+  reviewDashboardLastError:"",
   reviewInboxPersistTimer:null,
   reviewInboxLastError:"",
   reviewPersistTimer:null,
@@ -1540,6 +1578,11 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       reviewStreetFilter=$("reviewStreetFilter"), reviewPositionFilter=$("reviewPositionFilter"), reviewSpotFilter=$("reviewSpotFilter"),
       reviewPlayedFilter=$("reviewPlayedFilter"), reviewRecommendedFilter=$("reviewRecommendedFilter"),
       reviewSizingFilter=$("reviewSizingFilter"), reviewJamFilter=$("reviewJamFilter"), reviewOverbetFilter=$("reviewOverbetFilter"),
+      reviewDashboard=$("reviewDashboard"), reviewDashboardMessage=$("reviewDashboardMessage"), reviewDashboardState=$("reviewDashboardState"),
+      reviewDashboardHands=$("reviewDashboardHands"), reviewDashboardDecisions=$("reviewDashboardDecisions"), reviewDashboardLoss=$("reviewDashboardLoss"),
+      reviewDashboardAnalyzed=$("reviewDashboardAnalyzed"), reviewDashboardLeak=$("reviewDashboardLeak"), reviewDashboardLeakMeta=$("reviewDashboardLeakMeta"),
+      reviewDashboardPriority=$("reviewDashboardPriority"), reviewDashboardPriorityMeta=$("reviewDashboardPriorityMeta"),
+      reviewDashboardImportBtn=$("reviewDashboardImportBtn"), reviewDashboardReviewBtn=$("reviewDashboardReviewBtn"), reviewDashboardLeakBtn=$("reviewDashboardLeakBtn"), reviewDashboardTrainingBtn=$("reviewDashboardTrainingBtn"), reviewDashboardTrace=$("reviewDashboardTrace"),
       activePopulationIdentity=$("activePopulationIdentity"), activeStrategyIdentity=$("activeStrategyIdentity"),
       runtimeIdentityDetails=$("runtimeIdentityDetails"), runtimeAppVersion=$("runtimeAppVersion"), runtimeEngineVersion=$("runtimeEngineVersion"),
       runtimeModelAIdentity=$("runtimeModelAIdentity"), runtimeModelBIdentity=$("runtimeModelBIdentity"),
@@ -3262,6 +3305,105 @@ function reviewInboxBuild(){
     return null;
   }
 }
+function reviewDashboardSourceScores(){
+  const sig=reviewContextSignature(),out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand.id),score=state.reviewScores?.[id];
+    if(score&&score.signature===sig)out[id]=score;
+  }
+  return out;
+}
+function reviewDashboardBuild(){
+  const Dashboard=window.PokerReviewDashboard,Inbox=window.PokerReviewInbox;
+  if(!Dashboard?.buildReviewDashboard||!Inbox?.normalizeUserMetadata){
+    state.reviewDashboardLastError="Contrat poker-review-dashboard/v1 indisponible.";
+    return null;
+  }
+  try{
+    const input={
+      reviewScores:reviewDashboardSourceScores(),
+      hhSources:reviewInboxHHSources(),
+      scope:reviewInboxScopeInput(),
+      top_leaks_limit:3,
+      training_min_decisions:1,
+      training_min_scenarios:1
+    };
+    const preview=Dashboard.buildReviewDashboard({...input,user_metadata:Inbox.normalizeUserMetadata({})});
+    const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
+    const dashboard=Dashboard.buildReviewDashboard({...input,user_metadata:metadata});
+    state.reviewDashboardLastError="";
+    return dashboard;
+  }catch(err){
+    state.reviewDashboardLastError=String(err?.message||err);
+    return null;
+  }
+}
+function reviewDashboardStateMessage(model){
+  const stateName=model?.state||"";
+  if(stateName==="NO_HANDS")return "Importez vos Hand Histories pour construire votre Review.";
+  if(stateName==="ANALYSIS_PENDING")return "Mains chargées · l’analyse des décisions est en cours.";
+  if(stateName==="ANALYSIS_INCOMPLETE")return "Analyse incomplète · les données disponibles ne permettent pas encore un verdict complet.";
+  if(stateName==="NO_SIGNIFICANT_LOSS")return "Aucune perte EV significative détectée dans les décisions comparables.";
+  if(stateName==="READY")return "Priorités calculées à partir des décisions comparables de ce contexte.";
+  return state.reviewDashboardLastError?`Dashboard indisponible : ${state.reviewDashboardLastError}`:"Dashboard Review indisponible.";
+}
+function renderReviewDashboardModel(model){
+  state.reviewDashboardView=model||null;
+  const metrics=model?.metrics||{};
+  const leak=model?.top_leaks?.[0]||null,hand=model?.priority?.hand||null,decision=model?.priority?.decision||null;
+  if(reviewDashboard)reviewDashboard.setAttribute("aria-busy",model?"false":"true");
+  if(reviewDashboardState)reviewDashboardState.textContent=model?.state||"UNAVAILABLE";
+  if(reviewDashboardMessage)reviewDashboardMessage.textContent=reviewDashboardStateMessage(model);
+  if(reviewDashboardHands)reviewDashboardHands.textContent=String(metrics.hands_loaded??0);
+  if(reviewDashboardDecisions)reviewDashboardDecisions.textContent=String(metrics.decisions_to_review??0);
+  if(reviewDashboardLoss)reviewDashboardLoss.textContent=formatBB(Number(metrics.total_ev_loss_bb)||0);
+  if(reviewDashboardAnalyzed)reviewDashboardAnalyzed.textContent=String(metrics.decisions_analyzed??0);
+  if(reviewDashboardLeak)reviewDashboardLeak.textContent=leak?String(leak.key):"Aucun leak significatif";
+  if(reviewDashboardLeakMeta)reviewDashboardLeakMeta.textContent=leak
+    ?`${formatBB(Number(leak.total_loss_bb)||0)} · ${Number(leak.decisions)||0} décision(s) · ${Number(leak.hands)||0} main(s)`
+    :"Les leaks apparaîtront après analyse de décisions comparables.";
+  if(reviewDashboardPriority)reviewDashboardPriority.textContent=hand
+    ?`Main #${hand.hand_id}${decision?` · ${decision.street} · ${decision.position}`:""}`
+    :"Aucune décision prioritaire";
+  if(reviewDashboardPriorityMeta)reviewDashboardPriorityMeta.textContent=decision
+    ?`${decision.action_played} → ${decision.action_recommended} · perte ${formatBB(Number(decision.loss_bb)||0)} · ${decision.spot_family}`
+    :(hand?`${hand.status_label||hand.status||""} · perte ${formatBB(Number(hand.total_loss_bb)||0)}`:"—");
+  const reviewEnabled=Boolean(model?.ctas?.review?.enabled),leakEnabled=Boolean(model?.ctas?.leak?.enabled),trainingEnabled=Boolean(model?.ctas?.training?.enabled);
+  if(reviewDashboardImportBtn)reviewDashboardImportBtn.hidden=Boolean(metrics.hands_loaded);
+  if(reviewDashboardReviewBtn){reviewDashboardReviewBtn.hidden=!reviewEnabled;reviewDashboardReviewBtn.disabled=!reviewEnabled;}
+  if(reviewDashboardLeakBtn){reviewDashboardLeakBtn.hidden=!leakEnabled;reviewDashboardLeakBtn.disabled=!leakEnabled;}
+  if(reviewDashboardTrainingBtn){reviewDashboardTrainingBtn.hidden=!trainingEnabled;reviewDashboardTrainingBtn.disabled=!trainingEnabled;}
+  if(reviewDashboardTrace){
+    const refs=Array.isArray(metrics.source_refs)?metrics.source_refs.length:0;
+    const coverage=Number(metrics.review_coverage_pct);
+    reviewDashboardTrace.textContent=`Sources EV : ${refs} décision(s)${Number.isFinite(coverage)?` · couverture ${coverage.toFixed(1)} %`:""} · ${model?.scope_key||""}`;
+  }
+}
+function renderReviewDashboard(){
+  renderReviewDashboardModel(reviewDashboardBuild());
+}
+function openReviewDashboardReview(){
+  const cta=state.reviewDashboardView?.ctas?.review;
+  if(!cta?.enabled||!cta.target)return {opened:false,reason:"NO_REVIEW_TARGET"};
+  return openReviewInboxDeepLink(cta.target);
+}
+function openReviewDashboardLeak(){
+  const model=state.reviewDashboardView,cta=model?.ctas?.leak,target=cta?.target;
+  if(!cta?.enabled||!target)return {opened:false,reason:"NO_LEAK_TARGET"};
+  if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
+  if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
+  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""};
+  renderHistoryHands();
+  requestAnimationFrame(()=>document.getElementById("historiesSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
+  return {opened:true,reason:"EXACT_LEAK_FILTER",dimension:target.dimension,key:String(target.key)};
+}
+function openReviewDashboardTraining(){
+  const cta=state.reviewDashboardView?.ctas?.training;
+  if(!cta?.enabled||!cta.target)return {opened:false,reason:cta?.reason||"NO_TRAINING_TARGET"};
+  trainerOpenBtn?.click();
+  return {opened:true,reason:"SUPPORTED_TARGET_AVAILABLE",target_id:cta.target.target_id||null};
+}
+
 function reviewInboxFiltersInput(){
   const f=state.reviewInboxFilters||{};
   return {
@@ -5410,6 +5552,7 @@ function visibleHistoryHands(){
   return items.map(item=>byId.get(String(item.hand_id))).filter(Boolean);
 }
 function renderHistoryHands(){
+  renderReviewDashboard();
   hhHandsEl.innerHTML="";
   if(hhSortSelect)hhSortSelect.value=state.hhSort;
   if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
@@ -7878,6 +8021,10 @@ localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
 localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
+reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
+reviewDashboardReviewBtn?.addEventListener("click",openReviewDashboardReview);
+reviewDashboardLeakBtn?.addEventListener("click",openReviewDashboardLeak);
+reviewDashboardTrainingBtn?.addEventListener("click",openReviewDashboardTraining);
 quickNavToggle?.addEventListener("click",toggleQuickNav);
 updateQuickNavUi();
 updateProductIdentityUi();
