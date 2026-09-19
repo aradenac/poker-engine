@@ -1,9 +1,9 @@
 # #350 real Zoom 100/200 pack admission audit
 
-- Population: \`pokerstars_nlhe_100-200_zoom_play_6max_v1\`
+- Population: `pokerstars_nlhe_100-200_zoom_play_6max_v1`
 - Assembly: **NOT_READY**
 - Preflight: **BLOCKED**
-- Admission counts: \`{"ADMISSIBLE": 0, "INCOMPATIBLE": 3, "REJECTED": 0, "RETAIN_REFERENCE": 2, "UNRESOLVED": 2}\`
+- Admission counts: `{"ADMISSIBLE": 0, "INCOMPATIBLE": 3, "REJECTED": 0, "RETAIN_REFERENCE": 2, "UNRESOLVED": 2}`
 - TEST consumed: **false**
 - Production effect: **NONE**
 
