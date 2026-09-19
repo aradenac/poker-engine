@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json
+          import json, os
           from pathlib import Path
           root=Path("training/runs/20260919_model_b_support_aware_backoff_v1")
           p=json.loads((root/"PROTOCOL.json").read_text())
@@ -66,8 +66,8 @@ jobs:
           assert g["frozen_before_validation"] is True
           assert g["nearest_context_heuristic"] is False
 
-          r197=json.loads(Path("$SOURCE197/RESULT.json").read_text())
-          p272=json.loads(Path("$SOURCE272/PROTOCOL.json").read_text())
+          r197=json.loads((Path(os.environ["SOURCE197"])/"RESULT.json").read_text())
+          p272=json.loads((Path(os.environ["SOURCE272"])/"PROTOCOL.json").read_text())
           assert r197["test_consumed"] is False
           assert r197["production_effect"]=="NONE"
           assert p272["split_contract"]["test_consumed"] is False
