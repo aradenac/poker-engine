@@ -135,6 +135,20 @@ function testDiagnosticsCannotSelect(){
   artifact2.selected_id='ISO@6';
   assert.throws(()=>D.validateArtifact(artifact2,decision()),err=>err.code==='DIAGNOSTIC_SELECTION_FORBIDDEN');
 }
+function testScientificWorldsRequireExplicitAdmission(){
+  const bad=worlds();
+  bad.synthetic_fixture=false;
+  bad.provenance.synthetic_fixture=false;
+  bad.execution_boundary={
+    mode:'SCIENTIFIC',
+    model_a_admission_status:'NON_SCIENTIFIC_SYNTHETIC'
+  };
+  assert.throws(
+    ()=>D.bridgePairedResult({decision:decision(),paired_result:paired(),diagnostic_worlds:bad}),
+    err=>err.code==='SCIENTIFIC_PROVIDER_NOT_ADMITTED'
+  );
+}
+
 function testDeterministicBridgeOutput(){
   assert.deepEqual(build(),build());
 }
@@ -151,6 +165,7 @@ const tests=[
   testBridgeRequiresSameCanonicalAndPairedEv,
   testPartitionAndPosteriorTamperingFailsClosed,
   testDiagnosticsCannotSelect,
+  testScientificWorldsRequireExplicitAdmission,
   testDeterministicBridgeOutput
 ];
 for(const test of tests)test();
