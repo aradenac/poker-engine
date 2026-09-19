@@ -1,5 +1,4 @@
 """Mandatory source integrity gate; missing archives must fail, never skip."""
-import base64
 import gzip
 import json
 import subprocess
@@ -95,10 +94,19 @@ class PersistedSnapshotTests(unittest.TestCase):
         self.assertTrue(report['kts_sb_two_limpers_projection']['scenario']['public_context_only'])
         self.assertFalse(report['kts_sb_two_limpers_projection']['scenario']['opponent_hidden_cards_consumed'])
         summary = summarize_preflop_sizing_support(report)
-        payload = gzip.compress(canonical_preflop_sizing_report_bytes(report), mtime=0)
-        print('PREFLOP_SIZING_SUMMARY_JSON=' + json.dumps(summary, sort_keys=True, separators=(',', ':')))
-        print('PREFLOP_SIZING_FULL_GZIP_BASE64=' + base64.b64encode(payload).decode('ascii'))
-        print('PREFLOP_SIZING_REPORT_MD_JSON=' + json.dumps(render_preflop_sizing_support_markdown(report)))
+        persisted_summary = json.loads(
+            (ROOT / 'analysis/preflop_sizing_support_train.json').read_text(encoding='utf-8')
+        )
+        self.assertEqual(summary, persisted_summary)
+        full_payload = (ROOT / 'analysis/preflop_sizing_support_train.full.json.gz').read_bytes()
+        self.assertEqual(gzip.decompress(full_payload), canonical_preflop_sizing_report_bytes(report))
+        persisted_md = (ROOT / 'analysis/preflop_sizing_support_train.md').read_text(encoding='utf-8')
+        self.assertEqual(render_preflop_sizing_support_markdown(report), persisted_md)
+        print('Preflop sizing TRAIN audit reproduced:', {
+            'report_hash': report['report_hash'],
+            'accounting': report['accounting'],
+            'support_zone_summary': report['support_zone_summary'],
+        })
 
     def test_hero_preflop_generation_contract_fixture(self):
         subprocess.run(
