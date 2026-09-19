@@ -2,6 +2,8 @@
 'use strict';
 
 const assert=require('node:assert/strict');
+const childProcess=require('node:child_process');
+const path=require('node:path');
 const Contract=require('../../src/preflop/contract.js');
 const Decision=require('../../src/preflop/decision.js');
 const Search=require('../../src/preflop/search.js');
@@ -195,5 +197,10 @@ async function testTieBreakIsDeterministicAndConservative(){
   testCanonicalContextPreventsArbitraryFourBetLabel();
   await testSearchBindsEvToExactSizingAndBudget();
   await testTieBreakIsDeterministicAndConservative();
+  childProcess.execFileSync(
+    'python3',
+    [path.resolve(__dirname,'test_hero_preflop_iso_runner.py')],
+    {cwd:path.resolve(__dirname,'../..'),stdio:'inherit'}
+  );
   console.log('preflop search orchestrator tests: PASS');
 })().catch(err=>{console.error(err);process.exit(1);});
