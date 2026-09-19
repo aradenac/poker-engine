@@ -1,0 +1,32 @@
+name: Project state consistency
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  project-state-consistency:
+    name: Project state consistency
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate project state, recovery and backlog
+        shell: bash
+        run: |
+          python3 tools/validate_project_state.py
+          python3 tools/validate_project_state.py --check-status
+          python3 tests/test_project_state.py
+          python3 tests/test_recovery_state.py
+          python3 tests/test_backlog_evidence.py
+          python3 tests/test_project_state_ci_contract.py
