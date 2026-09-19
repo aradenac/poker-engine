@@ -887,13 +887,15 @@ async function trainerHeroAction(kind,cost=0){
   let detail=null,row=null,actual=null;
   try{
     actual=trainerActualLine(hand,kind,cost);
-    if(guide&&trainerRecommendationMatchesAction(guide,actual,hand)){
+    if(hand.street==="preflop"){
+      detail=await trainerComputePreflopReference(hand,actual,guide);
+    }else if(guide&&trainerRecommendationMatchesAction(guide,actual,hand)){
       detail=trainerReuseBestAsPlayed(guide);
     }else{
       const played=await trainerTimedReviewText(trainerBuildReviewHH(hand,actual.line,actual.kind,actual.cost));
       detail=guide?trainerGuideAnchoredDetail(guide,played):played;
     }
-    trainerState.recommendation=guide||detail;row=trainerRecordDecision(detail,actual.kind,actual.cost);
+    trainerState.recommendation=hand.street==="preflop"?detail:(guide||detail);row=trainerRecordDecision(detail,actual.kind,actual.cost);
     if(trainerState.targeted.active&&trainerState.targeted.currentScenario)trainerTargetEvent(detail,row,actual);
   }
   catch(err){trainerRenderStatus(`Décision jouée, mais verdict indisponible : ${err.message}`,"error");}
