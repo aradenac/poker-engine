@@ -1,0 +1,194 @@
+{
+  "schema": "poker-issue367-real-iso-ev-protocol/v1",
+  "issue": 367,
+  "parent_issue": 314,
+  "status": "FROZEN_BEFORE_REAL_EXECUTION",
+  "frozen_at": "2026-09-19",
+  "purpose": "Real canonical #314 KTs SB/two-limper FOLD/OVERLIMP/ISO exact-support EV execution using the explicitly admitted #352 sizing-aware Model A v2.",
+  "model_a": {
+    "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "admission_decision": "ADMIT_CANDIDATE",
+    "admission_status_for_runner": "ADMITTED_FOR_SIZING_EV",
+    "fit_evidence_path": "analysis/model_a_preflop_sizing_v2_fit.json",
+    "fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+    "validation_evidence_path": "analysis/model_a_preflop_sizing_v2_validation.json",
+    "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+    "validation_protocol_sha256": "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2",
+    "active_model_pointer_mutation": false,
+    "nearest_price": false,
+    "required_scope": "VS_ISO_AGGRESSOR_SB_EXACT_PRICE"
+  },
+  "scenario": {
+    "fixture_path": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+    "fixture_git_blob_sha": "41a600e6567c0ea61ecfe8cb53e3376e61d1c32c",
+    "scenario_id": "kts_sb_two_limp_iso4_three_calls_v1",
+    "public_timeline_sha256": "51585a3dc55fd3ffb8aea8961249ddc97c032ebd3c85f566febfe5b5b2bd0b7b",
+    "before_hero_public_fingerprint_sha256": "b337ba199b2afa7126b762bd38a8779fa26f5b1c850b3d1e215f56af008aa5fb",
+    "hero": "Hero",
+    "hero_position": "SB",
+    "hero_hand_class": "KTs",
+    "hero_exact_cards": [
+      "Ks",
+      "Ts"
+    ],
+    "limpers": [
+      "CO",
+      "BTN"
+    ],
+    "played_action": "ISO",
+    "played_target_total_bb": 4,
+    "information_boundary": {
+      "public_history_only_for_model_conditioning": true,
+      "future_cards_used_only_as_paired_rollout_world_after_decision": true,
+      "opponent_hole_cards_used_only_as_paired_rollout_world_after_decision": true,
+      "recommendation_never_used_to_materialize_world": true
+    }
+  },
+  "exact_support_grid": {
+    "source_report_path": "analysis/preflop_sizing_support_train.json",
+    "source_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "source_git_blob_sha": "d193842178ede938e1957fbdc94339f13ff93916",
+    "requested_targets_bb": [
+      4,
+      5,
+      6
+    ],
+    "hero_observed_support_by_target": {
+      "4": 13,
+      "5": 56,
+      "6": 9
+    },
+    "admitted_v2_bb_response_support_by_target": {
+      "4": 0,
+      "5": 45,
+      "6": 0
+    },
+    "scientific_supported_targets_bb": [
+      5
+    ],
+    "legal_but_model_unsupported_targets_bb": [
+      4,
+      6
+    ],
+    "support_intersection_rule": "HERO_EXACT_OBSERVED_PRICE_AND_ADMITTED_V2_EXACT_RESPONSE_SUPPORT",
+    "nearest_price": false,
+    "interpolation": false,
+    "unsupported_policy": "VISIBLE_LEGAL_BUT_UNSUPPORTED_WITH_NULL_EV"
+  },
+  "alternatives": {
+    "required": [
+      "FOLD",
+      "OVERLIMP@1",
+      "ISO@4",
+      "ISO@5",
+      "ISO@6"
+    ],
+    "evaluated": [
+      "FOLD",
+      "OVERLIMP@1",
+      "ISO@5"
+    ],
+    "exact_value_policy": {
+      "FOLD": 0
+    },
+    "caller_diagnostics_contract": "#322 ISO-only; FOLD/OVERLIMP persist NOT_APPLICABLE null caller metrics rather than inventing ISO diagnostics"
+  },
+  "execution": {
+    "runner": "tools/simulation/hero_preflop_iso_runner.py",
+    "runner_git_blob_sha": "d01b7cb6dc73f8773ec8caf01f12de2db93e3289",
+    "provider": "tools/simulation/admitted_model_a_iso_provider.py",
+    "provider_git_blob_sha": "f564a4b079095892e869798a49334e4077a52799",
+    "executor": "tools/simulation/run_issue367_real_iso_ev.py",
+    "executor_git_blob_sha": "240069522735ded5ef38ee44ad2710de8c4d262d",
+    "paired_engine": "tools/simulation/paired_adaptive_preflop_ev.py",
+    "paired_engine_git_blob_sha": "889cad50fee6321875b82d6992b94d2b775902d0",
+    "workflow": ".github/workflows/issue-367-real-iso-ev.yml",
+    "workflow_git_blob_sha": "725d898e00cac47d54845dea0eb17b93a5a6a45d",
+    "decision_id": "issue-367:#321:KTs:SB:two-limpers:real-iso-ev-v1",
+    "base_seed": "issue-367-real-iso-ev-v1",
+    "common_random_numbers": true,
+    "same_worlds_for_ev_and_diagnostics": true
+  },
+  "paired_adaptive_budget": {
+    "initial_samples_per_alternative": 256,
+    "max_samples_per_alternative": 1024,
+    "batch_size": 128,
+    "max_total_rollouts": 2048,
+    "confidence_z": 1.96,
+    "elimination_margin_bb": 0,
+    "adaptive": true,
+    "rationale": "One canonical decision; FOLD is exact zero, two rollout alternatives (OVERLIMP and ISO@5), bounded at 2048 total full-hand rollouts."
+  },
+  "selection": {
+    "rule": "MAX_EV_POINT_ESTIMATE_ONLY",
+    "exact_tie_break": "LEXICAL_ALTERNATIVE_ID_ONLY_IF_POINT_EV_EXACTLY_EQUAL",
+    "indifference_rule": "PAIRED_CI95_INCLUDES_ZERO",
+    "indifference_effect_on_selection": "NONE_EXPLANATORY_ONLY",
+    "diagnostics_can_select": false,
+    "callers_can_select": false,
+    "minimum_callers_can_select": false
+  },
+  "continuation_assumptions": {
+    "opponent_required_preflop_vs_iso": "ADMITTED_MODEL_A_V2_EXACT_PRICE_ONLY",
+    "opponent_other_preflop": "FROZEN_ACTIVE_MODEL_A_V5_EXACT_NODE",
+    "opponent_postflop": "FROZEN_MODEL_A_V5_PLUS_#102_SELECTED_CONTINUATION; explicit passive CHECK/CALL/FOLD closure only on missing exact postflop node, counted in provider audit",
+    "hero_after_fixed_candidate": "FROZEN_#108_SUPPORT_CLOSED_MODEL_A_REFERENCE",
+    "hero_reference_descriptor": "training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json",
+    "hero_reference_descriptor_git_blob_sha": "a4b510d7681d3df26a95263c50e139115824055f",
+    "hero_reference_active_preflop_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "hero_reference_postflop_sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+    "hero_reference_overlay_sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
+    "optimization_claim": "NONE_FOR_CONTINUATION_ASSUMPTION",
+    "nearest_context": false
+  },
+  "diagnostics": {
+    "contract": "poker-preflop-iso-sizing-diagnostics/v1",
+    "posterior_contract": "poker-opponent-posterior-range/v1",
+    "persist_per_evaluated_iso": [
+      "caller_partition.all_fold",
+      "caller_partition.exactly_1_caller",
+      "caller_partition.exactly_2_callers",
+      "caller_partition.three_plus_callers",
+      "expected_callers",
+      "p_3bet_or_jam",
+      "continuing_positions",
+      "posterior_refs"
+    ],
+    "posterior_ref_policy": "FIRST_DETERMINISTIC_SAMPLE_PER_ALTERNATIVE_POSITION_RESPONSE_WITH_ALL_OBSERVED_DISTRIBUTION_FINGERPRINTS_AUDITED",
+    "same_worlds_as_ev": true
+  },
+  "output": {
+    "result_schema": "poker-issue367-real-iso-ev-result/v1",
+    "result_path": "training/runs/20260919_issue367_real_iso_ev_v1/RESULT.json",
+    "summary_path": "training/runs/20260919_issue367_real_iso_ev_v1/SUMMARY.md",
+    "persist_action_and_exact_sizing": true,
+    "persist_ev_and_uncertainty": true,
+    "persist_paired_delta": true,
+    "persist_callers_diagnostics": true,
+    "persist_posterior_refs": true,
+    "persist_played_vs_recommended": true
+  },
+  "scientific_boundary": {
+    "test_consumed": false,
+    "test_authorized": false,
+    "model_b_consumed": false,
+    "model_b_sensitivity": false,
+    "promotion_performed": false,
+    "active_model_pointer_mutated": false,
+    "ui_modified": false,
+    "vs_limpers_generation_196": false
+  },
+  "forbidden": [
+    "TEST",
+    "PROMOTION",
+    "ACTIVE_MODEL_A_POINTER_MUTATION",
+    "NEAREST_PRICE",
+    "PRICE_INTERPOLATION",
+    "MODEL_B_SENSITIVITY",
+    "UI",
+    "#196_VS_LIMPERS_GENERATION",
+    "RETUNING_AFTER_RESULT",
+    "CALLER_MINIMIZATION_AS_SELECTION_RULE"
+  ]
+}
