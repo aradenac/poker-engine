@@ -1,0 +1,204 @@
+{
+  "schema": "central-ui-action-sizing-ev-parity/v1",
+  "summary": {
+    "schema": "decision-summary/v1",
+    "played": {
+      "label": "CALL",
+      "sizing": "call 2 BB",
+      "costBB": 2,
+      "targetStreetBB": 3,
+      "evBB": 1.5,
+      "chosen": true,
+      "recommended": false
+    },
+    "recommended": {
+      "label": "RAISE",
+      "sizing": "ajoute 5 BB → total rue 8 BB",
+      "costBB": 5,
+      "targetStreetBB": 8,
+      "evBB": 2.2,
+      "chosen": false,
+      "recommended": true
+    },
+    "deltaEVBB": -0.7,
+    "lossEVBB": 0.7,
+    "effectiveLossEVBB": 0.65,
+    "withinNoise": false,
+    "score": 0,
+    "alternatives": [
+      {
+        "label": "RAISE",
+        "sizing": "ajoute 5 BB → total rue 8 BB",
+        "costBB": 5,
+        "targetStreetBB": 8,
+        "evBB": 2.2,
+        "chosen": false,
+        "recommended": true
+      },
+      {
+        "label": "CALL",
+        "sizing": "call 2 BB",
+        "costBB": 2,
+        "targetStreetBB": 3,
+        "evBB": 1.5,
+        "chosen": true,
+        "recommended": false
+      },
+      {
+        "label": "FOLD",
+        "sizing": "0 BB",
+        "costBB": 0,
+        "targetStreetBB": null,
+        "evBB": 0,
+        "chosen": false,
+        "recommended": false
+      }
+    ]
+  },
+  "canonical_decision": {
+    "schema": "poker-preflop-decision/v1",
+    "contract_profile": "CANONICAL_RUNTIME_DECISION_V1",
+    "decision_id": "decision-205-parity",
+    "hand_id": "hand-205-parity",
+    "street": "PREFLOP",
+    "public_state_fingerprint": "fixture-public",
+    "public_state": {
+      "actor": "BB",
+      "legal_actions": [
+        "FOLD",
+        "CALL",
+        "RAISE"
+      ],
+      "to_call_bb": 2,
+      "current_bet_bb": 3,
+      "actor_contribution_bb": 1,
+      "actor_remaining_bb": 99
+    },
+    "context_id": "ctx-vs-rfi",
+    "hero_position": "BB",
+    "effective_stack_bb": 100,
+    "pot_before_action_bb": 6,
+    "facing_action": "RAISE",
+    "facing_context": "VS_RFI",
+    "played_action": "CALL",
+    "played_target_sizing": {
+      "target_total_bb": 3,
+      "bet_to_bb": 3
+    },
+    "recommended_action": "CALL",
+    "recommended_target_sizing": {
+      "target_total_bb": 3,
+      "bet_to_bb": 3
+    },
+    "incremental_cost_bb": 2,
+    "recommended_ev_bb": 2,
+    "played_ev_bb": 2,
+    "delta_ev_bb": 0,
+    "ev_comparable": true,
+    "alternatives": [
+      {
+        "id": "fold",
+        "action": "FOLD",
+        "target_sizing": null,
+        "incremental_cost_bb": 0,
+        "ev_bb": 0,
+        "uncertainty": {
+          "monte_carlo": {
+            "standard_error_bb": 0.05,
+            "samples": 1000,
+            "method": "synthetic"
+          }
+        },
+        "support": {
+          "observations": 100,
+          "source": "SYNTHETIC"
+        },
+        "comparable": true,
+        "comparability_reason": null
+      },
+      {
+        "id": "call",
+        "action": "CALL",
+        "target_sizing": {
+          "target_total_bb": 3,
+          "bet_to_bb": 3
+        },
+        "incremental_cost_bb": 2,
+        "ev_bb": 2,
+        "uncertainty": {
+          "monte_carlo": {
+            "standard_error_bb": 0.05,
+            "samples": 1000,
+            "method": "synthetic"
+          }
+        },
+        "support": {
+          "observations": 100,
+          "source": "SYNTHETIC"
+        },
+        "comparable": true,
+        "comparability_reason": null
+      },
+      {
+        "id": "jam",
+        "action": "JAM",
+        "target_sizing": {
+          "target_total_bb": 100,
+          "bet_to_bb": 100
+        },
+        "incremental_cost_bb": 99,
+        "ev_bb": 1.2,
+        "uncertainty": {
+          "monte_carlo": {
+            "standard_error_bb": 0.05,
+            "samples": 1000,
+            "method": "synthetic"
+          }
+        },
+        "support": {
+          "observations": 100,
+          "source": "SYNTHETIC"
+        },
+        "comparable": true,
+        "comparability_reason": null
+      }
+    ],
+    "coverage_state": "COVERED",
+    "support_tier": "HIGH",
+    "support": {
+      "observations": 100,
+      "source": "SYNTHETIC"
+    },
+    "recommendation_admissibility": {
+      "admissible": true,
+      "status": "ADMISSIBLE",
+      "default_advice": true,
+      "reason_codes": [],
+      "source_guidance_schema": "poker-preflop-guidance/v1",
+      "source_recommendation_state": "PROMOTED",
+      "selected_alternative_id": "call"
+    },
+    "reason_codes": [],
+    "identity": {
+      "population_id": "fixture-population",
+      "pack_id": "fixture-pack",
+      "pack_version": "pack-v1",
+      "strategy_id": "fixture-strategy",
+      "strategy_version": "strategy-v1",
+      "strategy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "decision_source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "ev_reference": "decision_point_incremental_bb"
+    },
+    "information_boundary": {
+      "public_only_fingerprint": true,
+      "future_cards_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "ignored_sensitive_fields": [],
+      "fingerprint_excludes_board_and_private_cards": true
+    },
+    "source": {
+      "split": "SYNTHETIC",
+      "source": "fixture"
+    }
+  }
+}
