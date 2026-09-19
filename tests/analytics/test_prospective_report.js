@@ -162,7 +162,7 @@ function coverageReport({gap=false,low=false}={}){
       ...raw,
       support:{covered:false,observations:0,source:'SYNTHETIC',reason:'NO_MODEL_SUPPORT'},
       comparability:{comparable:false,reason:'NO_MODEL_SUPPORT'},
-      ev:{...raw.ev,played_bb:null,best_bb:null}
+      ev:{...raw.ev,played_bb:null,best_bb:null,raw_delta_bb:0,nominal_loss_bb:0,attributed_loss_bb:0}
     },...events.slice(1)];
   }
   if(low){
