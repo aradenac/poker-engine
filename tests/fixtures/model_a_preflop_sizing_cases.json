@@ -1,0 +1,159 @@
+{
+  "schema": "poker-model-a-preflop-sizing-synthetic-fixtures/v1",
+  "scientific_effect": "NONE_SYNTHETIC_SCAFFOLD_ONLY",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "contexts": [
+    {
+      "name": "two_limpers_sb_iso_4bb_bb_response",
+      "hand_class": "KTs",
+      "input": {
+        "table_size": 6,
+        "actor_position": "BB",
+        "live_positions": [
+          "LJ",
+          "HJ",
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "all_in_positions": [],
+        "history": [
+          {
+            "position": "LJ",
+            "action": "LIMP"
+          },
+          {
+            "position": "HJ",
+            "action": "LIMP"
+          },
+          {
+            "position": "SB",
+            "action": "RAISE"
+          }
+        ],
+        "raise_level": 1,
+        "contribution_bb_by_position": {
+          "LJ": 1,
+          "HJ": 1,
+          "CO": 0,
+          "BTN": 0,
+          "SB": 4,
+          "BB": 1
+        },
+        "stack_bb_by_position": {
+          "LJ": 100,
+          "HJ": 100,
+          "CO": 100,
+          "BTN": 100,
+          "SB": 100,
+          "BB": 100
+        },
+        "pot_before_bb": 7,
+        "current_price_bb": 4,
+        "pending_positions": [
+          "LJ",
+          "HJ",
+          "CO",
+          "BTN"
+        ],
+        "min_raise_to_bb": 7
+      },
+      "probabilities": {
+        "FOLD": 0.2,
+        "CALL": 0.65,
+        "RAISE": 0.1,
+        "JAM": 0.05
+      },
+      "marginal_probabilities": {
+        "FOLD": 0.35,
+        "CALL": 0.5,
+        "RAISE": 0.1,
+        "JAM": 0.05
+      },
+      "expected": {
+        "target_total_bb": 4,
+        "to_call_bb": 3,
+        "pot_before_bb": 7,
+        "price_to_pot_ratio": 0.428571429,
+        "pot_odds": 0.3,
+        "effective_stack_bb": 100,
+        "limper_count": 2,
+        "caller_count": 0
+      }
+    },
+    {
+      "name": "two_limpers_sb_iso_6bb_bb_response",
+      "hand_class": "KTs",
+      "input": {
+        "table_size": 6,
+        "actor_position": "BB",
+        "live_positions": [
+          "LJ",
+          "HJ",
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "all_in_positions": [],
+        "history": [
+          {
+            "position": "LJ",
+            "action": "LIMP"
+          },
+          {
+            "position": "HJ",
+            "action": "LIMP"
+          },
+          {
+            "position": "SB",
+            "action": "RAISE"
+          }
+        ],
+        "raise_level": 1,
+        "contribution_bb_by_position": {
+          "LJ": 1,
+          "HJ": 1,
+          "CO": 0,
+          "BTN": 0,
+          "SB": 6,
+          "BB": 1
+        },
+        "stack_bb_by_position": {
+          "LJ": 100,
+          "HJ": 100,
+          "CO": 100,
+          "BTN": 100,
+          "SB": 100,
+          "BB": 100
+        },
+        "pot_before_bb": 9,
+        "current_price_bb": 6,
+        "pending_positions": [
+          "LJ",
+          "HJ",
+          "CO",
+          "BTN"
+        ],
+        "min_raise_to_bb": 11
+      },
+      "probabilities": {
+        "FOLD": 0.5,
+        "CALL": 0.4,
+        "RAISE": 0.08,
+        "JAM": 0.02
+      },
+      "expected": {
+        "target_total_bb": 6,
+        "to_call_bb": 5,
+        "pot_before_bb": 9,
+        "price_to_pot_ratio": 0.555555556,
+        "pot_odds": 0.357142857,
+        "effective_stack_bb": 100,
+        "limper_count": 2,
+        "caller_count": 0
+      }
+    }
+  ]
+}
