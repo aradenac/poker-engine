@@ -13,19 +13,11 @@
   const CATALOG_SCHEMA="poker-population-catalog/v1";
   const RUNTIME_SCHEMA="poker-browser-runtime-pack/v1";
   const EXPORT_SCHEMA="poker-browser-runtime-pack-export/v1";
+  const Identity=global.PokerPackIdentity;
+  if(!Identity)throw new Error("PokerPackIdentity requis avant population-packs.js.");
+  const {bytes,sha256,contentIdentity,storageId,packIdentity,samePackIdentity}=Identity;
   const encoder=new TextEncoder(),decoder=new TextDecoder();
 
-  function bytes(value){
-    if(value instanceof Uint8Array)return value;
-    if(value instanceof ArrayBuffer)return new Uint8Array(value);
-    if(ArrayBuffer.isView(value))return new Uint8Array(value.buffer,value.byteOffset,value.byteLength);
-    if(Array.isArray(value))return Uint8Array.from(value);
-    if(typeof value==="string")return encoder.encode(value);
-    throw new TypeError("unsupported byte source");
-  }
-  function hex(buffer){return [...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,"0")).join("");}
-  async function sha256(value){return hex(await crypto.subtle.digest("SHA-256",bytes(value)));}
-  function storageId(entry){return `${entry.population_id}::${entry.pack_id}::${entry.pack_version}::${entry.runtime_revision}`;}
   function asUrlPath(url){return new URL(url,location.href).pathname;}
 
   function openDb(){
@@ -116,7 +108,7 @@
       const r=await fetchImpl(asset.url,{cache:"no-store"});if(!r.ok)throw new Error(`${asset.key}: HTTP ${r.status}`);
       const data=new Uint8Array(await r.arrayBuffer());
       if(Number(asset.size_bytes)!==data.byteLength)throw new Error(`${asset.key}: taille invalide.`);
-      const digest=await sha256(data);if(digest!==asset.sha256)throw new Error(`${asset.key}: SHA-256 invalide.`);
+      const identity=await contentIdentity(data),digest=identity.sha256;if(digest!==asset.sha256)throw new Error(`${asset.key}: SHA-256 invalide.`);
       validateJsonAsset(asset,data,entry);
       files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:data.byteLength,bytes:data};
     }
@@ -161,11 +153,7 @@
   async function assertManualOverrideAllowsTarget(target){
     const contract=await readManualOverrideContract();
     if(!contract?.active)return;
-    const baseId=String(contract?.base_active_pack?.id||"");
-    const basePopulation=String(contract?.base_active_pack?.population_id||"");
-    const targetId=String(target?.id||"");
-    const targetPopulation=String(target?.population_id||target?.entry?.population_id||"");
-    if(baseId!==targetId||basePopulation!==targetPopulation){
+    if(!samePackIdentity(contract.base_active_pack,packIdentity(target))){
       throw new Error("MANUAL_OVERRIDE actif pour une autre identité de pack. Exécutez RESTORE_ACTIVE_PACK avant de changer de pack.");
     }
   }
@@ -226,7 +214,7 @@
   async function exportTestOnlyZip(id){return exportZipFromStore(id,TEST_PACK_STORE);}
   async function importZipToStore(value,{fetchImpl=fetch,allowTestOnly=false,store=PACK_STORE,source="offline_zip"}={}){
     const z=await readZip(value),manifestBytes=z["PACK_RUNTIME.json"];if(!manifestBytes)throw new Error("PACK_RUNTIME.json absent du ZIP.");let manifest;try{manifest=JSON.parse(decoder.decode(manifestBytes));}catch(_){throw new Error("PACK_RUNTIME.json invalide.");}if(manifest.schema!==EXPORT_SCHEMA)throw new Error("Schéma ZIP runtime non supporté.");const entry=validateEntry(manifest.entry,{allowTestOnly});await assertCompatibility(entry,fetchImpl);const files={};
-    for(const asset of entry.assets){const desc=manifest.files?.[asset.key],payload=desc&&z[desc.archive_path];if(!desc||!payload)throw new Error(`${asset.key}: absent du ZIP.`);if(payload.length!==Number(desc.size_bytes)||payload.length!==Number(asset.size_bytes))throw new Error(`${asset.key}: taille ZIP invalide.`);const digest=await sha256(payload);if(digest!==desc.sha256||digest!==asset.sha256)throw new Error(`${asset.key}: hash ZIP invalide.`);validateJsonAsset(asset,payload,entry);files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:payload.length,bytes:payload};}
+    for(const asset of entry.assets){const desc=manifest.files?.[asset.key],payload=desc&&z[desc.archive_path];if(!desc||!payload)throw new Error(`${asset.key}: absent du ZIP.`);if(payload.length!==Number(desc.size_bytes)||payload.length!==Number(asset.size_bytes))throw new Error(`${asset.key}: taille ZIP invalide.`);const identity=await contentIdentity(payload),digest=identity.sha256;if(digest!==desc.sha256||digest!==asset.sha256)throw new Error(`${asset.key}: hash ZIP invalide.`);validateJsonAsset(asset,payload,entry);files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:payload.length,bytes:payload};}
     const record=makeRecord(entry,files,source);await putPack(record,store);return record;
   }
   async function importZip(value,{fetchImpl=fetch}={}){return importZipToStore(value,{fetchImpl,allowTestOnly:false,store:PACK_STORE,source:"offline_zip"});}

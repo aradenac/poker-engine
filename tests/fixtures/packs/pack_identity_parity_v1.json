@@ -1,0 +1,94 @@
+{
+  "schema": "poker-pack-identity-parity/v1",
+  "sha256_vectors": [
+    {
+      "label": "empty-string",
+      "input": "",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "abc-string",
+      "input": "abc",
+      "expected_sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    }
+  ],
+  "storage_id": {
+    "entry": {
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "pack_id": "zoom-pack",
+      "pack_version": "1.2.3",
+      "runtime_revision": "0123456789abcdef"
+    },
+    "expected": "pokerstars_nlhe_100-200_zoom_play_6max_v1::zoom-pack::1.2.3::0123456789abcdef"
+  },
+  "active_record": {
+    "input": {
+      "id": "pokerstars_nlhe_100-200_zoom_play_6max_v1::zoom-pack::1.2.3::0123456789abcdef",
+      "pack_id": "zoom-pack",
+      "pack_version": "1.2.3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "runtime_revision": "0123456789abcdef",
+      "entry": {
+        "compatibility": {
+          "engine_version": "v83"
+        }
+      }
+    },
+    "expected": {
+      "id": "pokerstars_nlhe_100-200_zoom_play_6max_v1::zoom-pack::1.2.3::0123456789abcdef",
+      "source": "ACTIVE_PACK",
+      "pack_id": "zoom-pack",
+      "pack_version": "1.2.3",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "runtime_revision": "0123456789abcdef",
+      "engine_version": "v83"
+    }
+  },
+  "fallback_expected": {
+    "id": "embedded-fallback",
+    "source": "EMBEDDED_FALLBACK",
+    "pack_id": null,
+    "pack_version": null,
+    "population_id": null,
+    "runtime_revision": null,
+    "engine_version": null
+  },
+  "same_identity_cases": [
+    {
+      "label": "same",
+      "a": {
+        "id": "pack::1",
+        "population_id": "pop-a"
+      },
+      "b": {
+        "id": "pack::1",
+        "population_id": "pop-a"
+      },
+      "expected": true
+    },
+    {
+      "label": "different-population",
+      "a": {
+        "id": "pack::1",
+        "population_id": "pop-a"
+      },
+      "b": {
+        "id": "pack::1",
+        "population_id": "pop-b"
+      },
+      "expected": false
+    },
+    {
+      "label": "different-id",
+      "a": {
+        "id": "pack::1",
+        "population_id": "pop-a"
+      },
+      "b": {
+        "id": "pack::2",
+        "population_id": "pop-a"
+      },
+      "expected": false
+    }
+  ]
+}
