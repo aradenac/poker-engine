@@ -114,6 +114,8 @@ function cell(report,dimension,key){
   assert.equal(cell(report,'preflop_context','ctx-btn-unopened').state,'STABLE');
   assert.equal(cell(report,'position','BTN').uncertainty.available,true);
   assert.equal(cell(report,'position','BTN').uncertainty.method,'DETERMINISTIC_BOOTSTRAP');
+  assert.ok(cell(report,'position','BTN').uncertainty.delta_ci.fold_frequency);
+  assert.ok(cell(report,'position','BTN').uncertainty.distance_ci);
 }
 
 {
@@ -187,6 +189,19 @@ function cell(report,dimension,key){
   assert.equal(pos.uncertainty.available,false);
   assert.equal(pos.uncertainty.reason,'INSUFFICIENT_SUPPORT');
   assert.deepEqual(pos.drift_reason_codes,[]);
+}
+
+{
+  const base=makeEvents('sb',{unsupported:30});
+  const target=makeEvents('st',{unsupported:30});
+  const report=analyze(base,target);
+  assert.equal(report.state,'LOW_SUPPORT');
+  const pos=cell(report,'position','BTN');
+  assert.equal(pos.state,'LOW_SUPPORT');
+  assert.ok(pos.support.reason_codes.includes('BASELINE_SUPPORTED_RATIO_BELOW_MINIMUM'));
+  assert.ok(pos.support.reason_codes.includes('TARGET_SUPPORTED_RATIO_BELOW_MINIMUM'));
+  assert.equal(pos.uncertainty.available,false,'bootstrap must require real support, not only sample size');
+  assert.equal(pos.uncertainty.reason,'INSUFFICIENT_SUPPORT');
 }
 
 {
