@@ -362,7 +362,9 @@
         "docs/project-state.md",
         "docs/prospective-validation.md",
         "tests/fixtures/parallel/**",
+        "tests/fixtures/project-state/backlog-evidence/**",
         "tests/fixtures/project-state/recovery/**",
+        "tests/test_backlog_evidence.py",
         "tests/test_parallel_claims.py",
         "tests/test_parallel_scope.py",
         "tests/test_project_state.py",
@@ -371,6 +373,7 @@
         "tools/build_recovery_state.py",
         "tools/check_parallel_claims.py",
         "tools/check_parallel_scope.py",
+        "tools/reconcile_backlog_evidence.py",
         "tools/validate_project_state.py",
         "tools/validate_prospective_holdout.py",
         "training/prospective/**"
