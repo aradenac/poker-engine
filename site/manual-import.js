@@ -15,16 +15,9 @@
   };
   const SUPPORTED_ROLES=Object.freeze(Object.keys(ROLE_KEYS));
   const RESTORE_ACTION="RESTORE_ACTIVE_PACK";
-  const encoder=new TextEncoder();
-
-  function bytes(value){
-    if(value instanceof Uint8Array)return value;
-    if(value instanceof ArrayBuffer)return new Uint8Array(value);
-    if(ArrayBuffer.isView(value))return new Uint8Array(value.buffer,value.byteOffset,value.byteLength);
-    return encoder.encode(String(value??""));
-  }
-  function hex(buffer){return [...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,"0")).join("");}
-  async function sha256(value){return hex(await crypto.subtle.digest("SHA-256",bytes(value)));}
+  const Identity=global.PokerPackIdentity;
+  if(!Identity)throw new Error("PokerPackIdentity requis avant manual-import.js.");
+  const {sha256,contentIdentity,packIdentity,samePackIdentity}=Identity;
 
   function openDb(){
     return new Promise((resolve,reject)=>{
@@ -134,31 +127,6 @@
     if(!packs?.active)return null;
     return packs.active();
   }
-  function packIdentity(record){
-    if(!record){
-      return {
-        id:"embedded-fallback",
-        source:"EMBEDDED_FALLBACK",
-        pack_id:null,
-        pack_version:null,
-        population_id:null,
-        runtime_revision:null,
-        engine_version:null
-      };
-    }
-    return {
-      id:record.id,
-      source:"ACTIVE_PACK",
-      pack_id:record.pack_id||record.entry?.pack_id||null,
-      pack_version:record.pack_version||record.entry?.pack_version||null,
-      population_id:record.population_id||record.entry?.population_id||null,
-      runtime_revision:record.runtime_revision||record.entry?.runtime_revision||null,
-      engine_version:record.entry?.compatibility?.engine_version||record.entry?.engine_version||null
-    };
-  }
-  function samePackIdentity(a,b){
-    return !!a&&!!b&&String(a.id||"")===String(b.id||"")&&String(a.population_id||"")===String(b.population_id||"");
-  }
   function preserveHeroPolicy(record){
     const entry=record?.entry||{};
     return entry?.customization_policy?.preserve_hero_manual_ranges===true ||
@@ -180,7 +148,7 @@
     if(engineVersion&&basePack.engine_version&&engineVersion!==basePack.engine_version){
       throw new Error(`Version moteur incompatible : ${engineVersion} ≠ ${basePack.engine_version}.`);
     }
-    const digest=await sha256(content);
+    const identity=await contentIdentity(content),digest=identity.sha256;
     const snapshot={
       name:file.name||`${role}.json`,
       size:Number(file.size)||content.length,
