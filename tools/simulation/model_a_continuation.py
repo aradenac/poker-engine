@@ -219,6 +219,14 @@ def _preflop_decision(
     clean_history = [
         {"position": row["position"], "action": row["action"]} for row in history
     ]
+    view = replay.legal_view(actor)
+    actor_start = float(replay.stacks_bb[actor]) + float(replay.total_committed_bb[actor])
+    opponent_starts = [
+        float(replay.stacks_bb[player]) + float(replay.total_committed_bb[player])
+        for player in live
+        if player != actor
+    ]
+    effective_stack = min(actor_start, max(opponent_starts, default=actor_start))
     return {
         "actor_position": actor_position,
         "table_size": len(replay.seats),
@@ -229,6 +237,13 @@ def _preflop_decision(
         "live_positions": _ordered_positions(live, positions, PRE_ORDER),
         "all_in_positions": _ordered_positions(all_in, positions, PRE_ORDER),
         "history": clean_history,
+        # Public pricing fields are additive metadata for sizing-aware Model A.
+        # Legacy exact-node matching intentionally ignores them.
+        "current_price_bb": float(view["current_price_bb"]),
+        "target_total_bb": float(view["current_price_bb"]),
+        "to_call_bb": float(view["to_call_bb"]),
+        "pot_before_bb": float(view["pot_before_bb"]),
+        "effective_stack_bb": effective_stack,
     }
 
 
