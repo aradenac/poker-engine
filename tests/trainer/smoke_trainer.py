@@ -56,6 +56,68 @@ async def main() -> None:
         assert "Recommandé" in shared_presentation["primary"] and "RAISE" in shared_presentation["primary"], shared_presentation
         assert "EV" in shared_presentation["alternatives"] and "CALL" in shared_presentation["alternatives"], shared_presentation
 
+        # #341 browser contract: one deterministic covered CALL/FOLD context and one
+        # explicit VS_LIMPERS fail-closed context, both on the retained #108 reference.
+        preflop_runtime = await page.evaluate(
+            """() => {
+                const seats=["BTN","SB","BB","LJ","HJ","CO"],stacks=Object.fromEntries(seats.map(x=>[x,100]));
+                const coveredCore=new PokerNlheGameState.NoLimitHoldemState({seats,button:"BTN",stacks_bb:stacks});
+                coveredCore.applyAction("LJ","FOLD");
+                coveredCore.applyAction("HJ","RAISE",{target_total_bb:2.5});
+                coveredCore.applyAction("CO","FOLD");
+                const covered=PokerPreflopRuntime.buildCallFold({
+                    public_state:{snapshot:coveredCore.toSnapshot(),legal_view:coveredCore.legalView("BTN")},
+                    context_id:"smoke-covered-vs-rfi",
+                    preflop_context:{context_id:"smoke-covered-vs-rfi",family:"VS_RFI",actor_position:"BTN"},
+                    hero_position:"BTN",hand_id:"smoke-covered",call_ev_bb:.42,
+                    played_action:{action:"CALL",target_total_bb:2.5},samples:2000
+                });
+                const surfaces=PokerPreflopRuntime.surfaceBundle(covered);
+
+                const uncoveredCore=new PokerNlheGameState.NoLimitHoldemState({seats,button:"BTN",stacks_bb:stacks});
+                uncoveredCore.applyAction("LJ","FOLD");
+                uncoveredCore.applyAction("HJ","CALL");
+                uncoveredCore.applyAction("CO","FOLD");
+                uncoveredCore.applyAction("BTN","CALL");
+                const unsupported=PokerPreflopRuntime.buildUnsupported({
+                    public_state:{snapshot:uncoveredCore.toSnapshot(),legal_view:uncoveredCore.legalView("SB")},
+                    context_id:"smoke-kts-sb-two-limp",
+                    preflop_context:{context_id:"smoke-kts-sb-two-limp",family:"VS_LIMPERS",actor_position:"SB"},
+                    hero_position:"SB",hand_id:"smoke-uncovered",
+                    played_action:{action:"RAISE",target_total_bb:4},reason:"SPOT_NON_COUVERT"
+                });
+                return {
+                    reference:PokerPreflopRuntime.REFERENCE,
+                    covered:{
+                        schema:covered.schema,admissible:covered.recommendation_admissibility.admissible,
+                        action:covered.recommended_action,target:covered.recommended_target_sizing?.target_total_bb,
+                        cost:covered.incremental_cost_bb,ev:covered.recommended_ev_bb,
+                        support:covered.support?.observations,alternatives:covered.alternatives.length,
+                        sameSurface:surfaces.feed===surfaces.detail&&surfaces.detail===surfaces.trainer&&surfaces.trainer===surfaces.review
+                    },
+                    unsupported:{
+                        schema:unsupported.schema,admissible:unsupported.recommendation_admissibility.admissible,
+                        coverage:unsupported.coverage_state,action:unsupported.recommended_action,
+                        ev:unsupported.recommended_ev_bb,target:unsupported.recommended_target_sizing,
+                        cost:unsupported.incremental_cost_bb,alternatives:unsupported.alternatives.length,
+                        reasons:unsupported.reason_codes
+                    }
+                };
+            }"""
+        )
+        assert preflop_runtime["reference"]["decision"] == "RETAIN_REFERENCE", preflop_runtime
+        assert preflop_runtime["reference"]["candidate_activated"] is False, preflop_runtime
+        assert preflop_runtime["covered"]["schema"] == "poker-preflop-decision/v1", preflop_runtime
+        assert preflop_runtime["covered"]["admissible"] is True and preflop_runtime["covered"]["action"] == "CALL", preflop_runtime
+        assert preflop_runtime["covered"]["target"] == 2.5 and preflop_runtime["covered"]["cost"] == 2.5, preflop_runtime
+        assert abs(preflop_runtime["covered"]["ev"] - 0.42) < 1e-9 and preflop_runtime["covered"]["support"] == 2000, preflop_runtime
+        assert preflop_runtime["covered"]["alternatives"] == 2 and preflop_runtime["covered"]["sameSurface"], preflop_runtime
+        assert preflop_runtime["unsupported"]["schema"] == "poker-preflop-decision/v1", preflop_runtime
+        assert preflop_runtime["unsupported"]["admissible"] is False and preflop_runtime["unsupported"]["coverage"] == "UNSUPPORTED", preflop_runtime
+        assert preflop_runtime["unsupported"]["action"] is None and preflop_runtime["unsupported"]["ev"] is None, preflop_runtime
+        assert preflop_runtime["unsupported"]["target"] is None and preflop_runtime["unsupported"]["cost"] is None, preflop_runtime
+        assert preflop_runtime["unsupported"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in preflop_runtime["unsupported"]["reasons"], preflop_runtime
+
         # Product architecture exposes only the five stable top-level domains.
         product_architecture = await page.evaluate(
             """() => ({
@@ -285,7 +347,8 @@ async def main() -> None:
                 const saved={
                     selectedHand:state.selectedHand,replaySteps:state.replaySteps,hhMode:state.hhMode,
                     populationTraceCache:state.populationTraceCache,postflopTraceCache:state.postflopTraceCache,
-                    populationRangeCache:state.populationRangeCache,postflopRangeCache:state.postflopRangeCache
+                    populationRangeCache:state.populationRangeCache,postflopRangeCache:state.postflopRangeCache,
+                    preflopRuntimeDecisionCache:state.preflopRuntimeDecisionCache
                 };
                 try{
                     const hand=parsePokerStarsHand(raw,"kts_sb_two_limp_iso4_three_calls.hand.txt");
@@ -294,14 +357,16 @@ async def main() -> None:
                     state.selectedHand=hand;state.replaySteps=steps;state.hhMode=true;
                     state.populationTraceCache=Object.create(null);state.postflopTraceCache=Object.create(null);
                     state.populationRangeCache=Object.create(null);state.postflopRangeCache=Object.create(null);
+                    state.preflopRuntimeDecisionCache=Object.create(null);
                     const heroIndex=steps.findIndex(s=>s.street==="Préflop"&&s.activePlayer===hand.heroName&&s.actionType==="raise");
                     const bbIndex=steps.findIndex((s,i)=>i>heroIndex&&s.street==="Préflop"&&s.activePlayer==="BB"&&s.actionType==="call");
                     if(heroIndex<0||bbIndex<0)throw new Error("steps #321 attendus introuvables");
                     const heroStep=steps[heroIndex],bbStep=steps[bbIndex];
                     const heroEvidence=replayObservedDecisionEvidence(heroIndex,heroStep);
                     const bbEvidence=replayObservedDecisionEvidence(bbIndex,bbStep);
+                    const canonical=preflopRuntimeDecisionForStep(heroIndex,heroStep,null,{observedEvidence:heroEvidence});
                     const heroState=replayHeroCommentState(heroIndex,heroStep,null,{
-                        req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,canonicalDecision:null,
+                        req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,canonicalDecision:canonical,
                         observedEvidence:heroEvidence
                     });
                     const bbUnavailable=replayOpponentCommentStateFromEvidence(bbEvidence,bbStep,null);
@@ -309,13 +374,17 @@ async def main() -> None:
                     const bbDetail=actionDetailModalInnerHtml(bbIndex,bbStep);
                     return {
                         hand:{id:hand.id,hero:hand.heroName,cards:reviewHeroCardsText(hand)},
-                        hero:{index:heroIndex,actor:heroStep.activePlayer,action:heroStep.actionType,evidence:heroEvidence,state:heroState},
+                        hero:{index:heroIndex,actor:heroStep.activePlayer,action:heroStep.actionType,evidence:heroEvidence,state:heroState,
+                            canonical:{schema:canonical?.schema,coverage:canonical?.coverage_state,admissible:canonical?.recommendation_admissibility?.admissible,
+                                recommended:canonical?.recommended_action,ev:canonical?.recommended_ev_bb,alternatives:canonical?.alternatives?.length,
+                                reasons:canonical?.reason_codes,reference:canonical?.identity?.strategy_id}},
                         bb:{index:bbIndex,actor:bbStep.activePlayer,action:bbStep.actionType,evidence:bbEvidence,state:bbUnavailable,feed:bbFeed,detail:bbDetail}
                     };
                 } finally {
                     state.selectedHand=saved.selectedHand;state.replaySteps=saved.replaySteps;state.hhMode=saved.hhMode;
                     state.populationTraceCache=saved.populationTraceCache;state.postflopTraceCache=saved.postflopTraceCache;
                     state.populationRangeCache=saved.populationRangeCache;state.postflopRangeCache=saved.postflopRangeCache;
+                    state.preflopRuntimeDecisionCache=saved.preflopRuntimeDecisionCache;
                 }
             }""",
             kts_iso_raw,
@@ -325,6 +394,10 @@ async def main() -> None:
         assert kts_replayer_comment["hero"]["evidence"]["decision"]["family"] == "VS_LIMPERS", kts_replayer_comment
         assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_COUVERT", kts_replayer_comment
         assert "Aucune recommandation EV validée" in kts_replayer_comment["hero"]["state"]["text"], kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["schema"] == "poker-preflop-decision/v1", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["coverage"] == "UNSUPPORTED" and kts_replayer_comment["hero"]["canonical"]["admissible"] is False, kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["recommended"] is None and kts_replayer_comment["hero"]["canonical"]["ev"] is None, kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in kts_replayer_comment["hero"]["canonical"]["reasons"], kts_replayer_comment
         assert kts_replayer_comment["bb"]["actor"] == "BB" and kts_replayer_comment["bb"]["action"] == "call", kts_replayer_comment
         assert kts_replayer_comment["bb"]["evidence"]["decision"]["family"] == "VS_ISO", kts_replayer_comment
         assert kts_replayer_comment["bb"]["state"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", kts_replayer_comment
@@ -960,58 +1033,115 @@ async def main() -> None:
         assert seats == 6, f"expected 6 trainer seats, got {seats}"
         assert await page.locator("#trainerTable .seat.hero").count() == 1
 
+        # Real preflop can legitimately end before Hero receives an action. Start a
+        # fresh hand until the browser exposes a live Hero decision.
+        for _ in range(8):
+            if await page.evaluate("!!trainerState.hand?.awaitingHero"):
+                break
+            await page.evaluate("trainerNewHand()")
+        assert await page.evaluate("!!trainerState.hand?.awaitingHero"), "no live Hero decision after 8 real-preflop hands"
+
         # Hero must be dealt from the persisted Custom range for this exact role/position.
         hero_range = await page.evaluate(
-            "() => { const h=trainerState.hand, p=h.positions[h.heroSeat], n=cardsToNotation(h.hole[h.heroSeat]); return {role:h.heroRole, position:p, notation:n, frequency:Number(trainerState.heroRanges?.ranges?.[h.heroRole]?.[p]?.[n]||0)}; }"
+            "() => { const h=trainerState.hand, p=h.positions[h.heroSeat], n=cardsToNotation(h.hole[h.heroSeat]); return {role:h.heroRole, position:p, notation:n, frequency:Number(trainerState.heroRanges?.ranges?.[h.heroRole]?.[p]?.[n]||0), street:h.street, boardCount:h.boardCount}; }"
         )
         assert hero_range["frequency"] > 0, hero_range
         assert not (hero_range["role"] == "CALLER" and hero_range["position"] == "BB"), hero_range
+        assert hero_range["street"] == "preflop" and hero_range["boardCount"] == 0, hero_range
 
-        # Wait until Model A has produced the pending Hero recommendation and the action UI is live.
         await page.wait_for_function(
             "document.querySelector('#trainerStatus')?.textContent.includes('À vous de jouer') && document.querySelectorAll('#trainerControls [data-trainer-action]').length > 0",
             timeout=90_000,
         )
 
-        # Default Training mode must hide the answer until Hero acts.
+        # Default Training mode hides the answer until Hero acts.
         rec_text = await page.locator("#trainerRecommendation").inner_text()
         assert "réponse masquée" in folded(rec_text), rec_text
 
-        # Switching to Guided mid-decision must compute a real recommendation.
+        # Guided consumes the canonical preflop object. Depending on the real history,
+        # the decision is either covered by retained CALL/FOLD or explicitly fail-closed.
         await page.click('[data-trainer-mode="guided"]')
         await page.wait_for_function(
-            "trainerState.recommendation && !trainerState.recommendation.error && trainerRecommendationKind(trainerState.hand, trainerState.recommendation)",
+            "trainerState.recommendation && !trainerState.recommendation.error && trainerState.recommendation.preflopDecision",
             timeout=90_000,
         )
         guided = await page.locator("#trainerRecommendation").inner_text()
-        assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
         guide = await page.evaluate(
-            "() => ({label: trainerState.recommendation.bestLabel, cost: Number(trainerState.recommendation.bestCostBB), ev: Number(trainerState.recommendation.bestEV), kind: trainerRecommendationKind(trainerState.hand, trainerState.recommendation)})"
+            """() => {
+                const r=trainerState.recommendation,d=r?.preflopDecision;
+                return {
+                    schema:d?.schema,covered:!!PokerPreflopRuntime.isCovered(d),
+                    family:d?.facing_context||"",label:r?.bestLabel,
+                    cost:Number(r?.bestCostBB),ev:Number(r?.bestEV),
+                    kind:trainerRecommendationKind(trainerState.hand,r),
+                    latencyMs:Number(trainerState.perf.lastMs),
+                    candidateActive:PokerPreflopRuntime.REFERENCE.candidate_activated
+                };
+            }"""
         )
-        assert guide["kind"] in {"FOLD", "CHECK", "CALL", "BET", "RAISE"}, guide
-        action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
-        assert await action.count(), f"guided action button missing: {guide}"
-        await action.first.click()
+        assert guide["schema"] == "poker-preflop-decision/v1" and guide["candidateActive"] is False, guide
+        assert guide["latencyMs"] >= 0, guide
 
+        if guide["covered"]:
+            assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
+            assert guide["kind"] in {"FOLD", "CALL"}, guide
+            action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
+            assert await action.count(), f"guided action button missing: {guide}"
+        else:
+            assert "spot_non_couvert" in folded(guided), guided
+            assert guide["kind"] == "", guide
+            action = page.locator('#trainerControls [data-trainer-action="CHECK"], #trainerControls [data-trainer-action="FOLD"], #trainerControls [data-trainer-action="CALL"]').first
+            assert await action.count(), f"no legal fail-closed action: {guide}"
+
+        await action.click()
         await page.wait_for_function(
             "document.querySelector('#trainerFeedback .trainer-feedback-title') && !document.querySelector('#trainerFeedback .trainer-feedback-title').textContent.includes('Feedback')",
             timeout=90_000,
         )
         feedback = await page.locator("#trainerFeedback").inner_text()
-        assert "recommandé" in folded(feedback) and "perte ev" in folded(feedback), feedback
         verdict = await page.evaluate(
-            "() => ({label: trainerState.feedback?.detail?.bestLabel, cost: Number(trainerState.feedback?.detail?.bestCostBB), ev: Number(trainerState.feedback?.detail?.bestEV), chosen: Number(trainerState.feedback?.detail?.chosenEV), loss: Number(trainerState.feedback?.row?.lossBB), reused: Number(trainerState.perf.reused)})"
+            """() => {
+                const d=trainerState.feedback?.detail?.preflopDecision;
+                return {
+                    schema:d?.schema,covered:!!PokerPreflopRuntime.isCovered(d),
+                    label:trainerState.feedback?.detail?.bestLabel,
+                    cost:Number(trainerState.feedback?.detail?.bestCostBB),
+                    ev:Number(trainerState.feedback?.detail?.bestEV),
+                    chosen:Number(trainerState.feedback?.detail?.chosenEV),
+                    loss:Number(trainerState.feedback?.row?.lossBB),
+                    comparable:!!d?.ev_comparable,
+                    reused:Number(trainerState.perf.reused),
+                    latencyMs:Number(trainerState.perf.lastMs)
+                };
+            }"""
         )
-        assert verdict["label"] == guide["label"], (guide, verdict)
-        if guide["cost"] == guide["cost"]:
-            assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
-        assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
-        assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
-        assert verdict["reused"] >= 1, (guide, verdict)
+        assert verdict["schema"] == "poker-preflop-decision/v1", verdict
+        if guide["covered"]:
+            assert verdict["covered"] is True and verdict["label"] == guide["label"], (guide, verdict)
+            if guide["cost"] == guide["cost"]:
+                assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
+            assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+            assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
+            assert verdict["reused"] >= 1, (guide, verdict)
+            assert "recommandé" in folded(feedback), feedback
+        else:
+            assert verdict["covered"] is False and verdict["comparable"] is False, verdict
+            assert "spot" in folded(feedback) and "non couvert" in folded(feedback), feedback
+            assert "aucune recommandation ev" in folded(feedback), feedback
+
         stats = await page.locator("#trainerStats").inner_text()
         assert "décisions" in folded(stats)
         decision_value = await page.locator("#trainerStats .trainer-stat").nth(1).locator(".v").inner_text()
         assert int(decision_value.strip()) >= 1
+
+        # Training/Test modes remain reachable and keep recommendations hidden.
+        await page.evaluate("trainerState.pauseAfterDecision=false; trainerState.feedback=null")
+        await page.click('[data-trainer-mode="test"]')
+        test_mode = await page.locator("#trainerRecommendation").inner_text()
+        assert "mode test" in folded(test_mode) and "réponse masquée" in folded(test_mode), test_mode
+        await page.click('[data-trainer-mode="training"]')
+        training_mode = await page.locator("#trainerRecommendation").inner_text()
+        assert "décidez" in folded(training_mode) and "réponse masquée" in folded(training_mode), training_mode
 
         # Trainer must not destroy the analyser navigation when returning.
         await page.click("#trainerBackBtn")

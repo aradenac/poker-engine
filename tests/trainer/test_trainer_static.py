@@ -42,10 +42,15 @@ def main() -> None:
     assert "/mnt/data" not in js
     assert "policyAdjustedEVBB=" not in js
     assert "postflopRaiseTreeSnapshot(" not in js
+    require(index, 'src="./training/preflop-runtime.js"', "canonical preflop runtime module")
+    require(js, 'trainerComputePreflopReference', "canonical Trainer preflop bridge")
+    require(js, 'SPOT_NON_COUVERT', "fail-closed preflop state")
 
-    # Forced blinds must always leave the 100 BB starting stack immediately.
-    require(js, 'stacks[sb]-=.5;stacks[bb]-=1;', "blind stack accounting")
-    assert "if(sb!==pfaSeat&&sb!==callerSeat)stacks[sb]-=.5" not in js
+    # Forced blinds and action order now come from the real public NLHE game state.
+    require(index, 'src="./training/nlhe-game-state.js"', "browser NLHE game-state module")
+    require(js, 'new Game.NoLimitHoldemState', "real blind/game-state construction")
+    require(js, 'hand.core.legalView', "real action legality")
+    assert 'stacks[sb]-=.5;stacks[bb]-=1;' not in js, "manual synthetic blind accounting reintroduced"
 
     require(js, 'TRAINER_POPULATION_MANIFEST="./assets/trainer/population.json"', "population pack selector")
     assert "TRAINER_ASSETS=" not in js, "trainer model paths must come from the population pack"

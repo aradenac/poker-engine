@@ -118,15 +118,18 @@ def patch_index() -> None:
 def patch_trainer() -> None:
     text = TRAINER.read_text(encoding="utf-8")
 
-    old = '  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;\n'
-    new = '  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;stacks[sb]-=.5;stacks[bb]-=1;\n'
-    if new not in text:
-        if text.count(old) != 1:
-            raise SystemExit("blind stack patch marker not found exactly once")
-        text = text.replace(old, new, 1)
+    # #341: the browser NoLimitHoldemState now owns blind posting and stack
+    # accounting. Keep the historical patch only for older trainer snapshots.
+    if 'new Game.NoLimitHoldemState' not in text:
+        old = '  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;\n'
+        new = '  const sb=trainerSeatForPosition({positions},"SB"),bb=trainerSeatForPosition({positions},"BB");contrib[sb]=.5;contrib[bb]=1;stacks[sb]-=.5;stacks[bb]-=1;\n'
+        if new not in text:
+            if text.count(old) != 1:
+                raise SystemExit("blind stack patch marker not found exactly once")
+            text = text.replace(old, new, 1)
 
-    legacy = '  // Forced blind chips were posted before the voluntary actions.\n  if(sb!==pfaSeat&&sb!==callerSeat)stacks[sb]-=.5;if(bb!==pfaSeat&&bb!==callerSeat)stacks[bb]-=1;\n'
-    text = text.replace(legacy, '')
+        legacy = '  // Forced blind chips were posted before the voluntary actions.\n  if(sb!==pfaSeat&&sb!==callerSeat)stacks[sb]-=.5;if(bb!==pfaSeat&&bb!==callerSeat)stacks[bb]-=1;\n'
+        text = text.replace(legacy, '')
 
     # Keep the nested template literal syntactically complete. The original MVP
     # draft missed the closing brace of the inner ${...} expression.

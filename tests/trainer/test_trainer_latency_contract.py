@@ -16,7 +16,9 @@ require('else trainerRenderStatus("À vous de jouer · recommandation calculée 
 # All heavy trainer evaluations go through the instrumented wrapper.
 require('async function trainerTimedReviewText(text)')
 require('trainerState.perf.evaluations++')
-require('detail=await trainerTimedReviewText(')
+require('await trainerTimedReviewText(')
+require('trainerComputePreflopReference')
+require('referenceCallEV')
 
 # Guided mode can reuse the already-computed best result for an exact matching action/sizing.
 # The matcher is now context-aware because sizing-only labels such as "25% pot" need the

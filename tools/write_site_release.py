@@ -37,6 +37,11 @@ NAV_TARGET = NAV_SOURCE + '\n      <a href="./packs.html">Packs de population</a
 FUNCTIONAL_FILES = (
     INDEX_PATH,
     ROOT / "site" / "preflop-contract.js",
+    ROOT / "site" / "preflop-decision.js",
+    ROOT / "site" / "preflop-guidance.js",
+    ROOT / "site" / "training" / "preflop-decision-adapter.js",
+    ROOT / "site" / "training" / "nlhe-game-state.js",
+    ROOT / "site" / "training" / "preflop-runtime.js",
     ROOT / "site" / "hero-ranges.html",
     ROOT / "site" / "hero-ranges.js",
     ROOT / "site" / "hero-ranges-app.js",

@@ -1539,6 +1539,11 @@
 <script src="./analytics/review-dashboard.js"></script>
 <script src="./analytics/model-b-robustness.js"></script>
 <script src="./preflop-contract.js"></script>
+<script src="./preflop-decision.js"></script>
+<script src="./preflop-guidance.js"></script>
+<script src="./training/preflop-decision-adapter.js"></script>
+<script src="./training/nlhe-game-state.js"></script>
+<script src="./training/preflop-runtime.js"></script>
 <script>
 "use strict";
 
@@ -1558,6 +1563,7 @@ const state = {
   populationPolicyCache:Object.create(null),
   populationTraceCache:Object.create(null),
   populationRangeCache:Object.create(null),
+  preflopRuntimeDecisionCache:Object.create(null),
   postflopModel:null,
   postflopModelMeta:null,
   postflopNodeIndex:null,
@@ -3768,13 +3774,29 @@ function reviewRegretForAction(stepIndex,cached){
     return null;
   }
 
-  // Preflop CALL: fold = 0 BB is a valid baseline. Do not invent EVs for raises/bets/folds
-  // where the current model does not provide a validated alternative tree.
+  // Preflop CALL/FOLD: the retained #108 reference is surfaced through the
+  // canonical #278 object. No raise/iso/squeeze EV is invented here.
   if(step.street==="Préflop"&&step.actionType==="call"){
-    const m=actionDecisionMetrics(priorEq,req,null);
-    if(Number.isFinite(m.evBB)){
-      const loss=Math.max(0,-Number(m.evBB));
-      return {lossBB:loss,rawLossBB:loss,chosenEV:Number(m.evBB),bestEV:Math.max(0,Number(m.evBB)),bestLabel:loss>0?"FOLD":"CALL",withinNoise:false,street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true};
+    const canonical=preflopRuntimeDecisionForStep(stepIndex,step,cached);
+    if(canonical&&window.PokerPreflopRuntime?.isCovered(canonical)){
+      const playedEV=Number(canonical.played_ev_bb),bestEV=Number(canonical.recommended_ev_bb);
+      const loss=Number.isFinite(canonical.delta_ev_bb)?Math.max(0,Number(canonical.delta_ev_bb)):Math.max(0,bestEV-playedEV);
+      return {
+        lossBB:loss,rawLossBB:loss,chosenEV:playedEV,bestEV,
+        bestLabel:String(canonical.recommended_action||"—"),
+        bestCostBB:Number(canonical.incremental_cost_bb),
+        withinNoise:false,street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true,
+        preflopDecision:canonical
+      };
+    }
+    // Opponent calls retain their historical analytical baseline; it is never
+    // promoted to a Hero recommendation surface.
+    if(replayActionActorRole(step)!=="HERO"){
+      const m=actionDecisionMetrics(priorEq,req,null);
+      if(Number.isFinite(m.evBB)){
+        const loss=Math.max(0,-Number(m.evBB));
+        return {lossBB:loss,rawLossBB:loss,chosenEV:Number(m.evBB),bestEV:Math.max(0,Number(m.evBB)),bestLabel:loss>0?"FOLD":"CALL",withinNoise:false,street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true};
+      }
     }
   }
   return null;
@@ -4321,6 +4343,99 @@ function replayObservedDecisionEvidence(stepIndex,step){
   }
   return null;
 }
+
+function preflopRuntimeCoreBeforeDecision(hand,ordinal){
+  const API=window.PokerNlheGameState;
+  if(!API?.NoLimitHoldemState||!hand)throw new Error("NoLimitHoldemState runtime indisponible.");
+  const players=(hand.players||[]).slice().sort((a,b)=>(Number(a.seat)||0)-(Number(b.seat)||0));
+  const seats=players.map(p=>p.name);
+  const buttonPlayer=players.find(p=>["BTN","SB_BTN"].includes(normalizePopulationPosition(p.hhPosition,players.length)))||players[0];
+  const stacks=Object.fromEntries(players.map(p=>[p.name,historyPlayerStackBB(hand,p.name)]));
+  if(Object.values(stacks).some(x=>!Number.isFinite(x)||x<=0))throw new Error("Stacks initiaux invalides pour le game core.");
+  const core=new API.NoLimitHoldemState({seats,button:buttonPlayer.name,stacks_bb:stacks,small_blind_bb:.5,big_blind_bb:1});
+  const trace=populationPreflopDecisionTrace(hand);
+  for(let i=0;i<ordinal;i++){
+    const d=trace[i],actor=d?.player;if(!actor)continue;
+    if(core.next_actor!==actor)throw new Error(`Game core / HH action-order mismatch: attendu ${core.next_actor}, reçu ${actor}`);
+    const a=String(d.action||"").toUpperCase();
+    if(a==="FOLD")core.applyAction(actor,"FOLD");
+    else if(a==="CHECK")core.applyAction(actor,"CHECK");
+    else if(a==="LIMP"||a==="CALL")core.applyAction(actor,"CALL");
+    else if(a==="RAISE"||a==="JAM"){
+      const target=Number(d.action_sizing_v1?.target_total_bb);
+      if(!Number.isFinite(target))throw new Error("Sizing préflop cible manquant.");
+      core.applyAction(actor,"RAISE",{target_total_bb:target});
+    }
+  }
+  return core;
+}
+function preflopRuntimePublicStateForEvidence(hand,evidence){
+  const ordinal=Number(evidence?.decision?.ordinal);
+  if(!Number.isInteger(ordinal)||ordinal<0)throw new Error("Ordinal préflop invalide.");
+  const core=preflopRuntimeCoreBeforeDecision(hand,ordinal),legal=core.legalView();
+  return {core,public_state:{snapshot:core.toSnapshot(),legal_view:legal}};
+}
+function preflopRuntimeDecisionForStep(stepIndex,step,cached,{observedEvidence=undefined}={}){
+  if(step?.street!=="Préflop"||replayActionActorRole(step)!=="HERO")return null;
+  const evidence=observedEvidence===undefined?replayObservedDecisionEvidence(stepIndex,step):observedEvidence;
+  if(!evidence?.decision)return null;
+  const runtime=window.PokerPreflopRuntime;if(!runtime)return null;
+  const ctx=evidence.decision.preflop_context_v1||{},family=String(evidence.decision.family||ctx.family||"UNKNOWN");
+  let pub;
+  try{pub=preflopRuntimePublicStateForEvidence(state.selectedHand,evidence).public_state;}
+  catch(err){
+    console.warn("Preflop public-state reconstruction failed",err);
+    return null;
+  }
+  const key=`${state.selectedHand?.id||""}:${evidence.decision.ordinal}:${cached?.status||"none"}:${actionEquityKey(stepIndex)||""}`;
+  if(state.preflopRuntimeDecisionCache[key])return state.preflopRuntimeDecisionCache[key];
+  let decision;
+  if(step.actionType==="call"&&cached?.status==="done"&&!["UNOPENED","VS_LIMPERS"].includes(family)){
+    const req=requiredEquityInfo(stepIndex),eq=cached.equities||{},sources=actionVerdictSourceKeys(stepIndex),priorEq=eq[sources.prior];
+    const metrics=actionDecisionMetrics(priorEq,req,null);
+    if(req?.kind==="call"&&Number.isFinite(metrics.evBB)){
+      decision=runtime.buildCallFold({
+        public_state:pub,context_id:ctx.context_id,preflop_context:ctx,hero_position:evidence.decision.actor_position,
+        hand_id:String(state.selectedHand?.id||""),decision_id:`preflop:${state.selectedHand?.id||""}:${evidence.decision.ordinal}`,
+        call_ev_bb:Number(metrics.evBB),played_action:{action:"CALL",target_total_bb:Number(pub.snapshot.current_bet_bb)},
+        samples:Number(cached.trials||cached.samples||trialsSelect?.value||0),support_source:"active-reference-call-fold"
+      });
+    }
+  }
+  if(!decision){
+    decision=runtime.buildUnsupported({
+      public_state:pub,context_id:ctx.context_id,preflop_context:ctx,hero_position:evidence.decision.actor_position,
+      hand_id:String(state.selectedHand?.id||""),decision_id:`preflop:${state.selectedHand?.id||""}:${evidence.decision.ordinal}`,
+      played_action:{action:String(evidence.decision.action||step.actionType||"").toUpperCase(),target_total_bb:evidence.decision.action_sizing_v1?.target_total_bb??null},
+      reason:family==="VS_LIMPERS"?"SPOT_NON_COUVERT":"ACTIVE_REFERENCE_SCOPE_UNSUPPORTED"
+    });
+  }
+  runtime.assertRetainedReference(decision);
+  state.preflopRuntimeDecisionCache[key]=decision;
+  return decision;
+}
+function preflopDecisionSizingText(target){
+  const v=Number(target?.target_total_bb);return Number.isFinite(v)?`total ${formatBB(v)}`:"0 BB";
+}
+function preflopDecisionCompactHtml(decision){
+  if(!decision)return "";
+  const covered=window.PokerPreflopRuntime?.isCovered(decision);
+  if(!covered){
+    const family=escapeHtml(decision.facing_context||"UNKNOWN");
+    return `${actionCompactPillHtml("HERO · SPOT_NON_COUVERT","warn","actor-state")}${actionCompactPillHtml(`Aucune recommandation EV validée · ${family}`,"subtle","best-summary")}`;
+  }
+  const support=Number(decision.support?.observations)||0;
+  return `${actionCompactPillHtml("HERO · RECOMMANDATION_VALIDÉE","good","actor-state")}${actionCompactPillHtml(`${escapeHtml(decision.recommended_action)} · ${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))} · coût ${escapeHtml(formatBB(decision.incremental_cost_bb))} · EV ${escapeHtml(formatBB(decision.recommended_ev_bb))}`,"good","best-summary")}${actionCompactPillHtml(`support ${support.toLocaleString("fr-FR")} · ${escapeHtml(decision.support_tier)}`,"subtle","best-summary")}`;
+}
+function preflopDecisionDetailHtml(decision){
+  if(!decision)return "";
+  if(!window.PokerPreflopRuntime?.isCovered(decision)){
+    const reasons=(decision.reason_codes||[]).join(", ");
+    return `<div class="section"><div class="section-title">Préflop · SPOT_NON_COUVERT</div><div class="action-detail-point">Aucune recommandation EV n’est exposée pour ce contexte. <b>${escapeHtml(decision.facing_context||"UNKNOWN")}</b>.</div><div class="action-analysis-meta">Fail-closed : ${escapeHtml(reasons||"UNSUPPORTED")}. La candidate #108 n’est pas active.</div></div>`;
+  }
+  const rows=(decision.alternatives||[]).map(a=>`<tr><td><b>${escapeHtml(a.action)}</b></td><td>${escapeHtml(preflopDecisionSizingText(a.target_sizing))}</td><td style="text-align:right">${escapeHtml(formatBB(a.incremental_cost_bb))}</td><td style="text-align:right"><b>${escapeHtml(formatBB(a.ev_bb))}</b></td></tr>`).join("");
+  return `<div class="section"><div class="section-title">Décision préflop canonique</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Action <b>${escapeHtml(decision.recommended_action)}</b></span><span class="action-detail-chip">Cible <b>${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))}</b></span><span class="action-detail-chip">Coût <b>${escapeHtml(formatBB(decision.incremental_cost_bb))}</b></span><span class="action-detail-chip">EV <b>${escapeHtml(formatBB(decision.recommended_ev_bb))}</b></span><span class="action-detail-chip">Support <b>${Number(decision.support?.observations||0).toLocaleString("fr-FR")}</b></span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left">Action</th><th style="text-align:left">Sizing</th><th style="text-align:right">Coût</th><th style="text-align:right">EV</th></tr></thead><tbody>${rows}</tbody></table></div><div class="action-analysis-meta" style="margin-top:8px">Source : référence active conservée après #108 · candidate non activée · objet <code>poker-preflop-decision/v1</code> partagé sans recalcul par surface.</div></div>`;
+}
 function replayOpponentCommentStateFromEvidence(evidence,step,match){
   const observed=String(evidence?.decision?.action||step?.actionType||"").toUpperCase();
   if(!evidence)return {
@@ -4356,6 +4471,13 @@ function replayOpponentCommentState(stepIndex,step){
   return replayOpponentCommentStateFromEvidence(evidence,step,match);
 }
 function replayHeroCommentState(stepIndex,step,cached,{canonicalDecision=null,req=null,priorMetrics=null,decisionSummary=null,observedEvidence=undefined}={}){
+  if(canonicalDecision?.schema==="poker-preflop-decision/v1")return {
+    actor_role:"HERO",
+    state:canonicalDecision.recommendation_admissibility?.admissible?"HERO_COVERED":"SPOT_NON_COUVERT",
+    text:canonicalDecision.recommendation_admissibility?.admissible?"Recommandation EV validée":"Aucune recommandation EV validée pour ce contexte",
+    family:String(canonicalDecision.facing_context||""),
+    source_contract:"poker-preflop-decision/v1"
+  };
   if(canonicalDecision?.schema==="decision-summary/v1")return {
     actor_role:"HERO",state:"HERO_COVERED",text:"Recommandation EV validée",family:"",source_contract:"decision-summary/v1"
   };
@@ -4451,7 +4573,10 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorEq=eq[sources.prior], postEq=eq[sources.post], priorTree=trees.prior||null, postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
-  const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
+  const canonicalDecision=step.street==="Préflop"
+    ?preflopRuntimeDecisionForStep(stepIndex,step,cached)
+    :(decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null);
+  if(canonicalDecision?.schema==="poker-preflop-decision/v1")return preflopDecisionDetailHtml(canonicalDecision);
   const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
@@ -4535,8 +4660,13 @@ function actionAnalysisHtml(stepIndex,step){
   const priorEq=eq[sources.prior],priorTree=trees.prior||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
-  const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
+  const canonicalDecision=step.street==="Préflop"
+    ?preflopRuntimeDecisionForStep(stepIndex,step,cached)
+    :decisionCanonicalSummary(stepIndex,step,cached);
   const heroState=replayHeroCommentState(stepIndex,step,cached,{canonicalDecision,req,priorMetrics,decisionSummary});
+  if(canonicalDecision?.schema==="poker-preflop-decision/v1"){
+    return `<div class="action-analysis decision-summary-feed" data-comment-actor="HERO" data-comment-state="${escapeHtml(heroState.state)}"><div class="action-analysis-compact"><div class="action-compact-row">${preflopDecisionCompactHtml(canonicalDecision)}</div></div></div>`;
+  }
   if(canonicalDecision){
     const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
     return `<div class="action-analysis decision-summary-feed" data-comment-actor="HERO" data-comment-state="${escapeHtml(heroState.state)}">${actionCompactPillHtml("HERO · RECOMMANDATION_VALIDÉE","good","actor-state")}${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}${modelBRobustnessCompactHtml(robustness)}</div>`;

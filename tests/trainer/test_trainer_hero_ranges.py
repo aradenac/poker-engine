@@ -52,7 +52,7 @@ required = [
     'weights.push(weight)',
     '!trainerHeroRangeAvailable(heroRole,heroPos)',
     'heroCards=trainerSampleHeroRangeCards(heroRole,heroPos,blocked)',
-    'const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);',
+    'const deck=trainerShuffle(Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c)));',
 ]
 for needle in required:
     assert needle in JS, f"missing Hero-range contract: {needle}"
