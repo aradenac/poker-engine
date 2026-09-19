@@ -3,6 +3,24 @@ name: Card-aware Model B runtime
 on:
   push:
     paths:
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
       - 'tools/simulation/model_b_card_aware_runtime.py'
       - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
       - 'tests/simulation/test_model_b_card_aware_runtime.py'
@@ -11,6 +29,24 @@ on:
       - '.github/workflows/model-b-card-aware-runtime.yml'
   pull_request:
     paths:
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
       - 'tools/simulation/model_b_card_aware_runtime.py'
       - 'tools/training/independent_profiles/card_aware_behavior_fit.py'
       - 'tests/simulation/test_model_b_card_aware_runtime.py'
@@ -29,7 +65,9 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version-file: '.python-version'
+      - name: Verify locked REPRO environment
+        run: python3 tools/repro_ci_environment.py verify
 
       - name: Compile runtime, fit seam and tests
         run: |
