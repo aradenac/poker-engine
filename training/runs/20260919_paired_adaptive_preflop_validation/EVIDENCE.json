@@ -1,0 +1,55 @@
+{
+  "schema": "poker-paired-adaptive-preflop-validation-evidence/v1",
+  "issue": 338,
+  "parent_issue": 198,
+  "pr": 261,
+  "source_head_sha": "042ee96a0a21d95d99a39a99624b8ffc875066ba",
+  "validation_run": {
+    "run_id": 35448617513,
+    "workflow": "Validate preflop grid evaluator",
+    "conclusion": "success",
+    "job_id": 105911779956,
+    "result_marker": "ISSUE338_VALIDATION_RESULT_BEGIN/END"
+  },
+  "companion_ci": {
+    "run_id": 35448617507,
+    "workflow": "Validate sequential independent arena",
+    "conclusion": "success"
+  },
+  "frozen_protocol": {
+    "path": "training/runs/20260919_paired_adaptive_preflop_validation/PROTOCOL_V2.json",
+    "sha256": "574826ed50d27ab072f1235b38e34330cba5f9ba523c482acd10f3e2e470dc69"
+  },
+  "corpus": {
+    "declared_split": "VALIDATION",
+    "distinct_hands": 6,
+    "path": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json",
+    "sha256": "4034996c13baf94508d5cfd73a2147ef8072557405e12fad9ddfad538343311c"
+  },
+  "acceptance": {
+    "pass": true,
+    "rule": "materialized common worlds AND paired_stability>=fixed_stability AND paired_mean_rollouts<=fixed_mean_rollouts AND deterministic"
+  },
+  "metrics": {
+    "deterministic_fixed": true,
+    "deterministic_paired": true,
+    "fixed_mean_rollouts": 24,
+    "fixed_stability": 0.3333333333333333,
+    "fixed_total_rollouts": 288,
+    "materialized_common_worlds": true,
+    "paired_mean_rollouts": 22,
+    "paired_stability": 0.3333333333333333,
+    "paired_total_rollouts": 264
+  },
+  "scientific_boundaries": {
+    "model_a_modified": false,
+    "model_b_modified": false,
+    "promotion_authorized": false,
+    "test_authorized": false,
+    "test_consumed": false,
+    "ui_modified": false
+  },
+  "no_additional_validation_run": true,
+  "test_consumed": false,
+  "test_authorized": false
+}
