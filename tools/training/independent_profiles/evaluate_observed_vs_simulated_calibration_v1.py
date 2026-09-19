@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Observed-vs-simulated Model B calibration for issue #272.
 
+Finalization rerun marker: protocol and scientific semantics unchanged.
+
 Scientific constraints:
 - the reference and candidate are pre-existing TRAIN-fitted artifacts;
 - metrics are computed on VALIDATION only;
