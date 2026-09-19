@@ -12,6 +12,12 @@
         "site/analytics/leak-analyzer.js": {
           "git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd"
         },
+        "site/analytics/leak-training-target.js": {
+          "git_blob_sha": "765ea9200faa0765fb46fce42228377e644e82e8"
+        },
+        "site/analytics/review-dashboard.js": {
+          "git_blob_sha": "8fe8958df456c22168226b305a574451b0a4529d"
+        },
         "site/analytics/review-inbox.js": {
           "git_blob_sha": "b6012f242ae633381c125d615e3018a839eded02"
         },
@@ -37,7 +43,7 @@
           "git_blob_sha": "03d5f4490cc7710644a32f9d4c17344e0a926c7c"
         },
         "site/index.html": {
-          "git_blob_sha": "5c1ed1f337f96ffd07663f112e24ef7859bb4df3"
+          "git_blob_sha": "f29f76841566695d3f186a4d16c22932b1bacb98"
         },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
