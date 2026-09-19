@@ -18,6 +18,7 @@ class PairedPreflopValidationTests(unittest.TestCase):
         self.assertFalse(result["scientific_boundaries"]["test_authorized"])
         self.assertTrue(result["metrics"]["deterministic_fixed"])
         self.assertTrue(result["metrics"]["deterministic_paired"])
+        self.assertTrue(result["metrics"]["materialized_common_worlds"])
         self.assertTrue(result["acceptance"]["pass"])
 
 
