@@ -170,6 +170,270 @@ async function trainerEnsureModels(){
   }finally{trainerState.loading=false;trainerRender();}
 }
 
+function trainerTargetApis(){
+  const Target=window.PokerLeakTrainingTarget,Selector=window.PokerLeakScenarioSelector,Leak=window.PokerLeakAnalyzer;
+  if(!Target?.buildTrainingTarget||!Target?.compileScenarioCriteria||!Target?.scenarioMatchesCriteria)throw new Error("poker-leak-training-target/v1 indisponible.");
+  if(!Selector?.buildSessionPlan||!Selector?.summarizePlannedSession)throw new Error("poker-leak-training-session-plan/v1 indisponible.");
+  if(!Leak?.buildDecisionEvent)throw new Error("PokerLeakAnalyzer indisponible.");
+  return {Target,Selector,Leak};
+}
+function trainerTargetClone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function trainerTargetResetSessionCounters(){
+  trainerState.session={hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)};
+  trainerState.testLog=[];
+}
+function trainerTargetSameIdentity(a={},b={}){
+  return ["population_id","pack_id","strategy_id","strategy_version","ev_reference"].every(k=>String(a?.[k]??"")===String(b?.[k]??""));
+}
+function trainerTargetAssertCurrentIdentity(target){
+  const currentDashboard=typeof reviewDashboardBuild==="function"?reviewDashboardBuild():state.reviewDashboardView;
+  const currentTarget=currentDashboard?.ctas?.training?.target||null;
+  if(currentTarget?.identity&&!trainerTargetSameIdentity(currentTarget.identity,target.identity))throw new Error("Le contexte Review a changé : population/pack/stratégie/version/EV ne correspondent plus à ce ciblage.");
+}
+function trainerTargetIdentityText(target){
+  const id=target?.identity||{};
+  return `Population ${id.population_id||"—"} · pack ${id.pack_id||"—"} · stratégie ${id.strategy_id||"—"} · version ${id.strategy_version||"—"} · EV ${id.ev_reference||"—"}`;
+}
+function trainerTargetHydrate(target){
+  if(!target)return;
+  trainerTargetPanel.hidden=false;
+  trainerTargetSummarySection.hidden=false;
+  trainerTargetIdentity.textContent=trainerTargetIdentityText(target);
+  trainerTargetPosition.value=String(target.context?.position||"");
+  trainerTargetStreet.value=String(target.context?.street||"");
+  trainerTargetSpot.value=String(target.context?.spot_family||"");
+  trainerTargetAction.value=String(target.source_pattern?.recommended_action||"");
+  trainerTargetSizing.checked=target.source_pattern?.sizing_error===true;
+  trainerTargetJam.checked=target.source_pattern?.jam===true;
+  trainerTargetOverbet.checked=target.source_pattern?.overbet===true;
+  trainerTargetSessionSize.value=String(trainerState.targeted.requestedSize||5);
+}
+function trainerTargetBuildFromControls(){
+  const {Target}=trainerTargetApis(),base=trainerState.targeted.baseTarget;
+  if(!base)throw new Error("Aucun leak source n'est actif.");
+  const size=Math.max(1,Math.min(10,Number(trainerTargetSessionSize.value)||5));
+  trainerState.targeted.requestedSize=size;
+  return Target.buildTrainingTarget({
+    identity:trainerTargetClone(base.identity),
+    context:{
+      position:String(trainerTargetPosition.value||"").toUpperCase()||null,
+      street:String(trainerTargetStreet.value||"").toUpperCase()||null,
+      spot_family:String(trainerTargetSpot.value||"").trim().toUpperCase()||null
+    },
+    source_pattern:{
+      played_action:base.source_pattern?.played_action||null,
+      recommended_action:String(trainerTargetAction.value||"").toUpperCase()||null,
+      sizing_error:trainerTargetSizing.checked?true:null,
+      jam:trainerTargetJam.checked?true:null,
+      overbet:trainerTargetOverbet.checked?true:null
+    },
+    source_leak:trainerTargetClone(base.source_leak),
+    minimum_support:trainerTargetClone(base.minimum_support)
+  });
+}
+function trainerTargetHints(target){
+  const street=String(target?.context?.street||"").toUpperCase(),spot=String(target?.context?.spot_family||"").toUpperCase();
+  if(street==="PREFLOP")return {unsupported:"PREFLOP_NOT_MATERIALIZED_BY_CURRENT_TRAINER"};
+  const parts=spot?spot.split("|"):[];
+  if(parts.length&&parts[0]&&parts[0]!=="SRP")return {unsupported:"SPOT_FAMILY_NOT_MATERIALIZED_BY_CURRENT_TRAINER"};
+  return {
+    position:String(target?.context?.position||"").toUpperCase(),
+    preflopRole:["PFA","CALLER"].includes(parts[1])?parts[1]:"",
+    relativePosition:["IP","OOP"].includes(parts[2])?parts[2]:"",
+    preview:true,strict:true
+  };
+}
+function trainerTargetStreetRank(street){return ({FLOP:0,TURN:1,RIVER:2})[String(street||"").toUpperCase()]??-1;}
+function trainerTargetAdvancePreview(hand,target){
+  const desired=String(target?.context?.street||"").toUpperCase();
+  for(let guard=0;guard<40&&!hand.ended;guard++){
+    if(!hand.queue.length){trainerAdvanceStreetOrShowdown(hand);continue;}
+    const seat=hand.queue.shift();
+    if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
+    if(seat!==hand.heroSeat){trainerOpponentAct(hand);continue;}
+    hand.awaitingHero=true;hand.decisionNo++;
+    const current=String(hand.street||"").toUpperCase();
+    if(!desired||current===desired)return hand;
+    if(trainerTargetStreetRank(current)>trainerTargetStreetRank(desired))return null;
+    const toCall=trainerToCall(hand,hand.heroSeat),kind=toCall>1e-8?"CALL":"CHECK";
+    hand.awaitingHero=false;trainerApplyAction(hand,hand.heroSeat,kind,toCall);
+  }
+  return null;
+}
+function trainerTargetSpotFamily(detail,hand){
+  const sim=detail?.simContext||{},parts=[sim.potType,sim.preflopRole,sim.relativePosition].map(v=>String(v||"").toUpperCase()).filter(Boolean);
+  if(parts.length===3)return parts.join("|");
+  const heroPos=hand.positions[hand.heroSeat],oppPos=hand.positions[hand.activeOppSeat],relative=trainerPostRank(heroPos)>trainerPostRank(oppPos)?"IP":"OOP";
+  return `SRP|${hand.heroRole}|${relative}`;
+}
+function trainerTargetFocus(hand){
+  const toCall=trainerToCall(hand,hand.heroSeat),remaining=Number(hand.stacks[hand.heroSeat])||0;
+  const canAggress=remaining>toCall+1e-8&&hand.raises<2;
+  return {sizing_decision:canAggress,jam_available:canAggress,overbet_available:canAggress&&remaining>Number(hand.pot||0)+toCall+1e-8};
+}
+function trainerTargetDescriptor(target,hand,detail,attempt){
+  const {Target}=trainerTargetApis(),recommended=trainerRecommendationKind(hand,detail),chosen=Number(detail?.chosenEV),best=Number(detail?.bestEV);
+  const comparable=detail?.comparable!==false&&Number.isFinite(chosen)&&Number.isFinite(best),position=String(hand.positions[hand.heroSeat]||"").toUpperCase();
+  const board=hand.runout.slice(0,hand.boardCount).map(cardCode).join("-");
+  return {
+    schema:Target.SCENARIO_SCHEMA,
+    scenario_id:`trainer-target:${target.target_id}:${attempt}:${hand.id}:${hand.decisionNo}`,
+    identity:trainerTargetClone(target.identity),
+    context:{position,street:String(hand.street||"").toUpperCase(),spot_family:trainerTargetSpotFamily(detail,hand)},
+    policy:{recommended_action:recommended},
+    focus:trainerTargetFocus(hand),
+    supported:comparable,
+    support:{covered:comparable,reason:comparable?null:"NO_COMPARABLE_EV"},
+    diversity_key:`${position}|${hand.heroRole}|${board}`,
+    payload_key:`${hand.id}|${hand.decisionNo}`,
+    payload:{hand:trainerTargetClone(hand),recommendation:trainerTargetClone(detail)}
+  };
+}
+function trainerTargetSetSupport(text,kind=""){
+  if(!trainerTargetSupport)return;
+  trainerTargetSupport.textContent=text||"";
+  trainerTargetSupport.className=`tiny${kind?" "+kind:""}`;
+}
+async function trainerTargetMaterializePool(target,requestedSize){
+  const {Target}=trainerTargetApis(),criteria=Target.compileScenarioCriteria(target),hints=trainerTargetHints(target);
+  if(hints.unsupported)return {pool:[],criteria,attempts:0,evaluated:0,unsupported:hints.unsupported};
+  const required=Math.max(requestedSize,Number(target.minimum_support?.scenarios)||1),maxAttempts=Math.max(30,required*18),maxEvaluated=Math.max(14,required*6);
+  const pool=[];let matching=0,attempts=0,evaluated=0;
+  while(attempts<maxAttempts&&evaluated<maxEvaluated&&matching<required){
+    attempts++;
+    const hand=trainerBuildHand(hints);if(!hand)break;
+    const ready=trainerTargetAdvancePreview(hand,target);if(!ready||ready.ended)continue;
+    evaluated++;
+    trainerTargetSetSupport(`Qualification des spots… ${matching}/${required} supportés · ${evaluated} évalués`,"busy");
+    let detail=null;
+    try{
+      const ph=trainerPlaceholderLine(ready);
+      detail=await trainerTimedReviewText(trainerBuildReviewHH(ready,ph.line,ph.kind,0));
+    }catch(err){
+      pool.push({
+        schema:Target.SCENARIO_SCHEMA,scenario_id:`trainer-target:${target.target_id}:${attempts}:unsupported`,
+        identity:trainerTargetClone(target.identity),context:{position:ready.positions[ready.heroSeat],street:String(ready.street).toUpperCase(),spot_family:trainerTargetSpotFamily(null,ready)},
+        policy:{recommended_action:"UNKNOWN"},focus:trainerTargetFocus(ready),supported:false,support:{covered:false,reason:"ORACLE_UNAVAILABLE"},
+        payload:{hand:trainerTargetClone(ready),recommendation:{error:String(err?.message||err)}}
+      });
+      continue;
+    }
+    const descriptor=trainerTargetDescriptor(target,ready,detail,attempts);pool.push(descriptor);
+    if(Target.scenarioMatchesCriteria(descriptor,criteria))matching++;
+  }
+  return {pool,criteria,attempts,evaluated,unsupported:null};
+}
+function trainerTargetRenderSummary(){
+  const t=trainerState.targeted;
+  if(!t.active){trainerTargetPanel.hidden=true;trainerTargetSummarySection.hidden=true;return;}
+  trainerTargetPanel.hidden=false;trainerTargetSummarySection.hidden=false;
+  if(t.fallback){
+    const p=t.plan?.pool||{};
+    trainerTargetSummary.textContent=`${t.fallback} · ${p.matching_supported??0} spot(s) exact(s) pour ${p.requested_coverage_pct==null?t.requestedSize:t.plan.request.session_size} demandé(s) · aucune substitution silencieuse.`;
+    return;
+  }
+  if(!t.plan){trainerTargetSummary.textContent=t.preparing?"Préparation de la session ciblée…":"Aucun plan ciblé exécutable.";return;}
+  const s=t.summary?.summary;
+  if(!s){trainerTargetSummary.textContent=`0/${t.plan.selection.length} spot joué · perte ΔEV ciblée : — · le bilan sera calculé uniquement sur les décisions couvertes et comparables.`;return;}
+  const change=s.within_session_change;
+  const evolution=change?` · évolution descriptive ${trainerFmtBB(change.first_segment_avg_loss_bb)} → ${trainerFmtBB(change.second_segment_avg_loss_bb)} (Δ ${trainerFmtBB(change.delta_avg_loss_bb)})`:" · évolution : échantillon encore insuffisant";
+  const longTerm=t.summary.long_term_progression;
+  trainerTargetSummary.textContent=`${t.summary.spots_played}/${t.plan.selection.length} spot(s) joué(s) · couvert/comparable ${s.covered_comparable} · perte ΔEV ciblée ${trainerFmtBB(s.total_delta_ev_loss_bb)} · moyenne ${s.average_delta_ev_loss_bb==null?"—":trainerFmtBB(s.average_delta_ev_loss_bb)} · unsupported ${s.unsupported} · non-comparable ${s.non_comparable}${evolution} · progression long terme non inférée (${longTerm.reason}).`;
+}
+function trainerTargetLoadSelection(index){
+  const t=trainerState.targeted,row=t.plan?.selection?.[index],payload=row?.scenario?.payload;
+  if(!row||!payload?.hand){
+    t.complete=true;t.currentScenario=null;t.currentCompleted=false;
+    if(trainerState.hand)trainerState.hand.awaitingHero=false;
+    trainerRenderStatus("Session ciblée terminée.");trainerRender();return false;
+  }
+  t.currentIndex=index;t.currentScenario=row;t.currentCompleted=false;t.complete=false;
+  trainerState.hand=trainerTargetClone(payload.hand);trainerState.hand.preview=false;trainerState.hand.awaitingHero=true;
+  trainerState.recommendation=trainerTargetClone(payload.recommendation);trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerState.sizingTouched=false;
+  trainerRenderStatus(`Spot ciblé ${index+1}/${t.plan.selection.length} · ${row.context.position} · ${row.context.street} · ${row.context.spot_family}.`);
+  trainerRender();return true;
+}
+function trainerTargetNext(){
+  const t=trainerState.targeted;if(!t.active||!t.plan?.ready)return false;
+  const next=t.currentIndex+1;
+  if(next>=t.plan.selection.length){
+    t.complete=true;t.currentScenario=null;t.currentCompleted=false;trainerState.pauseAfterDecision=false;
+    if(trainerState.hand)trainerState.hand.awaitingHero=false;
+    trainerRenderStatus("Session ciblée terminée · bilan ΔEV disponible.");trainerRender();return false;
+  }
+  return trainerTargetLoadSelection(next);
+}
+function trainerTargetEvent(detail,row,actual){
+  const t=trainerState.targeted,selection=t.currentScenario,scenario=selection?.scenario,hand=trainerState.hand;
+  if(!t.active||!t.plan||!scenario||!hand)return null;
+  const {Leak,Selector}=trainerTargetApis(),chosen=Number(detail?.chosenEV),best=Number(detail?.bestEV),comparable=detail?.comparable!==false&&Number.isFinite(chosen)&&Number.isFinite(best);
+  const played=String(actual?.kind||row?.played||"UNKNOWN").toUpperCase(),recommended=String(scenario.policy?.recommended_action||"UNKNOWN").toUpperCase();
+  const cost=Number(actual?.cost)||0,potBefore=Math.max(.01,Number(hand.pot)||0),bestCost=Number(detail?.bestCostBB),rawLoss=Math.max(0,Number(detail?.rawLossBB)||0),effectiveLoss=Math.max(0,Number(row?.lossBB)||0);
+  const aggressive=["BET","RAISE"].includes(played),playedRatio=aggressive?cost/potBefore:null,allIn=cost>=Number(hand.stacks[hand.heroSeat]||0)-1e-8&&cost>0;
+  const event=Leak.buildDecisionEvent({
+    hand_id:`trainer-target-${hand.id}-${t.currentIndex+1}`,decision_id:`trainer-target:${hand.id}:${hand.decisionNo}`,timestamp:new Date(Date.now()+t.events.length).toISOString(),
+    ...trainerTargetClone(t.target.identity),position:scenario.context.position,street:scenario.context.street,spot_family:scenario.context.spot_family,context_id:t.target.target_id,
+    action_played:played,action_recommended:recommended,played_target_total_bb:(Number(hand.streetPaid[hand.heroSeat])||0)+cost,
+    recommended_target_total_bb:Number.isFinite(bestCost)?(Number(hand.streetPaid[hand.heroSeat])||0)+bestCost:null,
+    played_size_pot_ratio:playedRatio,recommended_size_pot_ratio:Number.isFinite(bestCost)&&["BET","RAISE"].includes(recommended)?bestCost/potBefore:null,
+    played_is_all_in:allIn,played_is_overbet:playedRatio!=null&&playedRatio>1,played_ev_bb:comparable?chosen:null,best_ev_bb:comparable?best:null,
+    uncertainty_bb:Math.max(0,rawLoss-effectiveLoss),attributed_loss_bb:comparable?effectiveLoss:null,within_noise:!!detail?.withinNoise,
+    sizing_error:played===recommended&&Number.isFinite(bestCost)&&Math.abs(bestCost-cost)>.05,
+    support:{covered:comparable,source:"trainer-targeted-runtime",reason:comparable?null:"NO_COMPARABLE_EV"},
+    comparability:{comparable,reason:comparable?null:"NO_COMPARABLE_EV"},notes:`target_id=${t.target.target_id}`
+  });
+  t.events.push(event);
+  t.summary=Selector.summarizePlannedSession(t.plan,t.events,{minimum_trend_decisions:4,minimum_long_term_spots:50});
+  trainerTargetRenderSummary();return event;
+}
+async function trainerPrepareTargetSession(target,{hydrate=false}={}){
+  const t=trainerState.targeted,{Selector}=trainerTargetApis();
+  t.active=true;t.preparing=true;t.target=trainerTargetClone(target);t.plan=null;t.pool=[];t.criteria=null;t.currentIndex=-1;t.currentScenario=null;t.currentCompleted=false;t.events=[];t.summary=null;t.fallback=null;t.lastError="";t.complete=false;
+  if(hydrate||!t.baseTarget){t.baseTarget=trainerTargetClone(target);trainerTargetHydrate(target);}
+  trainerTargetResetSessionCounters();trainerTargetRenderSummary();
+  try{
+    trainerTargetAssertCurrentIdentity(target);
+    if(!target.source_support?.sufficient)throw new Error("INSUFFICIENT_SOURCE_SUPPORT");
+    if(!await trainerEnsureModels())throw new Error(trainerState.error||"Trainer indisponible");
+    const materialized=await trainerTargetMaterializePool(target,t.requestedSize);
+    t.pool=materialized.pool;t.criteria=materialized.criteria;t.attempts=materialized.attempts;t.evaluated=materialized.evaluated;
+    const plan=Selector.buildSessionPlan(target,t.pool,{session_size:t.requestedSize,seed:target.target_id,identity:trainerTargetClone(target.identity)});
+    t.plan=plan;t.fallback=plan.fallback||materialized.unsupported||null;
+    if(!plan.ready){
+      t.fallback=plan.fallback||"INSUFFICIENT_SUPPORTED_SCENARIOS";
+      trainerState.hand=null;trainerState.recommendation=null;trainerState.feedback=null;trainerState.pauseAfterDecision=false;
+      const p=plan.pool||{};trainerTargetSetSupport(`${t.fallback} · exacts ${p.matching_supported??0}/${plan.request.effective_minimum_supported_scenarios} · ${p.rejected??0} rejeté(s) · aucun spot alternatif sélectionné.`,"error");
+      trainerRenderStatus("Session ciblée indisponible : support exact insuffisant.","error");trainerRender();return plan;
+    }
+    trainerTargetSetSupport(`Plan exact prêt · ${plan.pool.matching_supported} spot(s) supporté(s), ${plan.selection.length} sélectionné(s) · target ${plan.target_id}.`);
+    trainerTargetLoadSelection(0);return plan;
+  }catch(err){
+    t.lastError=String(err?.message||err);t.fallback=t.lastError==="INSUFFICIENT_SOURCE_SUPPORT"?"INSUFFICIENT_SOURCE_SUPPORT":"INSUFFICIENT_SUPPORTED_SCENARIOS";
+    trainerState.hand=null;trainerState.recommendation=null;trainerState.feedback=null;trainerState.pauseAfterDecision=false;
+    trainerTargetSetSupport(`${t.fallback} · ${t.lastError} · aucune substitution silencieuse.`,"error");
+    trainerRenderStatus(`Session ciblée indisponible : ${t.lastError}`,"error");trainerRender();return null;
+  }finally{t.preparing=false;trainerTargetRenderSummary();}
+}
+async function trainerOpenTargetedSession(target){
+  const {Target}=trainerTargetApis();
+  if(!target||target.schema!==Target.TARGET_SCHEMA)throw new Error("Descriptor poker-leak-training-target/v1 requis.");
+  trainerState.targeted.baseTarget=trainerTargetClone(target);trainerState.targeted.requestedSize=Math.max(1,Math.min(10,Number(trainerTargetSessionSize?.value)||5));
+  trainerTargetHydrate(target);
+  await trainerOpen({deferHand:true});
+  return trainerPrepareTargetSession(target,{hydrate:true});
+}
+window.trainerOpenTargetedSession=trainerOpenTargetedSession;
+async function trainerApplyTargetControls(){
+  if(!trainerState.targeted.active)return;
+  try{const target=trainerTargetBuildFromControls();await trainerPrepareTargetSession(target,{hydrate:false});}
+  catch(err){trainerTargetSetSupport(String(err?.message||err),"error");}
+}
+async function trainerClearTargeting(){
+  const t=trainerState.targeted;t.active=false;t.preparing=false;t.baseTarget=null;t.target=null;t.criteria=null;t.plan=null;t.pool=[];t.currentIndex=-1;t.currentScenario=null;t.currentCompleted=false;t.events=[];t.summary=null;t.fallback=null;t.lastError="";t.complete=false;
+  trainerTargetPanel.hidden=true;trainerTargetSummarySection.hidden=true;trainerState.hand=null;trainerState.recommendation=null;trainerState.feedback=null;trainerState.pauseAfterDecision=false;
+  trainerTargetResetSessionCounters();trainerRenderStatus("Ciblage désactivé · session Training générale.");trainerRender();await trainerNewHand();
+}
+
 function trainerKeyFor(cols,row){return !cols?.length?"ALL":cols.map(c=>String(row[c]??"NA")).join("|");}
 function trainerSelectNode(levels,row,minObs){
   let fallback=null;
