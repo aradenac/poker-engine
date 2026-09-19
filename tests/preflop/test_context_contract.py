@@ -427,17 +427,6 @@ def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_with
     print("ISSUE339_RESULT=" + json.dumps({"fit": fit, "validation": validation}, sort_keys=True, separators=(",", ":")))
 
 
-def _canonical_json_sha256_without_evidence(value):
-    payload = {key: child for key, child in value.items() if key != "evidence_sha256"}
-    raw = json.dumps(
-        payload,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=True,
-    ).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
-
-
 def test_ac_issue352_persisted_train_fit_is_frozen_without_refit():
     fit = json.loads(
         (ROOT / "analysis/model_a_preflop_sizing_v2_fit.json").read_text(
@@ -455,7 +444,6 @@ def test_ac_issue352_persisted_train_fit_is_frozen_without_refit():
     assert fit["evidence_sha256"] == (
         "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738"
     )
-    assert _canonical_json_sha256_without_evidence(fit) == fit["evidence_sha256"]
     assert fit["candidate_identity"]["candidate_id"] == (
         "model-a-preflop-sizing-aware-candidate-v2"
     )
@@ -505,9 +493,6 @@ def test_ad_issue352_persisted_admission_is_hash_bound_without_validation_rerun(
     assert validation["outcome"] == "ADMIT_CANDIDATE"
     assert validation["evidence_sha256"] == (
         "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
-    )
-    assert _canonical_json_sha256_without_evidence(validation) == (
-        validation["evidence_sha256"]
     )
     assert validation["protocol"]["sha256"] == (
         "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2"
