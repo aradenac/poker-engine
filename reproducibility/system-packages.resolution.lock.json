@@ -1,0 +1,311 @@
+{
+  "schema": "poker-engine-system-packages-resolution/v1",
+  "issue": 203,
+  "snapshot_id": "20260918T000000Z",
+  "architecture": "amd64",
+  "pinning_level": "OFFICIAL_SNAPSHOT_PINNED_RUNTIME_RESOLUTION",
+  "fully_pinned": false,
+  "entries": [
+    {
+      "requested_package": "build-essential",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "ca-certificates",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "curl",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "fonts-liberation",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "fonts-noto-color-emoji",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libasound2t64",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libatk-bridge2.0-0t64",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libatk1.0-0t64",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libatspi2.0-0t64",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libbz2-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libcairo2",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libcups2t64",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libdbus-1-3",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libdrm2",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libexpat1-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libffi-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libfontconfig1",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libfreetype6",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libgbm1",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libgdbm-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libglib2.0-0t64",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "liblzma-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libncurses-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libnspr4",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libnss3",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libpango-1.0-0",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libreadline-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libsqlite3-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libssl-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libx11-6",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxcb1",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxcomposite1",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxdamage1",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxext6",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxfixes3",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxkbcommon0",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxrandr2",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "libxshmfence1",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "pkg-config",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "tk-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "uuid-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "xz-utils",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    },
+    {
+      "requested_package": "zlib1g-dev",
+      "resolved_version": null,
+      "source": "ubuntu-official-snapshot",
+      "snapshot_status": "PINNED_20260918T000000Z",
+      "verification_status": "RESOLVE_AND_COMPARE_AT_BUILD_OR_VERIFY"
+    }
+  ]
+}

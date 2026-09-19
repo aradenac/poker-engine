@@ -4,35 +4,79 @@
   "title": "Poker Engine environment identity",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "version", "expected", "locks", "identity_sha256"],
+  "required": [
+    "schema",
+    "version",
+    "expected",
+    "locks",
+    "identity_sha256"
+  ],
   "properties": {
-    "schema": {"const": "poker-environment-identity/v1"},
-    "version": {"const": 1},
+    "schema": {
+      "const": "poker-environment-identity/v1"
+    },
+    "version": {
+      "const": 1
+    },
     "expected": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["python", "node", "playwright", "browser", "os"],
+      "required": [
+        "python",
+        "node",
+        "playwright",
+        "browser",
+        "os"
+      ],
       "properties": {
-        "python": {"$ref": "#/$defs/versionIdentity"},
-        "node": {"$ref": "#/$defs/versionIdentity"},
-        "playwright": {"$ref": "#/$defs/versionIdentity"},
+        "python": {
+          "$ref": "#/$defs/versionIdentity"
+        },
+        "node": {
+          "$ref": "#/$defs/versionIdentity"
+        },
+        "playwright": {
+          "$ref": "#/$defs/versionIdentity"
+        },
         "browser": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["name", "version"],
+          "required": [
+            "name",
+            "version"
+          ],
           "properties": {
-            "name": {"type": "string", "minLength": 1},
-            "version": {"type": "string", "minLength": 1}
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "os": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["distribution", "version", "architecture"],
+          "required": [
+            "distribution",
+            "version",
+            "architecture"
+          ],
           "properties": {
-            "distribution": {"type": "string", "minLength": 1},
-            "version": {"type": "string", "minLength": 1},
-            "architecture": {"type": "string", "minLength": 1}
+            "distribution": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "architecture": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         }
       }
@@ -44,11 +88,28 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["role", "path", "sha256"],
+        "required": [
+          "role",
+          "path",
+          "sha256"
+        ],
         "properties": {
-          "role": {"enum": ["requirements_lock", "package_lock", "environment_lock", "os_lock"]},
-          "path": {"type": "string", "minLength": 1},
-          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          "role": {
+            "enum": [
+              "requirements_lock",
+              "package_lock",
+              "environment_lock",
+              "os_lock"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
         }
       }
     },
@@ -61,57 +122,284 @@
         "container_lock_sha256",
         "system_packages_sha256",
         "container_manifest_sha256",
+        "system_packages_pinning_level",
+        "apt_snapshot_identity",
+        "browser_archive_identity",
+        "browser_binary_identity",
         "hermeticity_level",
         "base_image_pinned",
-        "system_packages_fully_pinned"
+        "system_packages_fully_pinned",
+        "browser_archive_sha_pinned"
       ],
       "properties": {
         "base_image": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["repository", "tag", "platform", "digest", "architecture", "os"],
+          "required": [
+            "repository",
+            "tag",
+            "platform",
+            "digest",
+            "architecture",
+            "os"
+          ],
           "properties": {
-            "repository": {"type": "string", "minLength": 1},
-            "tag": {"type": "string", "minLength": 1},
-            "platform": {"const": "linux/amd64"},
-            "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-            "architecture": {"const": "x86_64"},
+            "repository": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tag": {
+              "type": "string",
+              "minLength": 1
+            },
+            "platform": {
+              "const": "linux/amd64"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "architecture": {
+              "const": "x86_64"
+            },
             "os": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["distribution", "version"],
+              "required": [
+                "distribution",
+                "version"
+              ],
               "properties": {
-                "distribution": {"const": "ubuntu"},
-                "version": {"const": "24.04"}
+                "distribution": {
+                  "const": "ubuntu"
+                },
+                "version": {
+                  "const": "24.04"
+                }
               }
             }
           }
         },
-        "definition": {"$ref": "#/$defs/hashedPath"},
-        "container_lock_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "system_packages_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "container_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "hermeticity_level": {"type": "string", "minLength": 1},
-        "base_image_pinned": {"const": true},
-        "system_packages_fully_pinned": {"type": "boolean"}
+        "definition": {
+          "$ref": "#/$defs/hashedPath"
+        },
+        "container_lock_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "system_packages_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "container_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "hermeticity_level": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_image_pinned": {
+          "const": true
+        },
+        "system_packages_fully_pinned": {
+          "type": "boolean"
+        },
+        "system_packages_pinning_level": {
+          "type": "string",
+          "minLength": 1
+        },
+        "apt_snapshot_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "snapshot_id",
+            "service",
+            "architecture",
+            "sources_path",
+            "sources_sha256",
+            "lock_sha256",
+            "resolution_lock_sha256",
+            "fully_pinned"
+          ],
+          "properties": {
+            "snapshot_id": {
+              "type": "string",
+              "pattern": "^[0-9]{8}T[0-9]{6}Z$"
+            },
+            "service": {
+              "type": "string",
+              "minLength": 1
+            },
+            "architecture": {
+              "const": "amd64"
+            },
+            "sources_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sources_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "lock_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "resolution_lock_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "fully_pinned": {
+              "type": "boolean"
+            }
+          }
+        },
+        "browser_archive_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "playwright",
+            "browser",
+            "version",
+            "revision",
+            "platform",
+            "architecture",
+            "path_template",
+            "sha256",
+            "sha_pinned",
+            "verification_status",
+            "lock_sha256"
+          ],
+          "properties": {
+            "playwright": {
+              "type": "string",
+              "minLength": 1
+            },
+            "browser": {
+              "const": "chromium"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "platform": {
+              "const": "ubuntu24.04-x64"
+            },
+            "architecture": {
+              "const": "x86_64"
+            },
+            "path_template": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              ]
+            },
+            "sha_pinned": {
+              "type": "boolean"
+            },
+            "verification_status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lock_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "browser_binary_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "relative_path",
+            "expected_version",
+            "expected_sha256",
+            "sha_pinned",
+            "verification_status"
+          ],
+          "properties": {
+            "relative_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expected_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expected_sha256": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              ]
+            },
+            "sha_pinned": {
+              "type": "boolean"
+            },
+            "verification_status": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "browser_archive_sha_pinned": {
+          "type": "boolean"
+        }
       }
     },
-    "identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
   },
   "$defs": {
     "versionIdentity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["version"],
-      "properties": {"version": {"type": "string", "minLength": 1}}
+      "required": [
+        "version"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "hashedPath": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256"],
+      "required": [
+        "path",
+        "sha256"
+      ],
       "properties": {
-        "path": {"type": "string", "minLength": 1},
-        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
       }
     }
   }

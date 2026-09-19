@@ -7,7 +7,11 @@
     "platform": "linux/amd64",
     "manifest_digest": "sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
     "index_digest": "sha256:b3cc40b72b93588182b5410f723c7aaf142363311c2aa993d8a453ddcbb3ae15",
-    "os": {"id": "ubuntu", "version_id": "24.04", "architecture": "x86_64"}
+    "os": {
+      "id": "ubuntu",
+      "version_id": "24.04",
+      "architecture": "x86_64"
+    }
   },
   "verification": {
     "source": "Docker Hub official image",
@@ -37,7 +41,6 @@
   "definition": "reproducibility/Dockerfile.science",
   "system_packages": "reproducibility/system-packages.apt.txt",
   "hermeticity": {
-    "level": "BASE_IMAGE_PINNED_PARTIAL_SYSTEM_AND_BROWSER_FETCH",
     "base_image_pinned": true,
     "python_source_sha256_pinned": true,
     "node_archive_sha256_pinned": true,
@@ -47,6 +50,11 @@
     "chromium_archive_digest_pinned": false,
     "system_packages_fully_pinned": false,
     "apt_snapshot": null,
-    "limitation": "APT package names are explicit but package versions are resolved from Ubuntu repositories at build time; the Playwright Chromium archive is selected by pinned Playwright 1.55.0 but is not independently SHA-pinned by this repository."
-  }
+    "limitation": "Ubuntu Snapshot Service timestamp and source set are pinned; package versions are resolved/compared at build or verify time and are not pre-expanded. Playwright Chromium revision/source are pinned, but no official archive SHA-256 is published in Playwright 1.55.0 metadata.",
+    "browser_archive_sha_pinned": false,
+    "apt_snapshot_pinned": true
+  },
+  "apt_snapshot": "reproducibility/apt-snapshot.lock.json",
+  "system_packages_resolution": "reproducibility/system-packages.resolution.lock.json",
+  "browser_identity": "reproducibility/browser-identity.lock.json"
 }

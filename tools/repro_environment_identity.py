@@ -237,12 +237,27 @@ def materialize_identity(root: Path = ROOT) -> dict[str, Any]:
                 "system_packages_sha256"
             ],
             "container_manifest_sha256": container_manifest["manifest_sha256"],
+            "system_packages_pinning_level": container_manifest["system_packages"][
+                "pinning_level"
+            ],
+            "apt_snapshot_identity": container_manifest["system_packages"][
+                "apt_snapshot_identity"
+            ],
+            "browser_archive_identity": container_manifest["browser"][
+                "archive_identity"
+            ],
+            "browser_binary_identity": container_manifest["browser"][
+                "binary_identity"
+            ],
             "hermeticity_level": container_manifest["hermeticity"]["level"],
             "base_image_pinned": container_manifest["hermeticity"][
                 "base_image_pinned"
             ],
             "system_packages_fully_pinned": container_manifest["hermeticity"][
                 "system_packages_fully_pinned"
+            ],
+            "browser_archive_sha_pinned": container_manifest["hermeticity"][
+                "browser_archive_sha_pinned"
             ],
         }
 

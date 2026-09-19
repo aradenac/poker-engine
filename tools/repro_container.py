@@ -12,6 +12,11 @@ import subprocess
 import sys
 from typing import Any
 
+try:
+    from tools import repro_hardening
+except ImportError:
+    import repro_hardening  # type: ignore
+
 ROOT = Path(__file__).resolve().parents[1]
 LOCK_SCHEMA = "poker-engine-container-base/v1"
 MANIFEST_SCHEMA = "poker-engine-science-container/v1"
@@ -185,8 +190,16 @@ def validate_contract(root: Path = ROOT) -> dict[str, Any]:
         raise ContainerContractError(
             "current contract must explicitly declare SYSTEM_PACKAGES_FULLY_PINNED=false"
         )
-    if not isinstance(hermeticity.get("level"), str) or not hermeticity["level"]:
-        raise ContainerContractError("hermeticity level is required")
+    if hermeticity.get("browser_archive_sha_pinned") is not False:
+        raise ContainerContractError(
+            "browser archive SHA must remain explicitly unpinned unless a verified hash is versioned"
+        )
+    if hermeticity.get("apt_snapshot_pinned") is not True:
+        raise ContainerContractError("official apt snapshot identity must be pinned")
+    try:
+        hardening_identity = repro_hardening.expected_identity(root)
+    except repro_hardening.HardeningError as exc:
+        raise ContainerContractError(f"invalid REPRO hardening contract: {exc}") from exc
 
     if not dockerfile_path.is_file():
         raise ContainerContractError(f"missing container definition: {dockerfile_path}")
@@ -211,7 +224,6 @@ def validate_contract(root: Path = ROOT) -> dict[str, Any]:
         node_src["sha256"],
         env["playwright"]["chromium_version"],
         digest,
-        hermeticity["level"],
     )
     for literal in required_literals:
         if str(literal) not in dockerfile:
@@ -225,6 +237,7 @@ def validate_contract(root: Path = ROOT) -> dict[str, Any]:
         "dockerfile_path": dockerfile_path,
         "packages_path": packages_path,
         "packages": packages,
+        "hardening_identity": hardening_identity,
     }
 
 
@@ -260,6 +273,10 @@ def materialize_manifest(root: Path = ROOT) -> dict[str, Any]:
                 root / env["python"]["requirements"]
             ),
             "package_lock_sha256": sha256_file(root / env["node"]["package_lock"]),
+            "apt_snapshot_lock_sha256": sha256_file(root / env["container"]["apt_snapshot"]),
+            "system_packages_resolution_lock_sha256": sha256_file(root / env["container"]["system_packages_resolution"]),
+            "browser_identity_lock_sha256": sha256_file(root / env["container"]["browser_identity"]),
+            "apt_sources_sha256": sha256_file(root / "reproducibility/ubuntu-snapshot.sources"),
         },
         "expected_runtime": {
             "python": env["python"]["version"],
@@ -271,9 +288,20 @@ def materialize_manifest(root: Path = ROOT) -> dict[str, Any]:
         "system_packages": {
             "path": data["packages_path"].relative_to(root).as_posix(),
             "count": len(data["packages"]),
-            "fully_pinned": False,
+            "fully_pinned": data["hardening_identity"]["apt_snapshot_identity"]["fully_pinned"],
+            "pinning_level": data["hardening_identity"]["system_packages_pinning_level"],
+            "apt_snapshot_identity": data["hardening_identity"]["apt_snapshot_identity"],
         },
-        "hermeticity": lock["hermeticity"],
+        "browser": {
+            "archive_identity": data["hardening_identity"]["browser_archive_identity"],
+            "binary_identity": data["hardening_identity"]["browser_binary_identity"],
+        },
+        "hermeticity": {
+            "level": data["hardening_identity"]["hermeticity_level"],
+            "base_image_pinned": lock["hermeticity"]["base_image_pinned"],
+            "system_packages_fully_pinned": data["hardening_identity"]["apt_snapshot_identity"]["fully_pinned"],
+            "browser_archive_sha_pinned": data["hardening_identity"]["browser_archive_identity"]["sha_pinned"],
+        },
     }
     manifest["manifest_sha256"] = manifest_sha256(manifest)
     return manifest
@@ -421,6 +449,27 @@ def verify_image(image: str, root: Path = ROOT) -> list[str]:
     if process.returncode != 0:
         detail = (process.stderr or process.stdout).strip()
         errors.append(f"container runtime verification failed: {detail}")
+
+    hardening = subprocess.run(
+        [
+            _docker(),
+            "run",
+            "--rm",
+            "--platform",
+            manifest["base_image"]["platform"],
+            image,
+            "python3",
+            "tools/repro_hardening.py",
+            "verify",
+        ],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if hardening.returncode != 0:
+        detail = (hardening.stderr or hardening.stdout).strip()
+        errors.append(f"container hardening verification failed: {detail}")
 
     return errors
 
