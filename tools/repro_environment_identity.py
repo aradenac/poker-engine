@@ -11,6 +11,11 @@ import re
 import sys
 from typing import Any
 
+try:
+    from tools import repro_container
+except ImportError:  # direct script execution from tools/
+    import repro_container  # type: ignore
+
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = "poker-environment-identity/v1"
 VERSION = 1
@@ -55,7 +60,9 @@ def _sha256_file(path: Path) -> str:
 def _canonical_payload(identity: dict[str, Any]) -> bytes:
     payload = copy.deepcopy(identity)
     payload.pop("identity_sha256", None)
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
 
 
 def canonical_sha256(identity: dict[str, Any]) -> str:
@@ -71,7 +78,9 @@ def _critical_version(value: Any, label: str) -> str:
     return value
 
 
-def _validate_sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Path]]:
+def _validate_sources(
+    root: Path,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Path]]:
     env_path = root / "reproducibility/environment.lock.json"
     env = _read_json(env_path)
     if env.get("schema") != "poker-engine-repro-environment/v1":
@@ -82,7 +91,9 @@ def _validate_sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[
         package_rel = env["node"]["package_lock"]
         os_rel = env["os"]["spec"]
     except (KeyError, TypeError) as exc:
-        raise IdentityError(f"environment lock missing lock-path contract: {exc}") from exc
+        raise IdentityError(
+            f"environment lock missing lock-path contract: {exc}"
+        ) from exc
 
     paths = {
         "requirements_lock": root / str(requirements_rel),
@@ -98,10 +109,16 @@ def _validate_sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[
     if os_lock.get("schema") != "poker-engine-os-base/v1":
         raise IdentityError("unexpected OS lock schema")
 
-    python_version = _critical_version(env.get("python", {}).get("version"), "python")
+    python_version = _critical_version(
+        env.get("python", {}).get("version"), "python"
+    )
     node_version = _critical_version(env.get("node", {}).get("version"), "node")
-    playwright_version = _critical_version(env.get("playwright", {}).get("python_package_version"), "playwright")
-    chromium_version = _critical_version(env.get("playwright", {}).get("chromium_version"), "chromium")
+    playwright_version = _critical_version(
+        env.get("playwright", {}).get("python_package_version"), "playwright"
+    )
+    chromium_version = _critical_version(
+        env.get("playwright", {}).get("chromium_version"), "chromium"
+    )
     browser_name = env.get("playwright", {}).get("browser")
     if not isinstance(browser_name, str) or not browser_name.strip():
         raise IdentityError("missing critical browser identity")
@@ -112,17 +129,30 @@ def _validate_sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[
         raise IdentityError(".node-version diverges from environment lock")
 
     req_text = paths["requirements_lock"].read_text(encoding="utf-8")
-    if f"playwright=={playwright_version}" not in {line.strip() for line in req_text.splitlines()}:
-        raise IdentityError("requirements lock does not contain the critical Playwright pin")
+    if f"playwright=={playwright_version}" not in {
+        line.strip() for line in req_text.splitlines()
+    }:
+        raise IdentityError(
+            "requirements lock does not contain the critical Playwright pin"
+        )
     for line in req_text.splitlines():
         stripped = line.strip()
-        if stripped and not stripped.startswith("#") and stripped.count("==") != 1:
+        if (
+            stripped
+            and not stripped.startswith("#")
+            and stripped.count("==") != 1
+        ):
             raise IdentityError(f"implicit/unpinned Python dependency: {stripped}")
 
     package_lock = _read_json(paths["package_lock"])
     if package_lock.get("lockfileVersion") != 3:
         raise IdentityError("package lock must use lockfileVersion 3")
-    lock_node = package_lock.get("packages", {}).get("", {}).get("engines", {}).get("node")
+    lock_node = (
+        package_lock.get("packages", {})
+        .get("", {})
+        .get("engines", {})
+        .get("node")
+    )
     if lock_node != node_version:
         raise IdentityError("package lock Node engine diverges from environment lock")
 
@@ -147,13 +177,16 @@ def _validate_sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[
 def materialize_identity(root: Path = ROOT) -> dict[str, Any]:
     root = root.resolve()
     env, os_lock, paths = _validate_sources(root)
+
     identity: dict[str, Any] = {
         "schema": SCHEMA,
         "version": VERSION,
         "expected": {
             "python": {"version": env["python"]["version"]},
             "node": {"version": env["node"]["version"]},
-            "playwright": {"version": env["playwright"]["python_package_version"]},
+            "playwright": {
+                "version": env["playwright"]["python_package_version"]
+            },
             "browser": {
                 "name": env["playwright"]["browser"],
                 "version": env["playwright"]["chromium_version"],
@@ -165,26 +198,53 @@ def materialize_identity(root: Path = ROOT) -> dict[str, Any]:
             },
         },
         "locks": [
-            {"role": role, "path": path.relative_to(root).as_posix(), "sha256": _sha256_file(path)}
+            {
+                "role": role,
+                "path": path.relative_to(root).as_posix(),
+                "sha256": _sha256_file(path),
+            }
             for role, path in ((role, paths[role]) for role in LOCK_ROLES)
         ],
     }
 
-    container = env.get("container")
-    if container is not None:
-        if not isinstance(container, dict):
-            raise IdentityError("versioned container identity must be an object")
-        clean: dict[str, str] = {}
-        image = container.get("image")
-        digest = container.get("digest")
-        if image:
-            clean["image"] = str(image)
-        if digest:
-            if not re.match(r"^sha256:[0-9a-f]{64}$", str(digest)):
-                raise IdentityError("invalid versioned container digest")
-            clean["digest"] = str(digest)
-        if clean:
-            identity["container"] = clean
+    if env.get("container") is not None:
+        try:
+            container_manifest = repro_container.materialize_manifest(root)
+        except repro_container.ContainerContractError as exc:
+            raise IdentityError(f"invalid container contract: {exc}") from exc
+
+        identity["container"] = {
+            "base_image": {
+                "repository": container_manifest["base_image"]["repository"],
+                "tag": container_manifest["base_image"]["tag"],
+                "platform": container_manifest["base_image"]["platform"],
+                "digest": container_manifest["base_image"]["manifest_digest"],
+                "architecture": container_manifest["base_image"]["os"][
+                    "architecture"
+                ],
+                "os": {
+                    "distribution": container_manifest["base_image"]["os"]["id"],
+                    "version": container_manifest["base_image"]["os"][
+                        "version_id"
+                    ],
+                },
+            },
+            "definition": container_manifest["definition"],
+            "container_lock_sha256": container_manifest["locks"][
+                "container_base_lock_sha256"
+            ],
+            "system_packages_sha256": container_manifest["locks"][
+                "system_packages_sha256"
+            ],
+            "container_manifest_sha256": container_manifest["manifest_sha256"],
+            "hermeticity_level": container_manifest["hermeticity"]["level"],
+            "base_image_pinned": container_manifest["hermeticity"][
+                "base_image_pinned"
+            ],
+            "system_packages_fully_pinned": container_manifest["hermeticity"][
+                "system_packages_fully_pinned"
+            ],
+        }
 
     identity["identity_sha256"] = canonical_sha256(identity)
     return identity
@@ -192,65 +252,102 @@ def materialize_identity(root: Path = ROOT) -> dict[str, Any]:
 
 def validate_identity(identity: Any, root: Path = ROOT) -> list[str]:
     errors: list[str] = []
+
     if not isinstance(identity, dict):
         return ["environment_identity must be an object"]
-    allowed = {"schema", "version", "expected", "locks", "container", "identity_sha256"}
+
+    allowed = {
+        "schema",
+        "version",
+        "expected",
+        "locks",
+        "container",
+        "identity_sha256",
+    }
     extras = sorted(set(identity) - allowed)
     if extras:
         errors.append("non-canonical fields: " + ", ".join(extras))
+
     if identity.get("schema") != SCHEMA:
         errors.append("invalid environment_identity schema")
     if identity.get("version") != VERSION:
         errors.append("invalid environment_identity version")
+
     digest = identity.get("identity_sha256")
     if not isinstance(digest, str) or not SHA256_RX.match(digest):
         errors.append("missing/invalid identity_sha256")
     elif digest != canonical_sha256(identity):
         errors.append("identity_sha256 mismatch")
+
     try:
         expected = materialize_identity(root)
     except IdentityError as exc:
         errors.append(str(exc))
         return errors
+
     if identity != expected:
-        errors.append("environment_identity diverges from versioned REPRO sources")
+        errors.append(
+            "environment_identity diverges from versioned REPRO sources"
+        )
     return errors
 
 
-def inject_manifest(manifest: dict[str, Any], root: Path = ROOT) -> dict[str, Any]:
+def inject_manifest(
+    manifest: dict[str, Any], root: Path = ROOT
+) -> dict[str, Any]:
     if not isinstance(manifest, dict):
         raise IdentityError("run manifest must be an object")
     if manifest.get("environment_identity_policy") == POLICY_GRANDFATHERED:
-        raise IdentityError("cannot inject future identity into a grandfathered historical manifest")
+        raise IdentityError(
+            "cannot inject future identity into a grandfathered historical manifest"
+        )
+
     identity = materialize_identity(root)
     existing = manifest.get("environment_identity")
     if existing is not None and existing != identity:
-        raise IdentityError("existing environment_identity conflicts with current REPRO sources")
+        raise IdentityError(
+            "existing environment_identity conflicts with current REPRO sources"
+        )
+
     result = copy.deepcopy(manifest)
     result["environment_identity_policy"] = POLICY_REQUIRED
     result["environment_identity"] = identity
     return result
 
 
-def validate_run_manifest(manifest: Any, root: Path = ROOT, grandfather_historical: bool = False) -> list[str]:
+def validate_run_manifest(
+    manifest: Any,
+    root: Path = ROOT,
+    grandfather_historical: bool = False,
+) -> list[str]:
     if not isinstance(manifest, dict):
         return ["run manifest must be an object"]
+
     identity = manifest.get("environment_identity")
     policy = manifest.get("environment_identity_policy")
+
     if identity is None:
         if policy == POLICY_REQUIRED:
             return ["new/future run missing required environment_identity"]
         if grandfather_historical:
             return []
-        return ["missing environment_identity; immutable history requires explicit --grandfather-historical"]
+        return [
+            "missing environment_identity; immutable history requires explicit "
+            "--grandfather-historical"
+        ]
+
     if policy != POLICY_REQUIRED:
         return ["run with environment_identity must declare policy REQUIRED"]
+
     return validate_identity(identity, root)
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> int:
@@ -274,6 +371,7 @@ def main() -> int:
 
     args = parser.parse_args()
     root = args.root.resolve()
+
     try:
         if args.command == "fragment":
             identity = materialize_identity(root)
@@ -281,23 +379,36 @@ def main() -> int:
                 _write_json(args.output, identity)
                 print(args.output)
             else:
-                print(json.dumps(identity, indent=2, sort_keys=True, ensure_ascii=False))
+                print(
+                    json.dumps(
+                        identity, indent=2, sort_keys=True, ensure_ascii=False
+                    )
+                )
             return 0
+
         if args.command == "inject":
             result = inject_manifest(_read_json(args.manifest), root)
             _write_json(args.output, result)
             print(args.output)
             return 0
+
         if args.command == "check-identity":
             errors = validate_identity(_read_json(args.identity), root)
         else:
-            errors = validate_run_manifest(_read_json(args.manifest), root, args.grandfather_historical)
+            errors = validate_run_manifest(
+                _read_json(args.manifest),
+                root,
+                args.grandfather_historical,
+            )
+
         if errors:
             for error in errors:
                 print(f"ERROR: {error}", file=sys.stderr)
             return 2
+
         print("environment identity: OK")
         return 0
+
     except IdentityError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
