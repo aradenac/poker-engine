@@ -29,6 +29,13 @@ async def main() -> None:
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
         assert await page.locator("#heroGrid .hand-cell").count() == 169
+        assert (await page.locator("h1").inner_text()).strip() == "Stratégie Hero"
+        assert (await page.locator(".source-panel h2").inner_text()).strip() == "Range source importée"
+        assert "Range source importée" in (await page.locator('label:has(#sourceRangeSelect)').inner_text())
+        visible_text = await page.locator("body").inner_text()
+        assert "Ranges Hero" not in visible_text
+        assert "Stratégie calculée" in visible_text
+        assert "Stratégie personnelle" in visible_text
 
         # Seed a calculated strategy and verify that the comparison layer is visible
         # before any personal override is created.
@@ -102,6 +109,7 @@ async def main() -> None:
         )
         await page.wait_for_function("document.querySelector('#sourceBadge')?.textContent.includes('préservée')")
         assert await page.locator("#sourceRangeSelect option").count() > 0
+        assert "range source importée" in (await page.locator("#sourceStatus").inner_text()).casefold()
         imported = await page.evaluate(f"JSON.parse(localStorage.getItem('{STORAGE_KEY}'))")
         assert imported["source"]["preserved_verbatim"] is True
         assert imported["source"]["range_folder"] == source
@@ -124,6 +132,16 @@ async def main() -> None:
         assert "AA" not in node["layers"]["personal"]["hands"]
         assert "calculée seule" in (await page.locator("#selectedHandState").inner_text()).casefold()
         assert "calculated-only" in (await page.locator('[data-hand="AA"]').get_attribute("class") or "")
+
+        async with page.expect_download() as download_info:
+            await page.click("#heroRangeExport")
+        download = await download_info.value
+        assert download.suggested_filename == "hero_ranges_repository_v1.json"
+        exported_path = await download.path()
+        exported_repo = json.loads(Path(exported_path).read_text(encoding="utf-8"))
+        assert exported_repo["schema"] == "poker-hero-range-repository/v1"
+        assert exported_repo["source"]["range_folder"] == source
+        assert "Stratégie Hero exportée" in (await page.locator("#sourceStatus").inner_text())
 
         snapshot = {
             "grid_cells": await page.locator("#heroGrid .hand-cell").count(),
