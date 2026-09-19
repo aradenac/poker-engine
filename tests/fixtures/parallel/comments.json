@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1000,
+    "created_at": "2026-09-19T00:00:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: A\nISSUE: #108\nSTATUS: CLAIMED\nBASE: abcA\nBRANCH: agent-A/issue-108-fixture\nCONFLICT_GROUP: SCIENCE-FROZEN\nFILES_INTENT:\n- training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260915.json\nNOTES: fixture"
+  },
+  {
+    "id": 1001,
+    "created_at": "2026-09-19T00:01:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: A\nISSUE: #108\nBASE/HEAD: abcA / defA\nPR: #408"
+  },
+  {
+    "id": 1002,
+    "created_at": "2026-09-19T00:02:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: A\nISSUE: #108\nSTATUS: RELEASED\nPR: #408\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1003,
+    "created_at": "2026-09-19T00:03:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: B\nISSUE: #197\nSTATUS: CLAIMED\nBASE: abcB\nBRANCH: agent-B/issue-197-fixture\nCONFLICT_GROUP: MODEL-B\nFILES_INTENT:\n- tools/simulation/model_b_price_response.py\nNOTES: fixture"
+  },
+  {
+    "id": 1004,
+    "created_at": "2026-09-19T00:04:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: B\nISSUE: #197\nBASE/HEAD: abcB / defB\nPR: #497"
+  },
+  {
+    "id": 1005,
+    "created_at": "2026-09-19T00:05:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: B\nISSUE: #197\nSTATUS: RELEASED\nPR: #497\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1006,
+    "created_at": "2026-09-19T00:06:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: C\nISSUE: #200\nSTATUS: CLAIMED\nBASE: abcC\nBRANCH: agent-C/issue-200-fixture\nCONFLICT_GROUP: ANALYTICS\nFILES_INTENT:\n- src/analytics/leak-analyzer.js\nNOTES: fixture"
+  },
+  {
+    "id": 1007,
+    "created_at": "2026-09-19T00:07:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: C\nISSUE: #200\nBASE/HEAD: abcC / defC\nPR: #500"
+  },
+  {
+    "id": 1008,
+    "created_at": "2026-09-19T00:08:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: C\nISSUE: #200\nSTATUS: RELEASED\nPR: #500\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1009,
+    "created_at": "2026-09-19T00:09:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: D\nISSUE: #215\nSTATUS: CLAIMED\nBASE: abcD\nBRANCH: agent-D/issue-215-fixture\nCONFLICT_GROUP: HERO-EDITOR\nFILES_INTENT:\n- site/hero-ranges-app.js\nNOTES: fixture"
+  },
+  {
+    "id": 1010,
+    "created_at": "2026-09-19T00:10:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: D\nISSUE: #215\nBASE/HEAD: abcD / defD\nPR: #515"
+  },
+  {
+    "id": 1011,
+    "created_at": "2026-09-19T00:11:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: D\nISSUE: #215\nSTATUS: RELEASED\nPR: #515\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1012,
+    "created_at": "2026-09-19T00:12:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: E\nISSUE: #216\nSTATUS: CLAIMED\nBASE: abcE\nBRANCH: agent-E/issue-216-fixture\nCONFLICT_GROUP: PACKS-UX\nFILES_INTENT:\n- site/packs-app.js\nNOTES: fixture"
+  },
+  {
+    "id": 1013,
+    "created_at": "2026-09-19T00:13:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: E\nISSUE: #216\nBASE/HEAD: abcE / defE\nPR: #516"
+  },
+  {
+    "id": 1014,
+    "created_at": "2026-09-19T00:14:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: E\nISSUE: #216\nSTATUS: RELEASED\nPR: #516\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1015,
+    "created_at": "2026-09-19T00:15:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: F\nISSUE: #203\nSTATUS: CLAIMED\nBASE: abcF\nBRANCH: agent-F/issue-203-fixture\nCONFLICT_GROUP: REPRO\nFILES_INTENT:\n- tools/repro_environment.py\nNOTES: fixture"
+  },
+  {
+    "id": 1016,
+    "created_at": "2026-09-19T00:16:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: F\nISSUE: #203\nBASE/HEAD: abcF / defF\nPR: #503"
+  },
+  {
+    "id": 1017,
+    "created_at": "2026-09-19T00:17:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: F\nISSUE: #203\nSTATUS: RELEASED\nPR: #503\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1018,
+    "created_at": "2026-09-19T00:18:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #264\nSTATUS: CLAIMED\nBASE: abcG\nBRANCH: agent-G/issue-264-fixture\nCONFLICT_GROUP: PROJECT-STATE\nFILES_INTENT:\n- tools/check_parallel_claims.py\nNOTES: fixture"
+  },
+  {
+    "id": 1019,
+    "created_at": "2026-09-19T00:19:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: G\nISSUE: #264\nBASE/HEAD: abcG / defG\nPR: #564"
+  },
+  {
+    "id": 1020,
+    "created_at": "2026-09-19T00:20:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #264\nSTATUS: RELEASED\nPR: #564\nRESULT: merged\nNEXT: none"
+  },
+  {
+    "id": 1021,
+    "created_at": "2026-09-19T00:21:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: H\nISSUE: #211\nSTATUS: CLAIMED\nBASE: abcH\nBRANCH: agent-H/issue-211-fixture\nCONFLICT_GROUP: CENTRAL-UI\nFILES_INTENT:\n- site/index.html\nNOTES: fixture"
+  },
+  {
+    "id": 1022,
+    "created_at": "2026-09-19T00:22:00Z",
+    "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: H\nISSUE: #211\nBASE/HEAD: abcH / defH\nPR: #511"
+  },
+  {
+    "id": 1023,
+    "created_at": "2026-09-19T00:23:00Z",
+    "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: H\nISSUE: #211\nSTATUS: RELEASED\nPR: #511\nRESULT: merged\nNEXT: none"
+  }
+]

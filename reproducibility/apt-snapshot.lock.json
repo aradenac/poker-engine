@@ -1,0 +1,51 @@
+{
+  "schema": "poker-engine-apt-snapshot/v1",
+  "issue": 203,
+  "snapshot_id": "20260918T000000Z",
+  "snapshot_service": {
+    "name": "Ubuntu Snapshot Service",
+    "url": "https://snapshot.ubuntu.com/",
+    "documentation_url": "https://snapshot.ubuntu.com/",
+    "verification_status": "OFFICIAL_DOCUMENTED_TIME_ADDRESSABLE_SERVICE",
+    "verified_at": "2026-09-19"
+  },
+  "platform": {
+    "os_id": "ubuntu",
+    "version_id": "24.04",
+    "codename": "noble",
+    "architecture": "amd64"
+  },
+  "sources": {
+    "path": "reproducibility/ubuntu-snapshot.sources",
+    "sha256": "002858768101158e434818faeb5ad12191ba20313fce4a404cd70f56e5e991ae",
+    "repositories": [
+      {
+        "uri": "http://archive.ubuntu.com/ubuntu",
+        "suites": [
+          "noble",
+          "noble-updates"
+        ],
+        "components": [
+          "main",
+          "universe"
+        ]
+      },
+      {
+        "uri": "http://security.ubuntu.com/ubuntu",
+        "suites": [
+          "noble-security"
+        ],
+        "components": [
+          "main",
+          "universe"
+        ]
+      }
+    ]
+  },
+  "package_resolution": {
+    "lock": "reproducibility/system-packages.resolution.lock.json",
+    "pinning_level": "OFFICIAL_SNAPSHOT_PINNED_RUNTIME_RESOLUTION",
+    "fully_pinned": false,
+    "rationale": "The official Ubuntu archive snapshot timestamp and repository/component set are pinned. Exact direct-package versions are deliberately not pre-expanded because this agent cannot execute the Ubuntu resolver against the snapshot; build/verify resolves and compares installed versions against apt-cache candidates under the pinned snapshot."
+  }
+}
