@@ -21,7 +21,7 @@ class ManualImportContractTests(unittest.TestCase):
         self.assertIn("hero_ranges", js)
         self.assertIn("model_a_preflop", js)
         self.assertIn("model_a_postflop", js)
-        self.assertIn("Override manuel", css)
+        self.assertIn(".badge.override", css)
 
     def test_manual_overrides_use_non_pack_storage_and_atomic_transaction(self):
         manual = (ROOT / "site/manual-import.js").read_text(encoding="utf-8")
