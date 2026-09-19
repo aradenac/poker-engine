@@ -102,6 +102,7 @@ class RealPopulationPackAdmissionAuditTests(unittest.TestCase):
 
 from tests.audit.test_pack_runtime_compatibility import PackRuntimeCompatibilityTests  # noqa: F401
 from tests.audit.test_pack_engine_artifact import PackEngineArtifactTests  # noqa: F401
+from tests.audit.test_pack_application_release import PackApplicationReleaseTests  # noqa: F401
 
 if __name__ == "__main__":
     unittest.main()

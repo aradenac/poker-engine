@@ -1,0 +1,66 @@
+{
+  "application": "Poker Range Equity Offline",
+  "artifact": "training/artifacts/application-release/pack-scoped-boot-v1-4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c.js",
+  "identity": {
+    "engine_release": {
+      "artifact": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+      "sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08"
+    },
+    "pack_scoped_boot": {
+      "artifact": "training/artifacts/application-release/pack-scoped-boot-v1-4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c.js",
+      "sha256": "4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c"
+    }
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "compatibility": {
+    "mode": "PACK_SCOPED_ZOOM",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "format": "ZOOM",
+    "legacy_engine_fallback_allowed": false,
+    "scientific_component_fallback_allowed": false,
+    "legacy_default_mode_behavior": "UNCHANGED_PASSTHROUGH"
+  },
+  "component_requirements": {
+    "model_a_preflop": {
+      "required": true,
+      "decision_status": "ADMISSIBLE_FOR_PACK",
+      "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "fallback": "NONE"
+    },
+    "model_a_postflop": {
+      "required": true,
+      "decision_status": "ADMISSIBLE_FOR_PACK",
+      "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "fallback": "NONE"
+    },
+    "model_b": {
+      "required": true,
+      "decision_status": "ADMISSIBLE_FOR_PACK",
+      "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "fallback": "NONE"
+    },
+    "hero_strategy": {
+      "required": true,
+      "decision_status": "ADMISSIBLE_FOR_PACK",
+      "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "fallback": "NONE"
+    },
+    "hero_ranges": {
+      "required": true,
+      "decision_status": "ADMISSIBLE_FOR_PACK",
+      "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "fallback": "NONE"
+    }
+  },
+  "models": {
+    "preflop": null,
+    "postflop": null
+  },
+  "notes": "Candidate-only Zoom application release. Explicit Zoom boot is fail-closed and never substitutes legacy engine, Model A v5, retained reference, or another population. Legacy/default behavior remains outside this candidate mode.",
+  "published": false,
+  "release_artifact": "training/artifacts/application-release/pack-scoped-boot-v1-4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c.js",
+  "schema": "poker-site-release/v3",
+  "sha256": "4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c",
+  "status": "candidate_unpublished",
+  "version": "zoom-100-200-candidate-v1"
+}
