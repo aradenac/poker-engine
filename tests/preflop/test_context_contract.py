@@ -352,7 +352,7 @@ def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
     assert schema["properties"]["backoff_policy"]["const"] == list(BACKOFF_POLICY)
 
 
-def test_issue339_support_key_matches_319_dimensions_not_nearest_numeric_state():
+def test_aa_issue339_support_key_matches_319_dimensions_not_nearest_numeric_state():
     four = build_context(**SIZING_FIXTURE["contexts"][0]["input"])
     same_price = dict(four)
     same_price["pot_before_bb"] = float(four["pot_before_bb"]) + 20.0
@@ -363,7 +363,7 @@ def test_issue339_support_key_matches_319_dimensions_not_nearest_numeric_state()
     assert support_context_key(four) != support_context_key(six)
 
 
-def test_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_without_test():
+def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_without_test():
     protocol = load_issue339_protocol()
     _, report = load_issue339_support_report()
     candidate, fit = build_issue339_candidate(protocol, report)
@@ -376,6 +376,8 @@ def test_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_without
     support = {int(row["target_total_bb"]): int(row["observations"]) for row in fit["kts_sb_two_limpers_exact_price_support"]}
     assert support == {4: 54, 5: 161, 6: 43}
     fit["posterior_321"] = evaluate_issue339_kts_posterior(candidate)
+    from tools.training.fit_model_a_preflop_sizing import canonical_hash as _issue339_hash
+    fit["evidence_sha256"] = _issue339_hash({key: value for key, value in fit.items() if key != "evidence_sha256"})
     posterior = {int(row["target_total_bb"]): row for row in fit["posterior_321"]["prices"]}
     assert posterior[4]["after_status"] == "UNSUPPORTED"
     assert posterior[5]["after_status"] == "AVAILABLE"
