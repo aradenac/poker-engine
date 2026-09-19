@@ -711,17 +711,17 @@ async function trainerReviewText(text){
   await trainerWaitFor(()=>!state.reviewBatchBusy,30000);
   const hand=parsePokerStarsHand(text,"trainer");
   if(!hand)throw new Error("Le moteur n'a pas pu parser le spot Training.");
-  const saved={hhHands:state.hhHands,selectedHand:state.selectedHand,hhMode:state.hhMode,replaySteps:state.replaySteps,replayIndex:state.replayIndex,popTrace:state.populationTraceCache,popRange:state.populationRangeCache,postTrace:state.postflopTraceCache,postRange:state.postflopRangeCache,actionEq:state.actionEquityCache,seatEq:state.seatEquityCache};
+  const saved={hhHands:state.hhHands,selectedHand:state.selectedHand,hhMode:state.hhMode,replaySteps:state.replaySteps,replayIndex:state.replayIndex,popTrace:state.populationTraceCache,popRange:state.populationRangeCache,postTrace:state.postflopTraceCache,postRange:state.postflopRangeCache,actionEq:state.actionEquityCache,seatEq:state.seatEquityCache,preflopRuntime:state.preflopRuntimeDecisionCache};
   const key=String(hand.id);
   try{
-    state.populationTraceCache=Object.create(null);state.populationRangeCache=Object.create(null);state.postflopTraceCache=Object.create(null);state.postflopRangeCache=Object.create(null);state.actionEquityCache=Object.create(null);state.seatEquityCache=Object.create(null);
+    state.populationTraceCache=Object.create(null);state.populationRangeCache=Object.create(null);state.postflopTraceCache=Object.create(null);state.postflopRangeCache=Object.create(null);state.actionEquityCache=Object.create(null);state.seatEquityCache=Object.create(null);state.preflopRuntimeDecisionCache=Object.create(null);
     state.replaySteps=[];state.replayIndex=0;state.hhHands=[hand];state.selectedHand=hand;state.hhMode=true;delete state.reviewScores[key];
     const plan=buildReviewBatchPlan(hand);plan.actions=plan.actions.filter(a=>a.actor===hand.heroName).slice(-1);if(!plan.actions.length)throw new Error("Aucune décision Hero analysable dans ce spot.");
     state.reviewBatchBusy=false;runReviewBatchPlan(plan);
     await trainerWaitFor(()=>!state.reviewBatchBusy&&!!state.reviewScores?.[key],45000);
     const score=state.reviewScores[key],detail=score?.details?.[score.details.length-1];if(!detail)throw new Error("Aucun verdict produit par le moteur.");return JSON.parse(JSON.stringify(detail));
   }finally{
-    delete state.reviewScores[key];state.hhHands=saved.hhHands;state.selectedHand=saved.selectedHand;state.hhMode=saved.hhMode;state.replaySteps=saved.replaySteps;state.replayIndex=saved.replayIndex;state.populationTraceCache=saved.popTrace;state.populationRangeCache=saved.popRange;state.postflopTraceCache=saved.postTrace;state.postflopRangeCache=saved.postRange;state.actionEquityCache=saved.actionEq;state.seatEquityCache=saved.seatEq;
+    delete state.reviewScores[key];state.hhHands=saved.hhHands;state.selectedHand=saved.selectedHand;state.hhMode=saved.hhMode;state.replaySteps=saved.replaySteps;state.replayIndex=saved.replayIndex;state.populationTraceCache=saved.popTrace;state.populationRangeCache=saved.popRange;state.postflopTraceCache=saved.postTrace;state.postflopRangeCache=saved.postRange;state.actionEquityCache=saved.actionEq;state.seatEquityCache=saved.seatEq;state.preflopRuntimeDecisionCache=saved.preflopRuntime;
   }
 }
 function trainerPlaceholderLine(hand){const s=hand.heroSeat,toCall=trainerToCall(hand,s);return {kind:toCall>1e-8?"FOLD":"CHECK",line:trainerActionLine(hand,s,toCall>1e-8?"FOLD":"CHECK"),cost:0};}
