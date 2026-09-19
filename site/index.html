@@ -3710,7 +3710,7 @@ function refreshReviewScoreForSelectedHand(){
     if(cached.status==="error"){errors++;continue;}
     const reg=reviewRegretForAction(i,cached);if(!reg)continue;
     comparable++;
-    reg.stepIndex=i;details.push(reg);
+    reg.stepIndex=i;modelBRobustnessAttachExisting(String(hand.id),reg,i);details.push(reg);
     const loss=Math.max(0,Number(reg.lossBB)||0);totalLossBB+=loss;
     if(reg.actor===hand.heroName)heroLossBB+=loss;else opponentLossBB+=loss;
     if(loss>biggestLossBB){biggestLossBB=loss;biggest=reg;}
@@ -3801,7 +3801,7 @@ function reviewBatchRegret(a){
 function finalizeReviewBatchPlan(plan){
   const hand=state.hhHands.find(h=>String(h.id)===String(plan.handId));if(!hand)return;
   let totalLossBB=0,heroLossBB=0,opponentLossBB=0,biggestLossBB=0,biggest=null,comparable=0,errors=0;const details=[];
-  for(const a of plan.actions){if(a.failed)errors++;const reg=reviewBatchRegret(a);if(!reg)continue;comparable++;reg.stepIndex=a.stepIndex;details.push(reg);
+  for(const a of plan.actions){if(a.failed)errors++;const reg=reviewBatchRegret(a);if(!reg)continue;comparable++;reg.stepIndex=a.stepIndex;modelBRobustnessAttachExisting(String(hand.id),reg,a.stepIndex);details.push(reg);
     const loss=Math.max(0,Number(reg.lossBB)||0);totalLossBB+=loss;if(reg.actor===hand.heroName)heroLossBB+=loss;else opponentLossBB+=loss;if(loss>biggestLossBB){biggestLossBB=loss;biggest=reg;}}
   const summary={handId:String(hand.id),signature:plan.signature,totalLossBB,heroLossBB,opponentLossBB,biggestLossBB,biggest,
     analyzableDecisions:plan.actions.length,finishedDecisions:plan.actions.length,comparableDecisions:comparable,errorDecisions:errors,
@@ -4275,6 +4275,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
   const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
+  const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
   const allIn=/all-in/i.test(step.actionText||"");
@@ -4308,7 +4309,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
     : `${chips}${keyPoints}`;
-  return `${primary}${retrospective}
+  return `${primary}${modelBRobustnessCompactHtml(robustness)}${modelBRobustnessDetailHtml(robustness)}${retrospective}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
@@ -4354,7 +4355,10 @@ function actionAnalysisHtml(stepIndex,step){
   const priorEq=eq[sources.prior],postEq=eq[sources.post],priorTree=trees.prior||null,postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree),postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
-  if(canonicalDecision)return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}</div>`;
+  if(canonicalDecision){
+    const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
+    return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}${modelBRobustnessCompactHtml(robustness)}</div>`;
+  }
   const row=[];
   if(req.kind==="call"&&Number.isFinite(priorMetrics.evBB)){
     const loss=Math.max(0,-Number(priorMetrics.evBB)),quality=loss<=1e-9?"good":"warn";
@@ -5453,7 +5457,8 @@ function aiExportActionAnalysisForStep(stepIndex){
   return {
     status:c.status||"unknown",error:c.error||"",required_equity:aiExportPlain(req),scenario_sources:aiExportPlain(sources),
     equity_scenarios:{range_vs_ranges:aiExportNumber(eq.range_ranges),range_vs_real:aiExportNumber(eq.range_real),hand_vs_ranges:aiExportNumber(eq.hand_ranges),hand_vs_real:aiExportNumber(eq.hand_real),prior_used:aiExportNumber(priorEq),posterior_used:aiExportNumber(postEq)},
-    postflop_response_trees:aiExportPlain(c.postflopTrees||null),sizing_optimization:aiExportPlain(c.sizingOptimization||null),decision_summary:aiExportPlain(decisionSummary),review_regret:aiExportPlain(regret)
+    postflop_response_trees:aiExportPlain(c.postflopTrees||null),sizing_optimization:aiExportPlain(c.sizingOptimization||null),decision_summary:aiExportPlain(decisionSummary),review_regret:aiExportPlain(regret),
+    model_b_robustness:aiExportPlain(modelBRobustnessEnvelopeForDecision(state.selectedHand?.id,stepIndex))
   };
 }
 function aiExportAnalysisProgress(){
@@ -5514,7 +5519,7 @@ async function buildAiHandExport(){
     schema:"poker-replayer-ai-export/v1",application:{name:"Poker Range Equity Offline",version:"v83",exported_at:new Date().toISOString()},
     purpose:"Complete replayer state and model analysis for external poker-strategy review. Values ending in _bb are expressed in big blinds. Posterior/real-hand fields may use cards only known after the decision; use prior fields to judge decision quality without hindsight.",
     analysis_context:{calculation_method:methodSelect?.value||"",monte_carlo_trials:Number(trialsSelect?.value)||null,range_source:fileMeta?.textContent||"",range_edition:!!state.rangeEdition,
-      preflop_population_model:aiExportPlain(state.populationModelMeta),postflop_population_model:aiExportPlain(state.postflopModelMeta),context_signature:replayFastContextSignature(),review_signature:reviewContextSignature(),
+      preflop_population_model:aiExportPlain(state.populationModelMeta),postflop_population_model:aiExportPlain(state.postflopModelMeta),context_signature:replayFastContextSignature(),review_signature:reviewContextSignature(),model_b_robustness_identity:aiExportPlain(reviewInboxScopeInput()),
       caveats:["A priori/prior values are intended for decision-quality review; a posteriori/real-hand values are informational and can contain showdown knowledge.","Flop/turn continuation trees use the application's documented checkdown-to-showdown approximation after calls where no validated future betting policy exists.","Postflop response composition is sizing-sensitive: population marginals set how often opponents continue, while combo quality determines which hands continue; river quality uses exact current-board showdown rank. Very large candidate sizings outside the empirical TRAIN distribution are excluded from recommendations; empirical support was rebuilt from the 26,741-hand deduplicated 100/200 observation corpus.","Postflop EV uses branch-specific effective stacks and returns unmatched overbet excess; sizings with non-monotone continuation-range quality are excluded from recommendations and EV-regret scoring.","Postflop recommendations use one final EV and select its strict argmax. Street×sizing residual calibration is retained, with generic JAM bonuses disabled; in pots smaller than the training-population mean for the street, each learned BB residual is scaled linearly by current pot / training mean pot, and it is never amplified above its learned value. Hypothetical aggression is excluded when any response node is very-low-confidence with fewer than 5 observations. JAM/overbet candidates require at least 10 response observations; for very-low-confidence nodes with at least 5 observations, hypothetical actions beyond the locally observed P90 call-price support are excluded when that statistic is available. Raw tree EV remains export-only for diagnostics.","Preflop actions without a validated alternative EV tree are exported but are not assigned invented EV regret."]},
     hand:{id:String(hand.id),date:hand.dateText||"",source_name:hand.sourceName||"",hero_name:hand.heroName,hero_cards:aiExportCards(hand.heroCards),button_seat:hand.buttonSeat,final_board:aiExportCards(hand.board),big_blind_chips:aiExportNumber(hand.bigBlind),total_pot_chips:aiExportNumber(hand.totalPot),rake_chips:aiExportNumber(hand.rake),hero_result:aiExportPlain(hand.heroResult),players:players.map(aiExportPlayerConfig),review_value:aiExportPlain(review),raw_hand_history:hand.raw||""},
     range_snapshots:registry.snapshots,steps
@@ -5733,13 +5738,15 @@ function renderHistoryHands(){
     const coverage=`Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
     const incompleteReasons=item.status==="INCOMPLETE_ANALYSIS"?(item.coverage?.reasons||[]).join(" · "):"";
     const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
+    const robustnessText=modelBRobustnessStatusText(robustness);
     const statusCls=item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
     const open=document.createElement("button");
     open.type="button";open.className="review-inbox-open";
     open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
     open.innerHTML=`<span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
       <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}${incompleteReasons?` · ${escapeHtml(incompleteReasons)}`:""}</small></span>
-      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")}</small></span>`;
+      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")} · ${escapeHtml(robustnessText)}</small></span>`;
     open.onclick=()=>openReviewInboxItem(item);
     const status=document.createElement("span");
     status.className="review-inbox-status";
