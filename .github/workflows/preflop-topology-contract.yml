@@ -13,6 +13,26 @@ on:
       - 'tests/training/test_preflop_free_check_matcher.py'
       - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
       - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json'
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
+      - 'tests/ci/test_repro_current_core_batch.py'
+      - 'analysis/workflow_audit/repro_current_core_batch_before_after.json'
       - '.github/workflows/preflop-topology-contract.yml'
   pull_request:
     paths:
@@ -26,6 +46,26 @@ on:
       - 'tests/training/test_preflop_free_check_matcher.py'
       - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json'
       - 'training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json'
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
+      - 'tests/ci/test_repro_current_core_batch.py'
+      - 'analysis/workflow_audit/repro_current_core_batch_before_after.json'
       - '.github/workflows/preflop-topology-contract.yml'
   workflow_dispatch:
 
@@ -37,6 +77,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - name: Verify locked REPRO runtime
+        run: python3 tools/repro_ci_environment.py verify
+      - name: REPRO current-core anti-bypass contract
+        run: PYTHONPATH=. python3 tests/ci/test_repro_current_core_batch.py
       - name: Runtime matcher parity and holdout tests
         run: |
           python3 tests/training/test_preflop_topology_candidate.py
