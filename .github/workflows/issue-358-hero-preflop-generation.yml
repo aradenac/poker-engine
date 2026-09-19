@@ -162,7 +162,7 @@ jobs:
             "contexts":{}
           }
           JSON
-          python tools/training/import_hero_preflop_generation.py             --generation-root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json             --base-repository "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json"             --output "$RUN_ROOT/HERO_RANGE_REPOSITORY_CANDIDATE_INACTIVE.json"             --receipt-output "$RUN_ROOT/IMPORT_RECEIPT.json"
+          PYTHONPATH=. python tools/training/import_hero_preflop_generation.py             --generation-root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json             --base-repository "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json"             --output "$RUN_ROOT/HERO_RANGE_REPOSITORY_CANDIDATE_INACTIVE.json"             --receipt-output "$RUN_ROOT/IMPORT_RECEIPT.json"
           python - <<'PY'
           import json
           from pathlib import Path
