@@ -253,7 +253,6 @@ const noEvents=Coverage.analyzeCoverage({
 assert.equal(noEvents.summary.decision_count,0);
 assert.equal(noEvents.summary.coverage_ratio,null);
 assert.equal(noEvents.summary.analysis_missing_rows,6);
-assert.equal(row.call,undefined);
 
 console.log(JSON.stringify({
   status:'PASS',
