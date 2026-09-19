@@ -46,6 +46,11 @@ from tools.training.preflop_policy169 import (
     hand_weights,
     policy_probability,
 )
+from src.ranges.model_a_posterior_runtime import ModelAPosteriorRuntime
+from src.ranges.posterior_range import validate_posterior_range
+from tools.preflop.model_a_sizing_runtime import SizingAwareModelAContinuationPolicy
+from tools.repro_preflop_fixture import load_verified_reference
+from tools.simulation.game_core import NoLimitHoldemState
 
 PROTOCOL = ROOT / "analysis/model_a_preflop_sizing_validation_protocol.json"
 SUPPORT_SUMMARY = ROOT / "analysis/preflop_sizing_support_train.json"
@@ -340,6 +345,78 @@ def build_candidate(protocol: Mapping[str, Any], report: Mapping[str, Any]) -> t
     return candidate, fit_evidence
 
 
+def evaluate_kts_posterior(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    """Exercise the canonical #321 public fixture at exact 4/5/6 BB prices."""
+    fixture = load_verified_reference(ROOT)
+    scenario = fixture["scenario"]
+    candidate_sha = canonical_candidate_sha256(candidate)
+    rows = []
+    for target in (4.0, 5.0, 6.0):
+        state = NoLimitHoldemState(
+            seats=scenario["seats"],
+            button=scenario["button"],
+            stacks_bb=scenario["starting_stacks_bb"],
+            small_blind_bb=scenario["blinds_bb"]["small"],
+            big_blind_bb=scenario["blinds_bb"]["big"],
+        )
+        for action in scenario["actions"][:4]:
+            state.apply_action(str(action["player"]), str(action["action"]).upper())
+        state.apply_action("Hero", "RAISE", target_total_bb=target)
+        policy = SizingAwareModelAContinuationPolicy(candidate)
+        runtime = ModelAPosteriorRuntime(
+            policy,
+            population_id=str(candidate["identity"]["population_id"]),
+            model_id=str(candidate["identity"]["candidate_id"]),
+            model_version=candidate_sha[:16],
+            source_id="analysis/preflop_sizing_support_train.full.json.gz#report_hash=" + EXPECTED_SUPPORT_HASH,
+        )
+        before = runtime.posterior_record(
+            state,
+            player="BB",
+            moment="BEFORE_ACTION",
+            hand_id=str(fixture["scenario_id"]) + f"@{target:g}bb",
+            step_id=f"bb_call_iso:{target:g}:before",
+        )
+        state.apply_action("BB", "CALL")
+        after = runtime.posterior_record(
+            state,
+            player="BB",
+            moment="AFTER_ACTION",
+            hand_id=str(fixture["scenario_id"]) + f"@{target:g}bb",
+            step_id=f"bb_call_iso:{target:g}:after",
+        )
+        before_errors = validate_posterior_range(before)
+        after_errors = validate_posterior_range(after)
+        if before_errors or after_errors:
+            raise ValueError(
+                f"#320 posterior contract failed at {target:g} BB: "
+                f"before={before_errors} after={after_errors}"
+            )
+        rows.append({
+            "target_total_bb": target,
+            "before_status": before["status"],
+            "after_status": after["status"],
+            "after_reason": after.get("reason"),
+            "source_observations": int((after.get("support") or {}).get("source_observations") or 0),
+            "backoff_level": (after.get("support") or {}).get("backoff", {}).get("level"),
+            "public_action": after.get("public_action"),
+            "candidate_identity": after.get("identity"),
+            "provenance": after.get("provenance"),
+            "contract_errors": [],
+        })
+    return {
+        "schema": "poker-model-a-preflop-sizing-posterior-evidence/v1",
+        "fixture": fixture["scenario_id"],
+        "posterior_contract": "poker-opponent-posterior-range/v1",
+        "public_only": True,
+        "future_cards_consumed": False,
+        "opponent_hole_cards_consumed": False,
+        "candidate_sha256": candidate_sha,
+        "prices": rows,
+        "expectation": "4/5/6 are independent exact-price contexts; low support fails closed rather than borrowing a neighboring price",
+    }
+
+
 def load_certified_split(split: str) -> tuple[list[Any], dict[str, Any]]:
     if split not in {"TRAIN", "VALIDATION"}:
         raise ValueError("#339 loader only permits TRAIN or VALIDATION; TEST is forbidden")
@@ -631,6 +708,10 @@ def main() -> int:
     protocol = load_protocol()
     _, report = load_support_report()
     candidate, fit_evidence = build_candidate(protocol, report)
+    fit_evidence["posterior_321"] = evaluate_kts_posterior(candidate)
+    fit_evidence["evidence_sha256"] = canonical_hash(
+        {key: value for key, value in fit_evidence.items() if key != "evidence_sha256"}
+    )
     write_json(args.candidate_out, candidate)
     write_json(args.fit_evidence_out, fit_evidence)
 
