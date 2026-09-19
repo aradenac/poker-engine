@@ -199,6 +199,28 @@ def test_valid_active_claim_is_keep_open() -> None:
     assert "ACTIVE_CLAIM" in row["codes"]
 
 
+def test_active_or_blocked_evidence_overrides_close_candidate() -> None:
+    manifest = _manifest()
+    project = _project_report("PRODUCT_INTEGRATED")
+
+    active_export = _export()
+    active_export["issues"] = [{"number": 10, "state": "open", "title": "active"}]
+    active_export["branches"] = ["agent-G/issue-10-active"]
+    active = [{
+        "slot": "G", "issue": 10, "branch": "agent-G/issue-10-active", "pr": None,
+        "claimed_comment_id": 9, "claimed_order": 9,
+    }]
+    recovery = _recovery()
+    recovery["lanes"]["G"].update({"status": "CLAIMED", "active_issue": 10, "branch": "agent-G/issue-10-active"})
+    active_report = audit.build_backlog_report({}, manifest, project, _claims(active), recovery, active_export)
+    assert _finding(active_report, 10)["category"] == "KEEP_OPEN"
+
+    blocked_export = _export()
+    blocked_export["issues"] = [{"number": 10, "state": "open", "title": "blocked", "labels": ["blocked"]}]
+    blocked_report = audit.build_backlog_report({}, manifest, project, _claims(), _recovery(), blocked_export)
+    assert _finding(blocked_report, 10)["category"] == "BLOCKED"
+
+
 def test_recovery_warning_becomes_lane_contradiction() -> None:
     recovery = _recovery()
     recovery["warnings"] = [{
