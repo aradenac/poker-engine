@@ -34,7 +34,11 @@ permissions:
   contents: read
 
 jobs:
+  repro-environment:
+    uses: ./.github/workflows/repro-scientific-environment.yml
+
   validate:
+    needs: repro-environment
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +46,20 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
+      - name: Enforce locked REPRO identity
+        env:
+          REPRO_ENVIRONMENT_IDENTITY_SHA256: ${{ needs.repro-environment.outputs.environment_identity_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py verify > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_environment.py identity --output /tmp/repro-environment-identity.json
+          python3 - <<'PY'
+          import json, os
+          value=json.load(open('/tmp/repro-environment-identity.json', encoding='utf-8'))
+          expected=os.environ['REPRO_ENVIRONMENT_IDENTITY_SHA256']
+          assert value['identity_sha256']==expected, (value['identity_sha256'], expected)
+          PY
       - name: Syntax and focused tests
         run: |
           python3 -m py_compile tools/build_population_pack.py tools/validate_population_pack.py
@@ -79,7 +96,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: validate
+    needs: [repro-environment, validate]
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' ||
@@ -93,7 +110,20 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
+      - name: Enforce locked REPRO identity
+        env:
+          REPRO_ENVIRONMENT_IDENTITY_SHA256: ${{ needs.repro-environment.outputs.environment_identity_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py verify > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_environment.py identity --output /tmp/repro-environment-identity.json
+          python3 - <<'PY'
+          import json, os
+          value=json.load(open('/tmp/repro-environment-identity.json', encoding='utf-8'))
+          expected=os.environ['REPRO_ENVIRONMENT_IDENTITY_SHA256']
+          assert value['identity_sha256']==expected, (value['identity_sha256'], expected)
+          PY
       - name: Build release assets from main
         env:
           PACK_SOURCE_COMMIT: ${{ github.sha }}
