@@ -126,9 +126,17 @@ def _sizing_aggressor_position(decision: Mapping[str, Any]) -> str:
     return aggressors[-1] if aggressors else ""
 
 
+ISO_RESPONSE_FAMILIES = {
+    "VS_ISO",
+    "VS_ISO_CALLERS",
+    "LIMPER_VS_ISO",
+    "LIMPER_VS_ISO_CALLERS",
+}
+
+
 def _is_required_sizing_context(decision: Mapping[str, Any]) -> bool:
     return (
-        str(decision.get("family") or "").upper() == "VS_ISO"
+        str(decision.get("family") or "").upper() in ISO_RESPONSE_FAMILIES
         and _sizing_aggressor_position(decision) == "SB"
     )
 
