@@ -218,22 +218,45 @@
     },
     "posteriorRef": {
       "additionalProperties": false,
+      "description": "Compact identity projection of a full poker-opponent-posterior-range/v1 record. Semantic validation is delegated to src/ranges/posterior_range.py through the #332 binder; this schema intentionally does not duplicate the #320 projector/validator.",
       "properties": {
-        "artifact_sha256": {
-          "pattern": "^[a-f0-9]{64}$",
-          "type": "string"
+        "distribution_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "hand_id": {
           "minLength": 1,
           "type": "string"
         },
-        "model_id": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "model_version": {
-          "minLength": 1,
-          "type": "string"
+        "identity": {
+          "additionalProperties": false,
+          "properties": {
+            "model_id": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "model_version": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "population_id": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_id": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "population_id",
+            "model_id",
+            "model_version",
+            "source_id"
+          ],
+          "type": "object"
         },
         "moment": {
           "const": "AFTER_ACTION"
@@ -242,20 +265,15 @@
           "minLength": 1,
           "type": "string"
         },
-        "population_id": {
-          "minLength": 1,
-          "type": "string"
-        },
         "position": {
           "minLength": 1,
           "type": "string"
         },
-        "public_state_fingerprint": {
-          "pattern": "^preflop-public:",
-          "type": "string"
+        "public_action": {
+          "description": "Exact public_action projection from the bound #320 record; validated by the reused #320 validator in the #332 binder.",
+          "type": "object"
         },
-        "range_contract_schema": {
-          "description": "Future #320 posterior contract schema identifier; intentionally not const until #320 lands.",
+        "public_state_fingerprint": {
           "minLength": 1,
           "type": "string"
         },
@@ -263,39 +281,41 @@
           "minLength": 1,
           "type": "string"
         },
-        "response_action": {
-          "enum": [
-            "CALL",
-            "3BET",
-            "JAM"
-          ]
+        "schema": {
+          "const": "poker-opponent-posterior-range/v1"
+        },
+        "source_fingerprint": {
+          "minLength": 1,
+          "type": "string"
         },
         "status": {
           "enum": [
             "AVAILABLE",
-            "UNSUPPORTED"
+            "UNSUPPORTED",
+            "INVALID"
           ]
         },
         "step_id": {
-          "minLength": 1,
-          "type": "string"
+          "type": [
+            "string",
+            "integer"
+          ]
         }
       },
       "required": [
         "ref_id",
-        "range_contract_schema",
+        "schema",
         "hand_id",
         "step_id",
         "public_state_fingerprint",
         "player",
         "position",
+        "identity",
         "moment",
-        "response_action",
-        "population_id",
-        "model_id",
-        "model_version",
-        "artifact_sha256",
-        "status"
+        "public_action",
+        "status",
+        "distribution_fingerprint",
+        "source_fingerprint"
       ],
       "type": "object"
     },
@@ -392,7 +412,7 @@
   "$id": "https://poker-engine.local/contracts/training/preflop-iso-sizing-diagnostics.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Explanatory caller/posterior diagnostics keyed to canonical poker-preflop-decision/v1 alternatives. Action, sizing, incremental cost, EV and uncertainty are intentionally not duplicated here; consumers resolve them from the canonical decision by alternative_id. Diagnostics never select an alternative.",
+  "description": "Explanatory caller/posterior diagnostics keyed to canonical poker-preflop-decision/v1 alternatives. Action/sizing/EV stay canonical-only. Posterior references are exact compact projections of poker-opponent-posterior-range/v1 records and are semantically validated by the reused #320 validate_posterior_range validator.",
   "properties": {
     "alternatives": {
       "items": {
