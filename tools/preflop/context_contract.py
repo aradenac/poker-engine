@@ -158,24 +158,6 @@ def _round_bb(value: float) -> float:
     return round(float(value), 9)
 
 
-def _price_metrics(*, target_total_bb: float, to_call_bb: float, pot_before_bb: float) -> dict[str, Any]:
-    """Pure public-price projection used by sizing-aware Model-A candidates."""
-    target = _round_bb(_finite_nonnegative(target_total_bb, "target_total_bb"))
-    to_call = _round_bb(_finite_nonnegative(to_call_bb, "to_call_bb"))
-    pot = _round_bb(_finite_nonnegative(pot_before_bb, "pot_before_bb"))
-    if pot <= EPS:
-        price_to_pot = 0.0 if to_call <= EPS else None
-    else:
-        price_to_pot = _round_bb(to_call / pot)
-    denom = pot + to_call
-    pot_odds = _round_bb(to_call / denom) if denom > EPS else 0.0
-    return {
-        "target_total_bb": target,
-        "price_to_pot_ratio": price_to_pot,
-        "pot_odds": pot_odds,
-    }
-
-
 def legal_actions_for_state(
     *,
     to_call_bb: float,
@@ -341,8 +323,6 @@ def build_context(
         "history": hist,
         "limper_positions": sort_positions(limpers, n),
         "caller_positions": sort_positions(callers, n),
-        "limper_count": len(set(limpers)),
-        "caller_count": len(set(callers)),
         "contribution_bb_by_position": {p: contrib[p] for p in sort_positions(contrib, n)},
         "actor_contribution_bb": _round_bb(actor_paid),
         "current_price_bb": _round_bb(price),
@@ -362,13 +342,6 @@ def build_context(
             "check_and_fold_cost_bb": 0.0,
         },
     }
-    result.update(
-        _price_metrics(
-            target_total_bb=price,
-            to_call_bb=to_call,
-            pot_before_bb=result["pot_before_bb"],
-        )
-    )
     result["canonical_key"] = canonical_key(result)
     result["context_id"] = context_id(result)
     return result
