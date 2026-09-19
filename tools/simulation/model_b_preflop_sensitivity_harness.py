@@ -291,6 +291,33 @@ def _prediction_input(
     }
 
 
+def _assert_empirical_domain(
+    model: EmpiricalPreflopResponseToPriceModel,
+    raw: Mapping[str, Any],
+) -> None:
+    """Reject extrapolation beyond the observed #319 family domain."""
+    family = str(raw["family"])
+    bins = model.bin_proposals.get(family)
+    if not isinstance(bins, Mapping):
+        raise ValueError(f"no #319 empirical domain for family {family!r}")
+    checks = (
+        ("target_total_bb", "target_total_bb"),
+        ("facing_price_to_pot", "price_to_pot"),
+        ("effective_stack_bb", "effective_stack_bb"),
+    )
+    for raw_key, bin_key in checks:
+        rows = bins.get(bin_key) or []
+        if not rows:
+            raise ValueError(f"missing #319 {bin_key} domain for family {family!r}")
+        x = _finite(raw[raw_key], name=raw_key)
+        lo = min(float(row["min_observed"]) for row in rows)
+        hi = max(float(row["max_observed"]) for row in rows)
+        if x < lo - 1e-9 or x > hi + 1e-9:
+            raise ValueError(
+                f"{raw_key}={x} outside declared #319 domain [{lo}, {hi}] for {family}"
+            )
+
+
 def _aggregate_responder(rows: list[tuple[float, Mapping[str, Any]]], *, reach: float) -> dict[str, Any]:
     if reach <= 0:
         return {
@@ -381,8 +408,9 @@ def evaluate_iso_alternative(
             if forbidden:
                 raise ValueError(f"forbidden feature reached Model B prediction input: {forbidden}")
             try:
+                _assert_empirical_domain(model, raw)
                 pred = model.predict(**raw)
-            except KeyError as exc:
+            except (KeyError, ValueError) as exc:
                 unsupported = str(exc)
                 break
             prediction_rows.append((state["weight"], pred))
@@ -465,6 +493,7 @@ def evaluate_iso_alternative(
             ),
             "backoff_states_observed": backoff_states,
             "nearest_price_substitution": False,
+            "out_of_domain_extrapolation": False,
             "family_never_dropped": True,
         },
         "modeling_boundary": {
