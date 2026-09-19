@@ -39,6 +39,10 @@ from tools.training.fit_model_a_preflop_sizing import (  # noqa: E402
     load_protocol as load_issue339_protocol,
     load_support_report as load_issue339_support_report,
 )
+from tools.training.fit_model_a_preflop_sizing_v2 import (  # noqa: E402
+    build_candidate as build_issue352_candidate,
+    load_fit_protocol as load_issue352_fit_protocol,
+)
 from tools.repro_preflop_model_parity import (  # noqa: E402
     REPORT_PATH as MODEL_PARITY_REPORT_PATH,
     build_parity_report,
@@ -424,6 +428,44 @@ def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_with
     assert validation["hero_ev_consumed"] is False
     assert validation["ui_modified"] is False
     print("ISSUE339_RESULT=" + json.dumps({"fit": fit, "validation": validation}, sort_keys=True, separators=(",", ":")))
+
+
+def test_ac_issue352_train_only_hierarchical_fit_is_deterministic_and_no_nearest_price():
+    fit_protocol = load_issue352_fit_protocol()
+    _, report = load_issue339_support_report()
+    candidate, fit = build_issue352_candidate(fit_protocol, report)
+
+    assert candidate["identity"]["candidate_id"] == "model-a-preflop-sizing-aware-candidate-v2"
+    assert candidate["identity"]["fit_scope"] == "TRAIN_EMPIRICAL_FIT"
+    assert candidate["identity"]["data_scope"] == "CERTIFIED_TRAIN_ONLY"
+    assert candidate["nearest_price_fallback"] is False
+    assert fit["split_consumed"] == "TRAIN"
+    assert fit["validation_consumed"] is False
+    assert fit["test_consumed"] is False
+    assert fit["nodes"]["marginal_exact_price"] == 282
+    assert fit["nodes"]["revealed_hand_class_shrunk"] > 4
+    assert fit["shrinkage"]["selected_prior_strength"] in [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0]
+    assert fit["shrinkage"]["nearest_price_fallback"] is False
+    assert fit["shrinkage"]["hidden_hands_imputed"] is False
+    assert fit["shrinkage"]["selection_scope"] == "CERTIFIED_TRAIN_REVEALED_ROWS_ONLY"
+
+    hand_nodes = [node for node in candidate["nodes"] if node.get("hand_class") is not None]
+    assert hand_nodes
+    sparse = [node for node in hand_nodes if int(node["support"]) < 5]
+    assert sparse
+    for node in sparse[:25]:
+        shrink = node["shrinkage"]
+        assert shrink["prior_weight"] > shrink["data_weight"]
+        assert shrink["train_revealed_observations"] == node["support"]
+
+    posterior = {int(row["target_total_bb"]): row for row in fit["posterior_321"]["prices"]}
+    assert set(posterior) == {4, 5, 6}
+    assert posterior[4]["after_status"] == "UNSUPPORTED"
+    assert posterior[5]["after_status"] == "AVAILABLE"
+    assert posterior[6]["after_status"] == "UNSUPPORTED"
+    assert all(not row["contract_errors"] for row in posterior.values())
+
+    print("ISSUE352_TRAIN_RESULT=" + json.dumps(fit, sort_keys=True, separators=(",", ":")))
 
 
 def test_canonical_321_model_a_b_public_context_parity():
