@@ -4311,7 +4311,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
     : `${chips}${keyPoints}`;
-  return `${primary}${modelBRobustnessCompactHtml(robustness)}${modelBRobustnessDetailHtml(robustness)}${retrospective}
+  return `${primary}${retrospective}${modelBRobustnessCompactHtml(robustness)}${modelBRobustnessDetailHtml(robustness)}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
