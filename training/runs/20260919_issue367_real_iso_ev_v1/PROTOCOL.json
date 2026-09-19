@@ -103,8 +103,8 @@
     "executor_git_blob_sha": "240069522735ded5ef38ee44ad2710de8c4d262d",
     "paired_engine": "tools/simulation/paired_adaptive_preflop_ev.py",
     "paired_engine_git_blob_sha": "889cad50fee6321875b82d6992b94d2b775902d0",
-    "workflow": ".github/workflows/issue-367-real-iso-ev.yml",
-    "workflow_git_blob_sha": "725d898e00cac47d54845dea0eb17b93a5a6a45d",
+    "workflow": ".github/workflows/issue-367-real-iso-ev-observable.yml",
+    "workflow_git_blob_sha": "1d987991bb1d3826341fda6fe01f977542bbb830",
     "decision_id": "issue-367:#321:KTs:SB:two-limpers:real-iso-ev-v1",
     "base_seed": "issue-367-real-iso-ev-v1",
     "common_random_numbers": true,
@@ -190,5 +190,21 @@
     "#196_VS_LIMPERS_GENERATION",
     "RETUNING_AFTER_RESULT",
     "CALLER_MINIMIZATION_AS_SELECTION_RULE"
-  ]
+  ],
+  "execution_transport_refresh": {
+    "reason": "Connector cannot expose push-triggered run #4/artifact; add an observable PR transport before inspecting any scientific result.",
+    "original_protocol_freeze_commit": "9ee8b5cee6ddc48fb7cbf748b976ae3fa03d7244",
+    "original_trigger_commit": "9bad865f362b6efbaa3ba1901bdd03367039c906",
+    "original_workflow": ".github/workflows/issue-367-real-iso-ev.yml",
+    "original_workflow_git_blob_sha": "725d898e00cac47d54845dea0eb17b93a5a6a45d",
+    "observable_workflow": ".github/workflows/issue-367-real-iso-ev-observable.yml",
+    "observable_workflow_git_blob_sha": "1d987991bb1d3826341fda6fe01f977542bbb830",
+    "scientific_config_changed": false,
+    "seeds_changed": false,
+    "budget_changed": false,
+    "exact_support_grid_changed": false,
+    "selection_rule_changed": false,
+    "indifference_rule_changed": false,
+    "model_identity_changed": false
+  }
 }
