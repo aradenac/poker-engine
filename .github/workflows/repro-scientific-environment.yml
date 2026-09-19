@@ -49,7 +49,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: repro-scientific-environment-${{ github.event.pull_request.number || github.ref }}
+  group: repro-scientific-environment-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
