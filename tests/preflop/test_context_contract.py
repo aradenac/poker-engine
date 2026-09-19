@@ -49,6 +49,31 @@ FIXTURE = json.loads((ROOT / "tests/fixtures/preflop_contract_cases.json").read_
 SIZING_FIXTURE = json.loads((ROOT / "tests/fixtures/model_a_preflop_sizing_cases.json").read_text(encoding="utf-8"))
 
 
+def assert_json_semantically_equal(actual, expected, path="root"):
+    """Cross-Python reproducibility: exact structure/text, tolerant IEEE float leaves."""
+    if isinstance(actual, bool) or isinstance(expected, bool) or actual is None or expected is None:
+        assert actual == expected, (path, actual, expected)
+        return
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        assert set(actual) == set(expected), (path, sorted(actual), sorted(expected))
+        for key in sorted(actual):
+            if path == "root" and key == "evidence_sha256":
+                # The evidence hash binds the persisted canonical run. Floating-point
+                # leaves can differ by machine epsilon between Python 3.11/3.12.
+                continue
+            assert_json_semantically_equal(actual[key], expected[key], f"{path}.{key}")
+        return
+    if isinstance(actual, list) and isinstance(expected, list):
+        assert len(actual) == len(expected), (path, len(actual), len(expected))
+        for index, (left, right) in enumerate(zip(actual, expected)):
+            assert_json_semantically_equal(left, right, f"{path}[{index}]")
+        return
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        assert math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12), (path, actual, expected)
+        return
+    assert actual == expected, (path, actual, expected)
+
+
 def assert_expected(ctx, expected):
     for key, value in expected.items():
         if key == "history_token":
@@ -389,7 +414,7 @@ def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_with
     persisted_fit = json.loads((ROOT / "analysis/model_a_preflop_sizing_fit.json").read_text(encoding="utf-8"))
     persisted_validation = json.loads((ROOT / "analysis/model_a_preflop_sizing_validation.json").read_text(encoding="utf-8"))
     assert persisted_fit == fit
-    assert persisted_validation == validation
+    assert_json_semantically_equal(validation, persisted_validation)
     assert validation["selection_split"] == "VALIDATION"
     assert validation["test_consumed"] is False
     assert validation["test_authorized"] is False
