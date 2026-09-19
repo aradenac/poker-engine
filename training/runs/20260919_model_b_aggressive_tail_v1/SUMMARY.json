@@ -1,0 +1,2686 @@
+{
+  "action_calibration": {
+    "candidate197": {
+      "actions": {
+        "CALL": {
+          "absolute_error": 0.0017507584975542945,
+          "observed_count": 3034,
+          "observed_frequency": 0.4679932130186642,
+          "observed_frequency_ci95": [
+            0.4558696048505711,
+            0.4801547295447623
+          ],
+          "predicted_frequency": 0.4662424545211099
+        },
+        "FOLD": {
+          "absolute_error": 0.008988262606787367,
+          "observed_count": 3020,
+          "observed_frequency": 0.4658337189572729,
+          "observed_frequency_ci95": [
+            0.45371487268471083,
+            0.47799303126018716
+          ],
+          "predicted_frequency": 0.4568454563504855
+        },
+        "RAISE": {
+          "absolute_error": 0.010739021104341648,
+          "observed_count": 429,
+          "observed_frequency": 0.06617306802406293,
+          "observed_frequency_ci95": [
+            0.06037522195590938,
+            0.0724847321977068
+          ],
+          "predicted_frequency": 0.07691208912840458
+        }
+      },
+      "brier": 0.5112863291521516,
+      "ece_confidence": 0.011016360005202317,
+      "log_loss": 0.8274561403781219
+    },
+    "reference": {
+      "actions": {
+        "CALL": {
+          "absolute_error": 0.01129688692325398,
+          "observed_count": 3034,
+          "observed_frequency": 0.4679932130186642,
+          "observed_frequency_ci95": [
+            0.4558696048505711,
+            0.4801547295447623
+          ],
+          "predicted_frequency": 0.4566963260954102
+        },
+        "FOLD": {
+          "absolute_error": 0.010326740736791074,
+          "observed_count": 3020,
+          "observed_frequency": 0.4658337189572729,
+          "observed_frequency_ci95": [
+            0.45371487268471083,
+            0.47799303126018716
+          ],
+          "predicted_frequency": 0.47616045969406395
+        },
+        "RAISE": {
+          "absolute_error": 0.0009701461864628225,
+          "observed_count": 429,
+          "observed_frequency": 0.06617306802406293,
+          "observed_frequency_ci95": [
+            0.06037522195590938,
+            0.0724847321977068
+          ],
+          "predicted_frequency": 0.06714321421052576
+        }
+      },
+      "brier": 0.5397983808009437,
+      "ece_confidence": 0.011503506909957087,
+      "log_loss": 0.859734967502078
+    },
+    "support286": {
+      "actions": {
+        "CALL": {
+          "absolute_error": 0.0017507584975542945,
+          "observed_count": 3034,
+          "observed_frequency": 0.4679932130186642,
+          "observed_frequency_ci95": [
+            0.4558696048505711,
+            0.4801547295447623
+          ],
+          "predicted_frequency": 0.4662424545211099
+        },
+        "FOLD": {
+          "absolute_error": 0.008988262606787367,
+          "observed_count": 3020,
+          "observed_frequency": 0.4658337189572729,
+          "observed_frequency_ci95": [
+            0.45371487268471083,
+            0.47799303126018716
+          ],
+          "predicted_frequency": 0.4568454563504855
+        },
+        "RAISE": {
+          "absolute_error": 0.010739021104341648,
+          "observed_count": 429,
+          "observed_frequency": 0.06617306802406293,
+          "observed_frequency_ci95": [
+            0.06037522195590938,
+            0.0724847321977068
+          ],
+          "predicted_frequency": 0.07691208912840458
+        }
+      },
+      "brier": 0.5112863291521516,
+      "ece_confidence": 0.011016360005202317,
+      "log_loss": 0.8274561403781219
+    },
+    "tail298": {
+      "actions": {
+        "CALL": {
+          "absolute_error": 0.0017507584975542945,
+          "observed_count": 3034,
+          "observed_frequency": 0.4679932130186642,
+          "observed_frequency_ci95": [
+            0.4558696048505711,
+            0.4801547295447623
+          ],
+          "predicted_frequency": 0.4662424545211099
+        },
+        "FOLD": {
+          "absolute_error": 0.008988262606787367,
+          "observed_count": 3020,
+          "observed_frequency": 0.4658337189572729,
+          "observed_frequency_ci95": [
+            0.45371487268471083,
+            0.47799303126018716
+          ],
+          "predicted_frequency": 0.4568454563504855
+        },
+        "RAISE": {
+          "absolute_error": 0.010739021104341648,
+          "observed_count": 429,
+          "observed_frequency": 0.06617306802406293,
+          "observed_frequency_ci95": [
+            0.06037522195590938,
+            0.0724847321977068
+          ],
+          "predicted_frequency": 0.07691208912840458
+        }
+      },
+      "brier": 0.5112863291521516,
+      "ece_confidence": 0.011016360005202317,
+      "log_loss": 0.8274561403781219
+    }
+  },
+  "action_guard_equal_to_286": true,
+  "degraded_domains_vs_286": [],
+  "descriptive_gate": "TAIL_IMPROVEMENT_WITHOUT_GLOBAL_DEGRADATION",
+  "domain_comparison_counts_vs_286": {
+    "IMPROVED": 18,
+    "INSUFFICIENT_SUPPORT": 114,
+    "SIMILAR": 8
+  },
+  "evaluation_split": "VALIDATION",
+  "global_support": {
+    "action_support": "SUPPORTED",
+    "distinct_hands": 2123,
+    "distinct_raise_hands": 335,
+    "joint_support": "SUPPORTED",
+    "observations": 6483,
+    "raise_observations": 429,
+    "tail_support": "SUPPORTED"
+  },
+  "improved_domains_vs_286": [
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.004834262256531574,
+              -0.003828531748634075
+            ],
+            "observed": -0.004309540829023812
+          },
+          "jam": {
+            "ci95": [
+              -0.010166980758225945,
+              -0.00888640294423534
+            ],
+            "observed": -0.009527713103024162
+          },
+          "overbet": {
+            "ci95": [
+              -0.0005970252143759305,
+              0.0006366594950933723
+            ],
+            "observed": 0.000579657627016849
+          },
+          "tail_score": {
+            "ci95": [
+              -0.00495082459795801,
+              -0.004077719944273252
+            ],
+            "observed": -0.004419198768343707
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2920,
+        "distinct_hands": 1400,
+        "seed": 16572395397800278046
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "flop"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1400,
+        "distinct_raise_hands": 153,
+        "joint_support": "SUPPORTED",
+        "observations": 2920,
+        "raise_observations": 182,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.014218576722971353,
+            "observed_count": 101,
+            "observed_frequency": 0.03458904109589041,
+            "observed_frequency_ci95": [
+              0.028548714040140317,
+              0.04185231888854605
+            ],
+            "predicted_frequency": 0.020370464372919055
+          },
+          "jam": {
+            "absolute_error": 0.02014310464389335,
+            "observed_count": 87,
+            "observed_frequency": 0.029794520547945205,
+            "observed_frequency_ci95": [
+              0.024218705349246958,
+              0.03660588494588652
+            ],
+            "predicted_frequency": 0.009651415904051854
+          },
+          "overbet": {
+            "absolute_error": 0.0033377159456752306,
+            "observed_count": 81,
+            "observed_frequency": 0.02773972602739726,
+            "observed_frequency_ci95": [
+              0.022375256650235056,
+              0.03434514394480433
+            ],
+            "predicted_frequency": 0.03107744197307249
+          }
+        },
+        "observations": 2920,
+        "tail_score_mean_absolute_error": 0.012566465770846644
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.009909035893947541,
+            "observed_count": 101,
+            "observed_frequency": 0.03458904109589041,
+            "observed_frequency_ci95": [
+              0.028548714040140317,
+              0.04185231888854605
+            ],
+            "predicted_frequency": 0.024680005201942867
+          },
+          "jam": {
+            "absolute_error": 0.010615391540869188,
+            "observed_count": 87,
+            "observed_frequency": 0.029794520547945205,
+            "observed_frequency_ci95": [
+              0.024218705349246958,
+              0.03660588494588652
+            ],
+            "predicted_frequency": 0.019179129007076016
+          },
+          "overbet": {
+            "absolute_error": 0.0039173735726920796,
+            "observed_count": 81,
+            "observed_frequency": 0.02773972602739726,
+            "observed_frequency_ci95": [
+              0.022375256650235056,
+              0.03434514394480433
+            ],
+            "predicted_frequency": 0.03165709960008934
+          }
+        },
+        "observations": 2920,
+        "tail_score_mean_absolute_error": 0.008147267002502937
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0069667434770954,
+              -0.00522758804918876
+            ],
+            "observed": -0.006090086527686604
+          },
+          "jam": {
+            "ci95": [
+              -0.011934143594597373,
+              -0.010011478401965158
+            ],
+            "observed": -0.010953086737108712
+          },
+          "overbet": {
+            "ci95": [
+              0.0009125132161113643,
+              0.0012477116607707479
+            ],
+            "observed": 0.0010795580990322212
+          },
+          "tail_score": {
+            "ci95": [
+              -0.00588221107355288,
+              -0.004755978999915955
+            ],
+            "observed": -0.005321205055254363
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 1564,
+        "distinct_hands": 999,
+        "seed": 18231761240294182971
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "river"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 999,
+        "distinct_raise_hands": 120,
+        "joint_support": "SUPPORTED",
+        "observations": 1564,
+        "raise_observations": 133,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.021228786119677302,
+            "observed_count": 83,
+            "observed_frequency": 0.053069053708439895,
+            "observed_frequency_ci95": [
+              0.04301393690125146,
+              0.06531427311332885
+            ],
+            "predicted_frequency": 0.03184026758876259
+          },
+          "jam": {
+            "absolute_error": 0.03323323836951646,
+            "observed_count": 72,
+            "observed_frequency": 0.04603580562659847,
+            "observed_frequency_ci95": [
+              0.03671546992531194,
+              0.05758070905945489
+            ],
+            "predicted_frequency": 0.012802567257082006
+          },
+          "overbet": {
+            "absolute_error": 0.014445045538462917,
+            "observed_count": 52,
+            "observed_frequency": 0.03324808184143223,
+            "observed_frequency_ci95": [
+              0.02544393754422567,
+              0.04333945774997123
+            ],
+            "predicted_frequency": 0.047693127379895145
+          }
+        },
+        "observations": 1564,
+        "tail_score_mean_absolute_error": 0.022969023342552224
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.015138699591990698,
+            "observed_count": 83,
+            "observed_frequency": 0.053069053708439895,
+            "observed_frequency_ci95": [
+              0.04301393690125146,
+              0.06531427311332885
+            ],
+            "predicted_frequency": 0.0379303541164492
+          },
+          "jam": {
+            "absolute_error": 0.022280151632407746,
+            "observed_count": 72,
+            "observed_frequency": 0.04603580562659847,
+            "observed_frequency_ci95": [
+              0.03671546992531194,
+              0.05758070905945489
+            ],
+            "predicted_frequency": 0.02375565399419072
+          },
+          "overbet": {
+            "absolute_error": 0.015524603637495138,
+            "observed_count": 52,
+            "observed_frequency": 0.03324808184143223,
+            "observed_frequency_ci95": [
+              0.02544393754422567,
+              0.04333945774997123
+            ],
+            "predicted_frequency": 0.048772685478927366
+          }
+        },
+        "observations": 1564,
+        "tail_score_mean_absolute_error": 0.01764781828729786
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.006622298456242288,
+              -0.0050962133251271115
+            ],
+            "observed": -0.005894334361010119
+          },
+          "jam": {
+            "ci95": [
+              -0.009620964939017363,
+              -0.007939185301918486
+            ],
+            "observed": -0.008811506445916547
+          },
+          "overbet": {
+            "ci95": [
+              -0.0003416020964138936,
+              0.0018966441883908644
+            ],
+            "observed": 0.0017506139301422738
+          },
+          "tail_score": {
+            "ci95": [
+              -0.005022919074217014,
+              -0.0037983702080659335
+            ],
+            "observed": -0.004318408958928132
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 1999,
+        "distinct_hands": 1210,
+        "seed": 11312813467954477580
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "turn"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1210,
+        "distinct_raise_hands": 102,
+        "joint_support": "SUPPORTED",
+        "observations": 1999,
+        "raise_observations": 114,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.017128660676344273,
+            "observed_count": 68,
+            "observed_frequency": 0.03401700850425213,
+            "observed_frequency_ci95": [
+              0.026921764521304507,
+              0.04289976738518752
+            ],
+            "predicted_frequency": 0.016888347827907855
+          },
+          "jam": {
+            "absolute_error": 0.024232138803613305,
+            "observed_count": 64,
+            "observed_frequency": 0.032016008004002,
+            "observed_frequency_ci95": [
+              0.025151740134061986,
+              0.04067546662763771
+            ],
+            "predicted_frequency": 0.007783869200388695
+          },
+          "overbet": {
+            "absolute_error": 0.005835260556695834,
+            "observed_count": 38,
+            "observed_frequency": 0.01900950475237619,
+            "observed_frequency_ci95": [
+              0.013880740548313113,
+              0.025983352772236623
+            ],
+            "predicted_frequency": 0.024844765309072023
+          }
+        },
+        "observations": 1999,
+        "tail_score_mean_absolute_error": 0.015732020012217806
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.011234326315334154,
+            "observed_count": 68,
+            "observed_frequency": 0.03401700850425213,
+            "observed_frequency_ci95": [
+              0.026921764521304507,
+              0.04289976738518752
+            ],
+            "predicted_frequency": 0.022782682188917974
+          },
+          "jam": {
+            "absolute_error": 0.015420632357696758,
+            "observed_count": 64,
+            "observed_frequency": 0.032016008004002,
+            "observed_frequency_ci95": [
+              0.025151740134061986,
+              0.04067546662763771
+            ],
+            "predicted_frequency": 0.01659537564630524
+          },
+          "overbet": {
+            "absolute_error": 0.007585874486838107,
+            "observed_count": 38,
+            "observed_frequency": 0.01900950475237619,
+            "observed_frequency_ci95": [
+              0.013880740548313113,
+              0.025983352772236623
+            ],
+            "predicted_frequency": 0.026595379239214297
+          }
+        },
+        "observations": 1999,
+        "tail_score_mean_absolute_error": 0.011413611053289674
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0072598905699436285,
+              -0.005794494433437039
+            ],
+            "observed": -0.006541197987940655
+          },
+          "jam": {
+            "ci95": [
+              -0.013224990431525977,
+              -0.011612110710003752
+            ],
+            "observed": -0.01237674628751875
+          },
+          "overbet": {
+            "ci95": [
+              -0.0015900384631118676,
+              0.0016580295365576643
+            ],
+            "observed": 0.0015243823378321905
+          },
+          "tail_score": {
+            "ci95": [
+              -0.007044336776954017,
+              -0.0053764682713455135
+            ],
+            "observed": -0.00579785397920907
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2270,
+        "distinct_hands": 1405,
+        "seed": 18383759904523329675
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "IP"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1405,
+        "distinct_raise_hands": 200,
+        "joint_support": "SUPPORTED",
+        "observations": 2270,
+        "raise_observations": 228,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.01589876632243505,
+            "observed_count": 99,
+            "observed_frequency": 0.04361233480176212,
+            "observed_frequency_ci95": [
+              0.035953627339817634,
+              0.05281309737518394
+            ],
+            "predicted_frequency": 0.02771356847932707
+          },
+          "jam": {
+            "absolute_error": 0.025265140897954494,
+            "observed_count": 81,
+            "observed_frequency": 0.035682819383259914,
+            "observed_frequency_ci95": [
+              0.02880256481819847,
+              0.04413192152312552
+            ],
+            "predicted_frequency": 0.010417678485305422
+          },
+          "overbet": {
+            "absolute_error": 0.0029138685305096362,
+            "observed_count": 93,
+            "observed_frequency": 0.040969162995594714,
+            "observed_frequency_ci95": [
+              0.0335605482600109,
+              0.04992876366376481
+            ],
+            "predicted_frequency": 0.04388303152610435
+          }
+        },
+        "observations": 2270,
+        "tail_score_mean_absolute_error": 0.014692591916966391
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.009357568334494394,
+            "observed_count": 99,
+            "observed_frequency": 0.04361233480176212,
+            "observed_frequency_ci95": [
+              0.035953627339817634,
+              0.05281309737518394
+            ],
+            "predicted_frequency": 0.034254766467267724
+          },
+          "jam": {
+            "absolute_error": 0.012888394610435745,
+            "observed_count": 81,
+            "observed_frequency": 0.035682819383259914,
+            "observed_frequency_ci95": [
+              0.02880256481819847,
+              0.04413192152312552
+            ],
+            "predicted_frequency": 0.02279442477282417
+          },
+          "overbet": {
+            "absolute_error": 0.004438250868341827,
+            "observed_count": 93,
+            "observed_frequency": 0.040969162995594714,
+            "observed_frequency_ci95": [
+              0.0335605482600109,
+              0.04992876366376481
+            ],
+            "predicted_frequency": 0.04540741386393654
+          }
+        },
+        "observations": 2270,
+        "tail_score_mean_absolute_error": 0.008894737937757321
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.004282286073640055,
+              -0.0033085700253937555
+            ],
+            "observed": -0.003795652768810928
+          },
+          "jam": {
+            "ci95": [
+              -0.00803046920978765,
+              -0.006949693299296517
+            ],
+            "observed": -0.007498415658406473
+          },
+          "overbet": {
+            "ci95": [
+              0.0004463807106898151,
+              0.0006015459839219188
+            ],
+            "observed": 0.0005295534438131515
+          },
+          "tail_score": {
+            "ci95": [
+              -0.003926476050750633,
+              -0.0032498625763103294
+            ],
+            "observed": -0.0035881716611347488
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2459,
+        "distinct_hands": 1405,
+        "seed": 15855120888439095149
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "OOP"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1405,
+        "distinct_raise_hands": 106,
+        "joint_support": "SUPPORTED",
+        "observations": 2459,
+        "raise_observations": 115,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.015670271534658997,
+            "observed_count": 82,
+            "observed_frequency": 0.03334688897925986,
+            "observed_frequency_ci95": [
+              0.026946737816384934,
+              0.04120278038324096
+            ],
+            "predicted_frequency": 0.01767661744460086
+          },
+          "jam": {
+            "absolute_error": 0.021912477572158418,
+            "observed_count": 75,
+            "observed_frequency": 0.030500203334688898,
+            "observed_frequency_ci95": [
+              0.024401811149877675,
+              0.03806321609323179
+            ],
+            "predicted_frequency": 0.008587725762530479
+          },
+          "overbet": {
+            "absolute_error": 0.005696593749923363,
+            "observed_count": 46,
+            "observed_frequency": 0.01870679137860919,
+            "observed_frequency_ci95": [
+              0.0140541677597874,
+              0.024860825520611085
+            ],
+            "predicted_frequency": 0.024403385128532552
+          }
+        },
+        "observations": 2459,
+        "tail_score_mean_absolute_error": 0.01442644761891359
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.011874618765848069,
+            "observed_count": 82,
+            "observed_frequency": 0.03334688897925986,
+            "observed_frequency_ci95": [
+              0.026946737816384934,
+              0.04120278038324096
+            ],
+            "predicted_frequency": 0.02147227021341179
+          },
+          "jam": {
+            "absolute_error": 0.014414061913751944,
+            "observed_count": 75,
+            "observed_frequency": 0.030500203334688898,
+            "observed_frequency_ci95": [
+              0.024401811149877675,
+              0.03806321609323179
+            ],
+            "predicted_frequency": 0.016086141420936954
+          },
+          "overbet": {
+            "absolute_error": 0.006226147193736514,
+            "observed_count": 46,
+            "observed_frequency": 0.01870679137860919,
+            "observed_frequency_ci95": [
+              0.0140541677597874,
+              0.024860825520611085
+            ],
+            "predicted_frequency": 0.024932938572345704
+          }
+        },
+        "observations": 2459,
+        "tail_score_mean_absolute_error": 0.010838275957778842
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.017684875333570393,
+              -0.009692558964095453
+            ],
+            "observed": -0.01367172166073835
+          },
+          "jam": {
+            "ci95": [
+              -0.022730769303307096,
+              -0.014292015605429493
+            ],
+            "observed": -0.01867616394099529
+          },
+          "overbet": {
+            "ci95": [
+              -0.0020599932500106714,
+              0.001995124458007483
+            ],
+            "observed": -0.001711873587782027
+          },
+          "tail_score": {
+            "ci95": [
+              -0.013924011401018932,
+              -0.008080686543371995
+            ],
+            "observed": -0.011353253063171899
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 233,
+        "distinct_hands": 87,
+        "seed": 14686383788754974486
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "3BP"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 87,
+        "distinct_raise_hands": 19,
+        "joint_support": "SUPPORTED",
+        "observations": 233,
+        "raise_observations": 30,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.0985601915032846,
+            "observed_count": 32,
+            "observed_frequency": 0.13733905579399142,
+            "observed_frequency_ci95": [
+              0.09899181337211754,
+              0.1874506834715408
+            ],
+            "predicted_frequency": 0.038778864290706816
+          },
+          "jam": {
+            "absolute_error": 0.08792231428631685,
+            "observed_count": 27,
+            "observed_frequency": 0.11587982832618025,
+            "observed_frequency_ci95": [
+              0.08087253519460763,
+              0.16334762418417847
+            ],
+            "predicted_frequency": 0.027957514039863404
+          },
+          "overbet": {
+            "absolute_error": 0.0080823487895587,
+            "observed_count": 11,
+            "observed_frequency": 0.04721030042918455,
+            "observed_frequency_ci95": [
+              0.026563022790421283,
+              0.08254565670077352
+            ],
+            "predicted_frequency": 0.03912795163962585
+          }
+        },
+        "observations": 233,
+        "tail_score_mean_absolute_error": 0.06485495152638672
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.08488846984254625,
+            "observed_count": 32,
+            "observed_frequency": 0.13733905579399142,
+            "observed_frequency_ci95": [
+              0.09899181337211754,
+              0.1874506834715408
+            ],
+            "predicted_frequency": 0.052450585951445174
+          },
+          "jam": {
+            "absolute_error": 0.06924615034532156,
+            "observed_count": 27,
+            "observed_frequency": 0.11587982832618025,
+            "observed_frequency_ci95": [
+              0.08087253519460763,
+              0.16334762418417847
+            ],
+            "predicted_frequency": 0.0466336779808587
+          },
+          "overbet": {
+            "absolute_error": 0.006370475201776672,
+            "observed_count": 11,
+            "observed_frequency": 0.04721030042918455,
+            "observed_frequency_ci95": [
+              0.026563022790421283,
+              0.08254565670077352
+            ],
+            "predicted_frequency": 0.04083982522740788
+          }
+        },
+        "observations": 233,
+        "tail_score_mean_absolute_error": 0.05350169846321482
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.003700481164121221,
+              0.003534843819036186
+            ],
+            "observed": -0.0023713644882112465
+          },
+          "jam": {
+            "ci95": [
+              -0.00760005083299877,
+              -0.006791162676468538
+            ],
+            "observed": -0.007178761595259431
+          },
+          "overbet": {
+            "ci95": [
+              0.0007400276741120802,
+              0.0008789945555412596
+            ],
+            "observed": 0.0008051978484818686
+          },
+          "tail_score": {
+            "ci95": [
+              -0.0034646955975438805,
+              -0.0009545792352176388
+            ],
+            "observed": -0.002914976078329602
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 3862,
+        "distinct_hands": 1180,
+        "seed": 9702461580893005240
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "LIMPED"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1180,
+        "distinct_raise_hands": 144,
+        "joint_support": "SUPPORTED",
+        "observations": 3862,
+        "raise_observations": 194,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.0028933875203380546,
+            "observed_count": 76,
+            "observed_frequency": 0.01967892283790782,
+            "observed_frequency_ci95": [
+              0.015751921787684347,
+              0.024560507079544682
+            ],
+            "predicted_frequency": 0.016785535317569766
+          },
+          "jam": {
+            "absolute_error": 0.011693415065687109,
+            "observed_count": 65,
+            "observed_frequency": 0.016830657690315897,
+            "observed_frequency_ci95": [
+              0.013227455450803113,
+              0.02139410372237713
+            ],
+            "predicted_frequency": 0.005137242624628788
+          },
+          "overbet": {
+            "absolute_error": 0.010421596797659638,
+            "observed_count": 71,
+            "observed_frequency": 0.018384256861729675,
+            "observed_frequency_ci95": [
+              0.014601204815350604,
+              0.023124465100038072
+            ],
+            "predicted_frequency": 0.028805853659389313
+          }
+        },
+        "observations": 3862,
+        "tail_score_mean_absolute_error": 0.008336133127894933
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.0005220230321268081,
+            "observed_count": 76,
+            "observed_frequency": 0.01967892283790782,
+            "observed_frequency_ci95": [
+              0.015751921787684347,
+              0.024560507079544682
+            ],
+            "predicted_frequency": 0.02020094587003463
+          },
+          "jam": {
+            "absolute_error": 0.004514653470427678,
+            "observed_count": 65,
+            "observed_frequency": 0.016830657690315897,
+            "observed_frequency_ci95": [
+              0.013227455450803113,
+              0.02139410372237713
+            ],
+            "predicted_frequency": 0.012316004219888219
+          },
+          "overbet": {
+            "absolute_error": 0.011226794646141507,
+            "observed_count": 71,
+            "observed_frequency": 0.018384256861729675,
+            "observed_frequency_ci95": [
+              0.014601204815350604,
+              0.023124465100038072
+            ],
+            "predicted_frequency": 0.029611051507871182
+          }
+        },
+        "observations": 3862,
+        "tail_score_mean_absolute_error": 0.005421157049565331
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.008163324208646018,
+              -0.006438746273397964
+            ],
+            "observed": -0.0073221568811380235
+          },
+          "jam": {
+            "ci95": [
+              -0.013726740418396608,
+              -0.01185146198207336
+            ],
+            "observed": -0.012776510670719395
+          },
+          "overbet": {
+            "ci95": [
+              -0.001462894284316664,
+              0.0015454326140302368
+            ],
+            "observed": 0.0014070157935418548
+          },
+          "tail_score": {
+            "ci95": [
+              -0.0073988787592068235,
+              -0.005699299727393813
+            ],
+            "observed": -0.006230550586105187
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2372,
+        "distinct_hands": 847,
+        "seed": 7228121247753280397
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "SRP"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 847,
+        "distinct_raise_hands": 172,
+        "joint_support": "SUPPORTED",
+        "observations": 2372,
+        "raise_observations": 205,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.031064777020005225,
+            "observed_count": 142,
+            "observed_frequency": 0.05986509274873524,
+            "observed_frequency_ci95": [
+              0.05101082686594992,
+              0.07014265235802622
+            ],
+            "predicted_frequency": 0.028800315728730017
+          },
+          "jam": {
+            "absolute_error": 0.03893442871141207,
+            "observed_count": 129,
+            "observed_frequency": 0.05438448566610455,
+            "observed_frequency_ci95": [
+              0.04595784706641815,
+              0.06425214099846956
+            ],
+            "predicted_frequency": 0.015450056954692482
+          },
+          "overbet": {
+            "absolute_error": 0.0022335212917844807,
+            "observed_count": 89,
+            "observed_frequency": 0.03752107925801012,
+            "observed_frequency_ci95": [
+              0.030590958186573394,
+              0.04594674938881149
+            ],
+            "predicted_frequency": 0.0397546005497946
+          }
+        },
+        "observations": 2372,
+        "tail_score_mean_absolute_error": 0.02407757567440059
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.0237426201388672,
+            "observed_count": 142,
+            "observed_frequency": 0.05986509274873524,
+            "observed_frequency_ci95": [
+              0.05101082686594992,
+              0.07014265235802622
+            ],
+            "predicted_frequency": 0.03612247260986804
+          },
+          "jam": {
+            "absolute_error": 0.026157918040692674,
+            "observed_count": 129,
+            "observed_frequency": 0.05438448566610455,
+            "observed_frequency_ci95": [
+              0.04595784706641815,
+              0.06425214099846956
+            ],
+            "predicted_frequency": 0.028226567625411876
+          },
+          "overbet": {
+            "absolute_error": 0.0036405370853263355,
+            "observed_count": 89,
+            "observed_frequency": 0.03752107925801012,
+            "observed_frequency_ci95": [
+              0.030590958186573394,
+              0.04594674938881149
+            ],
+            "predicted_frequency": 0.041161616343336455
+          }
+        },
+        "observations": 2372,
+        "tail_score_mean_absolute_error": 0.017847025088295405
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.009188202946759325,
+              -0.005798687511354225
+            ],
+            "observed": -0.00820279665462767
+          },
+          "jam": {
+            "ci95": [
+              -0.016260076767435724,
+              -0.014002460048913236
+            ],
+            "observed": -0.015098610065311921
+          },
+          "overbet": {
+            "ci95": [
+              -0.001441319146539947,
+              0.0023184521532662854
+            ],
+            "observed": 0.0021159926894834258
+          },
+          "tail_score": {
+            "ci95": [
+              -0.00802314726105823,
+              -0.006129171469683475
+            ],
+            "observed": -0.007061804676818722
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 1526,
+        "distinct_hands": 1001,
+        "seed": 9567378825196293946
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1001,
+        "distinct_raise_hands": 148,
+        "joint_support": "SUPPORTED",
+        "observations": 1526,
+        "raise_observations": 159,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.01696566472155578,
+            "observed_count": 79,
+            "observed_frequency": 0.051769331585845346,
+            "observed_frequency_ci95": [
+              0.04173550979934348,
+              0.06405418356238077
+            ],
+            "predicted_frequency": 0.03480366686428957
+          },
+          "jam": {
+            "absolute_error": 0.02933955723648573,
+            "observed_count": 65,
+            "observed_frequency": 0.04259501965923984,
+            "observed_frequency_ci95": [
+              0.03355926080906711,
+              0.05392788241678599
+            ],
+            "predicted_frequency": 0.01325546242275411
+          },
+          "overbet": {
+            "absolute_error": 0.008359755055003207,
+            "observed_count": 66,
+            "observed_frequency": 0.04325032765399738,
+            "observed_frequency_ci95": [
+              0.03413952279173003,
+              0.05465494544382817
+            ],
+            "predicted_frequency": 0.05161008270900059
+          }
+        },
+        "observations": 1526,
+        "tail_score_mean_absolute_error": 0.018221659004348238
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.008762868066928109,
+            "observed_count": 79,
+            "observed_frequency": 0.051769331585845346,
+            "observed_frequency_ci95": [
+              0.04173550979934348,
+              0.06405418356238077
+            ],
+            "predicted_frequency": 0.04300646351891724
+          },
+          "jam": {
+            "absolute_error": 0.014240947171173808,
+            "observed_count": 65,
+            "observed_frequency": 0.04259501965923984,
+            "observed_frequency_ci95": [
+              0.03355926080906711,
+              0.05392788241678599
+            ],
+            "predicted_frequency": 0.028354072488066033
+          },
+          "overbet": {
+            "absolute_error": 0.010475747744486633,
+            "observed_count": 66,
+            "observed_frequency": 0.04325032765399738,
+            "observed_frequency_ci95": [
+              0.03413952279173003,
+              0.05465494544382817
+            ],
+            "predicted_frequency": 0.053726075398484015
+          }
+        },
+        "observations": 1526,
+        "tail_score_mean_absolute_error": 0.011159854327529516
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0064112950204691455,
+              -0.001808553434296542
+            ],
+            "observed": -0.0039326236939290216
+          },
+          "jam": {
+            "ci95": [
+              -0.010374282262610538,
+              -0.005276680902115145
+            ],
+            "observed": -0.007707808343855829
+          },
+          "overbet": {
+            "ci95": [
+              -0.0005264522427802675,
+              0.0005781560994110999
+            ],
+            "observed": 0.0004107266664123352
+          },
+          "tail_score": {
+            "ci95": [
+              -0.005488694677650294,
+              -0.002249336211531045
+            ],
+            "observed": -0.0037432351237908362
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 174,
+        "distinct_hands": 165,
+        "seed": 7856232598093344619
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>RAISE"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 165,
+        "distinct_raise_hands": 13,
+        "joint_support": "SUPPORTED",
+        "observations": 174,
+        "raise_observations": 13,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.07427430303708557,
+            "observed_count": 18,
+            "observed_frequency": 0.10344827586206896,
+            "observed_frequency_ci95": [
+              0.06644267117224241,
+              0.15758528656546178
+            ],
+            "predicted_frequency": 0.029173972824983394
+          },
+          "jam": {
+            "absolute_error": 0.07885196208956385,
+            "observed_count": 17,
+            "observed_frequency": 0.09770114942528736,
+            "observed_frequency_ci95": [
+              0.06189698906340395,
+              0.1508849970473105
+            ],
+            "predicted_frequency": 0.018849187335723504
+          },
+          "overbet": {
+            "absolute_error": 0.007975368717918152,
+            "observed_count": 5,
+            "observed_frequency": 0.028735632183908046,
+            "observed_frequency_ci95": [
+              0.012335289825062531,
+              0.06549503676177434
+            ],
+            "predicted_frequency": 0.0367110009018262
+          }
+        },
+        "observations": 174,
+        "tail_score_mean_absolute_error": 0.05370054461485586
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.07034167934315655,
+            "observed_count": 18,
+            "observed_frequency": 0.10344827586206896,
+            "observed_frequency_ci95": [
+              0.06644267117224241,
+              0.15758528656546178
+            ],
+            "predicted_frequency": 0.033106596518912415
+          },
+          "jam": {
+            "absolute_error": 0.07114415374570802,
+            "observed_count": 17,
+            "observed_frequency": 0.09770114942528736,
+            "observed_frequency_ci95": [
+              0.06189698906340395,
+              0.1508849970473105
+            ],
+            "predicted_frequency": 0.026556995679579337
+          },
+          "overbet": {
+            "absolute_error": 0.008386095384330487,
+            "observed_count": 5,
+            "observed_frequency": 0.028735632183908046,
+            "observed_frequency_ci95": [
+              0.012335289825062531,
+              0.06549503676177434
+            ],
+            "predicted_frequency": 0.03712172756823853
+          }
+        },
+        "observations": 174,
+        "tail_score_mean_absolute_error": 0.04995730949106502
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0054029780781146945,
+              -0.0019812271252653245
+            ],
+            "observed": -0.004639274323679662
+          },
+          "jam": {
+            "ci95": [
+              -0.008781955183733748,
+              -0.007042875346697493
+            ],
+            "observed": -0.007965977305662834
+          },
+          "overbet": {
+            "ci95": [
+              -0.0013951667825063793,
+              0.0014169661947065718
+            ],
+            "observed": 0.0012967908829530916
+          },
+          "tail_score": {
+            "ci95": [
+              -0.004936785501653758,
+              -0.0029724534496183186
+            ],
+            "observed": -0.003769486915463134
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 1229,
+        "distinct_hands": 950,
+        "seed": 8976703542617829294
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 950,
+        "distinct_raise_hands": 83,
+        "joint_support": "SUPPORTED",
+        "observations": 1229,
+        "raise_observations": 85,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.012517499740710623,
+            "observed_count": 41,
+            "observed_frequency": 0.03336045565500407,
+            "observed_frequency_ci95": [
+              0.024685530855768405,
+              0.04494342119359563
+            ],
+            "predicted_frequency": 0.020842955914293446
+          },
+          "jam": {
+            "absolute_error": 0.018951914857583213,
+            "observed_count": 35,
+            "observed_frequency": 0.028478437754271765,
+            "observed_frequency_ci95": [
+              0.02054721135328999,
+              0.03934812903486425
+            ],
+            "predicted_frequency": 0.009526522896688554
+          },
+          "overbet": {
+            "absolute_error": 0.0016480380137218476,
+            "observed_count": 35,
+            "observed_frequency": 0.028478437754271765,
+            "observed_frequency_ci95": [
+              0.02054721135328999,
+              0.03934812903486425
+            ],
+            "predicted_frequency": 0.030126475767993613
+          }
+        },
+        "observations": 1229,
+        "tail_score_mean_absolute_error": 0.011039150870671893
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.007878225417030961,
+            "observed_count": 41,
+            "observed_frequency": 0.03336045565500407,
+            "observed_frequency_ci95": [
+              0.024685530855768405,
+              0.04494342119359563
+            ],
+            "predicted_frequency": 0.025482230237973108
+          },
+          "jam": {
+            "absolute_error": 0.010985937551920379,
+            "observed_count": 35,
+            "observed_frequency": 0.028478437754271765,
+            "observed_frequency_ci95": [
+              0.02054721135328999,
+              0.03934812903486425
+            ],
+            "predicted_frequency": 0.017492500202351387
+          },
+          "overbet": {
+            "absolute_error": 0.002944828896674939,
+            "observed_count": 35,
+            "observed_frequency": 0.028478437754271765,
+            "observed_frequency_ci95": [
+              0.02054721135328999,
+              0.03934812903486425
+            ],
+            "predicted_frequency": 0.031423266650946705
+          }
+        },
+        "observations": 1229,
+        "tail_score_mean_absolute_error": 0.007269663955208759
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0038106379444021446,
+              -0.002131502898024225
+            ],
+            "observed": -0.0030165795349636447
+          },
+          "jam": {
+            "ci95": [
+              -0.008255453072878298,
+              -0.006217698456416454
+            ],
+            "observed": -0.007236952714730561
+          },
+          "overbet": {
+            "ci95": [
+              -0.00048643920702661674,
+              0.0004773040389194262
+            ],
+            "observed": -0.0004048432025064233
+          },
+          "tail_score": {
+            "ci95": [
+              -0.0040848202666115925,
+              -0.0027614375392535457
+            ],
+            "observed": -0.0035527918174002113
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 480,
+        "distinct_hands": 437,
+        "seed": 1637303051027894785
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 437,
+        "distinct_raise_hands": 26,
+        "joint_support": "SUPPORTED",
+        "observations": 480,
+        "raise_observations": 26,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.021962860540819105,
+            "observed_count": 18,
+            "observed_frequency": 0.0375,
+            "observed_frequency_ci95": [
+              0.023850066538831934,
+              0.058493970116900156
+            ],
+            "predicted_frequency": 0.015537139459180891
+          },
+          "jam": {
+            "absolute_error": 0.02851548101053387,
+            "observed_count": 17,
+            "observed_frequency": 0.035416666666666666,
+            "observed_frequency_ci95": [
+              0.0222281042304214,
+              0.05598234700484102
+            ],
+            "predicted_frequency": 0.006901185656132795
+          },
+          "overbet": {
+            "absolute_error": 0.004186352801980379,
+            "observed_count": 14,
+            "observed_frequency": 0.029166666666666667,
+            "observed_frequency_ci95": [
+              0.017452060312482066,
+              0.048357634661371336
+            ],
+            "predicted_frequency": 0.02498031386468629
+          }
+        },
+        "observations": 480,
+        "tail_score_mean_absolute_error": 0.018221564784444453
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.01894628100585546,
+            "observed_count": 18,
+            "observed_frequency": 0.0375,
+            "observed_frequency_ci95": [
+              0.023850066538831934,
+              0.058493970116900156
+            ],
+            "predicted_frequency": 0.018553718994144538
+          },
+          "jam": {
+            "absolute_error": 0.02127852829580331,
+            "observed_count": 17,
+            "observed_frequency": 0.035416666666666666,
+            "observed_frequency_ci95": [
+              0.0222281042304214,
+              0.05598234700484102
+            ],
+            "predicted_frequency": 0.014138138370863355
+          },
+          "overbet": {
+            "absolute_error": 0.0037815095994739555,
+            "observed_count": 14,
+            "observed_frequency": 0.029166666666666667,
+            "observed_frequency_ci95": [
+              0.017452060312482066,
+              0.048357634661371336
+            ],
+            "predicted_frequency": 0.02538515706719271
+          }
+        },
+        "observations": 480,
+        "tail_score_mean_absolute_error": 0.014668772967044242
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0049734965179539835,
+              -0.0038630689169029363
+            ],
+            "observed": -0.0044053514261111
+          },
+          "jam": {
+            "ci95": [
+              -0.011344815549215077,
+              -0.010037189082397974
+            ],
+            "observed": -0.010647884206899477
+          },
+          "overbet": {
+            "ci95": [
+              0.0007227432515428724,
+              0.0009283846656871391
+            ],
+            "observed": 0.0008393739593810061
+          },
+          "tail_score": {
+            "ci95": [
+              -0.005149464693709574,
+              -0.004376373128201373
+            ],
+            "observed": -0.004737953891209857
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2719,
+        "distinct_hands": 1429,
+        "seed": 9531803663569907040
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P25_50"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1429,
+        "distinct_raise_hands": 136,
+        "joint_support": "SUPPORTED",
+        "observations": 2719,
+        "raise_observations": 143,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.01543201886535147,
+            "observed_count": 123,
+            "observed_frequency": 0.045237219566016916,
+            "observed_frequency_ci95": [
+              0.038046416049846356,
+              0.05371120649234324
+            ],
+            "predicted_frequency": 0.029805200700665446
+          },
+          "jam": {
+            "absolute_error": 0.026110710833022497,
+            "observed_count": 104,
+            "observed_frequency": 0.038249356381022434,
+            "observed_frequency_ci95": [
+              0.03166730404453123,
+              0.04613430946272233
+            ],
+            "predicted_frequency": 0.012138645547999937
+          },
+          "overbet": {
+            "absolute_error": 0.005866622776753535,
+            "observed_count": 66,
+            "observed_frequency": 0.024273630011033467,
+            "observed_frequency_ci95": [
+              0.01912542562502021,
+              0.030764169812361304
+            ],
+            "predicted_frequency": 0.030140252787787
+          }
+        },
+        "observations": 2719,
+        "tail_score_mean_absolute_error": 0.01580311749170917
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.01102666743924037,
+            "observed_count": 123,
+            "observed_frequency": 0.045237219566016916,
+            "observed_frequency_ci95": [
+              0.038046416049846356,
+              0.05371120649234324
+            ],
+            "predicted_frequency": 0.034210552126776546
+          },
+          "jam": {
+            "absolute_error": 0.01546282662612302,
+            "observed_count": 104,
+            "observed_frequency": 0.038249356381022434,
+            "observed_frequency_ci95": [
+              0.03166730404453123,
+              0.04613430946272233
+            ],
+            "predicted_frequency": 0.022786529754899414
+          },
+          "overbet": {
+            "absolute_error": 0.006705996736134541,
+            "observed_count": 66,
+            "observed_frequency": 0.024273630011033467,
+            "observed_frequency_ci95": [
+              0.01912542562502021,
+              0.030764169812361304
+            ],
+            "predicted_frequency": 0.030979626747168008
+          }
+        },
+        "observations": 2719,
+        "tail_score_mean_absolute_error": 0.011065163600499311
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.006412598506946771,
+              -0.00426738471852022
+            ],
+            "observed": -0.005301493947476241
+          },
+          "jam": {
+            "ci95": [
+              -0.011993195488593901,
+              -0.008606998942996524
+            ],
+            "observed": -0.010263713542021796
+          },
+          "overbet": {
+            "ci95": [
+              -0.0007998576647962632,
+              -0.0006382073801896295
+            ],
+            "observed": -0.0007176187201730147
+          },
+          "tail_score": {
+            "ci95": [
+              -0.006360667039262458,
+              -0.004612726107615318
+            ],
+            "observed": -0.00542760873655701
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 454,
+        "distinct_hands": 307,
+        "seed": 8056465107116688845
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P50_75"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 307,
+        "distinct_raise_hands": 13,
+        "joint_support": "SUPPORTED",
+        "observations": 454,
+        "raise_observations": 14,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.054375983304817695,
+            "observed_count": 37,
+            "observed_frequency": 0.08149779735682819,
+            "observed_frequency_ci95": [
+              0.05970308864554483,
+              0.11031528195199297
+            ],
+            "predicted_frequency": 0.027121814052010494
+          },
+          "jam": {
+            "absolute_error": 0.06198547234516859,
+            "observed_count": 36,
+            "observed_frequency": 0.07929515418502203,
+            "observed_frequency_ci95": [
+              0.05782463750226555,
+              0.10782540872999616
+            ],
+            "predicted_frequency": 0.017309681839853444
+          },
+          "overbet": {
+            "absolute_error": 0.021525370990767023,
+            "observed_count": 8,
+            "observed_frequency": 0.01762114537444934,
+            "observed_frequency_ci95": [
+              0.008955355024634053,
+              0.03438160897989638
+            ],
+            "predicted_frequency": 0.03914651636521636
+          }
+        },
+        "observations": 454,
+        "tail_score_mean_absolute_error": 0.045962275546917765
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.049074489357341454,
+            "observed_count": 37,
+            "observed_frequency": 0.08149779735682819,
+            "observed_frequency_ci95": [
+              0.05970308864554483,
+              0.11031528195199297
+            ],
+            "predicted_frequency": 0.032423307999486735
+          },
+          "jam": {
+            "absolute_error": 0.05172175880314679,
+            "observed_count": 36,
+            "observed_frequency": 0.07929515418502203,
+            "observed_frequency_ci95": [
+              0.05782463750226555,
+              0.10782540872999616
+            ],
+            "predicted_frequency": 0.027573395381875237
+          },
+          "overbet": {
+            "absolute_error": 0.020807752270594008,
+            "observed_count": 8,
+            "observed_frequency": 0.01762114537444934,
+            "observed_frequency_ci95": [
+              0.008955355024634053,
+              0.03438160897989638
+            ],
+            "predicted_frequency": 0.03842889764504335
+          }
+        },
+        "observations": 454,
+        "tail_score_mean_absolute_error": 0.040534666810360755
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.021000243436899317,
+              -0.013727502751198153
+            ],
+            "observed": -0.01744317066654616
+          },
+          "jam": {
+            "ci95": [
+              -0.018537637791206405,
+              -0.011203603218011254
+            ],
+            "observed": -0.014899618113020263
+          },
+          "overbet": {
+            "ci95": [
+              0.0034653993299156695,
+              0.004408442464292635
+            ],
+            "observed": 0.003931345004920567
+          },
+          "tail_score": {
+            "ci95": [
+              -0.011749906205377702,
+              -0.007040689782599587
+            ],
+            "observed": -0.009470481258215258
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 518,
+        "distinct_hands": 365,
+        "seed": 11567587356636070478
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR00_1"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 365,
+        "distinct_raise_hands": 41,
+        "joint_support": "SUPPORTED",
+        "observations": 518,
+        "raise_observations": 44,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.22904464091290938,
+            "observed_count": 143,
+            "observed_frequency": 0.27606177606177607,
+            "observed_frequency_ci95": [
+              0.23931891003008757,
+              0.3161016184110692
+            ],
+            "predicted_frequency": 0.04701713514886669
+          },
+          "jam": {
+            "absolute_error": 0.22904464091290938,
+            "observed_count": 143,
+            "observed_frequency": 0.27606177606177607,
+            "observed_frequency_ci95": [
+              0.23931891003008757,
+              0.3161016184110692
+            ],
+            "predicted_frequency": 0.04701713514886669
+          },
+          "overbet": {
+            "absolute_error": 0.008195022580488391,
+            "observed_count": 0,
+            "observed_frequency": 0.0,
+            "observed_frequency_ci95": [
+              0.0,
+              0.007361352295341598
+            ],
+            "predicted_frequency": 0.008195022580488391
+          }
+        },
+        "observations": 518,
+        "tail_score_mean_absolute_error": 0.15542810146876904
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.21160147024636322,
+            "observed_count": 143,
+            "observed_frequency": 0.27606177606177607,
+            "observed_frequency_ci95": [
+              0.23931891003008757,
+              0.3161016184110692
+            ],
+            "predicted_frequency": 0.06446030581541286
+          },
+          "jam": {
+            "absolute_error": 0.21414502279988912,
+            "observed_count": 143,
+            "observed_frequency": 0.27606177606177607,
+            "observed_frequency_ci95": [
+              0.23931891003008757,
+              0.3161016184110692
+            ],
+            "predicted_frequency": 0.06191675326188695
+          },
+          "overbet": {
+            "absolute_error": 0.012126367585408958,
+            "observed_count": 0,
+            "observed_frequency": 0.0,
+            "observed_frequency_ci95": [
+              0.0,
+              0.007361352295341598
+            ],
+            "predicted_frequency": 0.012126367585408958
+          }
+        },
+        "observations": 518,
+        "tail_score_mean_absolute_error": 0.14595762021055378
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.005505594822155232,
+              -0.004385005748004694
+            ],
+            "observed": -0.004929887417275618
+          },
+          "jam": {
+            "ci95": [
+              -0.00989565743339168,
+              -0.008585246880682094
+            ],
+            "observed": -0.009207347219810903
+          },
+          "overbet": {
+            "ci95": [
+              -0.0010269263480115244,
+              0.001108202944872615
+            ],
+            "observed": 0.0010044653340988072
+          },
+          "tail_score": {
+            "ci95": [
+              -0.005219915668861229,
+              -0.004022432130730193
+            ],
+            "observed": -0.004377589767662574
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2493,
+        "distinct_hands": 1239,
+        "seed": 5793583085574473724
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "0"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1239,
+        "distinct_raise_hands": 149,
+        "joint_support": "SUPPORTED",
+        "observations": 2493,
+        "raise_observations": 175,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.018361527083198353,
+            "observed_count": 98,
+            "observed_frequency": 0.03931006819093462,
+            "observed_frequency_ci95": [
+              0.03236349259656304,
+              0.047674211885916626
+            ],
+            "predicted_frequency": 0.020948541107736265
+          },
+          "jam": {
+            "absolute_error": 0.024990611778100958,
+            "observed_count": 85,
+            "observed_frequency": 0.034095467308463696,
+            "observed_frequency_ci95": [
+              0.027658108879457483,
+              0.04196643945001585
+            ],
+            "predicted_frequency": 0.009104855530362738
+          },
+          "overbet": {
+            "absolute_error": 0.0031497685488651936,
+            "observed_count": 73,
+            "observed_frequency": 0.029281989570798236,
+            "observed_frequency_ci95": [
+              0.023353650859019782,
+              0.03665875332921695
+            ],
+            "predicted_frequency": 0.03243175811966343
+          }
+        },
+        "observations": 2493,
+        "tail_score_mean_absolute_error": 0.015500635803388169
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.013431639665922736,
+            "observed_count": 98,
+            "observed_frequency": 0.03931006819093462,
+            "observed_frequency_ci95": [
+              0.03236349259656304,
+              0.047674211885916626
+            ],
+            "predicted_frequency": 0.025878428525011883
+          },
+          "jam": {
+            "absolute_error": 0.015783264558290055,
+            "observed_count": 85,
+            "observed_frequency": 0.034095467308463696,
+            "observed_frequency_ci95": [
+              0.027658108879457483,
+              0.04196643945001585
+            ],
+            "predicted_frequency": 0.01831220275017364
+          },
+          "overbet": {
+            "absolute_error": 0.004154233882964001,
+            "observed_count": 73,
+            "observed_frequency": 0.029281989570798236,
+            "observed_frequency_ci95": [
+              0.023353650859019782,
+              0.03665875332921695
+            ],
+            "predicted_frequency": 0.03343622345376224
+          }
+        },
+        "observations": 2493,
+        "tail_score_mean_absolute_error": 0.011123046035725595
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.007661334322451526,
+              -0.0056750276794675664
+            ],
+            "observed": -0.00659738131624342
+          },
+          "jam": {
+            "ci95": [
+              -0.012799671141049818,
+              -0.010539585559741244
+            ],
+            "observed": -0.01159858039701939
+          },
+          "overbet": {
+            "ci95": [
+              0.0010144450166788442,
+              0.0014968373224595042
+            ],
+            "observed": 0.0013228775523086295
+          },
+          "tail_score": {
+            "ci95": [
+              -0.006463304064213301,
+              -0.005007778338340148
+            ],
+            "observed": -0.005624361386984725
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 1256,
+        "distinct_hands": 735,
+        "seed": 9932865449209761793
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "1"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 735,
+        "distinct_raise_hands": 94,
+        "joint_support": "SUPPORTED",
+        "observations": 1256,
+        "raise_observations": 114,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.020512005146819404,
+            "observed_count": 59,
+            "observed_frequency": 0.046974522292993634,
+            "observed_frequency_ci95": [
+              0.03659097769010237,
+              0.06012076168601473
+            ],
+            "predicted_frequency": 0.02646251714617423
+          },
+          "jam": {
+            "absolute_error": 0.030032971218160343,
+            "observed_count": 53,
+            "observed_frequency": 0.04219745222929936,
+            "observed_frequency_ci95": [
+              0.03240471214754726,
+              0.05478201920793135
+            ],
+            "predicted_frequency": 0.012164481011139018
+          },
+          "overbet": {
+            "absolute_error": 0.009775345241210015,
+            "observed_count": 37,
+            "observed_frequency": 0.02945859872611465,
+            "observed_frequency_ci95": [
+              0.02144685127676985,
+              0.04033985869033946
+            ],
+            "predicted_frequency": 0.039233943967324665
+          }
+        },
+        "observations": 1256,
+        "tail_score_mean_absolute_error": 0.02010677386872992
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.013914623830575984,
+            "observed_count": 59,
+            "observed_frequency": 0.046974522292993634,
+            "observed_frequency_ci95": [
+              0.03659097769010237,
+              0.06012076168601473
+            ],
+            "predicted_frequency": 0.03305989846241765
+          },
+          "jam": {
+            "absolute_error": 0.018434390821140952,
+            "observed_count": 53,
+            "observed_frequency": 0.04219745222929936,
+            "observed_frequency_ci95": [
+              0.03240471214754726,
+              0.05478201920793135
+            ],
+            "predicted_frequency": 0.02376306140815841
+          },
+          "overbet": {
+            "absolute_error": 0.011098222793518644,
+            "observed_count": 37,
+            "observed_frequency": 0.02945859872611465,
+            "observed_frequency_ci95": [
+              0.02144685127676985,
+              0.04033985869033946
+            ],
+            "predicted_frequency": 0.040556821519633295
+          }
+        },
+        "observations": 1256,
+        "tail_score_mean_absolute_error": 0.014482412481745194
+      }
+    },
+    {
+      "candidate_minus_286_uncertainty": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_baseline": {
+          "aggressive_tail": {
+            "ci95": [
+              -0.0054055003297608095,
+              -0.004258331354803001
+            ],
+            "observed": -0.004870156793431148
+          },
+          "jam": {
+            "ci95": [
+              -0.009802965909030783,
+              -0.008489431290013772
+            ],
+            "observed": -0.00916021130410052
+          },
+          "overbet": {
+            "ci95": [
+              0.0008860853375928623,
+              0.0010951605976580695
+            ],
+            "observed": 0.0009929919899495342
+          },
+          "tail_score": {
+            "ci95": [
+              -0.004739759301130304,
+              -0.003928925057734716
+            ],
+            "observed": -0.004345792035860711
+          }
+        },
+        "cluster_unit": "hand_id",
+        "decisions": 2734,
+        "distinct_hands": 1254,
+        "seed": 4616940240858687306
+      },
+      "comparison_vs_286": "IMPROVED",
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "2"
+      },
+      "support": {
+        "action_support": "SUPPORTED",
+        "distinct_hands": 1254,
+        "distinct_raise_hands": 120,
+        "joint_support": "SUPPORTED",
+        "observations": 2734,
+        "raise_observations": 140,
+        "tail_support": "SUPPORTED"
+      },
+      "support286": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.013687597926644184,
+            "observed_count": 95,
+            "observed_frequency": 0.034747622531089976,
+            "observed_frequency_ci95": [
+              0.028509382949897338,
+              0.04229145111453748
+            ],
+            "predicted_frequency": 0.021060024604445792
+          },
+          "jam": {
+            "absolute_error": 0.021657530660460955,
+            "observed_count": 85,
+            "observed_frequency": 0.03108997805413314,
+            "observed_frequency_ci95": [
+              0.025213463078570524,
+              0.03828234609643375
+            ],
+            "predicted_frequency": 0.009432447393672185
+          },
+          "overbet": {
+            "absolute_error": 0.00873177067340232,
+            "observed_count": 61,
+            "observed_frequency": 0.02231163130943672,
+            "observed_frequency_ci95": [
+              0.017409070360202995,
+              0.02855467908016798
+            ],
+            "predicted_frequency": 0.03104340198283904
+          }
+        },
+        "observations": 2734,
+        "tail_score_mean_absolute_error": 0.014692299753502487
+      },
+      "tail298": {
+        "metrics": {
+          "aggressive_tail": {
+            "absolute_error": 0.008817441133213037,
+            "observed_count": 95,
+            "observed_frequency": 0.034747622531089976,
+            "observed_frequency_ci95": [
+              0.028509382949897338,
+              0.04229145111453748
+            ],
+            "predicted_frequency": 0.02593018139787694
+          },
+          "jam": {
+            "absolute_error": 0.012497319356360434,
+            "observed_count": 85,
+            "observed_frequency": 0.03108997805413314,
+            "observed_frequency_ci95": [
+              0.025213463078570524,
+              0.03828234609643375
+            ],
+            "predicted_frequency": 0.018592658697772706
+          },
+          "overbet": {
+            "absolute_error": 0.009724762663351854,
+            "observed_count": 61,
+            "observed_frequency": 0.02231163130943672,
+            "observed_frequency_ci95": [
+              0.017409070360202995,
+              0.02855467908016798
+            ],
+            "predicted_frequency": 0.032036393972788575
+          }
+        },
+        "observations": 2734,
+        "tail_score_mean_absolute_error": 0.010346507717641775
+      }
+    }
+  ],
+  "interpretation": "Descriptive frozen VALIDATION comparison only. The #298 component leaves #286 action probabilities and sizing distribution unchanged and evaluates an explicit TRAIN-fitted conditional aggressive-tail probability component. No activation or promotion follows.",
+  "issue": 298,
+  "production_effect": "NONE",
+  "schema": "model-b-aggressive-tail-summary/v1",
+  "sizing_calibration": {
+    "candidate197": {
+      "distinct_raise_hands": 335,
+      "mean_absolute_log2_error": 1.0468830367661774,
+      "median_absolute_log2_error": 0.7863770565709532,
+      "n": 429,
+      "p90_absolute_log2_error": 2.238127096821605
+    },
+    "reference": {
+      "distinct_raise_hands": 335,
+      "mean_absolute_log2_error": 1.1409140123297672,
+      "median_absolute_log2_error": 0.8810946315977607,
+      "n": 429,
+      "p90_absolute_log2_error": 2.3734215847415228
+    },
+    "support286": {
+      "distinct_raise_hands": 335,
+      "mean_absolute_log2_error": 1.0468830367661774,
+      "median_absolute_log2_error": 0.7863770565709532,
+      "n": 429,
+      "p90_absolute_log2_error": 2.238127096821605
+    },
+    "tail298": {
+      "distinct_raise_hands": 335,
+      "mean_absolute_log2_error": 1.0468830367661774,
+      "median_absolute_log2_error": 0.7863770565709532,
+      "n": 429,
+      "p90_absolute_log2_error": 2.238127096821605
+    }
+  },
+  "sizing_guard_equal_to_286": true,
+  "tail298_selection_coverage": {
+    "backoff_fraction": 0.9614376060465833,
+    "exact_fraction": 0.03856239395341663,
+    "fallback_reason_counts": {
+      "BACKOFF_TAIL_SUPPORT": 6233,
+      "EXACT_TAIL_CONTEXT_SUPPORTED": 250
+    },
+    "predictions": 6483,
+    "selected_level_counts": {
+      "0": 250,
+      "1": 974,
+      "2": 1026,
+      "3": 704,
+      "4": 2883,
+      "5": 526,
+      "6": 120
+    },
+    "selected_level_fraction": {
+      "0": 0.03856239395341663,
+      "1": 0.1502390868425112,
+      "2": 0.15826006478482185,
+      "3": 0.10859170137282123,
+      "4": 0.4447015270708006,
+      "5": 0.08113527687798859,
+      "6": 0.01850994909763998
+    }
+  },
+  "tail298_vs_286_uncertainty": {
+    "bootstrap_samples": 1000,
+    "candidate_minus_baseline": {
+      "aggressive_tail": {
+        "ci95": [
+          -0.0056613668489734386,
+          -0.004841386259242008
+        ],
+        "observed": -0.005227753962318463
+      },
+      "jam": {
+        "ci95": [
+          -0.010148690131095907,
+          -0.009199752536152062
+        ],
+        "observed": -0.009650740598959703
+      },
+      "overbet": {
+        "ci95": [
+          0.0009938403869415708,
+          0.001133943269801086
+        ],
+        "observed": 0.0010613151911352814
+      },
+      "tail_score": {
+        "ci95": [
+          -0.004901595678855186,
+          -0.00434709515617778
+        ],
+        "observed": -0.004605726456714294
+      }
+    },
+    "cluster_unit": "hand_id",
+    "decisions": 6483,
+    "distinct_hands": 2123,
+    "seed": 6424426999552664110
+  },
+  "tail_calibration": {
+    "candidate197": {
+      "metrics": {
+        "aggressive_tail": {
+          "absolute_error": 0.016807073610097773,
+          "observed_count": 252,
+          "observed_frequency": 0.03887089310504396,
+          "observed_frequency_ci95": [
+            0.034432404615728926,
+            0.04385553598595483
+          ],
+          "predicted_frequency": 0.02206381949494619
+        },
+        "jam": {
+          "absolute_error": 0.024561884287909196,
+          "observed_count": 223,
+          "observed_frequency": 0.03439765540644763,
+          "observed_frequency_ci95": [
+            0.03022980458175126,
+            0.03911695865831645
+          ],
+          "predicted_frequency": 0.009835771118538434
+        },
+        "overbet": {
+          "absolute_error": 0.006787423667493853,
+          "observed_count": 171,
+          "observed_frequency": 0.026376677464136973,
+          "observed_frequency_ci95": [
+            0.022747328614721327,
+            0.030566978666586572
+          ],
+          "predicted_frequency": 0.033164101131630826
+        }
+      },
+      "observations": 6483,
+      "tail_score_mean_absolute_error": 0.016052127188500274
+    },
+    "reference": {
+      "metrics": {
+        "aggressive_tail": {
+          "absolute_error": 0.020997372818203665,
+          "observed_count": 252,
+          "observed_frequency": 0.03887089310504396,
+          "observed_frequency_ci95": [
+            0.034432404615728926,
+            0.04385553598595483
+          ],
+          "predicted_frequency": 0.0178735202868403
+        },
+        "jam": {
+          "absolute_error": 0.02706270099325908,
+          "observed_count": 223,
+          "observed_frequency": 0.03439765540644763,
+          "observed_frequency_ci95": [
+            0.03022980458175126,
+            0.03911695865831645
+          ],
+          "predicted_frequency": 0.00733495441318855
+        },
+        "overbet": {
+          "absolute_error": 0.002335058332744444,
+          "observed_count": 171,
+          "observed_frequency": 0.026376677464136973,
+          "observed_frequency_ci95": [
+            0.022747328614721327,
+            0.030566978666586572
+          ],
+          "predicted_frequency": 0.028711735796881417
+        }
+      },
+      "observations": 6483,
+      "tail_score_mean_absolute_error": 0.016798377381402396
+    },
+    "support286": {
+      "metrics": {
+        "aggressive_tail": {
+          "absolute_error": 0.016807073610097773,
+          "observed_count": 252,
+          "observed_frequency": 0.03887089310504396,
+          "observed_frequency_ci95": [
+            0.034432404615728926,
+            0.04385553598595483
+          ],
+          "predicted_frequency": 0.02206381949494619
+        },
+        "jam": {
+          "absolute_error": 0.024561884287909196,
+          "observed_count": 223,
+          "observed_frequency": 0.03439765540644763,
+          "observed_frequency_ci95": [
+            0.03022980458175126,
+            0.03911695865831645
+          ],
+          "predicted_frequency": 0.009835771118538434
+        },
+        "overbet": {
+          "absolute_error": 0.006787423667493853,
+          "observed_count": 171,
+          "observed_frequency": 0.026376677464136973,
+          "observed_frequency_ci95": [
+            0.022747328614721327,
+            0.030566978666586572
+          ],
+          "predicted_frequency": 0.033164101131630826
+        }
+      },
+      "observations": 6483,
+      "tail_score_mean_absolute_error": 0.016052127188500274
+    },
+    "tail298": {
+      "metrics": {
+        "aggressive_tail": {
+          "absolute_error": 0.01157931964777931,
+          "observed_count": 252,
+          "observed_frequency": 0.03887089310504396,
+          "observed_frequency_ci95": [
+            0.034432404615728926,
+            0.04385553598595483
+          ],
+          "predicted_frequency": 0.027291573457264653
+        },
+        "jam": {
+          "absolute_error": 0.014911143688949493,
+          "observed_count": 223,
+          "observed_frequency": 0.03439765540644763,
+          "observed_frequency_ci95": [
+            0.03022980458175126,
+            0.03911695865831645
+          ],
+          "predicted_frequency": 0.01948651171749814
+        },
+        "overbet": {
+          "absolute_error": 0.007848738858629134,
+          "observed_count": 171,
+          "observed_frequency": 0.026376677464136973,
+          "observed_frequency_ci95": [
+            0.022747328614721327,
+            0.030566978666586572
+          ],
+          "predicted_frequency": 0.03422541632276611
+        }
+      },
+      "observations": 6483,
+      "tail_score_mean_absolute_error": 0.01144640073178598
+    }
+  },
+  "test_consumed": false
+}
