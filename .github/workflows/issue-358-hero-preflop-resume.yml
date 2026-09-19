@@ -1,0 +1,203 @@
+name: Resume issue 358 assemble from generated shards
+
+on:
+  push:
+    branches:
+      - execute/issue-358-hero-preflop-generation-noniso
+    paths:
+      - .github/triggers/issue-358-resume-assemble
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: issue-358-hero-preflop-generation
+  cancel-in-progress: false
+
+jobs:
+  assemble-resume:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SOURCE_RUN_ID: "35455766353"
+      SOURCE_ASSEMBLE_JOB_ID: "105941776472"
+      SOURCE_HEAD_SHA: "c897d822971ccdb494acba1a75e382f9bbefd015"
+      RUN_ROOT: "training/runs/20260919_hero_preflop_noniso_ready_v3"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Prove resume is mechanical-only
+        run: |
+          git diff --exit-code "$SOURCE_HEAD_SHA" "$GITHUB_SHA" --             tools/training/generate_hero_preflop_noniso.py             tools/training/bridge_paired_ev_to_hero_generation.py             tools/training/import_hero_preflop_generation.py             tools/training/validate_hero_preflop_generation.py             contracts/training/hero-preflop-generation-manifest.schema.json             contracts/training/hero-preflop-strategy.schema.json             contracts/training/paired-ev-generation-bridge.schema.json             analysis/hero_preflop_generation_plan.json             analysis/hero_preflop_coverage_train.json             training/protocols/issue358_hero_preflop_noniso_generation_v3.json             training/protocols/issue358_hero_preflop_noniso_validation_v3.json
+
+      - name: Reuse frozen inputs from source run
+        uses: actions/download-artifact@v4
+        with:
+          name: issue358-inputs
+          path: issue358-inputs
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Reuse generated shards from source run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: issue358-part-*
+          path: issue358-parts
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Verify reused artifact set
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          parts = sorted(Path("issue358-parts").glob("part-*.json"))
+          assert len(parts) == 176, f"expected 176 generated parts, got {len(parts)}"
+
+          scope = json.loads(Path("issue358-inputs/scope.json").read_text())
+          params = json.loads(Path("issue358-inputs/generation_parameters.json").read_text())
+          assert scope["eligible_context_count"] == 22
+          assert scope["eligible_group_counts"] == {"RFI_CALLERS_SQUEEZE": 8, "VS_RFI": 14}
+          assert scope["test_consumed"] is False
+
+          part_lines = []
+          for path in parts:
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              part_lines.append(f"{path.name}:{digest}")
+          parts_digest = hashlib.sha256(("\n".join(part_lines)+"\n").encode()).hexdigest()
+
+          inputs = sorted(Path("issue358-inputs").glob("*"))
+          input_lines = []
+          for path in inputs:
+              if path.is_file():
+                  input_lines.append(f"{path.name}:{hashlib.sha256(path.read_bytes()).hexdigest()}")
+          inputs_digest = hashlib.sha256(("\n".join(input_lines)+"\n").encode()).hexdigest()
+
+          Path(os.environ["RUN_ROOT"]).mkdir(parents=True, exist_ok=True)
+          receipt = {
+              "schema": "poker-hero-preflop-assemble-resume/v1",
+              "issue": 358,
+              "source_run_id": int(os.environ["SOURCE_RUN_ID"]),
+              "source_assemble_job_id": int(os.environ["SOURCE_ASSEMBLE_JOB_ID"]),
+              "source_head_sha": os.environ["SOURCE_HEAD_SHA"],
+              "resume_head_sha": os.environ["GITHUB_SHA"],
+              "reason": "MECHANICAL_IMPORT_WIRING_ONLY",
+              "reused_inputs": True,
+              "reused_generated_shards": True,
+              "shards_recomputed": False,
+              "scientific_parameters_changed": False,
+              "generated_part_count": len(parts),
+              "generated_parts_combined_sha256": parts_digest,
+              "inputs_combined_sha256": inputs_digest,
+          }
+          Path(os.environ["RUN_ROOT"], "ASSEMBLE_RESUME_RECEIPT.json").write_text(
+              json.dumps(receipt, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Assemble immutable #277 generation from reused shards
+        run: |
+          GEN_ROOT="$RUN_ROOT/generation"
+          python tools/training/generate_hero_preflop_noniso.py assemble             --scope issue358-inputs/scope.json             --representatives issue358-inputs/representatives.json             --parameters issue358-inputs/generation_parameters.json             --environment issue358-inputs/environment_identity.json             --parts-dir issue358-parts             --output-root "$GEN_ROOT"             --code-sha "$SOURCE_HEAD_SHA"
+          cp issue358-inputs/scope.json "$RUN_ROOT/SCOPE.json"
+          cp issue358-inputs/representatives.json "$RUN_ROOT/REPRESENTATIVES.json"
+          cp issue358-inputs/certified_decisions_summary.json "$RUN_ROOT/CERTIFIED_DECISIONS_SUMMARY.json"
+
+      - name: Import candidate through #287 without activation
+        run: |
+          cat > "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json" <<'JSON'
+          {
+            "schema":"poker-hero-range-repository/v1",
+            "version":1,
+            "defaults":{"population_id":"pokerstars_nlhe_100-200_zoom_play_6max_v1","table_size":6,"effective_stack_bb":100},
+            "source":{"format":"issue-358-empty-base","preserved_verbatim":false,"range_folder":null,"meta":{"purpose":"inactive candidate import only"}},
+            "contexts":{}
+          }
+          JSON
+          PYTHONPATH=. python tools/training/import_hero_preflop_generation.py             --generation-root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json             --base-repository "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json"             --output "$RUN_ROOT/HERO_RANGE_REPOSITORY_CANDIDATE_INACTIVE.json"             --receipt-output "$RUN_ROOT/IMPORT_RECEIPT.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path(os.environ["RUN_ROOT"])
+          receipt=json.loads((root/"IMPORT_RECEIPT.json").read_text())
+          assert receipt["active_hand_count"] == 0
+          assert receipt["activation_state"] == "INACTIVE_CANDIDATE_METADATA_ONLY"
+          assert receipt["nearest_context_allowed"] is False
+          assert all(row["family"] not in {"VS_LIMPERS","VS_ISO","VS_ISO_CALLERS","LIMPER_VS_ISO","LIMPER_VS_ISO_CALLERS"} for row in receipt["contexts"])
+          PY
+
+      - name: Persist frozen VALIDATION disposition and TEST boundary
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path(os.environ["RUN_ROOT"])
+          protocol=Path("training/protocols/issue358_hero_preflop_noniso_validation_v3.json")
+          receipt=json.loads((root/"IMPORT_RECEIPT.json").read_text())
+          generation=json.loads((root/"generation/GENERATION_RESULT.json").read_text())
+          result={
+            "schema":"poker-hero-preflop-validation-disposition/v1",
+            "issue":358,
+            "protocol_path":str(protocol),
+            "protocol_sha256":hashlib.sha256(protocol.read_bytes()).hexdigest(),
+            "protocol_frozen_before_generation_results":True,
+            "execution":"NOT_RUN_NO_ACTIVATION_OR_PROMOTION_IN_ISSUE_358",
+            "reason":"#196 requires full-hand VALIDATION before promotion; #358 explicitly forbids activation/promotion, so no performance selection is made in this slice.",
+            "candidate_repository_sha256":receipt["repository_sha256"],
+            "generated_contexts":generation["scope"]["generated_context_count"],
+            "validation_consumed":False,
+            "test_consumed":False,
+            "test_authorized":False,
+            "promotion_authorized":False
+          }
+          (root/"VALIDATION_DISPOSITION.json").write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+          PY
+
+      - name: Revalidate immutable artifact and inactive import
+        run: |
+          python tools/training/validate_hero_preflop_generation.py             --root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json
+          PYTHONPATH=. python tests/training/test_import_hero_preflop_generation.py
+          PYTHONPATH=. python tests/training/test_issue358_generation_contract.py
+          PYTHONPATH=. python tests/training/test_bridge_paired_ev_to_hero_generation.py
+
+      - name: Finalize resume provenance
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path(os.environ["RUN_ROOT"])
+          p=root/"ASSEMBLE_RESUME_RECEIPT.json"
+          data=json.loads(p.read_text())
+          manifest=root/"generation/manifest.json"
+          imp=json.loads((root/"IMPORT_RECEIPT.json").read_text())
+          data["manifest_sha256"]=hashlib.sha256(manifest.read_bytes()).hexdigest()
+          data["candidate_repository_sha256"]=imp["repository_sha256"]
+          data["activation_state"]=imp["activation_state"]
+          data["test_consumed"]=False
+          data["validation_consumed"]=False
+          p.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue358-final-generation-resumed
+          path: training/runs/20260919_hero_preflop_noniso_ready_v3/
+          retention-days: 30
+
+      - name: Commit immutable generation evidence to execution branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add training/runs/20260919_hero_preflop_noniso_ready_v3
+          git commit -m "[D][#358] Persist resumed immutable non-ISO generation evidence"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
