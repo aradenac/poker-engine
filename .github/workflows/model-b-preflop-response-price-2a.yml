@@ -2,6 +2,13 @@ name: Model B preflop response-to-price tranche 2A
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/simulation/model_b_preflop_response_to_price.py'
+      - 'tools/training/evaluate_preflop_response_to_price_2a.py'
+      - 'tests/training/test_preflop_response_to_price_2a.py'
+      - 'training/runs/20260919_model_b_preflop_response_to_price_2a/**'
+      - '.github/workflows/model-b-preflop-response-price-2a.yml'
   push:
     branches:
       - agent-C/issue-340-model-b-response-price-2a
@@ -188,6 +195,7 @@ jobs:
             training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json
 
       - name: Commit persisted issue 340 evidence to branch
+        if: github.event_name == 'push'
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
