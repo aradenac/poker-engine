@@ -10,7 +10,7 @@ from typing import Any
 
 from tools.simulation.game_core import NoLimitHoldemState
 from tools.simulation.hand_history_state import replay_public_hand
-from tools.simulation.model_a_continuation import ModelAContinuationPolicy
+from tools.simulation.model_a_continuation import ModelAContinuationPolicy, ModelAUnsupportedContext
 from tools.simulation.model_a_preflop_rollout import ModelAPreflopContinuationRollout
 from tools.simulation.model_a_support_closure import SupportClosedModelAContinuationPolicy
 from tools.simulation.model_b_runtime import combo_class
@@ -136,7 +136,18 @@ def run_validation(
         hero = str(scenario["hero"])
         state = state_at_first_hero_preflop(str(scenario["raw_hand"]), hero)
         hand_class = combo_class(tuple(scenario["hero_cards"]))
-        raise_targets, sizing_support = generation.observed_raise_targets(strict, state, hero)
+        try:
+            raise_targets, sizing_support = generation.observed_raise_targets(strict, state, hero)
+        except ModelAUnsupportedContext as exc:
+            if "exposes no observed legal raise sizing" not in str(exc):
+                raise
+            raise_targets = []
+            sizing_support = {
+                "sources": [],
+                "grid_contract": "EXACT_NODE_OBSERVED_NONJAM_SIZINGS_PLUS_SEPARATE_JAM",
+                "fallback": "NO_OBSERVED_LEGAL_NONJAM_SIZING__JAM_ONLY",
+                "reason": str(exc),
+            }
         call_action, raise_action = generation.semantic_grid_labels(state)
         candidates = build_candidates(
             state,
