@@ -606,5 +606,9 @@
       "source": "synthetic-response-model-v1"
     }
   },
-  "synthetic_fixture": true
+  "synthetic_fixture": true,
+  "execution_boundary": {
+    "mode": "NON_SCIENTIFIC",
+    "model_a_admission_status": "NON_SCIENTIFIC_SYNTHETIC"
+  }
 }
