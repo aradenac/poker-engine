@@ -150,7 +150,7 @@ def select_prior_strength(
             observations += sum(max(0, int(counts.get(action) or 0)) for action in ACTIONS)
         scores.append({
             "prior_strength": tau,
-            "log_marginal_likelihood_kernel": total,
+            "log_marginal_likelihood_kernel": round(total, 12),
             "cells": len(scored_cells),
             "revealed_observations": observations,
         })
@@ -312,7 +312,7 @@ def build_candidate(
             "prior_weight_summary": {
                 "minimum": min(weights) if weights else None,
                 "maximum": max(weights) if weights else None,
-                "mean": (sum(weights) / len(weights)) if weights else None,
+                "mean": round(sum(weights) / len(weights), 12) if weights else None,
             },
             "marginal_anchor": "SAME_EXACT_PRICE_ONLY",
             "nearest_price_fallback": False,
