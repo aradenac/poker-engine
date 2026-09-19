@@ -268,6 +268,45 @@ def bridge_request(
         bridge_state = EXACT_ZERO_ROLLOUT
         if samples <= 0:
             fail("EXACT_VALUE_EVIDENCE_INVALID", "zero-rollout exact value must still expose sampled/report evidence")
+        if action != "FOLD" or sizing != {"kind": "NONE", "value": None, "unit": None} or abs(ev_bb) > 1e-12:
+            fail("EXACT_VALUE_EVIDENCE_INVALID", "only exact zero-EV FOLD can be materialized without rollouts")
+        if abs(std_error) > 1e-12 or abs(ci_low) > 1e-12 or abs(ci_high) > 1e-12:
+            fail("EXACT_VALUE_EVIDENCE_INVALID", "exact zero-EV FOLD uncertainty must be identically zero")
+        cell = {
+            "population_id": identity["population_id"],
+            "generation_id": identity["generation_id"],
+            "candidate_id": identity["candidate_id"],
+            "context_id": context_id,
+            **dimensions,
+            "hand_class": hand_class,
+            "action": {"status": "EXACT_DETERMINISTIC", "value": "FOLD"},
+            "sizing": {"status": "EXACT_DETERMINISTIC", "kind": "NONE", "value": None, "unit": None},
+            "ev": {
+                "status": "EXACT_DETERMINISTIC",
+                "estimate_bb": 0.0,
+                "uncertainty": {
+                    "method": "EXACT_DETERMINISTIC_ZERO",
+                    "std_error_bb": 0.0,
+                    "ci95_low_bb": 0.0,
+                    "ci95_high_bb": 0.0,
+                },
+            },
+            "rollout": {
+                "status": "EXACT_DETERMINISTIC",
+                "sample_count": samples,
+                "world_count": 0,
+            },
+            "support": support,
+            "provenance": {
+                "source_plan_sha256": identity["source_plan_sha256"],
+                "source_train_audit_sha256": identity["source_train_audit_sha256"],
+                "generator_version": identity["generator_version"],
+                "code_sha": identity["code_sha"],
+                "environment_identity_slot": identity["environment_identity_slot"],
+                "generation_parameters_slot": identity["generation_parameters_slot"],
+                "scientific_effect": identity["scientific_effect"],
+            },
+        }
     else:
         if samples != rollouts:
             fail(
