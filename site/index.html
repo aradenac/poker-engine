@@ -4384,7 +4384,7 @@ function preflopRuntimeDecisionForStep(stepIndex,step,cached,{observedEvidence=u
   const key=`${state.selectedHand?.id||""}:${evidence.decision.ordinal}:${cached?.status||"none"}:${actionEquityKey(stepIndex)||""}`;
   if(state.preflopRuntimeDecisionCache[key])return state.preflopRuntimeDecisionCache[key];
   let decision;
-  if(step.actionType==="call"&&cached?.status==="done"){
+  if(step.actionType==="call"&&cached?.status==="done"&&!["UNOPENED","VS_LIMPERS"].includes(family)){
     const req=requiredEquityInfo(stepIndex),eq=cached.equities||{},sources=actionVerdictSourceKeys(stepIndex),priorEq=eq[sources.prior];
     const metrics=actionDecisionMetrics(priorEq,req,null);
     if(req?.kind==="call"&&Number.isFinite(metrics.evBB)){
