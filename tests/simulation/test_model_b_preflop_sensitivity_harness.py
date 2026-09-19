@@ -88,6 +88,7 @@ def main():
         assert row["status"] == "AVAILABLE", row
         assert row["target_total_bb"] == target
         assert row["support"]["nearest_price_substitution"] is False
+        assert row["support"]["out_of_domain_extrapolation"] is False
         assert row["support"]["family_never_dropped"] is True
         assert row["support"]["non_identifiability"] in {
             "EXACT_IDENTIFIABLE", "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
@@ -147,6 +148,15 @@ def main():
         assert "missing public sensitivity context" in str(exc)
     else:
         raise AssertionError("missing public context must fail closed")
+
+    outside = copy.deepcopy(request)
+    iso6 = next(x for x in outside["alternatives"] if x["alternative_id"] == "ISO@6")
+    iso6["target_total_bb"] = 6000.0
+    iso6["incremental_cost_bb"] = 5999.5
+    report = run_harness(outside, **docs)
+    outside_row = next(x for x in report["candidate"]["alternatives"] if x["alternative_id"] == "ISO@6")
+    assert outside_row["status"] == "UNSUPPORTED"
+    assert "outside declared #319 domain" in outside_row["detail"]
 
     tampered = copy.deepcopy(docs["candidate_doc"])
     tampered["alpha_per_action"] = 2.0
