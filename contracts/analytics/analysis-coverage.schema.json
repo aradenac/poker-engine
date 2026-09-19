@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/analytics/analysis-coverage.schema.json",
+  "title": "Poker analysis coverage and support",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "event_schema", "scope", "scope_key", "configuration", "source_contracts",
+    "semantics", "summary", "rows", "matrix", "coverage_gaps", "preflop_train_evidence"
+  ],
+  "properties": {
+    "schema": {"const": "poker-analysis-coverage/v1"},
+    "event_schema": {"const": "poker-leak-decision-event/v1"},
+    "scope": {"$ref": "#/$defs/scope"},
+    "scope_key": {"type": "string", "minLength": 1},
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_supported_observations"],
+      "properties": {"minimum_supported_observations": {"type": "integer", "minimum": 0}}
+    },
+    "source_contracts": {"type": "object"},
+    "semantics": {
+      "type": "object",
+      "required": [
+        "coverage_support_is_distinct_from_ev_loss", "ev_loss_aggregated",
+        "states_excluded_from_ev_leaks", "preflop_evidence_split", "validation_consumed", "test_consumed"
+      ],
+      "properties": {
+        "coverage_support_is_distinct_from_ev_loss": {"const": true},
+        "ev_loss_aggregated": {"const": false},
+        "states_excluded_from_ev_leaks": {
+          "type": "array",
+          "const": ["LOW_SUPPORT", "UNSUPPORTED", "NON_COMPARABLE", "ANALYSIS_MISSING"]
+        },
+        "preflop_evidence_split": {"const": "TRAIN"},
+        "validation_consumed": {"const": false},
+        "test_consumed": {"const": false}
+      }
+    },
+    "summary": {"$ref": "#/$defs/counts"},
+    "rows": {"type": "array", "items": {"$ref": "#/$defs/row"}},
+    "matrix": {
+      "type": "object",
+      "required": ["position", "street", "spot_family", "action_context", "sizing_context", "jam", "overbet", "preflop_family", "preflop_context"],
+      "additionalProperties": false,
+      "properties": {
+        "position": {"$ref": "#/$defs/row_ids"},
+        "street": {"$ref": "#/$defs/row_ids"},
+        "spot_family": {"$ref": "#/$defs/row_ids"},
+        "action_context": {"$ref": "#/$defs/row_ids"},
+        "sizing_context": {"$ref": "#/$defs/row_ids"},
+        "jam": {"$ref": "#/$defs/row_ids"},
+        "overbet": {"$ref": "#/$defs/row_ids"},
+        "preflop_family": {"$ref": "#/$defs/row_ids"},
+        "preflop_context": {"$ref": "#/$defs/row_ids"}
+      }
+    },
+    "coverage_gaps": {"type": "array", "items": {"type": "object"}},
+    "preflop_train_evidence": {
+      "type": "object",
+      "required": ["schema", "population_id", "context_count", "total_train_observations", "support_tiers"],
+      "properties": {
+        "schema": {"const": "poker-analysis-preflop-train-evidence/v1"},
+        "population_id": {"type": ["string", "null"]},
+        "context_count": {"type": "integer", "minimum": 0},
+        "total_train_observations": {"type": "integer", "minimum": 0},
+        "support_tiers": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["population_id", "pack_id", "pack_version", "strategy_id", "strategy_version", "ev_reference"],
+      "properties": {
+        "population_id": {"type": "string", "minLength": 1},
+        "pack_id": {"type": ["string", "null"]},
+        "pack_version": {"type": ["string", "null"]},
+        "strategy_id": {"type": "string", "minLength": 1},
+        "strategy_version": {"type": "string", "minLength": 1},
+        "ev_reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hand_id", "decision_id"],
+      "properties": {"hand_id": {"type": "string"}, "decision_id": {"type": "string"}}
+    },
+    "row_ids": {"type": "array", "items": {"type": "string"}},
+    "counts": {
+      "type": "object",
+      "required": [
+        "hand_count", "decision_count", "comparable_count", "supported_count", "covered_count",
+        "low_support_count", "unsupported_count", "non_comparable_count", "analysis_missing_rows",
+        "coverage_ratio", "comparable_ratio", "distinct_hands", "exclusion_reasons"
+      ],
+      "properties": {
+        "hand_count": {"type": "integer", "minimum": 0},
+        "decision_count": {"type": "integer", "minimum": 0},
+        "comparable_count": {"type": "integer", "minimum": 0},
+        "supported_count": {"type": "integer", "minimum": 0},
+        "covered_count": {"type": "integer", "minimum": 0},
+        "low_support_count": {"type": "integer", "minimum": 0},
+        "unsupported_count": {"type": "integer", "minimum": 0},
+        "non_comparable_count": {"type": "integer", "minimum": 0},
+        "analysis_missing_rows": {"type": "integer", "minimum": 0},
+        "coverage_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "comparable_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "distinct_hands": {"type": "array", "items": {"type": "string"}},
+        "exclusion_reasons": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}}
+      }
+    },
+    "train_evidence": {
+      "type": ["object", "null"],
+      "properties": {
+        "source_schema": {"const": "poker-analysis-preflop-train-evidence/v1"},
+        "context_count": {"type": "integer", "minimum": 1},
+        "train_observations": {"type": "integer", "minimum": 0},
+        "distinct_hands_max": {"type": "integer", "minimum": 0},
+        "support_tier": {"type": "string"},
+        "support_tiers": {"type": "array", "items": {"type": "string"}},
+        "readiness": {"type": "array", "items": {"type": "string"}},
+        "context_ids": {"type": "array", "items": {"type": "string"}},
+        "frequency_of_targeted_sum": {"type": "number"}
+      }
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "row_id", "dimension", "key", "state", "hand_count", "decision_count",
+        "comparable_count", "supported_count", "covered_count", "low_support_count",
+        "unsupported_count", "non_comparable_count", "support_tier", "support_tier_source",
+        "coverage_ratio", "comparable_ratio", "distinct_hands", "source_refs",
+        "exclusion_reasons", "train_evidence", "semantics"
+      ],
+      "properties": {
+        "schema": {"const": "poker-analysis-coverage-row/v1"},
+        "row_id": {"type": "string", "minLength": 1},
+        "dimension": {
+          "enum": ["position", "street", "spot_family", "action_context", "sizing_context", "jam", "overbet", "preflop_family", "preflop_context"]
+        },
+        "key": {"type": "string"},
+        "state": {"enum": ["COVERED", "LOW_SUPPORT", "UNSUPPORTED", "NON_COMPARABLE", "ANALYSIS_MISSING"]},
+        "hand_count": {"type": "integer", "minimum": 0},
+        "decision_count": {"type": "integer", "minimum": 0},
+        "comparable_count": {"type": "integer", "minimum": 0},
+        "supported_count": {"type": "integer", "minimum": 0},
+        "covered_count": {"type": "integer", "minimum": 0},
+        "low_support_count": {"type": "integer", "minimum": 0},
+        "unsupported_count": {"type": "integer", "minimum": 0},
+        "non_comparable_count": {"type": "integer", "minimum": 0},
+        "support_tier": {"type": "string"},
+        "support_tier_source": {"enum": ["ANALYSIS", "TRAIN_ONLY", "NONE"]},
+        "coverage_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "comparable_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "distinct_hands": {"type": "array", "items": {"type": "string"}},
+        "source_refs": {"type": "array", "items": {"$ref": "#/$defs/source_ref"}},
+        "exclusion_reasons": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "train_evidence": {"$ref": "#/$defs/train_evidence"},
+        "semantics": {
+          "type": "object",
+          "required": ["ev_loss_aggregated", "usable_as_ev_leak", "training_target_eligible"],
+          "properties": {
+            "ev_loss_aggregated": {"const": false},
+            "usable_as_ev_leak": {"type": "boolean"},
+            "training_target_eligible": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}
