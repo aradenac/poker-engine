@@ -166,16 +166,19 @@ try {{
             result["admissions"]["application_release"]["reason_codes"],
         )
 
-    def test_legacy_release_relabel_is_rejected_by_resolver(self):
+    def test_cross_population_application_release_fallback_is_rejected(self):
         evidence = self._load(EVIDENCE_PATH)
         legacy = copy.deepcopy(evidence)
-        legacy_path = "site/RELEASE.json"
-        legacy["components"]["application_release"]["source_path"] = legacy_path
-        legacy["components"]["application_release"]["sha256"] = sha256_file(ROOT / legacy_path)
+        app = legacy["components"]["application_release"]
+        app["provenance"]["source_population_id"] = "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+        app["lineage"] = {
+            "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+            "format": "MIXED_ZOOM_REGULAR",
+        }
         result = resolve_admission(self._write_temp_evidence(legacy), expected_population_id=TARGET)
         row = result["admissions"]["application_release"]
         self.assertEqual(row["status"], "INCOMPATIBLE")
-        self.assertIn("LEGACY_MIXED_RELABEL_REJECTED", row["reason_codes"])
+        self.assertIn("CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED", row["reason_codes"])
 
     def test_full_audit_runs_resolver_and_read_only_preflight(self):
         result = audit()
