@@ -289,7 +289,7 @@
   },
   "posterior_catalog": {
     "posterior:ISO@4|BB|3BET": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -313,7 +313,7 @@
       "step_id": "synthetic:ISO@4:BB:3BET"
     },
     "posterior:ISO@4|BB|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -337,7 +337,7 @@
       "step_id": "synthetic:ISO@4:BB:CALL"
     },
     "posterior:ISO@4|BTN|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -361,7 +361,7 @@
       "step_id": "synthetic:ISO@4:BTN:CALL"
     },
     "posterior:ISO@4|CO|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -385,7 +385,7 @@
       "step_id": "synthetic:ISO@4:CO:CALL"
     },
     "posterior:ISO@5|BB|3BET": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -409,7 +409,7 @@
       "step_id": "synthetic:ISO@5:BB:3BET"
     },
     "posterior:ISO@5|BB|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -433,7 +433,7 @@
       "step_id": "synthetic:ISO@5:BB:CALL"
     },
     "posterior:ISO@5|BTN|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -457,7 +457,7 @@
       "step_id": "synthetic:ISO@5:BTN:CALL"
     },
     "posterior:ISO@5|CO|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -481,7 +481,7 @@
       "step_id": "synthetic:ISO@5:CO:CALL"
     },
     "posterior:ISO@6|BB|3BET": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -505,7 +505,7 @@
       "step_id": "synthetic:ISO@6:BB:3BET"
     },
     "posterior:ISO@6|BB|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -529,7 +529,7 @@
       "step_id": "synthetic:ISO@6:BB:CALL"
     },
     "posterior:ISO@6|BTN|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
@@ -553,7 +553,7 @@
       "step_id": "synthetic:ISO@6:BTN:CALL"
     },
     "posterior:ISO@6|CO|CALL": {
-      "distribution_fingerprint": "sha256:ef7cec1774481f5b280de73ba0a73f99a092429c63dbfafd0c07253e5b53b974",
+      "distribution_fingerprint": "sha256:13c8245d27a73e8255cd13c2eb31c08d92cd08a5dd82693b500cd75ec8e91006",
       "hand_id": "SYNTHETIC-HAND-322",
       "identity": {
         "model_id": "synthetic-model-a-v1",
