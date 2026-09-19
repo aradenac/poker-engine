@@ -134,6 +134,42 @@
     const record=makeRecord(entry,files,source);
     await putPack(record,TEST_PACK_STORE);return record;
   }
+  const MANUAL_OVERRIDE_DB_NAME="PokerRangeEquityOffline";
+  const MANUAL_OVERRIDE_DB_VERSION=1;
+  const MANUAL_OVERRIDE_STORE="kv";
+  const MANUAL_OVERRIDE_CONTRACT_KEY="manualOverrideContract";
+
+  function openManualOverrideDb(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(MANUAL_OVERRIDE_DB_NAME,MANUAL_OVERRIDE_DB_VERSION);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(MANUAL_OVERRIDE_STORE))db.createObjectStore(MANUAL_OVERRIDE_STORE);};
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error||new Error("Stockage override manuel indisponible."));
+    });
+  }
+  async function readManualOverrideContract(){
+    const db=await openManualOverrideDb();
+    try{
+      return await new Promise((resolve,reject)=>{
+        const tx=db.transaction(MANUAL_OVERRIDE_STORE,"readonly");
+        const req=tx.objectStore(MANUAL_OVERRIDE_STORE).get(MANUAL_OVERRIDE_CONTRACT_KEY);
+        req.onsuccess=()=>resolve(req.result||null);
+        req.onerror=()=>reject(req.error);
+      });
+    }finally{db.close();}
+  }
+  async function assertManualOverrideAllowsTarget(target){
+    const contract=await readManualOverrideContract();
+    if(!contract?.active)return;
+    const baseId=String(contract?.base_active_pack?.id||"");
+    const basePopulation=String(contract?.base_active_pack?.population_id||"");
+    const targetId=String(target?.id||"");
+    const targetPopulation=String(target?.population_id||target?.entry?.population_id||"");
+    if(baseId!==targetId||basePopulation!==targetPopulation){
+      throw new Error("MANUAL_OVERRIDE actif pour une autre identité de pack. Exécutez RESTORE_ACTIVE_PACK avant de changer de pack.");
+    }
+  }
+
   async function installed(){return idbGetAll(PACK_STORE);}
   async function testInstalled(){return idbGetAll(TEST_PACK_STORE);}
   async function active(){const id=await metaGet(ACTIVE_KEY,META_STORE);return id?await idbGet(PACK_STORE,id):null;}
@@ -141,7 +177,7 @@
   async function testActive(){const id=await metaGet(TEST_ACTIVE_KEY,TEST_META_STORE);return id?await idbGet(TEST_PACK_STORE,id):null;}
   async function testPrevious(){const id=await metaGet(TEST_PREVIOUS_KEY,TEST_META_STORE);return id?await idbGet(TEST_PACK_STORE,id):null;}
   async function activate(id,{fetchImpl=fetch}={}){
-    const target=await idbGet(PACK_STORE,id);if(!target)throw new Error("Pack non installé.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);
+    const target=await idbGet(PACK_STORE,id);if(!target)throw new Error("Pack non installé.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);await assertManualOverrideAllowsTarget(target);
     const old=await metaGet(ACTIVE_KEY,META_STORE);await metaSetPair(id,old&&old!==id?old:await metaGet(PREVIOUS_KEY,META_STORE));return target;
   }
   async function activateTestOnly(id,{fetchImpl=fetch}={}){
