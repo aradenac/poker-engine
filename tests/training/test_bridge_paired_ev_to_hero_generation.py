@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 
 from tools.training.bridge_paired_ev_to_hero_generation import (
     EXACT_ZERO_ROLLOUT,
