@@ -531,10 +531,10 @@ def main() -> int:
     summary = [
         "# #350 real Zoom 100/200 pack admission audit",
         "",
-        f"- Population: \`{TARGET}\`",
+        f"- Population: `{TARGET}`",
         f"- Assembly: **{matrix['assembly_status']}**",
         f"- Preflight: **{preflight_result['result']}**",
-        f"- Admission counts: \`{json.dumps(matrix['summary'], sort_keys=True)}\`",
+        f"- Admission counts: `{json.dumps(matrix['summary'], sort_keys=True)}`",
         "- TEST consumed: **false**",
         "- Production effect: **NONE**",
         "",
