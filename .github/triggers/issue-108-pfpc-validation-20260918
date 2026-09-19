@@ -19,14 +19,17 @@
   "test_authorized": false,
   "test_consumed": false,
   "thresholds_changed": false,
-  "execution_attempt": 3,
-  "supersedes_failed_workflow_run_id": 35406589362,
-  "previous_attempt_interpretation": "NO_PERFORMANCE_RESULT_MECHANICAL_RUNTIME_FAILURE",
-  "runtime_fix_pr": 263,
-  "runtime_fix_merge_sha": "5e49f3746deb9ea1646cf92d7d5acfe0c82e69e4",
-  "execution_base_main": "d034d58b2fd983c70cc223de05f1d8e6afcb7d9a",
+  "execution_attempt": 4,
+  "supersedes_failed_workflow_run_id": 35407328906,
+  "previous_attempt_interpretation": "NO_PERFORMANCE_RESULT_CI_EXECUTION_TIMEOUT",
+  "runtime_fix_pr": 307,
+  "runtime_fix_merge_sha": "f178ba6850ca29202e76620cfa2c59f2e3133958",
+  "execution_base_main": "f178ba6850ca29202e76620cfa2c59f2e3133958",
   "prior_failed_runs": [
     35403172597,
-    35406589362
-  ]
+    35406589362,
+    35407328906
+  ],
+  "technical_block_result": "training/runs/20260919_preflop_strategy_validation_pfpc_timeout_35407328906/RESULT.json",
+  "environment_timeout_minutes": 360
 }
