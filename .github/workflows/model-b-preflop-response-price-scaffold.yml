@@ -1,0 +1,189 @@
+name: Model B preflop response-to-price scaffold
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent-B/issue-315-preflop-response-price-scaffold
+    paths:
+      - 'tools/simulation/model_b_preflop_response_to_price.py'
+      - 'tools/simulation/model_b_preflop_price_diagnostics.py'
+      - 'tests/simulation/test_model_b_preflop_response_to_price.py'
+      - 'tests/training/test_preflop_response_to_price_scaffold_v1.py'
+      - 'tests/fixtures/model_b_preflop_response_to_price/**'
+      - 'training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/FEATURE_CONTRACT.json'
+      - 'training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/BACKOFF_GRAPH.json'
+      - '.github/workflows/model-b-preflop-response-price-scaffold.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-preflop-response-price-scaffold-315
+  cancel-in-progress: true
+
+env:
+  RUN_DIR: training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1
+  FIXTURE: tests/fixtures/model_b_preflop_response_to_price/scenario_4bb_vs_6bb.json
+
+jobs:
+  synthetic-scaffold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Guard tranche-one synthetic-only contract
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          feature=json.loads((run/"FEATURE_CONTRACT.json").read_text())
+          graph=json.loads((run/"BACKOFF_GRAPH.json").read_text())
+          fixture=json.loads(Path(os.environ["FIXTURE"]).read_text())
+          assert feature["status"]=="SCAFFOLD_SYNTHETIC_ONLY"
+          assert feature["source_policy"]["builder_allowed_source_kind"]=="SYNTHETIC_FIXTURE"
+          assert feature["source_policy"]["real_train_fit_allowed"] is False
+          assert feature["source_policy"]["validation_allowed"] is False
+          assert feature["source_policy"]["test_allowed"] is False
+          assert feature["scientific_constraints"]["performance_claim_allowed"] is False
+          assert feature["scientific_constraints"]["active_model_b_change_allowed"] is False
+          assert feature["scientific_constraints"]["automatic_promotion"] is False
+          assert feature["scientific_constraints"]["production_effect"]=="NONE"
+          assert feature["scientific_constraints"]["issue_108_files_modified"] is False
+          assert graph["source_kind"]=="SYNTHETIC_FIXTURE"
+          assert graph["fit_status"]=="NOT_FINAL_BEFORE_319"
+          assert graph["validation_consumed"] is False
+          assert graph["test_consumed"] is False
+          assert graph["no_cross_family_pooling"] is True
+          assert graph["nearest_context_heuristic"] is False
+          assert fixture["source_kind"]=="SYNTHETIC_FIXTURE"
+          print("tranche-one synthetic-only guards: PASS")
+          PY
+
+      - name: Compile and run synthetic unit tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile             tools/simulation/model_b_preflop_response_to_price.py             tools/simulation/model_b_preflop_price_diagnostics.py             tests/simulation/test_model_b_preflop_response_to_price.py             tests/training/test_preflop_response_to_price_scaffold_v1.py
+          PYTHONPATH=. python3 tests/simulation/test_model_b_preflop_response_to_price.py
+          PYTHONPATH=. python3 tests/training/test_preflop_response_to_price_scaffold_v1.py
+
+      - name: Build synthetic scaffold twice
+        run: |
+          set -euo pipefail
+          rm -rf "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"
+          PYTHONPATH=. python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from tools.simulation.model_b_preflop_price_diagnostics import run_fixture
+          run=Path(os.environ["RUN_DIR"])
+          fixture=Path(os.environ["FIXTURE"])
+          graph=run/"BACKOFF_GRAPH.json"
+          run_fixture(fixture_path=fixture,graph_path=graph,output_dir=run/".rerun-a")
+          run_fixture(fixture_path=fixture,graph_path=graph,output_dir=run/".rerun-b")
+          PY
+          for f in model/preflop_response_to_price.json SYNTHETIC_COUNTERFACTUAL.json RESULT.json; do
+            cmp "$RUN_DIR/.rerun-a/$f" "$RUN_DIR/.rerun-b/$f"
+          done
+          echo "deterministic synthetic rerun: PASS"
+
+      - name: Persist scaffold evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUN_DIR/model"
+          cp "$RUN_DIR/.rerun-a/model/preflop_response_to_price.json" "$RUN_DIR/model/preflop_response_to_price.json"
+          cp "$RUN_DIR/.rerun-a/SYNTHETIC_COUNTERFACTUAL.json" "$RUN_DIR/SYNTHETIC_COUNTERFACTUAL.json"
+          cp "$RUN_DIR/.rerun-a/RESULT.json" "$RUN_DIR/RESULT.json"
+          rm -rf "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"
+
+      - name: Final scaffold and lane-safety guards
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          model=json.loads((run/"model/preflop_response_to_price.json").read_text())
+          diag=json.loads((run/"SYNTHETIC_COUNTERFACTUAL.json").read_text())
+          result=json.loads((run/"RESULT.json").read_text())
+          assert model["status"]=="SCAFFOLD_SYNTHETIC_ONLY"
+          assert model["fit_status"]=="NOT_FINAL_BEFORE_319"
+          assert model["source_kind"]=="SYNTHETIC_FIXTURE"
+          assert model["validation_consumed"] is False
+          assert model["test_consumed"] is False
+          assert model["performance_claim_allowed"] is False
+          assert model["production_effect"]=="NONE"
+          assert model["active_model_b_changed"] is False
+          assert diag["comparison"]=={"low_variant":"4BB","high_variant":"6BB"}
+          assert diag["validation_consumed"] is False
+          assert diag["test_consumed"] is False
+          assert diag["performance_claim_allowed"] is False
+          assert diag["production_effect"]=="NONE"
+          assert diag["aggregate_high_minus_low"]["synthetic_expected_continuers"] < 0
+          assert diag["aggregate_high_minus_low"]["synthetic_all_fold_probability"] > 0
+          assert all(row["high_minus_low"]["probabilities"]["FOLD"] > 0 for row in diag["responder_deltas"])
+          assert all(row["high_minus_low"]["probabilities"]["CALL"] < 0 for row in diag["responder_deltas"])
+          assert result["status"]=="SCAFFOLD_COMPLETE"
+          assert result["source_kind"]=="SYNTHETIC_FIXTURE"
+          assert result["fit_status"]=="NOT_FINAL_BEFORE_319"
+          assert result["validation_consumed"] is False
+          assert result["test_consumed"] is False
+          assert result["performance_claim_allowed"] is False
+          assert result["production_effect"]=="NONE"
+          assert result["active_model_b_changed"] is False
+          assert result["automatic_promotion"] is False
+          assert all(result["dod"].values())
+          print(json.dumps({
+            "candidate_artifact_sha256":result["candidate_artifact_sha256"],
+            "synthetic_4bb":diag["variants"]["4BB"],
+            "synthetic_6bb":diag["variants"]["6BB"],
+            "aggregate_high_minus_low":diag["aggregate_high_minus_low"],
+            "validation_consumed":False,
+            "test_consumed":False,
+            "production_effect":"NONE",
+          },indent=2))
+          PY
+          changed="$(git diff --name-only HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -E '(^|/)(107|108|holdout)|training/datasets/|training/registry\.json|training/populations/|site/index\.html|site/trainer\.js'; then
+            echo "forbidden dataset/cross-lane/production modification detected" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-315-preflop-response-price-scaffold
+          path: |
+            training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/FEATURE_CONTRACT.json
+            training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/BACKOFF_GRAPH.json
+            training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/model/preflop_response_to_price.json
+            training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/SYNTHETIC_COUNTERFACTUAL.json
+            training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/RESULT.json
+
+      - name: Commit persisted synthetic evidence
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$RUN_DIR/model/preflop_response_to_price.json"                   "$RUN_DIR/SYNTHETIC_COUNTERFACTUAL.json"                   "$RUN_DIR/RESULT.json"
+          if git diff --cached --quiet; then
+            echo "No issue #315 scaffold evidence changes to commit"
+          else
+            git commit -m "[B][#315] Persist synthetic preflop price scaffold evidence"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            exit 1
+          fi

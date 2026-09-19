@@ -1,0 +1,27 @@
+{
+  "active_model_b_changed": false,
+  "automatic_promotion": false,
+  "candidate_artifact_sha256": "d3e5c35c9c4a33599f8253415836bd3b3a462eeef2ed9a37a62d7374e1758027",
+  "dod": {
+    "counterfactual_4bb_vs_6bb_persisted": true,
+    "explicit_support_backoff": true,
+    "feature_contract_defined": true,
+    "independent_builder_runtime": true,
+    "model_a_ev_recommendation_features_forbidden": true,
+    "no_final_fit_before_319": true,
+    "no_promotion_or_pointer_change": true,
+    "no_validation_or_test": true,
+    "public_price_stack_position_sequence_profile_dimensions": true,
+    "synthetic_fixture_only": true
+  },
+  "fit_status": "NOT_FINAL_BEFORE_319",
+  "issue": 315,
+  "performance_claim_allowed": false,
+  "production_effect": "NONE",
+  "schema": "model-b-preflop-response-to-price-scaffold-result/v1",
+  "source_kind": "SYNTHETIC_FIXTURE",
+  "status": "SCAFFOLD_COMPLETE",
+  "test_consumed": false,
+  "tranche": 1,
+  "validation_consumed": false
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "model-b-preflop-response-to-price-backoff-graph/v1",
+  "issue": 315,
+  "tranche": 1,
+  "status": "SCAFFOLD_SYNTHETIC_ONLY",
+  "min_observations": 20,
+  "min_distinct_hands": 12,
+  "alpha_per_action": 1,
+  "selection_rule": "Select first declared node meeting both synthetic observation and distinct-hand support; never use nearest-context matching. If all fine levels fail, fall back only within the same preflop family.",
+  "no_cross_family_pooling": true,
+  "nearest_context_heuristic": false,
+  "levels": [
+    {
+      "index": 0,
+      "dimensions": [
+        "profile",
+        "family",
+        "responder_position",
+        "raiser_position",
+        "sequence",
+        "limper_count_bucket",
+        "raise_size_bucket",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 1,
+      "dimensions": [
+        "family",
+        "responder_position",
+        "raiser_position",
+        "sequence",
+        "limper_count_bucket",
+        "raise_size_bucket",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 2,
+      "dimensions": [
+        "family",
+        "responder_position",
+        "sequence",
+        "limper_count_bucket",
+        "raise_size_bucket",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 3,
+      "dimensions": [
+        "family",
+        "responder_position",
+        "limper_count_bucket",
+        "raise_size_bucket",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 4,
+      "dimensions": [
+        "family",
+        "responder_position",
+        "limper_count_bucket",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 5,
+      "dimensions": [
+        "family",
+        "responder_position",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 6,
+      "dimensions": [
+        "family",
+        "price_bucket",
+        "effective_stack_bucket"
+      ]
+    },
+    {
+      "index": 7,
+      "dimensions": [
+        "family",
+        "price_bucket"
+      ]
+    },
+    {
+      "index": 8,
+      "dimensions": [
+        "family"
+      ]
+    }
+  ],
+  "fit_status": "NOT_FINAL_BEFORE_319",
+  "source_kind": "SYNTHETIC_FIXTURE",
+  "validation_consumed": false,
+  "test_consumed": false,
+  "production_effect": "NONE"
+}

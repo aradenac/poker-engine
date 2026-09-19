@@ -1,0 +1,88 @@
+{
+  "schema": "model-b-preflop-response-to-price-synthetic-fixture/v1",
+  "fixture_id": "sb-kts-two-limpers-iso-4bb-vs-6bb",
+  "purpose": "Synthetic scaffold diagnostic only; no performance claim.",
+  "source_kind": "SYNTHETIC_FIXTURE",
+  "common": {
+    "profile": "SYNTHETIC_LOOSE_PASSIVE",
+    "family": "ISO_OVER_LIMPERS",
+    "raiser_position": "SB",
+    "sequence": "CO_LIMP>BTN_LIMP>SB_ISO",
+    "limper_count": 2,
+    "effective_stack_bb": 100
+  },
+  "variants": [
+    {
+      "variant_id": "4BB",
+      "hero_raise_size_bb": 4,
+      "responders": [
+        {
+          "responder_position": "BB",
+          "facing_price_to_pot": 0.55,
+          "action_counts": {
+            "FOLD": 14,
+            "CALL": 20,
+            "RAISE": 4,
+            "JAM": 2
+          }
+        },
+        {
+          "responder_position": "CO",
+          "facing_price_to_pot": 0.55,
+          "action_counts": {
+            "FOLD": 8,
+            "CALL": 26,
+            "RAISE": 4,
+            "JAM": 2
+          }
+        },
+        {
+          "responder_position": "BTN",
+          "facing_price_to_pot": 0.55,
+          "action_counts": {
+            "FOLD": 10,
+            "CALL": 24,
+            "RAISE": 4,
+            "JAM": 2
+          }
+        }
+      ]
+    },
+    {
+      "variant_id": "6BB",
+      "hero_raise_size_bb": 6,
+      "responders": [
+        {
+          "responder_position": "BB",
+          "facing_price_to_pot": 0.85,
+          "action_counts": {
+            "FOLD": 24,
+            "CALL": 10,
+            "RAISE": 4,
+            "JAM": 2
+          }
+        },
+        {
+          "responder_position": "CO",
+          "facing_price_to_pot": 0.85,
+          "action_counts": {
+            "FOLD": 18,
+            "CALL": 16,
+            "RAISE": 4,
+            "JAM": 2
+          }
+        },
+        {
+          "responder_position": "BTN",
+          "facing_price_to_pot": 0.85,
+          "action_counts": {
+            "FOLD": 20,
+            "CALL": 14,
+            "RAISE": 4,
+            "JAM": 2
+          }
+        }
+      ]
+    }
+  ]
+}
