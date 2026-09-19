@@ -29,6 +29,7 @@ on:
       - 'tests/preflop/test_decision_contract.js'
       - 'docs/preflop-grid-evaluator.md'
       - '.github/workflows/preflop-grid-evaluator.yml'
+      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -39,14 +40,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - uses: actions/setup-node@v4
+          require-node: 'false'
+          install-python-deps: 'true'
         with:
-          node-version-file: '.node-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify --require-node
+          require-node: 'true'
       - name: Syntax
         run: |
           python3 -m py_compile tools/simulation/preflop_grid_evaluator.py tests/simulation/test_preflop_grid_evaluator.py

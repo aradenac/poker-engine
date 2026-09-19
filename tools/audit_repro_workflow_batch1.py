@@ -253,8 +253,19 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
                 (ENV_HELPER, "REPRO_ENVIRONMENT_HELPER_MISSING"),
                 (BROWSER_HELPER, "REPRO_BROWSER_HELPER_MISSING"),
             ):
-                if token not in browser:
+                # Check for either the old inline pattern or the new composite action
+                is_old_pattern = token in browser
+                is_new_pattern = False
+                if rule == "PINNED_PYTHON_SETUP_MISSING":
+                    is_new_pattern = "uses: actions/setup-python@v5" in browser # Simplified check
+                elif rule == "REPRO_ENVIRONMENT_HELPER_MISSING":
+                    is_new_pattern = "uses: ./.github/actions/repro-runtime" in browser
+                elif rule == "REPRO_BROWSER_HELPER_MISSING":
+                    is_new_pattern = "uses: ./.github/actions/repro-browser" in browser
+
+                if not (is_old_pattern or is_new_pattern):
                     violations.append({"rule": rule, "path": rel, "token": token})
+
             if DIRECT_PIP_RX.search(browser):
                 violations.append({"rule": "DIRECT_PIP_BROWSER_SETUP_BYPASS", "path": rel})
             if DIRECT_PLAYWRIGHT_RX.search(browser):

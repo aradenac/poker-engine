@@ -1,0 +1,66 @@
+name: REPRO locked runtime
+description: >-
+  Factorised REPRO bootstrap. Assumes actions/checkout already ran. Pins Python
+  (and optionally Node) from the repository version files and delegates every
+  verify/bootstrap decision to tools/repro_ci_environment.py. Fail-fast only.
+
+inputs:
+  require-node:
+    description: 'Set up Node from .node-version and require the locked Node version.'
+    required: false
+    default: 'false'
+  install-python-deps:
+    description: 'Install the locked Python requirements through the REPRO helper.'
+    required: false
+    default: 'false'
+  install-node-deps:
+    description: 'Install the locked Node packages through the REPRO helper.'
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Reject unknown composite input values
+      shell: bash
+      run: |
+        set -euo pipefail
+        for pair in \
+          "require-node=${{ inputs.require-node }}" \
+          "install-python-deps=${{ inputs.install-python-deps }}" \
+          "install-node-deps=${{ inputs.install-node-deps }}"; do
+          name="${pair%%=*}"
+          value="${pair#*=}"
+          case "$value" in
+            true|false) ;;
+            *) echo "repro-runtime: input ${name} must be 'true' or 'false', got '${value}'" >&2; exit 1 ;;
+          esac
+        done
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version-file: '.python-version'
+
+    - if: inputs.require-node == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.node-version'
+
+    - name: Verify locked REPRO environment
+      shell: bash
+      env:
+        REPRO_REQUIRE_NODE: ${{ inputs.require-node }}
+        REPRO_INSTALL_PYTHON_DEPS: ${{ inputs.install-python-deps }}
+        REPRO_INSTALL_NODE_DEPS: ${{ inputs.install-node-deps }}
+      run: |
+        set -euo pipefail
+        args=()
+        if [ "$REPRO_INSTALL_PYTHON_DEPS" = "true" ] || [ "$REPRO_INSTALL_NODE_DEPS" = "true" ]; then
+          args+=(bootstrap)
+          if [ "$REPRO_INSTALL_PYTHON_DEPS" = "true" ]; then args+=(--python-deps); fi
+          if [ "$REPRO_INSTALL_NODE_DEPS" = "true" ]; then args+=(--node-deps); fi
+        else
+          args+=(verify)
+        fi
+        if [ "$REPRO_REQUIRE_NODE" = "true" ]; then args+=(--require-node); fi
+        python3 tools/repro_ci_environment.py "${args[@]}" | tee /tmp/repro-ci-environment.json

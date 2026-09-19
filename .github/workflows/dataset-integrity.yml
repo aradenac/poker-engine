@@ -31,6 +31,7 @@ on:
       - 'tests/datasets/**'
       - 'tests/training/**'
       - '.github/workflows/dataset-integrity.yml'
+      - '.github/actions/repro-runtime/action.yml'
   pull_request:
     paths:
       - '.python-version'
@@ -59,6 +60,7 @@ on:
       - 'tests/datasets/**'
       - 'tests/training/**'
       - '.github/workflows/dataset-integrity.yml'
+      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 concurrency:
@@ -75,11 +77,10 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
+          install-python-deps: 'true'
       - name: Verify exact sources, unseen IDs, splits and materialized payloads
         run: |
           python3 tests/datasets/test_build_hand_history_increment.py

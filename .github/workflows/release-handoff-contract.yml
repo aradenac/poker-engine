@@ -32,6 +32,7 @@ on:
       - 'tests/training/test_finalize_cycle_release.py'
       - 'tests/training/test_verify_live_release.py'
       - '.github/workflows/release-handoff-contract.yml'
+      - '.github/actions/repro-runtime/action.yml'
   push:
     branches:
       - 'issue-113-release-handoff-contract-sol'
@@ -49,11 +50,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
+          install-python-deps: 'true'
       - name: Compile handoff validator and builder
         run: |
           python3 -m py_compile \

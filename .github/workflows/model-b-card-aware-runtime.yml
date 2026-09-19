@@ -27,6 +27,7 @@ on:
       - 'tests/training/test_card_aware_behavior_fit.py'
       - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
       - '.github/workflows/model-b-card-aware-runtime.yml'
+      - '.github/actions/repro-runtime/action.yml'
   pull_request:
     paths:
       - 'tools/repro_ci_environment.py'
@@ -53,6 +54,7 @@ on:
       - 'tests/training/test_card_aware_behavior_fit.py'
       - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
       - '.github/workflows/model-b-card-aware-runtime.yml'
+      - '.github/actions/repro-runtime/action.yml'
 
 permissions:
   contents: read
@@ -63,11 +65,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
+          install-python-deps: 'true'
 
       - name: Compile runtime, fit seam and tests
         run: |

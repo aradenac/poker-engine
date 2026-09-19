@@ -36,6 +36,7 @@ on:
       - 'docs/full_hand_arena.md'
       - 'training/runs/20260915_model_b_card_aware_v1/RESULT.json'
       - '.github/workflows/full-hand-arena.yml'
+      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -47,11 +48,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
+          install-python-deps: 'true'
       - name: Compile
         run: |
           python3 -m py_compile \
@@ -81,11 +81,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
+          install-python-deps: 'true'
       - name: Download immutable issue 104 fit artifact
         env:
           GH_TOKEN: ${{ github.token }}

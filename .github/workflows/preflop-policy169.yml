@@ -29,6 +29,7 @@ on:
       - 'tests/training/test_preflop_policy169_rebuild.py'
       - 'tests/training/test_evaluate_preflop_policy169_candidate.py'
       - '.github/workflows/preflop-policy169.yml'
+      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -43,11 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
+          install-python-deps: 'true'
       - name: Compile candidate path
         run: |
           python3 -m py_compile \

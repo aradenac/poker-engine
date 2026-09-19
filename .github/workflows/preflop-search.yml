@@ -30,6 +30,7 @@ on:
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
       - 'docs/preflop-search-orchestrator.md'
       - '.github/workflows/preflop-search.yml'
+      - '.github/actions/repro-runtime/action.yml'
   pull_request:
     paths:
       - '.python-version'
@@ -59,6 +60,7 @@ on:
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
       - 'docs/preflop-search-orchestrator.md'
       - '.github/workflows/preflop-search.yml'
+      - '.github/actions/repro-runtime/action.yml'
 
 permissions:
   contents: read
@@ -72,14 +74,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - uses: actions/setup-node@v4
+          require-node: 'false'
+          install-python-deps: 'true'
         with:
-          node-version-file: '.node-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify --require-node
+          require-node: 'true'
       - name: Syntax
         run: |
           node --check src/preflop/search.js

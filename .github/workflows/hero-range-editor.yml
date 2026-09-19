@@ -13,6 +13,8 @@ on:
       - 'tools/patches/apply_hero_range_editor.py'
       - 'tools/write_site_release.py'
       - '.github/workflows/hero-range-editor.yml'
+      - '.github/actions/repro-runtime/action.yml'
+      - '.github/actions/repro-browser/action.yml'
   pull_request:
     paths:
       - 'site/hero-ranges.html'
@@ -25,6 +27,8 @@ on:
       - 'tools/patches/apply_hero_range_editor.py'
       - 'tools/write_site_release.py'
       - '.github/workflows/hero-range-editor.yml'
+      - '.github/actions/repro-runtime/action.yml'
+      - '.github/actions/repro-browser/action.yml'
 
 permissions:
   contents: read
@@ -38,6 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/repro-runtime
+        with:
+          require-node: 'true'
+          install-python-deps: 'true'
       - name: REPRO batch-1 anti-bypass contract
         run: PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
       - name: JavaScript syntax
@@ -60,14 +68,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-browser
         with:
-          python-version: '3.11.9'
-      - name: Install locked browser runtime
-        run: |
-          set -euo pipefail
-          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json
-          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json
+          require-node: 'true'
       - name: Serve static application
         run: |
           python3 -m http.server 8765 --directory site >/tmp/hero-range-http.log 2>&1 &

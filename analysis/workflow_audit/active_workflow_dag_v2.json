@@ -4,8 +4,8 @@
   "aggregate": {
     "job_count": 50,
     "repro_statuses": {
-      "REPRO_HELPER_VERIFIED": 15,
-      "REPRO_NOT_VERIFIED": 10,
+      "REPRO_HELPER_VERIFIED": 3,
+      "REPRO_NOT_VERIFIED": 22,
       "REPRO_STRONG_IDENTITY_BOUND": 6
     },
     "side_effect_classes": {
@@ -15,7 +15,7 @@
       "REPOSITORY_WRITE": 6,
       "UNKNOWN": 3
     },
-    "static_cost_proxy": 279
+    "static_cost_proxy": 235
   },
   "base_sha": "ac208d26cbf3f16b498fd5333ad3b7c4fa58355b",
   "inventory_sha256": "58994e7bb5ff362c629ccfbd7ba33ca5477c958ae0604830af869dac4448c0b8",
@@ -29,7 +29,7 @@
         "changed_paths": [
           "site/trainer.js"
         ],
-        "cost_proxy": 20,
+        "cost_proxy": 14,
         "event": "pull_request",
         "id": "trainer_js",
         "job_count": 4,
@@ -40,7 +40,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 10,
+            "cost_proxy": 6,
             "jobs": [
               {
                 "id": "contract",
@@ -57,7 +57,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 10,
+            "cost_proxy": 8,
             "jobs": [
               {
                 "id": "static-contract",
@@ -140,7 +140,7 @@
         "changed_paths": [
           "tools/simulation/game_core.py"
         ],
-        "cost_proxy": 72,
+        "cost_proxy": 64,
         "event": "pull_request",
         "id": "game_core",
         "job_count": 7,
@@ -154,7 +154,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 16,
+            "cost_proxy": 12,
             "jobs": [
               {
                 "id": "full-hand-arena",
@@ -197,7 +197,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "preflop-grid",
@@ -335,7 +335,7 @@
         "changed_paths": [
           "src/preflop/decision.js"
         ],
-        "cost_proxy": 26,
+        "cost_proxy": 14,
         "event": "pull_request",
         "id": "preflop_decision",
         "job_count": 4,
@@ -348,7 +348,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 9,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "calculated-range-contract",
@@ -374,7 +374,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "preflop-grid",
@@ -387,7 +387,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "contract",
@@ -486,7 +486,7 @@
         "changed_paths": [
           "training/datasets/NLHE_100-200/source/NLHE 100-200.zip"
         ],
-        "cost_proxy": 54,
+        "cost_proxy": 52,
         "event": "push",
         "id": "dataset_nlhe_100_200",
         "job_count": 7,
@@ -498,7 +498,7 @@
         "matches": [
           {
             "activation_event": "push",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "integrity",
@@ -647,7 +647,7 @@
         "changed_paths": [
           "training/models/preflop_population_model_v5.json"
         ],
-        "cost_proxy": 22,
+        "cost_proxy": 18,
         "event": "pull_request",
         "id": "preflop_model",
         "job_count": 4,
@@ -659,7 +659,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 9,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "calculated-range-contract",
@@ -778,7 +778,7 @@
         "changed_paths": [
           "tools/repro_ci_environment.py"
         ],
-        "cost_proxy": 49,
+        "cost_proxy": 37,
         "event": "push",
         "id": "repro_helper",
         "job_count": 8,
@@ -794,7 +794,7 @@
         "matches": [
           {
             "activation_event": "push",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "integrity",
@@ -807,7 +807,7 @@
           },
           {
             "activation_event": "push",
-            "cost_proxy": 7,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "validate",
@@ -833,7 +833,7 @@
           },
           {
             "activation_event": "push",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "runtime-contract",
@@ -863,7 +863,7 @@
           },
           {
             "activation_event": "push",
-            "cost_proxy": 9,
+            "cost_proxy": 7,
             "jobs": [
               {
                 "id": "refit",
@@ -876,7 +876,7 @@
           },
           {
             "activation_event": "push",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "contract",
@@ -974,7 +974,7 @@
         "changed_paths": [
           ".python-version"
         ],
-        "cost_proxy": 113,
+        "cost_proxy": 77,
         "event": "pull_request",
         "id": "python_version",
         "job_count": 16,
@@ -997,7 +997,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "integrity",
@@ -1010,7 +1010,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 16,
+            "cost_proxy": 12,
             "jobs": [
               {
                 "id": "full-hand-arena",
@@ -1027,7 +1027,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "validate",
@@ -1040,7 +1040,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 9,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "calculated-range-contract",
@@ -1066,7 +1066,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "runtime-contract",
@@ -1079,7 +1079,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "validation",
@@ -1092,7 +1092,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 12,
+            "cost_proxy": 6,
             "jobs": [
               {
                 "id": "contract",
@@ -1109,7 +1109,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 9,
+            "cost_proxy": 7,
             "jobs": [
               {
                 "id": "refit",
@@ -1122,7 +1122,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "preflop-grid",
@@ -1135,7 +1135,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "contract",
@@ -1148,7 +1148,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "contract",
@@ -1161,7 +1161,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "contract",
@@ -1369,7 +1369,7 @@
         "changed_paths": [
           ".node-version"
         ],
-        "cost_proxy": 79,
+        "cost_proxy": 51,
         "event": "pull_request",
         "id": "node_version",
         "job_count": 11,
@@ -1387,7 +1387,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 16,
+            "cost_proxy": 12,
             "jobs": [
               {
                 "id": "full-hand-arena",
@@ -1404,7 +1404,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 9,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "calculated-range-contract",
@@ -1430,7 +1430,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "runtime-contract",
@@ -1443,7 +1443,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 5,
             "jobs": [
               {
                 "id": "validation",
@@ -1456,7 +1456,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 12,
+            "cost_proxy": 6,
             "jobs": [
               {
                 "id": "contract",
@@ -1473,7 +1473,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 9,
+            "cost_proxy": 7,
             "jobs": [
               {
                 "id": "refit",
@@ -1486,7 +1486,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "preflop-grid",
@@ -1499,7 +1499,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 7,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "contract",
@@ -1620,7 +1620,7 @@
         "changed_paths": [
           "tools/training/build_release_handoff.py"
         ],
-        "cost_proxy": 10,
+        "cost_proxy": 6,
         "event": "pull_request",
         "id": "release_handoff_tooling",
         "job_count": 2,
@@ -1631,7 +1631,7 @@
         "matches": [
           {
             "activation_event": "pull_request",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "integrity",
@@ -1644,7 +1644,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "contract",
@@ -1715,7 +1715,7 @@
         "changed_paths": [
           "tools/training/independent_profiles/card_aware_behavior_fit.py"
         ],
-        "cost_proxy": 10,
+        "cost_proxy": 6,
         "event": "push",
         "id": "model_b_training",
         "job_count": 2,
@@ -1726,7 +1726,7 @@
         "matches": [
           {
             "activation_event": "push",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "integrity",
@@ -1739,7 +1739,7 @@
           },
           {
             "activation_event": "push",
-            "cost_proxy": 5,
+            "cost_proxy": 3,
             "jobs": [
               {
                 "id": "runtime-contract",
@@ -2126,7 +2126,8 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml"
+            ".github/workflows/dataset-integrity.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -2156,7 +2157,8 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml"
+            ".github/workflows/dataset-integrity.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -2166,14 +2168,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "dataset_population",
       "scientific_boundaries": {
         "TEST": true,
         "TRAIN": true,
         "VALIDATION": true
       },
-      "sha256": "dc61294edc71f5551c7ecdc0a645b298b1d9a7eed94dc7d4f295048684aa17d3",
+      "sha256": "99040e3222c5bc9a4ab0f6ed20456bf56a7780c811734a3b48121be4d732de03",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -2184,11 +2186,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 5
+        "score": 3
       },
       "triggers": {
         "pull_request": {
@@ -2218,7 +2220,8 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml"
+            ".github/workflows/dataset-integrity.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -2251,7 +2254,8 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml"
+            ".github/workflows/dataset-integrity.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2339,7 +2343,8 @@
             "tests/simulation/test_game_core_consolidated_regressions.py",
             "docs/full_hand_arena.md",
             "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
-            ".github/workflows/full-hand-arena.yml"
+            ".github/workflows/full-hand-arena.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -2350,14 +2355,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "simulation_benchmark",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": true,
         "VALIDATION": false
       },
-      "sha256": "6997be3eae49b673e792dddb740bf6c5b8bf0230197f52f9476feae2744bc187",
+      "sha256": "72f4d9c23413ac3fd16dbf21cd4bb4054bf7a4725347bd2ef1ca60363e60b4f7",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
         "band": "medium",
@@ -2368,11 +2373,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 2,
+          "setup_python": 0,
           "upload_artifact": 1
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 16
+        "score": 12
       },
       "triggers": {
         "pull_request": {
@@ -2409,7 +2414,8 @@
             "tests/simulation/test_game_core_consolidated_regressions.py",
             "docs/full_hand_arena.md",
             "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
-            ".github/workflows/full-hand-arena.yml"
+            ".github/workflows/full-hand-arena.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2470,7 +2476,8 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml"
+            ".github/workflows/full-hand-protocol.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -2500,7 +2507,8 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml"
+            ".github/workflows/full-hand-protocol.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -2510,14 +2518,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "simulation_benchmark",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "178c43ba383d865d29f8520b4effbab5c925d2ac02522504da8119e24ea82b99",
+      "sha256": "65534fa48d98a17e5eee35d0dd91db1b60e2728b598bd6658552d8c0adbb6213",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -2528,11 +2536,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 7
+        "score": 5
       },
       "triggers": {
         "pull_request": {
@@ -2562,7 +2570,8 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml"
+            ".github/workflows/full-hand-protocol.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -2595,7 +2604,8 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml"
+            ".github/workflows/full-hand-protocol.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2764,7 +2774,8 @@
             "training/models/postflop_population_model_v5.json",
             "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
             "docs/hero-calculated-range-candidate.md",
-            ".github/workflows/hero-calculated-range-export.yml"
+            ".github/workflows/hero-calculated-range-export.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -2774,29 +2785,29 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "hero_preflop",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": true,
         "VALIDATION": false
       },
-      "sha256": "d8cb95b363e273c8cee78ff206e4a0ea40ba8254e455873b3f0bab23cdcf66c5",
+      "sha256": "a4621b1b7a2c90a27f6f9f615e3833e98cd53fe5fc2cb8b1f0b273b921a80fe3",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
-        "band": "medium",
+        "band": "low",
         "components": {
           "checkout": 1,
           "download_artifact": 0,
           "npm_install": 0,
           "pip_install": 0,
           "playwright_install": 0,
-          "setup_node": 1,
-          "setup_python": 1,
+          "setup_node": 0,
+          "setup_python": 0,
           "upload_artifact": 1
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 9
+        "score": 5
       },
       "triggers": {
         "pull_request": {
@@ -2840,7 +2851,8 @@
             "training/models/postflop_population_model_v5.json",
             "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
             "docs/hero-calculated-range-candidate.md",
-            ".github/workflows/hero-calculated-range-export.yml"
+            ".github/workflows/hero-calculated-range-export.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2903,7 +2915,9 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml"
+            ".github/workflows/hero-range-compliance.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "push": {
@@ -2920,7 +2934,9 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml"
+            ".github/workflows/hero-range-compliance.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },
@@ -2937,22 +2953,22 @@
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "30285d84a72f4a9e985ecbc935955229905010e461b28e01ab31bfe8faf78e5d",
+      "sha256": "990ccbde1ecaac150cd3a078687f5b5f18bbfefc3cae31a82709cf739dd4a0bd",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
-        "band": "medium",
+        "band": "low",
         "components": {
           "checkout": 2,
           "download_artifact": 0,
           "npm_install": 0,
           "pip_install": 0,
           "playwright_install": 0,
-          "setup_node": 1,
-          "setup_python": 1,
+          "setup_node": 0,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 10
+        "score": 6
       },
       "triggers": {
         "pull_request": {
@@ -2969,7 +2985,9 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml"
+            ".github/workflows/hero-range-compliance.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "push": {
@@ -2986,7 +3004,9 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml"
+            ".github/workflows/hero-range-compliance.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },
@@ -3045,7 +3065,9 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml"
+            ".github/workflows/hero-range-editor.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "push": {
@@ -3059,7 +3081,9 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml"
+            ".github/workflows/hero-range-editor.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },
@@ -3076,10 +3100,10 @@
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "8f47e3b352b2b6c98d3ae6e48afb4feb5ee45dd426fd857316510b64259ba2d2",
+      "sha256": "b115974ae5c4beb01d00c231ab829a30d81f7c056f9fe2f0cc21a55a70546a61",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
-        "band": "medium",
+        "band": "low",
         "components": {
           "checkout": 2,
           "download_artifact": 0,
@@ -3087,11 +3111,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 8
+        "score": 6
       },
       "triggers": {
         "pull_request": {
@@ -3105,7 +3129,9 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml"
+            ".github/workflows/hero-range-editor.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "push": {
@@ -3119,7 +3145,9 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml"
+            ".github/workflows/hero-range-editor.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },
@@ -3799,7 +3827,8 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -3827,7 +3856,8 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -3837,14 +3867,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "model_b",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "eebb7aaac40596f6ae53daa1432aa7682b68423b1afa245bfbd8272a5157bd0b",
+      "sha256": "29dedbb7c6f5af3b372a1fbddeec2161bef0ce0d2688d24ec5214503e3c4c678",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -3855,11 +3885,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 5
+        "score": 3
       },
       "triggers": {
         "pull_request": {
@@ -3887,7 +3917,8 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -3915,7 +3946,8 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -4061,7 +4093,8 @@
             "tools/training/independent_profiles/evaluate_reveal_aware_ranges.py",
             "tests/training/test_reveal_aware_ranges.py",
             "training/runs/20260915_model_b_reveal_aware_v3/**",
-            ".github/workflows/model-b-reveal-aware.yml"
+            ".github/workflows/model-b-reveal-aware.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -4071,14 +4104,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "model_b",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": true,
         "VALIDATION": true
       },
-      "sha256": "c44861b492ff485993e9ce244fb21ced855f61883d8227857a522ebaceb17c00",
+      "sha256": "bb333e7a506e816f6be47cedc8c2f7ad6010575f35a437341ce50bf66d9e4451",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -4089,11 +4122,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 1
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 7
+        "score": 5
       },
       "triggers": {
         "pull_request": {
@@ -4121,7 +4154,8 @@
             "tools/training/independent_profiles/evaluate_reveal_aware_ranges.py",
             "tests/training/test_reveal_aware_ranges.py",
             "training/runs/20260915_model_b_reveal_aware_v3/**",
-            ".github/workflows/model-b-reveal-aware.yml"
+            ".github/workflows/model-b-reveal-aware.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -4486,7 +4520,9 @@
             "analysis/workflow_audit/helper_consumers.json",
             "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
             "tests/ci/test_repro_population_pack_catalog.py",
-            ".github/workflows/population-pack-catalog.yml"
+            ".github/workflows/population-pack-catalog.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },
@@ -4496,29 +4532,29 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "product_browser_validation",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "dc5f481fabfaadb27b39af15f3e2f10e600888bcb9de5138afbda7084c68bab2",
+      "sha256": "8b588e8f3d2475f6775eb17b8d51da180b7d558eb639d70e76307041ea50bdff",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
-        "band": "medium",
+        "band": "low",
         "components": {
           "checkout": 2,
           "download_artifact": 0,
           "npm_install": 0,
           "pip_install": 0,
           "playwright_install": 0,
-          "setup_node": 1,
-          "setup_python": 2,
+          "setup_node": 0,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 12
+        "score": 6
       },
       "triggers": {
         "pull_request": {
@@ -4557,7 +4593,9 @@
             "analysis/workflow_audit/helper_consumers.json",
             "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
             "tests/ci/test_repro_population_pack_catalog.py",
-            ".github/workflows/population-pack-catalog.yml"
+            ".github/workflows/population-pack-catalog.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -4786,7 +4824,8 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml"
+            ".github/workflows/postflop-response-refit.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -4822,7 +4861,8 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml"
+            ".github/workflows/postflop-response-refit.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -4832,17 +4872,17 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "validation_or_utility",
       "scientific_boundaries": {
         "TEST": true,
         "TRAIN": true,
         "VALIDATION": true
       },
-      "sha256": "c3f541a99755ff3c98fd59ca76d06429a743ff3fabafb0bce452d15c37b6a914",
+      "sha256": "89652c7d707d94f9f4774fa4b64477bb527f6a068e8cc01c048489c15b2dbde3",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
-        "band": "medium",
+        "band": "low",
         "components": {
           "checkout": 1,
           "download_artifact": 0,
@@ -4850,11 +4890,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 1
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 9
+        "score": 7
       },
       "triggers": {
         "pull_request": {
@@ -4890,7 +4930,8 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml"
+            ".github/workflows/postflop-response-refit.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -4929,7 +4970,8 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml"
+            ".github/workflows/postflop-response-refit.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -5085,7 +5127,8 @@
             "tests/simulation/test_game_core.py",
             "tests/preflop/test_decision_contract.js",
             "docs/preflop-grid-evaluator.md",
-            ".github/workflows/preflop-grid-evaluator.yml"
+            ".github/workflows/preflop-grid-evaluator.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -5095,14 +5138,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "preflop_strategy",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "c415a1db1b746910aec92aa975bb01a80cc8a49bb738492cedd77102cc1b6478",
+      "sha256": "cf5190de71ab5e8f2e29a0f45a40b374e624e9d9060cafca6e0e2e9813a9624f",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5112,12 +5155,12 @@
           "npm_install": 0,
           "pip_install": 0,
           "playwright_install": 0,
-          "setup_node": 1,
-          "setup_python": 1,
+          "setup_node": 0,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 7
+        "score": 3
       },
       "triggers": {
         "pull_request": {
@@ -5147,7 +5190,8 @@
             "tests/simulation/test_game_core.py",
             "tests/preflop/test_decision_contract.js",
             "docs/preflop-grid-evaluator.md",
-            ".github/workflows/preflop-grid-evaluator.yml"
+            ".github/workflows/preflop-grid-evaluator.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -5211,7 +5255,8 @@
             "tests/training/test_preflop_policy169.py",
             "tests/training/test_preflop_policy169_rebuild.py",
             "tests/training/test_evaluate_preflop_policy169_candidate.py",
-            ".github/workflows/preflop-policy169.yml"
+            ".github/workflows/preflop-policy169.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -5221,14 +5266,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "preflop_strategy",
       "scientific_boundaries": {
         "TEST": true,
         "TRAIN": false,
         "VALIDATION": true
       },
-      "sha256": "498a26bb9506cd490382de72acf3b6ed684073f09477117ad550f3a5f9589075",
+      "sha256": "0ec28733dbb1f32e0e93f03133b8130bfe7cc3bd640eb3077a04875d72842e3a",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5239,11 +5284,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 7
+        "score": 5
       },
       "triggers": {
         "pull_request": {
@@ -5273,7 +5318,8 @@
             "tests/training/test_preflop_policy169.py",
             "tests/training/test_preflop_policy169_rebuild.py",
             "tests/training/test_evaluate_preflop_policy169_candidate.py",
-            ".github/workflows/preflop-policy169.yml"
+            ".github/workflows/preflop-policy169.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -5338,7 +5384,8 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml"
+            ".github/workflows/preflop-search.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -5369,7 +5416,8 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml"
+            ".github/workflows/preflop-search.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -5379,14 +5427,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "preflop_strategy",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "4b3264cd7ef5204bc8de32da0817c197a59cff4e62501a81b603dcc383503fb5",
+      "sha256": "0db96d13a3ebcfa49989ce38c738873297d9c677c4bcc9d5435785f51f6aa26f",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5396,12 +5444,12 @@
           "npm_install": 0,
           "pip_install": 0,
           "playwright_install": 0,
-          "setup_node": 1,
-          "setup_python": 1,
+          "setup_node": 0,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 7
+        "score": 3
       },
       "triggers": {
         "pull_request": {
@@ -5432,7 +5480,8 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml"
+            ".github/workflows/preflop-search.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -5463,7 +5512,8 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml"
+            ".github/workflows/preflop-search.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -5652,7 +5702,8 @@
             "tests/training/test_build_promote_release_handoff.py",
             "tests/training/test_finalize_cycle_release.py",
             "tests/training/test_verify_live_release.py",
-            ".github/workflows/release-handoff-contract.yml"
+            ".github/workflows/release-handoff-contract.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         }
       },
@@ -5662,14 +5713,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_HELPER_VERIFIED",
+      "repro_status": "REPRO_NOT_VERIFIED",
       "role": "release_promotion",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "a0c1172d254eb023d389dc9d7b436f77861d5e21968927a2e81804aaf1ff5a50",
+      "sha256": "89062beb97078d5832fb79866ca58391c29f81c91ac40527f2bb52647558d0c7",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5680,11 +5731,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 5
+        "score": 3
       },
       "triggers": {
         "pull_request": {
@@ -5717,7 +5768,8 @@
             "tests/training/test_build_promote_release_handoff.py",
             "tests/training/test_finalize_cycle_release.py",
             "tests/training/test_verify_live_release.py",
-            ".github/workflows/release-handoff-contract.yml"
+            ".github/workflows/release-handoff-contract.yml",
+            ".github/actions/repro-runtime/action.yml"
           ]
         },
         "push": {
@@ -6158,7 +6210,9 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml"
+            ".github/workflows/trainer-smoke.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "push": {
@@ -6175,7 +6229,9 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml"
+            ".github/workflows/trainer-smoke.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },
@@ -6192,7 +6248,7 @@
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "df5c3226c697515daace3cd4c5484195ba5b85f3111e36061b5220d2df8d0b1d",
+      "sha256": "26d758fd10ec8bff54d105f134c59c713e84ef1eb4abe8f83754afe92e9a9e3c",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "medium",
@@ -6203,11 +6259,11 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 1,
+          "setup_python": 0,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 10
+        "score": 8
       },
       "triggers": {
         "pull_request": {
@@ -6224,7 +6280,9 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml"
+            ".github/workflows/trainer-smoke.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         },
         "push": {
@@ -6241,7 +6299,9 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml"
+            ".github/workflows/trainer-smoke.yml",
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml"
           ]
         }
       },

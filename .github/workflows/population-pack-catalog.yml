@@ -38,6 +38,8 @@ on:
       - 'analysis/workflow_audit/repro_population_pack_catalog_before_after.json'
       - 'tests/ci/test_repro_population_pack_catalog.py'
       - '.github/workflows/population-pack-catalog.yml'
+      - '.github/actions/repro-runtime/action.yml'
+      - '.github/actions/repro-browser/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -52,14 +54,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.node-version'
-      - name: Verify locked REPRO runtime
-        run: python3 tools/repro_ci_environment.py verify --require-node
+          require-node: 'true'
+          install-python-deps: 'true'
       - name: REPRO population pack catalogue anti-bypass contract
         run: PYTHONPATH=. python3 tests/ci/test_repro_population_pack_catalog.py
       - name: Patch product navigation idempotently
@@ -107,20 +105,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-browser
         with:
-          python-version-file: '.python-version'
+          require-node: 'true'
       - name: Assemble static site
         run: |
           python3 tools/patches/apply_pack_manager_link.py
           python3 tools/write_pack_catalog.py
           python3 tools/write_deployment_metadata.py
           python3 tools/write_site_release.py
-      - name: Install locked browser runtime
-        run: |
-          set -euo pipefail
-          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json
-          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json
       - name: Serve static application
         run: |
           python3 -m http.server 8765 --directory site >/tmp/population-pack-http.log 2>&1 &
