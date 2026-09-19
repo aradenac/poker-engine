@@ -96,14 +96,9 @@ def public_sizing_context(context: Mapping[str, Any]) -> dict[str, Any]:
         "actor_position",
         "family",
         "raise_level",
-        "target_total_bb",
         "to_call_bb",
         "pot_before_bb",
-        "price_to_pot_ratio",
-        "pot_odds",
         "effective_stack_bb",
-        "limper_count",
-        "caller_count",
     )
     missing = [field for field in required if field not in context]
     if missing:
@@ -111,25 +106,38 @@ def public_sizing_context(context: Mapping[str, Any]) -> dict[str, Any]:
             "missing public sizing fields: " + ", ".join(missing)
         )
 
-    target = _finite_nonnegative(context["target_total_bb"], "target_total_bb")
+    target_raw = context.get("target_total_bb", context.get("current_price_bb"))
+    if target_raw is None:
+        raise SizingLikelihoodError(
+            "missing public sizing fields: target_total_bb/current_price_bb"
+        )
+    target = _finite_nonnegative(target_raw, "target_total_bb")
     to_call = _finite_nonnegative(context["to_call_bb"], "to_call_bb")
     pot = _finite_nonnegative(context["pot_before_bb"], "pot_before_bb")
     effective = _finite_nonnegative(
         context["effective_stack_bb"], "effective_stack_bb"
     )
-    ratio_raw = context["price_to_pot_ratio"]
     ratio = (
-        None
-        if ratio_raw is None
-        else _finite_nonnegative(ratio_raw, "price_to_pot_ratio")
+        0.0
+        if pot <= EPS and to_call <= EPS
+        else None
+        if pot <= EPS
+        else round(to_call / pot, 9)
     )
-    odds = _finite_nonnegative(context["pot_odds"], "pot_odds")
+    denom = pot + to_call
+    odds = round(to_call / denom, 9) if denom > EPS else 0.0
     table_size = _int_nonnegative(context["table_size"], "table_size")
     if table_size < 2:
         raise SizingLikelihoodError("table_size must be at least 2")
     raise_level = _int_nonnegative(context["raise_level"], "raise_level")
-    limpers = _int_nonnegative(context["limper_count"], "limper_count")
-    callers = _int_nonnegative(context["caller_count"], "caller_count")
+    limpers = _int_nonnegative(
+        context.get("limper_count", len(set(context.get("limper_positions") or []))),
+        "limper_count",
+    )
+    callers = _int_nonnegative(
+        context.get("caller_count", len(set(context.get("caller_positions") or []))),
+        "caller_count",
+    )
 
     structural = str(context.get("canonical_key") or canonical_key(context))
     projection = {
