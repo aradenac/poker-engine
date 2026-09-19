@@ -810,13 +810,14 @@ function trainerActualLine(hand,kind,cost){
   const minTarget=hand.currentBet+Math.max(hand.lastRaise,1),target=Math.min(paid+remaining,Math.max(minTarget,paid+(Number(cost)||toCall+hand.lastRaise))),c=target-paid,inc=target-hand.currentBet;return {line:trainerActionLine(hand,s,"RAISE",c,target,inc),kind:"RAISE",cost:c,target};
 }
 function trainerDecisionClass(detail){
+  if(detail?.preflopDecision&&(!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision)||!detail.preflopDecision.ev_comparable))return "unknown";
   const rawLoss=Math.max(0,Number(detail?.rawLossBB??detail?.lossBB)||0),effectiveLoss=Math.max(0,Number(detail?.lossBB)||0);
   const quality=TrainerActionSizingEV.qualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
   return quality.key==="unknown"?"close":quality.key;
 }
 function trainerRecordDecision(detail,playedKind,playedCost){
-  const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail),row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:detail?.bestLabel||"—",bestCostBB:Number.isFinite(Number(detail?.bestCostBB))?Number(detail.bestCostBB):null,bestEV:Number(detail?.bestEV),chosenEV:Number(detail?.chosenEV),lossBB:loss,withinNoise:!!detail?.withinNoise,cls};
-  const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else s.poor++;
+  const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail),row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:detail?.bestLabel||"—",bestCostBB:Number.isFinite(Number(detail?.bestCostBB))?Number(detail.bestCostBB):null,bestEV:Number(detail?.bestEV),chosenEV:Number(detail?.chosenEV),lossBB:loss,withinNoise:!!detail?.withinNoise,cls,comparable:detail?.preflopDecision?!!detail.preflopDecision.ev_comparable:true,covered:detail?.preflopDecision?!!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision):true};
+  const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else if(cls==="poor")s.poor++;
   const key=`${row.position} · ${row.street}`;const b=s.breakdown[key]||(s.breakdown[key]={n:0,loss:0});b.n++;b.loss+=loss;trainerState.testLog.unshift(row);return row;
 }
 function trainerDecisionCanonical(detail,row){
@@ -838,6 +839,11 @@ function trainerDecisionCanonical(detail,row){
 }
 function trainerRecommendationKind(hand,rec){
   if(!hand||!rec||rec.error)return "";
+  if(rec.preflopDecision){
+    if(!window.PokerPreflopRuntime?.isCovered(rec.preflopDecision))return "";
+    const action=String(rec.preflopDecision.recommended_action||"").toUpperCase();
+    return action==="LIMP"?"CALL":action;
+  }
   const label=String(rec.bestLabel||"").trim().toUpperCase();
   if(label.startsWith("FOLD"))return "FOLD";
   if(label.startsWith("CHECK"))return "CHECK";
