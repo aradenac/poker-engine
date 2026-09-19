@@ -97,6 +97,12 @@ class PersistedSnapshotTests(unittest.TestCase):
         persisted_summary = json.loads(
             (ROOT / 'analysis/preflop_sizing_support_train.json').read_text(encoding='utf-8')
         )
+        self.assertEqual(summary['full_report']['matrix_cells'], len(report['matrix']))
+        self.assertEqual(summary['full_report']['binned_support_cells'], len(report['binned_support']))
+        self.assertEqual(
+            summary['full_report']['revealed_hand_class_cells'],
+            len(report['revealed_hand_class_support']),
+        )
         self.assertEqual(summary, persisted_summary)
         full_payload = (ROOT / 'analysis/preflop_sizing_support_train.full.json.gz').read_bytes()
         self.assertEqual(gzip.decompress(full_payload), canonical_preflop_sizing_report_bytes(report))
