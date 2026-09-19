@@ -1,0 +1,93 @@
+{
+  "contexts": {
+    "pokerstars_nlhe_100-200_zoom_play_6max_v1|6|BTN|100|UNOPENED|PFC_1111111111111111": {
+      "context": {
+        "effective_stack_bb": 100,
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "position": "BTN",
+        "preflop_context_id": "PFC_1111111111111111",
+        "spot": "UNOPENED",
+        "table_size": 6
+      },
+      "layers": {
+        "calculated": {
+          "hands": {
+            "AQs": {
+              "actions": {
+                "FOLD": 1
+              },
+              "notes": "old calculated layer must be atomically replaced",
+              "sizings": {}
+            }
+          },
+          "kind": "calculated",
+          "provenance": {
+            "source": "legacy synthetic calculated fixture"
+          },
+          "version": "legacy-calculated-fixture"
+        },
+        "personal": {
+          "hands": {
+            "AKs": {
+              "actions": {
+                "OPEN": 1
+              },
+              "notes": "personal strategy must survive generation import",
+              "sizings": {
+                "OPEN": [
+                  {
+                    "probability": 1,
+                    "target_total_bb": 2.5
+                  }
+                ]
+              }
+            }
+          },
+          "kind": "personal",
+          "provenance": {
+            "author": "synthetic-test"
+          },
+          "version": "user-fixture-v1"
+        }
+      }
+    }
+  },
+  "defaults": {
+    "effective_stack_bb": 100,
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "table_size": 6
+  },
+  "schema": "poker-hero-range-repository/v1",
+  "source": {
+    "format": "range-folder",
+    "meta": {
+      "fixture": "hero-preflop-repository-import"
+    },
+    "preserved_verbatim": true,
+    "range_folder": {
+      "name": "Synthetic imported source fixture",
+      "ranges": [
+        {
+          "name": "Legacy source",
+          "positions": [
+            {
+              "hands": [
+                {
+                  "actions": [
+                    {
+                      "frequency": 100,
+                      "name": "OPEN"
+                    }
+                  ],
+                  "hand": "AA"
+                }
+              ],
+              "position": "BTN"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "version": 1
+}
