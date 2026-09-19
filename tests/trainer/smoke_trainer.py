@@ -196,6 +196,47 @@ async def main() -> None:
         assert review_inbox_ui["stale"]["exact"] is False and review_inbox_ui["stale"]["reason"] == "DECISION_NOT_FOUND", review_inbox_ui
         assert review_inbox_ui["filters"] and review_inbox_ui["summary"] and review_inbox_ui["secondaryCollapsed"], review_inbox_ui
 
+        # #311 Review surfaces Hero cards and actual settled result, never EV-derived.
+        review_actual_result = await page.evaluate(
+            """() => {
+                const cards=[parseCardCode("Ks"),parseCardCode("Ts")];
+                const won={id:"42",heroCards:cards,bigBlind:2,heroResult:{net:37}};
+                const lost={id:"43",heroCards:cards,bigBlind:2,heroResult:{net:-14}};
+                const unavailable={id:"44",heroCards:cards,bigBlind:null,heroResult:{net:9}};
+                const wonMeta=reviewHandDisplayMeta(won),lostMeta=reviewHandDisplayMeta(lost),unavailableMeta=reviewHandDisplayMeta(unavailable);
+                const savedHands=state.hhHands;
+                try{
+                    state.hhHands=[won];
+                    renderReviewDashboardModel({
+                        schema:PokerReviewDashboard.DASHBOARD_SCHEMA,state:"READY",scope_key:"smoke-311",
+                        metrics:{hands_loaded:1,decisions_to_review:1,total_ev_loss_bb:1.25,decisions_analyzed:1,source_refs:[]},
+                        top_leaks:[],
+                        priority:{
+                            hand:{hand_id:"42",total_loss_bb:1.25,status:"TO_REVIEW",status_label:"À revoir"},
+                            decision:{decision_id:"review:42:3",step_index:3,street:"FLOP",position:"BTN",spot_family:"SRP",action_played:"CALL",action_recommended:"RAISE",loss_bb:1.25}
+                        },
+                        ctas:{review:{enabled:false},leak:{enabled:false},training:{enabled:false}}
+                    });
+                    return {
+                        won:wonMeta,lost:lostMeta,unavailable:unavailableMeta,
+                        dashboard:{priority:reviewDashboardPriority.textContent,meta:reviewDashboardPriorityMeta.textContent}
+                    };
+                } finally {
+                    state.hhHands=savedHands;
+                    renderReviewDashboard();
+                }
+            }"""
+        )
+        assert review_actual_result["won"]["hero_cards"] == "K♠ T♠", review_actual_result
+        assert review_actual_result["won"]["result"]["state"] == "win" and "Gagné" in review_actual_result["won"]["result"]["text"], review_actual_result
+        assert review_actual_result["won"]["result"]["amount"].startswith("+") and ("18,50" in review_actual_result["won"]["result"]["amount"] or "18.50" in review_actual_result["won"]["result"]["amount"]), review_actual_result
+        assert review_actual_result["lost"]["result"]["state"] == "loss" and "Perdu" in review_actual_result["lost"]["result"]["text"], review_actual_result
+        assert "7,00" in review_actual_result["lost"]["result"]["amount"] or "7.00" in review_actual_result["lost"]["result"]["amount"], review_actual_result
+        assert review_actual_result["unavailable"]["result"]["state"] == "unavailable", review_actual_result
+        assert review_actual_result["unavailable"]["result"]["text"] == "Résultat réel indisponible", review_actual_result
+        assert all(x in review_actual_result["dashboard"]["priority"] for x in ["Main #42","K♠ T♠","Gagné","FLOP","BTN"]), review_actual_result
+        assert "perte EV" in review_actual_result["dashboard"]["meta"] and "CALL" in review_actual_result["dashboard"]["meta"] and "RAISE" in review_actual_result["dashboard"]["meta"], review_actual_result
+
         exact_review_open = await page.evaluate(
             """() => {
                 const saved={
