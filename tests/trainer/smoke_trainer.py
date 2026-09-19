@@ -44,6 +44,37 @@ async def main() -> None:
         assert product_architecture["packsInSettings"], product_architecture
         assert product_architecture["replayerPresent"] and product_architecture["equityComponents"], product_architecture
 
+        # Review Inbox consumes the merged backend contract and exposes fail-closed deep-link resolution.
+        review_inbox_ui = await page.evaluate(
+            """() => {
+                const exact=resolveReviewInboxDeepLink(
+                    {schema:PokerReviewInbox.DEEP_LINK_SCHEMA,hand_id:"42",decision_id:"review:42:3",step_index:3},
+                    "42",
+                    [{},{},{},{actionType:"call"}],
+                    {details:[{stepIndex:3}]}
+                );
+                const stale=resolveReviewInboxDeepLink(
+                    {schema:PokerReviewInbox.DEEP_LINK_SCHEMA,hand_id:"42",decision_id:"review:42:3",step_index:3},
+                    "42",
+                    [{},{},{},{actionType:"call"}],
+                    {details:[{stepIndex:2}]}
+                );
+                return {
+                    schema:PokerReviewInbox?.INBOX_SCHEMA,
+                    metadataSchema:PokerReviewInbox?.USER_METADATA_SCHEMA,
+                    exact,stale,
+                    filters:["reviewStatusFilter","reviewCoverageFilter","reviewStreetFilter","reviewPositionFilter","reviewSpotFilter","reviewPlayedFilter","reviewRecommendedFilter","reviewSizingFilter","reviewJamFilter","reviewOverbetFilter"].every(id=>!!document.getElementById(id)),
+                    summary:!!document.getElementById("reviewInboxSummary"),
+                    secondaryCollapsed:!document.querySelector(".review-inbox-filters")?.open
+                };
+            }"""
+        )
+        assert review_inbox_ui["schema"] == "poker-review-inbox/v1", review_inbox_ui
+        assert review_inbox_ui["metadataSchema"] == "poker-review-inbox-user-metadata/v1", review_inbox_ui
+        assert review_inbox_ui["exact"]["exact"] is True and review_inbox_ui["exact"]["stepIndex"] == 3, review_inbox_ui
+        assert review_inbox_ui["stale"]["exact"] is False and review_inbox_ui["stale"]["reason"] == "DECISION_NOT_FOUND", review_inbox_ui
+        assert review_inbox_ui["filters"] and review_inbox_ui["summary"] and review_inbox_ui["secondaryCollapsed"], review_inbox_ui
+
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(
             "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"
