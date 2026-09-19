@@ -35,6 +35,7 @@ from tools.training.audit_preflop_key_runtime_parity import runtime_signature  #
 from tools.training.fit_model_a_preflop_sizing import (  # noqa: E402
     build_candidate as build_issue339_candidate,
     evaluate_validation as evaluate_issue339_validation,
+    evaluate_kts_posterior as evaluate_issue339_kts_posterior,
     load_protocol as load_issue339_protocol,
     load_support_report as load_issue339_support_report,
 )
@@ -374,6 +375,13 @@ def test_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_without
     assert fit["test_consumed"] is False
     support = {int(row["target_total_bb"]): int(row["observations"]) for row in fit["kts_sb_two_limpers_exact_price_support"]}
     assert support == {4: 54, 5: 161, 6: 43}
+    fit["posterior_321"] = evaluate_issue339_kts_posterior(candidate)
+    posterior = {int(row["target_total_bb"]): row for row in fit["posterior_321"]["prices"]}
+    assert posterior[4]["after_status"] == "UNSUPPORTED"
+    assert posterior[5]["after_status"] == "AVAILABLE"
+    assert posterior[5]["source_observations"] == 45
+    assert posterior[6]["after_status"] == "UNSUPPORTED"
+    assert all(not row["contract_errors"] for row in posterior.values())
 
     validation = evaluate_issue339_validation(protocol, candidate, fit)
     assert validation["selection_split"] == "VALIDATION"
