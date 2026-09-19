@@ -1,0 +1,17 @@
+{
+  "activation": false,
+  "application_release_sha256_after": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+  "application_release_sha256_before": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+  "application_release_unchanged": true,
+  "catalogue_mutation": false,
+  "original_zoom_candidate_sha256_after": "744f382088df1415d81725b070ac162b277543716787ae86abfcd463d7b7f6e6",
+  "original_zoom_candidate_sha256_before": "744f382088df1415d81725b070ac162b277543716787ae86abfcd463d7b7f6e6",
+  "original_zoom_candidate_unchanged": true,
+  "promotion": false,
+  "publication": false,
+  "registry_pointer_mutation": false,
+  "registry_sha256_after": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+  "registry_sha256_before": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+  "registry_unchanged": true,
+  "test_consumed": false
+}

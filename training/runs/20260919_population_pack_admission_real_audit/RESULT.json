@@ -1,0 +1,80 @@
+{
+  "activation_performed": false,
+  "admission_summary": {
+    "ADMISSIBLE": 0,
+    "INCOMPATIBLE": 3,
+    "REJECTED": 0,
+    "RETAIN_REFERENCE": 2,
+    "UNRESOLVED": 2
+  },
+  "assembly_status": "NOT_READY",
+  "candidate_contract_sha256": "eda681285109d852a3f003181fcd95050943b8043c924c7d29ea10a6b92dafeb",
+  "dod": {
+    "blockers_have_next_evidence": true,
+    "deterministic_contracts": true,
+    "hashes_and_provenance_verified": true,
+    "issue_108_consumed_without_reinterpretation": true,
+    "issue_339_respected": true,
+    "issue_340_no_promotion_respected": true,
+    "legacy_relabel_forbidden": true,
+    "no_publication_activation_promotion_mutation": true,
+    "parent_201_remains_open": true,
+    "preflight_read_only_executed": true,
+    "seven_roles_explicit": true,
+    "test_unconsumed": true
+  },
+  "evidence_set_sha256": "23d0538d56e51bc4657ae5aeef96b4a6172a4cc0730d6d95e13c2fade3f50258",
+  "issue": 350,
+  "matrix_sha256": "9e50660513c0dd7d9edfbef34b5499a90860621ddf530635588d75f754ff9e6f",
+  "parent_issue": 201,
+  "parent_issue_201_should_remain_open": true,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "preflight_result": "BLOCKED",
+  "preflight_sha256": "01413d3cdcae9ff9f699a4b81127ac9a138c565417bf048b5291dce63d5c0728",
+  "production_effect": "NONE",
+  "promotion_performed": false,
+  "publication_performed": false,
+  "registry_or_pointer_mutation": false,
+  "resolution_sha256": "c871c39eb8a3030123f62452a0529e9613fcba7de08ba0420ccc0afb9f03bb22",
+  "safety": {
+    "activation": false,
+    "application_release_sha256_after": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+    "application_release_sha256_before": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+    "application_release_unchanged": true,
+    "catalogue_mutation": false,
+    "original_zoom_candidate_sha256_after": "744f382088df1415d81725b070ac162b277543716787ae86abfcd463d7b7f6e6",
+    "original_zoom_candidate_sha256_before": "744f382088df1415d81725b070ac162b277543716787ae86abfcd463d7b7f6e6",
+    "original_zoom_candidate_unchanged": true,
+    "promotion": false,
+    "publication": false,
+    "registry_pointer_mutation": false,
+    "registry_sha256_after": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+    "registry_sha256_before": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+    "registry_unchanged": true,
+    "test_consumed": false
+  },
+  "schema": "poker-population-pack-admission-real-audit-result/v1",
+  "source_decisions": {
+    "issue_108": {
+      "decision": "RETAIN_REFERENCE",
+      "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+      "promotion_authorized": false,
+      "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223",
+      "test_consumed": false
+    },
+    "issue_339": {
+      "decision": "RETAIN_ACTIVE_REFERENCE",
+      "path": "analysis/model_a_preflop_sizing_validation.json",
+      "sha256": "081f02ce76a4b2429e920f847fe630f4acedd4382f0e65ebb6841b2d49fb476f",
+      "test_consumed": false
+    },
+    "issue_340": {
+      "decision": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION",
+      "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+      "sha256": "3df3d5d74caf1ca636d0b7124e4f6851240016e219373a979fad86500c0372f8",
+      "test_consumed": false
+    }
+  },
+  "status": "COMPLETE_READ_ONLY_AUDIT",
+  "test_consumed": false
+}
