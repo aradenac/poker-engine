@@ -291,13 +291,13 @@
         "assert x['strict_free_check_validation']['paired_bootstrap']['ci95'][1]==0.0"
       ],
       "scientific_token_counts_before": {
-        "VALIDATION": 4,
+        "VALIDATION": 2,
         "test_used": 2,
         "test_authorized": 2,
         "production_effect": 2
       },
       "scientific_token_counts_after": {
-        "VALIDATION": 4,
+        "VALIDATION": 2,
         "test_used": 2,
         "test_authorized": 2,
         "production_effect": 2
