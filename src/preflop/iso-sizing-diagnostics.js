@@ -264,11 +264,21 @@
 
   function validateWorlds(worlds){
     if(!worlds||worlds.schema!==WORLDS_SCHEMA)fail('WORLDS_SCHEMA_MISMATCH','expected '+WORLDS_SCHEMA);
-    if(worlds.synthetic_fixture!==true)fail('NON_SYNTHETIC_INPUT_FORBIDDEN','#322 bridge accepts synthetic_fixture=true only');
+    const synthetic=worlds.synthetic_fixture===true;
+    const scientific=worlds.synthetic_fixture===false;
+    if(!synthetic&&!scientific)fail('EXECUTION_BOUNDARY_INVALID','synthetic_fixture must be explicit');
     if(!worlds.support_by_alternative||typeof worlds.support_by_alternative!=='object')fail('SUPPORT_INVALID','support_by_alternative is required');
     if(!worlds.alternatives||typeof worlds.alternatives!=='object')fail('WORLDS_INVALID','alternatives observations are required');
     if(!worlds.posterior_catalog||typeof worlds.posterior_catalog!=='object')fail('POSTERIOR_REF_INVALID','posterior_catalog is required');
-    if(!worlds.provenance||worlds.provenance.scientific_effect!==SCIENTIFIC_EFFECT||worlds.provenance.synthetic_fixture!==true)fail('PROVENANCE_INVALID','synthetic integration-contract provenance required');
+    if(!worlds.provenance||worlds.provenance.scientific_effect!==SCIENTIFIC_EFFECT||worlds.provenance.synthetic_fixture!==synthetic)fail('PROVENANCE_INVALID','integration-contract provenance mismatch');
+    const boundary=worlds.execution_boundary||{};
+    if(scientific){
+      if(text(boundary.mode).toUpperCase()!=='SCIENTIFIC'||text(boundary.model_a_admission_status).toUpperCase()!=='ADMITTED_FOR_SIZING_EV'){
+        fail('SCIENTIFIC_PROVIDER_NOT_ADMITTED','non-synthetic diagnostics require ADMITTED_FOR_SIZING_EV');
+      }
+    }else if(text(boundary.mode).toUpperCase()!=='NON_SCIENTIFIC'){
+      fail('EXECUTION_BOUNDARY_INVALID','synthetic diagnostics require NON_SCIENTIFIC execution mode');
+    }
     return worlds;
   }
 
@@ -381,7 +391,7 @@
           source_mode:text(paired_result.mode),
           sample_indices:[...seenIndices].sort((a,b)=>a-b),
           world_fingerprints_sha256:perAltFingerprints,
-          synthetic_fixture:true
+          synthetic_fixture:worlds.synthetic_fixture
         }
       });
     }
