@@ -1,0 +1,54 @@
+{
+  "schema": "poker-repro-ci-enforcement-evidence/v1",
+  "issue": 347,
+  "parent_issue": 203,
+  "branch": "agent-B/issue-347-ci-repro-enforcement",
+  "base_sha": "61000fa18ef08b5ae6aee8b50bc3cb5e3380ac43",
+  "protected_workflows": [
+    ".github/workflows/continuous-training-cycle.yml",
+    ".github/workflows/population-certification.yml",
+    ".github/workflows/population-pack.yml",
+    ".github/workflows/user-artifact-bundle.yml",
+    ".github/workflows/plan-ingested-cycle.yml",
+    ".github/workflows/materialize-certified-population.yml"
+  ],
+  "reused_validators": [
+    "tools/repro_ci_environment.py",
+    "tools/repro_container.py",
+    "tools/repro_hardening.py",
+    "tools/repro_environment_identity.py",
+    "tools/repro_lock_update.py"
+  ],
+  "persisted_tests": {
+    "positive": [
+      "guarded workflow topology",
+      "matching locked runtime/environment identity"
+    ],
+    "fail_closed": [
+      "critical runtime lock divergence",
+      "environment_identity divergence",
+      "guard dependency removed",
+      "unguarded artifact/publication job added",
+      "historical run or TEST ledger changed"
+    ]
+  },
+  "limitations_preserved": {
+    "system_packages_fully_pinned": false,
+    "browser_archive_sha_pinned": false
+  },
+  "scope": {
+    "real_upgrade_executed": false,
+    "scientific_test_consumed": false,
+    "model_a_b_modified": false,
+    "hero_ev_modified": false,
+    "ui_modified": false,
+    "strategy_modified": false,
+    "historical_runs_modified": false,
+    "test_ledger_modified": false
+  },
+  "ci": {
+    "status": "PENDING_SYNCHRONIZE_TRIGGER",
+    "pull_request": 351,
+    "run_ids": []
+  }
+}
