@@ -215,7 +215,9 @@
     const reasons=[];
     if(!guidance){
       reasons.push('NO_ADMISSIBLE_STRATEGY');
-      return {admissible:false,reasons,surface:null,status:'NO_ADMISSIBLE_STRATEGY'};
+      if(!context.context_id)reasons.push('EXACT_CONTEXT_ABSENT');
+      const status=!context.context_id?'EXACT_CONTEXT_ABSENT':'NO_ADMISSIBLE_STRATEGY';
+      return {admissible:false,reasons:unique(reasons),surface:null,tier:coverage.support_tier||'UNKNOWN',status};
     }
     if(guidance.schema!==GUIDANCE_SCHEMA){
       reasons.push('INVALID_GUIDANCE');
