@@ -489,6 +489,14 @@ def test_ad_issue352_frozen_validation_compares_active_339_and_v2_without_test()
 
     protocol = load_issue352_validation_protocol(fit)
     validation = evaluate_issue352_validation(protocol, candidate, fit)
+    persisted_validation = json.loads(
+        (ROOT / "analysis/model_a_preflop_sizing_v2_validation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert_json_semantically_equal(validation, persisted_validation)
+    assert validation["outcome"] == "ADMIT_CANDIDATE"
+    assert all(validation["gate"].values())
     assert validation["selection_split"] == "VALIDATION"
     assert validation["test_consumed"] is False
     assert validation["test_authorized"] is False
