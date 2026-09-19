@@ -1,0 +1,57 @@
+{
+  "schema": "poker-site-release/v3",
+  "artifact_class": "CANDIDATE_UNPUBLISHED",
+  "non_publishable": true,
+  "role": "application_release",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "version": "runtime-compat-2026-09-19.1",
+  "status": "candidate_unpublished",
+  "published": false,
+  "runtime_source_commit": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "identity": {
+    "engine_release": {
+      "artifact": null,
+      "sha256": null,
+      "binding_status": "UNRESOLVED_NO_DISTRIBUTABLE_ENGINE"
+    },
+    "source_release_anchor": {
+      "artifact": "site/RELEASE.json",
+      "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+    }
+  },
+  "compatibility": {
+    "target_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "target_format": "ZOOM",
+    "legacy_mixed_bytes_relabelled": false,
+    "blockers": [
+      {
+        "code": "CURRENT_RELEASE_BINDS_LEGACY_ENGINE",
+        "evidence": "site/RELEASE.json",
+        "detail": "current engine_release is user/releases/poker_range_equity_offline_multiway_v83.html"
+      },
+      {
+        "code": "CURRENT_APPLICATION_LOADS_MODEL_A_V5_DEFAULTS",
+        "evidence": "site/trainer.js",
+        "detail": "trainer initializes preflop_population_model_v5.json and postflop_population_model_v5.json when models are absent"
+      },
+      {
+        "code": "CURRENT_PREFLOP_RUNTIME_BINDS_RETAINED_REFERENCE",
+        "evidence": "site/training/preflop-runtime.js",
+        "detail": "runtime binds #108 RETAIN_REFERENCE and the retained strategy SHA matching the legacy active Model A v5 reference"
+      },
+      {
+        "code": "PROMOTION_FORBIDDEN_IN_ISSUE_360",
+        "evidence": "#360",
+        "detail": "#253 preflight requires application release status promoted for engine compatibility; this ticket explicitly forbids promotion"
+      }
+    ],
+    "pack_role_admissible": false
+  },
+  "provenance": {
+    "path": "training/runs/20260919_pack_runtime_compatibility/SOURCE_PROVENANCE.json",
+    "sha256": "aefbd8fd76b2fe3ff6c31d290075be6eaa2aec215bd76444ca4cb8f3d1be8ff2"
+  },
+  "scientific_effect": "NONE",
+  "production_effect": "NONE",
+  "test_consumed": false
+}
