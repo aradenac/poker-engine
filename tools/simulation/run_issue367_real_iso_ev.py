@@ -109,7 +109,7 @@ def load_protocol(path: Path) -> dict[str, Any]:
 
 def canonical_state() -> tuple[dict[str, Any], str]:
     fixture = _load(FIXTURE)
-    if fixture.get("fixture_id") != "kts_sb_two_limp_iso4_three_calls_v1":
+    if fixture.get("scenario_id") != "kts_sb_two_limp_iso4_three_calls_v1":
         raise ValueError("unexpected #321 fixture")
     row = next(
         item for item in fixture["snapshots"] if item["id"] == "before_hero"
