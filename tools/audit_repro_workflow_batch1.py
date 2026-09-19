@@ -115,6 +115,25 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
     violations: list[dict[str, Any]] = []
     checked: list[dict[str, Any]] = []
     parsed_rows: list[dict[str, Any]] = []
+
+    # Bind the before state to the exact #291 consumer evidence instead of
+    # trusting a hand-written baseline.
+    helper_evidence = _json(root / "analysis/workflow_audit/helper_consumers.json")
+    browser_rows = next(
+        (
+            row for row in helper_evidence.get("helpers") or []
+            if row.get("helper") == "tools/repro_ci_browser.py"
+        ),
+        None,
+    )
+    if browser_rows is None:
+        violations.append({"rule": "ISSUE_291_BROWSER_CONSUMER_EVIDENCE_MISSING"})
+        before_by_path: dict[str, str] = {}
+    else:
+        before_by_path = {
+            str(row.get("workflow")): str(row.get("workflow_blob_sha"))
+            for row in browser_rows.get("consumers") or []
+        }
     aggregate: dict[str, int] = {
         "workflow_lines": 0,
         "checkout": 0,
@@ -153,6 +172,16 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
         if rel == ".github/workflows/project-state-consistency.yml":
             violations.append({"rule": "N8N_RESERVED_WORKFLOW_IN_BATCH", "path": rel})
             continue
+
+        issue_291_before = before_by_path.get(rel)
+        declared_before = str(row.get("before_git_blob_sha") or "")
+        if issue_291_before != declared_before:
+            violations.append({
+                "rule": "BEFORE_BLOB_NOT_BOUND_TO_ISSUE_291",
+                "path": rel,
+                "issue_291": issue_291_before,
+                "declared": declared_before,
+            })
 
         path = root / rel
         if not path.is_file():
