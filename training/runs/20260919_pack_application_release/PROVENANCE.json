@@ -1,0 +1,66 @@
+{
+  "schema": "poker-pack-application-release-provenance/v1",
+  "issue": 377,
+  "parent_issue": 201,
+  "predecessor_issue": 370,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "base_commit": "f88ea0ff60b349165f936d2e67c5bf1ad30d9a95",
+  "predecessor_engine_merge": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+  "artifact": {
+    "path": "training/artifacts/application-release/poker-site-release-zoom-100-200-candidate-v1-25afc20cce834fc93ff140f56723548e806034cd892a8b222de21f916d162984.json",
+    "sha256": "25afc20cce834fc93ff140f56723548e806034cd892a8b222de21f916d162984"
+  },
+  "boot_contract": {
+    "path": "training/artifacts/application-release/pack-scoped-boot-v1-4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c.js",
+    "sha256": "4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c",
+    "materialization_commit": "13390fc8a89947d4920b91d6c808bd9d04525712"
+  },
+  "application_release_materialization_commit": "267e0bf0466f4ad6ce679c8c96f61e13e6d63271",
+  "engine_evidence": {
+    "manifest": {
+      "path": "training/runs/20260919_pack_engine_artifact/ENGINE_ARTIFACT_MANIFEST.json",
+      "sha256": "34b7083e913a6657d119baccafb47f12d6b4866a161814777fb23104db2e6620"
+    },
+    "provenance": {
+      "path": "training/runs/20260919_pack_engine_artifact/PROVENANCE.json",
+      "sha256": "7262a6dc6a1df7d363312b5a731f76aa25710753e5adcb4152b1faf33a3ee781"
+    },
+    "decision": {
+      "path": "training/runs/20260919_pack_engine_artifact/ROLE_DECISION.json",
+      "sha256": "321247eb27fb04530a304a5d171d6d224b431ca14e4b9dcb2f4ddb5b5539cf86"
+    }
+  },
+  "manifest": {
+    "path": "training/runs/20260919_pack_application_release/APPLICATION_RELEASE_MANIFEST.json",
+    "sha256": "d1c8705516d990a779023d5af28f7467477f8f82bef952c65e98bce2d4fd2ac7"
+  },
+  "legacy_behavior_proof": {
+    "production_files_modified": false,
+    "anchors": [
+      {
+        "path": "site/RELEASE.json",
+        "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+      },
+      {
+        "path": "site/trainer.js",
+        "sha256": "3d323efa24cd76342f953c26447e992162a3c1cca77d9472744d9107fe459e56"
+      },
+      {
+        "path": "site/training/preflop-runtime.js",
+        "sha256": "35ba3517ac4ccd9564f99fa2eb501da02647a690d819a7725f4059e8ad0ae778"
+      }
+    ],
+    "explicit_zoom_mode_isolated": true
+  },
+  "boundaries": {
+    "scientific_effect": "NONE",
+    "test_consumed": false,
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "registry_mutation": false,
+    "pointer_mutation": false,
+    "production_effect": "NONE"
+  }
+}
