@@ -1,0 +1,332 @@
+{
+  "blockers": [
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "model_a_preflop: unresolved component",
+      "role": "model_a_preflop"
+    },
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "model_a_postflop: unresolved component",
+      "role": "model_a_postflop"
+    },
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "model_b: unresolved component",
+      "role": "model_b"
+    },
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "hero_strategy: unresolved component",
+      "role": "hero_strategy"
+    },
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "engine: unresolved component",
+      "role": "engine"
+    },
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "hero_ranges: unresolved component",
+      "role": "hero_ranges"
+    },
+    {
+      "code": "COMPONENT_UNRESOLVED",
+      "message": "application_release: unresolved component",
+      "role": "application_release"
+    },
+    {
+      "code": "CANDIDATE_STATUS_NOT_READY",
+      "message": "candidate status is 'BLOCKED_PENDING_SCIENTIFIC_DECISION', expected 'READY_FOR_ASSEMBLY'",
+      "role": null
+    },
+    {
+      "code": "POPULATION_STATUS_NOT_PROMOTED",
+      "message": "population status is 'CERTIFIED_DATA_ONLY', expected 'PROMOTED'",
+      "role": null
+    },
+    {
+      "code": "ENGINE_COMPONENT_NOT_READY",
+      "message": "engine component is not available and admissible",
+      "role": "engine"
+    },
+    {
+      "code": "APPLICATION_RELEASE_NOT_READY",
+      "message": "application_release component is not available and admissible",
+      "role": "engine"
+    }
+  ],
+  "candidate": {
+    "candidate_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1@admission-23d0538d56e51bc4",
+    "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION",
+    "contract_path": "training/runs/20260919_population_pack_admission_real_audit/CANDIDATE_CONTRACT.json",
+    "contract_sha256": "a93d14ac314b3e5c75dc5f7848f37a02f5705743532c322cb4cd2ebb4ff04d91",
+    "declared_blocked_on": [],
+    "publication_policy": {
+      "catalog_eligible": false,
+      "default": false,
+      "recommended": false,
+      "release_allowed": false
+    }
+  },
+  "components": {
+    "application_release": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "application_release: unresolved component",
+          "role": "application_release"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "application_release",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    },
+    "engine": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "engine: unresolved component",
+          "role": "engine"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "engine",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    },
+    "hero_ranges": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "hero_ranges: unresolved component",
+          "role": "hero_ranges"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "hero_ranges",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    },
+    "hero_strategy": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "hero_strategy: unresolved component",
+          "role": "hero_strategy"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "hero_strategy",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    },
+    "model_a_postflop": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "model_a_postflop: unresolved component",
+          "role": "model_a_postflop"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "model_a_postflop",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    },
+    "model_a_preflop": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "model_a_preflop: unresolved component",
+          "role": "model_a_preflop"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "model_a_preflop",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    },
+    "model_b": {
+      "availability": "UNRESOLVED",
+      "blockers": [
+        {
+          "code": "COMPONENT_UNRESOLVED",
+          "message": "model_b: unresolved component",
+          "role": "model_b"
+        }
+      ],
+      "hash": {
+        "actual_sha256": null,
+        "declared_sha256": null,
+        "kind": null,
+        "verified": false
+      },
+      "population_id": null,
+      "provenance": null,
+      "registered_source_owners": [],
+      "role": "model_b",
+      "scientific_status": {
+        "admissible": false,
+        "evidence": null,
+        "issue": null,
+        "status": "UNRESOLVED"
+      },
+      "source_path": null
+    }
+  },
+  "engine_compatibility": {
+    "application_release": {
+      "declared_engine_sha256": null,
+      "declared_engine_source_path": null,
+      "schema": null,
+      "source_path": null,
+      "status": null
+    },
+    "blockers": [
+      {
+        "code": "ENGINE_COMPONENT_NOT_READY",
+        "message": "engine component is not available and admissible"
+      },
+      {
+        "code": "APPLICATION_RELEASE_NOT_READY",
+        "message": "application_release component is not available and admissible"
+      }
+    ],
+    "candidate_engine": {
+      "sha256": null,
+      "source_path": null
+    },
+    "status": "BLOCKED"
+  },
+  "handoff": {
+    "assembly_gate": "tools/build_population_pack.py",
+    "candidate_contract_config_field": "candidate_contract",
+    "candidate_contract_path": "training/runs/20260919_population_pack_admission_real_audit/CANDIDATE_CONTRACT.json",
+    "candidate_contract_sha256": "a93d14ac314b3e5c75dc5f7848f37a02f5705743532c322cb4cd2ebb4ff04d91",
+    "ready_without_new_logic": false
+  },
+  "population": {
+    "identity": {
+      "currency": "PLAY_CHIPS",
+      "format": "ZOOM",
+      "game_kind": "cash",
+      "max_seats": 6,
+      "money": "play",
+      "platform": "PokerStars",
+      "rake": {
+        "policy": "OBSERVED_FROM_HAND_HISTORY_SUMMARY_ONLY"
+      },
+      "stake": "100/200",
+      "variant": "NLHE"
+    },
+    "legacy_unscoped_artifacts_allowed": false,
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "status": "CERTIFIED_DATA_ONLY"
+  },
+  "registry_component_pointers": {
+    "engine": null,
+    "hero_strategy": null,
+    "model_a_postflop": null,
+    "model_a_preflop": null,
+    "model_b": null,
+    "pack": null
+  },
+  "result": "BLOCKED",
+  "safety": {
+    "catalogue_updates": false,
+    "dry_run": true,
+    "pack_activation": false,
+    "population_registry_updates": false,
+    "production_pointer_updates": false,
+    "recommended_or_default_changes": false,
+    "release_publication": false,
+    "writes_performed": false
+  },
+  "schema": "poker-population-pack-preflight/v1"
+}

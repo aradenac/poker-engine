@@ -1,0 +1,230 @@
+{
+  "artifact_class": "REAL_PERSISTED_EVIDENCE_READ_ONLY_AUDIT",
+  "components": {
+    "application_release": {
+      "audit_source": {
+        "declared_engine": {
+          "artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
+          "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4"
+        },
+        "release_status": "promoted"
+      },
+      "decision": {
+        "evidence": {
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        "issue": "#201",
+        "status": "UNRESOLVED_NO_PACK_ADMISSION"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        "source_population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "role": "application_release",
+      "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+      "source_path": "site/RELEASE.json"
+    },
+    "engine": {
+      "audit_source": {
+        "release_status": "promoted"
+      },
+      "decision": {
+        "evidence": {
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        "issue": "#201",
+        "status": "UNRESOLVED_NO_PACK_ADMISSION"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "training/populations/registry.json",
+          "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+        },
+        "source_population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "role": "engine",
+      "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+      "source_path": "user/releases/poker_range_equity_offline_multiway_v83.html"
+    },
+    "hero_ranges": {
+      "audit_source": {
+        "candidate_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+        "promotion_authorized": false,
+        "source_evidence_commit": "c680014cea70e4d1fb0fc07840f4ee09c557aa11"
+      },
+      "decision": {
+        "evidence": {
+          "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+          "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223"
+        },
+        "issue": "#108",
+        "status": "RETAIN_REFERENCE"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/SOURCE_RUN.json",
+          "sha256": "2d7c9de9a18d524af314712b0ffcc722c33d2d705e738fbe91f717ce00090e48"
+        },
+        "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "role": "hero_ranges",
+      "sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+      "source_path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json"
+    },
+    "hero_strategy": {
+      "audit_source": {
+        "candidate_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+        "promotion_authorized": false,
+        "source_evidence_commit": "c680014cea70e4d1fb0fc07840f4ee09c557aa11"
+      },
+      "decision": {
+        "evidence": {
+          "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+          "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223"
+        },
+        "issue": "#108",
+        "status": "RETAIN_REFERENCE"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/SOURCE_RUN.json",
+          "sha256": "2d7c9de9a18d524af314712b0ffcc722c33d2d705e738fbe91f717ce00090e48"
+        },
+        "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "role": "hero_strategy",
+      "sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+      "source_path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json"
+    },
+    "model_a_postflop": {
+      "audit_source": {
+        "candidate_sha256": "cba96c01fc97eddc9039a590a2ba3e88982a8b8d8aa5f7b3b4e159214fcff3a9",
+        "production_effect": "NONE",
+        "selected_overlay_sha256": "3d97b488fcb7a2ef34c49161bc4047fe4a3afd13387dc7775044479f74d37080"
+      },
+      "decision": {
+        "evidence": {
+          "path": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json",
+          "sha256": "0dd27abc18919629ae56ee76c9f5939e857d002d12c72625c549fdab82595302"
+        },
+        "issue": "#102",
+        "status": "PROMOTE_STAGE_B_SCIENTIFICALLY"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json",
+          "sha256": "0dd27abc18919629ae56ee76c9f5939e857d002d12c72625c549fdab82595302"
+        },
+        "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "role": "model_a_postflop",
+      "sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
+      "source_path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json"
+    },
+    "model_a_preflop": {
+      "audit_source": {
+        "active_reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "candidate_sha256": "53cc87600c6748b5ae8e53b32c8b6770b2bd881e0f5e23be07fdf363ad4103ee",
+        "meaning": "active reference retained; rejected sizing-aware candidate is not a production component"
+      },
+      "decision": {
+        "evidence": {
+          "path": "analysis/model_a_preflop_sizing_validation.json",
+          "sha256": "081f02ce76a4b2429e920f847fe630f4acedd4382f0e65ebb6841b2d49fb476f"
+        },
+        "issue": "#339",
+        "status": "RETAIN_ACTIVE_REFERENCE"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "training/populations/registry.json",
+          "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+        },
+        "source_population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "role": "model_a_preflop",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "source_path": "training/models/preflop_population_model_v5.json"
+    },
+    "model_b": {
+      "audit_source": {
+        "active_model_b_changed": false,
+        "automatic_promotion": false
+      },
+      "decision": {
+        "evidence": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+          "sha256": "3df3d5d74caf1ca636d0b7124e4f6851240016e219373a979fad86500c0372f8"
+        },
+        "issue": "#340",
+        "status": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION"
+      },
+      "hash_kind": "file_sha256",
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "provenance": {
+        "evidence": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RUN_PROVENANCE.json",
+          "sha256": "38449bff8777bffc5e8ece5786f0c7eb3ad0651838b43e4c7718d4ff00be95b9"
+        },
+        "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "role": "model_b",
+      "sha256": "621fb4b198e797e73f55bfe4e42f60c70dfc9056376c134fac571f4c36284a1a",
+      "source_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json"
+    }
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "schema": "poker-scientific-component-evidence-set/v1",
+  "scientific_effect": "NONE_AUDIT_ONLY",
+  "source_policy": {
+    "admissible_status_fabricated": false,
+    "live_issue_state_is_evidence": false,
+    "persisted_artifacts_only": true,
+    "test_read_or_consumed": false
+  }
+}

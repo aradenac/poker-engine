@@ -1,0 +1,467 @@
+{
+  "assembly_status": "NOT_READY",
+  "invariants": {
+    "all_7_roles_resolved_to_explicit_state": true,
+    "legacy_mixed_sources_never_admitted": true,
+    "no_promotion_model_b_never_admitted": true,
+    "no_role_silently_relabelled": true,
+    "production_effect": "NONE",
+    "retain_reference_never_admitted": true,
+    "test_consumed": false
+  },
+  "issue": 350,
+  "parent_issue": 201,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "roles": [
+    {
+      "artifact": {
+        "actual_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "declared_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "hash_kind": "file_sha256",
+        "source_path": "training/models/preflop_population_model_v5.json",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "target-scoped Model A preflop artifact with an explicit persisted pack-admission decision; legacy v5 cannot be silently reused",
+        "next_tickets": [
+          "#352",
+          "#201"
+        ],
+        "reason_codes": [
+          "CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED"
+        ]
+      },
+      "lineage": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "reason_codes": [
+        "CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED"
+      ],
+      "registered_source_owners": [
+        {
+          "format": "MIXED_ZOOM_REGULAR",
+          "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+          "role": "model_a_preflop"
+        }
+      ],
+      "role": "model_a_preflop",
+      "scientific_decision": {
+        "evidence": {
+          "path": "analysis/model_a_preflop_sizing_validation.json",
+          "sha256": "081f02ce76a4b2429e920f847fe630f4acedd4382f0e65ebb6841b2d49fb476f"
+        },
+        "issue": "#339",
+        "status": "RETAIN_ACTIVE_REFERENCE"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "training/models/preflop_population_model_v5.json",
+          "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "training/populations/registry.json",
+          "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+        },
+        {
+          "context_only": true,
+          "issue": "#339",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "analysis/model_a_preflop_sizing_validation.json",
+          "sha256": "081f02ce76a4b2429e920f847fe630f4acedd4382f0e65ebb6841b2d49fb476f"
+        }
+      ],
+      "status": "INCOMPATIBLE"
+    },
+    {
+      "artifact": {
+        "actual_sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
+        "declared_sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
+        "hash_kind": "file_sha256",
+        "source_path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "explicit persisted ADMISSIBLE_FOR_PACK decision for the #102 target-scoped selected overlay plus final compatibility binding",
+        "next_tickets": [
+          "#201"
+        ],
+        "reason_codes": [
+          "SCIENTIFIC_DECISION_STATUS_UNRESOLVED"
+        ]
+      },
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "reason_codes": [
+        "SCIENTIFIC_DECISION_STATUS_UNRESOLVED"
+      ],
+      "registered_source_owners": [],
+      "role": "model_a_postflop",
+      "scientific_decision": {
+        "evidence": {
+          "path": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json",
+          "sha256": "0dd27abc18919629ae56ee76c9f5939e857d002d12c72625c549fdab82595302"
+        },
+        "issue": "#102",
+        "status": "PROMOTE_STAGE_B_SCIENTIFICALLY"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+          "sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json",
+          "sha256": "0dd27abc18919629ae56ee76c9f5939e857d002d12c72625c549fdab82595302"
+        },
+        {
+          "context_only": true,
+          "issue": "#102",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "training/runs/20260916_model_a_postflop_continuation_v1/RESULT.json",
+          "sha256": "0dd27abc18919629ae56ee76c9f5939e857d002d12c72625c549fdab82595302"
+        }
+      ],
+      "status": "UNRESOLVED"
+    },
+    {
+      "artifact": {
+        "actual_sha256": "621fb4b198e797e73f55bfe4e42f60c70dfc9056376c134fac571f4c36284a1a",
+        "declared_sha256": "621fb4b198e797e73f55bfe4e42f60c70dfc9056376c134fac571f4c36284a1a",
+        "hash_kind": "file_sha256",
+        "source_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "post-#314 real sensitivity and an explicit promotion/pack-admission decision; #340 NO_PROMOTION is insufficient",
+        "next_tickets": [
+          "#315",
+          "#201"
+        ],
+        "reason_codes": [
+          "SCIENTIFIC_DECISION_STATUS_UNRESOLVED"
+        ]
+      },
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "reason_codes": [
+        "SCIENTIFIC_DECISION_STATUS_UNRESOLVED"
+      ],
+      "registered_source_owners": [],
+      "role": "model_b",
+      "scientific_decision": {
+        "evidence": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+          "sha256": "3df3d5d74caf1ca636d0b7124e4f6851240016e219373a979fad86500c0372f8"
+        },
+        "issue": "#340",
+        "status": "VALIDATION_SUPPORTS_PRICE_AWARE_CANDIDATE__NO_PROMOTION"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json",
+          "sha256": "621fb4b198e797e73f55bfe4e42f60c70dfc9056376c134fac571f4c36284a1a"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RUN_PROVENANCE.json",
+          "sha256": "38449bff8777bffc5e8ece5786f0c7eb3ad0651838b43e4c7718d4ff00be95b9"
+        },
+        {
+          "context_only": true,
+          "issue": "#340",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+          "sha256": "3df3d5d74caf1ca636d0b7124e4f6851240016e219373a979fad86500c0372f8"
+        }
+      ],
+      "status": "UNRESOLVED"
+    },
+    {
+      "artifact": {
+        "actual_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+        "declared_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+        "hash_kind": "file_sha256",
+        "source_path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "new/final Hero strategy evidence that supersedes #108 RETAIN_REFERENCE and is explicitly admitted for the Zoom pack",
+        "next_tickets": [
+          "#196",
+          "#201"
+        ],
+        "reason_codes": [
+          "SCIENTIFIC_DECISION_RETAIN_REFERENCE"
+        ]
+      },
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "reason_codes": [
+        "SCIENTIFIC_DECISION_RETAIN_REFERENCE"
+      ],
+      "registered_source_owners": [],
+      "role": "hero_strategy",
+      "scientific_decision": {
+        "evidence": {
+          "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+          "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223"
+        },
+        "issue": "#108",
+        "status": "RETAIN_REFERENCE"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json",
+          "sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/SOURCE_RUN.json",
+          "sha256": "2d7c9de9a18d524af314712b0ffcc722c33d2d705e738fbe91f717ce00090e48"
+        },
+        {
+          "context_only": true,
+          "issue": "#108",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+          "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223"
+        }
+      ],
+      "status": "RETAIN_REFERENCE"
+    },
+    {
+      "artifact": {
+        "actual_sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+        "declared_sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4",
+        "hash_kind": "file_sha256",
+        "source_path": "user/releases/poker_range_equity_offline_multiway_v83.html",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "target-scoped engine or explicit persisted cross-population fallback authorization plus ADMISSIBLE_FOR_PACK decision",
+        "next_tickets": [
+          "#201"
+        ],
+        "reason_codes": [
+          "CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED"
+        ]
+      },
+      "lineage": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "reason_codes": [
+        "CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED"
+      ],
+      "registered_source_owners": [
+        {
+          "format": "MIXED_ZOOM_REGULAR",
+          "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+          "role": "engine"
+        },
+        {
+          "format": "MIXED_ZOOM_REGULAR",
+          "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+          "role": "hero_strategy"
+        }
+      ],
+      "role": "engine",
+      "scientific_decision": {
+        "evidence": {
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        "issue": "#201",
+        "status": "UNRESOLVED_NO_PACK_ADMISSION"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "user/releases/poker_range_equity_offline_multiway_v83.html",
+          "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "training/populations/registry.json",
+          "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+        },
+        {
+          "context_only": true,
+          "issue": "#201",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        }
+      ],
+      "status": "INCOMPATIBLE"
+    },
+    {
+      "artifact": {
+        "actual_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+        "declared_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+        "hash_kind": "file_sha256",
+        "source_path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "final target-scoped Hero range repository with explicit pack admission; #108-retained candidate cannot be promoted",
+        "next_tickets": [
+          "#196",
+          "#201"
+        ],
+        "reason_codes": [
+          "SCIENTIFIC_DECISION_RETAIN_REFERENCE"
+        ]
+      },
+      "lineage": {
+        "format": "ZOOM",
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+      },
+      "reason_codes": [
+        "SCIENTIFIC_DECISION_RETAIN_REFERENCE"
+      ],
+      "registered_source_owners": [],
+      "role": "hero_ranges",
+      "scientific_decision": {
+        "evidence": {
+          "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+          "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223"
+        },
+        "issue": "#108",
+        "status": "RETAIN_REFERENCE"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/HERO_RANGE_REPOSITORY_PFPC.json",
+          "sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/SOURCE_RUN.json",
+          "sha256": "2d7c9de9a18d524af314712b0ffcc722c33d2d705e738fbe91f717ce00090e48"
+        },
+        {
+          "context_only": true,
+          "issue": "#108",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "training/runs/20260919_population_pack_admission_real_audit/source_snapshots/issue_108_VALIDATION_SELECTION.json",
+          "sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223"
+        }
+      ],
+      "status": "RETAIN_REFERENCE"
+    },
+    {
+      "artifact": {
+        "actual_sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+        "declared_sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+        "hash_kind": "file_sha256",
+        "source_path": "site/RELEASE.json",
+        "verified": true
+      },
+      "blocker": {
+        "blocking": true,
+        "next_evidence": "target-scoped application release binding the admitted engine with an explicit pack-admission decision",
+        "next_tickets": [
+          "#201"
+        ],
+        "reason_codes": [
+          "CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED"
+        ]
+      },
+      "lineage": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
+      },
+      "reason_codes": [
+        "CROSS_POPULATION_FALLBACK_NOT_AUTHORIZED"
+      ],
+      "registered_source_owners": [],
+      "role": "application_release",
+      "scientific_decision": {
+        "evidence": {
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        "issue": "#201",
+        "status": "UNRESOLVED_NO_PACK_ADMISSION"
+      },
+      "source_refs": [
+        {
+          "hash_kind": "file_sha256",
+          "kind": "artifact",
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        {
+          "kind": "provenance_evidence",
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        },
+        {
+          "context_only": true,
+          "issue": "#201",
+          "kind": "decision_context"
+        },
+        {
+          "kind": "decision_evidence",
+          "path": "site/RELEASE.json",
+          "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d"
+        }
+      ],
+      "status": "INCOMPATIBLE"
+    }
+  ],
+  "roles_total": 7,
+  "schema": "poker-population-pack-admission-real-matrix/v1",
+  "summary": {
+    "ADMISSIBLE": 0,
+    "INCOMPATIBLE": 3,
+    "REJECTED": 0,
+    "RETAIN_REFERENCE": 2,
+    "UNRESOLVED": 2
+  }
+}

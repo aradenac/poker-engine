@@ -1,0 +1,130 @@
+{
+  "candidate_exposure_validity": {
+    "coverage": {
+      "model-b-public-reference-higher-aggression-v1": {
+        "hero_preflop_decisions": 5062,
+        "out_of_support_decision_rate": 0.8836428289213749,
+        "out_of_support_decisions": 4473,
+        "supported_decision_rate": 0.11635717107862505,
+        "supported_decisions": 589
+      },
+      "model-b-public-reference-lower-aggression-v1": {
+        "hero_preflop_decisions": 4966,
+        "out_of_support_decision_rate": 0.8791784132098268,
+        "out_of_support_decisions": 4366,
+        "supported_decision_rate": 0.12082158679017317,
+        "supported_decisions": 600
+      },
+      "model-b-public-reference-nominal-v1": {
+        "hero_preflop_decisions": 5010,
+        "out_of_support_decision_rate": 0.8812375249500998,
+        "out_of_support_decisions": 4415,
+        "supported_decision_rate": 0.1187624750499002,
+        "supported_decisions": 595
+      }
+    },
+    "rule": "EACH_COMPLETED_ENVIRONMENT_MUST_EXECUTE_AT_LEAST_ONE_CANDIDATE_DECISION",
+    "status": "PASS"
+  },
+  "candidate_id": "20260918_hero_preflop_unopened_5pos_pfpc_v1",
+  "contract_version": "2026-09-18.3",
+  "environment_gate_rule": "PASS_ALL_PREDECLARED_ENVIRONMENTS",
+  "environment_pass": {
+    "model-b-public-reference-higher-aggression-v1": false,
+    "model-b-public-reference-lower-aggression-v1": false,
+    "model-b-public-reference-nominal-v1": false
+  },
+  "environment_summaries": {
+    "model-b-public-reference-higher-aggression-v1": {
+      "ci95_bb_per_100": [
+        -43.14402093875699,
+        49.05219381351495
+      ],
+      "delta_bb_per_100": 2.409532501936317,
+      "out_of_support_decision_rate": 0.8836428289213749,
+      "supported_decision_rate": 0.11635717107862505
+    },
+    "model-b-public-reference-lower-aggression-v1": {
+      "ci95_bb_per_100": [
+        -21.54810173450355,
+        63.78516716930078
+      ],
+      "delta_bb_per_100": 20.34765429722461,
+      "out_of_support_decision_rate": 0.8791784132098268,
+      "supported_decision_rate": 0.12082158679017317
+    },
+    "model-b-public-reference-nominal-v1": {
+      "ci95_bb_per_100": [
+        -21.78015165287489,
+        70.39991188227141
+      ],
+      "delta_bb_per_100": 24.619411857616182,
+      "out_of_support_decision_rate": 0.8812375249500998,
+      "supported_decision_rate": 0.1187624750499002
+    }
+  },
+  "frozen_finalist": null,
+  "interpretation": "Reference retained; TEST remains unconsumed and active strategy pointers must remain unchanged.",
+  "interpretation_limits": [
+    "Performance is conditional on the shared CHECK/CALL/FOLD support closure whenever exact Model A is unavailable.",
+    "Support-closure frequency is reported and no nearest-context substitution is used.",
+    "TEST remains unconsumed unless every frozen environment passes the unchanged clustered CI gate."
+  ],
+  "outcome": "RETAIN_REFERENCE",
+  "phase": "VALIDATION",
+  "promotion_authorized": false,
+  "reference_support_closure": {
+    "model-b-public-reference-higher-aggression-v1": {
+      "candidate_reference_by_street": {
+        "flop": 172,
+        "preflop": 120,
+        "river": 227,
+        "turn": 210
+      },
+      "candidate_reference_rate": 0.06702215684471821,
+      "reference_by_street": {
+        "flop": 162,
+        "preflop": 112,
+        "river": 203,
+        "turn": 192
+      },
+      "reference_rate": 0.05930325325768992
+    },
+    "model-b-public-reference-lower-aggression-v1": {
+      "candidate_reference_by_street": {
+        "flop": 124,
+        "preflop": 73,
+        "river": 177,
+        "turn": 153
+      },
+      "candidate_reference_rate": 0.04783516383770536,
+      "reference_by_street": {
+        "flop": 119,
+        "preflop": 67,
+        "river": 161,
+        "turn": 140
+      },
+      "reference_rate": 0.04261090209117158
+    },
+    "model-b-public-reference-nominal-v1": {
+      "candidate_reference_by_street": {
+        "flop": 145,
+        "preflop": 94,
+        "river": 191,
+        "turn": 175
+      },
+      "candidate_reference_rate": 0.05527638190954774,
+      "reference_by_street": {
+        "flop": 137,
+        "preflop": 86,
+        "river": 172,
+        "turn": 161
+      },
+      "reference_rate": 0.048939353930111784
+    }
+  },
+  "schema": "poker-preflop-strategy-validation-selection/v2",
+  "test_authorized": false,
+  "test_consumed": false,
+  "test_used_for_selection": false
+}

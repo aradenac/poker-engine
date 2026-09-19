@@ -1,0 +1,36 @@
+{
+  "blocked_on": [],
+  "candidate_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1@admission-23d0538d56e51bc4",
+  "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION",
+  "components": {
+    "application_release": null,
+    "engine": null,
+    "hero_ranges": null,
+    "hero_strategy": null,
+    "model_a_postflop": null,
+    "model_a_preflop": null,
+    "model_b": null
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "publication_policy": {
+    "catalog_eligible": false,
+    "default": false,
+    "recommended": false,
+    "release_allowed": false
+  },
+  "required_roles": [
+    "model_a_preflop",
+    "model_a_postflop",
+    "model_b",
+    "hero_strategy",
+    "engine",
+    "hero_ranges",
+    "application_release"
+  ],
+  "resolver": {
+    "input_path": "training/runs/20260919_population_pack_admission_real_audit/EVIDENCE_SET.json",
+    "input_sha256": "23d0538d56e51bc4657ae5aeef96b4a6172a4cc0730d6d95e13c2fade3f50258",
+    "schema": "poker-scientific-component-admission/v1"
+  },
+  "schema": "poker-population-pack-candidate/v1"
+}
