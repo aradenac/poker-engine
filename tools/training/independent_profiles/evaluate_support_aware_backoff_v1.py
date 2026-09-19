@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TRAIN-fit / VALIDATION-only evaluation for issue #286.\n\nFinal validation trigger after workflow guard fix.\n"""
+"""TRAIN-fit / VALIDATION-only evaluation for issue #286.\n\nFinal validation trigger after current-main refresh.\n"""
 from __future__ import annotations
 
 import argparse
