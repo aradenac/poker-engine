@@ -55,9 +55,10 @@ class RealGridIntegrationTests(unittest.TestCase):
 
         def rollout(state, *, actor, seed, sample_index, candidate):
             del state, actor
-            calls.setdefault(sample_index, {})[candidate["id"]] = seed
+            alternative_id = candidate["alternative_id"]
+            calls.setdefault(sample_index, {})[alternative_id] = (seed, candidate["id"])
             noise = ((seed % 101) - 50) / 10000.0
-            bonus = 1.0 if candidate["id"] == "ISO@4BB" else 0.15
+            bonus = 1.0 if alternative_id == "ISO@4BB" else 0.15
             return {"ending_stack_bb": 100.0 + bonus + noise}
 
         result = evaluate_preflop_grid_paired(
@@ -79,6 +80,7 @@ class RealGridIntegrationTests(unittest.TestCase):
         self.assertFalse(result["test_consumed"])
         for per_sample in calls.values():
             self.assertEqual(per_sample["OVERLIMP@1BB"], per_sample["ISO@4BB"])
+            self.assertTrue(per_sample["ISO@4BB"][1].startswith("PAIRED_WORLD:"))
 
         bridged = bridge_integration_file(
             result, artifact_identity=self.identity(), plan_path=self.PLAN

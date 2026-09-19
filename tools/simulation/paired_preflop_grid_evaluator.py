@@ -181,13 +181,16 @@ def evaluate_preflop_grid_paired(
     def evaluator(world, candidate_id, payload):
         branch = NoLimitHoldemState.from_snapshot(payload["state_after"])
         try:
+            callback_candidate = dict(payload["candidate"])
+            callback_candidate["alternative_id"] = candidate_id
+            callback_candidate["id"] = f"PAIRED_WORLD:{decision_id}"
             result = dict(
                 rollout(
                     branch,
                     actor=actor,
                     seed=int(world["seed"]),
                     sample_index=int(world["sample_index"]),
-                    candidate=dict(payload["candidate"]),
+                    candidate=callback_candidate,
                 )
             )
         except UnsupportedAlternative:
