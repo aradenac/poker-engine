@@ -33,6 +33,8 @@ async def main() -> None:
                 })),
                 home:[...document.querySelectorAll('.product-home-actions > a,.product-home-actions > button')].map(x=>x.textContent.trim()),
                 packsInSettings:!!document.querySelector('#settingsSection a[href="./packs.html"]'),
+                advancedImportInSettings:document.querySelector('#advancedManualImportLink')?.getAttribute('href')||'',
+                legacyImportsHidden:!!document.querySelector('#rangesSection[hidden][data-legacy-import-surface="advanced-only"]'),
                 replayerPresent:!!document.querySelector('#replayerSection'),
                 equityComponents:['opponentsSection','cardsSection','rangeDisplaySection','equitySection'].every(id=>!!document.getElementById(id))
             })"""
@@ -42,7 +44,97 @@ async def main() -> None:
         assert product_architecture["nav"][2]["href"] == "./hero-ranges.html", product_architecture
         assert product_architecture["home"] == ["Review", "Training", "Strategy", "Equity Lab"], product_architecture
         assert product_architecture["packsInSettings"], product_architecture
+        assert product_architecture["advancedImportInSettings"] == "./manual-import.html", product_architecture
+        assert product_architecture["legacyImportsHidden"], product_architecture
         assert product_architecture["replayerPresent"] and product_architecture["equityComponents"], product_architecture
+
+        # #217 CENTRAL-UI consumes the merged advanced-import contract without duplicating it.
+        advanced_import_ui = await page.evaluate(
+            """async () => {
+                const API=window.PokerManualOverrides;
+                const clean=await API.inspect();
+                await refreshCentralManualOverrideState(clean);
+                const standard={
+                    cleanSchema:clean?.schema,
+                    active:clean?.active,
+                    status:clean?.configuration_status,
+                    restore:clean?.restore_action,
+                    noticeHidden:centralOverrideNotice.hidden
+                };
+                const active={
+                    schema:"poker-manual-override/v1",
+                    active:true,
+                    classification:"MANUAL_OVERRIDE",
+                    configuration_status:"NON_STANDARD",
+                    compatibility_status:"COMPATIBLE",
+                    roles_overridden:["model_a_preflop","model_a_postflop"],
+                    base_active_pack:{
+                        id:"smoke-pack-id",source:"ACTIVE_PACK",pack_id:"smoke-pack",
+                        pack_version:"2026.09.19.1",population_id:"smoke-pop",
+                        runtime_revision:"smoke-revision",engine_version:"v83"
+                    },
+                    restore_action:"RESTORE_ACTIVE_PACK"
+                };
+                await refreshCentralManualOverrideState(active);
+                const shown={
+                    hidden:centralOverrideNotice.hidden,
+                    badge:centralOverrideBadge.textContent,
+                    text:centralOverrideText.textContent,
+                    href:centralManualImportLink.getAttribute("href"),
+                    restoreDisabled:centralRestorePackBtn.disabled,
+                    loadAllowed:centralManualOverrideLoadAllowed(active)
+                };
+                const stale={...active,compatibility_status:"STALE_BASE_PACK"};
+                await refreshCentralManualOverrideState(stale);
+                const staleState={
+                    hidden:centralOverrideNotice.hidden,
+                    text:centralOverrideText.textContent,
+                    loadAllowed:centralManualOverrideLoadAllowed(stale)
+                };
+
+                const originalInspect=API.inspect,originalRestore=API.restoreActivePack;
+                let restoreCalls=0,current=active;
+                try{
+                    API.inspect=async()=>current;
+                    API.restoreActivePack=async()=>{
+                        restoreCalls++;
+                        current={...clean,active:false,classification:null,configuration_status:"STANDARD",compatibility_status:"COMPATIBLE",restore_action:"RESTORE_ACTIVE_PACK"};
+                        return current;
+                    };
+                    await refreshCentralManualOverrideState(active);
+                    const restored=await centralRestoreActivePack({reload:false});
+                    return {
+                        api:{schema:API.CONTRACT_SCHEMA,restoreAction:API.RESTORE_ACTION},
+                        standard,shown,staleState,
+                        restore:{
+                            calls:restoreCalls,active:restored.active,
+                            noticeHidden:centralOverrideNotice.hidden,
+                            status:centralOverrideStatus.textContent
+                        }
+                    };
+                } finally {
+                    API.inspect=originalInspect;
+                    API.restoreActivePack=originalRestore;
+                    await refreshCentralManualOverrideState(clean);
+                }
+            }"""
+        )
+        assert advanced_import_ui["api"] == {
+            "schema":"poker-manual-override/v1",
+            "restoreAction":"RESTORE_ACTIVE_PACK",
+        }, advanced_import_ui
+        assert advanced_import_ui["standard"]["cleanSchema"] == "poker-manual-override/v1", advanced_import_ui
+        assert advanced_import_ui["standard"]["active"] is False and advanced_import_ui["standard"]["status"] == "STANDARD", advanced_import_ui
+        assert advanced_import_ui["standard"]["restore"] == "RESTORE_ACTIVE_PACK" and advanced_import_ui["standard"]["noticeHidden"], advanced_import_ui
+        assert advanced_import_ui["shown"]["hidden"] is False, advanced_import_ui
+        assert advanced_import_ui["shown"]["badge"] == "MANUAL_OVERRIDE / NON_STANDARD", advanced_import_ui
+        assert "model_a_preflop" in advanced_import_ui["shown"]["text"] and "smoke-pack" in advanced_import_ui["shown"]["text"], advanced_import_ui
+        assert advanced_import_ui["shown"]["href"] == "./manual-import.html" and not advanced_import_ui["shown"]["restoreDisabled"], advanced_import_ui
+        assert advanced_import_ui["shown"]["loadAllowed"] is True, advanced_import_ui
+        assert advanced_import_ui["staleState"]["hidden"] is False and advanced_import_ui["staleState"]["loadAllowed"] is False, advanced_import_ui
+        assert "non appliqué au runtime" in advanced_import_ui["staleState"]["text"], advanced_import_ui
+        assert advanced_import_ui["restore"]["calls"] == 1 and advanced_import_ui["restore"]["active"] is False, advanced_import_ui
+        assert advanced_import_ui["restore"]["noticeHidden"] is True and "Pack actif restauré" in advanced_import_ui["restore"]["status"], advanced_import_ui
 
         # Review Inbox consumes the merged backend contract and exposes fail-closed deep-link resolution.
         review_inbox_ui = await page.evaluate(
