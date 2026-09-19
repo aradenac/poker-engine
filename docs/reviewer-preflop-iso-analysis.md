@@ -67,6 +67,12 @@ Après avoir été payé par trois joueurs, je veux que le Reviewer puisse m'aid
 - Le pot à quatre joueurs était-il malgré tout le résultat le plus rentable compte tenu de leurs tendances ?
 - Quelle part du résultat vient de mon action, de mon sizing ou simplement des réactions adverses observées ?
 
+### 5. Avoir des commentaires adaptés à l'acteur
+
+Sous une action **Hero**, si le spot n'est pas encore couvert, je veux que le Reviewer me le dise clairement : par exemple **« Aucune recommandation EV validée pour ce contexte »**. Je ne veux pas qu'un message ambigu me laisse penser que toutes les alternatives ont été calculées si ce n'est pas le cas.
+
+Sous une action **adverse**, je ne veux pas voir un commentaire du type **« Aucune alternative EV validée »**, car je ne cherche pas à optimiser la décision de l'adversaire comme celle de Hero. Je veux plutôt voir ce que son action apprend sur sa range, ou un message clair indiquant que cette analyse n'est pas disponible.
+
 ## Présentation souhaitée
 
 Au niveau de ma décision, je veux retrouver rapidement :
