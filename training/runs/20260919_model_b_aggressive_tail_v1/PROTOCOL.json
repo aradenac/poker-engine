@@ -1,0 +1,95 @@
+{
+  "schema": "model-b-aggressive-tail-protocol/v1",
+  "issue": 298,
+  "version": "2026-09-19.1",
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "source_issue_197_run": "training/runs/20260919_model_b_response_to_price_v1",
+  "source_issue_286_run": "training/runs/20260919_model_b_support_aware_backoff_v1",
+  "source_issue_286_candidate_artifact_sha256": "0dbda0dbd19325538141ba192343b5da2ba74ec00c5079f42dceda25c1a77594",
+  "split_contract": {
+    "fit": [
+      "TRAIN"
+    ],
+    "freeze_before": [
+      "VALIDATION"
+    ],
+    "evaluate": [
+      "VALIDATION"
+    ],
+    "forbidden": [
+      "TEST"
+    ],
+    "test_consumed": false
+  },
+  "context_dimensions": [
+    "profile",
+    "street",
+    "relative_position",
+    "pot_type",
+    "sequence",
+    "price_bucket",
+    "spr_bucket"
+  ],
+  "representation": {
+    "action_distribution": "DELEGATE_UNCHANGED_TO_ISSUE_286",
+    "sizing_distribution": "DELEGATE_UNCHANGED_TO_ISSUE_286",
+    "tail_component": "CONDITIONAL_ON_RAISE_MULTINOMIAL",
+    "mutually_exclusive_classes": [
+      "JAM_OVERBET",
+      "JAM_NONOVERBET",
+      "LARGE_OVERBET_NONJAM",
+      "OVERBET_NONJAM",
+      "OTHER_RAISE"
+    ],
+    "class_definitions": {
+      "JAM_OVERBET": "observed RAISE with HH all-in flag and raise_sizing_ratio > 1.0",
+      "JAM_NONOVERBET": "observed RAISE with HH all-in flag and raise_sizing_ratio <= 1.0",
+      "LARGE_OVERBET_NONJAM": "non-jam observed RAISE with raise_sizing_ratio > 1.5",
+      "OVERBET_NONJAM": "non-jam observed RAISE with 1.0 < raise_sizing_ratio <= 1.5",
+      "OTHER_RAISE": "non-jam observed RAISE with raise_sizing_ratio <= 1.0"
+    },
+    "derived_probabilities": {
+      "jam": "P(JAM_OVERBET)+P(JAM_NONOVERBET)",
+      "overbet": "P(JAM_OVERBET)+P(LARGE_OVERBET_NONJAM)+P(OVERBET_NONJAM)",
+      "aggressive_tail": "1 when facing_price_to_pot > 1.5, otherwise P(JAM_OVERBET)+P(JAM_NONOVERBET)+P(LARGE_OVERBET_NONJAM)"
+    }
+  },
+  "method": {
+    "kind": "SUPPORT_AWARE_EXPLICIT_TAIL_COMPONENT",
+    "tail_min_raises": 12,
+    "tail_min_distinct_hands": 8,
+    "alpha_per_tail_class": 0.5,
+    "alpha_rationale": "Symmetric Jeffreys-style weak multinomial prior fixed before VALIDATION; not tuned on VALIDATION",
+    "threshold_source": "Inherited from frozen #286 sizing-support contract; not tuned on VALIDATION",
+    "nearest_context_heuristic": false,
+    "silent_pooling": false
+  },
+  "descriptive_gate": {
+    "global_action_guard": "support-aware candidate action probabilities must equal #286 on every VALIDATION row",
+    "sizing_guard": "conditional raise sizing metrics must equal #286 because #298 does not alter sizing distribution",
+    "tail_score": "mean absolute calibration error across JAM, OVERBET and aggressive-tail frequencies",
+    "tail_improvement_rule": "paired cluster bootstrap by hand_id: upper CI95 of (#298 minus #286 tail-score error) < 0",
+    "categories": [
+      "TAIL_IMPROVEMENT_WITHOUT_GLOBAL_DEGRADATION",
+      "GLOBAL_TAIL_TRADEOFF",
+      "NO_GAIN",
+      "INSUFFICIENT_SUPPORT"
+    ],
+    "automatic_activation": false
+  },
+  "uncertainty": {
+    "cluster_unit": "hand_id",
+    "bootstrap_samples": 1000,
+    "seed": 20260919
+  },
+  "scientific_constraints": {
+    "hyperparameters_selected_on_validation": false,
+    "model_a_features_allowed": false,
+    "hero_or_ev_features_allowed": false,
+    "automatic_promotion": false,
+    "active_model_b_change_allowed": false,
+    "production_effect": "NONE",
+    "issue_108_files_modified": false
+  }
+}
