@@ -1,0 +1,67 @@
+{
+  "schema": "poker-model-a-preflop-sizing-v2-fit-protocol/v1",
+  "issue": 352,
+  "parent_issue": 314,
+  "status": "FROZEN_TRAIN_ONLY_BEFORE_FIT_EXECUTION",
+  "population": {
+    "id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "source_support_report": "analysis/preflop_sizing_support_train.full.json.gz",
+    "source_support_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+  },
+  "candidate": {
+    "id": "model-a-preflop-sizing-aware-candidate-v2",
+    "marginal_estimator": "IDENTICAL_TO_ISSUE_339_JEFFREYS_DIRICHLET_ALPHA_0.5",
+    "minimum_marginal_observations": 20,
+    "exact_price_only": true,
+    "nearest_price_fallback": false,
+    "hand_class": {
+      "source": "ACTUALLY_REVEALED_CERTIFIED_TRAIN_ROWS_ONLY",
+      "minimum_revealed_observations_for_node": 1,
+      "bias": "MNAR_REVEAL_SELECTED_NO_HIDDEN_HAND_IMPUTATION",
+      "estimator": "DIRICHLET_EMPIRICAL_BAYES_TO_EXACT_PRICE_MARGINAL",
+      "prior_strength_grid": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128,
+        256
+      ],
+      "selection_objective": "MAXIMIZE_SUM_DIRICHLET_MULTINOMIAL_LOG_MARGINAL_LIKELIHOOD",
+      "selection_scope": "all revealed hand-class cells with n>=1 whose exact-price marginal has TRAIN support>=20",
+      "tie_break": "SMALLEST_PRIOR_STRENGTH",
+      "fixed_after_train_selection": true
+    }
+  },
+  "backoff": [
+    "EXACT_HAND_CLASS_EXACT_PRICE",
+    "MARGINAL_EXACT_PRICE",
+    "UNRESOLVED"
+  ],
+  "posterior": {
+    "contract": "poker-opponent-posterior-range/v1",
+    "fixture": "kts_sb_two_limp_iso4_three_calls_v1",
+    "exact_prices_bb": [
+      4,
+      5,
+      6
+    ],
+    "missing_exact_support": "UNSUPPORTED",
+    "public_only": true
+  },
+  "forbidden": [
+    "VALIDATION_DURING_HYPERPARAMETER_SELECTION",
+    "TEST",
+    "NEAREST_PRICE",
+    "HIDDEN_HAND_IMPUTATION",
+    "MODEL_B",
+    "HERO_EV",
+    "UI",
+    "ACTIVE_MODEL_POINTER_MUTATION",
+    "AUTOMATIC_PROMOTION",
+    "#314_REAL_OPTIMIZATION"
+  ]
+}

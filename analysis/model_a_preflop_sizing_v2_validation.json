@@ -1,0 +1,181 @@
+{
+  "active_model_replaced": false,
+  "automatic_promotion": false,
+  "coverage": {
+    "exact_price_rows_scored": 9854,
+    "hand_conditioned_rows_scored": 976,
+    "minimum_train_revealed_support_for_hand_gate": 5,
+    "unresolved_no_exact_supported_price_cell": 1636,
+    "validation_population_rows_in_scope": 11490
+  },
+  "evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+  "gate": {
+    "global_v2_vs_active_and_339_parity": true,
+    "hand_support_minimum_met": true,
+    "hand_v2_adds_information_vs_exact_price_marginal": true,
+    "hand_v2_vs_339": true,
+    "hand_v2_vs_active": true
+  },
+  "hero_ev_consumed": false,
+  "inputs": {
+    "active_reference": {
+      "id": "active-model-a-preflop-v5",
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "candidate_339": {
+      "candidate_id": "model-a-preflop-sizing-aware-candidate-v1",
+      "candidate_sha256": "53cc87600c6748b5ae8e53b32c8b6770b2bd881e0f5e23be07fdf363ad4103ee",
+      "persisted_validation": "analysis/model_a_preflop_sizing_validation.json",
+      "role": "DESCRIPTIVE_REJECTED_PREDECESSOR_ONLY"
+    },
+    "candidate_v2": {
+      "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "selected_prior_strength": 1
+    },
+    "support_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "validation": {
+      "archives": [
+        {
+          "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+          "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+          "unique_hands": 27164
+        },
+        {
+          "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+          "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+          "unique_hands": 11896
+        }
+      ],
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands": 2324,
+      "hands_parsed": 2324,
+      "population_preflop_rows_in_scope": 11490,
+      "split": "VALIDATION"
+    }
+  },
+  "issue": 352,
+  "issue_314_real_optimization": false,
+  "metrics": {
+    "global_exact_price": {
+      "hands": 2323,
+      "model_logloss": {
+        "active_v5": 0.926353895358785,
+        "candidate_339": 0.9020224565434855,
+        "candidate_v2": 0.9020224565434855
+      },
+      "pairwise": {
+        "v2_minus_339": {
+          "delta_logloss": 0,
+          "left": "candidate_v2",
+          "paired_bootstrap": {
+            "ci95": [
+              0,
+              0
+            ],
+            "hands": 2323,
+            "mean": 0,
+            "probability_candidate_better": 0,
+            "samples": 5000,
+            "seed": 20262920
+          },
+          "right": "candidate_339"
+        },
+        "v2_minus_active": {
+          "delta_logloss": -0.024331438815299533,
+          "left": "candidate_v2",
+          "paired_bootstrap": {
+            "ci95": [
+              -0.02934022911349696,
+              -0.019358763206221794
+            ],
+            "hands": 2323,
+            "mean": -0.02433143881536371,
+            "probability_candidate_better": 1,
+            "samples": 5000,
+            "seed": 20262919
+          },
+          "right": "active_v5"
+        }
+      },
+      "rows": 9854
+    },
+    "hand_conditioned": {
+      "hands": 781,
+      "model_logloss": {
+        "active_v5": 0.8747808756826249,
+        "candidate_339": 1.3754163078545882,
+        "candidate_v2": 0.6991242316549349,
+        "v2_exact_price_marginal": 1.396003314722046
+      },
+      "pairwise": {
+        "v2_minus_339": {
+          "delta_logloss": -0.6762920761996534,
+          "left": "candidate_v2",
+          "paired_bootstrap": {
+            "ci95": [
+              -0.718223307265647,
+              -0.6327578700706323
+            ],
+            "hands": 781,
+            "mean": -0.6762920761996486,
+            "probability_candidate_better": 1,
+            "samples": 5000,
+            "seed": 20263920
+          },
+          "right": "candidate_339"
+        },
+        "v2_minus_active": {
+          "delta_logloss": -0.17565664402769,
+          "left": "candidate_v2",
+          "paired_bootstrap": {
+            "ci95": [
+              -0.2189625513972646,
+              -0.12951558508797167
+            ],
+            "hands": 781,
+            "mean": -0.1756566440276918,
+            "probability_candidate_better": 1,
+            "samples": 5000,
+            "seed": 20263919
+          },
+          "right": "active_v5"
+        },
+        "v2_minus_exact_price_marginal": {
+          "delta_logloss": -0.6968790830671112,
+          "left": "candidate_v2",
+          "paired_bootstrap": {
+            "ci95": [
+              -0.7388690164032075,
+              -0.6544546571675721
+            ],
+            "hands": 781,
+            "mean": -0.6968790830671059,
+            "probability_candidate_better": 1,
+            "samples": 5000,
+            "seed": 20263921
+          },
+          "right": "v2_exact_price_marginal"
+        }
+      },
+      "rows": 976
+    }
+  },
+  "model_b_consumed": false,
+  "outcome": "ADMIT_CANDIDATE",
+  "parent_issue": 314,
+  "phase": "VALIDATION",
+  "production_effect": "NONE",
+  "protocol": {
+    "path": "analysis/model_a_preflop_sizing_v2_validation_protocol.json",
+    "sha256": "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2",
+    "status": "FROZEN_BEFORE_VALIDATION"
+  },
+  "reason": "all frozen global and hand-conditioned predictive gates passed",
+  "schema": "poker-model-a-preflop-sizing-v2-validation/v1",
+  "selection_split": "VALIDATION",
+  "test_authorized": false,
+  "test_consumed": false,
+  "ui_modified": false
+}

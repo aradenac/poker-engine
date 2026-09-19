@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import inspect
 import json
 import math
@@ -424,6 +425,108 @@ def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_with
     assert validation["hero_ev_consumed"] is False
     assert validation["ui_modified"] is False
     print("ISSUE339_RESULT=" + json.dumps({"fit": fit, "validation": validation}, sort_keys=True, separators=(",", ":")))
+
+
+def test_ac_issue352_persisted_train_fit_is_frozen_without_refit():
+    fit = json.loads(
+        (ROOT / "analysis/model_a_preflop_sizing_v2_fit.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert fit["schema"] == "poker-model-a-preflop-sizing-v2-fit-evidence/v1"
+    assert fit["issue"] == 352
+    assert fit["split_consumed"] == "TRAIN"
+    assert fit["validation_consumed"] is False
+    assert fit["test_consumed"] is False
+    assert fit["candidate_sha256"] == (
+        "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
+    )
+    assert fit["evidence_sha256"] == (
+        "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738"
+    )
+    assert fit["candidate_identity"]["candidate_id"] == (
+        "model-a-preflop-sizing-aware-candidate-v2"
+    )
+    assert fit["candidate_identity"]["active_model_replaced"] is False
+    assert fit["nodes"] == {
+        "by_support_band": {
+            "IDENTIFIABLE_REVEAL_SHRUNK": 4,
+            "LOW_REVEAL_SHRUNK": 752,
+            "MEDIUM_REVEAL_SHRUNK": 76,
+            "SPARSE_REVEAL_SHRUNK": 3545,
+        },
+        "marginal_exact_price": 282,
+        "revealed_hand_class_shrunk": 4377,
+        "total": 4659,
+    }
+    shrinkage = fit["shrinkage"]
+    assert shrinkage["selected_prior_strength"] == 1
+    assert shrinkage["nearest_price_fallback"] is False
+    assert shrinkage["hidden_hands_imputed"] is False
+    assert shrinkage["selection_scope"] == "CERTIFIED_TRAIN_REVEALED_ROWS_ONLY"
+    assert shrinkage["validation_consumed"] is False
+    assert shrinkage["test_consumed"] is False
+
+    posterior = {
+        int(row["target_total_bb"]): row
+        for row in fit["posterior_321"]["prices"]
+    }
+    assert set(posterior) == {4, 5, 6}
+    assert posterior[4]["after_status"] == "UNSUPPORTED"
+    assert posterior[5]["after_status"] == "AVAILABLE"
+    assert posterior[6]["after_status"] == "UNSUPPORTED"
+    assert all(not row["contract_errors"] for row in posterior.values())
+
+
+def test_ad_issue352_persisted_admission_is_hash_bound_without_validation_rerun():
+    protocol_path = ROOT / "analysis/model_a_preflop_sizing_v2_validation_protocol.json"
+    validation = json.loads(
+        (ROOT / "analysis/model_a_preflop_sizing_v2_validation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    actual_protocol_sha = hashlib.sha256(protocol_path.read_bytes()).hexdigest()
+
+    assert validation["schema"] == "poker-model-a-preflop-sizing-v2-validation/v1"
+    assert validation["issue"] == 352
+    assert validation["outcome"] == "ADMIT_CANDIDATE"
+    assert validation["evidence_sha256"] == (
+        "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
+    )
+    assert validation["protocol"]["sha256"] == (
+        "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2"
+    )
+    assert actual_protocol_sha == validation["protocol"]["sha256"]
+    assert protocol["status"] == "FROZEN_BEFORE_VALIDATION"
+    assert protocol["frozen_train_fit"]["candidate_sha256"] == (
+        "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
+    )
+    assert protocol["frozen_train_fit"]["fit_evidence_sha256"] == (
+        "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738"
+    )
+    refresh = protocol["mechanical_repro_refresh"]
+    assert refresh["original_freeze_commit"] == (
+        "628ec0d2a1e5ba9605a929610498ac090830251b"
+    )
+    assert refresh["scientific_rules_changed"] is False
+    assert refresh["evaluation_thresholds_changed"] is False
+    assert refresh["bootstrap_seeds_changed"] is False
+
+    assert all(validation["gate"].values())
+    assert validation["selection_split"] == "VALIDATION"
+    assert validation["test_consumed"] is False
+    assert validation["test_authorized"] is False
+    assert validation["active_model_replaced"] is False
+    assert validation["automatic_promotion"] is False
+    assert validation["model_b_consumed"] is False
+    assert validation["hero_ev_consumed"] is False
+    assert validation["ui_modified"] is False
+    assert validation["issue_314_real_optimization"] is False
+    assert validation["production_effect"] == "NONE"
+    assert validation["inputs"]["candidate_v2"]["candidate_sha256"] == (
+        "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
+    )
 
 
 def test_canonical_321_model_a_b_public_context_parity():

@@ -1,0 +1,115 @@
+{
+  "schema": "poker-model-a-preflop-sizing-v2-validation-protocol/v1",
+  "issue": 352,
+  "parent_issue": 314,
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "frozen_at": "2026-09-19",
+  "population": {
+    "id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "certification": "training/datasets/NLHE_100-200/population_certification.json",
+    "split": "VALIDATION",
+    "test_consumed": false,
+    "test_authorized": false
+  },
+  "frozen_train_fit": {
+    "path": "analysis/model_a_preflop_sizing_v2_fit.json",
+    "fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+    "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "selected_prior_strength": 1,
+    "selection_scope": "CERTIFIED_TRAIN_REVEALED_ROWS_ONLY",
+    "hand_class_nodes": 4377,
+    "exact_price_marginal_nodes": 282,
+    "validation_consumed": false,
+    "test_consumed": false
+  },
+  "comparators": {
+    "active_reference": {
+      "id": "active-model-a-preflop-v5",
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "role": "ACTIVE_REFERENCE"
+    },
+    "rejected_candidate_339": {
+      "id": "model-a-preflop-sizing-aware-candidate-v1",
+      "candidate_sha256": "53cc87600c6748b5ae8e53b32c8b6770b2bd881e0f5e23be07fdf363ad4103ee",
+      "fit": "analysis/model_a_preflop_sizing_fit.json",
+      "validation": "analysis/model_a_preflop_sizing_validation.json",
+      "role": "DESCRIPTIVE_REJECTED_PREDECESSOR_ONLY"
+    }
+  },
+  "evaluation": {
+    "split": "VALIDATION",
+    "test_consumed": false,
+    "test_authorized": false,
+    "global_exact_price": {
+      "scope": "non-Hero preflop population decisions in #319 focus families, excluding CHECK, where v2 and #339 exact-price marginal nodes both exist",
+      "metric": "multiclass_action_log_loss",
+      "paired_unit": "hand_id",
+      "bootstrap_samples": 5000,
+      "bootstrap_seed": 20262919,
+      "admission": [
+        "v2-minus-active paired 95% CI upper bound <= 0",
+        "absolute global log-loss delta v2-vs-#339 <= 1e-12 because their exact-price marginals are intentionally identical"
+      ],
+      "maximum_abs_delta_vs_339": 1e-12
+    },
+    "hand_conditioned": {
+      "scope": "same exact-price validation universe with known_hand_class and v2 TRAIN revealed support >=5; #339 uses its class node when present otherwise its same-price marginal",
+      "minimum_train_revealed_support": 5,
+      "minimum_validation_rows": 100,
+      "minimum_validation_hands": 50,
+      "metric": "multiclass_action_log_loss",
+      "paired_unit": "hand_id",
+      "bootstrap_samples": 5000,
+      "bootstrap_seed": 20263919,
+      "admission": [
+        "v2-minus-active paired 95% CI upper bound <= 0",
+        "v2-minus-#339 paired 95% CI upper bound <= 0",
+        "v2-minus-v2-exact-price-marginal paired 95% CI upper bound <= 0"
+      ],
+      "rationale": "hand-conditioned likelihood must add predictive information rather than merely differ from the marginal; sparse n<5 cells remain shrinkage-enabled runtime nodes but are excluded from the identifiable validation gate",
+      "reveal_bias": "MNAR_DIAGNOSTIC_REQUIRED"
+    },
+    "outcome_rule": "ADMIT_CANDIDATE only when all frozen global and hand-conditioned gates pass; otherwise RETAIN_ACTIVE_REFERENCE"
+  },
+  "posterior_acceptance": {
+    "contract": "poker-opponent-posterior-range/v1",
+    "fixture": "kts_sb_two_limp_iso4_three_calls_v1",
+    "exact_prices_bb": [
+      4,
+      5,
+      6
+    ],
+    "public_only": true,
+    "nearest_price": false,
+    "requirement": "4/5/6 remain distinct exact-price contexts; unsupported exact price fails closed"
+  },
+  "publication": {
+    "automatic_promotion": "FORBIDDEN",
+    "active_reference_mutation": "FORBIDDEN",
+    "production_effect": "NONE",
+    "downstream": "#314 may consume only an ADMIT_CANDIDATE decision; rejected candidate leaves active v5 unchanged"
+  },
+  "forbidden": [
+    "TEST",
+    "HERO_EV",
+    "#314_REAL_OPTIMIZATION",
+    "MODEL_B",
+    "UI",
+    "NEAREST_PRICE",
+    "ACTIVE_POINTER_MUTATION",
+    "AUTOMATIC_PROMOTION"
+  ],
+  "mechanical_repro_refresh": {
+    "original_freeze_commit": "628ec0d2a1e5ba9605a929610498ac090830251b",
+    "original_fit_evidence_sha256": "b7f4fba15f18a8d5f2cbf1b3a5262d8f2d5a342105374899e5023b573a7c0151",
+    "refreshed_fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+    "candidate_sha256_unchanged": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "selected_prior_strength_unchanged": 1,
+    "scientific_rules_changed": false,
+    "evaluation_thresholds_changed": false,
+    "bootstrap_seeds_changed": false,
+    "reason": "Canonicalized descriptive floating-point evidence after main advanced; candidate probabilities/hash and TRAIN-selected hyperparameter are unchanged."
+  }
+}

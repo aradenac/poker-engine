@@ -32,7 +32,10 @@
       ],
       "properties": {
         "candidate_id": {
-          "const": "model-a-preflop-sizing-aware-candidate-v1"
+          "enum": [
+            "model-a-preflop-sizing-aware-candidate-v1",
+            "model-a-preflop-sizing-aware-candidate-v2"
+          ]
         },
         "model_family": {
           "const": "MODEL_A_PREFLOP"
@@ -288,6 +291,48 @@
         },
         "fit_method": {
           "type": "string"
+        },
+        "shrinkage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "prior_strength",
+            "data_weight",
+            "prior_weight",
+            "selection_scope",
+            "selection_rule"
+          ],
+          "properties": {
+            "method": {
+              "const": "DIRICHLET_EMPIRICAL_BAYES_TO_EXACT_PRICE_MARGINAL"
+            },
+            "prior_strength": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "data_weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "prior_weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "selection_scope": {
+              "const": "CERTIFIED_TRAIN_REVEALED_ROWS_ONLY"
+            },
+            "selection_rule": {
+              "type": "string",
+              "minLength": 1
+            },
+            "train_revealed_observations": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
         }
       }
     }
