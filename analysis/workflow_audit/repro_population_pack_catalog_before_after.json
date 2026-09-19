@@ -1,0 +1,395 @@
+{
+  "schema": "poker-repro-population-pack-catalog-migration/v1",
+  "issue": 371,
+  "parent_issue": 204,
+  "helper_source_issue": 291,
+  "repro_guard_source_issue": 347,
+  "base_sha": "1ef356e59458e01ce5c8864e6542237e01fd4645",
+  "workflow": ".github/workflows/population-pack-catalog.yml",
+  "before_git_blob_sha": "2bf55cd7f443509607e45543725bb7e5b5c26d53",
+  "after_git_blob_sha": "56f15bc0b1cef5ec856d8761addf392f1f00a9c3",
+  "coordination": {
+    "reserved_n8n_issue": 372,
+    "reserved_n8n_branch": "n8n/issue-372-population-pack-repro",
+    "reserved_n8n_branch_present_at_claim": false,
+    "overlapping_open_pr_present_at_claim": false,
+    "n8n_scope_modified": false
+  },
+  "invariants": {
+    "job_ids_changed": false,
+    "needs_changed": false,
+    "historical_trigger_semantics_changed": false,
+    "concurrency_changed": false,
+    "permissions_changed": false,
+    "product_commands_changed": false,
+    "release_assertions_changed": false,
+    "browser_smoke_semantics_changed": false,
+    "scientific_gate_changed": false,
+    "pack_logic_changed": false,
+    "scientific_test_consumed": false,
+    "publication_or_promotion_effect": "NONE"
+  },
+  "before": {
+    "jobs": [
+      {
+        "id": "contract",
+        "runner": "ubuntu-latest",
+        "needs": []
+      },
+      {
+        "id": "browser-smoke",
+        "runner": "ubuntu-latest",
+        "needs": [
+          "contract"
+        ]
+      }
+    ],
+    "triggers": {
+      "pull_request": {
+        "paths": [
+          "site/packs.html",
+          "site/packs.css",
+          "site/packs-app.js",
+          "site/population-packs.js",
+          "site/population-pack-sw.js",
+          "site/assets/trainer/**",
+          "tools/write_pack_catalog.py",
+          "tools/write_site_release.py",
+          "tools/patches/apply_pack_manager_link.py",
+          "tests/packs/**",
+          "user/packs/**",
+          "wrangler.jsonc",
+          ".github/workflows/population-pack-catalog.yml"
+        ]
+      },
+      "workflow_dispatch": {}
+    },
+    "permissions": {
+      "contents": "read"
+    },
+    "concurrency": {
+      "group": "population-pack-catalog-${{ github.ref }}",
+      "cancel_in_progress": true
+    },
+    "runtime": {
+      "contract": {
+        "python": "3.11",
+        "python_source": "inline_minor",
+        "node": "runner-implicit",
+        "node_source": "runner"
+      },
+      "browser-smoke": {
+        "python": "3.11",
+        "python_source": "inline_minor",
+        "node": "not-used",
+        "node_source": null
+      }
+    },
+    "direct_pip_playwright_installs": 1,
+    "direct_playwright_browser_installs": 1,
+    "repro_environment_helper_calls": 0,
+    "repro_browser_helper_calls": 0,
+    "artifact_upload_names": []
+  },
+  "after": {
+    "jobs": [
+      {
+        "id": "contract",
+        "runner": "ubuntu-latest",
+        "needs": []
+      },
+      {
+        "id": "browser-smoke",
+        "runner": "ubuntu-latest",
+        "needs": [
+          "contract"
+        ]
+      }
+    ],
+    "triggers": {
+      "pull_request": {
+        "paths": [
+          "site/packs.html",
+          "site/packs.css",
+          "site/packs-app.js",
+          "site/population-packs.js",
+          "site/population-pack-sw.js",
+          "site/assets/trainer/**",
+          "tools/write_pack_catalog.py",
+          "tools/write_site_release.py",
+          "tools/patches/apply_pack_manager_link.py",
+          "tests/packs/**",
+          "user/packs/**",
+          "wrangler.jsonc",
+          ".python-version",
+          ".node-version",
+          "requirements.lock.txt",
+          "package-lock.json",
+          "tools/repro_ci_environment.py",
+          "tools/repro_environment_identity.py",
+          "tools/repro_ci_browser.py",
+          "tools/repro_container.py",
+          "tools/repro_hardening.py",
+          "tools/repro_environment.py",
+          "reproducibility/environment.lock.json",
+          "reproducibility/os-base.lock.json",
+          "reproducibility/container-base.lock.json",
+          "reproducibility/Dockerfile.science",
+          "reproducibility/system-packages.apt.txt",
+          "reproducibility/apt-snapshot.lock.json",
+          "reproducibility/system-packages.resolution.lock.json",
+          "reproducibility/browser-identity.lock.json",
+          "reproducibility/ubuntu-snapshot.sources",
+          "analysis/workflow_audit/helper_consumers.json",
+          "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
+          "tests/ci/test_repro_population_pack_catalog.py",
+          ".github/workflows/population-pack-catalog.yml"
+        ]
+      },
+      "workflow_dispatch": {}
+    },
+    "permissions": {
+      "contents": "read"
+    },
+    "concurrency": {
+      "group": "population-pack-catalog-${{ github.ref }}",
+      "cancel_in_progress": true
+    },
+    "runtime": {
+      "contract": {
+        "python": "3.11.9",
+        "python_source": ".python-version",
+        "node": "22.14.0",
+        "node_source": ".node-version"
+      },
+      "browser-smoke": {
+        "python": "3.11.9",
+        "python_source": ".python-version",
+        "node": "not-used",
+        "node_source": null
+      }
+    },
+    "direct_pip_playwright_installs": 0,
+    "direct_playwright_browser_installs": 0,
+    "repro_environment_helper_calls": 2,
+    "repro_browser_helper_calls": 1,
+    "artifact_upload_names": []
+  },
+  "repro_paths_added": [
+    {
+      "path": ".python-version",
+      "reason": "setup-python and environment helper exact Python contract"
+    },
+    {
+      "path": ".node-version",
+      "reason": "setup-node and environment helper exact Node contract"
+    },
+    {
+      "path": "requirements.lock.txt",
+      "reason": "environment helper Python dependency lock and environment identity"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "environment helper Node lock and environment identity"
+    },
+    {
+      "path": "tools/repro_ci_environment.py",
+      "reason": "directly executed by both jobs"
+    },
+    {
+      "path": "tools/repro_environment_identity.py",
+      "reason": "imported by environment helper"
+    },
+    {
+      "path": "tools/repro_ci_browser.py",
+      "reason": "directly executed by browser-smoke"
+    },
+    {
+      "path": "tools/repro_container.py",
+      "reason": "transitively imported by environment identity"
+    },
+    {
+      "path": "tools/repro_hardening.py",
+      "reason": "transitively imported by container contract"
+    },
+    {
+      "path": "tools/repro_environment.py",
+      "reason": "transitively imported by hardening module"
+    },
+    {
+      "path": "reproducibility/environment.lock.json",
+      "reason": "environment/browser helper root contract"
+    },
+    {
+      "path": "reproducibility/os-base.lock.json",
+      "reason": "environment identity and container OS contract"
+    },
+    {
+      "path": "reproducibility/container-base.lock.json",
+      "reason": "container identity contract"
+    },
+    {
+      "path": "reproducibility/Dockerfile.science",
+      "reason": "container identity validation"
+    },
+    {
+      "path": "reproducibility/system-packages.apt.txt",
+      "reason": "container/hardening identity"
+    },
+    {
+      "path": "reproducibility/apt-snapshot.lock.json",
+      "reason": "hardening identity"
+    },
+    {
+      "path": "reproducibility/system-packages.resolution.lock.json",
+      "reason": "hardening identity"
+    },
+    {
+      "path": "reproducibility/browser-identity.lock.json",
+      "reason": "browser helper and hardening identity"
+    },
+    {
+      "path": "reproducibility/ubuntu-snapshot.sources",
+      "reason": "hardening snapshot-source identity"
+    },
+    {
+      "path": "analysis/workflow_audit/helper_consumers.json",
+      "reason": "static test binds migration baseline to #291"
+    },
+    {
+      "path": "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
+      "reason": "static test consumes persisted migration contract"
+    },
+    {
+      "path": "tests/ci/test_repro_population_pack_catalog.py",
+      "reason": "workflow executes fail-closed static contract"
+    }
+  ],
+  "consumed_source_hashes": [
+    {
+      "path": ".python-version",
+      "algorithm": "git_blob_sha1",
+      "value": "2419ad5b0a329db360c988461d3ca3d7c73d6eef"
+    },
+    {
+      "path": ".node-version",
+      "algorithm": "git_blob_sha1",
+      "value": "7d41c735d7127c4a2530ebe846b14ffbf38b8031"
+    },
+    {
+      "path": "requirements.lock.txt",
+      "algorithm": "git_blob_sha1",
+      "value": "0a50f500a3f52b85155c5e0d1aff04434198e4ed"
+    },
+    {
+      "path": "package-lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "d3123747039f6370b5a43fd21d9b146b10c98613"
+    },
+    {
+      "path": "reproducibility/environment.lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "1177458d5119d01244c095a905d20b47c931a8e3"
+    },
+    {
+      "path": "reproducibility/os-base.lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "9c104a13a582264121c0afaa419add317f60a000"
+    },
+    {
+      "path": "reproducibility/container-base.lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "3f7139c12417c4f8a2e4de734aa62d186f9bcdaf"
+    },
+    {
+      "path": "reproducibility/Dockerfile.science",
+      "algorithm": "git_blob_sha1",
+      "value": "2b2d9d13dd95dd3a918f7383094928814e3c9ae5"
+    },
+    {
+      "path": "reproducibility/system-packages.apt.txt",
+      "algorithm": "git_blob_sha1",
+      "value": "27e2e13a45cfbff64f83f1fb3a87178720aa5216"
+    },
+    {
+      "path": "reproducibility/apt-snapshot.lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "bc08c36b0b9334617f6505843d5740f33e6a6000"
+    },
+    {
+      "path": "reproducibility/system-packages.resolution.lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "0e9fea7393fa465400050659def28a9ded9450de"
+    },
+    {
+      "path": "reproducibility/browser-identity.lock.json",
+      "algorithm": "git_blob_sha1",
+      "value": "3ce4b58596ebe1c97e0e1c9dbe0ebba9cb8cf3bd"
+    },
+    {
+      "path": "reproducibility/ubuntu-snapshot.sources",
+      "algorithm": "git_blob_sha1",
+      "value": "50feb1cd9411b55c17359640620d0361cb52d6d6"
+    }
+  ],
+  "helper_hashes": [
+    {
+      "path": "tools/repro_ci_environment.py",
+      "git_blob_sha": "dabc299609eee6ad5dbc965f4902a8123f6c79f4"
+    },
+    {
+      "path": "tools/repro_ci_browser.py",
+      "git_blob_sha": "7a57ec2116898626dacd1b6f72fb8fda3fa12bd9"
+    }
+  ],
+  "product_commands": {
+    "canonical_sha256": "b765f53c993fca57d685158fbc2ee9112fa5d22f8d2d1a2ff2fd1ca3c12b41c4",
+    "before_and_after_identical": true,
+    "ordered_tokens": [
+      "python3 tools/patches/apply_pack_manager_link.py",
+      "sha256sum site/index.html > /tmp/index-pack-link.sha",
+      "sha256sum site/index.html | diff -u /tmp/index-pack-link.sha -",
+      "python3 tools/patches/apply_pack_manager_link.py --check",
+      "python3 tools/write_pack_catalog.py",
+      "cp site/packs/catalog.json /tmp/catalog.json",
+      "cmp /tmp/catalog.json site/packs/catalog.json",
+      "python3 tests/packs/test_pack_catalog_runtime.py",
+      "node --check site/population-packs.js",
+      "node --check site/population-pack-sw.js",
+      "node --check site/packs-app.js",
+      "python3 tools/write_site_release.py --output /tmp/RELEASE.json",
+      "assert not missing, missing",
+      "assert doc['publication_verification']['tracked_by_issue']==45",
+      "python3 tools/write_deployment_metadata.py",
+      "python3 tools/write_site_release.py",
+      "python3 -m http.server 8765 --directory site >/tmp/population-pack-http.log 2>&1 &",
+      "curl -fsS http://127.0.0.1:8765/packs.html",
+      "python3 tests/packs/smoke_population_packs.py",
+      "if: failure()",
+      "cat /tmp/population-pack-http.log || true"
+    ]
+  },
+  "validation": {
+    "local": {
+      "status": "PENDING",
+      "commands": [
+        "python3 tests/test_repro_ci_helpers.py",
+        "python3 tests/ci/test_repro_population_pack_catalog.py",
+        "python3 tests/packs/test_pack_catalog_runtime.py",
+        "python3 tools/audit_github_workflows.py --json /tmp/workflow-audit.json",
+        "python3 tools/repro_ci_environment.py verify --require-node",
+        "git diff --check"
+      ]
+    },
+    "github_actions": {
+      "workflow": "Validate population pack catalogue",
+      "status": "PENDING",
+      "run_id": null
+    }
+  },
+  "modified_files": [
+    ".github/workflows/population-pack-catalog.yml",
+    "tests/ci/test_repro_population_pack_catalog.py",
+    "analysis/workflow_audit/repro_population_pack_catalog_before_after.json"
+  ]
+}
