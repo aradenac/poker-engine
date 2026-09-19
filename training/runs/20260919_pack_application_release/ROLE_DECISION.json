@@ -1,0 +1,31 @@
+{
+  "schema": "poker-pack-application-release-role-decision/v1",
+  "issue": 377,
+  "parent_issue": 201,
+  "role": "application_release",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "status": "ADMISSIBLE_FOR_PACK",
+  "decision_class": "RUNTIME_BINDING_COMPATIBILITY_ONLY",
+  "artifact": {
+    "path": "training/artifacts/application-release/poker-site-release-zoom-100-200-candidate-v1-25afc20cce834fc93ff140f56723548e806034cd892a8b222de21f916d162984.json",
+    "sha256": "25afc20cce834fc93ff140f56723548e806034cd892a8b222de21f916d162984"
+  },
+  "manifest": {
+    "path": "training/runs/20260919_pack_application_release/APPLICATION_RELEASE_MANIFEST.json",
+    "sha256": "d1c8705516d990a779023d5af28f7467477f8f82bef952c65e98bce2d4fd2ac7"
+  },
+  "provenance": {
+    "path": "training/runs/20260919_pack_application_release/PROVENANCE.json",
+    "sha256": "a7adebd0025c7b4f6a6a6dfa3972fd267079120d58898f5eabde99c4c28d35b5"
+  },
+  "reasons": [
+    "fresh candidate release is content-addressed and target-scoped",
+    "release binds exact #370 engine path and SHA-256",
+    "explicit Zoom boot requires all scientific roles from target-scoped ADMISSIBLE_FOR_PACK components",
+    "legacy engine and Model A v5 sources are explicitly rejected in explicit Zoom mode",
+    "legacy/default production files remain unchanged and candidate is unpublished/non-active"
+  ],
+  "scientific_performance_claim": false,
+  "test_consumed": false,
+  "production_effect": "NONE"
+}
