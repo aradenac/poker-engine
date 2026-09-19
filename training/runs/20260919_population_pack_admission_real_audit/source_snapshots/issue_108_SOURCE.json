@@ -1,0 +1,12 @@
+{
+  "schema": "population-pack-admission-audit-source-snapshot/v1",
+  "issue": 108,
+  "original_ref": "c680014cea70e4d1fb0fc07840f4ee09c557aa11",
+  "original_path": "training/runs/20260918_preflop_strategy_validation_pfpc_v1/VALIDATION_SELECTION.json",
+  "original_git_blob_sha": "04308004cafd30fe58bf02f68ffc0d0546c9f97c",
+  "expected_content_sha256": "0ae368126435ac37cbe1f098fde8642788af80e87b57af88ca042c45ad4bf223",
+  "decision": "RETAIN_REFERENCE",
+  "promotion_authorized": false,
+  "test_consumed": false,
+  "note": "Verbatim snapshot of immutable #108 evidence commit for deterministic read-only #350 admission audit; not a new scientific decision."
+}
