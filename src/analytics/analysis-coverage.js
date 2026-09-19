@@ -430,7 +430,9 @@
   function analyzeCoverageFromPersistedReviewData(input={}){
     if(!Adapter||typeof Adapter.adaptPersistedReviewData!=='function')throw new Error('PokerReviewLeakAdapter is required');
     const adapted=Adapter.adaptPersistedReviewData({reviewScores:input.reviewScores||{},hhSources:input.hhSources||[],scope:input.scope});
-    return analyzeCoverage({...input,decision_events:adapted.events});
+    const packVersion=input.scope&&text(input.scope.pack_version)||null;
+    const decisionEvents=adapted.events.map(e=>packVersion?{...e,pack_version:packVersion}:e);
+    return analyzeCoverage({...input,decision_events:decisionEvents});
   }
   function analyzeCoverageByScope(input={}){
     if(!Leak)throw new Error('PokerLeakAnalyzer is required');
