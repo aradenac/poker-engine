@@ -294,12 +294,67 @@ def bin_proposals(rows: list[dict[str, Any]]) -> dict[str, Any]:
             "to_call_bb": empirical_bins([r["_to_call_bb"] for r in group]),
             "pot_before_bb": empirical_bins([r["_pot_before_bb"] for r in group]),
             "price_to_pot": empirical_bins([r["_price_to_pot"] for r in group]),
+            "pot_odds": empirical_bins([r["_pot_odds"] for r in group]),
             "effective_stack_bb": empirical_bins([r["_effective_stack_bb"] for r in group]),
             "observed_action_target_total_bb": empirical_bins([
                 r["_observed_action_target_total_bb"] for r in group
             ]),
         }
     return result
+
+
+def bin_for(value: float | None, bins: list[dict[str, Any]]) -> str:
+    if value is None or not bins:
+        return "MISSING"
+    x = float(value)
+    for b in bins:
+        if x <= float(b["max_observed"]) + 1e-9:
+            return str(b["bin_id"])
+    return str(bins[-1]["bin_id"])
+
+
+def binned_support(rows: list[dict[str, Any]], proposals: dict[str, Any]) -> list[dict[str, Any]]:
+    grouped: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+    for r in rows:
+        family = str(r.get("family") or "")
+        bins = proposals.get(family) or {}
+        key = (
+            family,
+            str(r.get("actor_position") or ""),
+            r["_aggressor_position"] or "",
+            int(r["_limper_count"]),
+            int(r["_caller_count"]),
+            r["_target_total_bb"],
+            bin_for(r["_pot_before_bb"], bins.get("pot_before_bb") or []),
+            bin_for(r["_price_to_pot"], bins.get("price_to_pot") or []),
+            bin_for(r["_pot_odds"], bins.get("pot_odds") or []),
+            bin_for(r["_effective_stack_bb"], bins.get("effective_stack_bb") or []),
+        )
+        grouped.setdefault(key, []).append(r)
+    out = []
+    for key, group in grouped.items():
+        family, actor, aggressor, limpers, callers, target, pot_bin, price_bin, odds_bin, stack_bin = key
+        out.append({
+            "family": family,
+            "actor_position": actor,
+            "aggressor_position": aggressor or None,
+            "limper_count": limpers,
+            "caller_count": callers,
+            "target_total_bb": target,
+            "pot_before_bb_bin": pot_bin,
+            "price_to_pot_bin": price_bin,
+            "pot_odds_bin": odds_bin,
+            "effective_stack_bucket": stack_bin,
+            "observations": len(group),
+            "distinct_hands": len({str(r["hand_id"]) for r in group}),
+            "actions": action_summary(group),
+        })
+    return sorted(out, key=lambda x: (
+        -x["observations"], x["family"], x["actor_position"],
+        x["aggressor_position"] or "", x["limper_count"], x["caller_count"],
+        -1 if x["target_total_bb"] is None else x["target_total_bb"],
+        x["pot_before_bb_bin"], x["price_to_pot_bin"], x["pot_odds_bin"], x["effective_stack_bucket"],
+    ))
 
 
 def kts_projection(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -388,6 +443,8 @@ def analyze_rows(rows: list[dict[str, Any]], provenance: dict[str, Any] | None =
             raise AssertionError("Hero row supplied to population audit")
     prepared = [prepare(r) for r in rows if str(r.get("family") or "") in FOCUS_FAMILIES]
     matrix = context_matrix(prepared)
+    proposals = bin_proposals(prepared)
+    bucketed = binned_support(prepared, proposals)
     reveals = reveal_summary(prepared)
     report = {
         "schema": SCHEMA,
@@ -410,6 +467,8 @@ def analyze_rows(rows: list[dict[str, Any]], provenance: dict[str, Any] | None =
             "hand_class_support_is_reveal_selected": True,
             "scientific_effect": "NONE_ANALYTICS_ONLY",
             "consumable_by": ["#313", "#315"],
+            "limp_response_mapping": "LIMP is counted as CALL in the response taxonomy; family/history distinguish first limp from overlimp",
+            "iso_event_mapping": "ISO is an observed RAISE/JAM action from a VS_LIMPERS public context",
         },
         "accounting": {
             "population_preflop_rows_in_scope": len(prepared),
@@ -418,10 +477,11 @@ def analyze_rows(rows: list[dict[str, Any]], provenance: dict[str, Any] | None =
             "unrevealed_rows": reveals["unrevealed_decisions"],
             "reveal_fraction": reveals["reveal_fraction"],
         },
-        "bin_proposals": bin_proposals(prepared),
+        "bin_proposals": proposals,
         "backoff_contract": {
             "no_silent_nearest_price": True,
             "exact_price_first": True,
+            "absence_of_exact_cell_means": "NO_SUPPORT",
             "ordered_backoff": [
                 "exact public context plus exact target_total_bb",
                 "drop action_sequence detail",
@@ -438,6 +498,7 @@ def analyze_rows(rows: list[dict[str, Any]], provenance: dict[str, Any] | None =
             },
         },
         "matrix": matrix,
+        "binned_support": bucketed,
         "revealed_hand_class_support": hand_class_support(prepared),
         "reveal_bias": reveals,
         "kts_sb_two_limpers_projection": kts_projection(prepared),
@@ -493,12 +554,14 @@ def summary_report(report: dict[str, Any], full_report_path: str = "analysis/pre
         "support_zone_summary": report["support_zone_summary"],
         "kts_sb_two_limpers_projection": report["kts_sb_two_limpers_projection"],
         "top_matrix_cells": report["matrix"][:100],
+        "top_binned_support": report["binned_support"][:100],
         "full_report": {
             "path": full_report_path,
             "compression": "gzip",
             "content_schema": report["schema"],
             "report_hash": report["report_hash"],
             "matrix_cells": len(report["matrix"]),
+            "binned_support_cells": len(report["binned_support"]),
             "revealed_hand_class_cells": len(report["revealed_hand_class_support"]),
         },
     }
