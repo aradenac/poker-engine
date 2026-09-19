@@ -74,7 +74,7 @@
       minimum_supported_decisions_per_cohort:nonNegativeInt(src.minimum_supported_decisions_per_cohort,'minimum_supported_decisions_per_cohort'),
       minimum_supported_ratio:probability(src.minimum_supported_ratio,'minimum_supported_ratio'),
       absolute_frequency_delta_threshold:probability(src.absolute_frequency_delta_threshold,'absolute_frequency_delta_threshold'),
-      relative_frequency_delta_threshold:finite(src.relative_frequency_delta_threshold,'relative_frequency_delta_threshold'),
+      relative_frequency_delta_threshold:(()=>{const n=finite(src.relative_frequency_delta_threshold,'relative_frequency_delta_threshold');if(n<0)throw new Error('relative_frequency_delta_threshold must be >= 0');return n;})(),
       relative_delta_min_baseline_frequency:probability(src.relative_delta_min_baseline_frequency,'relative_delta_min_baseline_frequency'),
       js_divergence_threshold:probability(src.js_divergence_threshold,'js_divergence_threshold'),
       sizing_js_divergence_threshold:probability(src.sizing_js_divergence_threshold,'sizing_js_divergence_threshold'),
@@ -333,8 +333,8 @@
     const action=jsd(aAct,bAct),sizing=jsd(aSize,bSize),jam=bernoulliJsd(jamA,jamB),overbet=bernoulliJsd(overA,overB);
     return {action_js_divergence:action,sizing_js_divergence:sizing,jam_js_divergence:jam,overbet_js_divergence:overbet,composite_distance:Math.max(action,sizing,jam,overbet)};
   }
-  function bootstrap(baseRows,targetRows,config,seed){
-    if(baseRows.length<config.bootstrap_min_decisions_per_cohort||targetRows.length<config.bootstrap_min_decisions_per_cohort){
+  function bootstrap(baseRows,targetRows,config,seed,supportSufficient){
+    if(!supportSufficient||baseRows.length<config.bootstrap_min_decisions_per_cohort||targetRows.length<config.bootstrap_min_decisions_per_cohort){
       return {available:false,method:'DETERMINISTIC_BOOTSTRAP',reason:'INSUFFICIENT_SUPPORT',confidence:config.bootstrap_confidence,iterations:config.bootstrap_iterations,seed,delta_ci:null,distance_ci:null};
     }
     const rng=makeRng(seed),metricSamples={fold_frequency:[],call_frequency:[],raise_frequency:[],jam_frequency:[],overbet_frequency:[]},distanceSamples=[];
@@ -374,7 +374,7 @@
     const dist=distances(baseRows,targetRows);
     const triggers=driftTriggers(metrics,dist,config);
     const state=lowReasons.length?'LOW_SUPPORT':(triggers.length?'DRIFTED':'STABLE');
-    const uncertainty=bootstrap(baseRows,targetRows,config,config.bootstrap_seed+'|'+cohorts.baseline.dataset_fingerprint+'|'+cohorts.target.dataset_fingerprint+'|'+dimension+'|'+key);
+    const uncertainty=bootstrap(baseRows,targetRows,config,config.bootstrap_seed+'|'+cohorts.baseline.dataset_fingerprint+'|'+cohorts.target.dataset_fingerprint+'|'+dimension+'|'+key,!lowReasons.length);
     const p=primaryMetric(metrics,dist);
     const baseSizing=sizingDistribution(baseRows),targetSizing=sizingDistribution(targetRows);
     const [bs,ts]=mergedDistribution(baseSizing,targetSizing);
