@@ -48,6 +48,7 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "packs.html",
     ROOT / "site" / "packs.css",
     ROOT / "site" / "packs-app.js",
+    ROOT / "site" / "pack-identity.js",
     ROOT / "site" / "population-packs.js",
     ROOT / "site" / "population-pack-sw.js",
     CATALOG_PATH,
