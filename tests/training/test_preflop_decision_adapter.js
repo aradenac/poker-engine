@@ -283,6 +283,38 @@ for(const c of cases){
 }
 
 {
+  const c=cases[0];
+  const out=Adapter.buildDecision({
+    public_state:c.state,identity:IDENTITY,guidance:null,played_action:c.played_action,
+    coverage:{state:'ANALYSIS_MISSING',support_tier:'UNKNOWN'},
+    preflop_context:{family:c.family,actor_position:c.actor},hand_id:'absent-context'
+  });
+  assert.equal(out.recommendation_admissibility.admissible,false);
+  assert.equal(out.recommendation_admissibility.status,'EXACT_CONTEXT_ABSENT');
+  assert.ok(out.reason_codes.includes('EXACT_CONTEXT_ABSENT'));
+  assert.ok(out.reason_codes.includes('NO_ADMISSIBLE_STRATEGY'));
+  assert.equal(out.recommended_action,null);
+}
+
+{
+  const low=evidence({
+    context_id:'ctx-low-selected',actor_contribution_bb:0,selected:'open-low',
+    alternatives:[
+      alt('fold-low','FOLD',null,0,0,150),
+      alt('open-low','OPEN',2.5,2.5,1.3,5)
+    ]
+  });
+  const out=buildCase({
+    name:'low-selected',actor:'CO',family:'UNOPENED',context_id:'ctx-low-selected',
+    state:publicState('CO'),decision:low,played_action:{action:'OPEN',target_total_bb:2.5},
+    coverage:{state:'COVERED',support_tier:'HIGH'}
+  });
+  assert.equal(out.recommendation_admissibility.admissible,false);
+  assert.ok(out.reason_codes.includes('LOW_SUPPORT'));
+  assert.equal(out.recommended_action,null);
+}
+
+{
   const c=cases[3];
   const out=buildCase({...c,extra:{alternative_comparability:{'3b-8':{comparable:false,reason:'MISSING_EXACT_EV'}}}});
   assert.equal(out.recommendation_admissibility.admissible,false);
