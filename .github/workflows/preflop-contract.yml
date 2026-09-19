@@ -15,6 +15,26 @@ on:
       - 'tests/preflop/**'
       - 'tests/fixtures/preflop_contract_cases.json'
       - 'tests/training/test_preflop_key_runtime_parity.py'
+      - '.python-version'
+      - '.node-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
+      - 'tests/ci/test_repro_current_core_batch.py'
+      - 'analysis/workflow_audit/repro_current_core_batch_before_after.json'
       - '.github/workflows/preflop-contract.yml'
   workflow_dispatch:
 
@@ -23,6 +43,16 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - name: Verify locked REPRO runtime
+        run: python3 tools/repro_ci_environment.py verify --require-node
+      - name: REPRO current-core anti-bypass contract
+        run: PYTHONPATH=. python3 tests/ci/test_repro_current_core_batch.py
       - name: Shared source synchronization
         run: python3 tools/sync_shared_modules.py --check
       - name: Python and JavaScript syntax
