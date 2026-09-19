@@ -359,14 +359,17 @@
       ],
       "reserved_paths": [
         ".project/**",
-        "tools/validate_project_state.py",
-        "tools/validate_prospective_holdout.py",
-        "tools/check_parallel_scope.py",
-        "tests/test_project_state.py",
-        "tests/test_parallel_scope.py",
-        "tests/training/test_prospective_holdout.py",
         "docs/project-state.md",
         "docs/prospective-validation.md",
+        "tests/fixtures/parallel/**",
+        "tests/test_parallel_claims.py",
+        "tests/test_parallel_scope.py",
+        "tests/test_project_state.py",
+        "tests/training/test_prospective_holdout.py",
+        "tools/check_parallel_claims.py",
+        "tools/check_parallel_scope.py",
+        "tools/validate_project_state.py",
+        "tools/validate_prospective_holdout.py",
         "training/prospective/**"
       ],
       "forbidden_paths": [

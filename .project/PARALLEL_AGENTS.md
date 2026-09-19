@@ -71,8 +71,45 @@ The checker validates file scope only. Agents still follow #225 manually:
 6. post `agent-worklog:v1` when requested;
 7. post `STATUS: RELEASED`.
 
-Live GitHub claim parsing is intentionally not implemented in this tranche.
+Live claim parsing is implemented by the offline-first checker below; #225 still remains authoritative for dispatch.
 
 ## Safety boundary
 
 This coordination layer changes no scientific/runtime behavior. It does not edit `.github/workflows/**`, #108 artifacts, TEST ledgers, or product runtime files. Optional CI wiring may invoke this checker later when workflow-sensitive lanes permit it.
+
+## Live claim/worklog reconstruction
+
+`tools/check_parallel_claims.py` reconstructs coordination state from comment text while keeping #225 as the human source of truth. The business parser is offline and deterministic; GitHub access is only an optional read-only adapter.
+
+Offline JSON:
+
+    python3 tools/check_parallel_claims.py \
+      --comments-json tests/fixtures/parallel/comments.json
+
+Stable JSON:
+
+    python3 tools/check_parallel_claims.py \
+      --comments-json tests/fixtures/parallel/comments.json \
+      --json
+
+Optional GitHub REST read:
+
+    python3 tools/check_parallel_claims.py \
+      --repo aradenac/poker-engine \
+      --issue 225
+
+The REST adapter performs GET requests only. It uses `GITHUB_TOKEN` or `GH_TOKEN` from the environment when available and never embeds a token. A JSON file may aggregate comments from several issues; the parser uses event timestamps/IDs rather than file order.
+
+The reconstructed state contains A-H slot status, active issue, branch, base, conflict group, files intent, PR, last worklog/release and a stable event timeline. Claim `FILES_INTENT` is checked with the exact same scope engine as `check_parallel_scope.py`.
+
+Detected coordination diagnostics include:
+
+- `DOUBLE_ACTIVE_CLAIM`, `SLOT_ALREADY_CLAIMED`, `ISSUE_CLAIMED_BY_MULTIPLE_SLOTS`;
+- `CLAIM_WITHOUT_RELEASE` for currently open lifecycle records;
+- `RELEASE_WITHOUT_CLAIM`, `WORKLOG_WITHOUT_CLAIM`, `WORKLOG_AFTER_RELEASE`;
+- `BRANCH_ISSUE_MISMATCH`, `CONFLICT_GROUP_MISMATCH`, `ISSUE_LANE_MISMATCH`;
+- `FILES_INTENT_SCOPE_VIOLATION` and `HOTSPOT_CLAIM_VIOLATION`;
+- `CLAIM_INCOMPLETE`;
+- `CLEAN_RECLAIM_AFTER_RELEASE` as a non-error warning documenting a clean replacement.
+
+This checker never comments on GitHub, assigns work, mutates issues, merges/ closes PRs, or replaces #225.
