@@ -33,7 +33,7 @@
       "repro_browser_helper_calls": 0,
       "continue_on_error_true": 0,
       "upload_artifact": 0,
-      "static_cost_proxy": 41
+      "static_cost_proxy": 43
     },
     "after": {
       "workflow_lines": 280,
@@ -46,7 +46,7 @@
       "repro_browser_helper_calls": 3,
       "continue_on_error_true": 0,
       "upload_artifact": 0,
-      "static_cost_proxy": 26
+      "static_cost_proxy": 28
     },
     "delta": {
       "workflow_lines": 18,
@@ -180,7 +180,7 @@
         "direct_playwright_install": 1,
         "setup_python": 0,
         "setup_node": 0,
-        "static_cost_proxy": 13
+        "static_cost_proxy": 15
       },
       "after": {
         "lines": 98,
@@ -188,7 +188,7 @@
         "direct_playwright_install": 0,
         "setup_python": 1,
         "setup_node": 0,
-        "static_cost_proxy": 8
+        "static_cost_proxy": 10
       }
     },
     {
