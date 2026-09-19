@@ -1,0 +1,64 @@
+{
+  "schema": "poker-backlog-evidence-github-export/v1",
+  "coverage": {
+    "comments_complete": true,
+    "all_issues_complete": true,
+    "all_pulls_complete": true,
+    "branches_complete": true,
+    "dispatch_issue": 225
+  },
+  "comments": [
+    {
+      "id": 2000,
+      "created_at": "2026-09-19T00:40:00Z",
+      "source_issue": 206,
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nSTATUS: CLAIMED\nBASE: fixture-base\nBRANCH: agent-G/issue-206-recovery-fixture\nCONFLICT_GROUP: PROJECT-STATE\nFILES_INTENT:\n- tools/build_recovery_state.py\nNOTES: fixture"
+    },
+    {
+      "id": 2001,
+      "created_at": "2026-09-19T00:41:00Z",
+      "source_issue": 206,
+      "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nBASE/HEAD: fixture-base / fixture-head\nPR: #292"
+    },
+    {
+      "id": 2002,
+      "created_at": "2026-09-19T00:42:00Z",
+      "source_issue": 206,
+      "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #206\nSTATUS: RELEASED\nPR: #292\nRESULT: merged\nNEXT: deferred CI wiring"
+    }
+  ],
+  "issues": [
+    {
+      "number": 45,
+      "state": "open",
+      "title": "Canonical live deployment verification",
+      "labels": []
+    },
+    {
+      "number": 109,
+      "state": "closed",
+      "title": "Historical preflop trainer completion claim",
+      "labels": []
+    },
+    {
+      "number": 206,
+      "state": "open",
+      "title": "Project-state automation",
+      "labels": []
+    }
+  ],
+  "pulls": [
+    {
+      "number": 292,
+      "state": "closed",
+      "merged_at": "2026-09-19T00:54:55Z",
+      "title": "[G][#206] Add deterministic recovery-state snapshot",
+      "head": "agent-G/issue-206-recovery-state",
+      "base": "main"
+    }
+  ],
+  "branches": [
+    "main"
+  ],
+  "read_errors": []
+}
