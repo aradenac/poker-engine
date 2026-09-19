@@ -2,27 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://poker-engine.local/contracts/analytics/preflop-sizing-support.schema.json",
   "title": "Certified TRAIN preflop sizing/price support audit",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "population_id",
-    "scope",
-    "provenance",
-    "semantics",
-    "accounting",
-    "bin_proposals",
-    "backoff_contract",
-    "matrix",
-    "revealed_hand_class_support",
-    "reveal_bias",
-    "kts_sb_two_limpers_projection",
-    "support_zone_summary",
-    "report_hash"
+  "oneOf": [
+    {"$ref": "#/$defs/fullReport"},
+    {"$ref": "#/$defs/summaryReport"}
   ],
-  "properties": {
-    "schema": {"const": "poker-preflop-sizing-support-audit/v1"},
-    "population_id": {"const": "pokerstars_nlhe_100-200_zoom_play_6max_v1"},
+  "$defs": {
     "scope": {
       "type": "object",
       "required": [
@@ -44,9 +28,9 @@
         "active_model_modified": {"const": false},
         "optimization_performed": {"const": false},
         "ui_modified": {"const": false}
-      }
+      },
+      "additionalProperties": true
     },
-    "provenance": {"type": "object"},
     "semantics": {
       "type": "object",
       "required": [
@@ -55,7 +39,9 @@
         "sizing_reconstructed_from_fixed_grid",
         "hand_class_support_is_reveal_selected",
         "scientific_effect",
-        "consumable_by"
+        "consumable_by",
+        "limp_response_mapping",
+        "iso_event_mapping"
       ],
       "properties": {
         "sizing_reconstructed_from_fixed_grid": {"const": false},
@@ -67,49 +53,10 @@
           "minItems": 2,
           "maxItems": 2
         }
-      }
+      },
+      "additionalProperties": true
     },
-    "accounting": {"type": "object"},
-    "bin_proposals": {"type": "object"},
-    "backoff_contract": {
-      "type": "object",
-      "required": ["no_silent_nearest_price", "exact_price_first", "ordered_backoff", "identifiability"],
-      "properties": {
-        "no_silent_nearest_price": {"const": true},
-        "exact_price_first": {"const": true}
-      }
-    },
-    "matrix": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "family",
-          "actor_position",
-          "aggressor_position",
-          "limper_count",
-          "caller_count",
-          "target_total_bb",
-          "to_call_bb",
-          "observations",
-          "distinct_hands",
-          "hand_ids_fingerprint_sha256",
-          "support_tier",
-          "identifiability",
-          "actions",
-          "reveal",
-          "pot_before_bb",
-          "price_to_pot",
-          "pot_odds",
-          "effective_stack_bb",
-          "action_sequences",
-          "observed_raise_or_jam_targets"
-        ]
-      }
-    },
-    "revealed_hand_class_support": {"type": "array"},
-    "reveal_bias": {"type": "object"},
-    "kts_sb_two_limpers_projection": {
+    "ktsProjection": {
       "type": "object",
       "required": [
         "scenario",
@@ -136,11 +83,115 @@
             "public_context_only": {"const": true},
             "opponent_hidden_cards_consumed": {"const": false},
             "hero_hand_used_to_filter_opponent_rows": {"const": false}
-          }
+          },
+          "additionalProperties": true
         }
-      }
+      },
+      "additionalProperties": true
     },
-    "support_zone_summary": {"type": "object"},
-    "report_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "fullReport": {
+      "type": "object",
+      "required": [
+        "schema",
+        "population_id",
+        "scope",
+        "provenance",
+        "semantics",
+        "accounting",
+        "bin_proposals",
+        "backoff_contract",
+        "matrix",
+        "binned_support",
+        "revealed_hand_class_support",
+        "reveal_bias",
+        "kts_sb_two_limpers_projection",
+        "support_zone_summary",
+        "report_hash"
+      ],
+      "properties": {
+        "schema": {"const": "poker-preflop-sizing-support-audit/v1"},
+        "population_id": {"const": "pokerstars_nlhe_100-200_zoom_play_6max_v1"},
+        "scope": {"$ref": "#/$defs/scope"},
+        "semantics": {"$ref": "#/$defs/semantics"},
+        "provenance": {"type": "object"},
+        "accounting": {"type": "object"},
+        "bin_proposals": {"type": "object"},
+        "backoff_contract": {
+          "type": "object",
+          "required": [
+            "no_silent_nearest_price",
+            "exact_price_first",
+            "absence_of_exact_cell_means",
+            "ordered_backoff",
+            "identifiability"
+          ],
+          "properties": {
+            "no_silent_nearest_price": {"const": true},
+            "exact_price_first": {"const": true},
+            "absence_of_exact_cell_means": {"const": "NO_SUPPORT"}
+          },
+          "additionalProperties": true
+        },
+        "matrix": {"type": "array"},
+        "binned_support": {"type": "array"},
+        "revealed_hand_class_support": {"type": "array"},
+        "reveal_bias": {"type": "object"},
+        "kts_sb_two_limpers_projection": {"$ref": "#/$defs/ktsProjection"},
+        "support_zone_summary": {"type": "object"},
+        "report_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "summaryReport": {
+      "type": "object",
+      "required": [
+        "schema",
+        "population_id",
+        "scope",
+        "provenance",
+        "semantics",
+        "accounting",
+        "bin_proposals",
+        "backoff_contract",
+        "support_zone_summary",
+        "kts_sb_two_limpers_projection",
+        "top_matrix_cells",
+        "top_binned_support",
+        "full_report"
+      ],
+      "properties": {
+        "schema": {"const": "poker-preflop-sizing-support-audit-summary/v1"},
+        "population_id": {"const": "pokerstars_nlhe_100-200_zoom_play_6max_v1"},
+        "scope": {"$ref": "#/$defs/scope"},
+        "semantics": {"$ref": "#/$defs/semantics"},
+        "provenance": {"type": "object"},
+        "accounting": {"type": "object"},
+        "bin_proposals": {"type": "object"},
+        "backoff_contract": {"type": "object"},
+        "support_zone_summary": {"type": "object"},
+        "kts_sb_two_limpers_projection": {"$ref": "#/$defs/ktsProjection"},
+        "top_matrix_cells": {"type": "array"},
+        "top_binned_support": {"type": "array"},
+        "full_report": {
+          "type": "object",
+          "required": [
+            "path",
+            "compression",
+            "content_schema",
+            "report_hash",
+            "matrix_cells",
+            "binned_support_cells",
+            "revealed_hand_class_cells"
+          ],
+          "properties": {
+            "compression": {"const": "gzip"},
+            "content_schema": {"const": "poker-preflop-sizing-support-audit/v1"},
+            "report_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
   }
 }
