@@ -183,6 +183,29 @@
     return 'SPARSE';
   }
 
+  function validateGuidanceEvidence(evidence){
+    if(!evidence||typeof evidence!=='object')throw new Error('guidance evidence_decision is required');
+    if(evidence.schema!==SCHEMA)throw new Error('guidance evidence_decision schema mismatch');
+    const alternatives=Array.isArray(evidence.alternatives)?evidence.alternatives:[];
+    if(!alternatives.length)throw new Error('guidance evidence_decision alternatives are required');
+    const selected=alternatives.find(x=>String(x.id)===String(evidence.selected_id));
+    if(!selected)throw new Error('guidance selected_id was not evaluated');
+    const scalar=[
+      ['action',upper],['target_total_bb',finiteOrNull],['incremental_cost_bb',finiteOrNull],['ev_bb',finiteOrNull]
+    ];
+    for(const [key,norm] of scalar){
+      const a=norm(evidence[key]),b=norm(selected[key]);
+      if(typeof a==='number'||typeof b==='number'){
+        if(a==null||b==null||Math.abs(a-b)>1e-6)throw new Error('guidance '+key+' does not match selected alternative');
+      }else if(a!==b)throw new Error('guidance '+key+' does not match selected alternative');
+    }
+    const evs=alternatives.map(x=>finiteOrNull(x.ev_bb));
+    if(evs.some(x=>x==null))throw new Error('guidance alternative EV is missing');
+    if(finiteOrNull(selected.ev_bb)<Math.max(...evs)-EPS)throw new Error('guidance selected alternative is not maximal EV');
+    if(text(evidence.ev_reference)!==(Decision&&Decision.EV_REFERENCE||'decision_point_incremental_bb'))throw new Error('guidance EV reference mismatch');
+    return true;
+  }
+
   function validateGuidanceForAdapter(guidance,identity,context,coverage,altComparability){
     const reasons=[];
     if(!guidance){
@@ -214,7 +237,7 @@
 
     let surface=null;
     try{
-      if(guidance.evidence_decision)Decision.validateDecision(guidance.evidence_decision);
+      validateGuidanceEvidence(guidance.evidence_decision);
       surface=Guidance.surfacePayload(guidance);
     }catch(_){reasons.push('INVALID_GUIDANCE');}
     if(surface&&surface.action==null)reasons.push('NO_ADMISSIBLE_STRATEGY');
