@@ -221,6 +221,32 @@ def test_active_or_blocked_evidence_overrides_close_candidate() -> None:
     assert _finding(blocked_report, 10)["category"] == "BLOCKED"
 
 
+def test_merged_release_respects_explicit_blockers_and_active_gaps() -> None:
+    blocked_export = _export()
+    blocked_export["issues"] = [{"number": 22, "state": "open", "title": "blocked", "labels": ["blocked"]}]
+    blocked_export["pulls"] = [{"number": 122, "state": "closed", "merged": True}]
+    blocked_export["comments"] = [
+        {"id": 1, "created_at": "2026-09-19T00:00:00Z", "source_issue": 22,
+         "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: G\nISSUE: #22\nBASE/HEAD: a / b\nPR: #122\nREMAINING_GAPS:\n- None"},
+        {"id": 2, "created_at": "2026-09-19T00:01:00Z", "source_issue": 22,
+         "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #22\nSTATUS: RELEASED\nPR: #122"},
+    ]
+    blocked_report = audit.build_backlog_report({}, {"capabilities": []}, _project_report(), _claims(), _recovery(), blocked_export)
+    assert _finding(blocked_report, 22)["category"] == "BLOCKED"
+
+    active_export = _export()
+    active_export["issues"] = [{"number": 23, "state": "open", "title": "active and blocked", "labels": ["blocked"]}]
+    active_export["pulls"] = [{"number": 123, "state": "closed", "merged": True}]
+    active_export["comments"] = [
+        {"id": 1, "created_at": "2026-09-19T00:00:00Z", "source_issue": 23,
+         "body": "<!-- agent-worklog:v1 -->\nAGENT_SLOT: G\nISSUE: #23\nBASE/HEAD: a / b\nPR: #123\nREMAINING_GAPS:\n- implement remaining local evidence"},
+        {"id": 2, "created_at": "2026-09-19T00:01:00Z", "source_issue": 23,
+         "body": "<!-- parallel-claim:v1 -->\nAGENT_SLOT: G\nISSUE: #23\nSTATUS: RELEASED\nPR: #123"},
+    ]
+    active_report = audit.build_backlog_report({}, {"capabilities": []}, _project_report(), _claims(), _recovery(), active_export)
+    assert _finding(active_report, 23)["category"] == "KEEP_OPEN"
+
+
 def test_recovery_warning_becomes_lane_contradiction() -> None:
     recovery = _recovery()
     recovery["warnings"] = [{
