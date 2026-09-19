@@ -1,0 +1,88 @@
+{
+  "schema": "model-b-support-aware-backoff-graph/v1",
+  "issue": 286,
+  "version": "2026-09-19.1",
+  "source": "Declared #197 hierarchy with #272 support thresholds",
+  "selection_rule": "Choose the first declared level whose TRAIN node satisfies both observation and distinct-hand thresholds; otherwise continue to the next declared level. Never choose an undeclared nearest context.",
+  "action_support": {
+    "min_observations": 30,
+    "min_distinct_hands": 20
+  },
+  "sizing_support": {
+    "min_raises": 12,
+    "min_distinct_hands": 8
+  },
+  "levels": [
+    {
+      "index": 0,
+      "dimensions": [
+        "profile",
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 1,
+      "dimensions": [
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 2,
+      "dimensions": [
+        "street",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 3,
+      "dimensions": [
+        "street",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 4,
+      "dimensions": [
+        "street",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 5,
+      "dimensions": [
+        "street",
+        "price_bucket"
+      ]
+    },
+    {
+      "index": 6,
+      "dimensions": [
+        "street"
+      ]
+    },
+    {
+      "index": 7,
+      "dimensions": []
+    }
+  ],
+  "source_split": "TRAIN",
+  "frozen_before_validation": true,
+  "nearest_context_heuristic": false,
+  "production_effect": "NONE"
+}
