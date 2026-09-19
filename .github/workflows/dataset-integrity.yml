@@ -5,6 +5,23 @@ on:
     branches:
       - main
     paths:
+      - '.python-version'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
       - 'training/registry.json'
       - 'training/datasets/**'
       - 'training/runs/20260909_population_increment_v2/**'
@@ -16,6 +33,23 @@ on:
       - '.github/workflows/dataset-integrity.yml'
   pull_request:
     paths:
+      - '.python-version'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
       - 'training/registry.json'
       - 'training/datasets/**'
       - 'training/runs/20260909_population_increment_v2/**'
@@ -41,6 +75,11 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - name: Verify locked REPRO environment
+        run: python3 tools/repro_ci_environment.py verify
       - name: Verify exact sources, unseen IDs, splits and materialized payloads
         run: |
           python3 tests/datasets/test_build_hand_history_increment.py
