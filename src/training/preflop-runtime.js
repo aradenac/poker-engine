@@ -48,6 +48,8 @@
     requireContracts();
     const {wrapper,snap,actor}=normalizePublicState(input.public_state);
     if(String(snap.street||'').toLowerCase()!=='preflop')throw new Error('call/fold reference is preflop-only');
+    const family=String(input.preflop_context?.family||input.facing_context||'UNKNOWN').toUpperCase();
+    if(['UNOPENED','VS_LIMPERS'].includes(family))throw new Error('active reference does not cover '+family);
     const legal=wrapper.legal_view||{};
     const toCall=finite(legal.to_call_bb??Math.max(0,Number(snap.current_bet_bb||0)-Number(snap.street_committed_bb?.[actor]||0)),'to_call_bb');
     if(!(toCall>EPS))throw new Error('call/fold reference requires a positive price');
