@@ -90,10 +90,14 @@
     requireContracts();
     normalizePublicState(input.public_state);
     const contextId=String(input.context_id||input.preflop_context?.context_id||'').trim()||null;
-    return Adapter.buildDecision({identity:identity(),public_state:input.public_state,guidance:null,hand_id:input.hand_id||null,decision_id:input.decision_id||null,
+    const reason=String(input.reason||'SPOT_NON_COUVERT').trim()||'SPOT_NON_COUVERT';
+    const decision=Adapter.buildDecision({identity:identity(),public_state:input.public_state,guidance:null,hand_id:input.hand_id||null,decision_id:input.decision_id||null,
       hero_position:input.hero_position||input.preflop_context?.actor_position||null,preflop_context:input.preflop_context||{context_id:contextId,family:input.facing_context||'UNKNOWN'},
-      coverage:{state:'UNSUPPORTED',support_tier:'UNKNOWN',supported_count:0,decision_count:0,coverage_ratio:0,reasons:[input.reason||'SPOT_NON_COUVERT']},
+      coverage:{state:'UNSUPPORTED',support_tier:'UNKNOWN',supported_count:0,decision_count:0,coverage_ratio:0,reasons:[reason]},
       played_action:input.played_action||null});
+    decision.reason_codes=Array.from(new Set([...(decision.reason_codes||[]),reason]));
+    decision.recommendation_admissibility.reason_codes=Array.from(new Set([...(decision.recommendation_admissibility.reason_codes||[]),reason]));
+    return decision;
   }
   function surfaceBundle(decision){requireContracts();return Adapter.surfaceBundle(decision);}
   function isCovered(decision){return !!decision&&decision.schema===Adapter.SCHEMA&&decision.coverage_state==='COVERED'&&decision.recommendation_admissibility?.admissible===true;}

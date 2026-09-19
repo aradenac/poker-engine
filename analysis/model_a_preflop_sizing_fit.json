@@ -1,0 +1,176 @@
+{
+  "active_model_replaced": false,
+  "candidate_identity": {
+    "active_model_replaced": false,
+    "candidate_id": "model-a-preflop-sizing-aware-candidate-v1",
+    "data_scope": "CERTIFIED_TRAIN_ONLY",
+    "feature_contract": "poker-model-a-preflop-sizing-public-context/v1",
+    "fit_scope": "TRAIN_EMPIRICAL_FIT",
+    "likelihood_contract": "poker-model-a-preflop-sizing-likelihood/v1",
+    "model_family": "MODEL_A_PREFLOP",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "source_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "status": "CANDIDATE_ONLY_NOT_ACTIVE"
+  },
+  "candidate_sha256": "53cc87600c6748b5ae8e53b32c8b6770b2bd881e0f5e23be07fdf363ad4103ee",
+  "evidence_sha256": "3567cc4aa36af4fa41df8891bd0f72bf2024b538fdef58974b507845dd57f5e5",
+  "fit": {
+    "backoff_policy": [
+      "EXACT_HAND_CLASS_EXACT_PRICE",
+      "MARGINAL_EXACT_PRICE",
+      "UNRESOLVED"
+    ],
+    "marginal_alpha_per_action": 0.5,
+    "minimum_marginal_observations": 20,
+    "minimum_revealed_hand_class_observations": 50,
+    "nearest_price_fallback": false,
+    "revealed_hand_prior_strength": 40
+  },
+  "issue": 339,
+  "kts_sb_two_limpers_exact_price_support": [
+    {
+      "observations": 54,
+      "state": "EXACT_SUPPORT",
+      "support_tier": "MEDIUM",
+      "target_total_bb": 4
+    },
+    {
+      "observations": 161,
+      "state": "EXACT_SUPPORT",
+      "support_tier": "MEDIUM",
+      "target_total_bb": 5
+    },
+    {
+      "observations": 43,
+      "state": "EXACT_SUPPORT",
+      "support_tier": "LOW",
+      "target_total_bb": 6
+    }
+  ],
+  "nodes": {
+    "identifiable_revealed_hand_class": 4,
+    "marginal_exact_price": 282,
+    "total": 286
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "posterior_321": {
+    "candidate_sha256": "53cc87600c6748b5ae8e53b32c8b6770b2bd881e0f5e23be07fdf363ad4103ee",
+    "expectation": "4/5/6 are independent exact-price contexts; low support fails closed rather than borrowing a neighboring price",
+    "fixture": "kts_sb_two_limp_iso4_three_calls_v1",
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "posterior_contract": "poker-opponent-posterior-range/v1",
+    "prices": [
+      {
+        "after_reason": "sizing-aware Model A has no supported exact-price cell: MAPSUP_fe30f71401958ef18e85:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=4|call=3",
+        "after_status": "UNSUPPORTED",
+        "backoff_level": "EXACT_NODE_REQUIRED",
+        "before_status": "AVAILABLE",
+        "candidate_identity": {
+          "model_id": "model-a-preflop-sizing-aware-candidate-v1",
+          "model_version": "53cc87600c6748b5",
+          "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+          "source_id": "analysis/preflop_sizing_support_train.full.json.gz#report_hash=5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+        },
+        "contract_errors": [],
+        "provenance": {
+          "contract_version": "poker-opponent-posterior-range/v1",
+          "producer": "ModelAPosteriorRuntime",
+          "source_artifact": "analysis/preflop_sizing_support_train.full.json.gz#report_hash=5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99#preflop_nodes=UNCONDITIONED_COMBO_PRIOR",
+          "source_fingerprint": "sha256:2382b4d9dbb0c477c729d7149e53a3a0ede0045c00719e430bb78a592c0ee676"
+        },
+        "public_action": {
+          "action": "CALL",
+          "sizing": {
+            "observed_size_bb": 3,
+            "pot_before_bb": 7,
+            "pot_fraction": 0.42857142857142855,
+            "semantic": "INCREMENTAL_COST_BB",
+            "target_total_bb": 4
+          },
+          "source_step_id": 5
+        },
+        "source_observations": 0,
+        "target_total_bb": 4
+      },
+      {
+        "after_reason": null,
+        "after_status": "AVAILABLE",
+        "backoff_level": "EXACT_NODE_HISTORY",
+        "before_status": "AVAILABLE",
+        "candidate_identity": {
+          "model_id": "model-a-preflop-sizing-aware-candidate-v1",
+          "model_version": "53cc87600c6748b5",
+          "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+          "source_id": "analysis/preflop_sizing_support_train.full.json.gz#report_hash=5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+        },
+        "contract_errors": [],
+        "provenance": {
+          "contract_version": "poker-opponent-posterior-range/v1",
+          "producer": "ModelAPosteriorRuntime",
+          "source_artifact": "analysis/preflop_sizing_support_train.full.json.gz#report_hash=5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99#preflop_nodes=MAPM_93bae80a3cd393e6",
+          "source_fingerprint": "sha256:8a5a06d2ddb064f71669faef2f2ed2e19f99192bf9a7bd2c28091415ced1d8df"
+        },
+        "public_action": {
+          "action": "CALL",
+          "sizing": {
+            "observed_size_bb": 4,
+            "pot_before_bb": 8,
+            "pot_fraction": 0.5,
+            "semantic": "INCREMENTAL_COST_BB",
+            "target_total_bb": 5
+          },
+          "source_step_id": 5
+        },
+        "source_observations": 45,
+        "target_total_bb": 5
+      },
+      {
+        "after_reason": "sizing-aware Model A has no supported exact-price cell: MAPSUP_4e108afa3484660e1ad3:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=6|call=5",
+        "after_status": "UNSUPPORTED",
+        "backoff_level": "EXACT_NODE_REQUIRED",
+        "before_status": "AVAILABLE",
+        "candidate_identity": {
+          "model_id": "model-a-preflop-sizing-aware-candidate-v1",
+          "model_version": "53cc87600c6748b5",
+          "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+          "source_id": "analysis/preflop_sizing_support_train.full.json.gz#report_hash=5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+        },
+        "contract_errors": [],
+        "provenance": {
+          "contract_version": "poker-opponent-posterior-range/v1",
+          "producer": "ModelAPosteriorRuntime",
+          "source_artifact": "analysis/preflop_sizing_support_train.full.json.gz#report_hash=5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99#preflop_nodes=UNCONDITIONED_COMBO_PRIOR",
+          "source_fingerprint": "sha256:2382b4d9dbb0c477c729d7149e53a3a0ede0045c00719e430bb78a592c0ee676"
+        },
+        "public_action": {
+          "action": "CALL",
+          "sizing": {
+            "observed_size_bb": 5,
+            "pot_before_bb": 9,
+            "pot_fraction": 0.5555555555555556,
+            "semantic": "INCREMENTAL_COST_BB",
+            "target_total_bb": 6
+          },
+          "source_step_id": 5
+        },
+        "source_observations": 0,
+        "target_total_bb": 6
+      }
+    ],
+    "public_only": true,
+    "schema": "poker-model-a-preflop-sizing-posterior-evidence/v1"
+  },
+  "production_effect": "NONE",
+  "reproduction": "python3 tools/training/fit_model_a_preflop_sizing.py --phase fit",
+  "reveal_bias": {
+    "hand_class_rows_are_reveal_selected": true,
+    "hidden_hands_imputed": false,
+    "source_reveal_fraction": 0.19613504671055224
+  },
+  "schema": "poker-model-a-preflop-sizing-fit-evidence/v1",
+  "source_support_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+  "split_consumed": "TRAIN",
+  "test_consumed": false,
+  "validation_consumed": false
+}

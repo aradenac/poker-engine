@@ -1,0 +1,76 @@
+{
+  "schema": "model-b-preflop-sensitivity-harness-contract/v1",
+  "issue": 344,
+  "parent_issue": 315,
+  "status": "SYNTHETIC_HARNESS_ONLY",
+  "future_dependency": "#314",
+  "canonical_input": {
+    "schema": "poker-preflop-decision/v1",
+    "projection": "tools/simulation/model_b_preflop_sensitivity_harness.py::project_canonical_decision",
+    "copied_fields": [
+      "id/alternative_id",
+      "action",
+      "target_total_bb",
+      "incremental_cost_bb"
+    ],
+    "ignored_fields": [
+      "ev_bb",
+      "uncertainty",
+      "confidence",
+      "support",
+      "selected_id",
+      "recommendation fields",
+      "Model A fields"
+    ]
+  },
+  "source_issue_340": {
+    "candidate_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json",
+    "reference_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/price_agnostic_reference.json",
+    "summary_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/SUMMARY.json",
+    "result_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+    "provenance_path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RUN_PROVENANCE.json",
+    "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+    "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+    "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+  },
+  "synthetic_fixture": {
+    "canonical_decision": "tests/fixtures/iso-sizing-diagnostics/canonical_decision.json",
+    "public_context": "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json",
+    "alternatives": [
+      "FOLD",
+      "OVERLIMP@1",
+      "ISO@4",
+      "ISO@5",
+      "ISO@6"
+    ]
+  },
+  "output_contract": {
+    "iso_metrics": [
+      "P(FOLD/CALL/RAISE/JAM) per responder",
+      "expected_continuers",
+      "P(all_fold)",
+      "P(3bet_or_jam)",
+      "caller partition",
+      "support/backoff/non-identifiability",
+      "pairwise sizing deltas"
+    ],
+    "non_iso_status": "NOT_APPLICABLE",
+    "aggressive_response_boundary": "RAISE/JAM is terminal; no response-to-3bet behavior is invented"
+  },
+  "scientific_boundaries": {
+    "real_issue_314_consumed": false,
+    "train_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false,
+    "model_a_consumed": false,
+    "hero_ev_consumed": false,
+    "recommendation_consumed": false,
+    "ui_modified": false,
+    "automatic_promotion": false,
+    "active_model_b_changed": false,
+    "production_effect": "NONE",
+    "nearest_price_substitution": false,
+    "out_of_domain_extrapolation": false,
+    "out_of_domain_sizing_status": "UNSUPPORTED_FAIL_CLOSED"
+  }
+}

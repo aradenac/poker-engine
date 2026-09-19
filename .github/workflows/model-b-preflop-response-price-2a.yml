@@ -1,0 +1,222 @@
+name: Model B preflop response-to-price tranche 2A
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/simulation/model_b_preflop_response_to_price.py'
+      - 'tools/training/evaluate_preflop_response_to_price_2a.py'
+      - 'tests/training/test_preflop_response_to_price_2a.py'
+      - 'training/runs/20260919_model_b_preflop_response_to_price_2a/**'
+      - '.github/workflows/model-b-preflop-response-price-2a.yml'
+  push:
+    branches:
+      - agent-C/issue-340-model-b-response-price-2a
+    paths:
+      - 'tools/simulation/model_b_preflop_response_to_price.py'
+      - 'tools/training/evaluate_preflop_response_to_price_2a.py'
+      - 'tests/training/test_preflop_response_to_price_2a.py'
+      - 'training/runs/20260919_model_b_preflop_response_to_price_2a/**'
+      - '.github/workflows/model-b-preflop-response-price-2a.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUN_DIR: training/runs/20260919_model_b_preflop_response_to_price_2a
+  SUPPORT: analysis/preflop_sizing_support_train.json
+  PROFILES: training/runs/20260912_independent_profiles_v2/model/profiles.json
+  CERTIFICATION: training/datasets/NLHE_100-200/population_certification.json
+
+jobs:
+  train-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Guard frozen protocol, #319 identity and TEST isolation
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          protocol=json.loads((run/"PROTOCOL.json").read_text())
+          support=json.loads(Path(os.environ["SUPPORT"]).read_text())
+          assert protocol["status"]=="FROZEN_BEFORE_VALIDATION"
+          assert protocol["split_contract"]["fit"]==["TRAIN"]
+          assert protocol["split_contract"]["evaluate"]==["VALIDATION"]
+          assert protocol["split_contract"]["forbidden"]==["TEST"]
+          assert protocol["split_contract"]["test_consumed"] is False
+          assert protocol["source_issue_319"]["report_hash"]==support["full_report"]["report_hash"]
+          assert protocol["method"]["no_cross_family_pooling"] is True
+          assert protocol["method"]["nearest_context_heuristic"] is False
+          assert protocol["scientific_constraints"]["model_a_features_allowed"] is False
+          assert protocol["scientific_constraints"]["hero_ev_or_recommendation_allowed"] is False
+          assert protocol["scientific_constraints"]["hero_sizing_sensitivity_allowed"] is False
+          assert protocol["scientific_constraints"]["automatic_promotion"] is False
+          assert protocol["scientific_constraints"]["active_model_b_change_allowed"] is False
+          assert protocol["scientific_constraints"]["production_effect"]=="NONE"
+          print("frozen issue #340 protocol / #319 identity / TEST isolation: PASS")
+          PY
+
+      - name: Compile and run 2A contract tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/simulation/model_b_preflop_response_to_price.py \
+            tools/training/evaluate_preflop_response_to_price_2a.py \
+            tests/training/test_preflop_response_to_price_2a.py
+          PYTHONPATH=. python3 tests/training/test_preflop_response_to_price_2a.py
+          PYTHONPATH=. python3 tests/training/test_preflop_response_to_price_scaffold_v1.py
+
+      - name: Run frozen TRAIN fit and independent VALIDATION twice
+        run: |
+          set -euo pipefail
+          rm -rf "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"
+          for out in "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"; do
+            PYTHONPATH=. python3 tools/training/evaluate_preflop_response_to_price_2a.py \
+              --protocol "$RUN_DIR/PROTOCOL.json" \
+              --support-summary "$SUPPORT" \
+              --profiles "$PROFILES" \
+              --certification "$CERTIFICATION" \
+              --output-dir "$out"
+          done
+          for f in \
+            model/candidate.json \
+            model/price_agnostic_reference.json \
+            TRAIN_FIT_AUDIT.json \
+            VALIDATION_REPORT.json \
+            SUMMARY.json \
+            RESULT.json; do
+            cmp "$RUN_DIR/.rerun-a/$f" "$RUN_DIR/.rerun-b/$f"
+          done
+          echo "deterministic TRAIN -> freeze -> VALIDATION rerun: PASS"
+
+      - name: Persist deterministic issue 340 evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUN_DIR/model"
+          cp "$RUN_DIR/.rerun-a/model/candidate.json" "$RUN_DIR/model/candidate.json"
+          cp "$RUN_DIR/.rerun-a/model/price_agnostic_reference.json" "$RUN_DIR/model/price_agnostic_reference.json"
+          cp "$RUN_DIR/.rerun-a/TRAIN_FIT_AUDIT.json" "$RUN_DIR/TRAIN_FIT_AUDIT.json"
+          cp "$RUN_DIR/.rerun-a/VALIDATION_REPORT.json" "$RUN_DIR/VALIDATION_REPORT.json"
+          cp "$RUN_DIR/.rerun-a/SUMMARY.json" "$RUN_DIR/SUMMARY.json"
+          cp "$RUN_DIR/.rerun-a/RESULT.json" "$RUN_DIR/RESULT.json"
+          rm -rf "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"
+
+      - name: Final scientific and lane-safety guards
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          audit=json.loads((run/"TRAIN_FIT_AUDIT.json").read_text())
+          report=json.loads((run/"VALIDATION_REPORT.json").read_text())
+          summary=json.loads((run/"SUMMARY.json").read_text())
+          result=json.loads((run/"RESULT.json").read_text())
+          candidate=json.loads((run/"model/candidate.json").read_text())
+          reference=json.loads((run/"model/price_agnostic_reference.json").read_text())
+
+          assert audit["fit_split"]=="TRAIN"
+          assert audit["validation_used_for_fit"] is False
+          assert audit["test_consumed"] is False
+          assert audit["no_cross_family_pooling"] is True
+          assert report["dataset"]["fit_split"]=="TRAIN"
+          assert report["dataset"]["evaluation_split"]=="VALIDATION"
+          assert report["dataset"]["test_consumed"] is False
+          assert report["comparability"]["same_validation_rows"] is True
+          assert report["comparability"]["model_a_features_consumed"] is False
+          assert report["comparability"]["hero_ev_or_recommendation_consumed"] is False
+          assert report["paired_action_log_loss"]["cluster_unit"]=="hand_id"
+          assert report["price_zone_validation"]
+          assert report["test_consumed"] is False
+          assert report["production_effect"]=="NONE"
+          assert report["automatic_promotion"] is False
+          assert report["active_model_b_changed"] is False
+          assert candidate["fit_split"]=="TRAIN" and reference["fit_split"]=="TRAIN"
+          assert candidate["reference_mode"] is False and reference["reference_mode"] is True
+          assert candidate["source_issue_319_report_hash"]==audit["source_issue_319_report_hash"]
+          assert candidate["feature_contract"]["no_cross_family_pooling"] is True
+          assert candidate["feature_contract"]["nearest_context_heuristic"] is False
+          assert candidate["test_consumed"] is False and reference["test_consumed"] is False
+          assert result["hero_sensitivity_run"] is False
+          assert result["hero_sensitivity_blocked_by"]=="#314"
+          assert result["parent_issue_315_should_remain_open"] is True
+          assert result["test_consumed"] is False
+          assert result["production_effect"]=="NONE"
+          assert result["automatic_promotion"] is False
+          assert all(result["scientific_dod"].values())
+          print(json.dumps({
+            "decision":summary["decision"],
+            "train_decisions":summary["train_decisions"],
+            "validation_decisions":summary["validation_decisions"],
+            "candidate_log_loss":summary["candidate_log_loss"],
+            "reference_log_loss":summary["reference_log_loss"],
+            "paired_candidate_minus_reference":summary["paired_candidate_minus_reference"],
+            "candidate_support_state_counts":summary["candidate_support_state_counts"],
+            "price_zones":summary["price_zones"],
+            "candidate_artifact_sha256":summary["candidate_artifact_sha256"],
+            "reference_artifact_sha256":summary["reference_artifact_sha256"],
+            "source_issue_319_report_hash":summary["source_issue_319_report_hash"],
+            "TEST_CONSUMED":False,
+            "production_effect":"NONE",
+          },indent=2,sort_keys=True))
+          PY
+          changed="$(git diff --name-only HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -E '(^|/)(107|108|holdout)|training/registry\.json|training/populations/|site/index\.html|site/trainer\.js|hero.*ev|model_a'; then
+            echo "forbidden TEST/cross-lane/Model-A/Hero-EV/UI mutation detected" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-340-model-b-preflop-response-price-2a
+          path: |
+            training/runs/20260919_model_b_preflop_response_to_price_2a/PROTOCOL.json
+            training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json
+            training/runs/20260919_model_b_preflop_response_to_price_2a/model/price_agnostic_reference.json
+            training/runs/20260919_model_b_preflop_response_to_price_2a/TRAIN_FIT_AUDIT.json
+            training/runs/20260919_model_b_preflop_response_to_price_2a/VALIDATION_REPORT.json
+            training/runs/20260919_model_b_preflop_response_to_price_2a/SUMMARY.json
+            training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json
+
+      - name: Commit persisted issue 340 evidence to branch
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "$RUN_DIR/model/candidate.json" \
+            "$RUN_DIR/model/price_agnostic_reference.json" \
+            "$RUN_DIR/TRAIN_FIT_AUDIT.json" \
+            "$RUN_DIR/VALIDATION_REPORT.json" \
+            "$RUN_DIR/SUMMARY.json" \
+            "$RUN_DIR/RESULT.json"
+          if git diff --cached --quiet; then
+            echo "No issue #340 evidence changes to commit"
+          else
+            git commit -m "[C][#340] Persist Model B preflop response-to-price 2A evidence"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            exit 1
+          fi

@@ -1,0 +1,234 @@
+name: Model B preflop sensitivity synthetic harness
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/simulation/model_b_preflop_sensitivity_harness.py'
+      - 'tests/simulation/test_model_b_preflop_sensitivity_harness.py'
+      - 'tests/fixtures/model_b_preflop_sensitivity/**'
+      - 'contracts/training/model-b-preflop-sensitivity-harness-request.schema.json'
+      - 'training/runs/20260919_model_b_preflop_sensitivity_harness_v1/**'
+      - 'docs/model-b-preflop-sensitivity-harness.md'
+      - '.github/workflows/model-b-preflop-sensitivity-harness.yml'
+  push:
+    branches:
+      - agent-C/issue-344-model-b-sensitivity-harness
+    paths:
+      - 'tools/simulation/model_b_preflop_sensitivity_harness.py'
+      - 'tests/simulation/test_model_b_preflop_sensitivity_harness.py'
+      - 'tests/fixtures/model_b_preflop_sensitivity/**'
+      - 'contracts/training/model-b-preflop-sensitivity-harness-request.schema.json'
+      - 'training/runs/20260919_model_b_preflop_sensitivity_harness_v1/**'
+      - 'docs/model-b-preflop-sensitivity-harness.md'
+      - '.github/workflows/model-b-preflop-sensitivity-harness.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUN_DIR: training/runs/20260919_model_b_preflop_sensitivity_harness_v1
+  DECISION: tests/fixtures/iso-sizing-diagnostics/canonical_decision.json
+  CONTEXT: tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json
+  SOURCE340: training/runs/20260919_model_b_preflop_response_to_price_2a
+
+jobs:
+  synthetic-harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Guard synthetic-only contract and #340 identity
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          source=Path(os.environ["SOURCE340"])
+          contract=json.loads((run/"HARNESS_CONTRACT.json").read_text())
+          summary=json.loads((source/"SUMMARY.json").read_text())
+          result=json.loads((source/"RESULT.json").read_text())
+          provenance=json.loads((source/"RUN_PROVENANCE.json").read_text())
+          assert contract["status"]=="SYNTHETIC_HARNESS_ONLY"
+          b=contract["scientific_boundaries"]
+          assert b["real_issue_314_consumed"] is False
+          assert b["train_consumed"] is False
+          assert b["validation_consumed"] is False
+          assert b["test_consumed"] is False
+          assert b["model_a_consumed"] is False
+          assert b["hero_ev_consumed"] is False
+          assert b["automatic_promotion"] is False
+          assert b["active_model_b_changed"] is False
+          assert b["production_effect"]=="NONE"
+          assert b["nearest_price_substitution"] is False
+          s340=contract["source_issue_340"]
+          assert summary["candidate_artifact_sha256"]==s340["candidate_artifact_sha256"]
+          assert summary["reference_artifact_sha256"]==s340["reference_artifact_sha256"]
+          assert summary["source_issue_319_report_hash"]==s340["source_issue_319_report_hash"]
+          assert result["test_consumed"] is False
+          assert result["production_effect"]=="NONE"
+          assert result["active_model_b_changed"] is False
+          assert provenance["scientific_identity"]["test_consumed"] is False
+          print("synthetic-only / #340 evidence guards: PASS")
+          PY
+
+      - name: Compile and test harness
+        run: |
+          set -euo pipefail
+          python3 -m py_compile             tools/simulation/model_b_preflop_sensitivity_harness.py             tests/simulation/test_model_b_preflop_sensitivity_harness.py
+          PYTHONPATH=. python3 tests/simulation/test_model_b_preflop_sensitivity_harness.py
+
+      - name: Generate synthetic harness evidence twice
+        run: |
+          set -euo pipefail
+          rm -rf "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"
+          for out in "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"; do
+            mkdir -p "$out"
+            PYTHONPATH=. python3 tools/simulation/model_b_preflop_sensitivity_harness.py               --decision "$DECISION"               --context "$CONTEXT"               --candidate "$SOURCE340/model/candidate.json"               --reference "$SOURCE340/model/price_agnostic_reference.json"               --summary "$SOURCE340/SUMMARY.json"               --result "$SOURCE340/RESULT.json"               --provenance "$SOURCE340/RUN_PROVENANCE.json"               --request-output "$out/PROJECTED_REQUEST.json"               --output "$out/SYNTHETIC_REPORT.json"
+          done
+          cmp "$RUN_DIR/.rerun-a/PROJECTED_REQUEST.json" "$RUN_DIR/.rerun-b/PROJECTED_REQUEST.json"
+          cmp "$RUN_DIR/.rerun-a/SYNTHETIC_REPORT.json" "$RUN_DIR/.rerun-b/SYNTHETIC_REPORT.json"
+          echo "deterministic synthetic harness rerun: PASS"
+
+      - name: Persist synthetic evidence and RESULT
+        run: |
+          set -euo pipefail
+          cp "$RUN_DIR/.rerun-a/PROJECTED_REQUEST.json" "$RUN_DIR/PROJECTED_REQUEST.json"
+          cp "$RUN_DIR/.rerun-a/SYNTHETIC_REPORT.json" "$RUN_DIR/SYNTHETIC_REPORT.json"
+          rm -rf "$RUN_DIR/.rerun-a" "$RUN_DIR/.rerun-b"
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          report=json.loads((run/"SYNTHETIC_REPORT.json").read_text())
+          request=json.loads((run/"PROJECTED_REQUEST.json").read_text())
+          candidate={x["alternative_id"]:x for x in report["candidate"]["alternatives"]}
+          result={
+            "schema":"model-b-preflop-sensitivity-harness-result/v1",
+            "issue":344,
+            "parent_issue":315,
+            "status":"COMPLETE_SYNTHETIC_HARNESS_ONLY",
+            "real_issue_314_consumed":False,
+            "validation_consumed":False,
+            "test_consumed":False,
+            "production_effect":"NONE",
+            "automatic_promotion":False,
+            "active_model_b_changed":False,
+            "report_sha256":report["report_sha256"],
+            "projected_request_sha256":report["input_request_sha256"],
+            "issue_340_identity":report["issue_340_identity"],
+            "synthetic_alternative_status":{k:v["status"] for k,v in sorted(candidate.items())},
+            "dod":{
+              "future_314_canonical_projection":True,
+              "model_a_ev_recommendation_excluded":True,
+              "action_and_exact_sizing_distinct":True,
+              "synthetic_4_5_6_diagnostics_separate":all(candidate[x]["status"]=="AVAILABLE" for x in ("ISO@4","ISO@5","ISO@6")),
+              "support_backoff_non_identifiability_exposed":True,
+              "nearest_price_substitution_forbidden":True,
+              "out_of_domain_sizing_fail_closed":True,
+              "issue_340_candidate_reference_provenance_verified":True,
+              "deterministic_outputs":True,
+              "synthetic_tests_passed":True,
+              "real_issue_314_not_consumed":True,
+              "validation_unconsumed":True,
+              "test_unconsumed":True,
+              "production_effect_none":True
+            },
+            "parent_issue_315_should_remain_open":True
+          }
+          (run/"RESULT.json").write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+          PY
+
+      - name: Final DoD and lane-safety guards
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          run=Path(os.environ["RUN_DIR"])
+          request=json.loads((run/"PROJECTED_REQUEST.json").read_text())
+          report=json.loads((run/"SYNTHETIC_REPORT.json").read_text())
+          result=json.loads((run/"RESULT.json").read_text())
+          assert request["source_kind"]=="SYNTHETIC_HARNESS_ONLY"
+          assert report["status"]=="SYNTHETIC_HARNESS_ONLY"
+          assert all(result["dod"].values()), result["dod"]
+          assert result["real_issue_314_consumed"] is False
+          assert result["validation_consumed"] is False
+          assert result["test_consumed"] is False
+          assert result["production_effect"]=="NONE"
+          assert result["automatic_promotion"] is False
+          assert result["active_model_b_changed"] is False
+          assert result["parent_issue_315_should_remain_open"] is True
+          assert report["scope"]["model_a_consumed"] is False
+          assert report["scope"]["hero_ev_consumed"] is False
+          assert report["scope"]["recommendation_consumed"] is False
+          assert report["scope"]["train_consumed"] is False
+          assert report["scope"]["validation_consumed"] is False
+          assert report["scope"]["test_consumed"] is False
+          for section in ("candidate","reference_control"):
+              rows={x["alternative_id"]:x for x in report[section]["alternatives"]}
+              assert rows["FOLD"]["status"]=="NOT_APPLICABLE"
+              assert rows["OVERLIMP@1"]["status"]=="NOT_APPLICABLE"
+              for key,target in (("ISO@4",4),("ISO@5",5),("ISO@6",6)):
+                  assert rows[key]["status"]=="AVAILABLE"
+                  assert rows[key]["target_total_bb"]==target
+                  assert rows[key]["support"]["nearest_price_substitution"] is False
+          print(json.dumps({
+            "status":result["status"],
+            "report_sha256":result["report_sha256"],
+            "issue_340_identity":result["issue_340_identity"],
+            "synthetic_alternative_status":result["synthetic_alternative_status"],
+            "TEST_CONSUMED":False,
+            "VALIDATION_CONSUMED":False,
+            "REAL_314_CONSUMED":False,
+            "production_effect":"NONE"
+          },indent=2,sort_keys=True))
+          PY
+          changed="$(git diff --name-only HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -E '(^|/)(107|108|holdout)|training/registry\.json|training/populations/|site/index\.html|site/trainer\.js|model_a|hero.*ev'; then
+            echo "forbidden cross-lane/Model-A/Hero-EV/UI/promotion mutation detected" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-344-model-b-preflop-sensitivity-harness
+          path: |
+            training/runs/20260919_model_b_preflop_sensitivity_harness_v1/HARNESS_CONTRACT.json
+            training/runs/20260919_model_b_preflop_sensitivity_harness_v1/PROJECTED_REQUEST.json
+            training/runs/20260919_model_b_preflop_sensitivity_harness_v1/SYNTHETIC_REPORT.json
+            training/runs/20260919_model_b_preflop_sensitivity_harness_v1/RESULT.json
+
+      - name: Commit persisted synthetic harness evidence
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             "$RUN_DIR/PROJECTED_REQUEST.json"             "$RUN_DIR/SYNTHETIC_REPORT.json"             "$RUN_DIR/RESULT.json"
+          if git diff --cached --quiet; then
+            echo "No #344 evidence changes to commit"
+          else
+            git commit -m "[C][#344] Persist synthetic Model B sensitivity harness evidence"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            exit 1
+          fi

@@ -1,0 +1,49 @@
+{
+  "active_model_b_changed": false,
+  "automatic_promotion": false,
+  "dod": {
+    "action_and_exact_sizing_distinct": true,
+    "deterministic_outputs": true,
+    "future_314_canonical_projection": true,
+    "issue_340_candidate_reference_provenance_verified": true,
+    "model_a_ev_recommendation_excluded": true,
+    "nearest_price_substitution_forbidden": true,
+    "out_of_domain_sizing_fail_closed": true,
+    "production_effect_none": true,
+    "real_issue_314_not_consumed": true,
+    "support_backoff_non_identifiability_exposed": true,
+    "synthetic_4_5_6_diagnostics_separate": true,
+    "synthetic_tests_passed": true,
+    "test_unconsumed": true,
+    "validation_unconsumed": true
+  },
+  "issue": 344,
+  "issue_340_identity": {
+    "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+    "production_effect": "NONE",
+    "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+    "source_issue": 340,
+    "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "test_consumed_by_this_harness": false,
+    "upstream_validation_evidence_referenced": true,
+    "validation_data_consumed_by_this_harness": false,
+    "workflow_run_id": 35446229547
+  },
+  "parent_issue": 315,
+  "parent_issue_315_should_remain_open": true,
+  "production_effect": "NONE",
+  "projected_request_sha256": "c4ba13679e866c1cd54562d40ad107f2a2ae9bf9a2fdb32a98494ae4d043faa3",
+  "real_issue_314_consumed": false,
+  "report_sha256": "05b23bcce7ade7616dd42158ecda2d6703bb6e175a4aca478ebec23f144a4c5f",
+  "schema": "model-b-preflop-sensitivity-harness-result/v1",
+  "status": "COMPLETE_SYNTHETIC_HARNESS_ONLY",
+  "synthetic_alternative_status": {
+    "FOLD": "NOT_APPLICABLE",
+    "ISO@4": "AVAILABLE",
+    "ISO@5": "AVAILABLE",
+    "ISO@6": "AVAILABLE",
+    "OVERLIMP@1": "NOT_APPLICABLE"
+  },
+  "test_consumed": false,
+  "validation_consumed": false
+}

@@ -49,7 +49,7 @@
           "git_blob_sha": "03d5f4490cc7710644a32f9d4c17344e0a926c7c"
         },
         "site/index.html": {
-          "git_blob_sha": "13ac2b113b33b53534f9788cbde670c4b5c5ce59"
+          "git_blob_sha": "31a582eff100249e52b4fc687ed3b1a6ec57e1bd"
         },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
@@ -76,7 +76,7 @@
           "git_blob_sha": "d5cebf63370ce3d49ccedbcb43bed44f1a55b926"
         },
         "site/training/preflop-runtime.js": {
-          "git_blob_sha": "17f0de3ca890516fb554b864664cce00caafe29a"
+          "git_blob_sha": "17471015fbe75b8cbe0d44b2342e90d54562c537"
         }
       }
     },

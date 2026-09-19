@@ -181,6 +181,9 @@ class ModelAPosteriorRuntime:
         trace: Sequence[Mapping[str, Any]],
         player: str,
     ) -> tuple[list[str], int]:
+        sizing_hook = getattr(self.policy, "posterior_support_for_trace", None)
+        if callable(sizing_hook):
+            return sizing_hook(trace, player)
         node_ids: list[str] = []
         supports: list[int] = []
         for item in trace:
