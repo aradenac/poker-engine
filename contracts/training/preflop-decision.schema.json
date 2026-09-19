@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/preflop-decision.schema.json",
+  "title": "Canonical runtime preflop decision",
+  "description": "Runtime/public-state superset of poker-preflop-decision/v1. Recommendation fields are populated only from admissible promoted guidance; fail-closed decisions retain public/played state with recommendation evidence null.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema","contract_profile","decision_id","hand_id","timestamp","street","public_state_fingerprint",
+    "public_state","context_id","hero_position","effective_stack_bb","pot_before_action_bb",
+    "facing_action","facing_context","played_action","played_target_sizing","recommended_action",
+    "recommended_target_sizing","incremental_cost_bb","recommended_ev_bb","played_ev_bb","delta_ev_bb",
+    "ev_comparable","alternatives","coverage_state","support_tier","support",
+    "recommendation_admissibility","reason_codes","identity","information_boundary"
+  ],
+  "properties": {
+    "schema": {"const": "poker-preflop-decision/v1"},
+    "contract_profile": {"const": "CANONICAL_RUNTIME_DECISION_V1"},
+    "decision_id": {"type":"string","minLength":1},
+    "hand_id": {"type":["string","null"]},
+    "timestamp": {"type":["string","null"]},
+    "street": {"const":"PREFLOP"},
+    "public_state_fingerprint": {"type":"string","pattern":"^preflop-public:"},
+    "public_state": {
+      "type":"object","additionalProperties":false,
+      "required":["actor","legal_actions","to_call_bb","current_bet_bb","actor_contribution_bb","actor_remaining_bb"],
+      "properties":{
+        "actor":{"type":"string"},"legal_actions":{"type":"array","items":{"type":"string"}},
+        "to_call_bb":{"type":"number"},"current_bet_bb":{"type":"number"},
+        "actor_contribution_bb":{"type":"number"},"actor_remaining_bb":{"type":"number"}
+      }
+    },
+    "context_id":{"type":["string","null"]},
+    "hero_position":{"type":"string"},
+    "effective_stack_bb":{"type":"number"},
+    "pot_before_action_bb":{"type":"number"},
+    "facing_action":{"type":"string"},
+    "facing_context":{"type":"string"},
+    "played_action":{"type":["string","null"]},
+    "played_target_sizing":{"$ref":"#/$defs/sizingOrNull"},
+    "recommended_action":{"type":["string","null"]},
+    "recommended_target_sizing":{"$ref":"#/$defs/sizingOrNull"},
+    "incremental_cost_bb":{"type":["number","null"]},
+    "recommended_ev_bb":{"type":["number","null"]},
+    "played_ev_bb":{"type":["number","null"]},
+    "delta_ev_bb":{"type":["number","null"]},
+    "ev_comparable":{"type":"boolean"},
+    "alternatives":{"type":"array","items":{"$ref":"#/$defs/alternative"}},
+    "coverage_state":{"enum":["COVERED","LOW_SUPPORT","UNSUPPORTED","NON_COMPARABLE","ANALYSIS_MISSING","UNCOVERED"]},
+    "support_tier":{"type":"string"},
+    "support":{"type":["object","null"]},
+    "recommendation_admissibility":{
+      "type":"object","additionalProperties":false,
+      "required":["admissible","status","default_advice","reason_codes","source_guidance_schema","source_recommendation_state","selected_alternative_id"],
+      "properties":{
+        "admissible":{"type":"boolean"},"status":{"type":"string"},"default_advice":{"type":"boolean"},
+        "reason_codes":{"type":"array","items":{"type":"string"}},
+        "source_guidance_schema":{"type":["string","null"]},
+        "source_recommendation_state":{"type":["string","null"]},
+        "selected_alternative_id":{"type":["string","null"]}
+      }
+    },
+    "reason_codes":{"type":"array","items":{"type":"string"}},
+    "identity":{"$ref":"#/$defs/identity"},
+    "information_boundary":{
+      "type":"object","additionalProperties":false,
+      "required":["public_only_fingerprint","future_cards_consumed","opponent_hole_cards_consumed","ignored_sensitive_fields","fingerprint_excludes_board_and_private_cards"],
+      "properties":{
+        "public_only_fingerprint":{"const":true},"future_cards_consumed":{"const":false},
+        "opponent_hole_cards_consumed":{"const":false},
+        "ignored_sensitive_fields":{"type":"array","items":{"type":"string"}},
+        "fingerprint_excludes_board_and_private_cards":{"const":true}
+      }
+    }
+  },
+  "$defs":{
+    "sizingOrNull":{
+      "oneOf":[
+        {"type":"null"},
+        {"type":"object","additionalProperties":false,"required":["target_total_bb","bet_to_bb"],
+          "properties":{"target_total_bb":{"type":"number"},"bet_to_bb":{"type":"number"}}}
+      ]
+    },
+    "identity":{
+      "type":"object","additionalProperties":false,
+      "required":["population_id","pack_id","pack_version","strategy_id","strategy_version","strategy_sha256","decision_source_sha256","ev_reference"],
+      "properties":{
+        "population_id":{"type":"string","minLength":1},"pack_id":{"type":["string","null"]},"pack_version":{"type":["string","null"]},
+        "strategy_id":{"type":"string","minLength":1},"strategy_version":{"type":"string","minLength":1},
+        "strategy_sha256":{"type":["string","null"]},"decision_source_sha256":{"type":["string","null"]},
+        "ev_reference":{"type":"string","minLength":1}
+      }
+    },
+    "alternative":{
+      "type":"object","additionalProperties":false,
+      "required":["id","action","target_sizing","incremental_cost_bb","ev_bb","uncertainty","support","confidence","comparable","comparability_reason"],
+      "properties":{
+        "id":{"type":"string"},"action":{"type":"string"},"target_sizing":{"$ref":"#/$defs/sizingOrNull"},
+        "incremental_cost_bb":{"type":["number","null"]},"ev_bb":{"type":["number","null"]},
+        "uncertainty":{"type":["object","null"]},"support":{"type":["object","null"]},
+        "confidence":{"type":["number","null"]},"comparable":{"type":"boolean"},
+        "comparability_reason":{"type":["string","null"]}
+      }
+    }
+  }
+}
