@@ -188,6 +188,32 @@
   .hh-review.partial .amount{color:#b8cae6}
   .hh-review.complete .amount{color:#f1c66d}
   .hh-review.unknown{opacity:.62}
+  .review-inbox-summary{margin:2px 0 12px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627;color:var(--muted);font-size:10px;line-height:1.45}
+  .review-inbox-primary-tools{display:flex;align-items:end;gap:9px;flex-wrap:wrap;margin:10px 0 8px}
+  .review-inbox-primary-tools .field{min-width:170px}
+  .review-inbox-filters{margin:6px 0 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627}
+  .review-inbox-filters>summary{cursor:pointer;padding:8px 10px;color:var(--muted);font-size:9px;font-weight:800}
+  .review-inbox-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:0 10px 10px}
+  .review-inbox-filter-grid .field{min-width:0}
+  .review-inbox-notice{min-height:16px;margin:4px 0 7px;color:var(--muted);font-size:9px}
+  .review-inbox-notice.warn{color:#f1c66d}
+  .review-inbox-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;width:100%;text-align:left}
+  .review-inbox-open{display:grid;grid-template-columns:104px minmax(150px,1.1fr) minmax(190px,1.45fr);gap:10px;align-items:center;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+  .review-inbox-open:hover,.review-inbox-open:focus{background:transparent;border-color:transparent;outline:2px solid rgba(92,225,185,.28);outline-offset:4px}
+  .review-inbox-loss{font-size:10px;color:var(--muted)}
+  .review-inbox-loss b{display:block;font-size:15px;color:#f1c66d;margin-top:2px}
+  .review-inbox-spot strong,.review-inbox-decision strong{display:block;font-size:11px;color:var(--text)}
+  .review-inbox-spot small,.review-inbox-decision small{display:block;margin-top:2px;color:var(--muted);font-size:9px;line-height:1.35}
+  .review-inbox-status{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .review-inbox-status-badge{display:inline-flex;padding:3px 6px;border:1px solid var(--border);border-radius:999px;font-size:8px;font-weight:900;white-space:nowrap}
+  .review-inbox-status-badge.incomplete{border-color:rgba(241,198,109,.38);color:#f1c66d}
+  .review-inbox-reviewed-toggle{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:8px;white-space:nowrap}
+  .review-inbox-reviewed-toggle input{width:auto}
+  @media(max-width:900px){
+    .review-inbox-row{grid-template-columns:minmax(0,1fr) 132px}
+    .review-inbox-open{grid-template-columns:90px 1fr}
+    .review-inbox-decision{grid-column:2}
+  }
   @media(max-width:760px){
     .hh-hand{grid-template-columns:96px minmax(0,1fr) 96px 78px}
     .hh-cards{display:none}
@@ -1146,7 +1172,8 @@
     </section>
 
     <section id="historiesSection" class="panel wide">
-      <h2>Review · Mes Hand Histories PokerStars</h2>
+      <h2>Review</h2>
+      <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
       <div class="hh-import-primary">
         <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
         <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
@@ -1177,24 +1204,53 @@
       </details>
 
       <div id="handSelectionSection" class="hh-selection-section">
-        <div class="hh-selection-title">Sélection de main</div>
-        <div class="hh-list-tools">
+        <div class="hh-selection-title">Inbox de review</div>
+        <div class="review-inbox-primary-tools">
           <div class="field">
-            <label for="hhSortSelect">Tri des mains</label>
-            <select id="hhSortSelect">
-              <option value="date_desc">Date — plus récentes d'abord</option>
-              <option value="date_asc">Date — plus anciennes d'abord</option>
-              <option value="result_desc">Résultat — plus gros gains d'abord</option>
-              <option value="result_asc">Résultat — plus grosses pertes d'abord</option>
-              <option value="review_desc">Perte EV cumulée — plus élevée d’abord</option>
+            <label for="reviewStatusFilter">Statut</label>
+            <select id="reviewStatusFilter">
+              <option value="">Tous</option>
+              <option value="TO_REVIEW">À revoir</option>
+              <option value="REVIEWED">Revue</option>
+              <option value="CORRECT">Correcte</option>
+              <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
             </select>
           </div>
-          <label class="hh-filter-check">
-            <input id="hhKnownFilter" type="checkbox">
-            Cartes adversaires connues &gt; 0
-          </label>
+          <div class="field">
+            <label for="reviewCoverageFilter">Couverture</label>
+            <select id="reviewCoverageFilter">
+              <option value="">Toutes</option>
+              <option value="COMPLETE">Complète</option>
+              <option value="INCOMPLETE">Incomplète</option>
+            </select>
+          </div>
           <div id="hhListCount" class="hh-list-count">0 main affichée</div>
         </div>
+        <details class="review-inbox-filters">
+          <summary>Filtres secondaires</summary>
+          <div class="review-inbox-filter-grid">
+            <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewSpotFilter">Spot family</label><select id="reviewSpotFilter"><option value="">Tous</option></select></div>
+            <div class="field"><label for="reviewPlayedFilter">Action jouée</label><select id="reviewPlayedFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewRecommendedFilter">Action recommandée</label><select id="reviewRecommendedFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewSizingFilter">Sizing error</label><select id="reviewSizingFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field"><label for="reviewJamFilter">Jam</label><select id="reviewJamFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field"><label for="reviewOverbetFilter">Overbet</label><select id="reviewOverbetFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field">
+              <label for="hhSortSelect">Ordre</label>
+              <select id="hhSortSelect">
+                <option value="review_desc">Perte EV — décroissante</option>
+                <option value="status_asc">Statut</option>
+                <option value="street_asc">Street</option>
+                <option value="position_asc">Position</option>
+                <option value="hand_asc">ID de main</option>
+              </select>
+            </div>
+            <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
+          </div>
+        </details>
+        <div id="reviewInboxNotice" class="review-inbox-notice" aria-live="polite"></div>
         <div id="hhHands" class="hh-list"></div>
       </div>
 
@@ -1370,6 +1426,9 @@
   </div>
 </div>
 
+<script src="./analytics/leak-analyzer.js"></script>
+<script src="./analytics/review-score-adapter.js"></script>
+<script src="./analytics/review-inbox.js"></script>
 <script src="./preflop-contract.js"></script>
 <script>
 "use strict";
@@ -1404,9 +1463,14 @@ const state = {
   rangeEdition:false,
   rangeEdits:Object.create(null),
   hhHands:[],
-  hhSort:"date_desc",
+  hhSort:"review_desc",
   hhKnownOnly:false,
   reviewScores:Object.create(null),
+  reviewInboxUserMetadataByScope:Object.create(null),
+  reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""},
+  reviewInboxView:null,
+  reviewInboxPersistTimer:null,
+  reviewInboxLastError:"",
   reviewPersistTimer:null,
   reviewListRefreshTimer:null,
   reviewBatchQueue:[],
@@ -1471,6 +1535,11 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
+      reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
+      reviewStatusFilter=$("reviewStatusFilter"), reviewCoverageFilter=$("reviewCoverageFilter"),
+      reviewStreetFilter=$("reviewStreetFilter"), reviewPositionFilter=$("reviewPositionFilter"), reviewSpotFilter=$("reviewSpotFilter"),
+      reviewPlayedFilter=$("reviewPlayedFilter"), reviewRecommendedFilter=$("reviewRecommendedFilter"),
+      reviewSizingFilter=$("reviewSizingFilter"), reviewJamFilter=$("reviewJamFilter"), reviewOverbetFilter=$("reviewOverbetFilter"),
       activePopulationIdentity=$("activePopulationIdentity"), activeStrategyIdentity=$("activeStrategyIdentity"),
       runtimeIdentityDetails=$("runtimeIdentityDetails"), runtimeAppVersion=$("runtimeAppVersion"), runtimeEngineVersion=$("runtimeEngineVersion"),
       runtimeModelAIdentity=$("runtimeModelAIdentity"), runtimeModelBIdentity=$("runtimeModelBIdentity"),
@@ -1836,6 +1905,7 @@ async function clearLocalPersistenceWithConfirmation(){
   state.restoringLocalState=true;
   if(state.persistPrefsTimer){clearTimeout(state.persistPrefsTimer);state.persistPrefsTimer=null;}
   if(state.reviewPersistTimer){clearTimeout(state.reviewPersistTimer);state.reviewPersistTimer=null;}
+  if(state.reviewInboxPersistTimer){clearTimeout(state.reviewInboxPersistTimer);state.reviewInboxPersistTimer=null;}
   if(state.hhWatchTimer){clearInterval(state.hhWatchTimer);state.hhWatchTimer=null;}
   state.hhWatchHandles=[];state.hhWatchMeta=[];state.hhWatchChecking=false;
   try{
@@ -3148,6 +3218,148 @@ function reviewContextSignature(){
     pm.name||'',pm.size||'',pm.schemaVersion||'',pf.name||'',pf.size||'',pf.schemaVersion||''
   ].join('|'));
 }
+const REVIEW_INBOX_METADATA_DB_KEY="reviewInboxUserMetadataByScope";
+
+function reviewInboxScopeInput(){
+  const population=state.populationModel?.population_id||state.populationModel?.populationId||state.populationModelMeta?.name||"review-local";
+  const pack=state.populationModel?.pack_id||state.populationModel?.packId||null;
+  return {
+    population_id:String(population),
+    pack_id:pack==null?null:String(pack),
+    strategy_id:"hero-custom",
+    strategy_version:"app-v83",
+    ev_reference:window.PokerReviewLeakAdapter?.DEFAULT_EV_REFERENCE||"review_score_policy_adjusted_incremental_bb"
+  };
+}
+function reviewInboxSourceScores(){
+  const sig=reviewContextSignature(),out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand.id),score=state.reviewScores?.[id];
+    out[id]=(score&&score.signature===sig)?score:{
+      handId:id,signature:sig,complete:false,analyzableDecisions:0,finishedDecisions:0,details:[]
+    };
+  }
+  return out;
+}
+function reviewInboxHHSources(){
+  return (state.hhHands||[]).map((hand,index)=>({
+    name:hand.sourceName||`review-inbox-${index+1}.txt`,
+    content:String(hand.raw||"")
+  })).filter(row=>row.content.trim());
+}
+function reviewInboxBuild(){
+  const Inbox=window.PokerReviewInbox;
+  if(!Inbox?.buildReviewInbox){state.reviewInboxLastError="Contrat poker-review-inbox/v1 indisponible.";return null;}
+  try{
+    const input={reviewScores:reviewInboxSourceScores(),hhSources:reviewInboxHHSources(),scope:reviewInboxScopeInput()};
+    const preview=Inbox.buildReviewInbox(input);
+    const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
+    const inbox=Inbox.buildReviewInbox({...input,user_metadata:metadata});
+    state.reviewInboxLastError="";
+    return inbox;
+  }catch(err){
+    state.reviewInboxLastError=String(err?.message||err);
+    return null;
+  }
+}
+function reviewInboxFiltersInput(){
+  const f=state.reviewInboxFilters||{};
+  return {
+    status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
+    action_played:f.action_played||"",action_recommended:f.action_recommended||"",
+    sizing_error:f.sizing_error||"",jam:f.jam||"",overbet:f.overbet||"",coverage:f.coverage||""
+  };
+}
+function reviewInboxSortMode(){
+  return ({review_desc:"EV_LOSS_DESC",status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"})[state.hhSort]||"EV_LOSS_DESC";
+}
+function reviewInboxQuery(inbox=reviewInboxBuild()){
+  const Inbox=window.PokerReviewInbox;
+  if(!Inbox?.queryInbox||!inbox)return null;
+  try{return Inbox.queryInbox(inbox,reviewInboxFiltersInput(),reviewInboxSortMode());}
+  catch(err){state.reviewInboxLastError=String(err?.message||err);return null;}
+}
+function reviewInboxUnique(items,field){
+  const vals=[];
+  for(const item of items||[]){
+    const value=item?.[field];
+    if(Array.isArray(value))vals.push(...value);else if(value!=null&&String(value)!=="")vals.push(value);
+  }
+  return [...new Set(vals.map(String))].sort((a,b)=>a.localeCompare(b));
+}
+function syncReviewFilterSelect(select,values,allLabel){
+  if(!select)return;
+  const current=select.value,options=[`<option value="">${escapeHtml(allLabel)}</option>`,...values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`)];
+  select.innerHTML=options.join("");
+  if(values.includes(current))select.value=current;
+}
+function syncReviewInboxFilterOptions(inbox){
+  const items=inbox?.items||[];
+  syncReviewFilterSelect(reviewStreetFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"streets"),"Toutes");
+  syncReviewFilterSelect(reviewPositionFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"positions"),"Toutes");
+  syncReviewFilterSelect(reviewSpotFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"spot_families"),"Tous");
+  syncReviewFilterSelect(reviewPlayedFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"played_actions"),"Toutes");
+  syncReviewFilterSelect(reviewRecommendedFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"recommended_actions"),"Toutes");
+}
+function schedulePersistReviewInboxMetadata(delay=80){
+  if(state.restoringLocalState)return;
+  if(state.reviewInboxPersistTimer)clearTimeout(state.reviewInboxPersistTimer);
+  state.reviewInboxPersistTimer=setTimeout(async()=>{
+    state.reviewInboxPersistTimer=null;
+    try{await localDbSet(REVIEW_INBOX_METADATA_DB_KEY,state.reviewInboxUserMetadataByScope||{});}
+    catch(err){console.warn("Review Inbox metadata persistence failed",err);persistenceStatus("Le statut utilisateur de la Review Inbox n’a pas pu être sauvegardé.",true);}
+  },delay);
+}
+function setReviewInboxReviewed(handId,reviewed){
+  const Inbox=window.PokerReviewInbox,inbox=reviewInboxBuild();
+  if(!Inbox?.setReviewed||!inbox)return false;
+  const before=JSON.stringify(state.reviewScores||{});
+  const current=state.reviewInboxUserMetadataByScope?.[inbox.scope_key]||Inbox.normalizeUserMetadata({});
+  const next=Inbox.setReviewed(current,String(handId),!!reviewed,reviewed?new Date().toISOString():null);
+  state.reviewInboxUserMetadataByScope[inbox.scope_key]=next;
+  if(JSON.stringify(state.reviewScores||{})!==before)throw new Error("Review Inbox user metadata must not mutate reviewScores");
+  schedulePersistReviewInboxMetadata();
+  renderHistoryHands();
+  return true;
+}
+function resolveReviewInboxDeepLink(descriptor,handId,replaySteps,reviewSummary){
+  const id=String(handId||""),idx=Number(descriptor?.step_index);
+  if(descriptor?.schema!==window.PokerReviewInbox?.DEEP_LINK_SCHEMA)return {exact:false,reason:"INVALID_SCHEMA",stepIndex:0};
+  if(String(descriptor?.hand_id||"")!==id)return {exact:false,reason:"HAND_MISMATCH",stepIndex:0};
+  if(!Number.isInteger(idx)||idx<0)return {exact:false,reason:"INVALID_STEP",stepIndex:0};
+  if(String(descriptor?.decision_id||"")!==`review:${id}:${idx}`)return {exact:false,reason:"DECISION_ID_MISMATCH",stepIndex:0};
+  const details=Array.isArray(reviewSummary?.details)?reviewSummary.details:[];
+  if(!details.some(d=>Number(d?.stepIndex)===idx))return {exact:false,reason:"DECISION_NOT_FOUND",stepIndex:0};
+  if(!Array.isArray(replaySteps)||!replaySteps[idx])return {exact:false,reason:"STEP_NOT_FOUND",stepIndex:0};
+  return {exact:true,reason:"EXACT",stepIndex:idx};
+}
+function openReviewInboxDeepLink(descriptor){
+  const handId=String(descriptor?.hand_id||""),hand=state.hhHands.find(h=>String(h.id)===handId);
+  if(!hand)return {opened:false,exact:false,reason:"HAND_NOT_FOUND",stepIndex:0};
+  const summary=state.reviewScores?.[handId]||null;
+  selectHistoryHandById(handId,{open:false});
+  const resolved=resolveReviewInboxDeepLink(descriptor,handId,state.replaySteps,summary);
+  if(resolved.exact)setReplayIndexAndRecalculate(resolved.stepIndex);
+  else state.replayIndex=0;
+  openReplayerPage({scrollTop:true});
+  if(replayerExportStatus){
+    replayerExportStatus.textContent=resolved.exact
+      ?`Décision prioritaire ouverte · étape ${resolved.stepIndex+1}`
+      :"Décision ciblée introuvable dans cette version de la main · aucune autre décision n’a été sélectionnée.";
+    replayerExportStatus.className=`replayer-export-status${resolved.exact?"":" warn"}`;
+  }
+  return {opened:true,...resolved};
+}
+function openReviewInboxItem(item){
+  if(item?.deep_link)return openReviewInboxDeepLink(item.deep_link);
+  selectHistoryHandById(item?.hand_id||"");
+  if(replayerExportStatus){
+    replayerExportStatus.textContent="Analyse incomplète · aucune décision comparable à cibler.";
+    replayerExportStatus.className="replayer-export-status warn";
+  }
+  return {opened:true,exact:false,reason:"NO_DEEP_LINK",stepIndex:0};
+}
+
 function reviewSummaryForHand(hand){
   if(!hand)return null;
   const r=state.reviewScores?.[String(hand.id)]||hand.reviewScore||null;
@@ -5140,7 +5352,7 @@ function loadSelectedHistoryHand(preserveStreet=true){
   updateStreetButtons();renderSlots();renderDeck();renderOpponents();renderMatrix();updateRangeEditionUi();updateHistoryUi();updateCalcReady();scheduleAutoCalculate(120);
   scheduleReplayBackgroundPrefetchSoon();
 }
-function selectHistoryHandById(id){
+function selectHistoryHandById(id,{open=true,scrollTop=true}={}){
   const hand=state.hhHands.find(h=>h.id===String(id));
   if(!hand) return;
   if(!state.hhMode){saveManualSnapshot();state.hhMode=true;}
@@ -5151,7 +5363,7 @@ function selectHistoryHandById(id){
   state.replayIndex=0;
   schedulePersistPrefs();
   loadSelectedHistoryHand(true);
-  openReplayerPage({scrollTop:true});
+  if(open)openReplayerPage({scrollTop});
 }
 function updateHistoryUi(){
   if(hhImportModeSelect) hhImportModeSelect.value=state.hhImportMode;
@@ -5185,88 +5397,79 @@ function handNetBB(hand){
   return Number.isFinite(bb)&&bb>0&&Number.isFinite(net) ? net/bb : NaN;
 }
 function visibleHistoryHands(){
-  let hands=state.hhHands.filter(h=>!state.hhKnownOnly || knownOpponentCount(h)>0);
-  hands=[...hands];
-  const byDateDesc=(a,b)=>b.sortKey-a.sortKey || Number(b.id)-Number(a.id);
-  const byDateAsc=(a,b)=>a.sortKey-b.sortKey || Number(a.id)-Number(b.id);
-
-  if(state.hhSort==="date_asc") hands.sort(byDateAsc);
-  else if(state.hhSort==="result_desc"){
-    hands.sort((a,b)=>{
-      const av=handNetBB(a),bv=handNetBB(b);
-      const af=Number.isFinite(av),bf=Number.isFinite(bv);
-      if(af!==bf) return af?-1:1;
-      if(!af) return byDateDesc(a,b);
-      return bv-av || byDateDesc(a,b);
-    });
-  }else if(state.hhSort==="result_asc"){
-    hands.sort((a,b)=>{
-      const av=handNetBB(a),bv=handNetBB(b);
-      const af=Number.isFinite(av),bf=Number.isFinite(bv);
-      if(af!==bf) return af?-1:1;
-      if(!af) return byDateDesc(a,b);
-      return av-bv || byDateDesc(a,b);
-    });
-  }else if(state.hhSort==="review_desc"){
-    hands.sort((a,b)=>{
-      const ar=reviewSummaryForHand(a),br=reviewSummaryForHand(b);
-      if(!!ar!==!!br)return ar?-1:1;
-      if(!ar)return byDateDesc(a,b);
-      if(ar.complete!==br.complete)return ar.complete?-1:1;
-      return (Number(br.totalLossBB)||0)-(Number(ar.totalLossBB)||0) || (Number(br.biggestLossBB)||0)-(Number(ar.biggestLossBB)||0) || byDateDesc(a,b);
-    });
-  }else hands.sort(byDateDesc);
-  return hands;
+  const inbox=reviewInboxBuild();
+  if(inbox)syncReviewInboxFilterOptions(inbox);
+  const query=inbox?reviewInboxQuery(inbox):null;
+  let items=query?.items||[];
+  if(state.hhKnownOnly)items=items.filter(item=>{
+    const hand=state.hhHands.find(h=>String(h.id)===String(item.hand_id));
+    return hand&&knownOpponentCount(hand)>0;
+  });
+  state.reviewInboxView=query?{...query,items}:inbox?{...inbox,items}:null;
+  const byId=new Map((state.hhHands||[]).map(h=>[String(h.id),h]));
+  return items.map(item=>byId.get(String(item.hand_id))).filter(Boolean);
 }
 function renderHistoryHands(){
   hhHandsEl.innerHTML="";
-  hhSortSelect.value=state.hhSort;
-  hhKnownFilter.checked=state.hhKnownOnly;
+  if(hhSortSelect)hhSortSelect.value=state.hhSort;
+  if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
+  if(reviewStatusFilter)reviewStatusFilter.value=state.reviewInboxFilters.status||"";
+  if(reviewCoverageFilter)reviewCoverageFilter.value=state.reviewInboxFilters.coverage||"";
+  if(reviewSizingFilter)reviewSizingFilter.value=state.reviewInboxFilters.sizing_error||"";
+  if(reviewJamFilter)reviewJamFilter.value=state.reviewInboxFilters.jam||"";
+  if(reviewOverbetFilter)reviewOverbetFilter.value=state.reviewInboxFilters.overbet||"";
 
   if(!state.hhHands.length){
     hhListCount.textContent="0 main affichée";
+    if(reviewInboxSummary)reviewInboxSummary.textContent="Aucune main chargée.";
+    if(reviewInboxNotice){reviewInboxNotice.textContent="";reviewInboxNotice.className="review-inbox-notice";}
     return;
   }
 
-  const hands=visibleHistoryHands();
-  const reviewed=state.hhHands.filter(h=>reviewSummaryForHand(h)?.complete).length;
-  hhListCount.textContent=`${hands.length} / ${state.hhHands.length} main${hands.length>1?"s":""} affichée${hands.length>1?"s":""} · ${reviewed} revue${reviewed>1?"s":""} calculée${reviewed>1?"s":""}`;
+  const hands=visibleHistoryHands(),view=state.reviewInboxView,items=view?.items||[];
+  const byId=new Map(items.map(item=>[String(item.hand_id),item]));
+  const allItems=reviewInboxBuild()?.items||[];
+  const totalLoss=allItems.reduce((sum,item)=>sum+(Number(item.total_loss_bb)||0),0);
+  const toReview=allItems.filter(item=>item.status==="TO_REVIEW").length;
+  const incomplete=allItems.filter(item=>item.status==="INCOMPLETE_ANALYSIS").length;
+  if(reviewInboxSummary)reviewInboxSummary.textContent=`${state.hhHands.length} main${state.hhHands.length>1?"s":""} · ${toReview} à revoir · perte EV cumulée ${formatBB(totalLoss)}${incomplete?` · ${incomplete} analyse${incomplete>1?"s":""} incomplète${incomplete>1?"s":""}`:""}`;
+  hhListCount.textContent=`${hands.length} / ${state.hhHands.length} main${hands.length>1?"s":""} affichée${hands.length>1?"s":""}`;
+  if(reviewInboxNotice){
+    reviewInboxNotice.textContent=state.reviewInboxLastError?`Inbox indisponible : ${state.reviewInboxLastError}`:"";
+    reviewInboxNotice.className=`review-inbox-notice${state.reviewInboxLastError?" warn":""}`;
+  }
 
   if(!hands.length){
-    const empty=document.createElement("div");
-    empty.className="status";
-    empty.textContent="Aucune main ne correspond au filtre actif.";
-    hhHandsEl.appendChild(empty);
-    return;
+    const empty=document.createElement("div");empty.className="status";empty.textContent="Aucune main ne correspond aux filtres actifs.";hhHandsEl.appendChild(empty);return;
   }
 
   for(const h of hands){
-    const b=document.createElement("button");
-    b.type="button";b.className="hh-hand"+(state.selectedHand?.id===h.id?" selected":"");
-    const known=knownOpponentCount(h);
-    const hero=h.heroCards.map(cardLabel).join(" ");
-    const heroHtml=cardsHtml(h.heroCards,{token:true,small:true});
-    const r=h.heroResult||{invested:0,collected:0,net:0};
-    const bb=h.bigBlind;
-    const investedBB=bb?r.invested/bb:NaN, collectedBB=bb?r.collected/bb:NaN, netBB=bb?r.net/bb:NaN;
-    const resultClass=Number.isFinite(netBB)?(netBB>0?"win":netBB<0?"loss":"even"):"even";
-    const resultLabel=Number.isFinite(netBB)?(netBB>0?"Gagné":netBB<0?"Perdu":"Neutre"):"N/D";
-    const signed=Number.isFinite(netBB)
-      ? (netBB>0?`+${formatBB(netBB)}`:netBB<0?`−${formatBB(Math.abs(netBB))}`:"0,00 BB")
-      : "—";
-    const resultTitle=Number.isFinite(netBB)
-      ? `Engagé : ${formatBB(investedBB)} · Encaissé : ${formatBB(collectedBB)} · Net : ${netBB>0?"+":netBB<0?"−":""}${formatBB(Math.abs(netBB))}`
-      : "Grosse blind non reconnue dans l'historique.";
-    const review=reviewSummaryForHand(h),reviewCls=reviewLossClass(review);
-    const reviewAmount=review?`${review.complete?"":"~ "}${formatBB(review.totalLossBB)}`:"—";
-    const reviewSplit=review?`H ${formatBB(review.heroLossBB)} · A ${formatBB(review.opponentLossBB)} · ${review.comparableDecisions}/${review.analyzableDecisions}`:"non analysée";
-    b.innerHTML=`<span class="hh-time">${escapeHtml(h.dateText.replace(/ \w+$/,""))}<br>#${escapeHtml(h.id)}</span>
-      <span class="hh-main"><strong>${escapeHtml(h.heroName)} · ${heroHtml}</strong><small>${handStreetLabel(h)} · ${h.players.length} joueurs · ${known} main(s) adverse(s) connue(s) · ${escapeHtml(h.sourceName)}</small></span>
-      <span class="hh-cards">${heroHtml}</span>
-      <span class="hh-review ${reviewCls}" title="${escapeHtml(reviewLossTitle(review))}">Perte EV cumulée<span class="amount">${escapeHtml(reviewAmount)}</span><span class="split">${escapeHtml(reviewSplit)}</span></span>
-      <span class="hh-result ${resultClass}" title="${escapeHtml(resultTitle)}">${resultLabel}<span class="amount">${escapeHtml(signed)}</span></span>`;
-    b.onclick=()=>selectHistoryHandById(h.id);
-    hhHandsEl.appendChild(b);
+    const item=byId.get(String(h.id));if(!item)continue;
+    const decision=item.costliest_decision||item.primary_decision;
+    const row=document.createElement("div");
+    row.className="hh-hand review-inbox-row"+(state.selectedHand?.id===h.id?" selected":"");
+    row.dataset.handId=String(h.id);
+    if(item.deep_link?.decision_id)row.dataset.decisionId=String(item.deep_link.decision_id);
+    if(item.deep_link?.step_index!=null)row.dataset.stepIndex=String(item.deep_link.step_index);
+    const decisionLoss=Number(decision?.loss_bb)||0;
+    const markers=[item.sizing_error?"sizing":null,item.jam?"jam":null,item.overbet?"overbet":null].filter(Boolean).join(" · ");
+    const coverage=`Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
+    const incompleteReasons=item.status==="INCOMPLETE_ANALYSIS"?(item.coverage?.reasons||[]).join(" · "):"";
+    const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    const statusCls=item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
+    const open=document.createElement("button");
+    open.type="button";open.className="review-inbox-open";
+    open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
+    open.innerHTML=`<span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
+      <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}${incompleteReasons?` · ${escapeHtml(incompleteReasons)}`:""}</small></span>
+      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")}</small></span>`;
+    open.onclick=()=>openReviewInboxItem(item);
+    const status=document.createElement("span");
+    status.className="review-inbox-status";
+    status.innerHTML=`<span class="review-inbox-status-badge${statusCls}">${escapeHtml(item.status_label)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
+    status.querySelector("[data-review-inbox-reviewed]")?.addEventListener("change",ev=>setReviewInboxReviewed(h.id,ev.currentTarget.checked));
+    row.append(open,status);
+    hhHandsEl.appendChild(row);
   }
 }
 
@@ -5538,16 +5741,22 @@ hhClearBtn?.addEventListener("click",()=>clearLoadedHands({persist:true,reason:"
 hhWatchBtn.addEventListener("click",startHHWatch);
 hhWatchStopBtn.addEventListener("click",()=>stopHHWatch("Surveillance automatique arrêtée · les mains déjà chargées restent disponibles."));
 
-hhSortSelect.addEventListener("change",()=>{
+hhSortSelect?.addEventListener("change",()=>{
   state.hhSort=hhSortSelect.value;
   schedulePersistPrefs();
   renderHistoryHands();
 });
-hhKnownFilter.addEventListener("change",()=>{
+hhKnownFilter?.addEventListener("change",()=>{
   state.hhKnownOnly=hhKnownFilter.checked;
   schedulePersistPrefs();
   renderHistoryHands();
 });
+[
+  [reviewStatusFilter,"status"],[reviewCoverageFilter,"coverage"],[reviewStreetFilter,"street"],
+  [reviewPositionFilter,"position"],[reviewSpotFilter,"spot_family"],[reviewPlayedFilter,"action_played"],
+  [reviewRecommendedFilter,"action_recommended"],[reviewSizingFilter,"sizing_error"],
+  [reviewJamFilter,"jam"],[reviewOverbetFilter,"overbet"]
+].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;renderHistoryHands();}));
 
 knownHandsBtn.addEventListener("click",()=>{
   if(knownHandsBtn.disabled) return;
@@ -7579,18 +7788,20 @@ async function restoreLocalState(){
     persistenceStatus("Restauration des données enregistrées dans ce navigateur…",false,true);
     await openLocalDb();
 
-    const [prefs,rangeSource,populationModelSource,postflopModelSource,hhSources,reviewScores]=await Promise.all([
+    const [prefs,rangeSource,populationModelSource,postflopModelSource,hhSources,reviewScores,reviewInboxUserMetadataByScope]=await Promise.all([
       localDbGet("prefs").catch(()=>null),
       localDbGet("rangeSource").catch(()=>null),
       localDbGet("populationModelSource").catch(()=>null),
       localDbGet("postflopModelSource").catch(()=>null),
       localDbGet("hhSources").catch(()=>null),
-      localDbGet("reviewScores").catch(()=>null)
+      localDbGet("reviewScores").catch(()=>null),
+      localDbGet(REVIEW_INBOX_METADATA_DB_KEY).catch(()=>null)
     ]);
     if(reviewScores&&typeof reviewScores==="object")state.reviewScores=reviewScores;
+    if(reviewInboxUserMetadataByScope&&typeof reviewInboxUserMetadataByScope==="object")state.reviewInboxUserMetadataByScope=reviewInboxUserMetadataByScope;
 
     if(prefs){
-      if(["date_desc","date_asc","result_desc","result_asc","review_desc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
+      if(["review_desc","status_asc","street_asc","position_asc","hand_asc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
       state.hhKnownOnly=!!prefs.hhKnownOnly;
       if(["replace","add"].includes(prefs.hhImportMode)) state.hhImportMode=prefs.hhImportMode;
       if(["main","replayer"].includes(prefs.appView)) state.appView=prefs.appView;
