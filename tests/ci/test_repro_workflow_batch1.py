@@ -18,7 +18,11 @@ TARGETS = (
 
 
 def _copy_batch(dst: Path) -> None:
-    for rel in (*TARGETS, EVIDENCE.as_posix()):
+    for rel in (
+        *TARGETS,
+        EVIDENCE.as_posix(),
+        "analysis/workflow_audit/helper_consumers.json",
+    ):
         source = ROOT / rel
         target = dst / rel
         target.parent.mkdir(parents=True, exist_ok=True)
