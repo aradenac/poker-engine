@@ -1,0 +1,82 @@
+{
+  "schema": "poker-pack-runtime-compatibility-result/v1",
+  "issue": 360,
+  "parent_issue": 201,
+  "status": "COMPLETE_FAIL_CLOSED_COMPATIBILITY_AUDIT",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "runtime_source_commit": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "roles": {
+    "engine": {
+      "status": "UNRESOLVED",
+      "blocker_codes": [
+        "NO_FRESH_DISTRIBUTABLE_ENGINE_ARTIFACT"
+      ],
+      "candidate_path": "training/runs/20260919_pack_runtime_compatibility/ENGINE_CANDIDATE.json",
+      "candidate_sha256": "8a90aac3c659feeb7973515961938b742038b05c904a87a1ffab67203599c8f3",
+      "compatibility_demonstrated": {
+        "population_agnostic_source_subset": true,
+        "distributable_pack_artifact": false
+      }
+    },
+    "application_release": {
+      "status": "UNRESOLVED",
+      "blocker_codes": [
+        "CURRENT_RELEASE_BINDS_LEGACY_ENGINE",
+        "CURRENT_APPLICATION_LOADS_MODEL_A_V5_DEFAULTS",
+        "CURRENT_PREFLOP_RUNTIME_BINDS_RETAINED_REFERENCE",
+        "PROMOTION_FORBIDDEN_IN_ISSUE_360"
+      ],
+      "candidate_path": "training/runs/20260919_pack_runtime_compatibility/APPLICATION_RELEASE_CANDIDATE.json",
+      "candidate_sha256": "4b766d78c16c5e757fe921f3f9fc47fc16876b9ce83ad425807d5f9149e20060",
+      "compatibility_demonstrated": false
+    }
+  },
+  "resolver_305_expected": {
+    "engine": "UNRESOLVED",
+    "application_release": "UNRESOLVED",
+    "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION",
+    "candidate_components_materialized": false
+  },
+  "preflight_253_expected": {
+    "result": "BLOCKED",
+    "engine_compatibility": "BLOCKED",
+    "writes_performed": false
+  },
+  "proofs": {
+    "source_provenance": {
+      "path": "training/runs/20260919_pack_runtime_compatibility/SOURCE_PROVENANCE.json",
+      "sha256": "aefbd8fd76b2fe3ff6c31d290075be6eaa2aec215bd76444ca4cb8f3d1be8ff2"
+    },
+    "role_decisions": {
+      "path": "training/runs/20260919_pack_runtime_compatibility/ROLE_DECISIONS.json",
+      "sha256": "bf35b169ef12053448a38f82106dbd25cea8dc804bccfaebfd03237085000f68"
+    },
+    "evidence_set": {
+      "path": "training/runs/20260919_pack_runtime_compatibility/EVIDENCE_SET.json",
+      "sha256": "e79a34b6f63a9feb3f70c77c540a7fa9915ead74a8b03578e959b78a1356a6d5"
+    }
+  },
+  "dod": {
+    "legacy_relabelled": false,
+    "fresh_identifiers_or_exact_blockers": true,
+    "hashes_and_provenance_pinned": true,
+    "population_compatibility_explicit": true,
+    "resolver_305_consumable": true,
+    "scientific_decision_fabricated": false,
+    "publication_activation_promotion": false,
+    "test_consumed": false,
+    "production_effect": "NONE",
+    "parent_201_remains_open": true
+  },
+  "boundaries": {
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "registry_mutation": false,
+    "pointer_mutation": false,
+    "model_a_b_modified": false,
+    "hero_ev": false,
+    "test_consumed": false,
+    "production_effect": "NONE"
+  }
+}

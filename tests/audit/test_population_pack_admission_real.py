@@ -100,5 +100,7 @@ class RealPopulationPackAdmissionAuditTests(unittest.TestCase):
         self.assertFalse(selection["test_used_for_selection"])
 
 
+from tests.audit.test_pack_runtime_compatibility import PackRuntimeCompatibilityTests  # noqa: F401
+
 if __name__ == "__main__":
     unittest.main()

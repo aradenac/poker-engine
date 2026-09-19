@@ -1,0 +1,66 @@
+{
+  "schema": "poker-scientific-component-evidence-set/v1",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "artifact_class": "FRESH_RUNTIME_COMPATIBILITY_EVIDENCE",
+  "scientific_effect": "NONE_RUNTIME_COMPATIBILITY_ONLY",
+  "source_policy": {
+    "persisted_artifacts_only": true,
+    "legacy_relabel_allowed": false,
+    "admissible_status_fabricated": false,
+    "test_read_or_consumed": false
+  },
+  "components": {
+    "engine": {
+      "role": "engine",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "source_path": "training/runs/20260919_pack_runtime_compatibility/ENGINE_CANDIDATE.json",
+      "hash_kind": "file_sha256",
+      "sha256": "8a90aac3c659feeb7973515961938b742038b05c904a87a1ffab67203599c8f3",
+      "provenance": {
+        "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "evidence": {
+          "path": "training/runs/20260919_pack_runtime_compatibility/SOURCE_PROVENANCE.json",
+          "sha256": "aefbd8fd76b2fe3ff6c31d290075be6eaa2aec215bd76444ca4cb8f3d1be8ff2"
+        }
+      },
+      "lineage": {
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "format": "ZOOM"
+      },
+      "decision": {
+        "status": "UNRESOLVED_RUNTIME_ARTIFACT_NOT_MATERIALIZED",
+        "issue": "#360",
+        "evidence": {
+          "path": "training/runs/20260919_pack_runtime_compatibility/ROLE_DECISIONS.json",
+          "sha256": "bf35b169ef12053448a38f82106dbd25cea8dc804bccfaebfd03237085000f68"
+        }
+      }
+    },
+    "application_release": {
+      "role": "application_release",
+      "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "source_path": "training/runs/20260919_pack_runtime_compatibility/APPLICATION_RELEASE_CANDIDATE.json",
+      "hash_kind": "file_sha256",
+      "sha256": "4b766d78c16c5e757fe921f3f9fc47fc16876b9ce83ad425807d5f9149e20060",
+      "provenance": {
+        "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "evidence": {
+          "path": "training/runs/20260919_pack_runtime_compatibility/SOURCE_PROVENANCE.json",
+          "sha256": "aefbd8fd76b2fe3ff6c31d290075be6eaa2aec215bd76444ca4cb8f3d1be8ff2"
+        }
+      },
+      "lineage": {
+        "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "format": "ZOOM"
+      },
+      "decision": {
+        "status": "UNRESOLVED_CURRENT_SHELL_COUPLED_TO_LEGACY_DEPENDENCIES",
+        "issue": "#360",
+        "evidence": {
+          "path": "training/runs/20260919_pack_runtime_compatibility/ROLE_DECISIONS.json",
+          "sha256": "bf35b169ef12053448a38f82106dbd25cea8dc804bccfaebfd03237085000f68"
+        }
+      }
+    }
+  }
+}

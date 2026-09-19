@@ -1,0 +1,141 @@
+{
+  "schema": "poker-pack-runtime-compatibility-provenance/v1",
+  "issue": 360,
+  "parent_issue": 201,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "runtime_source_commit": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "source_policy": {
+    "runtime_code_only": true,
+    "legacy_relabel_allowed": false,
+    "scientific_components_admitted_here": false,
+    "publication_activation_promotion": false,
+    "test_consumed": false
+  },
+  "generic_engine_core": {
+    "status": "POPULATION_AGNOSTIC_SOURCE_SUBSET_CONFIRMED",
+    "files": [
+      {
+        "path": "src/training/nlhe-game-state.js",
+        "git_blob_sha": "57a30094f3e4082c8b5cb990b9d9562cc2ce789e",
+        "sha256": "ddb509a37ba3eb6b96fd12f6048e765bdfa2fb8ffe4dc3ef048133fe575a3245",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/preflop/contract.js",
+        "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9",
+        "sha256": "62d2a718b25111c6ab69e103be43d7676ce4cc409da0afbc5adec140f482ab34",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/preflop/decision.js",
+        "git_blob_sha": "1b2a49c7b2305a53468e36acd3eb687a09514654",
+        "sha256": "5eff67b68541b66c3cc0c812e685f6a8ff9d725f0a3e570d9af805c46d44541a",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/preflop/search.js",
+        "git_blob_sha": "354d3afff68afebce394b8ec7803c4d51ea1ea95",
+        "sha256": "94a5e40c5d312523ef7404bb4cdd3e4719030f5a6d14b4eceba0c1944b8eaed8",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/preflop/guidance.js",
+        "git_blob_sha": "8541cf75b27afbeba2580864ef744da3a9b40457",
+        "sha256": "af0ee5aaedeabc7edd80efbe0eb2c59b1104e9d39922f6780864a89c5311f79e",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/training/preflop-decision-adapter.js",
+        "git_blob_sha": "d5cebf63370ce3d49ccedbcb43bed44f1a55b926",
+        "sha256": "186c87788458a4711798dfca8746620c002253999fea24aa234ef44b4636768a",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/preflop/hero-preflop-alternatives.js",
+        "git_blob_sha": "df44f83c0fe1cd8341851b137f8943d849f70483",
+        "sha256": "11612abce016d73f7f77a60d3a08fb4154dd1112fbbf64ffb89e2b34d96cb8d2",
+        "forbidden_marker_hits": []
+      },
+      {
+        "path": "src/preflop/iso-sizing-diagnostics.js",
+        "git_blob_sha": "d78c2b5cdc3c8f8144e61c7c2fa723e52099ed46",
+        "sha256": "d7b5246e8203a11fc1baf31fe921a2493b1763c5d646ec606432400d8c23fe86",
+        "forbidden_marker_hits": []
+      }
+    ],
+    "forbidden_markers": [
+      "MIXED_ZOOM_REGULAR",
+      "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+      "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+      "preflop_population_model_v5",
+      "postflop_population_model_v5",
+      "RETAIN_REFERENCE",
+      "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    ],
+    "distributable_pack_engine_materialized": false,
+    "interpretation": "Pure game/preflop contract/search/diagnostics modules are free of target/legacy/model identity markers, but this source subset is not itself the current single-file pack engine artifact."
+  },
+  "current_application": {
+    "release_anchor": {
+      "path": "site/RELEASE.json",
+      "git_blob_sha": "1a803d8135b2d049c0adddaf98eba0af59048526",
+      "sha256": "52edc76bbc4b06713d89490ee4553e6428a39b9e35943f81b983d9786f7d631d",
+      "engine_release": {
+        "artifact": "user/releases/poker_range_equity_offline_multiway_v83.html",
+        "sha256": "2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4"
+      },
+      "models": {
+        "postflop": "training/models/postflop_population_model_v5.json",
+        "preflop": "training/models/preflop_population_model_v5.json"
+      },
+      "status": "promoted",
+      "published": true
+    },
+    "trainer": {
+      "path": "site/trainer.js",
+      "git_blob_sha": "53c06b9943aa5e4f07e43abcd954e81634734d88",
+      "sha256": "3d323efa24cd76342f953c26447e992162a3c1cca77d9472744d9107fe459e56",
+      "markers": [
+        "preflop_population_model_v5.json",
+        "postflop_population_model_v5.json"
+      ]
+    },
+    "preflop_runtime": {
+      "path": "site/training/preflop-runtime.js",
+      "git_blob_sha": "17471015fbe75b8cbe0d44b2342e90d54562c537",
+      "sha256": "35ba3517ac4ccd9564f99fa2eb501da02647a690d819a7725f4059e8ad0ae778",
+      "markers": [
+        "RETAIN_REFERENCE",
+        "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+        "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+      ]
+    }
+  },
+  "registry": {
+    "path": "training/populations/registry.json",
+    "git_blob_sha": "d2b8b0160d33b0c0c36822f7dc7a8a73ca36ce51",
+    "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+    "target_status": "CERTIFIED_DATA_ONLY",
+    "target_format": "ZOOM",
+    "target_legacy_unscoped_artifacts_allowed": false,
+    "legacy_format": "MIXED_ZOOM_REGULAR",
+    "legacy_engine": "user/releases/poker_range_equity_offline_multiway_v83.html"
+  },
+  "conclusions": {
+    "engine": {
+      "status": "UNRESOLVED",
+      "blocker_code": "NO_FRESH_DISTRIBUTABLE_ENGINE_ARTIFACT",
+      "reason": "Population-agnostic engine source modules are demonstrated, but the only current distributable engine artifact is the legacy MIXED_ZOOM_REGULAR v83 HTML. A source subset cannot be relabelled as the pack engine role."
+    },
+    "application_release": {
+      "status": "UNRESOLVED",
+      "blocker_codes": [
+        "CURRENT_RELEASE_BINDS_LEGACY_ENGINE",
+        "CURRENT_APPLICATION_LOADS_MODEL_A_V5_DEFAULTS",
+        "CURRENT_PREFLOP_RUNTIME_BINDS_RETAINED_REFERENCE",
+        "PROMOTION_FORBIDDEN_IN_ISSUE_360"
+      ],
+      "reason": "A fresh unpublished release descriptor can be created, but the current application shell remains coupled to the legacy engine/model defaults and #253 requires a promoted release for engine compatibility; #360 forbids promotion."
+    }
+  }
+}
