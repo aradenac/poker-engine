@@ -4,9 +4,12 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from pathlib import Path
 from playwright.async_api import async_playwright
 
 URL = "http://127.0.0.1:8765/index.html"
+ROOT = Path(__file__).resolve().parents[2]
+KTS_ISO_FIXTURE = ROOT / "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt"
 
 
 def folded(text: str) -> str:
@@ -14,6 +17,7 @@ def folded(text: str) -> str:
 
 
 async def main() -> None:
+    kts_iso_raw = KTS_ISO_FIXTURE.read_text(encoding="utf-8")
     page_errors: list[str] = []
     console_errors: list[str] = []
     async with async_playwright() as p:
@@ -236,6 +240,98 @@ async def main() -> None:
         assert review_actual_result["unavailable"]["result"]["text"] == "Résultat réel indisponible", review_actual_result
         assert all(x in review_actual_result["dashboard"]["priority"] for x in ["Main #42","K♠ T♠","Gagné","FLOP","BTN"]), review_actual_result
         assert "perte EV" in review_actual_result["dashboard"]["meta"] and "CALL" in review_actual_result["dashboard"]["meta"] and "RAISE" in review_actual_result["dashboard"]["meta"], review_actual_result
+
+        # #323 Actor-aware replayer comment states consume existing contracts/support only.
+        replayer_comment_states = await page.evaluate(
+            """() => {
+                const evidence={
+                    phase:"PREFLOP",
+                    decision:{
+                        action:"RAISE",family:"VS_LIMPERS",
+                        preflop_context_v1:{schema:PokerPreflopContract.SCHEMA,family:"VS_LIMPERS"}
+                    }
+                };
+                const analyzed=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},{
+                    quality:"exact",node:{coverage:{population_decisions:37},context:{family:"VS_LIMPERS"}}
+                });
+                const insufficient=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},{
+                    quality:"exact",node:{coverage:{population_decisions:0},context:{family:"VS_LIMPERS"}}
+                });
+                const unavailable=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},null);
+                const heroCovered=replayHeroCommentState(0,{street:"Flop"},null,{
+                    canonicalDecision:{schema:"decision-summary/v1"}
+                });
+                const heroUncovered=replayHeroCommentState(0,{street:"Préflop"},null,{
+                    req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,observedEvidence:evidence
+                });
+                return {analyzed,insufficient,unavailable,heroCovered,heroUncovered};
+            }"""
+        )
+        assert replayer_comment_states["analyzed"]["actor_role"] == "OPPONENT", replayer_comment_states
+        assert replayer_comment_states["analyzed"]["state"] == "OPPONENT_ANALYZABLE" and replayer_comment_states["analyzed"]["support"] == 37, replayer_comment_states
+        assert replayer_comment_states["analyzed"]["source_contract"] == "poker-preflop-context/v1", replayer_comment_states
+        assert replayer_comment_states["insufficient"]["state"] == "OPPONENT_SUPPORT_INSUFFICIENT", replayer_comment_states
+        assert "Support insuffisant" in replayer_comment_states["insufficient"]["text"], replayer_comment_states
+        assert replayer_comment_states["unavailable"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", replayer_comment_states
+        assert "Analyse adverse non disponible" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
+        assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "HERO_COVERED", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_COUVERT", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["family"] == "VS_LIMPERS", replayer_comment_states
+        assert "Aucune recommandation EV validée" in replayer_comment_states["heroUncovered"]["text"], replayer_comment_states
+
+        # #323 canonical #321 KTs SB / 2 limpers / iso 4 BB / 3 calls browser smoke.
+        kts_replayer_comment = await page.evaluate(
+            """(raw) => {
+                const saved={
+                    selectedHand:state.selectedHand,replaySteps:state.replaySteps,hhMode:state.hhMode,
+                    populationTraceCache:state.populationTraceCache,postflopTraceCache:state.postflopTraceCache,
+                    populationRangeCache:state.populationRangeCache,postflopRangeCache:state.postflopRangeCache
+                };
+                try{
+                    const hand=parsePokerStarsHand(raw,"kts_sb_two_limp_iso4_three_calls.hand.txt");
+                    if(!hand)throw new Error("fixture #321 non parsée");
+                    const steps=makeReplaySteps(hand);
+                    state.selectedHand=hand;state.replaySteps=steps;state.hhMode=true;
+                    state.populationTraceCache=Object.create(null);state.postflopTraceCache=Object.create(null);
+                    state.populationRangeCache=Object.create(null);state.postflopRangeCache=Object.create(null);
+                    const heroIndex=steps.findIndex(s=>s.street==="Préflop"&&s.activePlayer===hand.heroName&&s.actionType==="raise");
+                    const bbIndex=steps.findIndex((s,i)=>i>heroIndex&&s.street==="Préflop"&&s.activePlayer==="BB"&&s.actionType==="call");
+                    if(heroIndex<0||bbIndex<0)throw new Error("steps #321 attendus introuvables");
+                    const heroStep=steps[heroIndex],bbStep=steps[bbIndex];
+                    const heroEvidence=replayObservedDecisionEvidence(heroIndex,heroStep);
+                    const bbEvidence=replayObservedDecisionEvidence(bbIndex,bbStep);
+                    const heroState=replayHeroCommentState(heroIndex,heroStep,null,{
+                        req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,canonicalDecision:null,
+                        observedEvidence:heroEvidence
+                    });
+                    const bbUnavailable=replayOpponentCommentStateFromEvidence(bbEvidence,bbStep,null);
+                    const bbFeed=actionAnalysisHtml(bbIndex,bbStep);
+                    const bbDetail=actionDetailModalInnerHtml(bbIndex,bbStep);
+                    return {
+                        hand:{id:hand.id,hero:hand.heroName,cards:reviewHeroCardsText(hand)},
+                        hero:{index:heroIndex,actor:heroStep.activePlayer,action:heroStep.actionType,evidence:heroEvidence,state:heroState},
+                        bb:{index:bbIndex,actor:bbStep.activePlayer,action:bbStep.actionType,evidence:bbEvidence,state:bbUnavailable,feed:bbFeed,detail:bbDetail}
+                    };
+                } finally {
+                    state.selectedHand=saved.selectedHand;state.replaySteps=saved.replaySteps;state.hhMode=saved.hhMode;
+                    state.populationTraceCache=saved.populationTraceCache;state.postflopTraceCache=saved.postflopTraceCache;
+                    state.populationRangeCache=saved.populationRangeCache;state.postflopRangeCache=saved.postflopRangeCache;
+                }
+            }""",
+            kts_iso_raw,
+        )
+        assert kts_replayer_comment["hand"] == {"id":"3210001","hero":"Hero","cards":"K♠ T♠"}, kts_replayer_comment
+        assert kts_replayer_comment["hero"]["actor"] == "Hero" and kts_replayer_comment["hero"]["action"] == "raise", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["evidence"]["decision"]["family"] == "VS_LIMPERS", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_COUVERT", kts_replayer_comment
+        assert "Aucune recommandation EV validée" in kts_replayer_comment["hero"]["state"]["text"], kts_replayer_comment
+        assert kts_replayer_comment["bb"]["actor"] == "BB" and kts_replayer_comment["bb"]["action"] == "call", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["evidence"]["decision"]["family"] == "VS_ISO", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["state"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", kts_replayer_comment
+        assert 'data-comment-actor="OPPONENT"' in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
+        assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
+        assert "alternative EV Hero" in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
+        assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
 
         exact_review_open = await page.evaluate(
             """() => {
