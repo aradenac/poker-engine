@@ -19,6 +19,7 @@ from tools.preflop.model_a_sizing_likelihood import (  # noqa: E402
     make_synthetic_candidate,
     public_sizing_context,
     resolve_likelihood,
+    support_context_key,
 )
 
 from tools.preflop.context_contract import (  # noqa: E402
@@ -31,6 +32,12 @@ from tools.preflop.context_contract import (  # noqa: E402
     v5_runtime_signature,
 )
 from tools.training.audit_preflop_key_runtime_parity import runtime_signature  # noqa: E402
+from tools.training.fit_model_a_preflop_sizing import (  # noqa: E402
+    build_candidate as build_issue339_candidate,
+    evaluate_validation as evaluate_issue339_validation,
+    load_protocol as load_issue339_protocol,
+    load_support_report as load_issue339_support_report,
+)
 from tools.repro_preflop_model_parity import (  # noqa: E402
     REPORT_PATH as MODEL_PARITY_REPORT_PATH,
     build_parity_report,
@@ -342,6 +349,42 @@ def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
     assert identity["active_model_replaced"]["const"] is False
     assert schema["properties"]["nearest_price_fallback"]["const"] is False
     assert schema["properties"]["backoff_policy"]["const"] == list(BACKOFF_POLICY)
+
+
+def test_issue339_support_key_matches_319_dimensions_not_nearest_numeric_state():
+    four = build_context(**SIZING_FIXTURE["contexts"][0]["input"])
+    same_price = dict(four)
+    same_price["pot_before_bb"] = float(four["pot_before_bb"]) + 20.0
+    same_price["effective_stack_bb"] = float(four["effective_stack_bb"]) + 50.0
+    assert support_context_key(four) == support_context_key(same_price)
+
+    six = build_context(**SIZING_FIXTURE["contexts"][1]["input"])
+    assert support_context_key(four) != support_context_key(six)
+
+
+def test_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_without_test():
+    protocol = load_issue339_protocol()
+    _, report = load_issue339_support_report()
+    candidate, fit = build_issue339_candidate(protocol, report)
+    assert candidate["identity"]["fit_scope"] == "TRAIN_EMPIRICAL_FIT"
+    assert candidate["identity"]["data_scope"] == "CERTIFIED_TRAIN_ONLY"
+    assert candidate["identity"]["source_report_hash"] == "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99"
+    assert fit["nodes"]["marginal_exact_price"] == 282
+    assert fit["nodes"]["identifiable_revealed_hand_class"] > 0
+    assert fit["test_consumed"] is False
+    support = {int(row["target_total_bb"]): int(row["observations"]) for row in fit["kts_sb_two_limpers_exact_price_support"]}
+    assert support == {4: 54, 5: 161, 6: 43}
+
+    validation = evaluate_issue339_validation(protocol, candidate, fit)
+    assert validation["selection_split"] == "VALIDATION"
+    assert validation["test_consumed"] is False
+    assert validation["test_authorized"] is False
+    assert validation["production_effect"] == "NONE"
+    assert validation["active_model_replaced"] is False
+    assert validation["model_b_consumed"] is False
+    assert validation["hero_ev_consumed"] is False
+    assert validation["ui_modified"] is False
+    print("ISSUE339_RESULT=" + json.dumps({"fit": fit, "validation": validation}, sort_keys=True, separators=(",", ":")))
 
 
 def test_canonical_321_model_a_b_public_context_parity():
