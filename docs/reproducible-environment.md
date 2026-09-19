@@ -57,12 +57,53 @@ Runtime verification plus content-addressed manifest:
 
 ## Lock update procedure
 
-1. Open a dedicated reproducibility PR; never rewrite an immutable scientific run.
-2. Change runtime/dependency versions in the canonical inputs.
-3. Keep .python-version, .node-version, package.json, package-lock.json, environment.lock.json and os-base.lock.json consistent.
-4. Run the exact REPRO tests and one-command verification.
-5. Treat a Playwright/Chromium or base-OS change as an explicit environment change.
-6. Re-run representative scientific non-regression tests before promotion.
+Lock changes are prepared in a separate candidate checkout/tree and reviewed as a **dry run**. The repository tool has deliberately no `apply` command and never edits the candidate or baseline locks.
+
+1. Create an isolated candidate checkout/copy from the reviewed baseline. Never use a historical `training/runs/**` tree as an update target.
+2. Make the proposed lock/version changes only in that candidate tree. Provenance-sensitive fields (source URLs, verified digests, Playwright/Chromium metadata, Ubuntu snapshot identity) must come from independently verified evidence; unavailable hashes stay explicitly unpinned rather than being invented.
+3. Inspect the versioned update matrix:
+
+   ```bash
+   python3 tools/repro_lock_update.py matrix
+   ```
+
+4. Generate a machine-readable old→new plan. Repeat `--expect-component` for every semantic component that is intentionally changing:
+
+   ```bash
+   python3 tools/repro_lock_update.py plan \
+     --candidate-root /path/to/candidate \
+     --expect-component playwright_runtime \
+     --expect-component chromium_runtime \
+     --output /tmp/lock-update-plan.json
+   ```
+
+   Valid component names are `python_runtime`, `python_dependencies`, `node_runtime`, `node_dependencies`, `playwright_runtime`, `chromium_runtime`, `os_base`, `container_base`, `apt_snapshot`, and `system_packages`.
+
+   A single proposed edit may legitimately affect several components. For example, changing the direct Playwright pin also changes the Python dependency component. The repeated `--expect-component` set must match the observed semantic component set exactly.
+
+5. Review the plan before committing. It records:
+   - SHA-256 old→new for every managed file that changed;
+   - semantic old→new fields for every affected component;
+   - baseline/candidate managed-state SHA-256;
+   - old/new container-manifest SHA-256;
+   - old/new `environment_identity.identity_sha256`;
+   - derived hermeticity level;
+   - deterministic `plan_sha256`;
+   - the exact non-regression commands required by the changed components.
+
+6. Reject the update whenever the plan is `FAIL`. The planner fails closed on missing candidate files, an unexpected component set, incoherent cross-lock contracts, or a partial update that omits any coupled file required by `reproducibility/lock-update-policy.json`.
+
+7. Execute every command listed in `required_non_regression_commands`. The always-required matrix covers the environment, environment identity, container, hardening and lock-update suites; component-specific tests are added for bootstrap, Node locks, Playwright/Chromium, container or snapshot changes.
+
+8. Commit the candidate lock changes only after:
+   - the dry-run plan is `PASS`;
+   - its old→new identities and provenance have been reviewed;
+   - every mandatory non-regression command passes;
+   - the reviewed `plan_sha256` is retained in review evidence.
+
+This procedure treats every Playwright/Chromium update as an explicit environment change. It also preserves the existing rule that historical scientific runs are immutable and are never rewritten merely because the environment lock changes.
+
+The versioned policy is `reproducibility/lock-update-policy.json`; local non-regression evidence for the procedure is persisted under `analysis/reproducibility/lock-update-non-regression.json`.
 
 ## Current boundary
 
