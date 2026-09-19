@@ -105,11 +105,26 @@ jobs:
               'ui_modified':False,
               'vs_limpers_generation_196':False,
           }
-          assert r['runner_result']['information_boundary']['nearest_price_used'] is False
-          assert r['runner_result']['posterior_binding']['posterior_schema']=='poker-opponent-posterior-range/v1'
-          comparable=[x for x in r['alternatives'] if x['comparable'] and x['ev_bb'] is not None]
-          selected=next(x for x in comparable if x['alternative_id']==r['selection']['selected_alternative_id'])
-          assert selected['ev_bb']==max(x['ev_bb'] for x in comparable)
+          if r.get('status')=='FAIL_CLOSED_EXACT_SUPPORT_UNAVAILABLE':
+              assert r['execution_valid'] is True
+              assert r['selection']['selected_alternative_id'] is None
+              assert r['selection']['selected_ev_bb'] is None
+              assert r['runner_result'] is None
+              assert all(x['ev_bb'] is None for x in r['alternatives'])
+              audit=r['diagnostics']['support_audit']
+              assert audit['nearest_price'] is False
+              assert audit['first_responder']['position']=='BB'
+              assert audit['first_responder']['source_observations']==45
+              assert audit['reachable_missing_branch']['position']=='CO'
+              assert audit['reachable_missing_branch']['family']=='LIMPER_VS_ISO'
+              assert audit['reachable_missing_branch']['status']=='EXACT_SUPPORT_MISSING'
+              assert 'target=5|call=4' in audit['reachable_missing_branch']['reason']
+          else:
+              assert r['runner_result']['information_boundary']['nearest_price_used'] is False
+              assert r['runner_result']['posterior_binding']['posterior_schema']=='poker-opponent-posterior-range/v1'
+              comparable=[x for x in r['alternatives'] if x['comparable'] and x['ev_bb'] is not None]
+              selected=next(x for x in comparable if x['alternative_id']==r['selection']['selected_alternative_id'])
+              assert selected['ev_bb']==max(x['ev_bb'] for x in comparable)
           print('issue #367 result boundary: PASS')
           PY
       - uses: actions/upload-artifact@v4
