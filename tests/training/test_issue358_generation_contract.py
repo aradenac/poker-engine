@@ -5,15 +5,15 @@ import json
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from tools.training.generate_hero_preflop_noniso import (
     ALLOWED_GROUPS,
     FORBIDDEN_GROUPS,
     scope_from_plan,
 )
-
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 PLAN = ROOT / "analysis/hero_preflop_generation_plan.json"
 MANIFEST_SCHEMA = ROOT / "contracts/training/hero-preflop-generation-manifest.schema.json"
 STRATEGY_SCHEMA = ROOT / "contracts/training/hero-preflop-strategy.schema.json"
