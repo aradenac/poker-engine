@@ -123,7 +123,7 @@ function cell(report,dimension,key){
   assert.equal(report.state,'DRIFTED');
   const pos=cell(report,'position','BTN');
   assert.equal(pos.state,'DRIFTED');
-  assert.equal(pos.metrics.fold_frequency.baseline,1/3);
+  assert.equal(pos.metrics.fold_frequency.baseline,round9(1/3));
   assert.equal(pos.metrics.fold_frequency.target,round9(8/60));
   assert.equal(pos.metrics.fold_frequency.delta,round9(8/60-1/3));
   assert.ok(pos.metrics.fold_frequency.absolute_delta>.19);
