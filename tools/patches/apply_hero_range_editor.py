@@ -19,15 +19,15 @@ def main() -> None:
     text = INDEX.read_text(encoding="utf-8")
     text = replace_once(
         text,
-        '  <a href="#rangesSection">Sources importées</a>\n',
-        '  <a href="#rangesSection">Sources importées</a>\n  <a href="./hero-ranges.html">Stratégie Hero</a>\n',
-        "quick navigation Hero ranges link",
+        '  <a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>\n',
+        '  <a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>\n  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>\n',
+        "quick navigation Strategy link",
     )
     text = replace_once(
         text,
-        '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button></div>\n',
-        '  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>\n',
-        "main Hero ranges link",
+        '    <button id="trainerOpenBtn" type="button" class="primary">Training</button>\n',
+        '    <button id="trainerOpenBtn" type="button" class="primary">Training</button>\n    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>\n',
+        "main Strategy link",
     )
     INDEX.write_text(text, encoding="utf-8")
     print("Hero range editor links integrated")
