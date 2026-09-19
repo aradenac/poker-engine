@@ -27,7 +27,12 @@ const trainerState={
   pauseAfterDecision:false,busy:false,sizingTouched:false,
   perf:{evaluations:0,reused:0,totalMs:0,lastMs:0,modelLoadMs:0,warmupMs:0,warmHit:false,cacheHits:0,cacheMisses:0},
   session:{hands:0,decisions:0,good:0,close:0,poor:0,lossBB:0,breakdown:Object.create(null)},
-  testLog:[]
+  testLog:[],
+  targeted:{
+    active:false,preparing:false,baseTarget:null,target:null,criteria:null,plan:null,pool:[],
+    currentIndex:-1,currentScenario:null,currentCompleted:false,events:[],summary:null,
+    requestedSize:5,fallback:null,lastError:"",attempts:0,evaluated:0,complete:false
+  }
 };
 
 const trainerPage=document.getElementById("trainerPage");
@@ -47,6 +52,21 @@ const trainerProfiles=document.getElementById("trainerProfiles");
 const trainerTestLog=document.getElementById("trainerTestLog");
 const trainerPopulationIdentity=document.getElementById("trainerPopulationIdentity");
 const trainerTechnicalIdentity=document.getElementById("trainerTechnicalIdentity");
+const trainerTargetPanel=document.getElementById("trainerTargetPanel");
+const trainerTargetIdentity=document.getElementById("trainerTargetIdentity");
+const trainerTargetPosition=document.getElementById("trainerTargetPosition");
+const trainerTargetStreet=document.getElementById("trainerTargetStreet");
+const trainerTargetSpot=document.getElementById("trainerTargetSpot");
+const trainerTargetAction=document.getElementById("trainerTargetAction");
+const trainerTargetSizing=document.getElementById("trainerTargetSizing");
+const trainerTargetJam=document.getElementById("trainerTargetJam");
+const trainerTargetOverbet=document.getElementById("trainerTargetOverbet");
+const trainerTargetSessionSize=document.getElementById("trainerTargetSessionSize");
+const trainerTargetApplyBtn=document.getElementById("trainerTargetApplyBtn");
+const trainerTargetClearBtn=document.getElementById("trainerTargetClearBtn");
+const trainerTargetSupport=document.getElementById("trainerTargetSupport");
+const trainerTargetSummarySection=document.getElementById("trainerTargetSummarySection");
+const trainerTargetSummary=document.getElementById("trainerTargetSummary");
 
 function trainerSleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function trainerClamp(x,a,b){return Math.max(a,Math.min(b,x));}
