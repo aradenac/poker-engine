@@ -24,7 +24,7 @@ def main() -> None:
     packs = '<script src="./population-packs.js"></script>'
     overrides = '<script src="./manual-import.js"></script>'
     assert index.index(identity) < index.index(packs) < index.index(overrides)
-    assert "window.PokerManualOverrides" in manual
+    assert "global.PokerManualOverrides" in manual
     assert 'RESTORE_ACTION="RESTORE_ACTIVE_PACK"' in manual
 
     # Central state is explicit and never presents an experimental override as promoted/default.
