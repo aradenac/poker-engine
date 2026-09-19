@@ -14,6 +14,7 @@ from tools.training.audit_preflop_sizing_support import (
     analyze_rows,
     empirical_bins,
     render_markdown,
+    summary_report,
 )
 
 
@@ -137,6 +138,10 @@ def main():
     assert a["semantics"]["sizing_reconstructed_from_fixed_grid"] is False
     assert a["semantics"]["consumable_by"] == ["#313", "#315"]
     assert a["backoff_contract"]["no_silent_nearest_price"] is True
+    assert a["backoff_contract"]["absence_of_exact_cell_means"] == "NO_SUPPORT"
+    assert a["semantics"]["limp_response_mapping"]
+    assert a["semantics"]["iso_event_mapping"]
+    assert a["binned_support"]
 
     cell = next(
         x for x in a["matrix"]
@@ -169,6 +174,10 @@ def main():
     assert bins
     assert all(x["min_observed"] in observed and x["max_observed"] in observed for x in bins)
 
+    summary = summary_report(a)
+    assert summary["schema"] == "poker-preflop-sizing-support-audit-summary/v1"
+    assert summary["full_report"]["report_hash"] == a["report_hash"]
+    assert summary["top_binned_support"]
     md = render_markdown(a)
     assert "No fixed sizing grid" in md
     assert "KTs SB + two limpers" in md
