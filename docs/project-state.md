@@ -45,9 +45,15 @@ Current examples include:
 
 The validator never reopens historical issues and never infers state from GitHub or chat context.
 
-## Remaining DoD gap
+## Project-state CI
 
-The repository now has deterministic generation and stale-file checking, but no dedicated CI workflow invokes `--check-status` yet. Under #225 that integration is intentionally left separate while lanes A/F own or audit workflow-sensitive areas. Until that final integration exists, #206 should remain open.
+`.github/workflows/project-state-consistency.yml` defines the stable `Project state consistency` check for every pull request and every push to `main`, without path filters. It runs manifest validation, `--check-status`, the project-state/recovery/backlog tests, and `tests/test_project_state_ci_contract.py`. Any nonzero exit fails the job; acknowledged `WARN` results with exit code zero remain accepted.
+
+The job uses Python 3.11, standard-library tests and offline fixtures, with `contents: read`, no custom secrets and no dependency installation. It does not regenerate tracked artifacts, run scientific poker TEST/VALIDATION commands or mutate GitHub. Python bytecode generation and checkout credential persistence are disabled.
+
+The workflow contract uses a strict text allowlist rather than a third-party YAML parser. Changes to its structure or commands require an explicit contract update. Run it locally with `python3 tests/test_project_state_ci_contract.py` alongside the five existing checks.
+
+Requiring this check before merge also requires a GitHub branch protection rule or ruleset selecting `Project state consistency`. That repository setting is separate from the workflow and is not changed by #346.
 
 ## Deterministic recovery state
 
@@ -89,7 +95,7 @@ Only explicit dependency data (`blocked_by`) or explicit blocked labels are rend
 
 Snapshots are intentionally generated on demand rather than committed as a live-state file: a committed claim/PR snapshot would become stale immediately when an agent posts `RELEASED` or a PR merges. For persisted/offline evidence, use a captured export plus `--write <path>`, then verify it byte-for-byte with the same inputs using `--check <path>`.
 
-The versioned fixture under `tests/fixtures/project-state/recovery/` is the deterministic proof input. No `.github/workflows/**` integration is part of this tranche.
+The versioned fixture under `tests/fixtures/project-state/recovery/` is the deterministic proof input. Its deterministic tests are included in the project-state CI check described above.
 
 ## Backlog / evidence reconciliation
 
@@ -131,5 +137,5 @@ The live adapter only reuses GET readers. It reads all issue, PR and branch stat
 
 The audit deliberately does not interpret free-form issue DoD as proof. A closed issue is compared to a capability state only when the capability manifest declares an administrative issue/claimed-state relationship. Likewise, an open issue becomes a close candidate only with explicit positive evidence. This keeps historical contradictions visible without rewriting GitHub history.
 
-The mandatory CI invocation for #206 remains the only deferred criterion and is outside this non-CI tranche; no `.github/workflows/**` file is modified here.
+The deterministic backlog tests are included in the project-state CI workflow added by #346; CI does not invoke the live GitHub adapter.
 
