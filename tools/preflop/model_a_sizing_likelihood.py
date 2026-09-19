@@ -347,6 +347,67 @@ def validate_candidate(candidate: Mapping[str, Any]) -> None:
         raise SizingLikelihoodError("candidate nodes must be a list")
 
 
+def resolve_support_likelihood(
+    *,
+    candidate: Mapping[str, Any],
+    context: Mapping[str, Any],
+    hand_class: str | None,
+) -> dict[str, Any]:
+    """Resolve a #319 exact support cell without requiring a full UI context projection."""
+    validate_candidate(candidate)
+    key = support_context_key(context)
+    exact_price_nodes = [
+        node
+        for node in candidate["nodes"]
+        if isinstance(node, Mapping) and node.get("support_context_key") == key
+    ]
+    hand = None if hand_class in (None, "") else str(hand_class)
+    if hand is not None:
+        exact_hand = [node for node in exact_price_nodes if node.get("hand_class") == hand]
+        if len(exact_hand) > 1:
+            raise SizingLikelihoodError("duplicate exact hand-class likelihood nodes")
+        if exact_hand:
+            node = exact_hand[0]
+            return {
+                "status": "RESOLVED",
+                "backoff_level": BACKOFF_POLICY[0],
+                "node_id": node.get("node_id"),
+                "support_context_key": key,
+                "hand_class": hand,
+                "probabilities": dict(node["probabilities"]),
+                "support": int(node.get("support") or 0),
+                "candidate_identity": dict(candidate["identity"]),
+                "source_report_hash": node.get("source_report_hash"),
+            }
+    marginal = [node for node in exact_price_nodes if node.get("hand_class") in (None, "")]
+    if len(marginal) > 1:
+        raise SizingLikelihoodError("duplicate exact-price marginal nodes")
+    if marginal:
+        node = marginal[0]
+        return {
+            "status": "RESOLVED",
+            "backoff_level": BACKOFF_POLICY[1],
+            "node_id": node.get("node_id"),
+            "support_context_key": key,
+            "hand_class": hand,
+            "probabilities": dict(node["probabilities"]),
+            "support": int(node.get("support") or 0),
+            "candidate_identity": dict(candidate["identity"]),
+            "source_report_hash": node.get("source_report_hash"),
+        }
+    return {
+        "status": "UNRESOLVED",
+        "backoff_level": BACKOFF_POLICY[2],
+        "reason_code": "EXACT_PRICE_UNSUPPORTED_NO_NEAREST_PRICE",
+        "support_context_key": key,
+        "hand_class": hand,
+        "probabilities": None,
+        "support": 0,
+        "candidate_identity": dict(candidate["identity"]),
+        "source_report_hash": candidate.get("identity", {}).get("source_report_hash"),
+    }
+
+
 def resolve_likelihood(
     *,
     candidate: Mapping[str, Any],
