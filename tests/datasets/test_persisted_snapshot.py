@@ -79,6 +79,13 @@ class PersistedSnapshotTests(unittest.TestCase):
             check=True,
         )
 
+    def test_paired_ev_generation_bridge_contract(self):
+        subprocess.run(
+            [sys.executable, str(ROOT / 'tests/training/test_bridge_paired_ev_to_hero_generation.py')],
+            cwd=ROOT,
+            check=True,
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
