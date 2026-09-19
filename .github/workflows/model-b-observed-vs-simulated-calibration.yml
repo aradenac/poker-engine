@@ -1,0 +1,154 @@
+name: Model B observed vs simulated calibration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent-B/issue-272-observed-sim-calibration
+    paths:
+      - 'tools/training/independent_profiles/evaluate_observed_vs_simulated_calibration_v1.py'
+      - 'tests/training/test_observed_vs_simulated_calibration_v1.py'
+      - 'training/runs/20260919_model_b_observed_vs_simulated_calibration_v1/PROTOCOL.json'
+      - '.github/workflows/model-b-observed-vs-simulated-calibration.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-observed-vs-simulated-calibration-issue-272
+  cancel-in-progress: true
+
+env:
+  POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
+  RUN_DIR: training/runs/20260919_model_b_observed_vs_simulated_calibration_v1
+  SOURCE197: training/runs/20260919_model_b_response_to_price_v1
+  INCUMBENT: training/runs/20260912_independent_profiles_v2/model
+  ARCHIVE_1: training/datasets/NLHE_100-200/source/NLHE 100-200.zip
+  ARCHIVE_2: training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip
+  ARCHIVE_3: training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Guard frozen issue 272 and source 197 contracts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path("training/runs/20260919_model_b_observed_vs_simulated_calibration_v1/PROTOCOL.json").read_text())
+          assert p["schema"]=="model-b-observed-vs-simulated-calibration-protocol/v1"
+          assert p["status"]=="FROZEN_BEFORE_ISSUE_272_EVALUATION"
+          assert p["split_contract"]["fit_source"]==["TRAIN_EXISTING_ARTIFACTS_ONLY"]
+          assert p["split_contract"]["evaluate"]==["VALIDATION"]
+          assert p["split_contract"]["forbidden"]==["TEST"]
+          assert p["split_contract"]["test_consumed"] is False
+          assert p["scientific_constraints"]["production_effect"]=="NONE"
+          assert p["scientific_constraints"]["automatic_promotion"] is False
+          assert p["scientific_constraints"]["active_model_b_change_allowed"] is False
+          assert p["scientific_constraints"]["model_a_features_allowed"] is False
+
+          s=json.loads(Path("training/runs/20260919_model_b_response_to_price_v1/PROTOCOL.json").read_text())
+          r=json.loads(Path("training/runs/20260919_model_b_response_to_price_v1/RESULT.json").read_text())
+          assert s["data"]["split_contract"]["fit"]==["TRAIN"]
+          assert s["data"]["split_contract"]["evaluate"]==["VALIDATION"]
+          assert s["data"]["split_contract"]["forbidden"]==["TEST"]
+          assert r["test_consumed"] is False
+          assert r["production_effect"]=="NONE"
+          assert r["active_model_b_changed"] is False
+          print("contract guards: PASS")
+          PY
+
+      - name: Compile and run issue 272 unit guards
+        run: |
+          set -euo pipefail
+          python3 -m py_compile             tools/training/independent_profiles/evaluate_observed_vs_simulated_calibration_v1.py             tests/training/test_observed_vs_simulated_calibration_v1.py
+          PYTHONPATH=. python3 tests/training/test_observed_vs_simulated_calibration_v1.py
+
+      - name: Evaluate observed vs simulated on VALIDATION only
+        run: |
+          set -euo pipefail
+          rm -f "$RUN_DIR/REPORT.json" "$RUN_DIR/SUMMARY.json"
+          PYTHONPATH=. python3 -m tools.training.independent_profiles.evaluate_observed_vs_simulated_calibration_v1             --archive "$ARCHIVE_1"             --archive "$ARCHIVE_2"             --archive "$ARCHIVE_3"             --stake 100/200             --exclude-player RoiDePiqueNique             --incumbent-model-dir "$INCUMBENT"             --candidate-artifact "$SOURCE197/model/response_to_price.json"             --source197-protocol "$SOURCE197/PROTOCOL.json"             --source197-result "$SOURCE197/RESULT.json"             --protocol "$RUN_DIR/PROTOCOL.json"             --population-id "$POPULATION"             --output-dir "$RUN_DIR"             --bootstrap-samples 1000
+
+      - name: Final scientific and lane-safety guards
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("training/runs/20260919_model_b_observed_vs_simulated_calibration_v1")
+          r=json.loads((root/"REPORT.json").read_text())
+          s=json.loads((root/"SUMMARY.json").read_text())
+          assert r["schema"]=="model-b-observed-vs-simulated-calibration/v1"
+          assert r["status"]=="COMPLETE"
+          assert r["dataset"]["evaluation_split"]=="VALIDATION"
+          assert r["dataset"]["reserved_holdout"]=="TEST_NOT_CONSUMED"
+          assert r["dataset"]["test_consumed"] is False
+          assert r["test_consumed"] is False
+          assert r["production_effect"]=="NONE"
+          assert r["automatic_promotion"] is False
+          assert r["active_model_b_changed"] is False
+          assert r["candidate_identity"]["fit_split"]=="TRAIN"
+          assert r["candidate_identity"]["production_effect"]=="NONE"
+          assert r["comparability"]["same_validation_rows"] is True
+          assert r["comparability"]["same_exact_context_set"] is True
+          assert r["comparability"]["silent_context_pooling"] is False
+          assert r["feature_safety"]["model_a_recommendation_or_ev_consumed"] is False
+          assert r["source_counts"]["sum_context_observations"]==r["source_counts"]["validation_facing_decisions"]
+          assert s["evaluation_split"]=="VALIDATION"
+          assert s["test_consumed"] is False
+          assert s["production_effect"]=="NONE"
+          assert len(r["context_rows"]) > 0
+          assert len(r["domain_summaries"]) > 0
+          print(json.dumps({
+              "source_counts":r["source_counts"],
+              "global":r["global_calibration"]["probability_calibration"]["candidate_minus_reference"],
+              "summary_counts":s["context_counts"],
+              "domain_counts":s["domain_comparison_counts"],
+          },indent=2))
+          PY
+          changed="$(git diff --name-only HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -E '(^|/)(hero-pfpc|107|108|holdout)|training/registry\.json|training/populations/|site/index\.html|site/trainer\.js'; then
+            echo "forbidden cross-lane/production modification detected" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-272-model-b-calibration
+          path: |
+            training/runs/20260919_model_b_observed_vs_simulated_calibration_v1/REPORT.json
+            training/runs/20260919_model_b_observed_vs_simulated_calibration_v1/SUMMARY.json
+
+      - name: Commit persisted issue 272 evidence to branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$RUN_DIR/REPORT.json" "$RUN_DIR/SUMMARY.json"
+          if git diff --cached --quiet; then
+            echo "No calibration evidence changes to commit"
+          else
+            git commit -m "[B][#272] Persist observed-vs-simulated calibration evidence"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            echo "Unable to persist issue #272 evidence after three retries." >&2
+            exit 1
+          fi
