@@ -794,6 +794,27 @@
   .decision-alt-pill{padding:3px 5px;border:1px solid #2b405f;border-radius:999px;background:#0d192b;color:#cbd7e8;white-space:nowrap}
   .decision-alt-pill.best{border-color:rgba(92,225,185,.35);color:#a7ead4}
   .decision-summary-feed .decision-alt-strip{margin-top:4px}
+  .model-b-robustness-compact{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px;padding:5px 7px;border:1px solid #2a405f;border-radius:8px;background:#0b1627;font-size:8.5px;line-height:1.25;color:#cbd7e8}
+  .model-b-robustness-compact.robust{border-color:rgba(92,225,185,.38);background:rgba(92,225,185,.055)}
+  .model-b-robustness-compact.sensitive{border-color:rgba(241,198,109,.48);background:rgba(241,198,109,.06);color:#efd491}
+  .model-b-robustness-compact.insufficient,.model-b-robustness-compact.unavailable{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.045);color:#f0b1b1}
+  .model-b-robustness-compact b{color:inherit}
+  .decision-summary-feed .model-b-robustness-compact{margin-top:2px;padding:2px 4px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
+  .decision-summary-feed .model-b-robustness-compact span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .model-b-robustness-detail{margin-top:9px;border:1px solid #2a405f;border-radius:10px;background:#0b1423;overflow:hidden}
+  .model-b-robustness-detail>summary{cursor:pointer;list-style:none;padding:8px 10px;font-size:9.5px;font-weight:900;color:#c8d6ea}
+  .model-b-robustness-detail>summary::-webkit-details-marker{display:none}
+  .model-b-robustness-detail>summary::after{content:"▾";float:right;color:var(--muted)}
+  .model-b-robustness-detail[open]>summary{border-bottom:1px solid #273b59}
+  .model-b-robustness-detail[open]>summary::after{content:"▴"}
+  .model-b-robustness-detail-body{padding:9px 10px 10px}
+  .model-b-robustness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .model-b-robustness-card{padding:7px 8px;border:1px solid #273b5a;border-radius:8px;background:#0a1424}
+  .model-b-robustness-card .k{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .model-b-robustness-card .v{margin-top:3px;font-size:11px;font-weight:900;color:var(--text)}
+  .model-b-robustness-card .s{margin-top:3px;font-size:8px;line-height:1.35;color:var(--muted)}
+  .model-b-robustness-warning{margin-top:7px;padding:6px 7px;border-radius:7px;background:rgba(241,198,109,.055);font-size:8.5px;line-height:1.4;color:#e6ce98}
+  @media(max-width:760px){.model-b-robustness-grid{grid-template-columns:1fr}}
   .action-advanced{margin-top:10px;border:1px solid #273b59;border-radius:10px;background:#0b1423;overflow:hidden}
   .action-advanced>summary{cursor:pointer;list-style:none;padding:9px 10px;font-size:10px;font-weight:900;color:#c4d1e4}
   .action-advanced>summary::-webkit-details-marker{display:none}
@@ -1489,6 +1510,7 @@
 <script src="./analytics/leak-training-target.js"></script>
 <script src="./training/leak-scenario-selector.js"></script>
 <script src="./analytics/review-dashboard.js"></script>
+<script src="./analytics/model-b-robustness.js"></script>
 <script src="./preflop-contract.js"></script>
 <script>
 "use strict";
@@ -1526,6 +1548,7 @@ const state = {
   hhSort:"review_desc",
   hhKnownOnly:false,
   reviewScores:Object.create(null),
+  modelBRobustnessByDecision:Object.create(null),
   reviewInboxUserMetadataByScope:Object.create(null),
   reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""},
   reviewInboxView:null,
@@ -3298,6 +3321,94 @@ function reviewInboxScopeInput(){
     ev_reference:window.PokerReviewLeakAdapter?.DEFAULT_EV_REFERENCE||"review_score_policy_adjusted_incremental_bb"
   };
 }
+function modelBRobustnessDecisionId(handId,stepIndex){
+  const idx=Number(stepIndex);
+  return Number.isInteger(idx)&&idx>=0?`review:${String(handId||"")}:${idx}`:"";
+}
+function modelBRobustnessExpected(handId,stepIndex){
+  return {decision_id:modelBRobustnessDecisionId(handId,stepIndex),identity:reviewInboxScopeInput()};
+}
+function modelBRobustnessEnvelopeForDecision(handId,stepIndex){
+  const decisionId=modelBRobustnessDecisionId(handId,stepIndex);
+  if(!decisionId)return null;
+  const direct=state.modelBRobustnessByDecision?.[decisionId];
+  if(direct)return direct;
+  const score=state.reviewScores?.[String(handId)];
+  const detail=(score?.details||[]).find(row=>Number(row?.stepIndex)===Number(stepIndex));
+  return detail?.model_b_robustness||null;
+}
+function modelBRobustnessViewForDecision(handId,stepIndex){
+  const UI=window.PokerModelBRobustnessUI;
+  const expected=modelBRobustnessExpected(handId,stepIndex);
+  if(!UI?.consumeEnvelope)return {evidence_status:"unavailable",status:"insufficiently_supported",fail_closed:true,reason:"UI_CONTRACT_UNAVAILABLE",decision_id:expected.decision_id,identity:expected.identity};
+  return UI.consumeEnvelope(modelBRobustnessEnvelopeForDecision(handId,stepIndex),expected);
+}
+function modelBRobustnessAttachExisting(handId,detail,stepIndex){
+  const envelope=modelBRobustnessEnvelopeForDecision(handId,stepIndex);
+  if(envelope&&detail)detail.model_b_robustness=JSON.parse(JSON.stringify(envelope));
+  return detail;
+}
+function setModelBRobustnessEnvelope(handId,stepIndex,envelope){
+  const UI=window.PokerModelBRobustnessUI,expected=modelBRobustnessExpected(handId,stepIndex);
+  if(!UI?.consumeEnvelope)return {accepted:false,reason:"UI_CONTRACT_UNAVAILABLE"};
+  const view=UI.consumeEnvelope(envelope,expected);
+  if(view.evidence_status!=="available")return {accepted:false,reason:view.reason||"INVALID_EVIDENCE",view};
+  const copy=JSON.parse(JSON.stringify(envelope)),decisionId=expected.decision_id;
+  state.modelBRobustnessByDecision[decisionId]=copy;
+  const score=state.reviewScores?.[String(handId)],detail=(score?.details||[]).find(row=>Number(row?.stepIndex)===Number(stepIndex));
+  if(detail){detail.model_b_robustness=copy;schedulePersistReviewScores();}
+  renderHistoryHands();
+  if(state.selectedHand&&String(state.selectedHand.id)===String(handId))renderVisualReplay();
+  return {accepted:true,reason:"EXACT_IDENTITY_AND_DECISION",view};
+}
+window.setModelBRobustnessEnvelope=setModelBRobustnessEnvelope;
+function modelBRobustnessStatusClass(view){
+  if(view?.evidence_status!=="available")return "unavailable";
+  if(view.status==="robust")return "robust";
+  if(view.status==="sensitive")return "sensitive";
+  return "insufficient";
+}
+function modelBRobustnessStatusText(view){
+  return window.PokerModelBRobustnessUI?.statusLabel?.(view)||"Robustesse Model B non établie";
+}
+function modelBRobustnessCompactHtml(view){
+  const cls=modelBRobustnessStatusClass(view),label=modelBRobustnessStatusText(view),regret=Number(view?.model_environment?.max_regret_bb);
+  const stability=view?.evidence_status==="available"
+    ?`action ${view.stability?.action===true?"stable":view.stability?.action===false?"variable":"?"} · sizing ${view.stability?.sizing===true?"stable":view.stability?.sizing===false?"variable":"?"}`
+    :"aucune preuve Model B liée à cette décision";
+  return `<div class="model-b-robustness-compact ${cls}" data-model-b-robustness-status="${escapeHtml(view?.evidence_status==="available"?view.status:"unavailable")}"><b>${escapeHtml(label)}</b><span>${escapeHtml(stability)}${Number.isFinite(regret)?` · regret max ${escapeHtml(formatBB(regret))}`:""}</span></div>`;
+}
+function modelBRobustnessFragilityLine(label,value){
+  if(!value?.applicable)return `${label} : non applicable`;
+  if(value.fragile===true){
+    const envs=(value.affected_environments||[]).map(String).join(", ")||"environnement stress";
+    return `${label} : fragile · ${envs}`;
+  }
+  if(value.fragile===false)return `${label} : aucune fragilité détectée dans les environnements couverts`;
+  return `${label} : non concluante`;
+}
+function modelBRobustnessDetailHtml(view){
+  const label=modelBRobustnessStatusText(view);
+  if(view?.evidence_status!=="available"){
+    return `<details class="model-b-robustness-detail"><summary>${escapeHtml(label)}</summary><div class="model-b-robustness-detail-body"><div class="model-b-robustness-warning">Aucun résumé <code>hero-model-b-robustness-summary/v1</code> avec identité et décision concordantes n’est disponible. L’interface ne conclut donc pas à la robustesse.</div></div></details>`;
+  }
+  const nominal=view.nominal||{},model=view.model_environment||{},mc=nominal.mc_ci95;
+  const nominalText=Number.isFinite(Number(nominal.ev_bb))?formatBB(Number(nominal.ev_bb)):"—";
+  const mcText=Array.isArray(mc)&&mc.length===2&&mc.every(x=>Number.isFinite(Number(x)))?`[${formatBB(Number(mc[0]))} ; ${formatBB(Number(mc[1]))}]`:"—";
+  const span=Array.isArray(model.ev_span_bb)&&model.ev_span_bb.length===2&&model.ev_span_bb.every(x=>Number.isFinite(Number(x)))?`[${formatBB(Number(model.ev_span_bb[0]))} ; ${formatBB(Number(model.ev_span_bb[1]))}]`:"—";
+  const maxRegret=Number(model.max_regret_bb),affected=window.PokerModelBRobustnessUI?.affectedEnvironmentIds?.(view)||[];
+  const identity=view.identity||{};
+  const statusNote=view.status==="insufficiently_supported"?"Support/comparabilité incomplets : aucune conclusion de robustesse.":view.status==="sensitive"?"La meilleure action, le sizing ou le ranking varie selon les environnements plausibles.":"La recommandation reste stable dans les environnements couverts.";
+  return `<details class="model-b-robustness-detail"><summary>${escapeHtml(label)}</summary><div class="model-b-robustness-detail-body">
+    <div class="model-b-robustness-grid">
+      <div class="model-b-robustness-card"><div class="k">EV nominale</div><div class="v">${escapeHtml(nominalText)}</div><div class="s">${escapeHtml(nominal.action||"—")}${nominal.sizing!=null?` · sizing ${escapeHtml(String(nominal.sizing))}`:""} · valeur nominale, pas une moyenne d’environnements</div></div>
+      <div class="model-b-robustness-card"><div class="k">Incertitude Monte-Carlo</div><div class="v">${escapeHtml(mcText)}</div><div class="s">IC 95 % MC${Number.isFinite(Number(nominal.mc_ci95_width_bb))?` · largeur ${escapeHtml(formatBB(Number(nominal.mc_ci95_width_bb)))}`:""}</div></div>
+      <div class="model-b-robustness-card"><div class="k">Incertitude Model B</div><div class="v">${escapeHtml(span)}</div><div class="s">Enveloppe non pondérée · regret max ${Number.isFinite(maxRegret)?escapeHtml(formatBB(maxRegret)):"—"} · ${Number(model.environment_count)||0} environnement(s)</div></div>
+    </div>
+    <div class="model-b-robustness-warning">${escapeHtml(statusNote)}<br>Stabilité : action <b>${view.stability?.action===true?"oui":view.stability?.action===false?"non":"—"}</b> · sizing <b>${view.stability?.sizing===true?"oui":view.stability?.sizing===false?"non":"—"}</b> · ranking <b>${view.stability?.ranking===true?"oui":view.stability?.ranking===false?"non":"—"}</b>.<br>${escapeHtml(modelBRobustnessFragilityLine("Shove",view.shove_fragility))} · ${escapeHtml(modelBRobustnessFragilityLine("Overbet",view.overbet_fragility))}${affected.length?`<br>Environnements concernés : ${escapeHtml(affected.join(", "))}`:""}.</div>
+    <div class="action-analysis-meta" style="margin-top:7px">Décision <b>${escapeHtml(view.decision_id)}</b> · population <b>${escapeHtml(identity.population_id||"—")}</b> · pack <b>${escapeHtml(identity.pack_id||"—")}</b> · stratégie <b>${escapeHtml(identity.strategy_id||"—")}@${escapeHtml(identity.strategy_version||"—")}</b> · EV ref <b>${escapeHtml(identity.ev_reference||"—")}</b>. Diagnostic de sensibilité uniquement, pas un verdict de stratégie.</div>
+  </div></details>`;
+}
 function reviewInboxSourceScores(){
   const sig=reviewContextSignature(),out=Object.create(null);
   for(const hand of state.hhHands||[]){
@@ -3601,7 +3712,7 @@ function refreshReviewScoreForSelectedHand(){
     if(cached.status==="error"){errors++;continue;}
     const reg=reviewRegretForAction(i,cached);if(!reg)continue;
     comparable++;
-    reg.stepIndex=i;details.push(reg);
+    reg.stepIndex=i;modelBRobustnessAttachExisting(String(hand.id),reg,i);details.push(reg);
     const loss=Math.max(0,Number(reg.lossBB)||0);totalLossBB+=loss;
     if(reg.actor===hand.heroName)heroLossBB+=loss;else opponentLossBB+=loss;
     if(loss>biggestLossBB){biggestLossBB=loss;biggest=reg;}
@@ -3692,7 +3803,7 @@ function reviewBatchRegret(a){
 function finalizeReviewBatchPlan(plan){
   const hand=state.hhHands.find(h=>String(h.id)===String(plan.handId));if(!hand)return;
   let totalLossBB=0,heroLossBB=0,opponentLossBB=0,biggestLossBB=0,biggest=null,comparable=0,errors=0;const details=[];
-  for(const a of plan.actions){if(a.failed)errors++;const reg=reviewBatchRegret(a);if(!reg)continue;comparable++;reg.stepIndex=a.stepIndex;details.push(reg);
+  for(const a of plan.actions){if(a.failed)errors++;const reg=reviewBatchRegret(a);if(!reg)continue;comparable++;reg.stepIndex=a.stepIndex;modelBRobustnessAttachExisting(String(hand.id),reg,a.stepIndex);details.push(reg);
     const loss=Math.max(0,Number(reg.lossBB)||0);totalLossBB+=loss;if(reg.actor===hand.heroName)heroLossBB+=loss;else opponentLossBB+=loss;if(loss>biggestLossBB){biggestLossBB=loss;biggest=reg;}}
   const summary={handId:String(hand.id),signature:plan.signature,totalLossBB,heroLossBB,opponentLossBB,biggestLossBB,biggest,
     analyzableDecisions:plan.actions.length,finishedDecisions:plan.actions.length,comparableDecisions:comparable,errorDecisions:errors,
@@ -4166,6 +4277,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
   const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
+  const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
   const allIn=/all-in/i.test(step.actionText||"");
@@ -4199,7 +4311,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
     : `${chips}${keyPoints}`;
-  return `${primary}${retrospective}
+  return `${primary}${retrospective}${modelBRobustnessCompactHtml(robustness)}${modelBRobustnessDetailHtml(robustness)}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
@@ -4245,7 +4357,10 @@ function actionAnalysisHtml(stepIndex,step){
   const priorEq=eq[sources.prior],postEq=eq[sources.post],priorTree=trees.prior||null,postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree),postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
-  if(canonicalDecision)return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}</div>`;
+  if(canonicalDecision){
+    const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
+    return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}${modelBRobustnessCompactHtml(robustness)}</div>`;
+  }
   const row=[];
   if(req.kind==="call"&&Number.isFinite(priorMetrics.evBB)){
     const loss=Math.max(0,-Number(priorMetrics.evBB)),quality=loss<=1e-9?"good":"warn";
@@ -5344,7 +5459,8 @@ function aiExportActionAnalysisForStep(stepIndex){
   return {
     status:c.status||"unknown",error:c.error||"",required_equity:aiExportPlain(req),scenario_sources:aiExportPlain(sources),
     equity_scenarios:{range_vs_ranges:aiExportNumber(eq.range_ranges),range_vs_real:aiExportNumber(eq.range_real),hand_vs_ranges:aiExportNumber(eq.hand_ranges),hand_vs_real:aiExportNumber(eq.hand_real),prior_used:aiExportNumber(priorEq),posterior_used:aiExportNumber(postEq)},
-    postflop_response_trees:aiExportPlain(c.postflopTrees||null),sizing_optimization:aiExportPlain(c.sizingOptimization||null),decision_summary:aiExportPlain(decisionSummary),review_regret:aiExportPlain(regret)
+    postflop_response_trees:aiExportPlain(c.postflopTrees||null),sizing_optimization:aiExportPlain(c.sizingOptimization||null),decision_summary:aiExportPlain(decisionSummary),review_regret:aiExportPlain(regret),
+    model_b_robustness:aiExportPlain(modelBRobustnessEnvelopeForDecision(state.selectedHand?.id,stepIndex))
   };
 }
 function aiExportAnalysisProgress(){
@@ -5405,7 +5521,7 @@ async function buildAiHandExport(){
     schema:"poker-replayer-ai-export/v1",application:{name:"Poker Range Equity Offline",version:"v83",exported_at:new Date().toISOString()},
     purpose:"Complete replayer state and model analysis for external poker-strategy review. Values ending in _bb are expressed in big blinds. Posterior/real-hand fields may use cards only known after the decision; use prior fields to judge decision quality without hindsight.",
     analysis_context:{calculation_method:methodSelect?.value||"",monte_carlo_trials:Number(trialsSelect?.value)||null,range_source:fileMeta?.textContent||"",range_edition:!!state.rangeEdition,
-      preflop_population_model:aiExportPlain(state.populationModelMeta),postflop_population_model:aiExportPlain(state.postflopModelMeta),context_signature:replayFastContextSignature(),review_signature:reviewContextSignature(),
+      preflop_population_model:aiExportPlain(state.populationModelMeta),postflop_population_model:aiExportPlain(state.postflopModelMeta),context_signature:replayFastContextSignature(),review_signature:reviewContextSignature(),model_b_robustness_identity:aiExportPlain(reviewInboxScopeInput()),
       caveats:["A priori/prior values are intended for decision-quality review; a posteriori/real-hand values are informational and can contain showdown knowledge.","Flop/turn continuation trees use the application's documented checkdown-to-showdown approximation after calls where no validated future betting policy exists.","Postflop response composition is sizing-sensitive: population marginals set how often opponents continue, while combo quality determines which hands continue; river quality uses exact current-board showdown rank. Very large candidate sizings outside the empirical TRAIN distribution are excluded from recommendations; empirical support was rebuilt from the 26,741-hand deduplicated 100/200 observation corpus.","Postflop EV uses branch-specific effective stacks and returns unmatched overbet excess; sizings with non-monotone continuation-range quality are excluded from recommendations and EV-regret scoring.","Postflop recommendations use one final EV and select its strict argmax. Street×sizing residual calibration is retained, with generic JAM bonuses disabled; in pots smaller than the training-population mean for the street, each learned BB residual is scaled linearly by current pot / training mean pot, and it is never amplified above its learned value. Hypothetical aggression is excluded when any response node is very-low-confidence with fewer than 5 observations. JAM/overbet candidates require at least 10 response observations; for very-low-confidence nodes with at least 5 observations, hypothetical actions beyond the locally observed P90 call-price support are excluded when that statistic is available. Raw tree EV remains export-only for diagnostics.","Preflop actions without a validated alternative EV tree are exported but are not assigned invented EV regret."]},
     hand:{id:String(hand.id),date:hand.dateText||"",source_name:hand.sourceName||"",hero_name:hand.heroName,hero_cards:aiExportCards(hand.heroCards),button_seat:hand.buttonSeat,final_board:aiExportCards(hand.board),big_blind_chips:aiExportNumber(hand.bigBlind),total_pot_chips:aiExportNumber(hand.totalPot),rake_chips:aiExportNumber(hand.rake),hero_result:aiExportPlain(hand.heroResult),players:players.map(aiExportPlayerConfig),review_value:aiExportPlain(review),raw_hand_history:hand.raw||""},
     range_snapshots:registry.snapshots,steps
@@ -5624,13 +5740,15 @@ function renderHistoryHands(){
     const coverage=`Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
     const incompleteReasons=item.status==="INCOMPLETE_ANALYSIS"?(item.coverage?.reasons||[]).join(" · "):"";
     const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
+    const robustnessText=modelBRobustnessStatusText(robustness);
     const statusCls=item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
     const open=document.createElement("button");
     open.type="button";open.className="review-inbox-open";
     open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
     open.innerHTML=`<span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
       <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}${incompleteReasons?` · ${escapeHtml(incompleteReasons)}`:""}</small></span>
-      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")}</small></span>`;
+      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")} · ${escapeHtml(robustnessText)}</small></span>`;
     open.onclick=()=>openReviewInboxItem(item);
     const status=document.createElement("span");
     status.className="review-inbox-status";

@@ -188,6 +188,115 @@ async def main() -> None:
         assert dashboard_ui["leakOpen"]["opened"] is True and dashboard_ui["leakFilter"] == "SRP|PFR|IP", dashboard_ui
         assert dashboard_ui["unsupported"]["opened"] is False and dashboard_ui["unsupported"]["reason"] == "UNSUPPORTED_LEAK_DIMENSION", dashboard_ui
 
+        # Model-B robustness UI consumes #260 summaries only and fails closed on identity/support mismatch.
+        robustness_ui = await page.evaluate(
+            """() => {
+                const UI=window.PokerModelBRobustnessUI;
+                const identity={...reviewInboxScopeInput()};
+                const decisionId="review:42:3";
+                const makeSummary=(status="robust")=>({
+                    schema:UI.SUMMARY_SCHEMA,
+                    decision_id:decisionId,
+                    status,
+                    nominal:{
+                        action:"JAM",sizing:1.6,ev_bb:2.4,advantage_bb:0.35,
+                        mc_ci95:[2.2,2.6],mc_ci95_width_bb:0.4
+                    },
+                    model_environment:{
+                        comparable:true,ev_span_bb:[1.7,2.4],max_regret_bb:0.05,
+                        worst_environment_regret:{environment_id:"fold-high",regret_bb:0.05},
+                        environment_count:3,missing_environment_ids:[],noncomparable_environment_ids:[],weighted:false
+                    },
+                    stability:{action:true,sizing:true,ranking:true},
+                    support:{all_environments_supported:true,unsupported_environment_count:0},
+                    shove_fragility:{applicable:true,kind:"SHOVE",fragile:false,affected_environments:[],nominal_advantage_bb:0.35,worst_environment_regret:{environment_id:"fold-high",regret_bb:0.05}},
+                    overbet_fragility:{applicable:true,kind:"OVERBET",fragile:false,affected_environments:[],nominal_advantage_bb:0.35,worst_environment_regret:{environment_id:"fold-high",regret_bb:0.05}},
+                    aggressive_fragility:null,
+                    detail_available:true
+                });
+                const envelope=summary=>({schema:UI.ENVELOPE_SCHEMA,identity:{...identity},summary});
+                const robust=UI.consumeEnvelope(envelope(makeSummary("robust")),{decision_id:decisionId,identity});
+
+                const sensitiveSummary=makeSummary("sensitive");
+                sensitiveSummary.stability={action:false,sizing:false,ranking:false};
+                sensitiveSummary.model_environment.max_regret_bb=0.65;
+                sensitiveSummary.model_environment.ev_span_bb=[0.9,2.4];
+                sensitiveSummary.shove_fragility={...sensitiveSummary.shove_fragility,fragile:true,affected_environments:["fold-high"]};
+                sensitiveSummary.overbet_fragility={...sensitiveSummary.overbet_fragility,fragile:true,affected_environments:["fold-low"]};
+                const sensitiveEnvelope=envelope(sensitiveSummary);
+                const sensitive=UI.consumeEnvelope(sensitiveEnvelope,{decision_id:decisionId,identity});
+
+                const falseRobustSummary=makeSummary("robust");
+                falseRobustSummary.support={all_environments_supported:false,unsupported_environment_count:1};
+                const falseRobust=UI.consumeEnvelope(envelope(falseRobustSummary),{decision_id:decisionId,identity});
+                const missing=UI.consumeEnvelope(null,{decision_id:decisionId,identity});
+                const mismatch=UI.consumeEnvelope(
+                    {schema:UI.ENVELOPE_SCHEMA,identity:{...identity,strategy_version:"wrong-version"},summary:makeSummary("robust")},
+                    {decision_id:decisionId,identity}
+                );
+                const wrongDecision=UI.consumeEnvelope(
+                    {schema:UI.ENVELOPE_SCHEMA,identity,summary:{...makeSummary("robust"),decision_id:"review:42:2"}},
+                    {decision_id:decisionId,identity}
+                );
+
+                const compact=modelBRobustnessCompactHtml(sensitive);
+                const detail=modelBRobustnessDetailHtml(sensitive);
+
+                const savedScores=state.reviewScores;
+                const savedMap=state.modelBRobustnessByDecision;
+                try{
+                    state.reviewScores={"42":{details:[{stepIndex:3}]}};
+                    state.modelBRobustnessByDecision=Object.create(null);
+                    const accepted=setModelBRobustnessEnvelope("42",3,sensitiveEnvelope);
+                    const stored=state.reviewScores["42"].details[0].model_b_robustness;
+                    const reviewView=modelBRobustnessViewForDecision("42",3);
+                    const rejected=setModelBRobustnessEnvelope("42",3,{
+                        schema:UI.ENVELOPE_SCHEMA,
+                        identity:{...identity,population_id:"other-pop"},
+                        summary:sensitiveSummary
+                    });
+                    return {
+                        schemas:{summary:UI.SUMMARY_SCHEMA,envelope:UI.ENVELOPE_SCHEMA,view:UI.VIEW_SCHEMA},
+                        robust:{status:robust.status,label:UI.statusLabel(robust)},
+                        sensitive:{status:sensitive.status,label:UI.statusLabel(sensitive),affected:UI.affectedEnvironmentIds(sensitive)},
+                        falseRobust:{status:falseRobust.status,failClosed:falseRobust.fail_closed,reason:falseRobust.reason},
+                        missing:{evidence:missing.evidence_status,status:missing.status,failClosed:missing.fail_closed},
+                        mismatch:{evidence:mismatch.evidence_status,reason:mismatch.reason},
+                        wrongDecision:{evidence:wrongDecision.evidence_status,reason:wrongDecision.reason},
+                        html:{compact,detail},
+                        setter:{
+                            accepted:accepted.accepted,
+                            storedSchema:stored?.schema,
+                            reviewStatus:reviewView.status,
+                            rejected:rejected.accepted,
+                            rejectReason:rejected.reason
+                        }
+                    };
+                } finally {
+                    state.reviewScores=savedScores;
+                    state.modelBRobustnessByDecision=savedMap;
+                }
+            }"""
+        )
+        assert robustness_ui["schemas"] == {
+            "summary": "hero-model-b-robustness-summary/v1",
+            "envelope": "hero-model-b-robustness-ui-envelope/v1",
+            "view": "hero-model-b-robustness-ui-view/v1",
+        }, robustness_ui
+        assert robustness_ui["robust"]["status"] == "robust" and "Robuste" in robustness_ui["robust"]["label"], robustness_ui
+        assert robustness_ui["sensitive"]["status"] == "sensitive" and "Sensible" in robustness_ui["sensitive"]["label"], robustness_ui
+        assert {"fold-high", "fold-low"}.issubset(set(robustness_ui["sensitive"]["affected"])), robustness_ui
+        assert robustness_ui["falseRobust"]["status"] == "insufficiently_supported" and robustness_ui["falseRobust"]["failClosed"], robustness_ui
+        assert robustness_ui["falseRobust"]["reason"] == "SUPPORT_OR_COMPARABILITY_INCOMPLETE", robustness_ui
+        assert robustness_ui["missing"] == {"evidence":"unavailable","status":"insufficiently_supported","failClosed":True}, robustness_ui
+        assert robustness_ui["mismatch"]["evidence"] == "unavailable" and robustness_ui["mismatch"]["reason"] == "IDENTITY_MISMATCH", robustness_ui
+        assert robustness_ui["wrongDecision"]["evidence"] == "unavailable" and robustness_ui["wrongDecision"]["reason"] == "DECISION_ID_MISMATCH", robustness_ui
+        assert "Sensible aux variantes Model B" in robustness_ui["html"]["compact"], robustness_ui
+        assert all(text in robustness_ui["html"]["detail"] for text in ["EV nominale","Incertitude Monte-Carlo","Incertitude Model B","Shove","Overbet","fold-high","pas un verdict de stratégie"]), robustness_ui
+        assert robustness_ui["setter"]["accepted"] is True and robustness_ui["setter"]["storedSchema"] == "hero-model-b-robustness-ui-envelope/v1", robustness_ui
+        assert robustness_ui["setter"]["reviewStatus"] == "sensitive", robustness_ui
+        assert robustness_ui["setter"]["rejected"] is False and robustness_ui["setter"]["rejectReason"] == "IDENTITY_MISMATCH", robustness_ui
+
         # Leak -> Training consumes the merged target + selector contracts and fails closed.
         targeted_training = await page.evaluate(
             """() => {
