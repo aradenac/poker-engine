@@ -1,0 +1,86 @@
+{
+  "schema": "central-ui-action-sizing-ev-duplication-audit/v1",
+  "issue": 205,
+  "source_issue_299": 299,
+  "measured_on_base": "453f09ae051ca874f8cf3c35180ae50092760b3f",
+  "decision": "EXTRACTION_JUSTIFIED",
+  "threshold": {
+    "minimum_real_consumers": 2
+  },
+  "findings": {
+    "shared_rendering": {
+      "primary_summary": {
+        "symbol": "decisionPrimarySummaryHtml",
+        "definition": "site/index.html:4235",
+        "consumers": [
+          "site/index.html:4402 replayer detail modal",
+          "site/index.html:4452 Review/feed action verdict",
+          "site/trainer.js:849 Training feedback"
+        ],
+        "real_consumer_count": 3
+      },
+      "alternatives_strip": {
+        "symbol": "decisionAlternativesStripHtml",
+        "definition": "site/index.html:4250",
+        "consumers": [
+          "site/index.html:4402 replayer detail modal",
+          "site/index.html:4452 Review/feed action verdict",
+          "site/trainer.js:849 Training feedback"
+        ],
+        "real_consumer_count": 3
+      },
+      "quality_projection": {
+        "symbol": "decisionQualityFromEV",
+        "definition": "site/index.html:4228",
+        "consumers": [
+          "site/index.html:4237 canonical summary presentation",
+          "site/trainer.js:677 Training decision classification",
+          "site/trainer.js:847 Training feedback"
+        ],
+        "real_consumer_count": 3
+      }
+    },
+    "keep_separate": {
+      "decisionCanonicalSummary": {
+        "location": "site/index.html:4200",
+        "reason": "Replayer-specific adapter from postflop analyzer/tree output into existing decision-summary/v1. It owns no shared rendering after extraction."
+      },
+      "trainerDecisionCanonical": {
+        "location": "site/trainer.js:685",
+        "reason": "Training-specific anchoring of played action to the pre-action guide. Removing it in this slice could alter Guided/targeted semantics; do not combine it with presentation extraction."
+      },
+      "recommendationConsistencyValidator": {
+        "location": "src/analytics/recommendation-consistency.js",
+        "reason": "Issue #299 remains authoritative for action/sizing/incremental-cost/EV and cross-surface consistency. This slice consumes it in parity tests and does not duplicate validation."
+      }
+    }
+  },
+  "extraction": {
+    "asset": "site/action-sizing-ev.js",
+    "responsibility": [
+      "render decision-summary/v1 primary action+sizing+EV cards",
+      "render decision-summary/v1 alternatives strip without selecting or recomputing an action/EV",
+      "derive presentation-only EV quality from already-provided loss/noise fields",
+      "copy the #299 canonical recommendation tuple into a surface snapshot without recomputation"
+    ],
+    "consumers": [
+      "site/index.html",
+      "site/trainer.js"
+    ],
+    "forbidden": [
+      "select recommended alternative",
+      "recompute EV",
+      "recompute target sizing",
+      "recompute incremental cost",
+      "replace #299 validator"
+    ]
+  },
+  "parity_plan": [
+    "snapshot old-vs-shared rendering for nominal decision-summary/v1",
+    "snapshot alternatives ordering and exact action/sizing/EV strings",
+    "run #299 validator on five surface snapshots projected from one canonical decision",
+    "reproduce historical JAM feed while CALL has higher EV and require #299 SURFACE_DIVERGENCE/NON_MAX_EV_RECOMMENDATION",
+    "browser smoke replayer/feed/trainer shared module availability"
+  ],
+  "scientific_effect": "NONE_CENTRAL_UI_REFACTOR_ONLY"
+}
