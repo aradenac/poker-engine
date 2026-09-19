@@ -26,21 +26,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  repro-environment:
+    uses: ./.github/workflows/repro-scientific-environment.yml
+
   contract:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
       - name: Compile materializer
         run: python3 -m py_compile tools/datasets/materialize_certified_population.py tests/datasets/test_materialize_certified_population.py
       - name: Exercise deterministic certification boundary
         run: PYTHONPATH=. python3 tests/datasets/test_materialize_certified_population.py
 
   materialize-zoom-baseline:
+    needs: [repro-environment, contract]
     if: github.event_name == 'push' && github.ref == 'refs/heads/issue-112-materialize-certified-population-sol'
-    needs: contract
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +51,20 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
+      - name: Enforce locked REPRO identity
+        env:
+          REPRO_ENVIRONMENT_IDENTITY_SHA256: ${{ needs.repro-environment.outputs.environment_identity_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py verify > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_environment.py identity --output /tmp/repro-environment-identity.json
+          python3 - <<'PY'
+          import json, os
+          value=json.load(open('/tmp/repro-environment-identity.json', encoding='utf-8'))
+          expected=os.environ['REPRO_ENVIRONMENT_IDENTITY_SHA256']
+          assert value['identity_sha256']==expected, (value['identity_sha256'], expected)
+          PY
       - name: Materialize exact certified Zoom baseline and bind registry
         run: |
           set -euo pipefail

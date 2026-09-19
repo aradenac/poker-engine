@@ -1,0 +1,85 @@
+{
+  "schema": "poker-repro-scientific-workflow-enforcement/v1",
+  "issue": 347,
+  "parent_issue": 203,
+  "reusable_workflow": ".github/workflows/repro-scientific-environment.yml",
+  "guard_job": "repro-environment",
+  "required_runtime_guard": {
+    "command": "python3 tools/repro_ci_environment.py verify",
+    "identity_command": "python3 tools/repro_ci_environment.py identity --output /tmp/repro-environment-identity.json",
+    "environment_variable": "REPRO_ENVIRONMENT_IDENTITY_SHA256"
+  },
+  "protected_workflows": [
+    {
+      "path": ".github/workflows/continuous-training-cycle.yml",
+      "protected_jobs": [
+        "run-committed-cycle"
+      ],
+      "reason": "scientific cycle execution behind admission/promotion boundary"
+    },
+    {
+      "path": ".github/workflows/population-certification.yml",
+      "protected_jobs": [
+        "certify"
+      ],
+      "reason": "scientific population certification artifact publication"
+    },
+    {
+      "path": ".github/workflows/population-pack.yml",
+      "protected_jobs": [
+        "validate",
+        "publish"
+      ],
+      "reason": "validated artifact publication and immutable release creation"
+    },
+    {
+      "path": ".github/workflows/user-artifact-bundle.yml",
+      "protected_jobs": [
+        "build-and-verify"
+      ],
+      "reason": "scientific user bundle artifact publication"
+    },
+    {
+      "path": ".github/workflows/plan-ingested-cycle.yml",
+      "protected_jobs": [
+        "plan-and-materialize"
+      ],
+      "reason": "scientific cycle materialization and repository write"
+    },
+    {
+      "path": ".github/workflows/materialize-certified-population.yml",
+      "protected_jobs": [
+        "materialize-zoom-baseline"
+      ],
+      "reason": "certified population materialization and repository write"
+    }
+  ],
+  "mutation_signatures": [
+    "actions/upload-artifact@",
+    "gh release create",
+    "git push"
+  ],
+  "historical_immutability": {
+    "forbidden_change_prefixes": [
+      "training/runs/"
+    ],
+    "forbidden_change_exact": [
+      "training/test-ledger.json",
+      "training/TEST_LEDGER.json"
+    ],
+    "note": "Historical runs and scientific TEST ledgers are not update targets of #347."
+  },
+  "explicit_limitations": {
+    "system_packages_fully_pinned": false,
+    "browser_archive_sha_pinned": false,
+    "rule": "Existing explicit unpinned limitations remain visible; #347 must not fabricate unavailable package/browser hashes."
+  },
+  "exclusions": {
+    "scientific_test_execution": false,
+    "real_upgrade": false,
+    "model_a_b_work": false,
+    "hero_ev": false,
+    "ui": false,
+    "strategy": false
+  }
+}
