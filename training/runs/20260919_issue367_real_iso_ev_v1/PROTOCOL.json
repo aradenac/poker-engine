@@ -98,7 +98,7 @@
     "runner": "tools/simulation/hero_preflop_iso_runner.py",
     "runner_git_blob_sha": "d01b7cb6dc73f8773ec8caf01f12de2db93e3289",
     "provider": "tools/simulation/admitted_model_a_iso_provider.py",
-    "provider_git_blob_sha": "f564a4b079095892e869798a49334e4077a52799",
+    "provider_git_blob_sha": "ce5b270e7d1f4e9376bc56099dd204df4ada4f7f",
     "executor": "tools/simulation/run_issue367_real_iso_ev.py",
     "executor_git_blob_sha": "240069522735ded5ef38ee44ad2710de8c4d262d",
     "paired_engine": "tools/simulation/paired_adaptive_preflop_ev.py",
@@ -131,7 +131,7 @@
   },
   "continuation_assumptions": {
     "opponent_required_preflop_vs_iso": "ADMITTED_MODEL_A_V2_EXACT_PRICE_ONLY",
-    "opponent_other_preflop": "FROZEN_ACTIVE_MODEL_A_V5_EXACT_NODE",
+    "opponent_other_preflop": "FROZEN_ACTIVE_MODEL_A_V5_EXACT_NODE; on ModelAUnsupportedContext only, use pre-existing #108 CHECK_THEN_CALL_THEN_FOLD_V1 legality-only support closure; audit every use; nearest-context substitution forbidden",
     "opponent_postflop": "FROZEN_MODEL_A_V5_PLUS_#102_SELECTED_CONTINUATION; explicit passive CHECK/CALL/FOLD closure only on missing exact postflop node, counted in provider audit",
     "hero_after_fixed_candidate": "FROZEN_#108_SUPPORT_CLOSED_MODEL_A_REFERENCE",
     "hero_reference_descriptor": "training/full_hand/HERO_REFERENCE_POLICY_20260917_SUPPORT_CLOSED.json",
@@ -140,7 +140,15 @@
     "hero_reference_postflop_sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
     "hero_reference_overlay_sha256": "46b918abd61fb9ec58a148cad4ee5e0f812bb2b724dc2cfe299f0eb770d1f27d",
     "optimization_claim": "NONE_FOR_CONTINUATION_ASSUMPTION",
-    "nearest_context": false
+    "nearest_context": false,
+    "opponent_other_preflop_support_closure": {
+      "contract": "model-a-reference-support-closed/v1",
+      "fallback": "CHECK_THEN_CALL_THEN_FOLD_V1",
+      "trigger": "ModelAUnsupportedContext only",
+      "nearest_context_substitution": false,
+      "optimization_claim": "NONE",
+      "audit_required": true
+    }
   },
   "diagnostics": {
     "contract": "poker-preflop-iso-sizing-diagnostics/v1",
@@ -206,5 +214,21 @@
     "selection_rule_changed": false,
     "indifference_rule_changed": false,
     "model_identity_changed": false
+  },
+  "execution_failure_remediation": {
+    "failed_observable_run_id": 35458605629,
+    "failed_before_result": true,
+    "failure": "missing exact preflop Model-A node",
+    "location": "opponent non-VS_ISO preflop continuation delegated to frozen v5",
+    "scientific_result_observed": false,
+    "candidate_changed": false,
+    "seeds_changed": false,
+    "budget_changed": false,
+    "exact_support_grid_changed": false,
+    "selection_rule_changed": false,
+    "indifference_rule_changed": false,
+    "remediation": "reuse pre-existing frozen #108 legality-only support closure for unsupported non-sizing opponent preflop exact nodes; admitted v2 VS_ISO remains strict fail-closed",
+    "previous_provider_git_blob_sha": "f564a4b079095892e869798a49334e4077a52799",
+    "refreshed_provider_git_blob_sha": "ce5b270e7d1f4e9376bc56099dd204df4ada4f7f"
   }
 }
