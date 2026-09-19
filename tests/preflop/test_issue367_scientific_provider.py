@@ -87,6 +87,16 @@ def test_non_sizing_opponent_preflop_closure_is_frozen_and_never_nearest():
     assert closure.identity["claim"] == "BENCHMARK_SUPPORT_CLOSURE_NOT_OPTIMIZED_HERO_STRATEGY"
 
 
+def test_posterior_support_closure_is_explicit_no_information_only():
+    provider = Issue367ScientificProvider(hero_hole_cards=("Ks", "Ts"))
+    assert provider.opponent_policy.posterior_support_closure == {}
+    audit = provider.audit()
+    assert audit["posterior_support_closure_no_information"] == {}
+    assert audit["nearest_price"] is False
+    assert audit["active_model_pointer_mutated"] is False
+    assert audit["test_consumed"] is False
+
+
 def test_reference_descriptor_keeps_active_v5_pointer_external_to_candidate():
     descriptor = json.loads(
         (
