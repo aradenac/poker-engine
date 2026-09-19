@@ -1,5 +1,5 @@
 {
-  "base_sha": "001a21a8969098adf3e57bfbcaa6a6ddbd038009",
+  "base_sha": "b2fa125bc5da885d30e15f36a8bb17072f46ca18",
   "branch": "n8n/issue-366-repro-env-batch2",
   "dependency_provenance": {
     "data_dependencies": "Actual repository file reads observed during verify using a Python audit hook, cross-checked against helper source. Browser identity is read as metadata; no browser helper or installation is invoked.",
@@ -76,9 +76,10 @@
     }
   ],
   "notes": [
-    "Local Python is 3.14.4; the unchanged helper correctly rejects it against 3.11.9. No matching local interpreter or actionlint executable was found. Runtime PASS remains to be obtained with Python 3.11.9.",
-    "HEAD and local main equal base_sha. Locally available origin/main is now b2fa125bc5da885d30e15f36a8bb17072f46ca18; rebase remains the responsibility of n8n. Branch was already selected by n8n; no checkout, commit, rebase, push or PR creation performed.",
-    "Claude review remains the responsibility of the n8n orchestrator. No scientific test or validation was executed."
+    "Local Python is 3.14.4; the unchanged helper correctly rejects it against 3.11.9. Runtime PASS remains to be obtained with Python 3.11.9. actionlint is unavailable locally.",
+    "The baseline is the parent of implementation commit 38638bc and includes the #361 migration. Protected workflow hashes were recalibrated against this parent and verified against the unchanged working files; migration baselines and workflow logic were preserved.",
+    "The contract test initially failed on three obsolete protected workflow hashes; after recalibration all four test methods passed. local_tests records the actual post-correction executions.",
+    "Branch was already selected by n8n; no checkout, commit, rebase, push or PR creation performed. Claude review and subsequent orchestration remain pending. No scientific test or validation was executed."
   ],
   "schema": "poker-repro-workflow-batch2-before-after/v1",
   "scientific_commands_changed": false,

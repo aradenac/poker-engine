@@ -13,16 +13,16 @@ import json
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE_SHA = '001a21a8969098adf3e57bfbcaa6a6ddbd038009'
+BASE_SHA = 'b2fa125bc5da885d30e15f36a8bb17072f46ca18'
 BASELINES = {'.github/workflows/full-hand-arena.yml': {'sha256': '3635255ff3de95e3cf734d15e0db7cf59a37d5664707f23ba6e95d6d6083d665',
                                            'setups': 2,
                                            'paths_blocks': 1},
  '.github/workflows/model-b-card-aware-runtime.yml': {'sha256': 'd297c71f5bbaf087ff14f15e9b461d54a06446d396f5eb37e3bd9c1d115ae1a2',
                                                       'setups': 1,
                                                       'paths_blocks': 2}}
-PROTECTED = {'.github/workflows/trainer-smoke.yml': '89bb574b39e5119ac80eddcba68f32939a2cd9633f0eeb4c0f3cf8362c4edac8',
- '.github/workflows/hero-range-editor.yml': '1825295ec7bf5263af6213b26302c87b6864defa804e61c31a134b341b387a0a',
- '.github/workflows/hero-range-compliance.yml': '132d3d211c68ecf16538ed17a90dc1b5e37b694a2838112c8bbf957ada2f5f8a',
+PROTECTED = {'.github/workflows/trainer-smoke.yml': 'df5c3226c697515daace3cd4c5484195ba5b85f3111e36061b5220d2df8d0b1d',
+ '.github/workflows/hero-range-editor.yml': '8f47e3b352b2b6c98d3ae6e48afb4feb5ee45dd426fd857316510b64259ba2d2',
+ '.github/workflows/hero-range-compliance.yml': '30285d84a72f4a9e985ecbc935955229905010e461b28e01ab31bfe8faf78e5d',
  '.github/workflows/project-state-consistency.yml': '16afa5bb9009d075665077c659410e44c7b96390edbadc0e49d398c095299e92'}
 REPRO_PATHS = ('tools/repro_ci_environment.py',
  'tools/repro_environment_identity.py',
