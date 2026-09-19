@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Import manuel — Outils avancés</title>
+  <link rel="stylesheet" href="./manual-import.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Outils avancés</p>
+        <h1>Import manuel</h1>
+        <p class="sub">Overrides locaux pour debug et expérimentation. Le pack actif reste l’identité de référence.</p>
+      </div>
+      <a class="back" href="./packs.html">Packs</a>
+    </header>
+
+    <section class="status-card" aria-live="polite">
+      <div class="status-main">
+        <span id="overrideBadge" class="badge standard">Pack actif</span>
+        <div>
+          <strong id="overrideTitle">Aucun override manuel</strong>
+          <div id="basePack" class="muted">Lecture du pack actif…</div>
+        </div>
+      </div>
+      <button id="restoreBtn" type="button" class="secondary" disabled>Revenir au pack actif</button>
+    </section>
+
+    <section class="panel">
+      <h2>Imports manuels</h2>
+      <p class="hint">Les fichiers sont validés ensemble avant activation. Aucun import partiel n’est conservé en cas d’échec.</p>
+
+      <div class="imports">
+        <label class="import-row">
+          <span><b>Ranges Hero / range source</b><small>Format range-folder legacy encore supporté.</small></span>
+          <input id="heroRangesInput" data-role="hero_ranges" type="file" accept=".json,application/json">
+        </label>
+        <label class="import-row">
+          <span><b>Model A préflop</b><small>Modèle population préflop JSON.</small></span>
+          <input id="preflopInput" data-role="model_a_preflop" type="file" accept=".json,application/json">
+        </label>
+        <label class="import-row">
+          <span><b>Model A postflop</b><small>Modèle population postflop JSON.</small></span>
+          <input id="postflopInput" data-role="model_a_postflop" type="file" accept=".json,application/json">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="activateBtn" type="button">Activer les imports sélectionnés</button>
+        <span id="actionStatus" class="muted">Aucun fichier sélectionné.</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Overrides actifs</h2>
+        <span id="compatibilityBadge" class="compat">—</span>
+      </div>
+      <div id="activeRoles" class="role-list"><span class="muted">Aucun.</span></div>
+
+      <details>
+        <summary>Détails techniques</summary>
+        <pre id="contractJson">Chargement…</pre>
+      </details>
+    </section>
+  </main>
+
+  <script src="./population-packs.js"></script>
+  <script src="./manual-import.js"></script>
+</body>
+</html>
