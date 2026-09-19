@@ -1,0 +1,45 @@
+{
+  "schema": "poker-pack-runtime-compatibility-decisions/v1",
+  "issue": 360,
+  "parent_issue": 201,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "runtime_source_commit": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "decisions": {
+    "engine": {
+      "status": "UNRESOLVED_RUNTIME_ARTIFACT_NOT_MATERIALIZED",
+      "pack_admission": false,
+      "blocker_codes": [
+        "NO_FRESH_DISTRIBUTABLE_ENGINE_ARTIFACT"
+      ],
+      "artifact": {
+        "path": "training/runs/20260919_pack_runtime_compatibility/ENGINE_CANDIDATE.json",
+        "sha256": "8a90aac3c659feeb7973515961938b742038b05c904a87a1ffab67203599c8f3"
+      }
+    },
+    "application_release": {
+      "status": "UNRESOLVED_CURRENT_SHELL_COUPLED_TO_LEGACY_DEPENDENCIES",
+      "pack_admission": false,
+      "blocker_codes": [
+        "CURRENT_RELEASE_BINDS_LEGACY_ENGINE",
+        "CURRENT_APPLICATION_LOADS_MODEL_A_V5_DEFAULTS",
+        "CURRENT_PREFLOP_RUNTIME_BINDS_RETAINED_REFERENCE",
+        "PROMOTION_FORBIDDEN_IN_ISSUE_360"
+      ],
+      "artifact": {
+        "path": "training/runs/20260919_pack_runtime_compatibility/APPLICATION_RELEASE_CANDIDATE.json",
+        "sha256": "4b766d78c16c5e757fe921f3f9fc47fc16876b9ce83ad425807d5f9149e20060"
+      }
+    }
+  },
+  "boundaries": {
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "registry_mutation": false,
+    "pointer_mutation": false,
+    "model_a_b_modified": false,
+    "hero_ev": false,
+    "test_consumed": false,
+    "production_effect": "NONE"
+  }
+}
