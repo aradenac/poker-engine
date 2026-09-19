@@ -1,0 +1,200 @@
+name: Audit real Zoom pack admission
+
+on:
+  pull_request:
+    paths:
+      - 'tools/audit_population_pack_admission_real.py'
+      - 'tests/audit/test_population_pack_admission_real.py'
+      - 'training/runs/20260919_population_pack_admission_real_audit/**'
+      - '.github/workflows/population-pack-real-admission-audit.yml'
+  push:
+    branches:
+      - agent-C/issue-350-pack-admission-audit
+    paths:
+      - 'tools/audit_population_pack_admission_real.py'
+      - 'tests/audit/test_population_pack_admission_real.py'
+      - 'training/runs/20260919_population_pack_admission_real_audit/**'
+      - '.github/workflows/population-pack-real-admission-audit.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUN_DIR: training/runs/20260919_population_pack_admission_real_audit
+
+jobs:
+  repro-environment:
+    uses: ./.github/workflows/repro-scientific-environment.yml
+
+  audit:
+    needs: repro-environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - name: Enforce locked REPRO identity
+        env:
+          REPRO_ENVIRONMENT_IDENTITY_SHA256: ${{ needs.repro-environment.outputs.environment_identity_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py verify > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_environment.py identity --output /tmp/repro-environment-identity.json
+          python3 - <<'PY'
+          import json, os
+          value=json.load(open('/tmp/repro-environment-identity.json', encoding='utf-8'))
+          assert value['identity_sha256']==os.environ['REPRO_ENVIRONMENT_IDENTITY_SHA256']
+          PY
+
+      - name: Compile and focused tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile             tools/audit_population_pack_admission_real.py             tools/population_pack_admission.py             tools/population_pack_preflight.py             tests/audit/test_population_pack_admission_real.py
+          PYTHONPATH=. python3 -m unittest -v tests/audit/test_population_pack_admission_real.py
+
+      - name: Run real admission audit twice deterministically
+        run: |
+          set -euo pipefail
+          rm -rf "$RUN_DIR/.generated" /tmp/issue350-a /tmp/issue350-b
+          mkdir -p "$RUN_DIR/.generated" /tmp/issue350-a /tmp/issue350-b
+          PYTHONPATH=. python3 tools/audit_population_pack_admission_real.py             --output-dir "$RUN_DIR/.generated"
+          cp -a "$RUN_DIR/.generated/." /tmp/issue350-a/
+          rm -rf "$RUN_DIR/.generated"
+          mkdir -p "$RUN_DIR/.generated"
+          PYTHONPATH=. python3 tools/audit_population_pack_admission_real.py             --output-dir "$RUN_DIR/.generated"
+          cp -a "$RUN_DIR/.generated/." /tmp/issue350-b/
+          diff -ru /tmp/issue350-a /tmp/issue350-b
+          echo "deterministic real admission audit: PASS"
+
+      - name: Persist audit evidence
+        run: |
+          set -euo pipefail
+          for file in             EVIDENCE_SET.json             ADMISSION_RESOLUTION.json             CANDIDATE_CONTRACT.json             PREFLIGHT.json             ADMISSION_MATRIX.json             READ_ONLY_GUARD.json             RESULT.json             SUMMARY.md
+          do
+            cp "$RUN_DIR/.generated/$file" "$RUN_DIR/$file"
+          done
+          rm -rf "$RUN_DIR/.generated"
+
+      - name: Final DoD guards
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          run=pathlib.Path("training/runs/20260919_population_pack_admission_real_audit")
+          result=json.loads((run/"RESULT.json").read_text())
+          matrix=json.loads((run/"ADMISSION_MATRIX.json").read_text())
+          preflight=json.loads((run/"PREFLIGHT.json").read_text())
+          guard=json.loads((run/"READ_ONLY_GUARD.json").read_text())
+
+          assert result["status"]=="COMPLETE_READ_ONLY_AUDIT"
+          assert result["assembly_status"]=="NOT_READY"
+          assert result["preflight_result"]=="BLOCKED"
+          assert all(result["dod"].values()), result["dod"]
+          assert result["test_consumed"] is False
+          assert result["production_effect"]=="NONE"
+          assert result["publication_performed"] is False
+          assert result["activation_performed"] is False
+          assert result["promotion_performed"] is False
+          assert result["registry_or_pointer_mutation"] is False
+          assert result["parent_issue_201_should_remain_open"] is True
+
+          expected={
+            "model_a_preflop":"INCOMPATIBLE",
+            "model_a_postflop":"UNRESOLVED",
+            "model_b":"UNRESOLVED",
+            "hero_strategy":"RETAIN_REFERENCE",
+            "engine":"INCOMPATIBLE",
+            "hero_ranges":"RETAIN_REFERENCE",
+            "application_release":"INCOMPATIBLE",
+          }
+          assert {r["role"]:r["status"] for r in matrix["roles"]}==expected
+          assert matrix["summary"]=={
+            "ADMISSIBLE":0,
+            "RETAIN_REFERENCE":2,
+            "UNRESOLVED":2,
+            "REJECTED":0,
+            "INCOMPATIBLE":3,
+          }
+          assert matrix["invariants"]["retain_reference_never_admitted"] is True
+          assert matrix["invariants"]["no_promotion_model_b_never_admitted"] is True
+          assert matrix["invariants"]["legacy_mixed_sources_never_admitted"] is True
+          assert preflight["result"]=="BLOCKED"
+          assert preflight["population"]["status"]=="CERTIFIED_DATA_ONLY"
+          assert preflight["safety"]["writes_performed"] is False
+          assert guard["registry_unchanged"] is True
+          assert guard["application_release_unchanged"] is True
+          assert guard["original_zoom_candidate_unchanged"] is True
+          assert guard["publication"] is False
+          assert guard["activation"] is False
+          assert guard["promotion"] is False
+          assert guard["registry_pointer_mutation"] is False
+          assert guard["catalogue_mutation"] is False
+          assert guard["test_consumed"] is False
+
+          print(json.dumps({
+            "status": result["status"],
+            "assembly_status": result["assembly_status"],
+            "preflight": result["preflight_result"],
+            "admissions": expected,
+            "TEST_CONSUMED": False,
+            "production_effect": "NONE",
+          }, indent=2, sort_keys=True))
+          PY
+
+      - name: Prove no forbidden mutation
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -E '^(training/populations/registry\.json|training/registry\.json|site/RELEASE\.json|user/packs/pokerstars_nlhe_100-200_zoom_play_6max_v1/candidate\.json|site/index\.html|site/trainer\.js)$'; then
+            echo "forbidden registry/pointer/release/UI mutation detected" >&2
+            exit 1
+          fi
+          if find . -maxdepth 3 -type f -name '*.zip' -newer "$RUN_DIR/source_snapshots/issue_108_SOURCE.json" | grep .; then
+            echo "unexpected ZIP creation detected" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-350-real-pack-admission-audit
+          path: |
+            training/runs/20260919_population_pack_admission_real_audit/EVIDENCE_SET.json
+            training/runs/20260919_population_pack_admission_real_audit/ADMISSION_RESOLUTION.json
+            training/runs/20260919_population_pack_admission_real_audit/CANDIDATE_CONTRACT.json
+            training/runs/20260919_population_pack_admission_real_audit/PREFLIGHT.json
+            training/runs/20260919_population_pack_admission_real_audit/ADMISSION_MATRIX.json
+            training/runs/20260919_population_pack_admission_real_audit/READ_ONLY_GUARD.json
+            training/runs/20260919_population_pack_admission_real_audit/RESULT.json
+            training/runs/20260919_population_pack_admission_real_audit/SUMMARY.md
+
+      - name: Commit persisted audit evidence
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             "$RUN_DIR/EVIDENCE_SET.json"             "$RUN_DIR/ADMISSION_RESOLUTION.json"             "$RUN_DIR/CANDIDATE_CONTRACT.json"             "$RUN_DIR/PREFLIGHT.json"             "$RUN_DIR/ADMISSION_MATRIX.json"             "$RUN_DIR/READ_ONLY_GUARD.json"             "$RUN_DIR/RESULT.json"             "$RUN_DIR/SUMMARY.md"
+          if git diff --cached --quiet; then
+            echo "No #350 audit evidence changes to commit"
+          else
+            git commit -m "[C][#350] Persist real pack admission audit evidence"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            exit 1
+          fi
