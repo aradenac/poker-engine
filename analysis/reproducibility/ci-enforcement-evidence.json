@@ -47,8 +47,78 @@
     "test_ledger_modified": false
   },
   "ci": {
-    "status": "PENDING_SYNCHRONIZE_TRIGGER",
+    "status": "PASS_ON_GITHUB_ACTIONS",
+    "tested_source_head": "62f65b808e7212a4c8a5b1040bf13c4e1293781b",
     "pull_request": 351,
-    "run_ids": []
+    "first_attempt": {
+      "result": "CANCELLED_DUE_TO_REUSABLE_CONCURRENCY_COLLISION",
+      "remediation_commit": "62f65b808e7212a4c8a5b1040bf13c4e1293781b",
+      "remediation": "scope reusable concurrency by caller workflow; no scientific contract or lock changed"
+    },
+    "dedicated_guard": {
+      "run_id": 35448582877,
+      "job_id": 105911692019,
+      "conclusion": "success",
+      "artifact": {
+        "id": 10585827750,
+        "name": "repro-environment-9f0ea691f05cb791cc6d22a0b280474a190e03c7",
+        "digest": "sha256:2aaac1f37f1f3bf3cb1e4af5bc5210ebf56084a56ea73e2853a208330478eaf5"
+      }
+    },
+    "consumers": [
+      {
+        "workflow": "NLHE 100-200 user artifact bundle",
+        "run_id": 35448582973,
+        "guard_job_id": 105911692146,
+        "protected_job": "build-and-verify",
+        "protected_job_id": 105911745881,
+        "conclusion": "success"
+      },
+      {
+        "workflow": "Plan ingested training cycle",
+        "run_id": 35448582964,
+        "guard_job_id": 105911692494,
+        "protected_job": "plan-and-materialize",
+        "conclusion": "skipped_on_pull_request",
+        "supporting_job": "planner-contract",
+        "supporting_conclusion": "success"
+      },
+      {
+        "workflow": "Certify NLHE 100-200 population",
+        "run_id": 35448582990,
+        "guard_job_id": 105911692124,
+        "protected_job": "certify",
+        "protected_job_id": 105911757681,
+        "conclusion": "success"
+      },
+      {
+        "workflow": "Validate and publish population pack",
+        "run_id": 35448583016,
+        "guard_job_id": 105911692374,
+        "protected_job": "validate",
+        "protected_job_id": 105911764689,
+        "conclusion": "success",
+        "publish_job": "skipped_on_pull_request"
+      },
+      {
+        "workflow": "Continuous training cycle",
+        "run_id": 35448583007,
+        "guard_job_id": 105911692240,
+        "protected_job": "run-committed-cycle",
+        "conclusion": "skipped_on_pull_request",
+        "supporting_job": "safety-contract",
+        "supporting_conclusion": "success"
+      },
+      {
+        "workflow": "Materialize certified population baseline",
+        "run_id": 35448583002,
+        "guard_job_id": 105911698511,
+        "protected_job": "materialize-zoom-baseline",
+        "conclusion": "skipped_on_pull_request",
+        "supporting_job": "contract",
+        "supporting_conclusion": "success"
+      }
+    ],
+    "semantics": "PR-executable artifact jobs passed after local identity revalidation; repository/release mutation jobs were correctly skipped by their pre-existing event gates after a successful REPRO preflight."
   }
 }
