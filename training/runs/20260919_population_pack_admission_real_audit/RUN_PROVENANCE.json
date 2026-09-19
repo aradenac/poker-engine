@@ -1,0 +1,39 @@
+{
+  "schema": "poker-population-pack-admission-real-audit-run-provenance/v1",
+  "issue": 350,
+  "parent_issue": 201,
+  "workflow_run_id": 35450085783,
+  "workflow_name": "Audit real Zoom pack admission",
+  "validated_source_head": "7840185820c5a9a8795823a804481621121110e2",
+  "persisted_evidence_commit": "66375990e1fa7181d1b3d61bc6a0fecabb2a7c16",
+  "workflow_conclusion": "success",
+  "artifact": {
+    "id": 10585653383,
+    "name": "issue-350-real-pack-admission-audit",
+    "zip_sha256": "1c422f4d845c4164e36493649f4cabf0c6f97d12c49b5730454c66b221acf57e"
+  },
+  "evidence": {
+    "status": "COMPLETE_READ_ONLY_AUDIT",
+    "assembly_status": "NOT_READY",
+    "admission_summary": {
+      "ADMISSIBLE": 0,
+      "INCOMPATIBLE": 3,
+      "REJECTED": 0,
+      "RETAIN_REFERENCE": 2,
+      "UNRESOLVED": 2
+    },
+    "evidence_set_sha256": "23d0538d56e51bc4657ae5aeef96b4a6172a4cc0730d6d95e13c2fade3f50258",
+    "resolution_sha256": "d9b19db277fd9b9760b3441bfdca3e90cecc83884df6d7564a54e6184a9c4bc4",
+    "candidate_contract_sha256": "8120d8e0e44a3823f2d1d4db0dfbb64a6c2977f892f7328cdd6b535d608d8ac9",
+    "preflight_result": "BLOCKED",
+    "preflight_sha256": "ef2a382ad5352f541ec01ce2f3ec06c962bf030453fbc7e9caf07896dd4224da",
+    "matrix_sha256": "9e50660513c0dd7d9edfbef34b5499a90860621ddf530635588d75f754ff9e6f",
+    "test_consumed": false,
+    "production_effect": "NONE",
+    "publication_performed": false,
+    "activation_performed": false,
+    "promotion_performed": false,
+    "registry_or_pointer_mutation": false
+  },
+  "note": "User-authored provenance after deterministic real-evidence audit persistence. #201 remains open; no TEST or production mutation."
+}
