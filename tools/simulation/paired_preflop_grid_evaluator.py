@@ -19,6 +19,10 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from tools.simulation.game_core import NoLimitHoldemState
+from tools.simulation.model_a_preflop_rollout import (
+    ModelAPreflopContinuationRollout,
+    _sample_fingerprint,
+)
 from tools.simulation.paired_adaptive_preflop_ev import AdaptiveBudget, run_paired_search
 from tools.simulation.preflop_grid_evaluator import (
     DECISION_SCHEMA,
@@ -115,6 +119,7 @@ def evaluate_preflop_grid_paired(
     model_uncertainty_provider=None,
     status: str = "EXPERIMENTAL",
     notes: str = "",
+    require_materialized_common_world: bool = False,
 ) -> dict[str, Any]:
     """Evaluate the canonical grid using CRN worlds shared across alternatives."""
 
@@ -167,32 +172,70 @@ def evaluate_preflop_grid_paired(
         "street": "preflop",
         "state_snapshot": state.to_snapshot(),
     }
+    materialized_model_a_world = isinstance(rollout, ModelAPreflopContinuationRollout)
+    if require_materialized_common_world and not materialized_model_a_world:
+        raise PreflopEvaluationError(
+            "real VALIDATION requires ModelAPreflopContinuationRollout common-world materialization"
+        )
 
     def world_factory(public, bound_decision_id, sample_index, seed):
-        # The materialized world is intentionally candidate-independent.  The real
-        # rollout callback receives the same seed/sample pair for every alternative.
-        return {
+        base = {
             "seed": int(seed),
             "sample_index": int(sample_index),
             "decision_id": str(bound_decision_id),
             "public_context_id": str(public["context_id"]),
         }
+        if materialized_model_a_world:
+            # Hidden cards exist before Hero chooses an alternative. Materialize
+            # them from the decision-point public history exactly once, then reuse
+            # the same holes + board for every counterfactual candidate.
+            decision_state = NoLimitHoldemState.from_snapshot(state.to_snapshot())
+            holes = rollout._sample_private_cards(
+                decision_state, hero=actor, seed=int(seed)
+            )
+            board = rollout._sample_board(decision_state, holes, seed=int(seed))
+            return {
+                **base,
+                "world_mode": "MATERIALIZED_MODEL_A_HOLES_AND_BOARD",
+                "holes": {player: list(cards) for player, cards in holes.items()},
+                "board": list(board),
+                "sample_fingerprint_sha256": _sample_fingerprint(holes, board),
+            }
+        return {**base, "world_mode": "GENERIC_SHARED_SEED"}
 
     def evaluator(world, candidate_id, payload):
         branch = NoLimitHoldemState.from_snapshot(payload["state_after"])
         try:
-            callback_candidate = dict(payload["candidate"])
-            callback_candidate["alternative_id"] = candidate_id
-            callback_candidate["id"] = f"PAIRED_WORLD:{decision_id}"
-            result = dict(
-                rollout(
+            if world["world_mode"] == "MATERIALIZED_MODEL_A_HOLES_AND_BOARD":
+                terminal = rollout._run_to_terminal(
                     branch,
-                    actor=actor,
+                    hero=actor,
+                    holes=world["holes"],
+                    board=world["board"],
                     seed=int(world["seed"]),
                     sample_index=int(world["sample_index"]),
-                    candidate=callback_candidate,
+                    candidate_id=f"PAIRED_WORLD:{decision_id}",
                 )
-            )
+                result = {
+                    "supported": True,
+                    **terminal,
+                    "sample_fingerprint_sha256": world[
+                        "sample_fingerprint_sha256"
+                    ],
+                }
+            else:
+                callback_candidate = dict(payload["candidate"])
+                callback_candidate["alternative_id"] = candidate_id
+                callback_candidate["id"] = f"PAIRED_WORLD:{decision_id}"
+                result = dict(
+                    rollout(
+                        branch,
+                        actor=actor,
+                        seed=int(world["seed"]),
+                        sample_index=int(world["sample_index"]),
+                        candidate=callback_candidate,
+                    )
+                )
         except UnsupportedAlternative:
             raise
         except Exception as exc:
@@ -314,6 +357,11 @@ def evaluate_preflop_grid_paired(
                 paired["search"]["worlds_materialized"]
             ),
             "pairwise_deltas": dict(paired["pairwise_deltas"]),
+            "common_world_mode": (
+                "MATERIALIZED_MODEL_A_HOLES_AND_BOARD"
+                if materialized_model_a_world
+                else "GENERIC_SHARED_SEED"
+            ),
         },
         "notes": str(notes or ""),
     }
