@@ -91,7 +91,7 @@ class ReproWorkflowBatch2Tests(unittest.TestCase):
         path = ".github/workflows/full-hand-arena.yml"
         original = (ROOT / path).read_text()
         mutations = [
-            original.replace("        run: python3 tools/repro_ci_environment.py verify\n", "", 1),
+            original.replace("      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n          install-python-deps: 'true'\n", "", 1),
             original.replace("verify\n", "verify || true\n", 1),
             original.replace("      - name: Verify locked", "        continue-on-error: true\n      - name: Verify locked", 1),
             original.replace("        run: python3 tools/repro_ci_environment.py verify", "        if: false\n        run: python3 tools/repro_ci_environment.py verify", 1),

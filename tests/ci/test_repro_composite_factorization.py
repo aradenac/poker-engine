@@ -1,10 +1,10 @@
 import unittest
-from pathlib import Path
+import subprocess
 
 class TestReproCompositeFactorization(unittest.TestCase):
-    def test_composite_actions_exist(self):
-        self.assertTrue((Path(".github/actions/repro-runtime/action.yml")).exists())
-        self.assertTrue((Path(".github/actions/repro-browser/action.yml")).exists())
+    def test_audit_tool(self):
+        result = subprocess.run(['python3', 'tools/audit_repro_composite_factorization.py'], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, f"Audit tool failed: {result.stderr}")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

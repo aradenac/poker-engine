@@ -15,7 +15,7 @@ HELPER_CONSUMERS = ROOT / "analysis/workflow_audit/helper_consumers.json"
 
 ENV_VERIFY = "python3 tools/repro_ci_environment.py verify --require-node"
 ENV_BOOTSTRAP = "python3 tools/repro_ci_environment.py bootstrap --python-deps"
-BROWSER_INSTALL = "python3 tools/repro_ci_browser.py install"
+BROWSER_INSTALL = "uses: ./.github/actions/repro-browser"
 
 DIRECT_PIP_PLAYWRIGHT_RX = re.compile(
     r"(?:\bpip(?:3)?\s+install\b|python3?\s+-m\s+pip\s+install)[^\n]*playwright"
@@ -304,8 +304,8 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
 
     def test_browser_helper_cannot_be_bypassed(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8").replace(
-            BROWSER_INSTALL,
-            "python3 -m playwright install --with-deps chromium",
+            "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'true'",
+            "run: python3 -m playwright install --with-deps chromium",
         )
         rules = {x["rule"] for x in audit_text(text, check_blob=False)["violations"]}
         self.assertIn("BROWSER_HELPER_MISSING", rules)

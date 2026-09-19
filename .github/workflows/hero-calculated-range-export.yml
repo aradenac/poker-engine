@@ -57,10 +57,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/repro-runtime
         with:
-          require-node: 'false'
-          install-python-deps: 'true'
-        with:
           require-node: 'true'
+          install-python-deps: 'true'
       - name: Syntax
         run: |
           node --check src/preflop/decision.js

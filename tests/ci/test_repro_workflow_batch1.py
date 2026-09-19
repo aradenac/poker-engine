@@ -50,8 +50,8 @@ def test_browser_helper_cannot_be_removed() -> None:
         target = root / TARGETS[0]
         text = target.read_text(encoding="utf-8")
         text = text.replace(
-            "python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json",
-            "echo bypass-browser-helper",
+            "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'true'",
+            "      - run: echo skipped-browser-helper",
         )
         target.write_text(text, encoding="utf-8")
         report = audit(root, check_global_repro=False)
@@ -65,7 +65,7 @@ def test_direct_unlocked_playwright_setup_is_rejected() -> None:
         _copy_batch(root)
         target = root / TARGETS[1]
         text = target.read_text(encoding="utf-8")
-        marker = "          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json"
+        marker = "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'true'"
         text = text.replace(
             marker,
             marker + "\n          python3 -m pip install --user playwright\n          python3 -m playwright install --with-deps chromium",
