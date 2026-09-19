@@ -26,6 +26,10 @@ def clone_sources(destination: Path) -> Path:
         "reproducibility/os-base.lock.json",
         "reproducibility/container-base.lock.json",
         "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources",
         "reproducibility/Dockerfile.science",
     ):
         source = ROOT / relative
@@ -179,7 +183,16 @@ class ContainerReproTests(unittest.TestCase):
         self.assertFalse(
             manifest["hermeticity"]["system_packages_fully_pinned"]
         )
-        self.assertIsNone(manifest["hermeticity"]["apt_snapshot"])
+        self.assertEqual(
+            "OFFICIAL_SNAPSHOT_PINNED_RUNTIME_RESOLUTION",
+            manifest["system_packages"]["pinning_level"],
+        )
+        self.assertEqual(
+            "20260918T000000Z",
+            manifest["system_packages"]["apt_snapshot_identity"]["snapshot_id"],
+        )
+        self.assertFalse(manifest["browser"]["archive_identity"]["sha_pinned"])
+        self.assertEqual("BASE_IMAGE_PINNED", manifest["hermeticity"]["level"])
 
     def test_grandfathered_historical_run_policy_is_unchanged(self) -> None:
         historical = {"schema": "historical-run/v1"}

@@ -1,0 +1,142 @@
+{
+  "schema": "model-b-observed-vs-simulated-calibration-protocol/v1",
+  "issue": 272,
+  "version": "2026-09-19.2",
+  "status": "FROZEN_BEFORE_ISSUE_272_EVALUATION",
+  "purpose": "Measure observed VALIDATION behavior against reference Model B and the persisted #197 response-to-price candidate without promotion.",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "source_issue_197_run": "training/runs/20260919_model_b_response_to_price_v1",
+  "split_contract": {
+    "fit_source": [
+      "TRAIN_EXISTING_ARTIFACTS_ONLY"
+    ],
+    "evaluate": [
+      "VALIDATION"
+    ],
+    "forbidden": [
+      "TEST"
+    ],
+    "test_consumed": false
+  },
+  "context_dimensions": [
+    "profile",
+    "street",
+    "relative_position",
+    "pot_type",
+    "sequence",
+    "price_bucket",
+    "spr_bucket"
+  ],
+  "support_contract": {
+    "action": {
+      "supported_min_observations": 30,
+      "supported_min_distinct_hands": 20,
+      "low_support_min_observations": 10,
+      "low_support_min_distinct_hands": 5
+    },
+    "sizing": {
+      "supported_min_raises": 12,
+      "supported_min_distinct_hands": 8,
+      "low_support_min_raises": 5,
+      "low_support_min_distinct_hands": 3
+    },
+    "states": [
+      "SUPPORTED",
+      "LOW_SUPPORT",
+      "INSUFFICIENT_SUPPORT",
+      "NOT_APPLICABLE"
+    ]
+  },
+  "metrics": {
+    "actions": [
+      "FOLD",
+      "CALL",
+      "RAISE"
+    ],
+    "probability": [
+      "log_loss",
+      "brier",
+      "ece_confidence"
+    ],
+    "sizing": [
+      "p10",
+      "median",
+      "p90",
+      "p99",
+      "absolute_log2_error"
+    ],
+    "aggressive": [
+      "jam_frequency",
+      "overbet_frequency",
+      "tail_frequency"
+    ],
+    "tail_definition": "is_jam OR facing_price_to_pot > 1.5 OR raise_sizing_ratio > 1.5"
+  },
+  "uncertainty": {
+    "observed_action_interval": "Wilson 95%",
+    "paired_model_comparison": "cluster bootstrap by hand_id on candidate-minus-reference log-loss",
+    "bootstrap_samples": 1000,
+    "seed": 20260919
+  },
+  "scientific_constraints": {
+    "production_effect": "NONE",
+    "automatic_promotion": false,
+    "active_model_b_change_allowed": false,
+    "model_a_features_allowed": false,
+    "silent_context_pooling_allowed": false,
+    "issue_108_files_modified": false
+  },
+  "reference_row_conditioned_extra_dimensions": [
+    "preflop_role"
+  ],
+  "declared_backoff_levels": [
+    [
+      "profile",
+      "street",
+      "relative_position",
+      "pot_type",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "relative_position",
+      "pot_type",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "pot_type",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "sequence",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "price_bucket",
+      "spr_bucket"
+    ],
+    [
+      "street",
+      "price_bucket"
+    ],
+    [
+      "street"
+    ],
+    []
+  ],
+  "protocol_correction": {
+    "reason": "Initial diagnostic contract included reference-only preflop_role in the exact key, over-fragmenting contexts. Final contract now matches issue #197 candidate public context exactly.",
+    "initial_diagnostic_run": 35408684293,
+    "initial_diagnostic_evidence_used_for_final_conclusions": false
+  }
+}
