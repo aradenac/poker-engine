@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/model-a-preflop-sizing-likelihood.schema.json",
+  "title": "Model-A preflop sizing-aware likelihood candidate",
+  "description": "Candidate-only public sizing likelihood contract. Exact-price lookup only; no nearest-price fallback and no active-model replacement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "identity",
+    "backoff_policy",
+    "nearest_price_fallback",
+    "nodes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "poker-model-a-preflop-sizing-likelihood/v1"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "model_family",
+        "status",
+        "population_id",
+        "feature_contract",
+        "likelihood_contract",
+        "active_model_replaced",
+        "fit_scope",
+        "data_scope"
+      ],
+      "properties": {
+        "candidate_id": {
+          "const": "model-a-preflop-sizing-aware-candidate-v1"
+        },
+        "model_family": {
+          "const": "MODEL_A_PREFLOP"
+        },
+        "status": {
+          "const": "CANDIDATE_ONLY_NOT_ACTIVE"
+        },
+        "population_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "feature_contract": {
+          "const": "poker-model-a-preflop-sizing-public-context/v1"
+        },
+        "likelihood_contract": {
+          "const": "poker-model-a-preflop-sizing-likelihood/v1"
+        },
+        "active_model_replaced": {
+          "const": false
+        },
+        "fit_scope": {
+          "const": "SCAFFOLD_ONLY_NO_FINAL_FIT"
+        },
+        "data_scope": {
+          "const": "SYNTHETIC_OR_TRAIN_ONLY"
+        }
+      }
+    },
+    "backoff_policy": {
+      "const": [
+        "EXACT_HAND_CLASS_EXACT_PRICE",
+        "MARGINAL_EXACT_PRICE",
+        "UNRESOLVED"
+      ]
+    },
+    "nearest_price_fallback": {
+      "const": false
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    }
+  },
+  "$defs": {
+    "publicContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "state_timing",
+        "table_size",
+        "actor_position",
+        "family",
+        "raise_level",
+        "structural_key",
+        "target_total_bb",
+        "to_call_bb",
+        "pot_before_bb",
+        "price_to_pot_ratio",
+        "pot_odds",
+        "effective_stack_bb",
+        "limper_count",
+        "caller_count",
+        "information_boundary",
+        "sizing_context_key"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-model-a-preflop-sizing-public-context/v1"
+        },
+        "state_timing": {
+          "const": "BEFORE_ACTION"
+        },
+        "table_size": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "actor_position": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raise_level": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "structural_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_total_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "to_call_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pot_before_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "price_to_pot_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pot_odds": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "effective_stack_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "limper_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "caller_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sizing_context_key": {
+          "type": "string",
+          "pattern": "^MAPSIZ_"
+        },
+        "information_boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "public_only",
+            "future_cards_consumed",
+            "opponent_hole_cards_consumed"
+          ],
+          "properties": {
+            "public_only": {
+              "const": true
+            },
+            "future_cards_consumed": {
+              "const": false
+            },
+            "opponent_hole_cards_consumed": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "sizing_context_key",
+        "public_context",
+        "hand_class",
+        "probabilities",
+        "support",
+        "support_class"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sizing_context_key": {
+          "type": "string",
+          "pattern": "^MAPSIZ_"
+        },
+        "public_context": {
+          "$ref": "#/$defs/publicContext"
+        },
+        "hand_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "probabilities": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "support": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "support_class": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
