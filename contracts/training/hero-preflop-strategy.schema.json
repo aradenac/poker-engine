@@ -1,0 +1,710 @@
+{
+  "$defs": {
+    "action": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "enum": [
+                  "FOLD",
+                  "CHECK",
+                  "CALL",
+                  "BET",
+                  "RAISE",
+                  "SHOVE"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "MEASURED",
+            "SYNTHETIC_PLACEHOLDER"
+          ]
+        },
+        "value": {
+          "enum": [
+            "FOLD",
+            "CHECK",
+            "CALL",
+            "BET",
+            "RAISE",
+            "SHOVE",
+            null
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "value"
+      ],
+      "type": "object"
+    },
+    "cell": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/action"
+        },
+        "caller_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "candidate_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "context_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "ev": {
+          "$ref": "#/$defs/ev"
+        },
+        "family": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "generation_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "hand_class": {
+          "$ref": "#/$defs/handClass"
+        },
+        "hero_position": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "jam_state": {
+          "type": "boolean"
+        },
+        "last_aggressor_position": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limper_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "opener_position": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "population_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "rollout": {
+          "$ref": "#/$defs/rollout"
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizing"
+        },
+        "stack_bucket": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "support": {
+          "$ref": "#/$defs/support"
+        }
+      },
+      "required": [
+        "population_id",
+        "generation_id",
+        "candidate_id",
+        "context_id",
+        "family",
+        "hero_position",
+        "opener_position",
+        "last_aggressor_position",
+        "caller_count",
+        "limper_count",
+        "jam_state",
+        "stack_bucket",
+        "hand_class",
+        "action",
+        "sizing",
+        "ev",
+        "rollout",
+        "support",
+        "provenance"
+      ],
+      "type": "object"
+    },
+    "ev": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_bb": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_bb": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "estimate_bb": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "MEASURED",
+            "SYNTHETIC_PLACEHOLDER"
+          ]
+        },
+        "uncertainty": {
+          "additionalProperties": false,
+          "properties": {
+            "ci95_high_bb": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "ci95_low_bb": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "method": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "std_error_bb": {
+              "minimum": 0,
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "std_error_bb",
+            "ci95_low_bb",
+            "ci95_high_bb"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "status",
+        "estimate_bb",
+        "uncertainty"
+      ],
+      "type": "object"
+    },
+    "handClass": {
+      "enum": [
+        "AA",
+        "AKs",
+        "AQs",
+        "AJs",
+        "ATs",
+        "A9s",
+        "A8s",
+        "A7s",
+        "A6s",
+        "A5s",
+        "A4s",
+        "A3s",
+        "A2s",
+        "AKo",
+        "KK",
+        "KQs",
+        "KJs",
+        "KTs",
+        "K9s",
+        "K8s",
+        "K7s",
+        "K6s",
+        "K5s",
+        "K4s",
+        "K3s",
+        "K2s",
+        "AQo",
+        "KQo",
+        "QQ",
+        "QJs",
+        "QTs",
+        "Q9s",
+        "Q8s",
+        "Q7s",
+        "Q6s",
+        "Q5s",
+        "Q4s",
+        "Q3s",
+        "Q2s",
+        "AJo",
+        "KJo",
+        "QJo",
+        "JJ",
+        "JTs",
+        "J9s",
+        "J8s",
+        "J7s",
+        "J6s",
+        "J5s",
+        "J4s",
+        "J3s",
+        "J2s",
+        "ATo",
+        "KTo",
+        "QTo",
+        "JTo",
+        "TT",
+        "T9s",
+        "T8s",
+        "T7s",
+        "T6s",
+        "T5s",
+        "T4s",
+        "T3s",
+        "T2s",
+        "A9o",
+        "K9o",
+        "Q9o",
+        "J9o",
+        "T9o",
+        "99",
+        "98s",
+        "97s",
+        "96s",
+        "95s",
+        "94s",
+        "93s",
+        "92s",
+        "A8o",
+        "K8o",
+        "Q8o",
+        "J8o",
+        "T8o",
+        "98o",
+        "88",
+        "87s",
+        "86s",
+        "85s",
+        "84s",
+        "83s",
+        "82s",
+        "A7o",
+        "K7o",
+        "Q7o",
+        "J7o",
+        "T7o",
+        "97o",
+        "87o",
+        "77",
+        "76s",
+        "75s",
+        "74s",
+        "73s",
+        "72s",
+        "A6o",
+        "K6o",
+        "Q6o",
+        "J6o",
+        "T6o",
+        "96o",
+        "86o",
+        "76o",
+        "66",
+        "65s",
+        "64s",
+        "63s",
+        "62s",
+        "A5o",
+        "K5o",
+        "Q5o",
+        "J5o",
+        "T5o",
+        "95o",
+        "85o",
+        "75o",
+        "65o",
+        "55",
+        "54s",
+        "53s",
+        "52s",
+        "A4o",
+        "K4o",
+        "Q4o",
+        "J4o",
+        "T4o",
+        "94o",
+        "84o",
+        "74o",
+        "64o",
+        "54o",
+        "44",
+        "43s",
+        "42s",
+        "A3o",
+        "K3o",
+        "Q3o",
+        "J3o",
+        "T3o",
+        "93o",
+        "83o",
+        "73o",
+        "63o",
+        "53o",
+        "43o",
+        "33",
+        "32s",
+        "A2o",
+        "K2o",
+        "Q2o",
+        "J2o",
+        "T2o",
+        "92o",
+        "82o",
+        "72o",
+        "62o",
+        "52o",
+        "42o",
+        "32o",
+        "22"
+      ],
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "code_sha": {
+          "pattern": "^[a-f0-9]{40}$",
+          "type": "string"
+        },
+        "environment_identity_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "generation_parameters_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "generator_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "scientific_effect": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_plan_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "source_train_audit_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_plan_sha256",
+        "source_train_audit_sha256",
+        "generator_version",
+        "code_sha",
+        "environment_identity_slot",
+        "generation_parameters_slot",
+        "scientific_effect"
+      ],
+      "type": "object"
+    },
+    "rollout": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sample_count": {
+                "const": 0
+              },
+              "world_count": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sample_count": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "world_count": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "sample_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "MEASURED",
+            "SYNTHETIC_PLACEHOLDER"
+          ]
+        },
+        "world_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "status",
+        "sample_count",
+        "world_count"
+      ],
+      "type": "object"
+    },
+    "sizing": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "SYNTHETIC_PLACEHOLDER"
+              },
+              "unit": {
+                "const": null
+              },
+              "value": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "NONE",
+                  "FIXED_BB",
+                  "POT_FRACTION",
+                  "ALL_IN"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "NONE",
+            "FIXED_BB",
+            "POT_FRACTION",
+            "ALL_IN",
+            "SYNTHETIC_PLACEHOLDER"
+          ]
+        },
+        "status": {
+          "enum": [
+            "MEASURED",
+            "SYNTHETIC_PLACEHOLDER"
+          ]
+        },
+        "unit": {
+          "enum": [
+            "BB",
+            "POT_FRACTION",
+            null
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "kind",
+        "value",
+        "unit"
+      ],
+      "type": "object"
+    },
+    "support": {
+      "additionalProperties": false,
+      "properties": {
+        "distinct_hands": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "source_plan_context_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "support_tier": {
+          "enum": [
+            "VERY_HIGH",
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "SPARSE"
+          ]
+        },
+        "train_observations": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "train_observations",
+        "distinct_hands",
+        "support_tier",
+        "source_plan_context_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://poker-engine.local/contracts/training/hero-preflop-strategy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "cells": {
+      "items": {
+        "$ref": "#/$defs/cell"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "population_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema": {
+      "const": "poker-hero-preflop-strategy-shard/v1"
+    },
+    "shard_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "synthetic_fixture": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema",
+    "population_id",
+    "generation_id",
+    "candidate_id",
+    "shard_id",
+    "synthetic_fixture",
+    "cells"
+  ],
+  "title": "Content-addressed Hero preflop strategy shard",
+  "type": "object"
+}

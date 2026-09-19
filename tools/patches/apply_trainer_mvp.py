@@ -31,12 +31,13 @@ def patch_index() -> None:
         "trainer stylesheet",
     )
 
-    text = replace_once(
-        text,
-        '  <a href="#replayerSection">Replayer</a>\n',
-        '  <a href="#replayerSection">Replayer</a>\n  <a id="trainerNavLink" href="#trainerPage">Training</a>\n',
-        "trainer quick-nav link",
-    )
+    if 'id="trainerNavLink"' not in text:
+        text = replace_once(
+            text,
+            '  <a href="#replayerSection">Replayer</a>\n',
+            '  <a href="#replayerSection">Replayer</a>\n  <a id="trainerNavLink" href="#trainerPage">Training</a>\n',
+            "trainer quick-nav link",
+        )
 
     # Other product features may share the action row next to the trainer.
     # Idempotence therefore keys on trainerOpenBtn itself rather than requiring
