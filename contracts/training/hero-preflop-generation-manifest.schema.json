@@ -1,0 +1,328 @@
+{
+  "$defs": {
+    "artifact": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "context_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "STRATEGY_SHARD",
+            "BINDING",
+            "ENVIRONMENT_IDENTITY",
+            "GENERATION_PARAMETERS"
+          ]
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "shard_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "role",
+        "path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "contentSlot": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "slot_id": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "path",
+        "sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://poker-engine.local/contracts/training/hero-preflop-generation-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/artifact"
+      },
+      "minItems": 4,
+      "type": "array"
+    },
+    "candidate_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "code_sha": {
+      "pattern": "^[a-f0-9]{40}$",
+      "type": "string"
+    },
+    "completeness": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_cells": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "actual_context_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "actual_shard_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "expected_cells": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "expected_context_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "expected_shard_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "INCOMPLETE",
+            "COMPLETE",
+            "FINALIZED"
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "expected_context_count",
+        "actual_context_count",
+        "expected_cells",
+        "actual_cells",
+        "expected_shard_count",
+        "actual_shard_count"
+      ],
+      "type": "object"
+    },
+    "context_count": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "environment_identity": {
+      "$ref": "#/$defs/contentSlot"
+    },
+    "expected_context_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "expected_hand_classes_per_context": {
+      "const": 169
+    },
+    "fallback_contract": {
+      "additionalProperties": false,
+      "properties": {
+        "forbidden_substitutions": {
+          "items": {
+            "enum": [
+              "NEAREST_STACK",
+              "NEAREST_POSITION",
+              "NEAREST_OPENER",
+              "NEAREST_FAMILY",
+              "CALLER_COUNT_BACKOFF",
+              "LIMPER_COUNT_BACKOFF",
+              "JAM_STATE_BACKOFF"
+            ]
+          },
+          "minItems": 4,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "lookup": {
+          "const": "EXACT_CONTEXT_ONLY"
+        },
+        "nearest_context_allowed": {
+          "const": false
+        },
+        "resolution_order": {
+          "const": [
+            "EXACT_GENERATED",
+            "EXACT_INCUMBENT_FALLBACK",
+            "EXACT_UNAVAILABLE"
+          ]
+        },
+        "states": {
+          "const": [
+            "EXACT_GENERATED",
+            "EXACT_INCUMBENT_FALLBACK",
+            "EXACT_UNAVAILABLE"
+          ]
+        }
+      },
+      "required": [
+        "states",
+        "resolution_order",
+        "lookup",
+        "nearest_context_allowed",
+        "forbidden_substitutions"
+      ],
+      "type": "object"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "generation_parameters": {
+      "$ref": "#/$defs/contentSlot"
+    },
+    "generation_scope": {
+      "enum": [
+        "FULL_READY_PLAN",
+        "SYNTHETIC_FIXTURE_SUBSET"
+      ]
+    },
+    "generator_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "hand_class_order_id": {
+      "const": "poker-hand-class-169-matrix-row-major-v1"
+    },
+    "immutability": {
+      "additionalProperties": false,
+      "properties": {
+        "content_addressed": {
+          "const": true
+        },
+        "correction_policy": {
+          "const": "NEW_GENERATION_ID"
+        },
+        "finalized_state": {
+          "const": "FINALIZED"
+        },
+        "hash_algorithm": {
+          "const": "sha256"
+        },
+        "in_place_modification_allowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "content_addressed",
+        "hash_algorithm",
+        "in_place_modification_allowed",
+        "correction_policy",
+        "finalized_state"
+      ],
+      "type": "object"
+    },
+    "plan_projection": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_hand_classes_per_context": {
+          "const": 169
+        },
+        "planned_shard_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "ready_cell_count": {
+          "minimum": 169,
+          "type": "integer"
+        },
+        "ready_context_count": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ready_context_count",
+        "expected_hand_classes_per_context",
+        "ready_cell_count",
+        "planned_shard_count"
+      ],
+      "type": "object"
+    },
+    "population_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema": {
+      "const": "poker-hero-preflop-generation-manifest/v1"
+    },
+    "shard_count": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "source_plan_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "type": "string"
+    },
+    "source_train_audit_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "type": "string"
+    },
+    "synthetic_fixture": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema",
+    "population_id",
+    "generation_id",
+    "candidate_id",
+    "generator_version",
+    "source_plan_sha256",
+    "source_train_audit_sha256",
+    "code_sha",
+    "environment_identity",
+    "generation_parameters",
+    "generation_scope",
+    "synthetic_fixture",
+    "context_count",
+    "expected_hand_classes_per_context",
+    "shard_count",
+    "hand_class_order_id",
+    "plan_projection",
+    "expected_context_ids",
+    "artifacts",
+    "completeness",
+    "fallback_contract",
+    "immutability"
+  ],
+  "title": "Hero preflop generation repository manifest",
+  "type": "object"
+}
