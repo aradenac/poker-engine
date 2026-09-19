@@ -1,4 +1,6 @@
 """Mandatory source integrity gate; missing archives must fail, never skip."""
+import base64
+import gzip
 import json
 import subprocess
 import sys
@@ -15,7 +17,9 @@ from tools.training.audit_hero_preflop_coverage import (
 )
 from tools.training.audit_preflop_sizing_support import (
     audit as audit_preflop_sizing_support,
+    canonical_report_bytes as canonical_preflop_sizing_report_bytes,
     render_markdown as render_preflop_sizing_support_markdown,
+    summary_report as summarize_preflop_sizing_support,
 )
 
 
@@ -90,7 +94,10 @@ class PersistedSnapshotTests(unittest.TestCase):
         self.assertTrue(report['matrix'])
         self.assertTrue(report['kts_sb_two_limpers_projection']['scenario']['public_context_only'])
         self.assertFalse(report['kts_sb_two_limpers_projection']['scenario']['opponent_hidden_cards_consumed'])
-        print('PREFLOP_SIZING_REPORT_JSON=' + json.dumps(report, sort_keys=True, separators=(',', ':')))
+        summary = summarize_preflop_sizing_support(report)
+        payload = gzip.compress(canonical_preflop_sizing_report_bytes(report), mtime=0)
+        print('PREFLOP_SIZING_SUMMARY_JSON=' + json.dumps(summary, sort_keys=True, separators=(',', ':')))
+        print('PREFLOP_SIZING_FULL_GZIP_BASE64=' + base64.b64encode(payload).decode('ascii'))
         print('PREFLOP_SIZING_REPORT_MD_JSON=' + json.dumps(render_preflop_sizing_support_markdown(report)))
 
     def test_hero_preflop_generation_contract_fixture(self):
