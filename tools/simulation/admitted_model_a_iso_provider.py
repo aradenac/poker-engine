@@ -217,6 +217,7 @@ class Issue367OpponentPolicy(ModelAContinuationPolicy):
             },
         )
         self.postflop_support_closure = collections.Counter()
+        self.posterior_support_closure = collections.Counter()
 
     def _resolve_sizing(
         self,
@@ -306,9 +307,14 @@ class Issue367OpponentPolicy(ModelAContinuationPolicy):
                 else:
                     node = exact_preflop_node(self.reference.preflop_model, decision)
                     if node is None:
-                        raise ModelAUnsupportedContext(
-                            "missing exact non-sizing preflop Model-A node in prior history"
-                        )
+                        # The frozen #108 legality-only support closure is deterministic
+                        # and hand-independent.  Therefore this observed action carries
+                        # no Model-A likelihood information; preserve the incoming
+                        # posterior weights exactly and audit the no-information update.
+                        self.posterior_support_closure[
+                            "preflop_non_sizing_no_information"
+                        ] += 1
+                        continue
                     weights = _normalize_weights(
                         [
                             weight
@@ -332,9 +338,12 @@ class Issue367OpponentPolicy(ModelAContinuationPolicy):
                 current_board = board
             node = exact_postflop_node(self.reference.postflop_model, decision)
             if node is None:
-                raise ModelAUnsupportedContext(
-                    "missing exact postflop Model-A node in prior history"
-                )
+                # Postflop support closure is likewise deterministic legality-only.
+                # Do not manufacture a likelihood for the fallback action.
+                self.posterior_support_closure[
+                    "postflop_no_information"
+                ] += 1
+                continue
             target = target_frequencies(
                 node, decision, self.reference.postflop_model
             )
@@ -819,6 +828,9 @@ class Issue367ScientificProvider:
         }
         return {
             "posterior_distribution_variants": variants,
+            "posterior_support_closure_no_information": dict(
+                sorted(self.opponent_policy.posterior_support_closure.items())
+            ),
             "preflop_non_sizing_support_closure_by_alternative": preflop_closure,
             "postflop_support_closure_by_alternative": closure,
             "posterior_ref_policy": (
