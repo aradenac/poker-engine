@@ -182,14 +182,14 @@
           hero_position:upper(p.hero_position||a&&a.actor_position)||'UNKNOWN',
           opener_position:upper(p.opener_position||a&&a.opener_position)||null,
           last_aggressor_position:upper(p.last_aggressor_position||a&&a.last_aggressor_position)||null,
-          caller_count:nonNegativeInt(p.caller_count??a&&a.callers_after_first_raise,'caller_count',0),
-          limper_count:nonNegativeInt(p.limper_count??a&&a.limpers_before_first_raise,'limper_count',0),
-          jam_state:Boolean(p.jam_state??a&&a.facing_jam),
-          train_observations:nonNegativeInt(p.train_observations??a&&a.observations,'train_observations',0),
-          distinct_hands:nonNegativeInt(p.distinct_hands??a&&a.distinct_hands,'distinct_hands',0),
+          caller_count:nonNegativeInt(p.caller_count??(a&&a.callers_after_first_raise),'caller_count',0),
+          limper_count:nonNegativeInt(p.limper_count??(a&&a.limpers_before_first_raise),'limper_count',0),
+          jam_state:Boolean(p.jam_state??(a&&a.facing_jam)),
+          train_observations:nonNegativeInt(p.train_observations??(a&&a.observations),'train_observations',0),
+          distinct_hands:nonNegativeInt(p.distinct_hands??(a&&a.distinct_hands),'distinct_hands',0),
           support_tier:normalizeTier(p.support_tier||a&&a.support_tier),
           readiness:upper(p.readiness)||null,
-          frequency_of_targeted:asFinite(p.frequency&&p.frequency.of_targeted??a&&a.frequency_of_targeted),
+          frequency_of_targeted:asFinite((p.frequency&&p.frequency.of_targeted)??(a&&a.frequency_of_targeted)),
           source:'TRAIN_PLAN_AND_AUDIT'
         });
       }
