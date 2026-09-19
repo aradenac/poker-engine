@@ -1,0 +1,45 @@
+{
+  "schema": "poker-pack-engine-provenance/v1",
+  "issue": 370,
+  "parent_issue": 201,
+  "role": "engine",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "source_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "source_commit": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "source_subset_sha256": "b7f61710817e7bfa391d269bc1452242601c9a4bf10e8f4823e358bd6136b81b",
+  "predecessor_evidence": {
+    "source_provenance": {
+      "path": "training/runs/20260919_pack_runtime_compatibility/SOURCE_PROVENANCE.json",
+      "sha256": "aefbd8fd76b2fe3ff6c31d290075be6eaa2aec215bd76444ca4cb8f3d1be8ff2"
+    },
+    "engine_candidate": {
+      "path": "training/runs/20260919_pack_runtime_compatibility/ENGINE_CANDIDATE.json",
+      "sha256": "8a90aac3c659feeb7973515961938b742038b05c904a87a1ffab67203599c8f3"
+    }
+  },
+  "manifest": {
+    "path": "training/runs/20260919_pack_engine_artifact/ENGINE_ARTIFACT_MANIFEST.json",
+    "sha256": "34b7083e913a6657d119baccafb47f12d6b4866a161814777fb23104db2e6620"
+  },
+  "artifact": {
+    "path": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+    "sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08"
+  },
+  "build_base_commit": "1ef356e59458e01ce5c8864e6542237e01fd4645",
+  "materialization_commit": "e1701f7bc46ad907822779f2352759f94d2e090c",
+  "runtime_dependency_closure": "SELF_CONTAINED",
+  "compatibility_basis": [
+    "#360 exact source subset unchanged",
+    "all direct CommonJS runtime dependencies closed in artifact",
+    "forbidden legacy/target/model markers absent from source closure",
+    "artifact path contains exact content SHA-256"
+  ],
+  "boundaries": {
+    "scientific_effect": "NONE",
+    "test_consumed": false,
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "production_effect": "NONE"
+  }
+}
