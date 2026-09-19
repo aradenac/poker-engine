@@ -1,0 +1,86 @@
+{
+  "schema": "poker-workflow-helper-validation/v1",
+  "issue": 204,
+  "lane": "F",
+  "conflict_group": "REPRO",
+  "tested_branch_head": "a69a272202db322386c739958ddae09da148c961",
+  "tested_source_blobs": {
+    "tools/repro_ci_environment.py": "dabc299609eee6ad5dbc965f4902a8123f6c79f4",
+    "tools/repro_ci_browser.py": "7a57ec2116898626dacd1b6f72fb8fda3fa12bd9",
+    "tests/test_repro_ci_helpers.py": "799f62eb4a0438ae7ba453f57a8b5c772113d929",
+    "analysis/workflow_audit/helper_consumers.json": "53afce60c1f265f5d3afa2a6c0f9b758582ea5a5",
+    "docs/ci-workflow-audit.md": "4062a4dcc99e8aab24a8991c177e3122929622d4"
+  },
+  "tests": [
+    {
+      "command": "python3 -m py_compile tools/repro_ci_environment.py tools/repro_ci_browser.py tests/test_repro_ci_helpers.py",
+      "status": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/test_repro_ci_helpers.py",
+      "status": "PASS",
+      "tests_run": 9
+    },
+    {
+      "command": "python3 tools/repro_ci_environment.py plan --python-deps --node-deps",
+      "status": "PASS",
+      "expected_versions": {
+        "python": "3.11.9",
+        "node": "22.14.0"
+      }
+    },
+    {
+      "command": "python3 tools/repro_ci_environment.py identity --output /tmp/204-environment-identity.json",
+      "status": "PASS",
+      "identity_sha256": "9ffbe19b85e450d20073a7c63078600882c246d3dfe0664161d28de74fbe2b71"
+    },
+    {
+      "command": "python3 tools/repro_ci_browser.py plan",
+      "status": "PASS",
+      "expected": {
+        "playwright": "1.55.0",
+        "chromium": "140.0.7339.16",
+        "revision": "1187",
+        "platform": "ubuntu24.04-x64"
+      }
+    },
+    {
+      "command": "python3 tools/repro_ci_browser.py verify --observation <synthetic matching locked observation>",
+      "status": "WARN",
+      "violations": 0,
+      "warnings": [
+        "BROWSER_ARCHIVE_SHA256_UNPINNED"
+      ]
+    }
+  ],
+  "scope_check": {
+    "command": "python3 tools/check_parallel_scope.py --slot F --files tools/repro_ci_environment.py tools/repro_ci_browser.py tests/test_repro_ci_helpers.py analysis/workflow_audit/helper_consumers.json analysis/workflow_audit/helper_validation.json docs/ci-workflow-audit.md",
+    "status": "WARN",
+    "violations": 0,
+    "warnings": [
+      {
+        "rule": "UNCLASSIFIED_PATH",
+        "path": "analysis/workflow_audit/helper_consumers.json",
+        "authorization": "#204 current authorized lane-F audit/matrix evidence area"
+      },
+      {
+        "rule": "UNCLASSIFIED_PATH",
+        "path": "analysis/workflow_audit/helper_validation.json",
+        "authorization": "#204 current authorized lane-F validation evidence area"
+      },
+      {
+        "rule": "UNCLASSIFIED_PATH",
+        "path": "docs/ci-workflow-audit.md",
+        "authorization": "#204 current authorized lane-F audit/matrix/DAG documentation area"
+      }
+    ]
+  },
+  "negative_guards": {
+    "workflow_files_modified": false,
+    "triggers_or_concurrency_changed": false,
+    "scientific_gates_changed": false,
+    "issue_108_files_changed": false,
+    "validation_or_test_ledgers_changed": false
+  },
+  "execution_note": "No network install/bootstrap command was executed during validation. Plans were rendered deterministically; browser verification used a synthetic matching observation. Helper source/test/evidence blobs were byte-identical to the GitHub branch when executed locally."
+}
