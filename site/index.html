@@ -3305,6 +3305,105 @@ function reviewInboxBuild(){
     return null;
   }
 }
+function reviewDashboardSourceScores(){
+  const sig=reviewContextSignature(),out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand.id),score=state.reviewScores?.[id];
+    if(score&&score.signature===sig)out[id]=score;
+  }
+  return out;
+}
+function reviewDashboardBuild(){
+  const Dashboard=window.PokerReviewDashboard,Inbox=window.PokerReviewInbox;
+  if(!Dashboard?.buildReviewDashboard||!Inbox?.normalizeUserMetadata){
+    state.reviewDashboardLastError="Contrat poker-review-dashboard/v1 indisponible.";
+    return null;
+  }
+  try{
+    const input={
+      reviewScores:reviewDashboardSourceScores(),
+      hhSources:reviewInboxHHSources(),
+      scope:reviewInboxScopeInput(),
+      top_leaks_limit:3,
+      training_min_decisions:1,
+      training_min_scenarios:1
+    };
+    const preview=Dashboard.buildReviewDashboard({...input,user_metadata:Inbox.normalizeUserMetadata({})});
+    const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
+    const dashboard=Dashboard.buildReviewDashboard({...input,user_metadata:metadata});
+    state.reviewDashboardLastError="";
+    return dashboard;
+  }catch(err){
+    state.reviewDashboardLastError=String(err?.message||err);
+    return null;
+  }
+}
+function reviewDashboardStateMessage(model){
+  const stateName=model?.state||"";
+  if(stateName==="NO_HANDS")return "Importez vos Hand Histories pour construire votre Review.";
+  if(stateName==="ANALYSIS_PENDING")return "Mains chargées · l’analyse des décisions est en cours.";
+  if(stateName==="ANALYSIS_INCOMPLETE")return "Analyse incomplète · les données disponibles ne permettent pas encore un verdict complet.";
+  if(stateName==="NO_SIGNIFICANT_LOSS")return "Aucune perte EV significative détectée dans les décisions comparables.";
+  if(stateName==="READY")return "Priorités calculées à partir des décisions comparables de ce contexte.";
+  return state.reviewDashboardLastError?`Dashboard indisponible : ${state.reviewDashboardLastError}`:"Dashboard Review indisponible.";
+}
+function renderReviewDashboardModel(model){
+  state.reviewDashboardView=model||null;
+  const metrics=model?.metrics||{};
+  const leak=model?.top_leaks?.[0]||null,hand=model?.priority?.hand||null,decision=model?.priority?.decision||null;
+  if(reviewDashboard)reviewDashboard.setAttribute("aria-busy",model?"false":"true");
+  if(reviewDashboardState)reviewDashboardState.textContent=model?.state||"UNAVAILABLE";
+  if(reviewDashboardMessage)reviewDashboardMessage.textContent=reviewDashboardStateMessage(model);
+  if(reviewDashboardHands)reviewDashboardHands.textContent=String(metrics.hands_loaded??0);
+  if(reviewDashboardDecisions)reviewDashboardDecisions.textContent=String(metrics.decisions_to_review??0);
+  if(reviewDashboardLoss)reviewDashboardLoss.textContent=formatBB(Number(metrics.total_ev_loss_bb)||0);
+  if(reviewDashboardAnalyzed)reviewDashboardAnalyzed.textContent=String(metrics.decisions_analyzed??0);
+  if(reviewDashboardLeak)reviewDashboardLeak.textContent=leak?String(leak.key):"Aucun leak significatif";
+  if(reviewDashboardLeakMeta)reviewDashboardLeakMeta.textContent=leak
+    ?`${formatBB(Number(leak.total_loss_bb)||0)} · ${Number(leak.decisions)||0} décision(s) · ${Number(leak.hands)||0} main(s)`
+    :"Les leaks apparaîtront après analyse de décisions comparables.";
+  if(reviewDashboardPriority)reviewDashboardPriority.textContent=hand
+    ?`Main #${hand.hand_id}${decision?` · ${decision.street} · ${decision.position}`:""}`
+    :"Aucune décision prioritaire";
+  if(reviewDashboardPriorityMeta)reviewDashboardPriorityMeta.textContent=decision
+    ?`${decision.action_played} → ${decision.action_recommended} · perte ${formatBB(Number(decision.loss_bb)||0)} · ${decision.spot_family}`
+    :(hand?`${hand.status_label||hand.status||""} · perte ${formatBB(Number(hand.total_loss_bb)||0)}`:"—");
+  const reviewEnabled=Boolean(model?.ctas?.review?.enabled),leakEnabled=Boolean(model?.ctas?.leak?.enabled),trainingEnabled=Boolean(model?.ctas?.training?.enabled);
+  if(reviewDashboardImportBtn)reviewDashboardImportBtn.hidden=Boolean(metrics.hands_loaded);
+  if(reviewDashboardReviewBtn){reviewDashboardReviewBtn.hidden=!reviewEnabled;reviewDashboardReviewBtn.disabled=!reviewEnabled;}
+  if(reviewDashboardLeakBtn){reviewDashboardLeakBtn.hidden=!leakEnabled;reviewDashboardLeakBtn.disabled=!leakEnabled;}
+  if(reviewDashboardTrainingBtn){reviewDashboardTrainingBtn.hidden=!trainingEnabled;reviewDashboardTrainingBtn.disabled=!trainingEnabled;}
+  if(reviewDashboardTrace){
+    const refs=Array.isArray(metrics.source_refs)?metrics.source_refs.length:0;
+    const coverage=Number(metrics.review_coverage_pct);
+    reviewDashboardTrace.textContent=`Sources EV : ${refs} décision(s)${Number.isFinite(coverage)?` · couverture ${coverage.toFixed(1)} %`:""} · ${model?.scope_key||""}`;
+  }
+}
+function renderReviewDashboard(){
+  renderReviewDashboardModel(reviewDashboardBuild());
+}
+function openReviewDashboardReview(){
+  const cta=state.reviewDashboardView?.ctas?.review;
+  if(!cta?.enabled||!cta.target)return {opened:false,reason:"NO_REVIEW_TARGET"};
+  return openReviewInboxDeepLink(cta.target);
+}
+function openReviewDashboardLeak(){
+  const model=state.reviewDashboardView,cta=model?.ctas?.leak,target=cta?.target;
+  if(!cta?.enabled||!target)return {opened:false,reason:"NO_LEAK_TARGET"};
+  if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
+  if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
+  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""};
+  renderHistoryHands();
+  requestAnimationFrame(()=>document.getElementById("historiesSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
+  return {opened:true,reason:"EXACT_LEAK_FILTER",dimension:target.dimension,key:String(target.key)};
+}
+function openReviewDashboardTraining(){
+  const cta=state.reviewDashboardView?.ctas?.training;
+  if(!cta?.enabled||!cta.target)return {opened:false,reason:cta?.reason||"NO_TRAINING_TARGET"};
+  trainerOpenBtn?.click();
+  return {opened:true,reason:"SUPPORTED_TARGET_AVAILABLE",target_id:cta.target.target_id||null};
+}
+
 function reviewInboxFiltersInput(){
   const f=state.reviewInboxFilters||{};
   return {
