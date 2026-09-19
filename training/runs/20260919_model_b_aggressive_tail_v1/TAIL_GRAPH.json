@@ -1,0 +1,85 @@
+{
+  "schema": "model-b-aggressive-tail-backoff-graph/v1",
+  "issue": 298,
+  "version": "2026-09-19.1",
+  "source": "Exact #286 hierarchy; tail node eligibility uses frozen #286 sizing support thresholds",
+  "selection_rule": "Choose first declared level with >=12 TRAIN raises and >=8 distinct TRAIN raise hands; otherwise continue through declared hierarchy only.",
+  "tail_support": {
+    "min_raises": 12,
+    "min_distinct_hands": 8
+  },
+  "levels": [
+    {
+      "index": 0,
+      "dimensions": [
+        "profile",
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 1,
+      "dimensions": [
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 2,
+      "dimensions": [
+        "street",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 3,
+      "dimensions": [
+        "street",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 4,
+      "dimensions": [
+        "street",
+        "price_bucket",
+        "spr_bucket"
+      ]
+    },
+    {
+      "index": 5,
+      "dimensions": [
+        "street",
+        "price_bucket"
+      ]
+    },
+    {
+      "index": 6,
+      "dimensions": [
+        "street"
+      ]
+    },
+    {
+      "index": 7,
+      "dimensions": []
+    }
+  ],
+  "source_split": "TRAIN",
+  "frozen_before_validation": true,
+  "nearest_context_heuristic": false,
+  "silent_pooling": false,
+  "production_effect": "NONE"
+}

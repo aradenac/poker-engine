@@ -1,0 +1,30 @@
+{
+  "active_model_b_changed": false,
+  "artifacts": {
+    "candidate": "model/aggressive_tail.json",
+    "graph": "TAIL_GRAPH.json",
+    "protocol": "PROTOCOL.json",
+    "report": "REPORT.json",
+    "summary": "SUMMARY.json",
+    "train_fit_audit": "TRAIN_FIT_AUDIT.json"
+  },
+  "automatic_promotion": false,
+  "descriptive_gate": "TAIL_IMPROVEMENT_WITHOUT_GLOBAL_DEGRADATION",
+  "dod": {
+    "active_model_b_pointer_unchanged": true,
+    "deterministic_report_contract": true,
+    "global_calibration_guarded": true,
+    "jams_overbets_aggressive_tails_reported_separately": true,
+    "no_108_model_a_hero_central_ui": true,
+    "protocol_thresholds_hyperparameters_frozen_before_validation": true,
+    "same_validation_rows_all_models": true,
+    "support_provenance_persisted": true,
+    "test_unconsumed": true,
+    "train_validation_strictly_separated": true
+  },
+  "issue": 298,
+  "production_effect": "NONE",
+  "schema": "model-b-aggressive-tail-result/v1",
+  "status": "COMPLETE",
+  "test_consumed": false
+}

@@ -1,0 +1,160 @@
+{
+  "alpha_per_tail_class": 0.5,
+  "fit_split": "TRAIN",
+  "global_class_counts": {
+    "JAM_NONOVERBET": 231,
+    "JAM_OVERBET": 579,
+    "LARGE_OVERBET_NONJAM": 283,
+    "OTHER_RAISE": 1764,
+    "OVERBET_NONJAM": 563
+  },
+  "level_node_counts": [
+    {
+      "dimensions": [
+        "profile",
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 0,
+      "nodes": 1804,
+      "supported_nodes": 19
+    },
+    {
+      "dimensions": [
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 1,
+      "nodes": 1289,
+      "supported_nodes": 51
+    },
+    {
+      "dimensions": [
+        "street",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 2,
+      "nodes": 994,
+      "supported_nodes": 61
+    },
+    {
+      "dimensions": [
+        "street",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 3,
+      "nodes": 694,
+      "supported_nodes": 64
+    },
+    {
+      "dimensions": [
+        "street",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 4,
+      "nodes": 52,
+      "supported_nodes": 31
+    },
+    {
+      "dimensions": [
+        "street",
+        "price_bucket"
+      ],
+      "level": 5,
+      "nodes": 11,
+      "supported_nodes": 10
+    },
+    {
+      "dimensions": [
+        "street"
+      ],
+      "level": 6,
+      "nodes": 3,
+      "supported_nodes": 3
+    },
+    {
+      "dimensions": [],
+      "level": 7,
+      "nodes": 1,
+      "supported_nodes": 1
+    }
+  ],
+  "representation": {
+    "action_distribution": "DELEGATE_UNCHANGED_TO_ISSUE_286",
+    "class_definitions": {
+      "JAM_NONOVERBET": "observed RAISE with HH all-in flag and raise_sizing_ratio <= 1.0",
+      "JAM_OVERBET": "observed RAISE with HH all-in flag and raise_sizing_ratio > 1.0",
+      "LARGE_OVERBET_NONJAM": "non-jam observed RAISE with raise_sizing_ratio > 1.5",
+      "OTHER_RAISE": "non-jam observed RAISE with raise_sizing_ratio <= 1.0",
+      "OVERBET_NONJAM": "non-jam observed RAISE with 1.0 < raise_sizing_ratio <= 1.5"
+    },
+    "derived_probabilities": {
+      "aggressive_tail": "1 when facing_price_to_pot > 1.5, otherwise P(JAM_OVERBET)+P(JAM_NONOVERBET)+P(LARGE_OVERBET_NONJAM)",
+      "jam": "P(JAM_OVERBET)+P(JAM_NONOVERBET)",
+      "overbet": "P(JAM_OVERBET)+P(LARGE_OVERBET_NONJAM)+P(OVERBET_NONJAM)"
+    },
+    "mutually_exclusive_classes": [
+      "JAM_OVERBET",
+      "JAM_NONOVERBET",
+      "LARGE_OVERBET_NONJAM",
+      "OVERBET_NONJAM",
+      "OTHER_RAISE"
+    ],
+    "sizing_distribution": "DELEGATE_UNCHANGED_TO_ISSUE_286",
+    "tail_component": "CONDITIONAL_ON_RAISE_MULTINOMIAL"
+  },
+  "schema": "model-b-aggressive-tail-train-fit-audit/v1",
+  "test_consumed": false,
+  "thresholds": {
+    "tail": {
+      "min_distinct_hands": 8,
+      "min_raises": 12
+    }
+  },
+  "train_raise_selection_coverage": {
+    "backoff_fraction": 0.8956140350877193,
+    "exact_fraction": 0.10438596491228071,
+    "fallback_reason_counts": {
+      "BACKOFF_TAIL_SUPPORT": 3063,
+      "EXACT_TAIL_CONTEXT_SUPPORTED": 357
+    },
+    "predictions": 3420,
+    "selected_level_counts": {
+      "0": 357,
+      "1": 764,
+      "2": 489,
+      "3": 511,
+      "4": 1168,
+      "5": 127,
+      "6": 4
+    },
+    "selected_level_fraction": {
+      "0": 0.10438596491228071,
+      "1": 0.22339181286549709,
+      "2": 0.14298245614035088,
+      "3": 0.14941520467836258,
+      "4": 0.34152046783625734,
+      "5": 0.03713450292397661,
+      "6": 0.0011695906432748538
+    }
+  },
+  "training_counts": {
+    "distinct_raise_hands": 2712,
+    "raise_observations": 3420
+  },
+  "validation_used_for_selection": false
+}
