@@ -8,6 +8,7 @@
     "issue_340_candidate_reference_provenance_verified": true,
     "model_a_ev_recommendation_excluded": true,
     "nearest_price_substitution_forbidden": true,
+    "out_of_domain_sizing_fail_closed": true,
     "production_effect_none": true,
     "real_issue_314_not_consumed": true,
     "support_backoff_non_identifiability_exposed": true,
