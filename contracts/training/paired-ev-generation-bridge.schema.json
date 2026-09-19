@@ -242,7 +242,8 @@
         "bridge_state": {
           "enum": [
             "MEASURED_COMPATIBLE",
-            "EXACT_ZERO_ROLLOUT_NON_MATERIALIZABLE"
+            "EXACT_ZERO_ROLLOUT_NON_MATERIALIZABLE",
+            "EXACT_DETERMINISTIC_COMPATIBLE"
           ]
         },
         "candidate_id": {

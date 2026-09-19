@@ -1,0 +1,5059 @@
+{
+  "certification": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "unique_hands": 27164
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+        "unique_hands": 11896
+      }
+    ],
+    "certification_path": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "certified_hands": 23789,
+    "certified_split_counts": {
+      "TEST": 2449,
+      "TRAIN": 19016,
+      "VALIDATION": 2324
+    },
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c"
+  },
+  "eligible_context_ids": [
+    "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=BTN:lastagg=BTN:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=BTN:lastagg=BTN:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=SB:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BTN:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=CO:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=SB:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=LJ:lastagg=LJ:callers=2:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BTN:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75"
+  ],
+  "information_boundary": {
+    "future_cards_consumed_for_selection": false,
+    "private_cards_consumed_for_selection": false
+  },
+  "issue": 358,
+  "missing_contexts": [],
+  "representatives": [
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "HJ",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 101.08,
+      "public_state_sha256": "ffd11df34eaedf1ed4e31ec7ddb49a55c8feb16ae2b76684e22494f9987f40aa",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 1,
+      "source_file": "HH20260911 NLHE 100-200 6 Max #6 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "262046849025",
+      "source_matrix_key": "{\"actor_position\":\"HJ\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "LJ"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "HJ",
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 90.935,
+          "BTN": 109.31,
+          "CO": 189.965,
+          "HJ": 101.08,
+          "LJ": 64.5,
+          "SB": 96.695
+        },
+        "starting_stacks_bb": {
+          "BB": 91.935,
+          "BTN": 109.31,
+          "CO": 189.965,
+          "HJ": 101.08,
+          "LJ": 66.5,
+          "SB": 97.195
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 101.08
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "CO",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 100.0,
+      "public_state_sha256": "e1eceec4ecdfc2542221424721a1f6c58230d48c355c5eb37e10d26550c7a253",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 2,
+      "source_file": "HH20260817 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261778816597",
+      "source_matrix_key": "{\"actor_position\":\"CO\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "LJ",
+          "HJ"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 98.255,
+          "BTN": 63.5,
+          "CO": 100.0,
+          "HJ": 778.275,
+          "LJ": 1139.48,
+          "SB": 120.725
+        },
+        "starting_stacks_bb": {
+          "BB": 99.255,
+          "BTN": 63.5,
+          "CO": 100.0,
+          "HJ": 778.275,
+          "LJ": 1141.48,
+          "SB": 121.225
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 100.0
+    },
+    {
+      "absolute_stack_distance_bb": 0.06999999999999318,
+      "actor": "CO",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 99.57,
+      "public_state_sha256": "21bec6e404cf156e3d6c46cba501304167a7fa1bccf0da3dd92f9994e79e08c8",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 2,
+      "source_file": "HH20260817 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261781140922",
+      "source_matrix_key": "{\"actor_position\":\"CO\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "HJ"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 72.1,
+          "BTN": 90.125,
+          "CO": 99.57,
+          "HJ": 116.24,
+          "LJ": 1579.29,
+          "SB": 68.1
+        },
+        "starting_stacks_bb": {
+          "BB": 73.1,
+          "BTN": 90.125,
+          "CO": 99.57,
+          "HJ": 118.24,
+          "LJ": 1579.29,
+          "SB": 68.6
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 99.63999999999999
+    },
+    {
+      "absolute_stack_distance_bb": 0.03499999999999659,
+      "actor": "BTN",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 97.585,
+      "public_state_sha256": "637e8f502e16cb4c788389d358ca97ef35e548186fc26e944d2988de495c234e",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 3,
+      "source_file": "HH20260903 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261961220656",
+      "source_matrix_key": "{\"actor_position\":\"BTN\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 3.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 3.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 3.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": true,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 2.0,
+        "pending": [
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 72.75,
+          "BTN": 97.585,
+          "CO": 186.66,
+          "HJ": 57.915,
+          "LJ": 212.25,
+          "SB": 110.045
+        },
+        "starting_stacks_bb": {
+          "BB": 73.75,
+          "BTN": 97.585,
+          "CO": 186.66,
+          "HJ": 57.915,
+          "LJ": 215.25,
+          "SB": 110.545
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 3.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 3.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 97.55
+    },
+    {
+      "absolute_stack_distance_bb": 0.17499999999999716,
+      "actor": "BTN",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 99.5,
+      "public_state_sha256": "43d4f7d3c72ec852c0077cf29df0e9bc033f2b64bc5bc226e2b7a6ef81c1b049",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 3,
+      "source_file": "HH20260817 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261783223108",
+      "source_matrix_key": "{\"actor_position\":\"BTN\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 3.5,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 3.5,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 3.5
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.5,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 3.5,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 3.5,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": false,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 2.5,
+        "pending": [
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 177.455,
+          "BTN": 99.5,
+          "CO": 76.655,
+          "HJ": 2418.515,
+          "LJ": 245.005,
+          "SB": 236.535
+        },
+        "starting_stacks_bb": {
+          "BB": 178.455,
+          "BTN": 99.5,
+          "CO": 76.655,
+          "HJ": 2422.015,
+          "LJ": 245.005,
+          "SB": 237.035
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 3.5,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 3.5,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 99.675
+    },
+    {
+      "absolute_stack_distance_bb": 0.14749999999999375,
+      "actor": "BTN",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 97.795,
+      "public_state_sha256": "117c8f4ff20691fff7ba9f233c9cb5e50ffac57e644e6519731e8be83d678fc1",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 3,
+      "source_file": "HH20260907 NLHE 100-200 6 Max #9 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261999772328",
+      "source_matrix_key": "{\"actor_position\":\"BTN\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"CO\",\"limpers_before_first_raise\":0,\"opener_position\":\"CO\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 3.5,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.5,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 3.5
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 3.5,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 2.5,
+        "pending": [
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 92.27,
+          "BTN": 97.795,
+          "CO": 230.105,
+          "HJ": 61.855,
+          "LJ": 129.705,
+          "SB": 366.4
+        },
+        "starting_stacks_bb": {
+          "BB": 93.27,
+          "BTN": 97.795,
+          "CO": 233.605,
+          "HJ": 61.855,
+          "LJ": 129.705,
+          "SB": 366.9
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 3.5,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 3.5,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 97.64750000000001
+    },
+    {
+      "absolute_stack_distance_bb": 0.030000000000001137,
+      "actor": "SB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=SB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 95.94,
+      "public_state_sha256": "b562dcc7bb23d2d1874e820316beec1cdeb77e3c3bd5fbae754679d9531bbf08",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 4,
+      "source_file": "HH20260818 NLHE 100-200 6 Max #8 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261795016708",
+      "source_matrix_key": "{\"actor_position\":\"SB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 10.5,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 10.5
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 10.5,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 10.5,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": true,
+          "HJ": true,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 9.5,
+        "pending": [
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 1325.38,
+          "BTN": 97.845,
+          "CO": 229.23,
+          "HJ": 68.2,
+          "LJ": 42.565,
+          "SB": 95.44
+        },
+        "starting_stacks_bb": {
+          "BB": 1326.38,
+          "BTN": 97.845,
+          "CO": 229.23,
+          "HJ": 68.2,
+          "LJ": 53.065,
+          "SB": 95.94
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 10.5,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 10.5,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 95.97
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "SB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 97.5,
+      "public_state_sha256": "d11e8ed4e671cc684ebf15d0f4e2e990f2f22b5eb5e61c52e57599eaf8f0934a",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 4,
+      "source_file": "HH20260817 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261778905556",
+      "source_matrix_key": "{\"actor_position\":\"SB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 6.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 6.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 6.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": true,
+          "HJ": false,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 5.0,
+        "pending": [
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 143.535,
+          "BTN": 104.45,
+          "CO": 162.38,
+          "HJ": 792.765,
+          "LJ": 48.24,
+          "SB": 97.0
+        },
+        "starting_stacks_bb": {
+          "BB": 144.535,
+          "BTN": 104.45,
+          "CO": 162.38,
+          "HJ": 798.765,
+          "LJ": 48.24,
+          "SB": 97.5
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 6.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 6.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 97.5
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "SB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=SB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 96.955,
+      "public_state_sha256": "3e555b5237152e7c9646cdcd4bb926ab38ea5b760c9547dc82ac1e3b07f40344",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 4,
+      "source_file": "HH20260910 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "262040455578",
+      "source_matrix_key": "{\"actor_position\":\"SB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"CO\",\"limpers_before_first_raise\":0,\"opener_position\":\"CO\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 10.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 10.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 10.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 10.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 10.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 10.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": false,
+          "HJ": true,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 9.0,
+        "pending": [
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 106.24,
+          "BTN": 313.75,
+          "CO": 54.865,
+          "HJ": 85.325,
+          "LJ": 256.32,
+          "SB": 96.455
+        },
+        "starting_stacks_bb": {
+          "BB": 107.24,
+          "BTN": 313.75,
+          "CO": 64.865,
+          "HJ": 85.325,
+          "LJ": 256.32,
+          "SB": 96.955
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 10.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 10.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 96.955
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "SB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=SB:opener=BTN:lastagg=BTN:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 97.845,
+      "public_state_sha256": "e471a79265626e003e809e86e088f6efaff5e5a5fa3b810795a556c64bcf0b9c",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 4,
+      "source_file": "HH20260904 NLHE 100-200 6 Max #5 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261975922250",
+      "source_matrix_key": "{\"actor_position\":\"SB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"BTN\",\"limpers_before_first_raise\":0,\"opener_position\":\"BTN\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 11.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 11.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 12.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 11.0
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 11.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": true,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 10.0,
+        "pending": [
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 303.26,
+          "BTN": 64.625,
+          "CO": 98.855,
+          "HJ": 43.01,
+          "LJ": 38.98,
+          "SB": 97.345
+        },
+        "starting_stacks_bb": {
+          "BB": 304.26,
+          "BTN": 75.625,
+          "CO": 98.855,
+          "HJ": 43.01,
+          "LJ": 38.98,
+          "SB": 97.845
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 11.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 11.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 97.845
+    },
+    {
+      "absolute_stack_distance_bb": 0.05750000000000455,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 87.885,
+      "public_state_sha256": "3f027a5c8a2c37201a2085bad89e2befb48e7b0059a8d0c2c836d5f0d9dff7bb",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260902 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261945886024",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": true,
+          "HJ": true,
+          "LJ": false,
+          "SB": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 204.825,
+          "BTN": 530.425,
+          "CO": 94.495,
+          "HJ": 79.515,
+          "LJ": 85.885,
+          "SB": 63.54
+        },
+        "starting_stacks_bb": {
+          "BB": 205.825,
+          "BTN": 530.425,
+          "CO": 94.495,
+          "HJ": 79.515,
+          "LJ": 87.885,
+          "SB": 64.04
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 87.8275
+    },
+    {
+      "absolute_stack_distance_bb": 0.19750000000000512,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 88.215,
+      "public_state_sha256": "987fb5cc26c50c88479a972741104784cd92c926b6a484eec03905326ba858f3",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260807 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261673862008",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": true,
+          "HJ": false,
+          "LJ": true,
+          "SB": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 87.215,
+          "BTN": 225.115,
+          "CO": 233.0,
+          "HJ": 91.45,
+          "LJ": 19.875,
+          "SB": 99.5
+        },
+        "starting_stacks_bb": {
+          "BB": 88.215,
+          "BTN": 225.115,
+          "CO": 233.0,
+          "HJ": 93.45,
+          "LJ": 19.875,
+          "SB": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 88.0175
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 89.16,
+      "public_state_sha256": "6372c9d2df3e41701f32c4c7866ebcb61120fc91302fe0fe6badc8ae70564cb1",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260905 NLHE 100-200 6 Max #13 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261984135737",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"CO\",\"limpers_before_first_raise\":0,\"opener_position\":\"CO\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 3.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 3.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 3.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": false,
+          "HJ": true,
+          "LJ": true,
+          "SB": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 2.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 88.16,
+          "BTN": 80.15,
+          "CO": 106.47,
+          "HJ": 721.525,
+          "LJ": 252.305,
+          "SB": 38.5
+        },
+        "starting_stacks_bb": {
+          "BB": 89.16,
+          "BTN": 80.15,
+          "CO": 109.47,
+          "HJ": 721.525,
+          "LJ": 252.305,
+          "SB": 39.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 3.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 3.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 89.16
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI:hero=BB:opener=BTN:lastagg=BTN:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 89.835,
+      "public_state_sha256": "abed40fc0584875c1f70451abf9feaee231dc36b9ed56b8b7009b96fd6f1cf1b",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260817 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261778749948",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":0,\"facing_jam\":false,\"family\":\"VS_RFI\",\"last_aggressor_position\":\"BTN\",\"limpers_before_first_raise\":0,\"opener_position\":\"BTN\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 6.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 6.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 6.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 6.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": true,
+          "LJ": true,
+          "SB": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 5.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 88.835,
+          "BTN": 684.135,
+          "CO": 72.0,
+          "HJ": 115.075,
+          "LJ": 196.48,
+          "SB": 98.5
+        },
+        "starting_stacks_bb": {
+          "BB": 89.835,
+          "BTN": 690.135,
+          "CO": 72.0,
+          "HJ": 115.075,
+          "LJ": 196.48,
+          "SB": 99.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 6.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 6.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 89.835
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "SB",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=SB:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 99.305,
+      "public_state_sha256": "4bc0aed7053ef0e2bb9761f14c654d8b84dae6ca668476d6b3eab6bfb61fe61c",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 4,
+      "source_file": "HH20260818 NLHE 100-200 6 Max #8 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261795116836",
+      "source_matrix_key": "{\"actor_position\":\"SB\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 5.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 5.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": true,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 105.76,
+          "BTN": 99.0,
+          "CO": 1282.87,
+          "HJ": 7.45,
+          "LJ": 101.705,
+          "SB": 98.805
+        },
+        "starting_stacks_bb": {
+          "BB": 106.76,
+          "BTN": 99.0,
+          "CO": 1282.87,
+          "HJ": 12.45,
+          "LJ": 106.705,
+          "SB": 99.305
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 5.0,
+          "LJ": 5.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 5.0,
+          "LJ": 5.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 99.305
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "BTN",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=BTN:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 99.73,
+      "public_state_sha256": "de045a6e1fbb345c2dee1664ba58a305e9cca7a204237a503fda29511f6dfe2a",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 3,
+      "source_file": "HH20260905 NLHE 100-200 6 Max #13 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261982481310",
+      "source_matrix_key": "{\"actor_position\":\"BTN\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 5.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 5.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 11.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 130.705,
+          "BTN": 99.73,
+          "CO": 217.61,
+          "HJ": 224.315,
+          "LJ": 198.915,
+          "SB": 55.98
+        },
+        "starting_stacks_bb": {
+          "BB": 131.705,
+          "BTN": 99.73,
+          "CO": 222.61,
+          "HJ": 224.315,
+          "LJ": 203.915,
+          "SB": 56.48
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 5.0,
+          "HJ": 0.0,
+          "LJ": 5.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 5.0,
+          "HJ": 0.0,
+          "LJ": 5.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 99.73
+    },
+    {
+      "absolute_stack_distance_bb": 0.06749999999999545,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 97.0,
+      "public_state_sha256": "320a5e7001348623876d96b23d7c2404d14361b8b72b3800b53d1c126322a30a",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260817 NLHE 100-200 6 Max #2 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261779220836",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 2.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": false,
+          "HJ": true,
+          "LJ": false,
+          "SB": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 96.0,
+          "BTN": 864.32,
+          "CO": 129.4,
+          "HJ": 74.795,
+          "LJ": 53.345,
+          "SB": 98.5
+        },
+        "starting_stacks_bb": {
+          "BB": 97.0,
+          "BTN": 864.32,
+          "CO": 131.4,
+          "HJ": 74.795,
+          "LJ": 55.345,
+          "SB": 99.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 2.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 2.0,
+          "HJ": 0.0,
+          "LJ": 2.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 96.9325
+    },
+    {
+      "absolute_stack_distance_bb": 0.017499999999998295,
+      "actor": "CO",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=CO:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 100.5,
+      "public_state_sha256": "5b897f29f3ed93fdfd12d446f2d2b1e8af2dd57cacfa07261109b9919c64dd67",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 2,
+      "source_file": "HH20260807 NLHE 100-200 6 Max #4 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261675135929",
+      "source_matrix_key": "{\"actor_position\":\"CO\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "LJ",
+          "HJ"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 4.5,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 4.5
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 4.5,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 4.5,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 10.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 4.5,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 6.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 4.5,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 3.5,
+        "pending": [
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 134.71,
+          "BTN": 98.5,
+          "CO": 100.5,
+          "HJ": 127.415,
+          "LJ": 262.49,
+          "SB": 108.145
+        },
+        "starting_stacks_bb": {
+          "BB": 135.71,
+          "BTN": 98.5,
+          "CO": 100.5,
+          "HJ": 131.915,
+          "LJ": 266.99,
+          "SB": 108.645
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 4.5,
+          "LJ": 4.5,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 4.5,
+          "LJ": 4.5,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 100.5175
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B2_P25_P50",
+      "effective_stack_bb": 92.23,
+      "public_state_sha256": "4214ef3799fecf45ca1a7e87d1f7527bc799bdf3f527f6079fa465ac2f6e1dfc",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260904 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261972617646",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 2.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": false,
+          "LJ": true,
+          "SB": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 118.77,
+          "BTN": 75.78,
+          "CO": 291.545,
+          "HJ": 90.23,
+          "LJ": 217.15,
+          "SB": 194.275
+        },
+        "starting_stacks_bb": {
+          "BB": 119.77,
+          "BTN": 77.78,
+          "CO": 291.545,
+          "HJ": 92.23,
+          "LJ": 217.15,
+          "SB": 194.775
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 2.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 2.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 92.23
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "SB",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=SB:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 99.0,
+      "public_state_sha256": "8e4cdfbbebf582b6aeffb27aef4686291d79ef2eb64a3c941e038d0f75362104",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 4,
+      "source_file": "HH20260807 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261674840695",
+      "source_matrix_key": "{\"actor_position\":\"SB\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 3.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 3.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 3.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 7.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 3.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 4.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 3.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": false,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 2.0,
+        "pending": [
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 104.105,
+          "BTN": 89.305,
+          "CO": 67.355,
+          "HJ": 235.255,
+          "LJ": 101.835,
+          "SB": 98.5
+        },
+        "starting_stacks_bb": {
+          "BB": 105.105,
+          "BTN": 92.305,
+          "CO": 67.355,
+          "HJ": 238.255,
+          "LJ": 101.835,
+          "SB": 99.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 3.0,
+          "CO": 0.0,
+          "HJ": 3.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 3.0,
+          "CO": 0.0,
+          "HJ": 3.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 99.0
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "BB",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=LJ:lastagg=LJ:callers=2:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 100.0,
+      "public_state_sha256": "066ea6ae561723ecf8f859299b91600bb59d84000186202060ccd2dc927519b9",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 5,
+      "source_file": "HH20260807 NLHE 100-200 6 Max #3 - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261678487895",
+      "source_matrix_key": "{\"actor_position\":\"BB\",\"callers_after_first_raise\":2,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"LJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"LJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "BTN",
+          "SB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 2.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 2.0
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 2.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.5,
+            "index": 4,
+            "player": "SB",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "BB"
+              ],
+              "pot_bb": 7.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "SB",
+              "board": [],
+              "current_bet_bb": 2.0,
+              "pending": [
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 5.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 2.0,
+        "folded": {
+          "BB": false,
+          "BTN": true,
+          "CO": true,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 1.0,
+        "pending": [
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 99.0,
+          "BTN": 340.48,
+          "CO": 98.5,
+          "HJ": 81.615,
+          "LJ": 38.5,
+          "SB": 337.03
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 340.48,
+          "CO": 98.5,
+          "HJ": 83.615,
+          "LJ": 40.5,
+          "SB": 339.03
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 2.0,
+          "SB": 2.0
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 2.0,
+          "LJ": 2.0,
+          "SB": 2.0
+        }
+      },
+      "target_p50_effective_stack_bb": 100.0
+    },
+    {
+      "absolute_stack_distance_bb": 0.0,
+      "actor": "BTN",
+      "context_id": "pfgen:v1:family=VS_RFI_CALLERS:hero=BTN:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+      "effective_stack_bb": 98.0,
+      "public_state_sha256": "28d27a1c6cced81c6458ec3933605159e95536bfce21684462f5b4b17eb58ad0",
+      "selection_uses_future_cards": false,
+      "selection_uses_private_cards": false,
+      "source_action_index": 3,
+      "source_file": "HH20260817 NLHE 100-200 6 Max - 100-200 - Argent fictif Hold'em No Limit.txt",
+      "source_hand_id": "261778624678",
+      "source_matrix_key": "{\"actor_position\":\"BTN\",\"callers_after_first_raise\":1,\"facing_jam\":false,\"family\":\"VS_RFI_CALLERS\",\"last_aggressor_position\":\"HJ\",\"limpers_before_first_raise\":0,\"opener_position\":\"HJ\"}",
+      "state_snapshot": {
+        "acted_since_full_raise": [
+          "HJ",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "LJ",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "LJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "LJ",
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 7.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 7.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 8.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 7.0
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 7.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 7.0,
+              "pending": [
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 15.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 7.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "SB",
+                "BB"
+              ],
+              "pot_bb": 8.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": false,
+          "SB": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 7.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "LJ": true,
+          "SB": false
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 6.0,
+        "pending": [
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "LJ": 0.0,
+          "SB": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "SB",
+          "BB",
+          "LJ",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "SB",
+        "stacks_bb": {
+          "BB": 95.385,
+          "BTN": 98.0,
+          "CO": 30.61,
+          "HJ": 622.345,
+          "LJ": 36.195,
+          "SB": 255.32
+        },
+        "starting_stacks_bb": {
+          "BB": 96.385,
+          "BTN": 98.0,
+          "CO": 37.61,
+          "HJ": 629.345,
+          "LJ": 36.195,
+          "SB": 255.82
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 7.0,
+          "HJ": 7.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 0.0,
+          "CO": 7.0,
+          "HJ": 7.0,
+          "LJ": 0.0,
+          "SB": 0.5
+        }
+      },
+      "target_p50_effective_stack_bb": 98.0
+    }
+  ],
+  "schema": "poker-hero-preflop-representatives/v1",
+  "skipped_candidate_rows": 82,
+  "source_plan_sha256": "9d8ec725ef30e6c0352d0e43f6ac726dd3501c9ad2756e862a80c27f9165b8aa",
+  "split_consumed": "TRAIN",
+  "test_consumed": false,
+  "validation_consumed": false
+}

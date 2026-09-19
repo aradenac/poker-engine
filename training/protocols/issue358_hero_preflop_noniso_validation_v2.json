@@ -1,0 +1,39 @@
+{
+  "schema": "poker-hero-preflop-validation-protocol/v2",
+  "issue": 358,
+  "parent_issue": 196,
+  "status": "FROZEN_BEFORE_ANY_VALIDATION_RESULT",
+  "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V2",
+  "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V2",
+  "phase": "VALIDATION",
+  "allowed_split": "VALIDATION",
+  "test_consumed": false,
+  "test_authorized": false,
+  "purpose": "non-promotional future full-hand/multiway evaluation gate for the immutable candidate",
+  "execution_in_issue_358": "NOT_REQUIRED_WITHOUT_ACTIVATION_OR_PROMOTION",
+  "execution_trigger": "separate explicit promotion/activation evaluation slice after immutable candidate exists",
+  "candidate_identity_binding": "manifest/repository SHA-256 must be frozen into the run manifest before execution",
+  "reference": "active retained reference after #108",
+  "pairing": "same frozen scenarios/worlds between reference and candidate arms",
+  "metrics": [
+    "candidate exact-context exposure",
+    "paired delta bb/100",
+    "clustered CI95",
+    "multiway coverage",
+    "support-closure rate"
+  ],
+  "selection_effect": "NONE_NO_PROMOTION_IN_ISSUE_358",
+  "forbidden": [
+    "TRAIN-as-performance-evidence",
+    "TEST",
+    "automatic activation",
+    "automatic promotion",
+    "nearest-context substitution",
+    "VS_LIMPERS/ISO"
+  ],
+  "supersedes": {
+    "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V1",
+    "reason": "BIND_VALIDATION_TO_RESTARTED_IMMUTABLE_CANDIDATE",
+    "scientific_gate_changed": false
+  }
+}

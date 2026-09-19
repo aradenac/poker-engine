@@ -1,0 +1,148 @@
+{
+  "artifacts": [
+    {
+      "cell_count": 0,
+      "context_ids": [],
+      "path": "environment_identity.json",
+      "role": "ENVIRONMENT_IDENTITY",
+      "sha256": "640bf4b9de9b5736e0d66ac9d7d72cf067956b4e07b77d6318c98304ad415a96",
+      "shard_id": null
+    },
+    {
+      "cell_count": 0,
+      "context_ids": [],
+      "path": "generation_parameters.json",
+      "role": "GENERATION_PARAMETERS",
+      "sha256": "69afdea8730e2f6246b1f5c6b7db8184e229f12ee256d656f82ac12f8beb37f3",
+      "shard_id": null
+    },
+    {
+      "cell_count": 1014,
+      "context_ids": [
+        "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50"
+      ],
+      "path": "shards/ISSUE358-GEN-003-VS_RFI-B2_P25_P50.json",
+      "role": "STRATEGY_SHARD",
+      "sha256": "26b5e8ef441fbec79b0d2789742541fc6cb7d95c32222f0e0a92fed54e712596",
+      "shard_id": "ISSUE358-GEN-003-VS_RFI-B2_P25_P50"
+    },
+    {
+      "cell_count": 676,
+      "context_ids": [
+        "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75"
+      ],
+      "path": "shards/ISSUE358-GEN-004-VS_RFI-B3_P50_P75.json",
+      "role": "STRATEGY_SHARD",
+      "sha256": "710b43606ba8ce8f718313f35bbfbd1d2f90d4309a77fa86c7131db75de4a489",
+      "shard_id": "ISSUE358-GEN-004-VS_RFI-B3_P50_P75"
+    },
+    {
+      "cell_count": 0,
+      "context_ids": [
+        "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+        "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+        "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50"
+      ],
+      "path": "binding.json",
+      "role": "BINDING",
+      "sha256": "3bcf9e641a6ceda2e912e66fd364b5862c5c6825c8b92accc477c435a8a7b444",
+      "shard_id": null
+    }
+  ],
+  "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+  "code_sha": "c897d822971ccdb494acba1a75e382f9bbefd015",
+  "completeness": {
+    "actual_cells": 1690,
+    "actual_context_count": 10,
+    "actual_shard_count": 2,
+    "expected_cells": 1690,
+    "expected_context_count": 10,
+    "expected_shard_count": 2,
+    "state": "FINALIZED"
+  },
+  "context_count": 10,
+  "environment_identity": {
+    "path": "environment_identity.json",
+    "sha256": "640bf4b9de9b5736e0d66ac9d7d72cf067956b4e07b77d6318c98304ad415a96",
+    "slot_id": "env:ISSUE358_NONISO_V3"
+  },
+  "expected_context_ids": [
+    "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50"
+  ],
+  "expected_hand_classes_per_context": 169,
+  "fallback_contract": {
+    "forbidden_substitutions": [
+      "NEAREST_STACK",
+      "NEAREST_POSITION",
+      "NEAREST_OPENER",
+      "NEAREST_FAMILY",
+      "CALLER_COUNT_BACKOFF",
+      "LIMPER_COUNT_BACKOFF",
+      "JAM_STATE_BACKOFF"
+    ],
+    "lookup": "EXACT_CONTEXT_ONLY",
+    "nearest_context_allowed": false,
+    "resolution_order": [
+      "EXACT_GENERATED",
+      "EXACT_INCUMBENT_FALLBACK",
+      "EXACT_UNAVAILABLE"
+    ],
+    "states": [
+      "EXACT_GENERATED",
+      "EXACT_INCUMBENT_FALLBACK",
+      "EXACT_UNAVAILABLE"
+    ]
+  },
+  "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+  "generation_parameters": {
+    "path": "generation_parameters.json",
+    "sha256": "69afdea8730e2f6246b1f5c6b7db8184e229f12ee256d656f82ac12f8beb37f3",
+    "slot_id": "params:ISSUE358_NONISO_V3"
+  },
+  "generation_scope": "AUTHORIZED_READY_SUBSET",
+  "generator_version": "hero-preflop-noniso-paired-adaptive/1",
+  "hand_class_order_id": "poker-hand-class-169-matrix-row-major-v1",
+  "immutability": {
+    "content_addressed": true,
+    "correction_policy": "NEW_GENERATION_ID",
+    "finalized_state": "FINALIZED",
+    "hash_algorithm": "sha256",
+    "in_place_modification_allowed": false
+  },
+  "plan_projection": {
+    "expected_hand_classes_per_context": 169,
+    "planned_shard_count": 6,
+    "ready_cell_count": 7436,
+    "ready_context_count": 44
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "schema": "poker-hero-preflop-generation-manifest/v1",
+  "shard_count": 2,
+  "source_plan_sha256": "9d8ec725ef30e6c0352d0e43f6ac726dd3501c9ad2756e862a80c27f9165b8aa",
+  "source_train_audit_sha256": "cee9463b0a412ca28ad7f043a3e985744768fbb45e7cbd18d252b8ade2913b36",
+  "synthetic_fixture": false
+}

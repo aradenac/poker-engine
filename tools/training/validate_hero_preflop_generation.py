@@ -240,6 +240,16 @@ def validate_generation(
             fail("MANIFEST_INVALID", "synthetic fixture needs >=2 unique exact contexts")
         if not set(expected_ids).issubset(ready_set):
             fail("WRONG_CONTEXT_ID", "fixture context is not READY in source plan")
+    elif scope == "AUTHORIZED_READY_SUBSET":
+        if synthetic:
+            fail("MANIFEST_INVALID", "authorized READY subset cannot be synthetic")
+        expected_ids = [str(x) for x in manifest.get("expected_context_ids") or []]
+        if not expected_ids or len(expected_ids) != len(set(expected_ids)):
+            fail("MANIFEST_INVALID", "authorized READY subset needs unique exact contexts")
+        if not set(expected_ids).issubset(ready_set):
+            fail("WRONG_CONTEXT_ID", "authorized subset context is not READY in source plan")
+        if expected_ids != [context_id for context_id in ready_ids if context_id in set(expected_ids)]:
+            fail("CONTEXT_ORDER_MISMATCH", "authorized subset must preserve source-plan generation order")
     else:
         fail("MANIFEST_INVALID", f"unsupported generation_scope {scope!r}")
 
@@ -389,14 +399,42 @@ def validate_generation(
                 sizing = cell.get("sizing") or {}
                 ev = cell.get("ev") or {}
                 rollout = cell.get("rollout") or {}
-                if action.get("status") != "MEASURED" or action.get("value") not in {"FOLD", "CHECK", "CALL", "BET", "RAISE", "SHOVE"}:
-                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} action")
-                if sizing.get("status") != "MEASURED" or sizing.get("kind") == "SYNTHETIC_PLACEHOLDER":
-                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} sizing")
-                if ev.get("status") != "MEASURED" or not isinstance(ev.get("estimate_bb"), (int, float)):
-                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} EV")
-                if rollout.get("status") != "MEASURED" or int(rollout.get("sample_count") or 0) < 1 or int(rollout.get("world_count") or 0) < 1:
-                    fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} rollout")
+                statuses = {
+                    str(action.get("status") or ""),
+                    str(sizing.get("status") or ""),
+                    str(ev.get("status") or ""),
+                    str(rollout.get("status") or ""),
+                }
+                if statuses == {"MEASURED"}:
+                    if action.get("value") not in {"FOLD", "CHECK", "CALL", "BET", "RAISE", "SHOVE"}:
+                        fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} action")
+                    if sizing.get("kind") == "SYNTHETIC_PLACEHOLDER":
+                        fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} sizing")
+                    if not isinstance(ev.get("estimate_bb"), (int, float)):
+                        fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} EV")
+                    if int(rollout.get("sample_count") or 0) < 1 or int(rollout.get("world_count") or 0) < 1:
+                        fail("PRODUCTION_CELL_NOT_MEASURED", f"{context_id} {hand} rollout")
+                elif statuses == {"EXACT_DETERMINISTIC"}:
+                    uncertainty = ev.get("uncertainty") or {}
+                    exact_ok = (
+                        action.get("value") == "FOLD"
+                        and sizing.get("kind") == "NONE"
+                        and sizing.get("value") is None
+                        and sizing.get("unit") is None
+                        and ev.get("estimate_bb") == 0
+                        and uncertainty == {
+                            "method": "EXACT_DETERMINISTIC_ZERO",
+                            "std_error_bb": 0,
+                            "ci95_low_bb": 0,
+                            "ci95_high_bb": 0,
+                        }
+                        and int(rollout.get("sample_count") or 0) >= 1
+                        and int(rollout.get("world_count") or 0) == 0
+                    )
+                    if not exact_ok:
+                        fail("EXACT_DETERMINISTIC_INVALID", f"{context_id} {hand}")
+                else:
+                    fail("PRODUCTION_CELL_STATUS_MISMATCH", f"{context_id} {hand}: {sorted(statuses)}")
             cells_by_context[context_id].append(cell)
 
     if actual_shard_contexts != set(expected_ids):

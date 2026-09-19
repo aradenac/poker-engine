@@ -1,0 +1,104 @@
+{
+  "schema": "poker-hero-preflop-generation-protocol/v3",
+  "issue": 358,
+  "parent_issue": 196,
+  "status": "FROZEN_BEFORE_GENERATION",
+  "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V3",
+  "candidate_id": "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "source_plan": {
+    "path": "analysis/hero_preflop_generation_plan.json",
+    "sha256": "9d8ec725ef30e6c0352d0e43f6ac726dd3501c9ad2756e862a80c27f9165b8aa"
+  },
+  "source_train_audit": {
+    "path": "analysis/hero_preflop_coverage_train.json",
+    "sha256": "cee9463b0a412ca28ad7f043a3e985744768fbb45e7cbd18d252b8ade2913b36"
+  },
+  "exact_context_ids": [
+    "pfgen:v1:family=VS_RFI:hero=HJ:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=CO:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=CO:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BTN:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=SB:opener=BTN:lastagg=BTN:callers=0:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=LJ:lastagg=LJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=HJ:lastagg=HJ:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=CO:lastagg=CO:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI:hero=BB:opener=BTN:lastagg=BTN:callers=0:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=SB:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BTN:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=CO:opener=LJ:lastagg=LJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B2_P25_P50",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=SB:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BB:opener=LJ:lastagg=LJ:callers=2:limpers=0:jam=0:stack=B3_P50_P75",
+    "pfgen:v1:family=VS_RFI_CALLERS:hero=BTN:opener=HJ:lastagg=HJ:callers=1:limpers=0:jam=0:stack=B3_P50_P75"
+  ],
+  "exact_context_count": 22,
+  "hand_classes_per_context": 169,
+  "planned_cells": 3718,
+  "paired_adaptive": {
+    "engine": "tools.simulation.paired_preflop_grid_evaluator.evaluate_preflop_grid_paired",
+    "initial_samples_per_alternative": 4,
+    "max_samples_per_alternative": 8,
+    "batch_size": 4,
+    "max_total_rollouts": 32,
+    "confidence_z": 1.96,
+    "elimination_margin_bb": 0,
+    "common_world_materialization_required": true
+  },
+  "representative_state": {
+    "split": "TRAIN",
+    "selection": "closest public effective_stack_bb to #269 observed p50; numeric hand_id/action-index tie break",
+    "table_size": 6,
+    "private_cards_consumed": false,
+    "future_cards_consumed": false
+  },
+  "sizing_support": {
+    "split": "TRAIN",
+    "contract": "CERTIFIED_TRAIN_EXACT_NODE_EMPIRICAL_RAISE_SIZING_V1",
+    "nearest_price": false,
+    "nearest_context": false
+  },
+  "continuation": {
+    "opponent": "MODEL_A_SELECTED_POPULATION_CONTINUATION_WITH_AUDITED_PASSIVE_SUPPORT_CLOSURE",
+    "hero_future": "FIXED_POPULATION_DERIVED_MODEL_A_CONTINUATION_BASELINE_WITH_AUDITED_PASSIVE_SUPPORT_CLOSURE",
+    "nearest_context": false
+  },
+  "materialization": {
+    "measured_status": "MEASURED",
+    "exact_fold_status": "EXACT_DETERMINISTIC",
+    "zero_rollout_must_not_be_measured": true
+  },
+  "excluded": {
+    "groups": [
+      "VS_LIMPERS_ISO"
+    ],
+    "issues": [
+      314,
+      315
+    ],
+    "test": true,
+    "activation": true,
+    "promotion": true,
+    "ui": true,
+    "pack_publication": true
+  },
+  "master_seed": 20260919,
+  "hand_shards": 8,
+  "supersedes": {
+    "generation_id": "20260919_HERO_PREFLOP_NONISO_READY_V2",
+    "reason": "ORCHESTRATION_ONLY_RESTART_BEFORE_FIRST_V2_ROLLOUT_COMPLETED",
+    "scientific_parameters_changed": false,
+    "per_hand_parallelism": 4,
+    "prior_finalized_manifest": false
+  },
+  "execution": {
+    "workers_per_hand_shard": 4,
+    "note": "Per-hand seeds/world contracts unchanged; only independent hand classes execute concurrently."
+  }
+}

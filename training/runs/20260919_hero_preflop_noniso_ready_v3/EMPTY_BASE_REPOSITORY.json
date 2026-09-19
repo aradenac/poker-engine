@@ -1,0 +1,7 @@
+{
+  "schema":"poker-hero-range-repository/v1",
+  "version":1,
+  "defaults":{"population_id":"pokerstars_nlhe_100-200_zoom_play_6max_v1","table_size":6,"effective_stack_bb":100},
+  "source":{"format":"issue-358-empty-base","preserved_verbatim":false,"range_folder":null,"meta":{"purpose":"inactive candidate import only"}},
+  "contexts":{}
+}
