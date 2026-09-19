@@ -69,6 +69,8 @@
     "automatic_promotion": false,
     "active_model_b_changed": false,
     "production_effect": "NONE",
-    "nearest_price_substitution": false
+    "nearest_price_substitution": false,
+    "out_of_domain_extrapolation": false,
+    "out_of_domain_sizing_status": "UNSUPPORTED_FAIL_CLOSED"
   }
 }
