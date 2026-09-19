@@ -10,6 +10,7 @@
   const RESOLVED_SCHEMA='poker-preflop-iso-sizing-diagnostics-resolved/v1';
   const WORLDS_SCHEMA='poker-preflop-iso-sizing-diagnostic-worlds/v1';
   const PAIRED_SCHEMA='paired-adaptive-preflop-ev/v1';
+  const POSTERIOR_SCHEMA='poker-opponent-posterior-range/v1';
   const PAIRING_CONTRACT='DECISION_SAMPLE_COMMON_RANDOM_NUMBERS_V1';
   const SELECTION_POLICY='CANONICAL_MAX_EV_ONLY';
   const SCIENTIFIC_EFFECT='NONE_INTEGRATION_CONTRACT_ONLY';
@@ -97,14 +98,23 @@
 
   function validatePosteriorRef(ref,{position,response,name}){
     if(!ref||typeof ref!=='object')fail('POSTERIOR_REF_INVALID',name+' posterior reference is required');
-    const required=['ref_id','range_contract_schema','hand_id','step_id','public_state_fingerprint','player','position','moment','response_action','population_id','model_id','model_version','artifact_sha256','status'];
-    for(const key of required)if(!text(ref[key]))fail('POSTERIOR_REF_INVALID',name+' posterior.'+key+' is required');
+    const required=['ref_id','schema','hand_id','step_id','public_state_fingerprint','player','position','identity','moment','public_action','status','distribution_fingerprint','source_fingerprint'];
+    for(const key of required)if(!Object.prototype.hasOwnProperty.call(ref,key))fail('POSTERIOR_REF_INVALID',name+' posterior.'+key+' is required');
+    if(!text(ref.ref_id)||ref.schema!==POSTERIOR_SCHEMA)fail('POSTERIOR_REF_INVALID',name+' posterior must bind '+POSTERIOR_SCHEMA);
+    if(!text(ref.hand_id)||ref.step_id==null||!text(ref.public_state_fingerprint)||!text(ref.player)||!text(ref.position))fail('POSTERIOR_REF_INVALID',name+' posterior runtime identity is incomplete');
+    const identity=ref.identity;
+    if(!identity||typeof identity!=='object')fail('POSTERIOR_REF_INVALID',name+' posterior.identity is required');
+    const identityKeys=['population_id','model_id','model_version','source_id'];
+    if(Object.keys(identity).sort().join('|')!==identityKeys.sort().join('|')||identityKeys.some(key=>!text(identity[key])))fail('POSTERIOR_REF_INVALID',name+' posterior identity must match #320 population/model/source identity');
     if(text(ref.position).toUpperCase()!==position)fail('POSTERIOR_REF_INVALID',name+' posterior position mismatch');
-    if(text(ref.response_action).toUpperCase()!==response)fail('POSTERIOR_REF_INVALID',name+' posterior response mismatch');
     if(text(ref.moment).toUpperCase()!=='AFTER_ACTION')fail('POSTERIOR_REF_INVALID',name+' posterior moment must be AFTER_ACTION');
+    if(!ref.public_action||typeof ref.public_action!=='object'||text(ref.public_action.action).toUpperCase()!==response)fail('POSTERIOR_REF_INVALID',name+' posterior public_action mismatch');
     if(!text(ref.public_state_fingerprint).startsWith('preflop-public:'))fail('POSTERIOR_REF_INVALID',name+' posterior must bind a public-state fingerprint');
-    if(!/^[a-f0-9]{64}$/.test(text(ref.artifact_sha256)))fail('POSTERIOR_REF_INVALID',name+' posterior artifact_sha256 must be lowercase 64-hex');
-    if(!['AVAILABLE','UNSUPPORTED'].includes(text(ref.status).toUpperCase()))fail('POSTERIOR_REF_INVALID',name+' posterior status invalid');
+    const status=text(ref.status).toUpperCase();
+    if(!['AVAILABLE','UNSUPPORTED','INVALID'].includes(status))fail('POSTERIOR_REF_INVALID',name+' posterior status invalid');
+    if(status==='AVAILABLE'&&!/^sha256:[a-f0-9]{64}$/.test(text(ref.distribution_fingerprint)))fail('POSTERIOR_REF_INVALID',name+' AVAILABLE posterior distribution_fingerprint must be sha256');
+    if(status!=='AVAILABLE'&&ref.distribution_fingerprint!==null)fail('POSTERIOR_REF_INVALID',name+' fail-closed posterior distribution_fingerprint must be null');
+    if(!text(ref.source_fingerprint))fail('POSTERIOR_REF_INVALID',name+' posterior source_fingerprint is required');
     return clone(ref);
   }
 
@@ -381,7 +391,7 @@
   }
 
   return {
-    SCHEMA,RESOLVED_SCHEMA,WORLDS_SCHEMA,PAIRED_SCHEMA,PAIRING_CONTRACT,SELECTION_POLICY,SCIENTIFIC_EFFECT,
+    SCHEMA,RESOLVED_SCHEMA,WORLDS_SCHEMA,PAIRED_SCHEMA,POSTERIOR_SCHEMA,PAIRING_CONTRACT,SELECTION_POLICY,SCIENTIFIC_EFFECT,
     IsoSizingDiagnosticsError,canonicalDecision,validateArtifact,resolveAgainstDecision,bridgePairedResult
   };
 });

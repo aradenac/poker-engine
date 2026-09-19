@@ -321,6 +321,14 @@ def test_v5_projection_ignores_new_sizing_candidate_fields():
 
 
 
+def test_iso_sizing_final_posterior_binding_contract():
+    subprocess.run(
+        ["node", str(ROOT / "tests/preflop/test_iso_sizing_diagnostics.js")],
+        cwd=ROOT,
+        check=True,
+    )
+
+
 def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
     schema = json.loads(
         (ROOT / "contracts/training/model-a-preflop-sizing-likelihood.schema.json").read_text(
