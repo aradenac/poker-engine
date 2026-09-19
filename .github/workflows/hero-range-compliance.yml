@@ -44,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: REPRO batch-1 anti-bypass contract
+        run: PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -70,10 +72,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install browser runtime
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Install locked browser runtime
         run: |
-          python3 -m pip install --user playwright
-          python3 -m playwright install --with-deps chromium
+          set -euo pipefail
+          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json
+          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json
       - name: Serve static application
         run: |
           python3 -m http.server 8765 --directory site >/tmp/hero-compliance-http.log 2>&1 &
