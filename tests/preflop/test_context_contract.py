@@ -489,6 +489,10 @@ def test_ad_issue352_frozen_validation_compares_active_339_and_v2_without_test()
 
     protocol = load_issue352_validation_protocol(fit)
     validation = evaluate_issue352_validation(protocol, candidate, fit)
+    print(
+        "ISSUE352_VALIDATION_RESULT="
+        + json.dumps(validation, sort_keys=True, separators=(",", ":"))
+    )
     persisted_validation = json.loads(
         (ROOT / "analysis/model_a_preflop_sizing_v2_validation.json").read_text(
             encoding="utf-8"
