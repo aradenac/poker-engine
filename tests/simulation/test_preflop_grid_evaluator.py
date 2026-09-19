@@ -5,6 +5,7 @@ import copy
 import unittest
 
 from tests.simulation.test_paired_preflop_grid_integration import RealGridIntegrationTests
+from tests.simulation.test_paired_preflop_validation import PairedPreflopValidationTests
 
 from tools.simulation.game_core import NoLimitHoldemState
 from tools.simulation.preflop_grid_evaluator import (

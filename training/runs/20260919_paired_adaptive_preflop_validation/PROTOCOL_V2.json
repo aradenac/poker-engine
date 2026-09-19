@@ -9,7 +9,7 @@
   "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
   "corpus": {
     "path": "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json",
-    "sha256": "47bd13720e6c09031bfd725c230154b004db30ea",
+    "git_blob_sha": "47bd13720e6c09031bfd725c230154b004db30ea",
     "declared_split": "VALIDATION",
     "selection": "first 6 distinct hand_id values in manifest order; first Hero preflop decision in each raw hand; no replacement after results",
     "distinct_hands": 6,

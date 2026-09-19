@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+"""Frozen VALIDATION benchmark for #338 paired/adaptive preflop EV search."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+from typing import Any
+
+from tools.simulation.game_core import NoLimitHoldemState
+from tools.simulation.hand_history_state import replay_public_hand
+from tools.simulation.model_a_continuation import ModelAContinuationPolicy
+from tools.simulation.model_a_preflop_rollout import ModelAPreflopContinuationRollout
+from tools.simulation.model_a_support_closure import SupportClosedModelAContinuationPolicy
+from tools.simulation.model_b_runtime import combo_class
+from tools.simulation.paired_adaptive_preflop_ev import AdaptiveBudget
+from tools.simulation.paired_preflop_grid_evaluator import evaluate_preflop_grid_paired
+from tools.simulation.preflop_grid_evaluator import (
+    build_candidates,
+    evaluate_preflop_grid,
+)
+from tools.training import generate_hero_range_decisions as generation
+
+ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_PROTOCOL = ROOT / "training/runs/20260919_paired_adaptive_preflop_validation/PROTOCOL_V2.json"
+DEFAULT_CORPUS = ROOT / "training/runs/20260913_strategy_candidate_v84/validation_scenarios.json"
+
+
+def sha256_path(path: Path) -> str:
+    h = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def canonical(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def state_at_first_hero_preflop(raw_hand: str, hero: str) -> NoLimitHoldemState:
+    replay = replay_public_hand(raw_hand)
+    trace = replay["trace"]
+    target = next(
+        i for i, row in enumerate(trace)
+        if row["street"] == "preflop" and row["player"] == hero
+    )
+    state = NoLimitHoldemState.from_snapshot(trace[target]["state_before"])
+    events = []
+    for i, row in enumerate(trace[:target]):
+        if row["street"] != "preflop":
+            raise ValueError("Hero has no preflop decision before postflop trace")
+        action = str(row["action"]).upper()
+        core = {
+            "FOLD": "FOLD",
+            "CHECK": "CHECK",
+            "CALL": "CALL",
+            "RAISE": "RAISE",
+            "BET": "RAISE",
+        }.get(action)
+        if core is None:
+            raise ValueError(f"unsupported replay action {action!r}")
+        event = {"street": "preflop", "player": row["player"], "action": core}
+        if core == "RAISE":
+            after = trace[i + 1]["state_before"]
+            event["target_total_bb"] = float(
+                after["street_committed_bb"][row["player"]]
+            )
+        events.append(event)
+    state.action_log = events
+    if state.next_actor != hero:
+        raise AssertionError(f"reconstructed next actor {state.next_actor!r} != {hero!r}")
+    return state
+
+
+def selected_scenarios(manifest: dict[str, Any], count: int) -> list[dict[str, Any]]:
+    if manifest.get("split") != "VALIDATION":
+        raise ValueError("benchmark corpus must declare VALIDATION")
+    out = []
+    seen = set()
+    for row in manifest.get("scenarios") or []:
+        hand_id = str(row["hand_id"])
+        if hand_id in seen:
+            continue
+        seen.add(hand_id)
+        out.append(row)
+        if len(out) == count:
+            break
+    if len(out) != count:
+        raise ValueError(f"requested {count} distinct VALIDATION hands, found {len(out)}")
+    return out
+
+
+def run_validation(
+    protocol_path: Path = DEFAULT_PROTOCOL,
+    corpus_path: Path = DEFAULT_CORPUS,
+) -> dict[str, Any]:
+    protocol = json.loads(Path(protocol_path).read_text(encoding="utf-8"))
+    corpus = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
+    if protocol.get("schema") != "poker-paired-adaptive-preflop-validation-protocol/v2":
+        raise ValueError("unexpected #338 protocol schema")
+    if protocol.get("phase") != "VALIDATION" or protocol.get("status") != "FROZEN_BEFORE_RESULTS":
+        raise ValueError("#338 protocol must be frozen VALIDATION")
+    boundaries = protocol.get("scientific_boundaries") or {}
+    if boundaries.get("test_consumed") is not False or boundaries.get("test_authorized") is not False:
+        raise ValueError("TEST must remain forbidden")
+
+    count = int((protocol.get("corpus") or {}).get("distinct_hands") or 0)
+    scenarios = selected_scenarios(corpus, count)
+    budget_cfg = protocol["budget"]
+    fixed_samples = int(budget_cfg["fixed_samples_per_non_exact_alternative"])
+    initial = int(budget_cfg["paired_initial_samples_per_non_exact_alternative"])
+    maximum = int(budget_cfg["paired_max_samples_per_non_exact_alternative"])
+    batch = int(budget_cfg["paired_batch_size"])
+    seed_blocks = [int(x) for x in protocol["comparison"]["seed_blocks"]]
+
+    strict = ModelAContinuationPolicy.from_paths(
+        generation.DEFAULT_PREFLOP,
+        generation.DEFAULT_POSTFLOP,
+        generation.DEFAULT_OVERLAY,
+    )
+    opponent = SupportClosedModelAContinuationPolicy(strict)
+    hero_future = SupportClosedModelAContinuationPolicy(strict)
+    hero_continuation = generation.FixedPopulationDerivedHeroContinuation(hero_future)
+
+    decisions = []
+    fixed_rollouts = 0
+    paired_rollouts = 0
+    fixed_stable = 0
+    paired_stable = 0
+    deterministic_fixed = None
+    deterministic_paired = None
+
+    for decision_index, scenario in enumerate(scenarios):
+        hero = str(scenario["hero"])
+        state = state_at_first_hero_preflop(str(scenario["raw_hand"]), hero)
+        hand_class = combo_class(tuple(scenario["hero_cards"]))
+        raise_targets, sizing_support = generation.observed_raise_targets(strict, state, hero)
+        call_action, raise_action = generation.semantic_grid_labels(state)
+        candidates = build_candidates(
+            state,
+            actor=hero,
+            raise_targets_bb=raise_targets,
+            call_action=call_action,
+            raise_action=raise_action,
+            include_jam=True,
+            sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+        )
+        non_exact = sum(candidate.core_action != "FOLD" for candidate in candidates)
+        max_total = non_exact * maximum
+        context_id = f"validation:{scenario['hand_id']}:hero-preflop-0"
+        rollout = ModelAPreflopContinuationRollout(
+            opponent_policy=opponent,
+            hero_hole_cards=scenario["hero_cards"],
+            hero_continuation_policy=hero_continuation,
+        )
+        block_rows = []
+        for seed in seed_blocks:
+            fixed = evaluate_preflop_grid(
+                NoLimitHoldemState.from_snapshot(state.to_snapshot()),
+                actor=hero,
+                context_id=context_id,
+                population_id=protocol["population_id"],
+                raise_targets_bb=raise_targets,
+                rollout=rollout,
+                samples_per_candidate=fixed_samples,
+                base_seed=seed,
+                call_action=call_action,
+                raise_action=raise_action,
+                include_jam=True,
+                sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+                status="EXPERIMENTAL",
+            )
+            paired = evaluate_preflop_grid_paired(
+                NoLimitHoldemState.from_snapshot(state.to_snapshot()),
+                actor=hero,
+                context_id=context_id,
+                hand_class=hand_class,
+                population_id=protocol["population_id"],
+                raise_targets_bb=raise_targets,
+                rollout=rollout,
+                budget=AdaptiveBudget(
+                    initial_samples_per_alternative=initial,
+                    max_samples_per_alternative=maximum,
+                    batch_size=batch,
+                    max_total_rollouts=max_total,
+                    confidence_z=float(budget_cfg["confidence_z"]),
+                    elimination_margin_bb=float(budget_cfg["elimination_margin_bb"]),
+                ),
+                base_seed=seed,
+                call_action=call_action,
+                raise_action=raise_action,
+                include_jam=True,
+                sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+                status="EXPERIMENTAL",
+            )
+            fixed_rollouts += int(fixed["search"]["budget"])
+            paired_rollouts += int(paired["decision"]["search"]["budget"])
+            block_rows.append({
+                "seed": seed,
+                "fixed_selected_id": fixed["selected_id"],
+                "paired_selected_id": paired["decision"]["selected_id"],
+                "fixed_rollouts": int(fixed["search"]["budget"]),
+                "paired_rollouts": int(paired["decision"]["search"]["budget"]),
+                "paired_pairwise_deltas": paired["paired_result"]["pairwise_deltas"],
+            })
+
+            if decision_index == 0 and seed == seed_blocks[0]:
+                fixed_again = evaluate_preflop_grid(
+                    NoLimitHoldemState.from_snapshot(state.to_snapshot()),
+                    actor=hero,
+                    context_id=context_id,
+                    population_id=protocol["population_id"],
+                    raise_targets_bb=raise_targets,
+                    rollout=rollout,
+                    samples_per_candidate=fixed_samples,
+                    base_seed=seed,
+                    call_action=call_action,
+                    raise_action=raise_action,
+                    include_jam=True,
+                    sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+                    status="EXPERIMENTAL",
+                )
+                paired_again = evaluate_preflop_grid_paired(
+                    NoLimitHoldemState.from_snapshot(state.to_snapshot()),
+                    actor=hero,
+                    context_id=context_id,
+                    hand_class=hand_class,
+                    population_id=protocol["population_id"],
+                    raise_targets_bb=raise_targets,
+                    rollout=rollout,
+                    budget=AdaptiveBudget(initial, maximum, batch, max_total),
+                    base_seed=seed,
+                    call_action=call_action,
+                    raise_action=raise_action,
+                    include_jam=True,
+                    sizing_grid_source="MODEL_A_EXACT_NODE_OBSERVED",
+                    status="EXPERIMENTAL",
+                )
+                deterministic_fixed = canonical(fixed) == canonical(fixed_again)
+                deterministic_paired = canonical(paired) == canonical(paired_again)
+
+        fixed_same = len({row["fixed_selected_id"] for row in block_rows}) == 1
+        paired_same = len({row["paired_selected_id"] for row in block_rows}) == 1
+        fixed_stable += int(fixed_same)
+        paired_stable += int(paired_same)
+        decisions.append({
+            "hand_id": str(scenario["hand_id"]),
+            "hero": hero,
+            "hand_class": hand_class,
+            "context_id": context_id,
+            "candidate_ids": [candidate.id for candidate in candidates],
+            "sizing_support": sizing_support,
+            "fixed_stable": fixed_same,
+            "paired_stable": paired_same,
+            "seed_blocks": block_rows,
+        })
+
+    n = len(decisions)
+    fixed_rate = fixed_stable / n
+    paired_rate = paired_stable / n
+    fixed_mean = fixed_rollouts / (n * len(seed_blocks))
+    paired_mean = paired_rollouts / (n * len(seed_blocks))
+    passed = (
+        deterministic_fixed is True
+        and deterministic_paired is True
+        and paired_rate >= fixed_rate
+        and paired_mean <= fixed_mean
+    )
+    return {
+        "schema": "poker-paired-adaptive-preflop-validation-result/v1",
+        "issue": 338,
+        "phase": "VALIDATION",
+        "protocol": {
+            "path": str(Path(protocol_path).relative_to(ROOT)),
+            "sha256": sha256_path(protocol_path),
+        },
+        "corpus": {
+            "path": str(Path(corpus_path).relative_to(ROOT)),
+            "sha256": sha256_path(corpus_path),
+            "declared_split": corpus.get("split"),
+            "distinct_hands": n,
+        },
+        "metrics": {
+            "fixed_stability": fixed_rate,
+            "paired_stability": paired_rate,
+            "fixed_mean_rollouts": fixed_mean,
+            "paired_mean_rollouts": paired_mean,
+            "fixed_total_rollouts": fixed_rollouts,
+            "paired_total_rollouts": paired_rollouts,
+            "deterministic_fixed": deterministic_fixed,
+            "deterministic_paired": deterministic_paired,
+        },
+        "acceptance": {
+            "rule": "paired_stability>=fixed_stability AND paired_mean_rollouts<=fixed_mean_rollouts AND deterministic",
+            "pass": passed,
+        },
+        "scientific_boundaries": {
+            "test_consumed": False,
+            "test_authorized": False,
+            "promotion_authorized": False,
+            "model_a_modified": False,
+            "model_b_modified": False,
+            "ui_modified": False,
+        },
+        "continuation_support": {
+            "opponent": opponent.aggregate_audit(),
+            "hero": hero_future.aggregate_audit(),
+        },
+        "decisions": decisions,
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--protocol", type=Path, default=DEFAULT_PROTOCOL)
+    parser.add_argument("--corpus", type=Path, default=DEFAULT_CORPUS)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    result = run_validation(args.protocol, args.corpus)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "phase": result["phase"],
+        "metrics": result["metrics"],
+        "acceptance": result["acceptance"],
+        "scientific_boundaries": result["scientific_boundaries"],
+    }, indent=2, sort_keys=True))
+    return 0 if result["acceptance"]["pass"] else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
