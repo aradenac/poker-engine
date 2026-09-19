@@ -1,0 +1,92 @@
+{
+  "schema": "poker-workflow-helper-consumers/v1",
+  "issue": 204,
+  "snapshot_base_sha": "925d28f7633c0b235f15205bebfc44c76f3f1cb5",
+  "workflow_files_modified": false,
+  "helpers": [
+    {
+      "helper": "tools/repro_ci_environment.py",
+      "contract": "poker-repro-ci-environment-helper/v1",
+      "purpose": "Consume exact #203 Python/Node lock identity, centralize locked dependency bootstrap and emit/verify environment_identity after setup actions select the pinned runtimes.",
+      "consumers": [
+        {
+          "workflow": ".github/workflows/population-pack-catalog.yml",
+          "evidence": {
+            "setup_python": 2,
+            "pip_install": 1
+          },
+          "future_use": "exact Python version via .python-version; helper plan/bootstrap for locked Python deps and identity",
+          "workflow_blob_sha": "2bf55cd7f443509607e45543725bb7e5b5c26d53"
+        },
+        {
+          "workflow": ".github/workflows/full-hand-arena.yml",
+          "evidence": {
+            "setup_python": 2,
+            "pip_install": 0
+          },
+          "future_use": "exact Python version via .python-version; helper verify/identity",
+          "workflow_blob_sha": "69039087785fef4d9dd8a906a19aaef290885ac1"
+        },
+        {
+          "workflow": ".github/workflows/model-b-card-aware-runtime.yml",
+          "evidence": {
+            "setup_python": 1,
+            "pip_install": 0
+          },
+          "future_use": "exact Python version via .python-version; helper verify/identity",
+          "workflow_blob_sha": "4d1252e1ef047829a48675ad30122855d1ac3d31"
+        }
+      ]
+    },
+    {
+      "helper": "tools/repro_ci_browser.py",
+      "contract": "poker-repro-ci-browser-helper/v1",
+      "purpose": "Replace repeated Playwright install blocks with a locked Chromium install/verify contract while preserving --with-deps behavior when requested.",
+      "consumers": [
+        {
+          "workflow": ".github/workflows/trainer-smoke.yml",
+          "evidence": {
+            "pip_install": 1,
+            "playwright_install": 1
+          },
+          "future_use": "browser-smoke install and identity verification",
+          "workflow_blob_sha": "cc121f1818b5920157f73429469e5f0b094b262f"
+        },
+        {
+          "workflow": ".github/workflows/hero-range-editor.yml",
+          "evidence": {
+            "pip_install": 1,
+            "playwright_install": 1
+          },
+          "future_use": "browser-smoke install and identity verification",
+          "workflow_blob_sha": "72215d13dbe3d427dfb71d781d49ceadcc2078de"
+        },
+        {
+          "workflow": ".github/workflows/hero-range-compliance.yml",
+          "evidence": {
+            "pip_install": 1,
+            "playwright_install": 1
+          },
+          "future_use": "browser-smoke install and identity verification",
+          "workflow_blob_sha": "e2e19e77bbcc5656266bb012d5f984d905ecfa77"
+        },
+        {
+          "workflow": ".github/workflows/population-pack-catalog.yml",
+          "evidence": {
+            "pip_install": 1,
+            "playwright_install": 1
+          },
+          "future_use": "browser-smoke install and identity verification",
+          "workflow_blob_sha": "2bf55cd7f443509607e45543725bb7e5b5c26d53"
+        }
+      ]
+    }
+  ],
+  "deferred": {
+    "workflow_migration": "blocked until #108 release",
+    "trigger_concurrency_changes": "blocked",
+    "scientific_gate_changes": "forbidden",
+    "artifact_helper": "not extracted in this tranche; stable artifact naming/SHA semantics need a narrower migration contract before extraction"
+  },
+  "evidence_note": "Consumer counts were verified read-only against the exact workflow blobs recorded above at snapshot_base_sha; no workflow file is modified by this tranche."
+}

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -113,6 +114,15 @@ class PromotedModelBIntegrationTests(unittest.TestCase):
         b = self.env.sample_sizing(seed_parts=("size", 99), **context)
         self.assertEqual(a, b)
         self.assertGreater(a, 0)
+
+
+class RobustnessBackendIntegrationTests(unittest.TestCase):
+    def test_issue_199_robustness_unit_matrix(self):
+        subprocess.run(
+            [sys.executable, str(ROOT / "tests/simulation/test_model_b_robustness.py")],
+            cwd=ROOT,
+            check=True,
+        )
 
 
 if __name__ == "__main__":

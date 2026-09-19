@@ -9,6 +9,24 @@
         "site/deployment-meta.css"
       ],
       "functional_files": {
+        "site/analytics/leak-analyzer.js": {
+          "git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd"
+        },
+        "site/analytics/leak-training-target.js": {
+          "git_blob_sha": "765ea9200faa0765fb46fce42228377e644e82e8"
+        },
+        "site/analytics/model-b-robustness.js": {
+          "git_blob_sha": "740a02d9bb9c0f6a2b37fc9c0904bd7aa374a8eb"
+        },
+        "site/analytics/review-dashboard.js": {
+          "git_blob_sha": "8fe8958df456c22168226b305a574451b0a4529d"
+        },
+        "site/analytics/review-inbox.js": {
+          "git_blob_sha": "b6012f242ae633381c125d615e3018a839eded02"
+        },
+        "site/analytics/review-score-adapter.js": {
+          "git_blob_sha": "967d1cb79e2b48259ce0cbc348b754f4b290774c"
+        },
         "site/hero-compliance-replayer.js": {
           "git_blob_sha": "0be68bd5eaaedde3b2d88289d1845d95cefb07a3"
         },
@@ -16,19 +34,19 @@
           "git_blob_sha": "83cc8e3de0e48bb33e793583c08272ef681a173a"
         },
         "site/hero-ranges-app.js": {
-          "git_blob_sha": "291f004486e076c2fa452d2936e1df65af9de783"
+          "git_blob_sha": "1969bc29fbfbd9b30369a43c1254c8a0d0e41112"
         },
         "site/hero-ranges.css": {
           "git_blob_sha": "631e1f01d6aec324b4a76f71df3affa8283b0200"
         },
         "site/hero-ranges.html": {
-          "git_blob_sha": "c27b3fd4ca83f6bfced82f459c6b06ed3e88edb6"
+          "git_blob_sha": "3b230f42cd8e384c11b3c8b231f9b8e009443647"
         },
         "site/hero-ranges.js": {
           "git_blob_sha": "03d5f4490cc7710644a32f9d4c17344e0a926c7c"
         },
         "site/index.html": {
-          "git_blob_sha": "71d781654b19208dfb122af05275bb6f46681878"
+          "git_blob_sha": "b0c89a90fe1300bc820f67706d9ef3a2a2e36e71"
         },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
@@ -37,7 +55,10 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "535032b0f0c63d325c965d95ea656e34f0409940"
+          "git_blob_sha": "a44f3f0058a9a7cdd73ceebb4d4c76dbb22c4b60"
+        },
+        "site/training/leak-scenario-selector.js": {
+          "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"
         }
       }
     },

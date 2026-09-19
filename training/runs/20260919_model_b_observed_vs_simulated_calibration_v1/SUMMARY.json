@@ -1,0 +1,796 @@
+{
+  "candidate_degrades_domains": [
+    {
+      "candidate_minus_reference_log_loss": 0.13055285605403844,
+      "distinct_hands": 37,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>CALL>FOLD"
+      },
+      "observations": 37,
+      "paired_ci95": [
+        0.008112537159816389,
+        0.2407225958712127
+      ]
+    }
+  ],
+  "candidate_improves_domains": [
+    {
+      "candidate_minus_reference_log_loss": -0.1798053569899154,
+      "distinct_hands": 148,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P75_100"
+      },
+      "observations": 233,
+      "paired_ci95": [
+        -0.23275118470611264,
+        -0.1214216619950759
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.06613458576858755,
+      "distinct_hands": 291,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD"
+      },
+      "observations": 300,
+      "paired_ci95": [
+        -0.10343027514950254,
+        -0.027524386169695665
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.055244409718548604,
+      "distinct_hands": 316,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET>FOLD"
+      },
+      "observations": 322,
+      "paired_ci95": [
+        -0.0902284395513387,
+        -0.018792475450984423
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0506362484559123,
+      "distinct_hands": 1210,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "turn"
+      },
+      "observations": 1999,
+      "paired_ci95": [
+        -0.06619865660926019,
+        -0.03432353610541123
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04918272350842878,
+      "distinct_hands": 950,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET"
+      },
+      "observations": 1229,
+      "paired_ci95": [
+        -0.07103707091823534,
+        -0.0284095476148726
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04765697718856843,
+      "distinct_hands": 1405,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "OOP"
+      },
+      "observations": 2459,
+      "paired_ci95": [
+        -0.06181390035446027,
+        -0.03212117325383543
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04635707667023814,
+      "distinct_hands": 410,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR1_2"
+      },
+      "observations": 521,
+      "paired_ci95": [
+        -0.0791340482723381,
+        -0.014777311276835523
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04282275524173407,
+      "distinct_hands": 1239,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "0"
+      },
+      "observations": 2493,
+      "paired_ci95": [
+        -0.05709719361015994,
+        -0.027585258896261056
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04140621843129222,
+      "distinct_hands": 999,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "river"
+      },
+      "observations": 1564,
+      "paired_ci95": [
+        -0.059796040565422426,
+        -0.021940987144629238
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04055615626262654,
+      "distinct_hands": 365,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR00_1"
+      },
+      "observations": 518,
+      "paired_ci95": [
+        -0.07646876847375297,
+        -0.0021108175197064125
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.03646199234742831,
+      "distinct_hands": 847,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "SRP"
+      },
+      "observations": 2372,
+      "paired_ci95": [
+        -0.05175769794966258,
+        -0.022332256192285144
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.03607447282538245,
+      "distinct_hands": 1001,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET"
+      },
+      "observations": 1526,
+      "paired_ci95": [
+        -0.05486281968396065,
+        -0.01787821648644758
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0358741383980109,
+      "distinct_hands": 1559,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR8_PLUS"
+      },
+      "observations": 3253,
+      "paired_ci95": [
+        -0.04694726035312494,
+        -0.023596164954262096
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.03359887612957779,
+      "distinct_hands": 1180,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "LIMPED"
+      },
+      "observations": 3862,
+      "paired_ci95": [
+        -0.04520123002830931,
+        -0.022047792870115743
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.030004358768462858,
+      "distinct_hands": 1118,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P00_25"
+      },
+      "observations": 3077,
+      "paired_ci95": [
+        -0.04423870969679203,
+        -0.015133383863650766
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.028594238976298758,
+      "distinct_hands": 1254,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "2"
+      },
+      "observations": 2734,
+      "paired_ci95": [
+        -0.04327136415276664,
+        -0.014144694512897472
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.027063083898864804,
+      "distinct_hands": 927,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR4_8"
+      },
+      "observations": 1293,
+      "paired_ci95": [
+        -0.04712779567672,
+        -0.006021920765953555
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.026763364954281,
+      "distinct_hands": 1405,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "IP"
+      },
+      "observations": 2270,
+      "paired_ci95": [
+        -0.042633035506444816,
+        -0.01028478080165771
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.02416766556429928,
+      "distinct_hands": 845,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "MIDDLE"
+      },
+      "observations": 1498,
+      "paired_ci95": [
+        -0.04230277783191205,
+        -0.006507084436103412
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.02106843603498909,
+      "distinct_hands": 1429,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P25_50"
+      },
+      "observations": 2719,
+      "paired_ci95": [
+        -0.03302450039943575,
+        -0.00984980831469812
+      ]
+    }
+  ],
+  "context_counts": {
+    "comparison": {
+      "INSUFFICIENT_SUPPORT": 3157,
+      "SIMILAR": 2
+    },
+    "not_fully_supported": 3157,
+    "supported": 2,
+    "total": 3159
+  },
+  "domain_comparison_counts": {
+    "CANDIDATE_DEGRADES": 1,
+    "CANDIDATE_IMPROVES": 21,
+    "INSUFFICIENT_SUPPORT": 96,
+    "SIMILAR": 22
+  },
+  "evaluation_split": "VALIDATION",
+  "global_calibration_snapshot": {
+    "actions": {
+      "CALL": {
+        "candidate_absolute_error": 0.0017507584975542945,
+        "candidate_relative_error": 0.0037409912128030624,
+        "observed_count": 3034,
+        "observed_frequency": 0.4679932130186642,
+        "observed_frequency_ci95": [
+          0.4558696048505711,
+          0.4801547295447623
+        ],
+        "reference_absolute_error": 0.01129688692325398,
+        "reference_relative_error": 0.024138997337987984,
+        "simulated_candidate_frequency": 0.4662424545211099,
+        "simulated_reference_frequency": 0.4566963260954102
+      },
+      "FOLD": {
+        "candidate_absolute_error": 0.008988262606787367,
+        "candidate_relative_error": 0.01929500214562997,
+        "observed_count": 3020,
+        "observed_frequency": 0.4658337189572729,
+        "observed_frequency_ci95": [
+          0.45371487268471083,
+          0.47799303126018716
+        ],
+        "reference_absolute_error": 0.010326740736791074,
+        "reference_relative_error": 0.022168298078349843,
+        "simulated_candidate_frequency": 0.4568454563504855,
+        "simulated_reference_frequency": 0.47616045969406395
+      },
+      "RAISE": {
+        "candidate_absolute_error": 0.010739021104341648,
+        "candidate_relative_error": 0.1622868853600161,
+        "observed_count": 429,
+        "observed_frequency": 0.06617306802406293,
+        "observed_frequency_ci95": [
+          0.06037522195590938,
+          0.0724847321977068
+        ],
+        "reference_absolute_error": 0.0009701461864628225,
+        "reference_relative_error": 0.014660740622001114,
+        "simulated_candidate_frequency": 0.07691208912840458,
+        "simulated_reference_frequency": 0.06714321421052576
+      }
+    },
+    "aggressive_tails": {
+      "candidate": {
+        "jam_frequency": 0.00983577111853845,
+        "jam_frequency_absolute_error": 0.02456188428790918,
+        "overbet_frequency": 0.033164101131630944,
+        "overbet_frequency_absolute_error": 0.006787423667493971,
+        "sizing_prediction_coverage": 1.0,
+        "tail_frequency": 0.022063819494946145,
+        "tail_frequency_absolute_error": 0.016807073610097818
+      },
+      "definition": {
+        "jam_observed": "HH all-in flag on a RAISE decision",
+        "jam_simulated": "raise sizing >= live SPR; derived proxy because Model B sizing artifacts do not store an explicit jam class",
+        "overbet": "raise sizing > 1.0 pot",
+        "tail": "jam OR facing_price_to_pot > 1.5 OR raise_sizing_ratio > 1.5"
+      },
+      "observed": {
+        "jam_count": 223,
+        "jam_frequency": 0.03439765540644763,
+        "overbet_count": 171,
+        "overbet_frequency": 0.026376677464136973,
+        "tail_count": 252,
+        "tail_frequency": 0.03887089310504396
+      },
+      "reference": {
+        "jam_frequency": 0.0073349544131885835,
+        "jam_frequency_absolute_error": 0.027062700993259046,
+        "overbet_frequency": 0.028711735796881716,
+        "overbet_frequency_absolute_error": 0.0023350583327447424,
+        "sizing_prediction_coverage": 1.0,
+        "tail_frequency": 0.01787352028684022,
+        "tail_frequency_absolute_error": 0.020997372818203745
+      }
+    },
+    "comparison": "CANDIDATE_IMPROVES",
+    "distinct_hands": 2123,
+    "observations": 6483,
+    "probability_calibration": {
+      "candidate": {
+        "brier": 0.5112863291521516,
+        "ece_confidence": 0.011016360005202317,
+        "log_loss": 0.8274561403781219,
+        "n": 6483
+      },
+      "candidate_minus_reference": {
+        "brier": -0.028512051648792114,
+        "ece_confidence": -0.00048714690475477017,
+        "log_loss": -0.03227882712395613,
+        "paired_log_loss_cluster_bootstrap": {
+          "bootstrap_samples": 1000,
+          "candidate_minus_reference_log_loss": -0.032278827123952795,
+          "ci95": [
+            -0.041391473365297214,
+            -0.02325364443391528
+          ],
+          "cluster_unit": "hand_id",
+          "decisions": 6483,
+          "distinct_hands": 2123,
+          "seed": 5107364975665119692
+        }
+      },
+      "reference": {
+        "brier": 0.5397983808009437,
+        "ece_confidence": 0.011503506909957087,
+        "log_loss": 0.859734967502078,
+        "n": 6483
+      }
+    },
+    "sizing_calibration": {
+      "candidate_log2_error": {
+        "mean_absolute_log2_error": 1.0468830367661774,
+        "median_absolute_log2_error": 0.7863770565709532,
+        "n": 429,
+        "p90_absolute_log2_error": 2.238127096821605
+      },
+      "distinct_raise_hands": 335,
+      "interpretable": true,
+      "observed_distribution": {
+        "median": 0.7878787878787878,
+        "n": 429,
+        "p10": 0.25,
+        "p90": 3.1142584877227186,
+        "p99": 22.256356946462212
+      },
+      "observed_raise_count": 429,
+      "reference_log2_error": {
+        "mean_absolute_log2_error": 1.1409140123297672,
+        "median_absolute_log2_error": 0.8810946315977607,
+        "n": 429,
+        "p90_absolute_log2_error": 2.3734215847415228
+      },
+      "simulated_candidate_distribution": {
+        "median": 0.8731132075471698,
+        "n": 6864,
+        "p10": 0.26666666666666666,
+        "p90": 3.0526992287917736,
+        "p99": 18.625
+      },
+      "simulated_reference_distribution": {
+        "median": 0.928571,
+        "n": 6864,
+        "p10": 0.275862,
+        "p90": 3.431786,
+        "p99": 18.257931
+      },
+      "support_tier": "SUPPORTED"
+    },
+    "support_tier": "SUPPORTED"
+  },
+  "hierarchy_comparison_counts": {
+    "CANDIDATE_DEGRADES": 1,
+    "CANDIDATE_IMPROVES": 32,
+    "INSUFFICIENT_SUPPORT": 4900,
+    "SIMILAR": 125
+  },
+  "insufficiently_supported_contexts": 3157,
+  "interpretation": "Descriptive VALIDATION calibration only. CANDIDATE_IMPROVES/DEGRADES requires SUPPORTED context and a paired hand-cluster bootstrap CI for candidate-minus-reference log-loss that excludes zero. No promotion decision is made.",
+  "issue": 272,
+  "production_effect": "NONE",
+  "schema": "model-b-observed-vs-simulated-calibration-summary/v1",
+  "similar_domains": [
+    {
+      "candidate_minus_reference_log_loss": 0.01906590673292552,
+      "distinct_hands": 256,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "ONLY"
+      },
+      "observations": 256,
+      "paired_ci95": [
+        -0.02895871675588649,
+        0.06874248735574255
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.047703954338473964,
+      "distinct_hands": 87,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "3BP"
+      },
+      "observations": 233,
+      "paired_ci95": [
+        -0.014500596096675549,
+        0.1118702186490941
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.00601616484242562,
+      "distinct_hands": 223,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>CALL"
+      },
+      "observations": 295,
+      "paired_ci95": [
+        -0.041944515667560266,
+        0.03050973557167716
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.01875524906655901,
+      "distinct_hands": 44,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>CALL>CALL"
+      },
+      "observations": 52,
+      "paired_ci95": [
+        -0.0757361515029626,
+        0.04759250886821372
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.0041593713160956725,
+      "distinct_hands": 53,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD>CALL"
+      },
+      "observations": 53,
+      "paired_ci95": [
+        -0.08636737987851413,
+        0.09627384377420811
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.09911225266991253,
+      "distinct_hands": 50,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD>FOLD"
+      },
+      "observations": 50,
+      "paired_ci95": [
+        -0.1909584850358378,
+        0.001572834676851344
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.08053719379386903,
+      "distinct_hands": 46,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD>FOLD>FOLD"
+      },
+      "observations": 46,
+      "paired_ci95": [
+        -0.18094597561756054,
+        0.019978248093024745
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.06520300435565984,
+      "distinct_hands": 165,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>RAISE"
+      },
+      "observations": 174,
+      "paired_ci95": [
+        -0.142921095174565,
+        0.015806201676270837
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.0003219059348378295,
+      "distinct_hands": 196,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>CALL"
+      },
+      "observations": 244,
+      "paired_ci95": [
+        -0.03877241169635346,
+        0.0399467259330352
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.013865148532856364,
+      "distinct_hands": 71,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>CALL>CALL"
+      },
+      "observations": 77,
+      "paired_ci95": [
+        -0.04537060731000691,
+        0.0737590600146262
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.015792735088623222,
+      "distinct_hands": 100,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>CALL>FOLD"
+      },
+      "observations": 100,
+      "paired_ci95": [
+        -0.046208700071695745,
+        0.07393972614585019
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0035438756447514486,
+      "distinct_hands": 208,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>FOLD"
+      },
+      "observations": 208,
+      "paired_ci95": [
+        -0.057204001240653175,
+        0.05305051767751312
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.022431278343609806,
+      "distinct_hands": 72,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>FOLD>CALL"
+      },
+      "observations": 72,
+      "paired_ci95": [
+        -0.03693200730227963,
+        0.08522915745666988
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.02876885175415922,
+      "distinct_hands": 147,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>FOLD>FOLD"
+      },
+      "observations": 147,
+      "paired_ci95": [
+        -0.08722229501257457,
+        0.036613862364210346
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.004571253417109955,
+      "distinct_hands": 80,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>RAISE"
+      },
+      "observations": 81,
+      "paired_ci95": [
+        -0.08182739495076909,
+        0.08227421790919977
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.014490879745449603,
+      "distinct_hands": 55,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>RAISE>FOLD"
+      },
+      "observations": 55,
+      "paired_ci95": [
+        -0.11744834057250583,
+        0.09723457664021005
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.027389834148266123,
+      "distinct_hands": 437,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET"
+      },
+      "observations": 480,
+      "paired_ci95": [
+        -0.059700725859858285,
+        0.005121537426726815
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.014819001341308535,
+      "distinct_hands": 213,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET>CALL"
+      },
+      "observations": 247,
+      "paired_ci95": [
+        -0.05590128859256712,
+        0.025524550935485266
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.041508272451821315,
+      "distinct_hands": 127,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>CHECK>BET"
+      },
+      "observations": 135,
+      "paired_ci95": [
+        -0.10089939503378964,
+        0.022200121551502583
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0391200408727983,
+      "distinct_hands": 307,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P50_75"
+      },
+      "observations": 454,
+      "paired_ci95": [
+        -0.07448726312795237,
+        0.0005295040328496687
+      ]
+    }
+  ],
+  "test_consumed": false,
+  "worst_candidate_calibration_contexts": [
+    {
+      "candidate_log_loss": 0.9584324166076279,
+      "context": {
+        "pot_type": "LIMPED",
+        "price_bucket": "P00_25",
+        "profile": 0,
+        "relative_position": "MIDDLE",
+        "sequence": "BET",
+        "spr_bucket": "SPR8_PLUS",
+        "street": "flop"
+      },
+      "context_id": "ctx-738d19bf5ff6359b",
+      "observations": 31,
+      "reference_log_loss": 1.0047117609758924
+    },
+    {
+      "candidate_log_loss": 0.8499135516475844,
+      "context": {
+        "pot_type": "LIMPED",
+        "price_bucket": "P25_50",
+        "profile": 0,
+        "relative_position": "OOP",
+        "sequence": "CHECK>BET",
+        "spr_bucket": "SPR8_PLUS",
+        "street": "flop"
+      },
+      "context_id": "ctx-90615fb203b8bd0d",
+      "observations": 34,
+      "reference_log_loss": 0.8999495016950857
+    }
+  ]
+}

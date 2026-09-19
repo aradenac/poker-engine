@@ -1,0 +1,217 @@
+{
+  "degraded_domains_vs_candidate197": [],
+  "domain_comparison_counts_vs_candidate197": {
+    "INSUFFICIENT_SUPPORT": 96,
+    "SIMILAR": 44
+  },
+  "evaluation_split": "VALIDATION",
+  "exact_contexts_requiring_backoff": 2837,
+  "exact_contexts_using_exact_level": 322,
+  "fallback": {
+    "action_selected_level_counts": {
+      "0": 2502,
+      "1": 1185,
+      "2": 696,
+      "3": 672,
+      "4": 1427,
+      "5": 1
+    },
+    "action_selected_level_fraction": {
+      "0": 0.38593243868579363,
+      "1": 0.1827857473391948,
+      "2": 0.10735770476631189,
+      "3": 0.1036557149467839,
+      "4": 0.2201141446861021,
+      "5": 0.00015424957581366652
+    },
+    "backoff_action_fraction": 0.6140675613142064,
+    "exact_action_fraction": 0.38593243868579363,
+    "fallback_reason_counts": {
+      "BACKOFF_ACTION_SUPPORT": 3981,
+      "EXACT_CONTEXT_SUPPORTED": 2502
+    },
+    "predictions": 6483,
+    "sizing_selected_level_counts": {
+      "0": 250,
+      "1": 974,
+      "2": 1026,
+      "3": 704,
+      "4": 2883,
+      "5": 526,
+      "6": 120
+    }
+  },
+  "global": {
+    "actions": {
+      "CALL": {
+        "candidate_absolute_error": 0.0017507584975542945,
+        "candidate_relative_error": 0.0037409912128030624,
+        "observed_count": 3034,
+        "observed_frequency": 0.4679932130186642,
+        "observed_frequency_ci95": [
+          0.4558696048505711,
+          0.4801547295447623
+        ],
+        "reference_absolute_error": 0.01129688692325398,
+        "reference_relative_error": 0.024138997337987984,
+        "simulated_candidate_frequency": 0.4662424545211099,
+        "simulated_reference_frequency": 0.4566963260954102
+      },
+      "FOLD": {
+        "candidate_absolute_error": 0.008988262606787367,
+        "candidate_relative_error": 0.01929500214562997,
+        "observed_count": 3020,
+        "observed_frequency": 0.4658337189572729,
+        "observed_frequency_ci95": [
+          0.45371487268471083,
+          0.47799303126018716
+        ],
+        "reference_absolute_error": 0.010326740736791074,
+        "reference_relative_error": 0.022168298078349843,
+        "simulated_candidate_frequency": 0.4568454563504855,
+        "simulated_reference_frequency": 0.47616045969406395
+      },
+      "RAISE": {
+        "candidate_absolute_error": 0.010739021104341648,
+        "candidate_relative_error": 0.1622868853600161,
+        "observed_count": 429,
+        "observed_frequency": 0.06617306802406293,
+        "observed_frequency_ci95": [
+          0.06037522195590938,
+          0.0724847321977068
+        ],
+        "reference_absolute_error": 0.0009701461864628225,
+        "reference_relative_error": 0.014660740622001114,
+        "simulated_candidate_frequency": 0.07691208912840458,
+        "simulated_reference_frequency": 0.06714321421052576
+      }
+    },
+    "candidate197": {
+      "brier": 0.5112863291521516,
+      "ece_confidence": 0.011016360005202317,
+      "log_loss": 0.8274561403781219,
+      "n": 6483
+    },
+    "reference": {
+      "brier": 0.5397983808009437,
+      "ece_confidence": 0.011503506909957087,
+      "log_loss": 0.859734967502078,
+      "n": 6483
+    },
+    "sizing": {
+      "candidate_log2_error": {
+        "mean_absolute_log2_error": 1.0468830367661774,
+        "median_absolute_log2_error": 0.7863770565709532,
+        "n": 429,
+        "p90_absolute_log2_error": 2.238127096821605
+      },
+      "distinct_raise_hands": 335,
+      "interpretable": true,
+      "observed_distribution": {
+        "median": 0.7878787878787878,
+        "n": 429,
+        "p10": 0.25,
+        "p90": 3.1142584877227186,
+        "p99": 22.256356946462212
+      },
+      "observed_raise_count": 429,
+      "reference_log2_error": {
+        "mean_absolute_log2_error": 1.1409140123297672,
+        "median_absolute_log2_error": 0.8810946315977607,
+        "n": 429,
+        "p90_absolute_log2_error": 2.3734215847415228
+      },
+      "simulated_candidate_distribution": {
+        "median": 0.8888888888888888,
+        "n": 6864,
+        "p10": 0.26666666666666666,
+        "p90": 2.96526508226691,
+        "p99": 18.896096153846074
+      },
+      "simulated_reference_distribution": {
+        "median": 0.91063,
+        "n": 6864,
+        "p10": 0.26087,
+        "p90": 3.3068928999999985,
+        "p99": 19.357692
+      },
+      "support_tier": "SUPPORTED"
+    },
+    "support_aware": {
+      "brier": 0.5112863291521516,
+      "ece_confidence": 0.011016360005202317,
+      "log_loss": 0.8274561403781219,
+      "n": 6483
+    },
+    "support_aware_minus_candidate197": {
+      "bootstrap_samples": 1000,
+      "candidate_minus_reference_log_loss": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "cluster_unit": "hand_id",
+      "decisions": 6483,
+      "distinct_hands": 2123,
+      "seed": 8158311521057894723
+    },
+    "support_aware_minus_reference": {
+      "brier": -0.028512051648792114,
+      "ece_confidence": -0.00048714690475477017,
+      "log_loss": -0.03227882712395613,
+      "paired_log_loss_cluster_bootstrap": {
+        "bootstrap_samples": 1000,
+        "candidate_minus_reference_log_loss": -0.032278827123952795,
+        "ci95": [
+          -0.04126256735375499,
+          -0.022906588630933037
+        ],
+        "cluster_unit": "hand_id",
+        "decisions": 6483,
+        "distinct_hands": 2123,
+        "seed": 3698612582714426178
+      }
+    },
+    "tails": {
+      "candidate": {
+        "jam_frequency": 0.00983577111853845,
+        "jam_frequency_absolute_error": 0.02456188428790918,
+        "overbet_frequency": 0.033164101131630944,
+        "overbet_frequency_absolute_error": 0.006787423667493971,
+        "sizing_prediction_coverage": 1.0,
+        "tail_frequency": 0.022063819494946145,
+        "tail_frequency_absolute_error": 0.016807073610097818
+      },
+      "definition": {
+        "jam_observed": "HH all-in flag on a RAISE decision",
+        "jam_simulated": "raise sizing >= live SPR; derived proxy because Model B sizing artifacts do not store an explicit jam class",
+        "overbet": "raise sizing > 1.0 pot",
+        "tail": "jam OR facing_price_to_pot > 1.5 OR raise_sizing_ratio > 1.5"
+      },
+      "observed": {
+        "jam_count": 223,
+        "jam_frequency": 0.03439765540644763,
+        "overbet_count": 171,
+        "overbet_frequency": 0.026376677464136973,
+        "tail_count": 252,
+        "tail_frequency": 0.03887089310504396
+      },
+      "reference": {
+        "jam_frequency": 0.0073349544131885835,
+        "jam_frequency_absolute_error": 0.027062700993259046,
+        "overbet_frequency": 0.028711735796881716,
+        "overbet_frequency_absolute_error": 0.0023350583327447424,
+        "sizing_prediction_coverage": 1.0,
+        "tail_frequency": 0.01787352028684022,
+        "tail_frequency_absolute_error": 0.020997372818203745
+      }
+    }
+  },
+  "improved_domains_vs_candidate197": [],
+  "insufficiently_supported_domains": 96,
+  "interpretation": "Descriptive VALIDATION-only comparison after TRAIN-only frozen support-aware fit. No promotion/activation. Contexts are never pooled outside the declared graph.",
+  "issue": 286,
+  "production_effect": "NONE",
+  "schema": "model-b-support-aware-backoff-summary/v1",
+  "test_consumed": false
+}

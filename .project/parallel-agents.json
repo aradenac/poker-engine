@@ -1,0 +1,470 @@
+{
+  "schema": "poker-parallel-agents/v1",
+  "source_of_truth": {
+    "human_dispatch_issue": 225,
+    "note": "#225 remains authoritative for live dispatch/claims; this file is a versioned scope-control mirror."
+  },
+  "lane_status_values": [
+    "ACTIVE",
+    "BLOCKED",
+    "DEFERRED"
+  ],
+  "shared_paths": [
+    {
+      "glob": "README.md",
+      "rule": "REPOSITORY_SHARED",
+      "reference": "#225"
+    },
+    {
+      "glob": "LICENSE*",
+      "rule": "REPOSITORY_SHARED",
+      "reference": "#225"
+    }
+  ],
+  "exclusive_hotspots": [
+    {
+      "glob": "site/index.html",
+      "owner": "H",
+      "rule": "CENTRAL_UI_EXCLUSIVE",
+      "reference": "#225"
+    },
+    {
+      "glob": "site/trainer.js",
+      "owner": "H",
+      "rule": "CENTRAL_UI_EXCLUSIVE",
+      "reference": "#225"
+    },
+    {
+      "glob": "site/hero-ranges*",
+      "owner": "D",
+      "rule": "HERO_EDITOR_EXCLUSIVE",
+      "reference": "#225"
+    },
+    {
+      "glob": "site/packs*",
+      "owner": "E",
+      "rule": "PACKS_UX_EXCLUSIVE",
+      "reference": "#225"
+    },
+    {
+      "glob": "site/population-packs.js",
+      "owner": "E",
+      "rule": "PACKS_UX_EXCLUSIVE",
+      "reference": "#225"
+    },
+    {
+      "glob": "training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT*.json",
+      "owner": "A",
+      "rule": "SCIENCE_108_FROZEN",
+      "reference": "#108/#225"
+    },
+    {
+      "glob": "training/**/*PREFLOP*BENCHMARK*CONTRACT*.json",
+      "owner": "A",
+      "rule": "SCIENCE_108_FROZEN",
+      "reference": "#108/#225"
+    },
+    {
+      "glob": "training/runs/*pfpc*/**",
+      "owner": "A",
+      "rule": "SCIENCE_108_FROZEN",
+      "reference": "#108/#225"
+    },
+    {
+      "glob": "training/runs/*preflop*benchmark*/**",
+      "owner": "A",
+      "rule": "SCIENCE_108_FROZEN",
+      "reference": "#108/#225"
+    },
+    {
+      "glob": "training/runs/20260913_strategy_candidate_v84/**",
+      "owner": "A",
+      "rule": "SCIENCE_108_FROZEN",
+      "reference": "#107/#108/#225"
+    },
+    {
+      "glob": ".github/workflows/*pfpc*.yml",
+      "owner": "A",
+      "rule": "SCIENCE_108_WORKFLOW",
+      "reference": "#108/#225"
+    },
+    {
+      "glob": ".github/workflows/*preflop*benchmark*.yml",
+      "owner": "A",
+      "rule": "SCIENCE_108_WORKFLOW",
+      "reference": "#108/#225"
+    },
+    {
+      "glob": ".github/workflows/recover-issue-107-pfpc.yml",
+      "owner": "A",
+      "rule": "SCIENCE_108_WORKFLOW",
+      "reference": "#107/#108/#225"
+    },
+    {
+      "glob": ".github/workflows/model-b*.yml",
+      "owner": "B",
+      "rule": "MODEL_B_DEDICATED",
+      "reference": "#197/#225"
+    }
+  ],
+  "lanes": {
+    "A": {
+      "conflict_group": "SCIENCE-FROZEN",
+      "description": "Frozen #107/#108 scientific contracts, runs, evidence and holdout-sensitive artifacts.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        107,
+        108,
+        92
+      ],
+      "reserved_paths": [
+        "training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT*.json",
+        "training/**/*PREFLOP*BENCHMARK*CONTRACT*.json",
+        "training/runs/*pfpc*/**",
+        "training/runs/*preflop*benchmark*/**",
+        "training/runs/20260913_strategy_candidate_v84/**",
+        "tests/**/*pfpc*",
+        "tests/**/*preflop*benchmark*"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": "site/index.html",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/trainer.js",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        }
+      ]
+    },
+    "B": {
+      "conflict_group": "MODEL-B",
+      "description": "Dedicated Model B response-to-price, diagnostics, evaluators, runs and tests.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        197,
+        199
+      ],
+      "reserved_paths": [
+        "tools/simulation/model_b_*.py",
+        "tools/training/independent_profiles/**",
+        "tests/simulation/test_model_b*.py",
+        "tests/training/test_*response_to_price*.py",
+        "training/runs/*model_b*/**",
+        ".github/workflows/model-b*.yml"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": "training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT*.json",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_FROZEN",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": ".github/workflows/*pfpc*.yml",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_WORKFLOW",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": ".github/workflows/*preflop*benchmark*.yml",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_WORKFLOW",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": ".github/workflows/recover-issue-107-pfpc.yml",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_WORKFLOW",
+          "reference": "#107/#108/#225"
+        }
+      ]
+    },
+    "C": {
+      "conflict_group": "ANALYTICS",
+      "description": "Leak/EV analytics contracts, data models, aggregation modules and tests.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        200,
+        219,
+        209,
+        210
+      ],
+      "reserved_paths": [
+        "src/analytics/**",
+        "contracts/analytics/**",
+        "tests/analytics/**",
+        "tools/analytics/**",
+        "analysis/*leak*",
+        "analysis/*review*"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": ".github/workflows/**",
+          "expected_owner": "F",
+          "rule": "WORKFLOW_OWNER",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/index.html",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/trainer.js",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        }
+      ]
+    },
+    "D": {
+      "conflict_group": "HERO-EDITOR",
+      "description": "Hero/preflop editor surfaces and dedicated coverage/tests; no central trainer/index ownership.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        215,
+        196
+      ],
+      "reserved_paths": [
+        "site/hero-ranges*",
+        "tests/**/*hero*range*",
+        "analysis/hero_preflop_coverage_*",
+        "tools/training/audit_hero_preflop_coverage.py",
+        "tests/training/test_audit_hero_preflop_coverage.py"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": ".github/workflows/**",
+          "expected_owner": "F",
+          "rule": "WORKFLOW_OWNER",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/index.html",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/trainer.js",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/packs*",
+          "expected_owner": "E",
+          "rule": "PACKS_UX_EXCLUSIVE",
+          "reference": "#225"
+        }
+      ]
+    },
+    "E": {
+      "conflict_group": "PACKS-UX",
+      "description": "Population-pack UX, pack helpers and dedicated tests.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        216,
+        201
+      ],
+      "reserved_paths": [
+        "site/packs*",
+        "site/population-packs.js",
+        "tests/**/*pack*"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": ".github/workflows/**",
+          "expected_owner": "F",
+          "rule": "WORKFLOW_OWNER",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/index.html",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/trainer.js",
+          "expected_owner": "H",
+          "rule": "CENTRAL_UI_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/hero-ranges*",
+          "expected_owner": "D",
+          "rule": "HERO_EDITOR_EXCLUSIVE",
+          "reference": "#225"
+        }
+      ]
+    },
+    "F": {
+      "conflict_group": "REPRO",
+      "description": "Reproducible-environment manifests/bootstrap and general workflow audit; frozen science remains A-owned.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        203,
+        204
+      ],
+      "reserved_paths": [
+        "reproducibility/**",
+        "scripts/repro-*.sh",
+        "tools/repro_*.py",
+        "tests/test_repro_*.py",
+        "docs/reproducible-environment.md",
+        ".github/workflows/**"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": ".github/workflows/*pfpc*.yml",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_WORKFLOW",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": ".github/workflows/*preflop*benchmark*.yml",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_WORKFLOW",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": ".github/workflows/recover-issue-107-pfpc.yml",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_WORKFLOW",
+          "reference": "#107/#108/#225"
+        },
+        {
+          "glob": ".github/workflows/model-b*.yml",
+          "expected_owner": "B",
+          "rule": "MODEL_B_DEDICATED",
+          "reference": "#197/#225"
+        }
+      ]
+    },
+    "G": {
+      "conflict_group": "PROJECT-STATE",
+      "description": "Project-state, prospective-protocol and parallel-coordination contracts, validators and docs.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        206,
+        202,
+        264
+      ],
+      "reserved_paths": [
+        ".project/**",
+        "docs/project-state.md",
+        "docs/prospective-validation.md",
+        "tests/fixtures/parallel/**",
+        "tests/fixtures/project-state/backlog/**",
+        "tests/fixtures/project-state/recovery/**",
+        "tests/test_backlog_evidence.py",
+        "tests/test_parallel_claims.py",
+        "tests/test_parallel_scope.py",
+        "tests/test_project_state.py",
+        "tests/test_recovery_state.py",
+        "tests/training/test_prospective_holdout.py",
+        "tools/audit_backlog_evidence.py",
+        "tools/build_recovery_state.py",
+        "tools/check_parallel_claims.py",
+        "tools/check_parallel_scope.py",
+        "tools/validate_project_state.py",
+        "tools/validate_prospective_holdout.py",
+        "training/prospective/**"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": ".github/workflows/**",
+          "expected_owner": "F",
+          "rule": "WORKFLOW_OWNER",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/**",
+          "expected_owner": "H",
+          "rule": "PRODUCT_RUNTIME_OUT_OF_SCOPE",
+          "reference": "#225"
+        },
+        {
+          "glob": "training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT*.json",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_FROZEN",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": "training/runs/*pfpc*/**",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_FROZEN",
+          "reference": "#108/#225"
+        }
+      ]
+    },
+    "H": {
+      "conflict_group": "CENTRAL-UI",
+      "description": "Central product UI/replayer/trainer integration; exclusive owner of index/trainer during the wave.",
+      "status": "ACTIVE",
+      "typical_issues": [
+        211,
+        212,
+        213,
+        214,
+        220,
+        218,
+        221,
+        222,
+        223,
+        208
+      ],
+      "reserved_paths": [
+        "site/index.html",
+        "site/trainer.js",
+        "site/trainer.css",
+        "tests/trainer/**"
+      ],
+      "forbidden_paths": [
+        {
+          "glob": ".github/workflows/**",
+          "expected_owner": "F",
+          "rule": "WORKFLOW_OWNER",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/hero-ranges*",
+          "expected_owner": "D",
+          "rule": "HERO_EDITOR_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/packs*",
+          "expected_owner": "E",
+          "rule": "PACKS_UX_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "site/population-packs.js",
+          "expected_owner": "E",
+          "rule": "PACKS_UX_EXCLUSIVE",
+          "reference": "#225"
+        },
+        {
+          "glob": "training/PREFLOP_STRATEGY_BENCHMARK_CONTRACT*.json",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_FROZEN",
+          "reference": "#108/#225"
+        },
+        {
+          "glob": "training/runs/*pfpc*/**",
+          "expected_owner": "A",
+          "rule": "SCIENCE_108_FROZEN",
+          "reference": "#108/#225"
+        }
+      ]
+    }
+  }
+}

@@ -1,31 +1,24 @@
 "use strict";
 (function(global){
-  const DB_NAME="poker-population-packs-v1";
-  const DB_VERSION=2;
-  const PACK_STORE="packs";
-  const META_STORE="meta";
-  const TEST_PACK_STORE="test_packs";
-  const TEST_META_STORE="test_meta";
-  const ACTIVE_KEY="active";
-  const PREVIOUS_KEY="previous";
-  const TEST_ACTIVE_KEY="test_active";
-  const TEST_PREVIOUS_KEY="test_previous";
+  const Identity=global.PokerPackIdentity;
+  if(!Identity)throw new Error("PokerPackIdentity requis avant population-packs.js.");
+  const {bytes,sha256,contentIdentity,storageId,storageNamespace,packIdentity,samePackIdentity}=Identity;
+  const PROD_STORAGE=storageNamespace(false),TEST_STORAGE=storageNamespace(true);
+  const DB_NAME=Identity.STORAGE_CONTRACT.db_name;
+  const DB_VERSION=Identity.STORAGE_CONTRACT.db_version;
+  const PACK_STORE=PROD_STORAGE.pack_store;
+  const META_STORE=PROD_STORAGE.meta_store;
+  const TEST_PACK_STORE=TEST_STORAGE.pack_store;
+  const TEST_META_STORE=TEST_STORAGE.meta_store;
+  const ACTIVE_KEY=PROD_STORAGE.active_key;
+  const PREVIOUS_KEY=PROD_STORAGE.previous_key;
+  const TEST_ACTIVE_KEY=TEST_STORAGE.active_key;
+  const TEST_PREVIOUS_KEY=TEST_STORAGE.previous_key;
   const CATALOG_SCHEMA="poker-population-catalog/v1";
   const RUNTIME_SCHEMA="poker-browser-runtime-pack/v1";
   const EXPORT_SCHEMA="poker-browser-runtime-pack-export/v1";
   const encoder=new TextEncoder(),decoder=new TextDecoder();
 
-  function bytes(value){
-    if(value instanceof Uint8Array)return value;
-    if(value instanceof ArrayBuffer)return new Uint8Array(value);
-    if(ArrayBuffer.isView(value))return new Uint8Array(value.buffer,value.byteOffset,value.byteLength);
-    if(Array.isArray(value))return Uint8Array.from(value);
-    if(typeof value==="string")return encoder.encode(value);
-    throw new TypeError("unsupported byte source");
-  }
-  function hex(buffer){return [...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,"0")).join("");}
-  async function sha256(value){return hex(await crypto.subtle.digest("SHA-256",bytes(value)));}
-  function storageId(entry){return `${entry.population_id}::${entry.pack_id}::${entry.pack_version}::${entry.runtime_revision}`;}
   function asUrlPath(url){return new URL(url,location.href).pathname;}
 
   function openDb(){
@@ -116,7 +109,7 @@
       const r=await fetchImpl(asset.url,{cache:"no-store"});if(!r.ok)throw new Error(`${asset.key}: HTTP ${r.status}`);
       const data=new Uint8Array(await r.arrayBuffer());
       if(Number(asset.size_bytes)!==data.byteLength)throw new Error(`${asset.key}: taille invalide.`);
-      const digest=await sha256(data);if(digest!==asset.sha256)throw new Error(`${asset.key}: SHA-256 invalide.`);
+      const identity=await contentIdentity(data),digest=identity.sha256;if(digest!==asset.sha256)throw new Error(`${asset.key}: SHA-256 invalide.`);
       validateJsonAsset(asset,data,entry);
       files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:data.byteLength,bytes:data};
     }
@@ -134,6 +127,38 @@
     const record=makeRecord(entry,files,source);
     await putPack(record,TEST_PACK_STORE);return record;
   }
+  const MANUAL_OVERRIDE_DB_NAME="PokerRangeEquityOffline";
+  const MANUAL_OVERRIDE_DB_VERSION=1;
+  const MANUAL_OVERRIDE_STORE="kv";
+  const MANUAL_OVERRIDE_CONTRACT_KEY="manualOverrideContract";
+
+  function openManualOverrideDb(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(MANUAL_OVERRIDE_DB_NAME,MANUAL_OVERRIDE_DB_VERSION);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(MANUAL_OVERRIDE_STORE))db.createObjectStore(MANUAL_OVERRIDE_STORE);};
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error||new Error("Stockage override manuel indisponible."));
+    });
+  }
+  async function readManualOverrideContract(){
+    const db=await openManualOverrideDb();
+    try{
+      return await new Promise((resolve,reject)=>{
+        const tx=db.transaction(MANUAL_OVERRIDE_STORE,"readonly");
+        const req=tx.objectStore(MANUAL_OVERRIDE_STORE).get(MANUAL_OVERRIDE_CONTRACT_KEY);
+        req.onsuccess=()=>resolve(req.result||null);
+        req.onerror=()=>reject(req.error);
+      });
+    }finally{db.close();}
+  }
+  async function assertManualOverrideAllowsTarget(target){
+    const contract=await readManualOverrideContract();
+    if(!contract?.active)return;
+    if(!samePackIdentity(contract.base_active_pack,packIdentity(target))){
+      throw new Error("MANUAL_OVERRIDE actif pour une autre identité de pack. Exécutez RESTORE_ACTIVE_PACK avant de changer de pack.");
+    }
+  }
+
   async function installed(){return idbGetAll(PACK_STORE);}
   async function testInstalled(){return idbGetAll(TEST_PACK_STORE);}
   async function active(){const id=await metaGet(ACTIVE_KEY,META_STORE);return id?await idbGet(PACK_STORE,id):null;}
@@ -141,7 +166,7 @@
   async function testActive(){const id=await metaGet(TEST_ACTIVE_KEY,TEST_META_STORE);return id?await idbGet(TEST_PACK_STORE,id):null;}
   async function testPrevious(){const id=await metaGet(TEST_PREVIOUS_KEY,TEST_META_STORE);return id?await idbGet(TEST_PACK_STORE,id):null;}
   async function activate(id,{fetchImpl=fetch}={}){
-    const target=await idbGet(PACK_STORE,id);if(!target)throw new Error("Pack non installé.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);
+    const target=await idbGet(PACK_STORE,id);if(!target)throw new Error("Pack non installé.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);await assertManualOverrideAllowsTarget(target);
     const old=await metaGet(ACTIVE_KEY,META_STORE);await metaSetPair(id,old&&old!==id?old:await metaGet(PREVIOUS_KEY,META_STORE));return target;
   }
   async function activateTestOnly(id,{fetchImpl=fetch}={}){
@@ -150,7 +175,7 @@
   }
   async function rollback({fetchImpl=fetch}={}){
     const old=await metaGet(PREVIOUS_KEY,META_STORE);if(!old)throw new Error("Aucune génération précédente disponible.");
-    const target=await idbGet(PACK_STORE,old);if(!target)throw new Error("La génération précédente n'est plus installée.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);
+    const target=await idbGet(PACK_STORE,old);if(!target)throw new Error("La génération précédente n'est plus installée.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);await assertManualOverrideAllowsTarget(target);
     const cur=await metaGet(ACTIVE_KEY,META_STORE);await metaSetPair(old,cur);return target;
   }
   async function rollbackTestOnly({fetchImpl=fetch}={}){
@@ -190,7 +215,7 @@
   async function exportTestOnlyZip(id){return exportZipFromStore(id,TEST_PACK_STORE);}
   async function importZipToStore(value,{fetchImpl=fetch,allowTestOnly=false,store=PACK_STORE,source="offline_zip"}={}){
     const z=await readZip(value),manifestBytes=z["PACK_RUNTIME.json"];if(!manifestBytes)throw new Error("PACK_RUNTIME.json absent du ZIP.");let manifest;try{manifest=JSON.parse(decoder.decode(manifestBytes));}catch(_){throw new Error("PACK_RUNTIME.json invalide.");}if(manifest.schema!==EXPORT_SCHEMA)throw new Error("Schéma ZIP runtime non supporté.");const entry=validateEntry(manifest.entry,{allowTestOnly});await assertCompatibility(entry,fetchImpl);const files={};
-    for(const asset of entry.assets){const desc=manifest.files?.[asset.key],payload=desc&&z[desc.archive_path];if(!desc||!payload)throw new Error(`${asset.key}: absent du ZIP.`);if(payload.length!==Number(desc.size_bytes)||payload.length!==Number(asset.size_bytes))throw new Error(`${asset.key}: taille ZIP invalide.`);const digest=await sha256(payload);if(digest!==desc.sha256||digest!==asset.sha256)throw new Error(`${asset.key}: hash ZIP invalide.`);validateJsonAsset(asset,payload,entry);files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:payload.length,bytes:payload};}
+    for(const asset of entry.assets){const desc=manifest.files?.[asset.key],payload=desc&&z[desc.archive_path];if(!desc||!payload)throw new Error(`${asset.key}: absent du ZIP.`);if(payload.length!==Number(desc.size_bytes)||payload.length!==Number(asset.size_bytes))throw new Error(`${asset.key}: taille ZIP invalide.`);const identity=await contentIdentity(payload),digest=identity.sha256;if(digest!==desc.sha256||digest!==asset.sha256)throw new Error(`${asset.key}: hash ZIP invalide.`);validateJsonAsset(asset,payload,entry);files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:payload.length,bytes:payload};}
     const record=makeRecord(entry,files,source);await putPack(record,store);return record;
   }
   async function importZip(value,{fetchImpl=fetch}={}){return importZipToStore(value,{fetchImpl,allowTestOnly:false,store:PACK_STORE,source:"offline_zip"});}

@@ -1,0 +1,53 @@
+FROM ubuntu@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4
+
+SHELL ["/bin/bash", "-euxo", "pipefail", "-c"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+ARG APT_SNAPSHOT_ID=20260918T000000Z
+COPY reproducibility/ubuntu-snapshot.sources /etc/apt/sources.list.d/ubuntu.sources
+COPY reproducibility/system-packages.apt.txt /tmp/system-packages.apt.txt
+RUN printf 'APT::Snapshot "%s";\n' "${APT_SNAPSHOT_ID}" > /etc/apt/apt.conf.d/50poker-engine-snapshot \
+    && apt-get update --snapshot "${APT_SNAPSHOT_ID}" \
+    && grep -Ev '^\\s*(#|$)' /tmp/system-packages.apt.txt | xargs apt-get install -y --no-install-recommends --snapshot "${APT_SNAPSHOT_ID}"
+
+ARG PYTHON_VERSION=3.11.9
+ARG PYTHON_SHA256=9b1e896523fc510691126c864406d9360a3d1e986acbda59cda57b5abda45b87
+RUN curl -fsSLo /tmp/Python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz" \
+    && echo "${PYTHON_SHA256}  /tmp/Python.tar.xz" | sha256sum -c - \
+    && mkdir -p /tmp/python-src \
+    && tar -xJf /tmp/Python.tar.xz -C /tmp/python-src --strip-components=1 \
+    && cd /tmp/python-src \
+    && ./configure --prefix="/opt/python/${PYTHON_VERSION}" --with-ensurepip=install \
+    && make -j"$(nproc)" \
+    && make install \
+    && rm -rf /tmp/Python.tar.xz /tmp/python-src
+
+ARG NODE_VERSION=22.14.0
+ARG NODE_SHA256=69b09dba5c8dcb05c4e4273a4340db1005abeafe3927efda2bc5b249e80437ec
+RUN curl -fsSLo /tmp/node.tar.xz "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+    && echo "${NODE_SHA256}  /tmp/node.tar.xz" | sha256sum -c - \
+    && mkdir -p "/opt/node/${NODE_VERSION}" \
+    && tar -xJf /tmp/node.tar.xz -C "/opt/node/${NODE_VERSION}" --strip-components=1 \
+    && rm /tmp/node.tar.xz
+
+ARG PLAYWRIGHT_VERSION=1.55.0
+ARG CHROMIUM_VERSION=140.0.7339.16
+ENV PATH="/opt/python/3.11.9/bin:/opt/node/22.14.0/bin:${PATH}" \
+    PLAYWRIGHT_BROWSERS_PATH="/ms-playwright"
+WORKDIR /workspace
+
+COPY requirements.lock.txt package.json package-lock.json ./
+RUN python3 -m pip install --no-cache-dir --no-deps -r requirements.lock.txt \
+    && npm ci --ignore-scripts \
+    && python3 -m playwright install chromium
+
+COPY . /workspace
+RUN python3 tools/repro_environment.py --check-contract \
+    && python3 tools/repro_environment.py --verify-runtime \
+    && python3 tools/repro_hardening.py validate \
+    && python3 tools/repro_hardening.py verify
+
+LABEL org.poker-engine.repro.base-image-digest="sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4" \
+      org.poker-engine.repro.platform="linux/amd64"
+
+CMD ["/bin/bash"]

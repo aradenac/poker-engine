@@ -1,0 +1,148 @@
+{
+  "fit_split": "TRAIN",
+  "level_node_counts": [
+    {
+      "dimensions": [
+        "profile",
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 0,
+      "nodes": 11605,
+      "supported_action_nodes": 327,
+      "supported_sizing_nodes": 19
+    },
+    {
+      "dimensions": [
+        "street",
+        "relative_position",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 1,
+      "nodes": 7145,
+      "supported_action_nodes": 317,
+      "supported_sizing_nodes": 51
+    },
+    {
+      "dimensions": [
+        "street",
+        "pot_type",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 2,
+      "nodes": 4351,
+      "supported_action_nodes": 297,
+      "supported_sizing_nodes": 61
+    },
+    {
+      "dimensions": [
+        "street",
+        "sequence",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 3,
+      "nodes": 2554,
+      "supported_action_nodes": 287,
+      "supported_sizing_nodes": 64
+    },
+    {
+      "dimensions": [
+        "street",
+        "price_bucket",
+        "spr_bucket"
+      ],
+      "level": 4,
+      "nodes": 65,
+      "supported_action_nodes": 59,
+      "supported_sizing_nodes": 31
+    },
+    {
+      "dimensions": [
+        "street",
+        "price_bucket"
+      ],
+      "level": 5,
+      "nodes": 12,
+      "supported_action_nodes": 12,
+      "supported_sizing_nodes": 10
+    },
+    {
+      "dimensions": [
+        "street"
+      ],
+      "level": 6,
+      "nodes": 3,
+      "supported_action_nodes": 3,
+      "supported_sizing_nodes": 3
+    },
+    {
+      "dimensions": [],
+      "level": 7,
+      "nodes": 1,
+      "supported_action_nodes": 1,
+      "supported_sizing_nodes": 1
+    }
+  ],
+  "schema": "model-b-support-aware-backoff-train-fit-audit/v1",
+  "test_consumed": false,
+  "threshold_source": "Inherited from frozen #272 support contract; not tuned on VALIDATION",
+  "thresholds": {
+    "action": {
+      "min_distinct_hands": 20,
+      "min_observations": 30
+    },
+    "sizing": {
+      "min_distinct_hands": 8,
+      "min_raises": 12
+    }
+  },
+  "train_selection_coverage": {
+    "action_selected_level_counts": {
+      "0": 20416,
+      "1": 9444,
+      "2": 5789,
+      "3": 5504,
+      "4": 10883,
+      "5": 21
+    },
+    "action_selected_level_fraction": {
+      "0": 0.3921854889832299,
+      "1": 0.1814165241946328,
+      "2": 0.11120502526077185,
+      "3": 0.10573025721804945,
+      "4": 0.20905930038227327,
+      "5": 0.0004034039610427032
+    },
+    "backoff_action_fraction": 0.6078145110167701,
+    "exact_action_fraction": 0.3921854889832299,
+    "fallback_reason_counts": {
+      "BACKOFF_ACTION_SUPPORT": 31641,
+      "EXACT_CONTEXT_SUPPORTED": 20416
+    },
+    "predictions": 52057,
+    "sizing_selected_level_counts": {
+      "0": 2289,
+      "1": 7651,
+      "2": 8006,
+      "3": 5528,
+      "4": 23584,
+      "5": 4072,
+      "6": 927
+    }
+  },
+  "training_counts": {
+    "decisions": 52057,
+    "raise_sizings": 3420
+  },
+  "validation_used_for_selection": false
+}

@@ -2,8 +2,14 @@
   "schema": "poker-engine-repro-environment/v1",
   "issue": 203,
   "phase": 1,
-  "python": {"version": "3.11.9", "requirements": "requirements.lock.txt"},
-  "node": {"version": "22.14.0", "package_lock": "package-lock.json"},
+  "python": {
+    "version": "3.11.9",
+    "requirements": "requirements.lock.txt"
+  },
+  "node": {
+    "version": "22.14.0",
+    "package_lock": "package-lock.json"
+  },
   "playwright": {
     "python_package_version": "1.55.0",
     "browser": "chromium",
@@ -15,6 +21,14 @@
     "version_id": "24.04",
     "machine": "x86_64"
   },
+  "container": {
+    "lock": "reproducibility/container-base.lock.json",
+    "definition": "reproducibility/Dockerfile.science",
+    "system_packages": "reproducibility/system-packages.apt.txt",
+    "apt_snapshot": "reproducibility/apt-snapshot.lock.json",
+    "system_packages_resolution": "reproducibility/system-packages.resolution.lock.json",
+    "browser_identity": "reproducibility/browser-identity.lock.json"
+  },
   "manifest": {
     "schema": "poker-engine-runtime-environment/v2",
     "content_addressed": true
@@ -23,6 +37,8 @@
     "workflows_wired": false,
     "os_base_pinned": true,
     "os_packages_pinned": false,
+    "container_base_pinned": true,
+    "container_hermeticity": "DERIVED_FROM_VERSIONED_INPUTS",
     "note": "Local/non-CI phase. Scientific workflow integration remains deferred until the #107/#108 freeze is released."
   }
 }

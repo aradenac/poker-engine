@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poker-recovery-state/v1",
+  "title": "Poker Engine recovery state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "source_of_truth",
+    "coverage",
+    "project_state",
+    "coordination",
+    "github",
+    "lanes",
+    "warnings"
+  ],
+  "properties": {
+    "schema": {"const": "poker-recovery-state/v1"},
+    "status": {"enum": ["PASS", "WARN", "FAIL"]},
+    "source_of_truth": {"type": "object"},
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["comments_complete", "open_issues_complete", "open_pulls_complete", "dispatch_issue"],
+      "properties": {
+        "comments_complete": {"type": "boolean"},
+        "open_issues_complete": {"type": "boolean"},
+        "open_pulls_complete": {"type": "boolean"},
+        "dispatch_issue": {"type": "integer", "minimum": 1}
+      }
+    },
+    "project_state": {"type": "object"},
+    "coordination": {"type": "object"},
+    "github": {"type": "object"},
+    "lanes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["A", "B", "C", "D", "E", "F", "G", "H"],
+      "properties": {
+        "A": {"$ref": "#/$defs/lane"},
+        "B": {"$ref": "#/$defs/lane"},
+        "C": {"$ref": "#/$defs/lane"},
+        "D": {"$ref": "#/$defs/lane"},
+        "E": {"$ref": "#/$defs/lane"},
+        "F": {"$ref": "#/$defs/lane"},
+        "G": {"$ref": "#/$defs/lane"},
+        "H": {"$ref": "#/$defs/lane"}
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "object"}
+    }
+  },
+  "$defs": {
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "status",
+        "conflict_group",
+        "active_issue",
+        "branch",
+        "pr",
+        "last_worklog",
+        "last_release",
+        "coordination_violations",
+        "open_issues",
+        "open_pulls",
+        "explicit_blockers",
+        "next_safe_action"
+      ],
+      "properties": {
+        "slot": {"type": "string", "pattern": "^[A-H]$"},
+        "status": {"enum": ["CLAIMED", "FREE", "UNKNOWN"]},
+        "conflict_group": {"type": "string", "minLength": 1},
+        "active_issue": {"type": ["integer", "null"]},
+        "branch": {"type": ["string", "null"]},
+        "pr": {"type": ["integer", "null"]},
+        "last_worklog": {"type": ["object", "null"]},
+        "last_release": {"type": ["object", "null"]},
+        "coordination_violations": {"type": "array", "items": {"type": "string"}},
+        "open_issues": {"type": "array", "items": {"type": "object"}},
+        "open_pulls": {"type": "array", "items": {"type": "object"}},
+        "explicit_blockers": {"type": "array", "items": {"type": "object"}},
+        "next_safe_action": {"type": "object"}
+      }
+    }
+  }
+}

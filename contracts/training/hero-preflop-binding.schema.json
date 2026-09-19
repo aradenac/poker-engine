@@ -1,0 +1,108 @@
+{
+  "$id": "https://poker-engine.local/contracts/training/hero-preflop-binding.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_path": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "artifact_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "candidate_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "context_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "generation_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "population_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "shard_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "stack_bucket": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "context_id",
+          "population_id",
+          "generation_id",
+          "candidate_id",
+          "stack_bucket",
+          "shard_id",
+          "artifact_path",
+          "artifact_sha256"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "candidate_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "lookup_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "fallback_states": {
+          "const": [
+            "EXACT_GENERATED",
+            "EXACT_INCUMBENT_FALLBACK",
+            "EXACT_UNAVAILABLE"
+          ]
+        },
+        "mode": {
+          "const": "EXACT_CONTEXT_ONLY"
+        },
+        "nearest_context_allowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "mode",
+        "nearest_context_allowed",
+        "fallback_states"
+      ],
+      "type": "object"
+    },
+    "population_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema": {
+      "const": "poker-hero-preflop-generation-binding/v1"
+    }
+  },
+  "required": [
+    "schema",
+    "population_id",
+    "generation_id",
+    "candidate_id",
+    "lookup_policy",
+    "bindings"
+  ],
+  "title": "Exact content-addressed Hero preflop generation binding",
+  "type": "object"
+}

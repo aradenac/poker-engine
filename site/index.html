@@ -188,12 +188,66 @@
   .hh-review.partial .amount{color:#b8cae6}
   .hh-review.complete .amount{color:#f1c66d}
   .hh-review.unknown{opacity:.62}
+  .review-inbox-summary{margin:2px 0 12px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627;color:var(--muted);font-size:10px;line-height:1.45}
+  .review-inbox-primary-tools{display:flex;align-items:end;gap:9px;flex-wrap:wrap;margin:10px 0 8px}
+  .review-inbox-primary-tools .field{min-width:170px}
+  .review-inbox-filters{margin:6px 0 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627}
+  .review-inbox-filters>summary{cursor:pointer;padding:8px 10px;color:var(--muted);font-size:9px;font-weight:800}
+  .review-inbox-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:0 10px 10px}
+  .review-inbox-filter-grid .field{min-width:0}
+  .review-inbox-notice{min-height:16px;margin:4px 0 7px;color:var(--muted);font-size:9px}
+  .review-inbox-notice.warn{color:#f1c66d}
+  .review-inbox-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;width:100%;text-align:left}
+  .review-inbox-open{display:grid;grid-template-columns:104px minmax(150px,1.1fr) minmax(190px,1.45fr);gap:10px;align-items:center;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+  .review-inbox-open:hover,.review-inbox-open:focus{background:transparent;border-color:transparent;outline:2px solid rgba(92,225,185,.28);outline-offset:4px}
+  .review-inbox-loss{font-size:10px;color:var(--muted)}
+  .review-inbox-loss b{display:block;font-size:15px;color:#f1c66d;margin-top:2px}
+  .review-inbox-spot strong,.review-inbox-decision strong{display:block;font-size:11px;color:var(--text)}
+  .review-inbox-spot small,.review-inbox-decision small{display:block;margin-top:2px;color:var(--muted);font-size:9px;line-height:1.35}
+  .review-inbox-status{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .review-inbox-status-badge{display:inline-flex;padding:3px 6px;border:1px solid var(--border);border-radius:999px;font-size:8px;font-weight:900;white-space:nowrap}
+  .review-inbox-status-badge.incomplete{border-color:rgba(241,198,109,.38);color:#f1c66d}
+  .review-inbox-reviewed-toggle{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:8px;white-space:nowrap}
+  .review-inbox-reviewed-toggle input{width:auto}
+  @media(max-width:900px){
+    .review-inbox-row{grid-template-columns:minmax(0,1fr) 132px}
+    .review-inbox-open{grid-template-columns:90px 1fr}
+    .review-inbox-decision{grid-column:2}
+  }
   @media(max-width:760px){
     .hh-hand{grid-template-columns:96px minmax(0,1fr) 96px 78px}
     .hh-cards{display:none}
     .hh-review{min-width:88px}
     .hh-review .split{display:none}
   }
+  .product-home-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+  .review-dashboard{margin:12px 0 10px;padding:16px;border:1px solid var(--border);border-radius:16px;background:rgba(19,26,45,.96);box-shadow:var(--shadow)}
+  .review-dashboard-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .review-dashboard-title{font-size:18px;font-weight:950}
+  .review-dashboard-state{display:inline-flex;padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:9px;font-weight:900}
+  .review-dashboard-message{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.45}
+  .review-dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin-top:12px}
+  .review-dashboard-metric{padding:10px;border:1px solid var(--border);border-radius:10px;background:#0f1729}
+  .review-dashboard-metric span{display:block;color:var(--muted);font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+  .review-dashboard-metric b{display:block;margin-top:4px;font-size:18px}
+  .review-dashboard-focus{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .review-dashboard-card{padding:10px;border:1px solid var(--border);border-radius:10px;background:#0d1627;min-height:78px}
+  .review-dashboard-card>span{display:block;color:var(--muted);font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+  .review-dashboard-card strong{display:block;margin-top:4px;font-size:12px}
+  .review-dashboard-card small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
+  .review-dashboard-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .review-dashboard-actions button{width:auto}
+  .review-dashboard-trace{margin-top:7px;color:var(--muted);font-size:8px}
+  .review-dashboard[aria-busy="true"]{opacity:.78}
+  @media(max-width:760px){.review-dashboard-metrics{grid-template-columns:repeat(2,minmax(120px,1fr))}.review-dashboard-focus{grid-template-columns:1fr}}
+  .product-settings{margin:8px 0 12px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#0d1627}
+  .product-settings-title{font-size:11px;font-weight:900;color:var(--text);margin-bottom:6px}
+  .product-settings-links{display:flex;gap:10px;flex-wrap:wrap;margin:3px 0 7px;font-size:10px}
+  .product-settings-links a{color:var(--accent2);text-decoration:none;font-weight:800}
+  .product-settings-links a:hover,.product-settings-links a:focus{text-decoration:underline}
+  .domain-heading{padding:10px 2px 2px;scroll-margin-top:18px}
+  .domain-title{font-size:18px;font-weight:950;color:var(--text)}
+  .domain-sub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
   .product-identity{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 5px}
   .product-identity-chip{display:inline-flex;gap:5px;align-items:baseline;padding:4px 7px;border:1px solid var(--border);border-radius:999px;background:#0f1729;color:var(--muted);font-size:9px}
   .product-identity-chip b{color:var(--text);font-size:10px}
@@ -668,6 +722,23 @@
   .street-event{cursor:pointer;transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease;scroll-snap-align:start;position:relative}
   .street-event:hover{background:rgba(255,255,255,.045);border-color:rgba(122,151,205,.28);transform:translateY(-1px)}
   .street-event:focus{outline:2px solid rgba(92,225,185,.42);outline-offset:1px}
+  button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,[role="button"]:focus-visible{
+    outline:2px solid rgba(92,225,185,.78);outline-offset:2px
+  }
+  [role="dialog"]:focus-visible{outline:2px solid rgba(92,225,185,.55);outline-offset:-3px}
+  @media(min-width:901px){
+    .decision-primary-card .k,
+    .action-eq-item.used-prior .label::after,.action-eq-item.used-post .label::after,
+    .population-modal-cell .freq,.population-delta-cell,
+    .street-event .player .known-hand-compact,.street-event .action-badge,.street-event .pot,
+    .action-mini-pill{font-size:10px!important}
+    .product-identity-chip,.runtime-identity>summary,.runtime-identity-grid,
+    .local-persistence-chip,.local-persistence-details>summary,.local-persistence-actions button,
+    .population-modal-sub,.population-modal-cell .hand,.population-modal-trace-row,
+    .population-modal-metric,.population-combo-row,.population-delta-cell .hand,
+    .population-modal-warning,.action-detail-chip,.action-retrospective-boundary,
+    .replayer-export-status{font-size:10px!important}
+  }
   .street-event.current{box-shadow:0 8px 18px rgba(0,0,0,.18)}
   .action-analysis{margin-top:4px;padding-top:5px}
   .action-analysis-compact{display:grid;gap:5px}
@@ -723,6 +794,27 @@
   .decision-alt-pill{padding:3px 5px;border:1px solid #2b405f;border-radius:999px;background:#0d192b;color:#cbd7e8;white-space:nowrap}
   .decision-alt-pill.best{border-color:rgba(92,225,185,.35);color:#a7ead4}
   .decision-summary-feed .decision-alt-strip{margin-top:4px}
+  .model-b-robustness-compact{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px;padding:5px 7px;border:1px solid #2a405f;border-radius:8px;background:#0b1627;font-size:8.5px;line-height:1.25;color:#cbd7e8}
+  .model-b-robustness-compact.robust{border-color:rgba(92,225,185,.38);background:rgba(92,225,185,.055)}
+  .model-b-robustness-compact.sensitive{border-color:rgba(241,198,109,.48);background:rgba(241,198,109,.06);color:#efd491}
+  .model-b-robustness-compact.insufficient,.model-b-robustness-compact.unavailable{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.045);color:#f0b1b1}
+  .model-b-robustness-compact b{color:inherit}
+  .decision-summary-feed .model-b-robustness-compact{margin-top:2px;padding:2px 4px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
+  .decision-summary-feed .model-b-robustness-compact span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .model-b-robustness-detail{margin-top:9px;border:1px solid #2a405f;border-radius:10px;background:#0b1423;overflow:hidden}
+  .model-b-robustness-detail>summary{cursor:pointer;list-style:none;padding:8px 10px;font-size:9.5px;font-weight:900;color:#c8d6ea}
+  .model-b-robustness-detail>summary::-webkit-details-marker{display:none}
+  .model-b-robustness-detail>summary::after{content:"▾";float:right;color:var(--muted)}
+  .model-b-robustness-detail[open]>summary{border-bottom:1px solid #273b59}
+  .model-b-robustness-detail[open]>summary::after{content:"▴"}
+  .model-b-robustness-detail-body{padding:9px 10px 10px}
+  .model-b-robustness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .model-b-robustness-card{padding:7px 8px;border:1px solid #273b5a;border-radius:8px;background:#0a1424}
+  .model-b-robustness-card .k{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .model-b-robustness-card .v{margin-top:3px;font-size:11px;font-weight:900;color:var(--text)}
+  .model-b-robustness-card .s{margin-top:3px;font-size:8px;line-height:1.35;color:var(--muted)}
+  .model-b-robustness-warning{margin-top:7px;padding:6px 7px;border-radius:7px;background:rgba(241,198,109,.055);font-size:8.5px;line-height:1.4;color:#e6ce98}
+  @media(max-width:760px){.model-b-robustness-grid{grid-template-columns:1fr}}
   .action-advanced{margin-top:10px;border:1px solid #273b59;border-radius:10px;background:#0b1423;overflow:hidden}
   .action-advanced>summary{cursor:pointer;list-style:none;padding:9px 10px;font-size:10px;font-weight:900;color:#c4d1e4}
   .action-advanced>summary::-webkit-details-marker{display:none}
@@ -1001,7 +1093,7 @@
   </div>
 </div>
 <div id="populationRangeModal" class="population-modal-backdrop" aria-hidden="true">
-  <div class="population-modal" role="dialog" aria-modal="true" aria-labelledby="populationRangeModalTitle">
+  <div class="population-modal" role="dialog" aria-modal="true" aria-labelledby="populationRangeModalTitle" tabindex="-1">
     <div class="population-modal-head">
       <div>
         <div id="populationRangeModalTitle" class="population-modal-title">Range adverse estimée</div>
@@ -1013,7 +1105,7 @@
   </div>
 </div>
 <div id="actionDetailModal" class="population-modal-backdrop" aria-hidden="true">
-  <div class="action-verdict-detail-modal" role="dialog" aria-modal="true" aria-labelledby="actionDetailModalTitle">
+  <div class="action-verdict-detail-modal" role="dialog" aria-modal="true" aria-labelledby="actionDetailModalTitle" tabindex="-1">
     <div class="action-verdict-head">
       <div>
         <div id="actionDetailModalTitle" class="action-verdict-title">Verdict d'action</div>
@@ -1024,28 +1116,46 @@
     <div id="actionDetailModalBody"></div>
   </div>
 </div>
-<nav id="quickNav" class="quick-nav" aria-label="Navigation rapide">
+<nav id="quickNav" class="quick-nav" aria-label="Navigation principale">
   <button id="quickNavToggle" type="button" class="quick-nav-toggle" aria-expanded="true" title="Replier / déplier la navigation">❮</button>
-  <div class="quick-nav-title">Navigation</div>
-  <a href="#rangesSection">Sources importées</a>
-  <a href="./hero-ranges.html">Stratégie Hero</a>
-  <a href="#historiesSection">Fichiers HH</a>
-  <a href="#handSelectionSection">Mains</a>
-  <a href="#replayerSection">Replayer</a>
-  <a id="trainerNavLink" href="#trainerPage">Training</a>
-  <a href="#opponentsSection">Adversaires</a>
-  <a href="#cardsSection">Cartes</a>
-  <a href="#rangeDisplaySection">Range adverse</a>
-  <a href="#equitySection">Calcul</a>
+  <div class="quick-nav-title">Espaces</div>
+  <a href="#historiesSection" data-product-domain="review">Review</a>
+  <a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>
+  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>
+  <a href="#equityLabSection" data-product-domain="equity-lab">Equity Lab</a>
+  <a href="#settingsSection" data-product-domain="settings">Settings</a>
 </nav>
 <div id="mainPage" class="wrap">
-  <h1>Poker Range Equity</h1>
-  <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
-  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>
+  <h1>Review</h1>
+  <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
   <div class="product-identity" aria-label="Contexte actif">
     <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
     <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
   </div>
+  <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
+    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">NO_HANDS</span></div>
+    <div class="review-dashboard-metrics">
+      <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
+      <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
+      <div class="review-dashboard-metric"><span>Perte EV totale</span><b id="reviewDashboardLoss">0,00 BB</b></div>
+      <div class="review-dashboard-metric"><span>Décisions analysées</span><b id="reviewDashboardAnalyzed">0</b></div>
+    </div>
+    <div class="review-dashboard-focus">
+      <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
+      <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
+    </div>
+    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
+    <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
+  </section>
+  <div class="actions product-home-actions" aria-label="Accès directs">
+    <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
+    <button id="trainerOpenBtn" type="button" class="primary">Training</button>
+    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
+    <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
+  </div>
+  <section id="settingsSection" class="product-settings" aria-label="Settings">
+  <div class="product-settings-title">Settings</div>
+  <div class="product-settings-links"><a href="./packs.html">Packs de population</a></div>
   <details id="runtimeIdentityDetails" class="runtime-identity">
     <summary>Identité du produit</summary>
     <div class="runtime-identity-grid">
@@ -1071,10 +1181,15 @@
       </div>
     </details>
   </div>
+  </section>
 
   <div class="grid">
+    <div id="equityLabSection" class="domain-heading wide" aria-labelledby="equityLabTitle">
+      <div id="equityLabTitle" class="domain-title">Equity Lab</div>
+      <div class="domain-sub">Configurer une situation, une range adverse et calculer l’équité sans dépendre des mains importées.</div>
+    </div>
     <section id="rangesSection" class="panel wide">
-      <h2>1. Importer une range source</h2>
+      <h2>Sources et modèles</h2>
       <label class="filelabel" for="fileInput">Choisir un fichier JSON</label>
       <input id="fileInput" type="file" accept=".json,application/json">
       <div id="fileMeta" class="filemeta">Aucun fichier importé.</div>
@@ -1112,7 +1227,8 @@
     </section>
 
     <section id="historiesSection" class="panel wide">
-      <h2>2. Mes Hand Histories PokerStars</h2>
+      <h2>Review</h2>
+      <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
       <div class="hh-import-primary">
         <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
         <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
@@ -1143,31 +1259,60 @@
       </details>
 
       <div id="handSelectionSection" class="hh-selection-section">
-        <div class="hh-selection-title">Sélection de main</div>
-        <div class="hh-list-tools">
+        <div class="hh-selection-title">Inbox de review</div>
+        <div class="review-inbox-primary-tools">
           <div class="field">
-            <label for="hhSortSelect">Tri des mains</label>
-            <select id="hhSortSelect">
-              <option value="date_desc">Date — plus récentes d'abord</option>
-              <option value="date_asc">Date — plus anciennes d'abord</option>
-              <option value="result_desc">Résultat — plus gros gains d'abord</option>
-              <option value="result_asc">Résultat — plus grosses pertes d'abord</option>
-              <option value="review_desc">Perte EV cumulée — plus élevée d’abord</option>
+            <label for="reviewStatusFilter">Statut</label>
+            <select id="reviewStatusFilter">
+              <option value="">Tous</option>
+              <option value="TO_REVIEW">À revoir</option>
+              <option value="REVIEWED">Revue</option>
+              <option value="CORRECT">Correcte</option>
+              <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
             </select>
           </div>
-          <label class="hh-filter-check">
-            <input id="hhKnownFilter" type="checkbox">
-            Cartes adversaires connues &gt; 0
-          </label>
+          <div class="field">
+            <label for="reviewCoverageFilter">Couverture</label>
+            <select id="reviewCoverageFilter">
+              <option value="">Toutes</option>
+              <option value="COMPLETE">Complète</option>
+              <option value="INCOMPLETE">Incomplète</option>
+            </select>
+          </div>
           <div id="hhListCount" class="hh-list-count">0 main affichée</div>
         </div>
+        <details class="review-inbox-filters">
+          <summary>Filtres secondaires</summary>
+          <div class="review-inbox-filter-grid">
+            <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewSpotFilter">Spot family</label><select id="reviewSpotFilter"><option value="">Tous</option></select></div>
+            <div class="field"><label for="reviewPlayedFilter">Action jouée</label><select id="reviewPlayedFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewRecommendedFilter">Action recommandée</label><select id="reviewRecommendedFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewSizingFilter">Sizing error</label><select id="reviewSizingFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field"><label for="reviewJamFilter">Jam</label><select id="reviewJamFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field"><label for="reviewOverbetFilter">Overbet</label><select id="reviewOverbetFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field">
+              <label for="hhSortSelect">Ordre</label>
+              <select id="hhSortSelect">
+                <option value="review_desc">Perte EV — décroissante</option>
+                <option value="status_asc">Statut</option>
+                <option value="street_asc">Street</option>
+                <option value="position_asc">Position</option>
+                <option value="hand_asc">ID de main</option>
+              </select>
+            </div>
+            <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
+          </div>
+        </details>
+        <div id="reviewInboxNotice" class="review-inbox-notice" aria-live="polite"></div>
         <div id="hhHands" class="hh-list"></div>
       </div>
 
     </section>
 
     <section id="opponentsSection" class="panel wide">
-      <h2>3. Configurer les adversaires</h2>
+      <h2>Adversaires</h2>
       <div class="row">
         <input id="streetSelect" type="hidden" value="3">
         <div class="field"><label>Méthode de calcul</label>
@@ -1191,7 +1336,7 @@
     </section>
 
     <section id="cardsSection" class="panel wide">
-      <h2>4. Choisir votre main et le board</h2>
+      <h2>Main et board</h2>
       <div class="cards-layout">
         <div>
           <div class="slots-title">Votre main</div>
@@ -1222,7 +1367,7 @@
     </section>
 
     <section id="rangeDisplaySection" class="panel wide">
-      <h2>5. Range adverse affichée</h2>
+      <h2>Range adverse</h2>
       <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range adverse estimée, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
       <div class="range-toolbar">
         <button id="rangeEditionBtn" class="secondary toggle-btn">Édition range adverse : OFF</button>
@@ -1236,7 +1381,7 @@
     </section>
 
     <section id="equitySection" class="panel wide">
-      <h2>6. Calcul d’équité</h2>
+      <h2>Résultat d’équité</h2>
       <div class="row">
         <button id="calcBtn" class="primary" disabled>Recalculer maintenant</button>
       </div>
@@ -1265,7 +1410,7 @@
 <div id="trainerPage" class="trainer-page mode-hidden" aria-hidden="true">
   <div class="trainer-shell">
     <div class="trainer-head">
-      <button id="trainerBackBtn" type="button" class="secondary">← Analyseur</button>
+      <button id="trainerBackBtn" type="button" class="secondary">← Accueil</button>
       <div>
         <div class="trainer-title">Training 6-max</div>
         <div class="trainer-sub">100 BB · <span id="trainerPopulationIdentity">population en chargement</span> · coaching ACTION / SIZING / EV</div>
@@ -1284,12 +1429,35 @@
           <button id="trainerContinueBtn" type="button" class="secondary" style="display:none">Continuer</button>
           <div id="trainerStatus" class="trainer-status" aria-live="polite"></div>
         </div>
+        <section id="trainerTargetPanel" class="trainer-note" hidden>
+          <div class="trainer-section-title">Session ciblée · Leak → Training</div>
+          <div id="trainerTargetIdentity" class="tiny"></div>
+          <div class="row" style="margin-top:8px">
+            <div class="field"><label for="trainerTargetPosition">Position</label><select id="trainerTargetPosition"><option value="">Toutes</option><option>LJ</option><option>HJ</option><option>CO</option><option>BTN</option><option>SB</option><option>BB</option></select></div>
+            <div class="field"><label for="trainerTargetStreet">Street</label><select id="trainerTargetStreet"><option value="">Toutes</option><option value="PREFLOP">Préflop</option><option value="FLOP">Flop</option><option value="TURN">Turn</option><option value="RIVER">River</option></select></div>
+            <div class="field"><label for="trainerTargetSpot">Spot family</label><input id="trainerTargetSpot" type="text" placeholder="SRP|PFA|IP"></div>
+            <div class="field"><label for="trainerTargetAction">Action recommandée</label><select id="trainerTargetAction"><option value="">Toutes</option><option>FOLD</option><option>CHECK</option><option>CALL</option><option>BET</option><option>RAISE</option></select></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <label class="hh-filter-check"><input id="trainerTargetSizing" type="checkbox"> décision de sizing</label>
+            <label class="hh-filter-check"><input id="trainerTargetJam" type="checkbox"> jam disponible</label>
+            <label class="hh-filter-check"><input id="trainerTargetOverbet" type="checkbox"> overbet disponible</label>
+            <div class="field" style="max-width:150px"><label for="trainerTargetSessionSize">Spots</label><input id="trainerTargetSessionSize" type="number" min="1" max="10" step="1" value="5"></div>
+            <button id="trainerTargetApplyBtn" type="button" class="primary" style="width:auto">Appliquer le filtre</button>
+            <button id="trainerTargetClearBtn" type="button" class="secondary" style="width:auto">Quitter le ciblage</button>
+          </div>
+          <div id="trainerTargetSupport" class="tiny" style="margin-top:7px" aria-live="polite"></div>
+        </section>
         <div id="trainerTable"></div>
         <div id="trainerControls"></div>
       </section>
       <aside class="trainer-side">
         <div id="trainerRecommendation"></div>
         <div id="trainerFeedback"></div>
+        <section id="trainerTargetSummarySection" hidden>
+          <div class="trainer-section-title">Bilan ciblé</div>
+          <div id="trainerTargetSummary" class="trainer-note"></div>
+        </section>
         <section>
           <div class="trainer-section-title">Session</div>
           <div id="trainerStats"></div>
@@ -1336,6 +1504,13 @@
   </div>
 </div>
 
+<script src="./analytics/leak-analyzer.js"></script>
+<script src="./analytics/review-score-adapter.js"></script>
+<script src="./analytics/review-inbox.js"></script>
+<script src="./analytics/leak-training-target.js"></script>
+<script src="./training/leak-scenario-selector.js"></script>
+<script src="./analytics/review-dashboard.js"></script>
+<script src="./analytics/model-b-robustness.js"></script>
 <script src="./preflop-contract.js"></script>
 <script>
 "use strict";
@@ -1370,9 +1545,17 @@ const state = {
   rangeEdition:false,
   rangeEdits:Object.create(null),
   hhHands:[],
-  hhSort:"date_desc",
+  hhSort:"review_desc",
   hhKnownOnly:false,
   reviewScores:Object.create(null),
+  modelBRobustnessByDecision:Object.create(null),
+  reviewInboxUserMetadataByScope:Object.create(null),
+  reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""},
+  reviewInboxView:null,
+  reviewDashboardView:null,
+  reviewDashboardLastError:"",
+  reviewInboxPersistTimer:null,
+  reviewInboxLastError:"",
   reviewPersistTimer:null,
   reviewListRefreshTimer:null,
   reviewBatchQueue:[],
@@ -1437,6 +1620,16 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
+      reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
+      reviewStatusFilter=$("reviewStatusFilter"), reviewCoverageFilter=$("reviewCoverageFilter"),
+      reviewStreetFilter=$("reviewStreetFilter"), reviewPositionFilter=$("reviewPositionFilter"), reviewSpotFilter=$("reviewSpotFilter"),
+      reviewPlayedFilter=$("reviewPlayedFilter"), reviewRecommendedFilter=$("reviewRecommendedFilter"),
+      reviewSizingFilter=$("reviewSizingFilter"), reviewJamFilter=$("reviewJamFilter"), reviewOverbetFilter=$("reviewOverbetFilter"),
+      reviewDashboard=$("reviewDashboard"), reviewDashboardMessage=$("reviewDashboardMessage"), reviewDashboardState=$("reviewDashboardState"),
+      reviewDashboardHands=$("reviewDashboardHands"), reviewDashboardDecisions=$("reviewDashboardDecisions"), reviewDashboardLoss=$("reviewDashboardLoss"),
+      reviewDashboardAnalyzed=$("reviewDashboardAnalyzed"), reviewDashboardLeak=$("reviewDashboardLeak"), reviewDashboardLeakMeta=$("reviewDashboardLeakMeta"),
+      reviewDashboardPriority=$("reviewDashboardPriority"), reviewDashboardPriorityMeta=$("reviewDashboardPriorityMeta"),
+      reviewDashboardImportBtn=$("reviewDashboardImportBtn"), reviewDashboardReviewBtn=$("reviewDashboardReviewBtn"), reviewDashboardLeakBtn=$("reviewDashboardLeakBtn"), reviewDashboardTrainingBtn=$("reviewDashboardTrainingBtn"), reviewDashboardTrace=$("reviewDashboardTrace"),
       activePopulationIdentity=$("activePopulationIdentity"), activeStrategyIdentity=$("activeStrategyIdentity"),
       runtimeIdentityDetails=$("runtimeIdentityDetails"), runtimeAppVersion=$("runtimeAppVersion"), runtimeEngineVersion=$("runtimeEngineVersion"),
       runtimeModelAIdentity=$("runtimeModelAIdentity"), runtimeModelBIdentity=$("runtimeModelBIdentity"),
@@ -1802,6 +1995,7 @@ async function clearLocalPersistenceWithConfirmation(){
   state.restoringLocalState=true;
   if(state.persistPrefsTimer){clearTimeout(state.persistPrefsTimer);state.persistPrefsTimer=null;}
   if(state.reviewPersistTimer){clearTimeout(state.reviewPersistTimer);state.reviewPersistTimer=null;}
+  if(state.reviewInboxPersistTimer){clearTimeout(state.reviewInboxPersistTimer);state.reviewInboxPersistTimer=null;}
   if(state.hhWatchTimer){clearInterval(state.hhWatchTimer);state.hhWatchTimer=null;}
   state.hhWatchHandles=[];state.hhWatchMeta=[];state.hhWatchChecking=false;
   try{
@@ -3114,6 +3308,336 @@ function reviewContextSignature(){
     pm.name||'',pm.size||'',pm.schemaVersion||'',pf.name||'',pf.size||'',pf.schemaVersion||''
   ].join('|'));
 }
+const REVIEW_INBOX_METADATA_DB_KEY="reviewInboxUserMetadataByScope";
+
+function reviewInboxScopeInput(){
+  const population=state.populationModel?.population_id||state.populationModel?.populationId||state.populationModelMeta?.name||"review-local";
+  const pack=state.populationModel?.pack_id||state.populationModel?.packId||null;
+  return {
+    population_id:String(population),
+    pack_id:pack==null?null:String(pack),
+    strategy_id:"hero-custom",
+    strategy_version:"app-v83",
+    ev_reference:window.PokerReviewLeakAdapter?.DEFAULT_EV_REFERENCE||"review_score_policy_adjusted_incremental_bb"
+  };
+}
+function modelBRobustnessDecisionId(handId,stepIndex){
+  const idx=Number(stepIndex);
+  return Number.isInteger(idx)&&idx>=0?`review:${String(handId||"")}:${idx}`:"";
+}
+function modelBRobustnessExpected(handId,stepIndex){
+  return {decision_id:modelBRobustnessDecisionId(handId,stepIndex),identity:reviewInboxScopeInput()};
+}
+function modelBRobustnessEnvelopeForDecision(handId,stepIndex){
+  const decisionId=modelBRobustnessDecisionId(handId,stepIndex);
+  if(!decisionId)return null;
+  const direct=state.modelBRobustnessByDecision?.[decisionId];
+  if(direct)return direct;
+  const score=state.reviewScores?.[String(handId)];
+  const detail=(score?.details||[]).find(row=>Number(row?.stepIndex)===Number(stepIndex));
+  return detail?.model_b_robustness||null;
+}
+function modelBRobustnessViewForDecision(handId,stepIndex){
+  const UI=window.PokerModelBRobustnessUI;
+  const expected=modelBRobustnessExpected(handId,stepIndex);
+  if(!UI?.consumeEnvelope)return {evidence_status:"unavailable",status:"insufficiently_supported",fail_closed:true,reason:"UI_CONTRACT_UNAVAILABLE",decision_id:expected.decision_id,identity:expected.identity};
+  return UI.consumeEnvelope(modelBRobustnessEnvelopeForDecision(handId,stepIndex),expected);
+}
+function modelBRobustnessAttachExisting(handId,detail,stepIndex){
+  const envelope=modelBRobustnessEnvelopeForDecision(handId,stepIndex);
+  if(envelope&&detail)detail.model_b_robustness=JSON.parse(JSON.stringify(envelope));
+  return detail;
+}
+function setModelBRobustnessEnvelope(handId,stepIndex,envelope){
+  const UI=window.PokerModelBRobustnessUI,expected=modelBRobustnessExpected(handId,stepIndex);
+  if(!UI?.consumeEnvelope)return {accepted:false,reason:"UI_CONTRACT_UNAVAILABLE"};
+  const view=UI.consumeEnvelope(envelope,expected);
+  if(view.evidence_status!=="available")return {accepted:false,reason:view.reason||"INVALID_EVIDENCE",view};
+  const copy=JSON.parse(JSON.stringify(envelope)),decisionId=expected.decision_id;
+  state.modelBRobustnessByDecision[decisionId]=copy;
+  const score=state.reviewScores?.[String(handId)],detail=(score?.details||[]).find(row=>Number(row?.stepIndex)===Number(stepIndex));
+  if(detail){detail.model_b_robustness=copy;schedulePersistReviewScores();}
+  renderHistoryHands();
+  if(state.selectedHand&&String(state.selectedHand.id)===String(handId))renderVisualReplay();
+  return {accepted:true,reason:"EXACT_IDENTITY_AND_DECISION",view};
+}
+window.setModelBRobustnessEnvelope=setModelBRobustnessEnvelope;
+function modelBRobustnessStatusClass(view){
+  if(view?.evidence_status!=="available")return "unavailable";
+  if(view.status==="robust")return "robust";
+  if(view.status==="sensitive")return "sensitive";
+  return "insufficient";
+}
+function modelBRobustnessStatusText(view){
+  return window.PokerModelBRobustnessUI?.statusLabel?.(view)||"Robustesse Model B non établie";
+}
+function modelBRobustnessCompactHtml(view){
+  const cls=modelBRobustnessStatusClass(view),label=modelBRobustnessStatusText(view),regret=Number(view?.model_environment?.max_regret_bb);
+  const stability=view?.evidence_status==="available"
+    ?`action ${view.stability?.action===true?"stable":view.stability?.action===false?"variable":"?"} · sizing ${view.stability?.sizing===true?"stable":view.stability?.sizing===false?"variable":"?"}`
+    :"aucune preuve Model B liée à cette décision";
+  return `<div class="model-b-robustness-compact ${cls}" data-model-b-robustness-status="${escapeHtml(view?.evidence_status==="available"?view.status:"unavailable")}"><b>${escapeHtml(label)}</b><span>${escapeHtml(stability)}${Number.isFinite(regret)?` · regret max ${escapeHtml(formatBB(regret))}`:""}</span></div>`;
+}
+function modelBRobustnessFragilityLine(label,value){
+  if(!value?.applicable)return `${label} : non applicable`;
+  if(value.fragile===true){
+    const envs=(value.affected_environments||[]).map(String).join(", ")||"environnement stress";
+    return `${label} : fragile · ${envs}`;
+  }
+  if(value.fragile===false)return `${label} : aucune fragilité détectée dans les environnements couverts`;
+  return `${label} : non concluante`;
+}
+function modelBRobustnessDetailHtml(view){
+  const label=modelBRobustnessStatusText(view);
+  if(view?.evidence_status!=="available"){
+    return `<details class="model-b-robustness-detail"><summary>${escapeHtml(label)}</summary><div class="model-b-robustness-detail-body"><div class="model-b-robustness-warning">Aucun résumé <code>hero-model-b-robustness-summary/v1</code> avec identité et décision concordantes n’est disponible. L’interface ne conclut donc pas à la robustesse.</div></div></details>`;
+  }
+  const nominal=view.nominal||{},model=view.model_environment||{},mc=nominal.mc_ci95;
+  const nominalText=Number.isFinite(Number(nominal.ev_bb))?formatBB(Number(nominal.ev_bb)):"—";
+  const mcText=Array.isArray(mc)&&mc.length===2&&mc.every(x=>Number.isFinite(Number(x)))?`[${formatBB(Number(mc[0]))} ; ${formatBB(Number(mc[1]))}]`:"—";
+  const span=Array.isArray(model.ev_span_bb)&&model.ev_span_bb.length===2&&model.ev_span_bb.every(x=>Number.isFinite(Number(x)))?`[${formatBB(Number(model.ev_span_bb[0]))} ; ${formatBB(Number(model.ev_span_bb[1]))}]`:"—";
+  const maxRegret=Number(model.max_regret_bb),affected=window.PokerModelBRobustnessUI?.affectedEnvironmentIds?.(view)||[];
+  const identity=view.identity||{};
+  const statusNote=view.status==="insufficiently_supported"?"Support/comparabilité incomplets : aucune conclusion de robustesse.":view.status==="sensitive"?"La meilleure action, le sizing ou le ranking varie selon les environnements plausibles.":"La recommandation reste stable dans les environnements couverts.";
+  return `<details class="model-b-robustness-detail"><summary>${escapeHtml(label)}</summary><div class="model-b-robustness-detail-body">
+    <div class="model-b-robustness-grid">
+      <div class="model-b-robustness-card"><div class="k">EV nominale</div><div class="v">${escapeHtml(nominalText)}</div><div class="s">${escapeHtml(nominal.action||"—")}${nominal.sizing!=null?` · sizing ${escapeHtml(String(nominal.sizing))}`:""} · valeur nominale, pas une moyenne d’environnements</div></div>
+      <div class="model-b-robustness-card"><div class="k">Incertitude Monte-Carlo</div><div class="v">${escapeHtml(mcText)}</div><div class="s">IC 95 % MC${Number.isFinite(Number(nominal.mc_ci95_width_bb))?` · largeur ${escapeHtml(formatBB(Number(nominal.mc_ci95_width_bb)))}`:""}</div></div>
+      <div class="model-b-robustness-card"><div class="k">Incertitude Model B</div><div class="v">${escapeHtml(span)}</div><div class="s">Enveloppe non pondérée · regret max ${Number.isFinite(maxRegret)?escapeHtml(formatBB(maxRegret)):"—"} · ${Number(model.environment_count)||0} environnement(s)</div></div>
+    </div>
+    <div class="model-b-robustness-warning">${escapeHtml(statusNote)}<br>Stabilité : action <b>${view.stability?.action===true?"oui":view.stability?.action===false?"non":"—"}</b> · sizing <b>${view.stability?.sizing===true?"oui":view.stability?.sizing===false?"non":"—"}</b> · ranking <b>${view.stability?.ranking===true?"oui":view.stability?.ranking===false?"non":"—"}</b>.<br>${escapeHtml(modelBRobustnessFragilityLine("Shove",view.shove_fragility))} · ${escapeHtml(modelBRobustnessFragilityLine("Overbet",view.overbet_fragility))}${affected.length?`<br>Environnements concernés : ${escapeHtml(affected.join(", "))}`:""}.</div>
+    <div class="action-analysis-meta" style="margin-top:7px">Décision <b>${escapeHtml(view.decision_id)}</b> · population <b>${escapeHtml(identity.population_id||"—")}</b> · pack <b>${escapeHtml(identity.pack_id||"—")}</b> · stratégie <b>${escapeHtml(identity.strategy_id||"—")}@${escapeHtml(identity.strategy_version||"—")}</b> · EV ref <b>${escapeHtml(identity.ev_reference||"—")}</b>. Diagnostic de sensibilité uniquement, pas un verdict de stratégie.</div>
+  </div></details>`;
+}
+function reviewInboxSourceScores(){
+  const sig=reviewContextSignature(),out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand.id),score=state.reviewScores?.[id];
+    out[id]=(score&&score.signature===sig)?score:{
+      handId:id,signature:sig,complete:false,analyzableDecisions:0,finishedDecisions:0,details:[]
+    };
+  }
+  return out;
+}
+function reviewInboxHHSources(){
+  return (state.hhHands||[]).map((hand,index)=>({
+    name:hand.sourceName||`review-inbox-${index+1}.txt`,
+    content:String(hand.raw||"")
+  })).filter(row=>row.content.trim());
+}
+function reviewInboxBuild(){
+  const Inbox=window.PokerReviewInbox;
+  if(!Inbox?.buildReviewInbox){state.reviewInboxLastError="Contrat poker-review-inbox/v1 indisponible.";return null;}
+  try{
+    const input={reviewScores:reviewInboxSourceScores(),hhSources:reviewInboxHHSources(),scope:reviewInboxScopeInput()};
+    const preview=Inbox.buildReviewInbox(input);
+    const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
+    const inbox=Inbox.buildReviewInbox({...input,user_metadata:metadata});
+    state.reviewInboxLastError="";
+    return inbox;
+  }catch(err){
+    state.reviewInboxLastError=String(err?.message||err);
+    return null;
+  }
+}
+function reviewDashboardSourceScores(){
+  const sig=reviewContextSignature(),out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand.id),score=state.reviewScores?.[id];
+    if(score&&score.signature===sig)out[id]=score;
+  }
+  return out;
+}
+function reviewDashboardBuild(){
+  const Dashboard=window.PokerReviewDashboard,Inbox=window.PokerReviewInbox;
+  if(!Dashboard?.buildReviewDashboard||!Inbox?.normalizeUserMetadata){
+    state.reviewDashboardLastError="Contrat poker-review-dashboard/v1 indisponible.";
+    return null;
+  }
+  try{
+    const input={
+      reviewScores:reviewDashboardSourceScores(),
+      hhSources:reviewInboxHHSources(),
+      scope:reviewInboxScopeInput(),
+      top_leaks_limit:3,
+      training_min_decisions:1,
+      training_min_scenarios:1
+    };
+    const preview=Dashboard.buildReviewDashboard({...input,user_metadata:Inbox.normalizeUserMetadata({})});
+    const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
+    const dashboard=Dashboard.buildReviewDashboard({...input,user_metadata:metadata});
+    state.reviewDashboardLastError="";
+    return dashboard;
+  }catch(err){
+    state.reviewDashboardLastError=String(err?.message||err);
+    return null;
+  }
+}
+function reviewDashboardStateMessage(model){
+  const stateName=model?.state||"";
+  if(stateName==="NO_HANDS")return "Importez vos Hand Histories pour construire votre Review.";
+  if(stateName==="ANALYSIS_PENDING")return "Mains chargées · l’analyse des décisions est en cours.";
+  if(stateName==="ANALYSIS_INCOMPLETE")return "Analyse incomplète · les données disponibles ne permettent pas encore un verdict complet.";
+  if(stateName==="NO_SIGNIFICANT_LOSS")return "Aucune perte EV significative détectée dans les décisions comparables.";
+  if(stateName==="READY")return "Priorités calculées à partir des décisions comparables de ce contexte.";
+  return state.reviewDashboardLastError?`Dashboard indisponible : ${state.reviewDashboardLastError}`:"Dashboard Review indisponible.";
+}
+function renderReviewDashboardModel(model){
+  state.reviewDashboardView=model||null;
+  const metrics=model?.metrics||{};
+  const leak=model?.top_leaks?.[0]||null,hand=model?.priority?.hand||null,decision=model?.priority?.decision||null;
+  if(reviewDashboard)reviewDashboard.setAttribute("aria-busy",model?"false":"true");
+  if(reviewDashboardState)reviewDashboardState.textContent=model?.state||"UNAVAILABLE";
+  if(reviewDashboardMessage)reviewDashboardMessage.textContent=reviewDashboardStateMessage(model);
+  if(reviewDashboardHands)reviewDashboardHands.textContent=String(metrics.hands_loaded??0);
+  if(reviewDashboardDecisions)reviewDashboardDecisions.textContent=String(metrics.decisions_to_review??0);
+  if(reviewDashboardLoss)reviewDashboardLoss.textContent=formatBB(Number(metrics.total_ev_loss_bb)||0);
+  if(reviewDashboardAnalyzed)reviewDashboardAnalyzed.textContent=String(metrics.decisions_analyzed??0);
+  if(reviewDashboardLeak)reviewDashboardLeak.textContent=leak?String(leak.key):"Aucun leak significatif";
+  if(reviewDashboardLeakMeta)reviewDashboardLeakMeta.textContent=leak
+    ?`${formatBB(Number(leak.total_loss_bb)||0)} · ${Number(leak.decisions)||0} décision(s) · ${Number(leak.hands)||0} main(s)`
+    :"Les leaks apparaîtront après analyse de décisions comparables.";
+  if(reviewDashboardPriority)reviewDashboardPriority.textContent=hand
+    ?`Main #${hand.hand_id}${decision?` · ${decision.street} · ${decision.position}`:""}`
+    :"Aucune décision prioritaire";
+  if(reviewDashboardPriorityMeta)reviewDashboardPriorityMeta.textContent=decision
+    ?`${decision.action_played} → ${decision.action_recommended} · perte ${formatBB(Number(decision.loss_bb)||0)} · ${decision.spot_family}`
+    :(hand?`${hand.status_label||hand.status||""} · perte ${formatBB(Number(hand.total_loss_bb)||0)}`:"—");
+  const reviewEnabled=Boolean(model?.ctas?.review?.enabled),leakEnabled=Boolean(model?.ctas?.leak?.enabled),trainingEnabled=Boolean(model?.ctas?.training?.enabled);
+  if(reviewDashboardImportBtn)reviewDashboardImportBtn.hidden=Boolean(metrics.hands_loaded);
+  if(reviewDashboardReviewBtn){reviewDashboardReviewBtn.hidden=!reviewEnabled;reviewDashboardReviewBtn.disabled=!reviewEnabled;}
+  if(reviewDashboardLeakBtn){reviewDashboardLeakBtn.hidden=!leakEnabled;reviewDashboardLeakBtn.disabled=!leakEnabled;}
+  if(reviewDashboardTrainingBtn){reviewDashboardTrainingBtn.hidden=!trainingEnabled;reviewDashboardTrainingBtn.disabled=!trainingEnabled;}
+  if(reviewDashboardTrace){
+    const refs=Array.isArray(metrics.source_refs)?metrics.source_refs.length:0;
+    const coverage=Number(metrics.review_coverage_pct);
+    reviewDashboardTrace.textContent=`Sources EV : ${refs} décision(s)${Number.isFinite(coverage)?` · couverture ${coverage.toFixed(1)} %`:""} · ${model?.scope_key||""}`;
+  }
+}
+function renderReviewDashboard(){
+  renderReviewDashboardModel(reviewDashboardBuild());
+}
+function openReviewDashboardReview(){
+  const cta=state.reviewDashboardView?.ctas?.review;
+  if(!cta?.enabled||!cta.target)return {opened:false,reason:"NO_REVIEW_TARGET"};
+  return openReviewInboxDeepLink(cta.target);
+}
+function openReviewDashboardLeak(){
+  const model=state.reviewDashboardView,cta=model?.ctas?.leak,target=cta?.target;
+  if(!cta?.enabled||!target)return {opened:false,reason:"NO_LEAK_TARGET"};
+  if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
+  if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
+  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""};
+  renderHistoryHands();
+  requestAnimationFrame(()=>document.getElementById("historiesSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
+  return {opened:true,reason:"EXACT_LEAK_FILTER",dimension:target.dimension,key:String(target.key)};
+}
+function openReviewDashboardTraining(){
+  const cta=state.reviewDashboardView?.ctas?.training;
+  if(!cta?.enabled||!cta.target)return {opened:false,reason:cta?.reason||"NO_TRAINING_TARGET"};
+  if(typeof window.trainerOpenTargetedSession!=="function")return {opened:false,reason:"TRAINER_TARGET_RUNTIME_UNAVAILABLE"};
+  window.trainerOpenTargetedSession(cta.target);
+  return {opened:true,reason:"TARGET_RUNTIME_REQUESTED",target_id:cta.target.target_id||null};
+}
+
+function reviewInboxFiltersInput(){
+  const f=state.reviewInboxFilters||{};
+  return {
+    status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
+    action_played:f.action_played||"",action_recommended:f.action_recommended||"",
+    sizing_error:f.sizing_error||"",jam:f.jam||"",overbet:f.overbet||"",coverage:f.coverage||""
+  };
+}
+function reviewInboxSortMode(){
+  return ({review_desc:"EV_LOSS_DESC",status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"})[state.hhSort]||"EV_LOSS_DESC";
+}
+function reviewInboxQuery(inbox=reviewInboxBuild()){
+  const Inbox=window.PokerReviewInbox;
+  if(!Inbox?.queryInbox||!inbox)return null;
+  try{return Inbox.queryInbox(inbox,reviewInboxFiltersInput(),reviewInboxSortMode());}
+  catch(err){state.reviewInboxLastError=String(err?.message||err);return null;}
+}
+function reviewInboxUnique(items,field){
+  const vals=[];
+  for(const item of items||[]){
+    const value=item?.[field];
+    if(Array.isArray(value))vals.push(...value);else if(value!=null&&String(value)!=="")vals.push(value);
+  }
+  return [...new Set(vals.map(String))].sort((a,b)=>a.localeCompare(b));
+}
+function syncReviewFilterSelect(select,values,allLabel){
+  if(!select)return;
+  const current=select.value,options=[`<option value="">${escapeHtml(allLabel)}</option>`,...values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`)];
+  select.innerHTML=options.join("");
+  if(values.includes(current))select.value=current;
+}
+function syncReviewInboxFilterOptions(inbox){
+  const items=inbox?.items||[];
+  syncReviewFilterSelect(reviewStreetFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"streets"),"Toutes");
+  syncReviewFilterSelect(reviewPositionFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"positions"),"Toutes");
+  syncReviewFilterSelect(reviewSpotFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"spot_families"),"Tous");
+  syncReviewFilterSelect(reviewPlayedFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"played_actions"),"Toutes");
+  syncReviewFilterSelect(reviewRecommendedFilter,reviewInboxUnique(items.map(x=>x.facets||{}),"recommended_actions"),"Toutes");
+}
+function schedulePersistReviewInboxMetadata(delay=80){
+  if(state.restoringLocalState)return;
+  if(state.reviewInboxPersistTimer)clearTimeout(state.reviewInboxPersistTimer);
+  state.reviewInboxPersistTimer=setTimeout(async()=>{
+    state.reviewInboxPersistTimer=null;
+    try{await localDbSet(REVIEW_INBOX_METADATA_DB_KEY,state.reviewInboxUserMetadataByScope||{});}
+    catch(err){console.warn("Review Inbox metadata persistence failed",err);persistenceStatus("Le statut utilisateur de la Review Inbox n’a pas pu être sauvegardé.",true);}
+  },delay);
+}
+function setReviewInboxReviewed(handId,reviewed){
+  const Inbox=window.PokerReviewInbox,inbox=reviewInboxBuild();
+  if(!Inbox?.setReviewed||!inbox)return false;
+  const before=JSON.stringify(state.reviewScores||{});
+  const current=state.reviewInboxUserMetadataByScope?.[inbox.scope_key]||Inbox.normalizeUserMetadata({});
+  const next=Inbox.setReviewed(current,String(handId),!!reviewed,reviewed?new Date().toISOString():null);
+  state.reviewInboxUserMetadataByScope[inbox.scope_key]=next;
+  if(JSON.stringify(state.reviewScores||{})!==before)throw new Error("Review Inbox user metadata must not mutate reviewScores");
+  schedulePersistReviewInboxMetadata();
+  renderHistoryHands();
+  return true;
+}
+function resolveReviewInboxDeepLink(descriptor,handId,replaySteps,reviewSummary){
+  const id=String(handId||""),idx=Number(descriptor?.step_index);
+  if(descriptor?.schema!==window.PokerReviewInbox?.DEEP_LINK_SCHEMA)return {exact:false,reason:"INVALID_SCHEMA",stepIndex:0};
+  if(String(descriptor?.hand_id||"")!==id)return {exact:false,reason:"HAND_MISMATCH",stepIndex:0};
+  if(!Number.isInteger(idx)||idx<0)return {exact:false,reason:"INVALID_STEP",stepIndex:0};
+  if(String(descriptor?.decision_id||"")!==`review:${id}:${idx}`)return {exact:false,reason:"DECISION_ID_MISMATCH",stepIndex:0};
+  const details=Array.isArray(reviewSummary?.details)?reviewSummary.details:[];
+  if(!details.some(d=>Number(d?.stepIndex)===idx))return {exact:false,reason:"DECISION_NOT_FOUND",stepIndex:0};
+  if(!Array.isArray(replaySteps)||!replaySteps[idx])return {exact:false,reason:"STEP_NOT_FOUND",stepIndex:0};
+  return {exact:true,reason:"EXACT",stepIndex:idx};
+}
+function openReviewInboxDeepLink(descriptor){
+  const handId=String(descriptor?.hand_id||""),hand=state.hhHands.find(h=>String(h.id)===handId);
+  if(!hand)return {opened:false,exact:false,reason:"HAND_NOT_FOUND",stepIndex:0};
+  const summary=state.reviewScores?.[handId]||null;
+  selectHistoryHandById(handId,{open:false});
+  const resolved=resolveReviewInboxDeepLink(descriptor,handId,state.replaySteps,summary);
+  if(resolved.exact)setReplayIndexAndRecalculate(resolved.stepIndex);
+  else state.replayIndex=0;
+  openReplayerPage({scrollTop:true});
+  if(replayerExportStatus){
+    replayerExportStatus.textContent=resolved.exact
+      ?`Décision prioritaire ouverte · étape ${resolved.stepIndex+1}`
+      :"Décision ciblée introuvable dans cette version de la main · aucune autre décision n’a été sélectionnée.";
+    replayerExportStatus.className=`replayer-export-status${resolved.exact?"":" warn"}`;
+  }
+  return {opened:true,...resolved};
+}
+function openReviewInboxItem(item){
+  if(item?.deep_link)return openReviewInboxDeepLink(item.deep_link);
+  selectHistoryHandById(item?.hand_id||"");
+  if(replayerExportStatus){
+    replayerExportStatus.textContent="Analyse incomplète · aucune décision comparable à cibler.";
+    replayerExportStatus.className="replayer-export-status warn";
+  }
+  return {opened:true,exact:false,reason:"NO_DEEP_LINK",stepIndex:0};
+}
+
 function reviewSummaryForHand(hand){
   if(!hand)return null;
   const r=state.reviewScores?.[String(hand.id)]||hand.reviewScore||null;
@@ -3188,7 +3712,7 @@ function refreshReviewScoreForSelectedHand(){
     if(cached.status==="error"){errors++;continue;}
     const reg=reviewRegretForAction(i,cached);if(!reg)continue;
     comparable++;
-    reg.stepIndex=i;details.push(reg);
+    reg.stepIndex=i;modelBRobustnessAttachExisting(String(hand.id),reg,i);details.push(reg);
     const loss=Math.max(0,Number(reg.lossBB)||0);totalLossBB+=loss;
     if(reg.actor===hand.heroName)heroLossBB+=loss;else opponentLossBB+=loss;
     if(loss>biggestLossBB){biggestLossBB=loss;biggest=reg;}
@@ -3279,7 +3803,7 @@ function reviewBatchRegret(a){
 function finalizeReviewBatchPlan(plan){
   const hand=state.hhHands.find(h=>String(h.id)===String(plan.handId));if(!hand)return;
   let totalLossBB=0,heroLossBB=0,opponentLossBB=0,biggestLossBB=0,biggest=null,comparable=0,errors=0;const details=[];
-  for(const a of plan.actions){if(a.failed)errors++;const reg=reviewBatchRegret(a);if(!reg)continue;comparable++;reg.stepIndex=a.stepIndex;details.push(reg);
+  for(const a of plan.actions){if(a.failed)errors++;const reg=reviewBatchRegret(a);if(!reg)continue;comparable++;reg.stepIndex=a.stepIndex;modelBRobustnessAttachExisting(String(hand.id),reg,a.stepIndex);details.push(reg);
     const loss=Math.max(0,Number(reg.lossBB)||0);totalLossBB+=loss;if(reg.actor===hand.heroName)heroLossBB+=loss;else opponentLossBB+=loss;if(loss>biggestLossBB){biggestLossBB=loss;biggest=reg;}}
   const summary={handId:String(hand.id),signature:plan.signature,totalLossBB,heroLossBB,opponentLossBB,biggestLossBB,biggest,
     analyzableDecisions:plan.actions.length,finishedDecisions:plan.actions.length,comparableDecisions:comparable,errorDecisions:errors,
@@ -3753,6 +4277,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree), postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const decisionSummary=["Flop","Turn","River"].includes(step.street)?postflopDecisionAlternativeSummary(stepIndex,priorEq,cached):null;
   const canonicalDecision=decisionSummary?decisionCanonicalSummary(stepIndex,step,cached):null;
+  const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
   const postflopTree=ctxPostflopMoneyAction(step),postflopCheck=ctxPostflopCheck(step),postflopFold=ctxPostflopFold(step);
   const actionName=step.actionType==="fold"?"FOLD":step.actionType==="check"?"CHECK":step.actionType==="call"?"CALL":step.actionType==="bet"?"BET":"RAISE";
   const allIn=/all-in/i.test(step.actionText||"");
@@ -3786,7 +4311,7 @@ function actionDetailModalInnerHtml(stepIndex,step){
   const primary=canonicalDecision
     ? `<div class="decision-modal-primary">${decisionPrimarySummaryHtml(canonicalDecision)}${decisionAlternativesStripHtml(canonicalDecision,4)}${actionSizingEVTableHtml(decisionSummary)}</div>`
     : `${chips}${keyPoints}`;
-  return `${primary}${retrospective}
+  return `${primary}${retrospective}${modelBRobustnessCompactHtml(robustness)}${modelBRobustnessDetailHtml(robustness)}
     <details class="action-advanced">
       <summary>Pourquoi ? / Détails avancés</summary>
       <div class="action-advanced-body">
@@ -3813,13 +4338,10 @@ function openActionDetailModal(stepIndex){
   actionDetailModalTitle.textContent=`Verdict · ${step.activePlayer||'Action'} · ${actionLabel}`;
   actionDetailModalSub.textContent=`Étape ${stepIndex+1}/${state.replaySteps.length} · ${step.label||step.street||''} · ${step.actionText||''}`;
   actionDetailModalBody.innerHTML=actionDetailModalInnerHtml(stepIndex,step);
-  actionDetailModal.classList.add('open');
-  actionDetailModal.setAttribute('aria-hidden','false');
+  openAccessibleModal(actionDetailModal,{initialFocus:()=>actionDetailModalClose});
 }
 function closeActionDetailModal(){
-  if(!actionDetailModal)return;
-  actionDetailModal.classList.remove('open');
-  actionDetailModal.setAttribute('aria-hidden','true');
+  closeAccessibleModal(actionDetailModal);
 }
 function actionAnalysisHtml(stepIndex,step){
   if(!isAnyMoneyEvent(step)&&!ctxPostflopCheck(step))return "";
@@ -3835,7 +4357,10 @@ function actionAnalysisHtml(stepIndex,step){
   const priorEq=eq[sources.prior],postEq=eq[sources.post],priorTree=trees.prior||null,postTree=trees.post||null;
   const priorMetrics=actionDecisionMetrics(priorEq,req,priorTree),postMetrics=actionDecisionMetrics(postEq,req,postTree);
   const canonicalDecision=decisionCanonicalSummary(stepIndex,step,cached);
-  if(canonicalDecision)return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}</div>`;
+  if(canonicalDecision){
+    const robustness=modelBRobustnessViewForDecision(state.selectedHand?.id,stepIndex);
+    return `<div class="action-analysis decision-summary-feed">${decisionPrimarySummaryHtml(canonicalDecision,{compact:true})}${decisionAlternativesStripHtml(canonicalDecision,3)}${modelBRobustnessCompactHtml(robustness)}</div>`;
+  }
   const row=[];
   if(req.kind==="call"&&Number.isFinite(priorMetrics.evBB)){
     const loss=Math.max(0,-Number(priorMetrics.evBB)),quality=loss<=1e-9?"good":"warn";
@@ -4179,7 +4704,7 @@ function replayStreetTimelineHtml(step,currentIndex){
       const amount=replayActionAmountText(s,s.activePlayer);
       const compactDetail=amount || (["fold","check","show","muck","noshow","collect"].includes(type)?"":detail);
       const canOpen=isAnyMoneyEvent(s)||ctxPostflopCheck(s);
-      return `<div class="street-event${i===currentIndex?" current":""}" data-replay-step="${i}"${canOpen?` data-open-action-detail="${i}" role="button" tabindex="0" aria-label="Ouvrir le détail de ${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}"`:""} title="${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}">
+      return `<div class="street-event${i===currentIndex?" current":""}" data-replay-step="${i}"${i===currentIndex?` aria-current="step"`:""}${canOpen?` data-open-action-detail="${i}" role="button" tabindex="0" aria-label="Ouvrir le détail de ${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}"`:""} title="${escapeHtml(s.activePlayer)} · ${escapeHtml(detail)}">
         <div class="street-event-main">
           <span class="player" title="${escapeHtml(s.activePlayer)}">${escapeHtml(s.activePlayer)}</span>
           <span class="action"><span class="action-badge ${escapeHtml(type)}">${escapeHtml(replayActionLabel(type))}</span>${compactDetail?`<span class="action-text-compact">${escapeHtml(compactDetail)}</span>`:""}</span>
@@ -4356,10 +4881,56 @@ function populationRangeWidthFromEntries(entries){
   }
   return total?weighted/total:0;
 }
+const modalFocusOrigins=new WeakMap();
+function modalDialogElement(backdrop){
+  return backdrop?.querySelector('[role="dialog"]')||null;
+}
+function modalFocusableElements(backdrop){
+  const dialog=modalDialogElement(backdrop);if(!dialog)return [];
+  return [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')]
+    .filter(el=>!el.hasAttribute('hidden')&&el.getAttribute('aria-hidden')!=="true"&&el.getClientRects().length>0);
+}
+function openAccessibleModal(backdrop,{initialFocus=null}={}){
+  if(!backdrop)return;
+  const origin=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  if(origin)modalFocusOrigins.set(backdrop,origin);
+  backdrop.classList.add("open");
+  backdrop.setAttribute("aria-hidden","false");
+  requestAnimationFrame(()=>{
+    const dialog=modalDialogElement(backdrop);
+    const target=initialFocus?.()||modalFocusableElements(backdrop)[0]||dialog;
+    target?.focus({preventScroll:true});
+  });
+}
+function closeAccessibleModal(backdrop){
+  if(!backdrop)return;
+  backdrop.classList.remove("open");
+  backdrop.setAttribute("aria-hidden","true");
+  const origin=modalFocusOrigins.get(backdrop);
+  modalFocusOrigins.delete(backdrop);
+  if(origin?.isConnected)requestAnimationFrame(()=>origin.focus({preventScroll:true}));
+}
+function activeAccessibleModal(){
+  if(actionDetailModal?.classList.contains("open"))return actionDetailModal;
+  if(populationRangeModal?.classList.contains("open"))return populationRangeModal;
+  return null;
+}
+function handleAccessibleModalKeydown(e){
+  const modal=activeAccessibleModal();if(!modal)return;
+  if(e.key==="Escape"){
+    e.preventDefault();e.stopPropagation();
+    if(modal===actionDetailModal)closeActionDetailModal();else closePopulationRangeModal();
+    return;
+  }
+  if(e.key!=="Tab")return;
+  const items=modalFocusableElements(modal);
+  if(!items.length){e.preventDefault();modalDialogElement(modal)?.focus();return;}
+  const first=items[0],last=items[items.length-1],active=document.activeElement;
+  if(e.shiftKey&&(active===first||!modal.contains(active))){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&(active===last||!modal.contains(active))){e.preventDefault();first.focus();}
+}
 function closePopulationRangeModal(){
-  if(!populationRangeModal) return;
-  populationRangeModal.classList.remove("open");
-  populationRangeModal.setAttribute("aria-hidden","true");
+  closeAccessibleModal(populationRangeModal);
 }
 
 function updateQuickNavUi(){
@@ -4449,16 +5020,13 @@ function openPopulationRangeModal(playerName){
     </div>
     ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
     <div class="section"><div class="section-title">Historique de conditionnement</div><div class="population-modal-trace">${traceHtml}</div></div>`;
-  populationRangeModal.classList.add("open");populationRangeModal.setAttribute("aria-hidden","false");
+  openAccessibleModal(populationRangeModal,{initialFocus:()=>populationRangeModalClose});
 }
 populationRangeModalClose?.addEventListener("click",closePopulationRangeModal);
 populationRangeModal?.addEventListener("click",e=>{if(e.target===populationRangeModal) closePopulationRangeModal();});
 actionDetailModalClose?.addEventListener('click',closeActionDetailModal);
 actionDetailModal?.addEventListener('click',e=>{if(e.target===actionDetailModal) closeActionDetailModal();});
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"&&populationRangeModal?.classList.contains("open")) closePopulationRangeModal();
-  if(e.key==="Escape"&&actionDetailModal?.classList.contains("open")) closeActionDetailModal();
-});
+document.addEventListener("keydown",handleAccessibleModalKeydown);
 
 function toggleReplayPlayback(){
   if(!state.hhMode||!state.selectedHand||!state.replaySteps.length)return;
@@ -4891,7 +5459,8 @@ function aiExportActionAnalysisForStep(stepIndex){
   return {
     status:c.status||"unknown",error:c.error||"",required_equity:aiExportPlain(req),scenario_sources:aiExportPlain(sources),
     equity_scenarios:{range_vs_ranges:aiExportNumber(eq.range_ranges),range_vs_real:aiExportNumber(eq.range_real),hand_vs_ranges:aiExportNumber(eq.hand_ranges),hand_vs_real:aiExportNumber(eq.hand_real),prior_used:aiExportNumber(priorEq),posterior_used:aiExportNumber(postEq)},
-    postflop_response_trees:aiExportPlain(c.postflopTrees||null),sizing_optimization:aiExportPlain(c.sizingOptimization||null),decision_summary:aiExportPlain(decisionSummary),review_regret:aiExportPlain(regret)
+    postflop_response_trees:aiExportPlain(c.postflopTrees||null),sizing_optimization:aiExportPlain(c.sizingOptimization||null),decision_summary:aiExportPlain(decisionSummary),review_regret:aiExportPlain(regret),
+    model_b_robustness:aiExportPlain(modelBRobustnessEnvelopeForDecision(state.selectedHand?.id,stepIndex))
   };
 }
 function aiExportAnalysisProgress(){
@@ -4952,7 +5521,7 @@ async function buildAiHandExport(){
     schema:"poker-replayer-ai-export/v1",application:{name:"Poker Range Equity Offline",version:"v83",exported_at:new Date().toISOString()},
     purpose:"Complete replayer state and model analysis for external poker-strategy review. Values ending in _bb are expressed in big blinds. Posterior/real-hand fields may use cards only known after the decision; use prior fields to judge decision quality without hindsight.",
     analysis_context:{calculation_method:methodSelect?.value||"",monte_carlo_trials:Number(trialsSelect?.value)||null,range_source:fileMeta?.textContent||"",range_edition:!!state.rangeEdition,
-      preflop_population_model:aiExportPlain(state.populationModelMeta),postflop_population_model:aiExportPlain(state.postflopModelMeta),context_signature:replayFastContextSignature(),review_signature:reviewContextSignature(),
+      preflop_population_model:aiExportPlain(state.populationModelMeta),postflop_population_model:aiExportPlain(state.postflopModelMeta),context_signature:replayFastContextSignature(),review_signature:reviewContextSignature(),model_b_robustness_identity:aiExportPlain(reviewInboxScopeInput()),
       caveats:["A priori/prior values are intended for decision-quality review; a posteriori/real-hand values are informational and can contain showdown knowledge.","Flop/turn continuation trees use the application's documented checkdown-to-showdown approximation after calls where no validated future betting policy exists.","Postflop response composition is sizing-sensitive: population marginals set how often opponents continue, while combo quality determines which hands continue; river quality uses exact current-board showdown rank. Very large candidate sizings outside the empirical TRAIN distribution are excluded from recommendations; empirical support was rebuilt from the 26,741-hand deduplicated 100/200 observation corpus.","Postflop EV uses branch-specific effective stacks and returns unmatched overbet excess; sizings with non-monotone continuation-range quality are excluded from recommendations and EV-regret scoring.","Postflop recommendations use one final EV and select its strict argmax. Street×sizing residual calibration is retained, with generic JAM bonuses disabled; in pots smaller than the training-population mean for the street, each learned BB residual is scaled linearly by current pot / training mean pot, and it is never amplified above its learned value. Hypothetical aggression is excluded when any response node is very-low-confidence with fewer than 5 observations. JAM/overbet candidates require at least 10 response observations; for very-low-confidence nodes with at least 5 observations, hypothetical actions beyond the locally observed P90 call-price support are excluded when that statistic is available. Raw tree EV remains export-only for diagnostics.","Preflop actions without a validated alternative EV tree are exported but are not assigned invented EV regret."]},
     hand:{id:String(hand.id),date:hand.dateText||"",source_name:hand.sourceName||"",hero_name:hand.heroName,hero_cards:aiExportCards(hand.heroCards),button_seat:hand.buttonSeat,final_board:aiExportCards(hand.board),big_blind_chips:aiExportNumber(hand.bigBlind),total_pot_chips:aiExportNumber(hand.totalPot),rake_chips:aiExportNumber(hand.rake),hero_result:aiExportPlain(hand.heroResult),players:players.map(aiExportPlayerConfig),review_value:aiExportPlain(review),raw_hand_history:hand.raw||""},
     range_snapshots:registry.snapshots,steps
@@ -5066,7 +5635,7 @@ function loadSelectedHistoryHand(preserveStreet=true){
   updateStreetButtons();renderSlots();renderDeck();renderOpponents();renderMatrix();updateRangeEditionUi();updateHistoryUi();updateCalcReady();scheduleAutoCalculate(120);
   scheduleReplayBackgroundPrefetchSoon();
 }
-function selectHistoryHandById(id){
+function selectHistoryHandById(id,{open=true,scrollTop=true}={}){
   const hand=state.hhHands.find(h=>h.id===String(id));
   if(!hand) return;
   if(!state.hhMode){saveManualSnapshot();state.hhMode=true;}
@@ -5077,7 +5646,7 @@ function selectHistoryHandById(id){
   state.replayIndex=0;
   schedulePersistPrefs();
   loadSelectedHistoryHand(true);
-  openReplayerPage({scrollTop:true});
+  if(open)openReplayerPage({scrollTop});
 }
 function updateHistoryUi(){
   if(hhImportModeSelect) hhImportModeSelect.value=state.hhImportMode;
@@ -5111,88 +5680,82 @@ function handNetBB(hand){
   return Number.isFinite(bb)&&bb>0&&Number.isFinite(net) ? net/bb : NaN;
 }
 function visibleHistoryHands(){
-  let hands=state.hhHands.filter(h=>!state.hhKnownOnly || knownOpponentCount(h)>0);
-  hands=[...hands];
-  const byDateDesc=(a,b)=>b.sortKey-a.sortKey || Number(b.id)-Number(a.id);
-  const byDateAsc=(a,b)=>a.sortKey-b.sortKey || Number(a.id)-Number(b.id);
-
-  if(state.hhSort==="date_asc") hands.sort(byDateAsc);
-  else if(state.hhSort==="result_desc"){
-    hands.sort((a,b)=>{
-      const av=handNetBB(a),bv=handNetBB(b);
-      const af=Number.isFinite(av),bf=Number.isFinite(bv);
-      if(af!==bf) return af?-1:1;
-      if(!af) return byDateDesc(a,b);
-      return bv-av || byDateDesc(a,b);
-    });
-  }else if(state.hhSort==="result_asc"){
-    hands.sort((a,b)=>{
-      const av=handNetBB(a),bv=handNetBB(b);
-      const af=Number.isFinite(av),bf=Number.isFinite(bv);
-      if(af!==bf) return af?-1:1;
-      if(!af) return byDateDesc(a,b);
-      return av-bv || byDateDesc(a,b);
-    });
-  }else if(state.hhSort==="review_desc"){
-    hands.sort((a,b)=>{
-      const ar=reviewSummaryForHand(a),br=reviewSummaryForHand(b);
-      if(!!ar!==!!br)return ar?-1:1;
-      if(!ar)return byDateDesc(a,b);
-      if(ar.complete!==br.complete)return ar.complete?-1:1;
-      return (Number(br.totalLossBB)||0)-(Number(ar.totalLossBB)||0) || (Number(br.biggestLossBB)||0)-(Number(ar.biggestLossBB)||0) || byDateDesc(a,b);
-    });
-  }else hands.sort(byDateDesc);
-  return hands;
+  const inbox=reviewInboxBuild();
+  if(inbox)syncReviewInboxFilterOptions(inbox);
+  const query=inbox?reviewInboxQuery(inbox):null;
+  let items=query?.items||[];
+  if(state.hhKnownOnly)items=items.filter(item=>{
+    const hand=state.hhHands.find(h=>String(h.id)===String(item.hand_id));
+    return hand&&knownOpponentCount(hand)>0;
+  });
+  state.reviewInboxView=query?{...query,items}:inbox?{...inbox,items}:null;
+  const byId=new Map((state.hhHands||[]).map(h=>[String(h.id),h]));
+  return items.map(item=>byId.get(String(item.hand_id))).filter(Boolean);
 }
 function renderHistoryHands(){
+  renderReviewDashboard();
   hhHandsEl.innerHTML="";
-  hhSortSelect.value=state.hhSort;
-  hhKnownFilter.checked=state.hhKnownOnly;
+  if(hhSortSelect)hhSortSelect.value=state.hhSort;
+  if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
+  if(reviewStatusFilter)reviewStatusFilter.value=state.reviewInboxFilters.status||"";
+  if(reviewCoverageFilter)reviewCoverageFilter.value=state.reviewInboxFilters.coverage||"";
+  if(reviewSizingFilter)reviewSizingFilter.value=state.reviewInboxFilters.sizing_error||"";
+  if(reviewJamFilter)reviewJamFilter.value=state.reviewInboxFilters.jam||"";
+  if(reviewOverbetFilter)reviewOverbetFilter.value=state.reviewInboxFilters.overbet||"";
 
   if(!state.hhHands.length){
     hhListCount.textContent="0 main affichée";
+    if(reviewInboxSummary)reviewInboxSummary.textContent="Aucune main chargée.";
+    if(reviewInboxNotice){reviewInboxNotice.textContent="";reviewInboxNotice.className="review-inbox-notice";}
     return;
   }
 
-  const hands=visibleHistoryHands();
-  const reviewed=state.hhHands.filter(h=>reviewSummaryForHand(h)?.complete).length;
-  hhListCount.textContent=`${hands.length} / ${state.hhHands.length} main${hands.length>1?"s":""} affichée${hands.length>1?"s":""} · ${reviewed} revue${reviewed>1?"s":""} calculée${reviewed>1?"s":""}`;
+  const hands=visibleHistoryHands(),view=state.reviewInboxView,items=view?.items||[];
+  const byId=new Map(items.map(item=>[String(item.hand_id),item]));
+  const allItems=reviewInboxBuild()?.items||[];
+  const totalLoss=allItems.reduce((sum,item)=>sum+(Number(item.total_loss_bb)||0),0);
+  const toReview=allItems.filter(item=>item.status==="TO_REVIEW").length;
+  const incomplete=allItems.filter(item=>item.status==="INCOMPLETE_ANALYSIS").length;
+  if(reviewInboxSummary)reviewInboxSummary.textContent=`${state.hhHands.length} main${state.hhHands.length>1?"s":""} · ${toReview} à revoir · perte EV cumulée ${formatBB(totalLoss)}${incomplete?` · ${incomplete} analyse${incomplete>1?"s":""} incomplète${incomplete>1?"s":""}`:""}`;
+  hhListCount.textContent=`${hands.length} / ${state.hhHands.length} main${hands.length>1?"s":""} affichée${hands.length>1?"s":""}`;
+  if(reviewInboxNotice){
+    reviewInboxNotice.textContent=state.reviewInboxLastError?`Inbox indisponible : ${state.reviewInboxLastError}`:"";
+    reviewInboxNotice.className=`review-inbox-notice${state.reviewInboxLastError?" warn":""}`;
+  }
 
   if(!hands.length){
-    const empty=document.createElement("div");
-    empty.className="status";
-    empty.textContent="Aucune main ne correspond au filtre actif.";
-    hhHandsEl.appendChild(empty);
-    return;
+    const empty=document.createElement("div");empty.className="status";empty.textContent="Aucune main ne correspond aux filtres actifs.";hhHandsEl.appendChild(empty);return;
   }
 
   for(const h of hands){
-    const b=document.createElement("button");
-    b.type="button";b.className="hh-hand"+(state.selectedHand?.id===h.id?" selected":"");
-    const known=knownOpponentCount(h);
-    const hero=h.heroCards.map(cardLabel).join(" ");
-    const heroHtml=cardsHtml(h.heroCards,{token:true,small:true});
-    const r=h.heroResult||{invested:0,collected:0,net:0};
-    const bb=h.bigBlind;
-    const investedBB=bb?r.invested/bb:NaN, collectedBB=bb?r.collected/bb:NaN, netBB=bb?r.net/bb:NaN;
-    const resultClass=Number.isFinite(netBB)?(netBB>0?"win":netBB<0?"loss":"even"):"even";
-    const resultLabel=Number.isFinite(netBB)?(netBB>0?"Gagné":netBB<0?"Perdu":"Neutre"):"N/D";
-    const signed=Number.isFinite(netBB)
-      ? (netBB>0?`+${formatBB(netBB)}`:netBB<0?`−${formatBB(Math.abs(netBB))}`:"0,00 BB")
-      : "—";
-    const resultTitle=Number.isFinite(netBB)
-      ? `Engagé : ${formatBB(investedBB)} · Encaissé : ${formatBB(collectedBB)} · Net : ${netBB>0?"+":netBB<0?"−":""}${formatBB(Math.abs(netBB))}`
-      : "Grosse blind non reconnue dans l'historique.";
-    const review=reviewSummaryForHand(h),reviewCls=reviewLossClass(review);
-    const reviewAmount=review?`${review.complete?"":"~ "}${formatBB(review.totalLossBB)}`:"—";
-    const reviewSplit=review?`H ${formatBB(review.heroLossBB)} · A ${formatBB(review.opponentLossBB)} · ${review.comparableDecisions}/${review.analyzableDecisions}`:"non analysée";
-    b.innerHTML=`<span class="hh-time">${escapeHtml(h.dateText.replace(/ \w+$/,""))}<br>#${escapeHtml(h.id)}</span>
-      <span class="hh-main"><strong>${escapeHtml(h.heroName)} · ${heroHtml}</strong><small>${handStreetLabel(h)} · ${h.players.length} joueurs · ${known} main(s) adverse(s) connue(s) · ${escapeHtml(h.sourceName)}</small></span>
-      <span class="hh-cards">${heroHtml}</span>
-      <span class="hh-review ${reviewCls}" title="${escapeHtml(reviewLossTitle(review))}">Perte EV cumulée<span class="amount">${escapeHtml(reviewAmount)}</span><span class="split">${escapeHtml(reviewSplit)}</span></span>
-      <span class="hh-result ${resultClass}" title="${escapeHtml(resultTitle)}">${resultLabel}<span class="amount">${escapeHtml(signed)}</span></span>`;
-    b.onclick=()=>selectHistoryHandById(h.id);
-    hhHandsEl.appendChild(b);
+    const item=byId.get(String(h.id));if(!item)continue;
+    const decision=item.costliest_decision||item.primary_decision;
+    const row=document.createElement("div");
+    row.className="hh-hand review-inbox-row"+(state.selectedHand?.id===h.id?" selected":"");
+    row.dataset.handId=String(h.id);
+    if(item.deep_link?.decision_id)row.dataset.decisionId=String(item.deep_link.decision_id);
+    if(item.deep_link?.step_index!=null)row.dataset.stepIndex=String(item.deep_link.step_index);
+    const decisionLoss=Number(decision?.loss_bb)||0;
+    const markers=[item.sizing_error?"sizing":null,item.jam?"jam":null,item.overbet?"overbet":null].filter(Boolean).join(" · ");
+    const coverage=`Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
+    const incompleteReasons=item.status==="INCOMPLETE_ANALYSIS"?(item.coverage?.reasons||[]).join(" · "):"";
+    const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
+    const robustnessText=modelBRobustnessStatusText(robustness);
+    const statusCls=item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
+    const open=document.createElement("button");
+    open.type="button";open.className="review-inbox-open";
+    open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
+    open.innerHTML=`<span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
+      <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}${incompleteReasons?` · ${escapeHtml(incompleteReasons)}`:""}</small></span>
+      <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")} · ${escapeHtml(robustnessText)}</small></span>`;
+    open.onclick=()=>openReviewInboxItem(item);
+    const status=document.createElement("span");
+    status.className="review-inbox-status";
+    status.innerHTML=`<span class="review-inbox-status-badge${statusCls}">${escapeHtml(item.status_label)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
+    status.querySelector("[data-review-inbox-reviewed]")?.addEventListener("change",ev=>setReviewInboxReviewed(h.id,ev.currentTarget.checked));
+    row.append(open,status);
+    hhHandsEl.appendChild(row);
   }
 }
 
@@ -5464,16 +6027,22 @@ hhClearBtn?.addEventListener("click",()=>clearLoadedHands({persist:true,reason:"
 hhWatchBtn.addEventListener("click",startHHWatch);
 hhWatchStopBtn.addEventListener("click",()=>stopHHWatch("Surveillance automatique arrêtée · les mains déjà chargées restent disponibles."));
 
-hhSortSelect.addEventListener("change",()=>{
+hhSortSelect?.addEventListener("change",()=>{
   state.hhSort=hhSortSelect.value;
   schedulePersistPrefs();
   renderHistoryHands();
 });
-hhKnownFilter.addEventListener("change",()=>{
+hhKnownFilter?.addEventListener("change",()=>{
   state.hhKnownOnly=hhKnownFilter.checked;
   schedulePersistPrefs();
   renderHistoryHands();
 });
+[
+  [reviewStatusFilter,"status"],[reviewCoverageFilter,"coverage"],[reviewStreetFilter,"street"],
+  [reviewPositionFilter,"position"],[reviewSpotFilter,"spot_family"],[reviewPlayedFilter,"action_played"],
+  [reviewRecommendedFilter,"action_recommended"],[reviewSizingFilter,"sizing_error"],
+  [reviewJamFilter,"jam"],[reviewOverbetFilter,"overbet"]
+].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;renderHistoryHands();}));
 
 knownHandsBtn.addEventListener("click",()=>{
   if(knownHandsBtn.disabled) return;
@@ -7505,18 +8074,20 @@ async function restoreLocalState(){
     persistenceStatus("Restauration des données enregistrées dans ce navigateur…",false,true);
     await openLocalDb();
 
-    const [prefs,rangeSource,populationModelSource,postflopModelSource,hhSources,reviewScores]=await Promise.all([
+    const [prefs,rangeSource,populationModelSource,postflopModelSource,hhSources,reviewScores,reviewInboxUserMetadataByScope]=await Promise.all([
       localDbGet("prefs").catch(()=>null),
       localDbGet("rangeSource").catch(()=>null),
       localDbGet("populationModelSource").catch(()=>null),
       localDbGet("postflopModelSource").catch(()=>null),
       localDbGet("hhSources").catch(()=>null),
-      localDbGet("reviewScores").catch(()=>null)
+      localDbGet("reviewScores").catch(()=>null),
+      localDbGet(REVIEW_INBOX_METADATA_DB_KEY).catch(()=>null)
     ]);
     if(reviewScores&&typeof reviewScores==="object")state.reviewScores=reviewScores;
+    if(reviewInboxUserMetadataByScope&&typeof reviewInboxUserMetadataByScope==="object")state.reviewInboxUserMetadataByScope=reviewInboxUserMetadataByScope;
 
     if(prefs){
-      if(["date_desc","date_asc","result_desc","result_asc","review_desc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
+      if(["review_desc","status_asc","street_asc","position_asc","hand_asc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
       state.hhKnownOnly=!!prefs.hhKnownOnly;
       if(["replace","add"].includes(prefs.hhImportMode)) state.hhImportMode=prefs.hhImportMode;
       if(["main","replayer"].includes(prefs.appView)) state.appView=prefs.appView;
@@ -7593,6 +8164,10 @@ localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
 localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
+reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
+reviewDashboardReviewBtn?.addEventListener("click",openReviewDashboardReview);
+reviewDashboardLeakBtn?.addEventListener("click",openReviewDashboardLeak);
+reviewDashboardTrainingBtn?.addEventListener("click",openReviewDashboardTraining);
 quickNavToggle?.addEventListener("click",toggleQuickNav);
 updateQuickNavUi();
 updateProductIdentityUi();
@@ -7600,15 +8175,15 @@ loadRuntimeReleaseIdentity();
 updateAppView();
 document.querySelectorAll(".quick-nav a").forEach(a=>{
   a.addEventListener("click",e=>{
-    const id=(a.getAttribute("href")||"").replace(/^#/,"");
+    const href=a.getAttribute("href")||"";
+    if(!href.startsWith("#")) return;
     e.preventDefault();
-    if(id==='replayerSection'){
-      if(state.selectedHand){ selectHistoryHandById(state.selectedHand.id); return; }
-      state.appView='main';state.hhMode=false;updateAppView();
-      document.getElementById('historiesSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    const id=href.slice(1);
+    if(id==="trainerPage"){
+      trainerOpenBtn?.click();
       return;
     }
-    if(state.appView==='replayer'){state.appView='main';updateAppView();}
+    if(state.appView==="replayer"){state.appView="main";state.hhMode=false;updateAppView();}
     const target=id?document.getElementById(id):null;
     if(!target)return;
     requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));

@@ -12,7 +12,9 @@ def main() -> None:
     # No contradictory legacy version is exposed in the main product chrome.
     assert '<title>Poker Range Equity — Offline</title>' in INDEX
     assert '<title>Poker Range Equity — Offline v83</title>' not in INDEX
-    assert '<h1>Poker Range Equity</h1>' in INDEX
+    assert '<h1>Review</h1>' in INDEX
+    assert 'Que faut-il revoir ou travailler maintenant ?' in INDEX
+    assert 'id="reviewDashboard"' in INDEX
     assert '>v78</span>' not in INDEX
     assert 'moteur v61' not in INDEX.lower()
 

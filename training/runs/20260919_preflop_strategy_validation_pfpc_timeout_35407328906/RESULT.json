@@ -1,0 +1,114 @@
+{
+  "schema": "poker-preflop-strategy-validation-technical-block/v1",
+  "related_issue": 108,
+  "status": "BLOCKED_TECHNICAL",
+  "decision": "NO_SELECTION_ENVIRONMENT_JOB_TIMEOUT",
+  "interpretation": "NO_PERFORMANCE_RESULT",
+  "contract": {
+    "path": "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260918_PFPC.json",
+    "version": "2026-09-18.3"
+  },
+  "workflow": {
+    "run_id": 35407328906,
+    "run_attempt": 1,
+    "head_branch": "execute/issue-108-pfpc-validation-20260918",
+    "head_sha": "30e24396870a1b8818db7af590ffa26e3f761af9",
+    "status": "completed",
+    "conclusion": "cancelled",
+    "run_started_at": "2026-09-18T23:52:16Z",
+    "updated_at": "2026-09-19T02:56:42Z",
+    "prepare_job": "success",
+    "selection_job": "skipped",
+    "persist_result_branch_job": "skipped"
+  },
+  "candidate": {
+    "evidence_branch": "evidence/issue-107-pfpc-d7ec5e532dc5",
+    "evidence_commit": "dfddfb5696623a2611f35565a213d14013d8a343",
+    "repository_sha256": "90c2778ce33aed1ec68cdbf062e4eff9d24510a80fe056b3294b75b5bc98137b",
+    "binding_sha256": "44e1e4d9e5846f3f2e6cc0402848b35b0e9e69b0a34334981c8e961f523a6bb7",
+    "source_head_sha": "d7ec5e532dc550d4c37e9129218b348eef4587b4"
+  },
+  "frozen_protocol": {
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "master_seed": 20260917,
+    "rollouts_per_base_hand": 2,
+    "bootstrap_samples": 5000,
+    "required_ci95_lower_bound_bb_per_100": 0,
+    "environments": [
+      "model-b-public-reference-nominal-v1",
+      "model-b-public-reference-lower-aggression-v1",
+      "model-b-public-reference-higher-aggression-v1"
+    ]
+  },
+  "environment_jobs": [
+    {
+      "environment_id": "model-b-public-reference-nominal-v1",
+      "job_id": 105800405246,
+      "started_at": "2026-09-18T23:56:26Z",
+      "completed_at": "2026-09-19T02:56:41Z",
+      "conclusion": "cancelled",
+      "terminal_log": "The operation was canceled.",
+      "environment_report_uploaded": false
+    },
+    {
+      "environment_id": "model-b-public-reference-lower-aggression-v1",
+      "job_id": 105800405257,
+      "started_at": "2026-09-18T23:56:26Z",
+      "completed_at": "2026-09-19T02:56:41Z",
+      "conclusion": "cancelled",
+      "terminal_log": "The operation was canceled.",
+      "environment_report_uploaded": false
+    },
+    {
+      "environment_id": "model-b-public-reference-higher-aggression-v1",
+      "job_id": 105800405254,
+      "started_at": "2026-09-18T23:56:26Z",
+      "completed_at": "2026-09-19T02:56:40Z",
+      "conclusion": "cancelled",
+      "terminal_log": "The operation was canceled.",
+      "environment_report_uploaded": false
+    }
+  ],
+  "frozen_prepare_artifact": {
+    "artifact_id": 10572682881,
+    "name": "issue-108-pfpc-validation-scenarios-30e24396870a1b8818db7af590ffa26e3f761af9",
+    "size_bytes": 1023159,
+    "digest": "sha256:e8d2e3c991ef41daee6362961ba230ae4ba557a27797b03e63e84d71006b425e",
+    "expires_at": "2026-10-18T23:56:21Z"
+  },
+  "selection_boundary": {
+    "validation_scenarios_materialized": true,
+    "validation_policy_rollout_started": true,
+    "complete_environment_reports": 0,
+    "candidate_exposure_interpretable": false,
+    "performance_gate_interpretable": false,
+    "selection_performed": false,
+    "validation_result_persisted_by_workflow": false,
+    "partial_results_reusable": false,
+    "test_data_read": false,
+    "test_consumed": false,
+    "promotion_authorized": false
+  },
+  "test_ledger": {
+    "path": "training/full_hand/TEST_HOLDOUT_LEDGER.json",
+    "verified_at_main_sha": "a2193ebf13cd3674695ff9671e7a7d8d22474f6d",
+    "generation_id": "zoom_100-200_play_20260915_g1",
+    "status": "UNCONSUMED",
+    "consumed_by_cycle": null,
+    "consumed_by_frozen_finalist": null
+  },
+  "root_cause": {
+    "category": "CI_EXECUTION_TIMEOUT",
+    "workflow_setting_minutes": 180,
+    "observation": "All three environment jobs started normally, executed the paired PFPC environment command for approximately 180 minutes, and were then cancelled together by GitHub at the configured job timeout. No runtime exception was logged before cancellation.",
+    "scientific_interpretation": "Purely technical execution-envelope failure. No complete environment report or VALIDATION selection exists; this run is not interpretable as candidate performance."
+  },
+  "remediation": {
+    "scope": "MECHANICAL_ONLY",
+    "workflow_change": "environment timeout-minutes 180 -> 360",
+    "scientific_protocol_changed": false,
+    "forbidden_reuse": "No partial data from run 35407328906 may be reused as performance evidence.",
+    "rerun_rule": "Only a fresh VALIDATION identity may run after this classification/remediation is merged."
+  },
+  "active_strategy_effect": "NONE"
+}

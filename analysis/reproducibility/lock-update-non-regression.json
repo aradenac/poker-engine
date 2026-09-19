@@ -1,0 +1,135 @@
+{
+  "schema": "poker-engine-repro-lock-update-validation/v1",
+  "issue": 203,
+  "lane": "F",
+  "conflict_group": "REPRO",
+  "scientific_effect": "NONE_INFRASTRUCTURE_ONLY",
+  "development_base_sha": "bcf30a7ae2493472594fedc1e395187c83ca171c",
+  "branch_validation_head": "54df54a179500e9662123a18a46fcadb29d53924",
+  "source_blobs": {
+    "reproducibility/lock-update-policy.json": "b10e5ecca98b738ad8a83cdd012bba4f9d03f507",
+    "tools/repro_lock_update.py": "6bb58603705f8bbf95e6ecee726c631905c1a1ca",
+    "tests/test_repro_lock_update.py": "afa5add509356c22efb99ac296c8df03720ef62b",
+    "docs/reproducible-environment.md": "5164ee8dfff84abae577ce81f5b4fa47dc8019bc"
+  },
+  "procedure": {
+    "mode": "DRY_RUN_REVIEW_ONLY",
+    "automatic_apply": false,
+    "historical_runs_mutated": false,
+    "workflows_modified": false,
+    "components": [
+      "python_runtime",
+      "python_dependencies",
+      "node_runtime",
+      "node_dependencies",
+      "playwright_runtime",
+      "chromium_runtime",
+      "os_base",
+      "container_base",
+      "apt_snapshot",
+      "system_packages"
+    ],
+    "outputs": [
+      "managed file old/new SHA-256",
+      "semantic component old/new diff",
+      "baseline/candidate managed-state SHA-256",
+      "old/new container manifest SHA-256",
+      "old/new environment_identity SHA-256",
+      "derived hermeticity level",
+      "required non-regression commands",
+      "deterministic plan_sha256"
+    ]
+  },
+  "tests": [
+    {
+      "command": "python3 -m py_compile tools/repro_lock_update.py tests/test_repro_lock_update.py",
+      "status": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/test_repro_lock_update.py",
+      "status": "PASS",
+      "tests_run": 12,
+      "coverage": [
+        "no-change deterministic/non-mutating",
+        "coupled system-package update PASS + identity change",
+        "partial system-package update FAIL",
+        "partial Playwright update FAIL",
+        "partial Python runtime update FAIL",
+        "partial Node runtime update FAIL",
+        "partial apt snapshot update FAIL",
+        "partial container digest update FAIL",
+        "missing candidate managed file FAIL",
+        "expected component set mismatch FAIL",
+        "component-aware non-regression matrix",
+        "all authorized update components present"
+      ]
+    },
+    {
+      "command": "python3 tools/repro_container.py validate",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tools/repro_hardening.py validate",
+      "status": "PASS",
+      "hermeticity_level": "BASE_IMAGE_PINNED"
+    },
+    {
+      "command": "python3 tools/repro_environment.py --check-contract",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tools/repro_environment_identity.py fragment",
+      "status": "PASS",
+      "local_identity_sha256": "0b7f263adb2c39e23815996cc55c11f756e73419f12e0fb0a14284f638c83445"
+    },
+    {
+      "command": "python3 tools/repro_lock_update.py matrix",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tools/repro_lock_update.py plan --candidate-root .",
+      "status": "NO_CHANGE",
+      "violations": 0,
+      "identity_changed": false,
+      "local_plan_sha256": "83a46c13752890785419741e7b5caad1915bc136fb8c3316a9c43b5b00cb663a"
+    }
+  ],
+  "synthetic_change_evidence": {
+    "change": "add zz-test-package to requested system-package list and matching null-resolution entry",
+    "expected_components": [
+      "system_packages"
+    ],
+    "status": "PASS",
+    "identity_changed": true,
+    "local_old_container_manifest_sha256": "e50fc19f331836bd9c14abc44fe2745d04a3b737ecb3ecd9b76ff254b5ae66ca",
+    "local_new_container_manifest_sha256": "339a4d5fefd0e5660b58d1bd8d8e60d6e82d51f7d3df4d5d605286155e8397",
+    "local_old_environment_identity_sha256": "0b7f263adb2c39e23815996cc55c11f756e73419f12e0fb0a14284f638c83445",
+    "local_new_environment_identity_sha256": "1e50ee3845750f3a724b7a81725744e1afefb3e4d1b1cd5ae8318665b4cff1d8"
+  },
+  "scope_check": {
+    "status": "WARN",
+    "violations": 0,
+    "warnings": [
+      {
+        "rule": "UNCLASSIFIED_PATH",
+        "path": "analysis/reproducibility/lock-update-non-regression.json",
+        "authorization": "#203 explicitly authorizes persisted machine-readable non-regression evidence for this lane-F tranche"
+      }
+    ]
+  },
+  "negative_guards": {
+    "github_workflows_changed": false,
+    "real_upgrade_applied": false,
+    "issue_108_changed": false,
+    "historical_training_runs_changed": false,
+    "model_runtime_changed": false,
+    "site_changed": false,
+    "scientific_test_ledger_changed": false
+  },
+  "limitations": [
+    "SYSTEM_PACKAGES_FULLY_PINNED remains false; this procedure does not fabricate exact apt versions.",
+    "BROWSER_ARCHIVE_SHA_PINNED remains false; this procedure requires provenance and never invents unavailable hashes.",
+    "CI/workflow consumption and enforcement remain deferred until #108 release."
+  ],
+  "execution_note": "No real dependency/runtime upgrade and no network install was performed by this tranche. The planner is dry-run only. Local validation exercised the procedure and existing REPRO validators; the branch source was separately inspected after correcting connector newline escaping."
+}

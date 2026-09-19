@@ -1,0 +1,60 @@
+{
+  "schema": "poker-engine-container-base/v1",
+  "issue": 203,
+  "image": {
+    "repository": "ubuntu",
+    "tag": "24.04",
+    "platform": "linux/amd64",
+    "manifest_digest": "sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
+    "index_digest": "sha256:b3cc40b72b93588182b5410f723c7aaf142363311c2aa993d8a453ddcbb3ae15",
+    "os": {
+      "id": "ubuntu",
+      "version_id": "24.04",
+      "architecture": "x86_64"
+    }
+  },
+  "verification": {
+    "source": "Docker Hub official image",
+    "source_url": "https://hub.docker.com/layers/library/ubuntu/24.04/images/sha256-496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
+    "verified_at": "2026-09-19",
+    "observed_manifest_digest": "sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
+    "observed_index_digest": "sha256:b3cc40b72b93588182b5410f723c7aaf142363311c2aa993d8a453ddcbb3ae15"
+  },
+  "runtime_sources": {
+    "python": {
+      "version": "3.11.9",
+      "url": "https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tar.xz",
+      "sha256": "9b1e896523fc510691126c864406d9360a3d1e986acbda59cda57b5abda45b87"
+    },
+    "node": {
+      "version": "22.14.0",
+      "url": "https://nodejs.org/download/release/v22.14.0/node-v22.14.0-linux-x64.tar.xz",
+      "sha256": "69b09dba5c8dcb05c4e4273a4340db1005abeafe3927efda2bc5b249e80437ec"
+    },
+    "playwright": {
+      "version": "1.55.0",
+      "browser": "chromium",
+      "chromium_version": "140.0.7339.16",
+      "browser_archive_digest_pinned": false
+    }
+  },
+  "definition": "reproducibility/Dockerfile.science",
+  "system_packages": "reproducibility/system-packages.apt.txt",
+  "hermeticity": {
+    "base_image_pinned": true,
+    "python_source_sha256_pinned": true,
+    "node_archive_sha256_pinned": true,
+    "dependency_locks_pinned": true,
+    "playwright_version_pinned": true,
+    "chromium_version_verified": true,
+    "chromium_archive_digest_pinned": false,
+    "system_packages_fully_pinned": false,
+    "apt_snapshot": null,
+    "limitation": "Ubuntu Snapshot Service timestamp and source set are pinned; package versions are resolved/compared at build or verify time and are not pre-expanded. Playwright Chromium revision/source are pinned, but no official archive SHA-256 is published in Playwright 1.55.0 metadata.",
+    "browser_archive_sha_pinned": false,
+    "apt_snapshot_pinned": true
+  },
+  "apt_snapshot": "reproducibility/apt-snapshot.lock.json",
+  "system_packages_resolution": "reproducibility/system-packages.resolution.lock.json",
+  "browser_identity": "reproducibility/browser-identity.lock.json"
+}
