@@ -1,0 +1,6 @@
+{
+  "note": "Contract fixture only; not a scientific runtime identity.",
+  "schema": "synthetic-environment-identity/v1",
+  "scientific_effect": "NONE_SYNTHETIC_FIXTURE",
+  "slot_id": "env:SYNTHETIC_CONTRACT_FIXTURE_V1"
+}

@@ -1,0 +1,162 @@
+{
+  "schema": "model-b-response-to-price-protocol/v1",
+  "issue": 197,
+  "version": "2026-09-19.1",
+  "status": "FROZEN_BEFORE_ISSUE_197_EVALUATION",
+  "purpose": "Evaluate a future-generation independent Model B response-to-price candidate without changing the active environment.",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "data": {
+    "scope": {
+      "stakes": [
+        "100/200"
+      ]
+    },
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6"
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip",
+        "sha256": "7768cd3ddca1f7d48601ea5a7c378e6bf1211d92aadb7cab9b3689f3b9dc561c"
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+        "sha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed"
+      }
+    ],
+    "split_contract": {
+      "function": "tools.datasets.build_hand_history_increment.split_for",
+      "fit": [
+        "TRAIN"
+      ],
+      "evaluate": [
+        "VALIDATION"
+      ],
+      "hero_sensitivity": [
+        "VALIDATION"
+      ],
+      "forbidden": [
+        "TEST"
+      ],
+      "test_consumed": false
+    },
+    "excluded_players": [
+      "RoiDePiqueNique"
+    ]
+  },
+  "incumbent": {
+    "model_dir": "training/runs/20260912_independent_profiles_v2/model",
+    "role": "reference Model B",
+    "active_pointer_change_allowed": false
+  },
+  "candidate": {
+    "representation": "discrete hierarchical backoff",
+    "mode": "postflop FACING decisions only",
+    "actions": [
+      "FOLD",
+      "CALL",
+      "RAISE"
+    ],
+    "features": [
+      "profile",
+      "street",
+      "relative_position",
+      "pot_type",
+      "sequence",
+      "facing_price_to_pot",
+      "spr"
+    ],
+    "forbidden_features": [
+      "model_a_ev",
+      "model_a_policy",
+      "model_a_recommendation",
+      "future_cards"
+    ],
+    "price_monotonicity_assumption": "NONE",
+    "price_edges": [
+      0.25,
+      0.5,
+      0.75,
+      1,
+      1.5,
+      2.5
+    ],
+    "spr_edges": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "action_min_support": 30,
+    "sizing_min_support": 12,
+    "alpha_per_action": 1,
+    "fit_population": "opponents_only_excluding_declared_hero"
+  },
+  "predictive_evaluation": {
+    "pairing_unit": "hand_id",
+    "bootstrap_samples": 5000,
+    "seed": 20260919,
+    "metrics": [
+      "log_loss",
+      "brier",
+      "calibration_l1",
+      "ece_confidence",
+      "sizing_absolute_log2_error",
+      "p10_p90_coverage",
+      "p99_tail_rate"
+    ],
+    "support_dimensions": [
+      "price_bucket",
+      "spr_bucket",
+      "sequence"
+    ],
+    "tail_definition": "is_jam OR facing_price_to_pot > 1.5 OR raise_sizing_ratio > 1.5",
+    "counterfactual_price_points": [
+      0.2,
+      0.4,
+      0.6,
+      0.9,
+      1.25,
+      1.75,
+      2.5
+    ],
+    "counterfactual_context_count": 12
+  },
+  "frozen_validation_gate": {
+    "paired_log_loss_ci95_upper_le_zero": true,
+    "candidate_brier_not_worse_by_gt": 0.002,
+    "candidate_ece_not_worse_by_gt": 0.01,
+    "sizing_median_abs_log2_not_worse_by_gt": 0.05,
+    "validation_low_action_support_max_fraction": 0.1
+  },
+  "hero_sensitivity": {
+    "split": "VALIDATION",
+    "base_hands": 32,
+    "reps": 2,
+    "trials_per_decision": 1200,
+    "master_seed": 20260919,
+    "policy": "current",
+    "environments": [
+      "reference",
+      "candidate_nominal",
+      "candidate_fold_low",
+      "candidate_fold_high"
+    ],
+    "environment_weights": null,
+    "sizing_change_threshold_pot": 0.25,
+    "interpretation": "paired sensitivity diagnostic only; not an environment probability model"
+  },
+  "decision_contract": {
+    "on_validation_pass": "RETAIN_ACTIVE_REFERENCE__CANDIDATE_VALIDATION_SUPPORTED__NO_PROMOTION_WITHOUT_FROZEN_FINAL_PROTOCOL",
+    "on_validation_fail": "RETAIN_ACTIVE_REFERENCE__CANDIDATE_REJECTED_ON_VALIDATION",
+    "automatic_promotion": false,
+    "test_consumption": false,
+    "production_effect": "NONE"
+  },
+  "protected_science": {
+    "issue_107_108_protocols_modified": false,
+    "issue_107_108_workflows_modified": false,
+    "holdout_ledger_modified": false
+  }
+}

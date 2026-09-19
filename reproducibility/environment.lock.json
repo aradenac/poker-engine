@@ -15,9 +15,30 @@
     "browser": "chromium",
     "chromium_version": "140.0.7339.16"
   },
+  "os": {
+    "spec": "reproducibility/os-base.lock.json",
+    "id": "ubuntu",
+    "version_id": "24.04",
+    "machine": "x86_64"
+  },
+  "container": {
+    "lock": "reproducibility/container-base.lock.json",
+    "definition": "reproducibility/Dockerfile.science",
+    "system_packages": "reproducibility/system-packages.apt.txt",
+    "apt_snapshot": "reproducibility/apt-snapshot.lock.json",
+    "system_packages_resolution": "reproducibility/system-packages.resolution.lock.json",
+    "browser_identity": "reproducibility/browser-identity.lock.json"
+  },
+  "manifest": {
+    "schema": "poker-engine-runtime-environment/v2",
+    "content_addressed": true
+  },
   "scope": {
     "workflows_wired": false,
+    "os_base_pinned": true,
     "os_packages_pinned": false,
-    "note": "Phase 1 defines the repository contract only. Scientific workflow integration and OS/container pinning are deferred until the #107/#108 freeze is released."
+    "container_base_pinned": true,
+    "container_hermeticity": "DERIVED_FROM_VERSIONED_INPUTS",
+    "note": "Local/non-CI phase. Scientific workflow integration remains deferred until the #107/#108 freeze is released."
   }
 }

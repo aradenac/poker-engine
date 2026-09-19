@@ -1,11 +1,15 @@
 "use strict";
 (function(global){
   const DB_NAME="poker-population-packs-v1";
-  const DB_VERSION=1;
+  const DB_VERSION=2;
   const PACK_STORE="packs";
   const META_STORE="meta";
+  const TEST_PACK_STORE="test_packs";
+  const TEST_META_STORE="test_meta";
   const ACTIVE_KEY="active";
   const PREVIOUS_KEY="previous";
+  const TEST_ACTIVE_KEY="test_active";
+  const TEST_PREVIOUS_KEY="test_previous";
   const CATALOG_SCHEMA="poker-population-catalog/v1";
   const RUNTIME_SCHEMA="poker-browser-runtime-pack/v1";
   const EXPORT_SCHEMA="poker-browser-runtime-pack-export/v1";
@@ -21,7 +25,7 @@
   }
   function hex(buffer){return [...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,"0")).join("");}
   async function sha256(value){return hex(await crypto.subtle.digest("SHA-256",bytes(value)));}
-  function storageId(entry){return `${entry.pack_id}::${entry.runtime_revision}`;}
+  function storageId(entry){return `${entry.population_id}::${entry.pack_id}::${entry.pack_version}::${entry.runtime_revision}`;}
   function asUrlPath(url){return new URL(url,location.href).pathname;}
 
   function openDb(){
@@ -31,6 +35,8 @@
         const db=req.result;
         if(!db.objectStoreNames.contains(PACK_STORE))db.createObjectStore(PACK_STORE,{keyPath:"id"});
         if(!db.objectStoreNames.contains(META_STORE))db.createObjectStore(META_STORE);
+        if(!db.objectStoreNames.contains(TEST_PACK_STORE))db.createObjectStore(TEST_PACK_STORE,{keyPath:"id"});
+        if(!db.objectStoreNames.contains(TEST_META_STORE))db.createObjectStore(TEST_META_STORE);
       };
       req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
     });
@@ -45,15 +51,15 @@
     try{return await new Promise((resolve,reject)=>{const tx=db.transaction(store,"readonly"),r=tx.objectStore(store).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});}
     finally{db.close();}
   }
-  async function putPack(record){
+  async function putPack(record,store=PACK_STORE){
     const db=await openDb();
-    try{await new Promise((resolve,reject)=>{const tx=db.transaction(PACK_STORE,"readwrite");tx.objectStore(PACK_STORE).put(record);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
+    try{await new Promise((resolve,reject)=>{const tx=db.transaction(store,"readwrite");tx.objectStore(store).put(record);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
     finally{db.close();}
   }
-  async function metaGet(key){return idbGet(META_STORE,key);}
-  async function metaSetPair(active,previous){
+  async function metaGet(key,store=META_STORE){return idbGet(store,key);}
+  async function metaSetPair(active,previous,{store=META_STORE,activeKey=ACTIVE_KEY,previousKey=PREVIOUS_KEY}={}){
     const db=await openDb();
-    try{await new Promise((resolve,reject)=>{const tx=db.transaction(META_STORE,"readwrite"),s=tx.objectStore(META_STORE);s.put(active,ACTIVE_KEY);if(previous)s.put(previous,PREVIOUS_KEY);else s.delete(PREVIOUS_KEY);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
+    try{await new Promise((resolve,reject)=>{const tx=db.transaction(store,"readwrite"),s=tx.objectStore(store);s.put(active,activeKey);if(previous)s.put(previous,previousKey);else s.delete(previousKey);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
     finally{db.close();}
   }
 
@@ -62,8 +68,16 @@
     for(const e of doc.entries)validateEntry(e);
     return doc;
   }
-  function validateEntry(e){
+  function validateEntry(e,{allowTestOnly=false}={}){
     if(!e||e.schema!==RUNTIME_SCHEMA||!e.pack_id||!e.pack_version||!e.population_id||!e.runtime_revision)throw new Error("Entrée de pack invalide.");
+    const distributionClass=e.distribution_class||"PRODUCTION";
+    if(distributionClass!=="PRODUCTION"&&distributionClass!=="TEST_ONLY")throw new Error("Classe de distribution inconnue.");
+    if(distributionClass==="TEST_ONLY"){
+      if(!allowTestOnly)throw new Error("Pack TEST_ONLY interdit dans le chemin de production.");
+      const p=e.publication_policy||{};
+      if(e.test_only!==true||e.non_publishable!==true||e.recommended===true||e.default===true)throw new Error("Contrat TEST_ONLY non fail-closed.");
+      for(const key of ["release_allowed","catalog_eligible","recommended","default","registry_promotion_allowed","production_activation_allowed"]){if(p[key]!==false)throw new Error(`TEST_ONLY: politique ${key} doit être false.`);}
+    }
     if(!Array.isArray(e.assets)||!e.assets.length)throw new Error(`Pack ${e.pack_id}: assets absents.`);
     const keys=new Set();
     for(const a of e.assets){
@@ -95,8 +109,8 @@
   async function fetchCatalog(url="./packs/catalog.json",fetchImpl=fetch){
     const r=await fetchImpl(url,{cache:"no-store"});if(!r.ok)throw new Error(`Catalogue : HTTP ${r.status}`);return validateCatalog(await r.json());
   }
-  async function fetchAndValidate(entry,fetchImpl=fetch){
-    validateEntry(entry);await assertCompatibility(entry,fetchImpl);
+  async function fetchAndValidate(entry,fetchImpl=fetch,{allowTestOnly=false}={}){
+    validateEntry(entry,{allowTestOnly});await assertCompatibility(entry,fetchImpl);
     const files={};
     for(const asset of entry.assets){
       const r=await fetchImpl(asset.url,{cache:"no-store"});if(!r.ok)throw new Error(`${asset.key}: HTTP ${r.status}`);
@@ -108,22 +122,77 @@
     }
     return files;
   }
+  function makeRecord(entry,files,source){return {id:storageId(entry),pack_id:entry.pack_id,pack_version:entry.pack_version,population_id:entry.population_id,runtime_revision:entry.runtime_revision,distribution_class:entry.distribution_class||"PRODUCTION",entry:structuredClone(entry),files,source,installed_at:new Date().toISOString()};}
   async function install(entry,{fetchImpl=fetch,source="catalog"}={}){
     const files=await fetchAndValidate(entry,fetchImpl);
-    const record={id:storageId(entry),pack_id:entry.pack_id,pack_version:entry.pack_version,population_id:entry.population_id,runtime_revision:entry.runtime_revision,entry:structuredClone(entry),files,source,installed_at:new Date().toISOString()};
-    await putPack(record);return record;
+    const record=makeRecord(entry,files,source);
+    await putPack(record,PACK_STORE);return record;
   }
+  async function installTestOnly(entry,{fetchImpl=fetch,source="test_fixture"}={}){
+    if(entry?.distribution_class!=="TEST_ONLY")throw new Error("Le sandbox accepte uniquement TEST_ONLY.");
+    const files=await fetchAndValidate(entry,fetchImpl,{allowTestOnly:true});
+    const record=makeRecord(entry,files,source);
+    await putPack(record,TEST_PACK_STORE);return record;
+  }
+  const MANUAL_OVERRIDE_DB_NAME="PokerRangeEquityOffline";
+  const MANUAL_OVERRIDE_DB_VERSION=1;
+  const MANUAL_OVERRIDE_STORE="kv";
+  const MANUAL_OVERRIDE_CONTRACT_KEY="manualOverrideContract";
+
+  function openManualOverrideDb(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(MANUAL_OVERRIDE_DB_NAME,MANUAL_OVERRIDE_DB_VERSION);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(MANUAL_OVERRIDE_STORE))db.createObjectStore(MANUAL_OVERRIDE_STORE);};
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error||new Error("Stockage override manuel indisponible."));
+    });
+  }
+  async function readManualOverrideContract(){
+    const db=await openManualOverrideDb();
+    try{
+      return await new Promise((resolve,reject)=>{
+        const tx=db.transaction(MANUAL_OVERRIDE_STORE,"readonly");
+        const req=tx.objectStore(MANUAL_OVERRIDE_STORE).get(MANUAL_OVERRIDE_CONTRACT_KEY);
+        req.onsuccess=()=>resolve(req.result||null);
+        req.onerror=()=>reject(req.error);
+      });
+    }finally{db.close();}
+  }
+  async function assertManualOverrideAllowsTarget(target){
+    const contract=await readManualOverrideContract();
+    if(!contract?.active)return;
+    const baseId=String(contract?.base_active_pack?.id||"");
+    const basePopulation=String(contract?.base_active_pack?.population_id||"");
+    const targetId=String(target?.id||"");
+    const targetPopulation=String(target?.population_id||target?.entry?.population_id||"");
+    if(baseId!==targetId||basePopulation!==targetPopulation){
+      throw new Error("MANUAL_OVERRIDE actif pour une autre identité de pack. Exécutez RESTORE_ACTIVE_PACK avant de changer de pack.");
+    }
+  }
+
   async function installed(){return idbGetAll(PACK_STORE);}
-  async function active(){const id=await metaGet(ACTIVE_KEY);return id?await idbGet(PACK_STORE,id):null;}
-  async function previous(){const id=await metaGet(PREVIOUS_KEY);return id?await idbGet(PACK_STORE,id):null;}
+  async function testInstalled(){return idbGetAll(TEST_PACK_STORE);}
+  async function active(){const id=await metaGet(ACTIVE_KEY,META_STORE);return id?await idbGet(PACK_STORE,id):null;}
+  async function previous(){const id=await metaGet(PREVIOUS_KEY,META_STORE);return id?await idbGet(PACK_STORE,id):null;}
+  async function testActive(){const id=await metaGet(TEST_ACTIVE_KEY,TEST_META_STORE);return id?await idbGet(TEST_PACK_STORE,id):null;}
+  async function testPrevious(){const id=await metaGet(TEST_PREVIOUS_KEY,TEST_META_STORE);return id?await idbGet(TEST_PACK_STORE,id):null;}
   async function activate(id,{fetchImpl=fetch}={}){
-    const target=await idbGet(PACK_STORE,id);if(!target)throw new Error("Pack non installé.");await assertCompatibility(target.entry,fetchImpl);
-    const old=await metaGet(ACTIVE_KEY);await metaSetPair(id,old&&old!==id?old:await metaGet(PREVIOUS_KEY));return target;
+    const target=await idbGet(PACK_STORE,id);if(!target)throw new Error("Pack non installé.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);await assertManualOverrideAllowsTarget(target);
+    const old=await metaGet(ACTIVE_KEY,META_STORE);await metaSetPair(id,old&&old!==id?old:await metaGet(PREVIOUS_KEY,META_STORE));return target;
+  }
+  async function activateTestOnly(id,{fetchImpl=fetch}={}){
+    const target=await idbGet(TEST_PACK_STORE,id);if(!target)throw new Error("Fixture TEST_ONLY non installée.");validateEntry(target.entry,{allowTestOnly:true});await assertCompatibility(target.entry,fetchImpl);
+    const old=await metaGet(TEST_ACTIVE_KEY,TEST_META_STORE);await metaSetPair(id,old&&old!==id?old:await metaGet(TEST_PREVIOUS_KEY,TEST_META_STORE),{store:TEST_META_STORE,activeKey:TEST_ACTIVE_KEY,previousKey:TEST_PREVIOUS_KEY});return target;
   }
   async function rollback({fetchImpl=fetch}={}){
-    const old=await metaGet(PREVIOUS_KEY);if(!old)throw new Error("Aucune génération précédente disponible.");
-    const target=await idbGet(PACK_STORE,old);if(!target)throw new Error("La génération précédente n'est plus installée.");await assertCompatibility(target.entry,fetchImpl);
-    const cur=await metaGet(ACTIVE_KEY);await metaSetPair(old,cur);return target;
+    const old=await metaGet(PREVIOUS_KEY,META_STORE);if(!old)throw new Error("Aucune génération précédente disponible.");
+    const target=await idbGet(PACK_STORE,old);if(!target)throw new Error("La génération précédente n'est plus installée.");validateEntry(target.entry);await assertCompatibility(target.entry,fetchImpl);await assertManualOverrideAllowsTarget(target);
+    const cur=await metaGet(ACTIVE_KEY,META_STORE);await metaSetPair(old,cur);return target;
+  }
+  async function rollbackTestOnly({fetchImpl=fetch}={}){
+    const old=await metaGet(TEST_PREVIOUS_KEY,TEST_META_STORE);if(!old)throw new Error("Aucune fixture TEST_ONLY précédente disponible.");
+    const target=await idbGet(TEST_PACK_STORE,old);if(!target)throw new Error("La fixture TEST_ONLY précédente n'est plus installée.");validateEntry(target.entry,{allowTestOnly:true});await assertCompatibility(target.entry,fetchImpl);
+    const cur=await metaGet(TEST_ACTIVE_KEY,TEST_META_STORE);await metaSetPair(old,cur,{store:TEST_META_STORE,activeKey:TEST_ACTIVE_KEY,previousKey:TEST_PREVIOUS_KEY});return target;
   }
 
   function crcTable(){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;}
@@ -150,16 +219,20 @@
     if(!Object.keys(out).length)throw new Error("ZIP sans fichiers lisibles.");return out;
   }
   function exportManifest(record){return {schema:EXPORT_SCHEMA,entry:record.entry,files:Object.fromEntries(Object.entries(record.files).map(([k,f])=>[k,{archive_path:`assets/${k}.json`,sha256:f.sha256,size_bytes:f.size_bytes}]))};}
-  async function exportZip(id){
-    const record=await idbGet(PACK_STORE,id);if(!record)throw new Error("Pack non installé.");const manifest=exportManifest(record),files={"PACK_RUNTIME.json":encoder.encode(JSON.stringify(manifest,null,2)+"\n")};for(const [k,f] of Object.entries(record.files))files[`assets/${k}.json`]=bytes(f.bytes);return makeStoredZip(files);
+  async function exportZipFromStore(id,store){
+    const record=await idbGet(store,id);if(!record)throw new Error("Pack non installé.");const manifest=exportManifest(record),files={"PACK_RUNTIME.json":encoder.encode(JSON.stringify(manifest,null,2)+"\n")};for(const [k,f] of Object.entries(record.files))files[`assets/${k}.json`]=bytes(f.bytes);return makeStoredZip(files);
   }
-  async function importZip(value,{fetchImpl=fetch}={}){
-    const z=await readZip(value),manifestBytes=z["PACK_RUNTIME.json"];if(!manifestBytes)throw new Error("PACK_RUNTIME.json absent du ZIP.");let manifest;try{manifest=JSON.parse(decoder.decode(manifestBytes));}catch(_){throw new Error("PACK_RUNTIME.json invalide.");}if(manifest.schema!==EXPORT_SCHEMA)throw new Error("Schéma ZIP runtime non supporté.");const entry=validateEntry(manifest.entry);await assertCompatibility(entry,fetchImpl);const files={};
+  async function exportZip(id){return exportZipFromStore(id,PACK_STORE);}
+  async function exportTestOnlyZip(id){return exportZipFromStore(id,TEST_PACK_STORE);}
+  async function importZipToStore(value,{fetchImpl=fetch,allowTestOnly=false,store=PACK_STORE,source="offline_zip"}={}){
+    const z=await readZip(value),manifestBytes=z["PACK_RUNTIME.json"];if(!manifestBytes)throw new Error("PACK_RUNTIME.json absent du ZIP.");let manifest;try{manifest=JSON.parse(decoder.decode(manifestBytes));}catch(_){throw new Error("PACK_RUNTIME.json invalide.");}if(manifest.schema!==EXPORT_SCHEMA)throw new Error("Schéma ZIP runtime non supporté.");const entry=validateEntry(manifest.entry,{allowTestOnly});await assertCompatibility(entry,fetchImpl);const files={};
     for(const asset of entry.assets){const desc=manifest.files?.[asset.key],payload=desc&&z[desc.archive_path];if(!desc||!payload)throw new Error(`${asset.key}: absent du ZIP.`);if(payload.length!==Number(desc.size_bytes)||payload.length!==Number(asset.size_bytes))throw new Error(`${asset.key}: taille ZIP invalide.`);const digest=await sha256(payload);if(digest!==desc.sha256||digest!==asset.sha256)throw new Error(`${asset.key}: hash ZIP invalide.`);validateJsonAsset(asset,payload,entry);files[asset.key]={key:asset.key,role:asset.role,url:asset.url,path:asUrlPath(asset.url),media_type:asset.media_type||"application/json",sha256:digest,size_bytes:payload.length,bytes:payload};}
-    const record={id:storageId(entry),pack_id:entry.pack_id,pack_version:entry.pack_version,population_id:entry.population_id,runtime_revision:entry.runtime_revision,entry:structuredClone(entry),files,source:"offline_zip",installed_at:new Date().toISOString()};await putPack(record);return record;
+    const record=makeRecord(entry,files,source);await putPack(record,store);return record;
   }
+  async function importZip(value,{fetchImpl=fetch}={}){return importZipToStore(value,{fetchImpl,allowTestOnly:false,store:PACK_STORE,source:"offline_zip"});}
+  async function importTestOnlyZip(value,{fetchImpl=fetch}={}){return importZipToStore(value,{fetchImpl,allowTestOnly:true,store:TEST_PACK_STORE,source:"test_offline_zip"});}
   async function registerServiceWorker(){if(!("serviceWorker" in navigator))throw new Error("Service Worker indisponible.");const reg=await navigator.serviceWorker.register("./population-pack-sw.js",{scope:"./"});await navigator.serviceWorker.ready;return reg;}
   function downloadBytes(value,name,type="application/zip"){const url=URL.createObjectURL(new Blob([bytes(value)],{type})),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 
-  global.PokerPopulationPacks={DB_NAME,DB_VERSION,PACK_STORE,META_STORE,ACTIVE_KEY,PREVIOUS_KEY,CATALOG_SCHEMA,RUNTIME_SCHEMA,EXPORT_SCHEMA,sha256,storageId,fetchCatalog,install,installed,active,previous,activate,rollback,exportZip,importZip,readZip,makeStoredZip,registerServiceWorker,downloadBytes,assertCompatibility};
+  global.PokerPopulationPacks={DB_NAME,DB_VERSION,PACK_STORE,META_STORE,TEST_PACK_STORE,TEST_META_STORE,ACTIVE_KEY,PREVIOUS_KEY,TEST_ACTIVE_KEY,TEST_PREVIOUS_KEY,CATALOG_SCHEMA,RUNTIME_SCHEMA,EXPORT_SCHEMA,sha256,storageId,fetchCatalog,install,installTestOnly,installed,testInstalled,active,previous,testActive,testPrevious,activate,activateTestOnly,rollback,rollbackTestOnly,exportZip,exportTestOnlyZip,importZip,importTestOnlyZip,readZip,makeStoredZip,registerServiceWorker,downloadBytes,assertCompatibility};
 })(window);

@@ -1,5 +1,6 @@
 """Mandatory source integrity gate; missing archives must fail, never skip."""
 import json
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -63,6 +64,20 @@ class PersistedSnapshotTests(unittest.TestCase):
         persisted_md = (ROOT / 'analysis/hero_preflop_coverage_train.md').read_text(encoding='utf-8')
         self.assertEqual(render_hero_preflop_coverage_markdown(report), persisted_md)
         print('Hero preflop TRAIN coverage audit reproduced:', report['accounting'])
+
+    def test_hero_preflop_generation_contract_fixture(self):
+        subprocess.run(
+            [sys.executable, str(ROOT / 'tests/training/test_hero_preflop_generation_contract.py')],
+            cwd=ROOT,
+            check=True,
+        )
+
+    def test_hero_preflop_generation_repository_adapter(self):
+        subprocess.run(
+            [sys.executable, str(ROOT / 'tests/training/test_import_hero_preflop_generation.py')],
+            cwd=ROOT,
+            check=True,
+        )
 
 
 if __name__ == '__main__':

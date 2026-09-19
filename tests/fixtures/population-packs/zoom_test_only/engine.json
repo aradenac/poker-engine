@@ -1,0 +1,8 @@
+{
+  "schema": "test-only-engine/v1",
+  "artifact_class": "TEST_ONLY",
+  "non_publishable": true,
+  "role": "engine",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "version": "test-engine-1"
+}

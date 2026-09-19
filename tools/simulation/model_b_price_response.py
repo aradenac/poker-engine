@@ -114,6 +114,7 @@ def build_response_artifact(
     observations: Iterable[Mapping[str, Any]],
     *,
     min_support: int = 30,
+    sizing_min_support: int = 12,
     alpha_per_action: float = 1.0,
     model_version: str = "model_b_response_to_price_v1_candidate",
 ) -> dict[str, Any]:
@@ -125,6 +126,8 @@ def build_response_artifact(
     """
     if int(min_support) <= 0:
         raise ValueError("min_support must be positive")
+    if int(sizing_min_support) <= 0:
+        raise ValueError("sizing_min_support must be positive")
     alpha = float(alpha_per_action)
     if not math.isfinite(alpha) or alpha <= 0:
         raise ValueError("alpha_per_action must be finite and positive")
@@ -184,6 +187,7 @@ def build_response_artifact(
         "price_edges": list(PRICE_EDGES),
         "spr_edges": list(SPR_EDGES),
         "backoff_min_observations": int(min_support),
+        "sizing_backoff_min_observations": int(sizing_min_support),
         "alpha_per_action": alpha,
         "training_counts": {"decisions": total, "raise_sizings": sizing_total},
         "levels": levels,
@@ -206,6 +210,8 @@ def validate_artifact(document: Mapping[str, Any]) -> None:
         raise ValueError("price monotonicity must not be hard-coded")
     if int(document.get("backoff_min_observations", 0)) <= 0:
         raise ValueError("invalid backoff support threshold")
+    if int(document.get("sizing_backoff_min_observations", 0)) <= 0:
+        raise ValueError("invalid sizing backoff support threshold")
     alpha = float(document.get("alpha_per_action", 0.0))
     if not math.isfinite(alpha) or alpha <= 0:
         raise ValueError("invalid alpha_per_action")
@@ -244,6 +250,7 @@ class ResponseToPriceModel:
         self.document = dict(document)
         validate_artifact(self.document)
         self.min_support = int(self.document["backoff_min_observations"])
+        self.sizing_min_support = int(self.document["sizing_backoff_min_observations"])
         self.alpha = float(self.document["alpha_per_action"])
         self.identity = {
             "schema": SCHEMA,
@@ -279,6 +286,51 @@ class ResponseToPriceModel:
             raise KeyError(f"no response-to-price node for context {context}")
         return fallback, fallback_selection
 
+    def _select_sizing(
+        self,
+        row: Mapping[str, Any],
+    ) -> tuple[Mapping[str, Any] | None, Selection | None]:
+        context = _context_row(row)
+        fallback = None
+        fallback_selection = None
+        for index, level in enumerate(self.document["levels"]):
+            columns = tuple(level["cols"])
+            key = _key(columns, context)
+            node = (level.get("data") or {}).get(key)
+            if node is None:
+                continue
+            values = [
+                float(value)
+                for value in node.get("raise_sizing_ratios", [])
+                if math.isfinite(float(value)) and float(value) > 0
+            ]
+            if not values:
+                continue
+            support = len(values)
+            selection = Selection(
+                level=index,
+                columns=columns,
+                key=key,
+                support=support,
+                used_backoff=index > 0,
+                below_min_support=support < self.sizing_min_support,
+            )
+            fallback = node
+            fallback_selection = selection
+            if support >= self.sizing_min_support:
+                return node, selection
+        return fallback, fallback_selection
+
+    def sizing_values(self, **context: Any) -> list[float]:
+        node, _ = self._select_sizing(context)
+        if node is None:
+            return []
+        return [
+            float(value)
+            for value in node.get("raise_sizing_ratios", [])
+            if math.isfinite(float(value)) and float(value) > 0
+        ]
+
     def predict(self, **context: Any) -> dict[str, Any]:
         node, selection = self._select(context)
         counts = {
@@ -301,9 +353,10 @@ class ResponseToPriceModel:
                     min(1.0, mean + 1.96 * sd),
                 ],
             }
-        sizing_values = [
+        sizing_node, sizing_selection = self._select_sizing(context)
+        sizing_values = [] if sizing_node is None else [
             float(value)
-            for value in node.get("raise_sizing_ratios", [])
+            for value in sizing_node.get("raise_sizing_ratios", [])
             if math.isfinite(float(value)) and float(value) > 0
         ]
         if sizing_values:
@@ -335,6 +388,14 @@ class ResponseToPriceModel:
                 "support": selection.support,
                 "used_backoff": selection.used_backoff,
                 "below_min_support": selection.below_min_support,
+            },
+            "sizing_selection": None if sizing_selection is None else {
+                "level": sizing_selection.level,
+                "columns": list(sizing_selection.columns),
+                "key": sizing_selection.key,
+                "support": sizing_selection.support,
+                "used_backoff": sizing_selection.used_backoff,
+                "below_min_support": sizing_selection.below_min_support,
             },
             "identifiability": (
                 "LOW_SUPPORT"

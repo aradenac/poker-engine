@@ -24,6 +24,11 @@ def main() -> int:
     assembled = release["identity"]["assembled_site"]
     assert set(assembled["functional_files"]) == {
         "site/index.html",
+        "site/analytics/leak-analyzer.js",
+        "site/analytics/review-score-adapter.js",
+        "site/analytics/review-inbox.js",
+        "site/analytics/leak-training-target.js",
+        "site/analytics/review-dashboard.js",
         "site/preflop-contract.js",
         "site/hero-ranges.html",
         "site/hero-ranges.js",

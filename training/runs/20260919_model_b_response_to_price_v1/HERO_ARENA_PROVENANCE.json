@@ -1,0 +1,45 @@
+{
+  "base_hands": 32,
+  "environments": [
+    "reference",
+    "candidate_nominal",
+    "candidate_fold_low",
+    "candidate_fold_high"
+  ],
+  "environments_weighted": false,
+  "files": {
+    "candidate_fold_high.json": {
+      "sha256": "3da7ef54dc3d19fd830a87c341e507cef196b534cf96e3103693a02e61dbc992",
+      "size_bytes": 296147
+    },
+    "candidate_fold_low.json": {
+      "sha256": "86b8e1806c7132b1bb5d42a55c5a5caa902e1a2fe4c2c5cad34ad90c574587cd",
+      "size_bytes": 306662
+    },
+    "candidate_nominal.json": {
+      "sha256": "b8e317740b545de755a24e1c9d6699a0044b1da4136a589006002f8acd13d16e",
+      "size_bytes": 301626
+    },
+    "candidate_scenarios.json": {
+      "sha256": "1d81ba00d228b9c8ea78f87b3e1c6faf73c20ba39810b9dcfce3d347bdf5aac5",
+      "size_bytes": 188347
+    },
+    "reference.json": {
+      "sha256": "9325fa8b7e2141b6be9ab049a26fbe1375c0a03ac54b8388b2b681ff7e992fab",
+      "size_bytes": 298962
+    },
+    "reference_scenarios.json": {
+      "sha256": "a729b31e5d36a5374a31ac73f5ef48cf545550bfabea782df7b1a904a7f6c40f",
+      "size_bytes": 187535
+    }
+  },
+  "master_seed": 20260919,
+  "policy": "current",
+  "raw_workflow_artifact": "issue-197-response-to-price-raw",
+  "reps": 2,
+  "scenarios": 64,
+  "schema": "model-b-response-to-price-hero-arena-provenance/v1",
+  "split": "VALIDATION",
+  "test_consumed": false,
+  "trials_per_decision": 1200
+}

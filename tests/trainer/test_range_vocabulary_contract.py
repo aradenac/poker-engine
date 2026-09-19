@@ -9,24 +9,26 @@ TRAINER = (ROOT / "site/trainer.js").read_text(encoding="utf-8")
 
 
 def main() -> None:
-    # Navigation has one explicit name per concept.
-    assert '<a href="#rangesSection">Sources importées</a>' in INDEX
-    assert '<a href="./hero-ranges.html">Stratégie Hero</a>' in INDEX
-    assert '<a href="#rangeDisplaySection">Range adverse</a>' in INDEX
-    assert '<a href="#rangesSection">Ranges</a>' not in INDEX
-    assert '<a href="./hero-ranges.html">Ranges Hero</a>' not in INDEX
-    assert '<a href="#rangeDisplaySection">Range</a>' not in INDEX
+    # #208 owns global navigation; this contract now checks vocabulary in its
+    # functional surfaces rather than requiring implementation-detail nav entries.
+    nav = INDEX.split('<nav id="quickNav"', 1)[1].split('</nav>', 1)[0]
+    assert '<a href="#rangesSection">Ranges</a>' not in nav
+    assert '<a href="./hero-ranges.html">Ranges Hero</a>' not in nav
+    assert '<a href="#rangeDisplaySection">Range</a>' not in nav
+    assert 'data-product-domain="strategy">Strategy</a>' in nav
 
     # CENTRAL-UI consistently names imported vs estimated opponent distributions.
-    assert '<h2>1. Importer une range source</h2>' in INDEX
-    assert '<h2>5. Range adverse affichée</h2>' in INDEX
+    assert '<h2>Sources et modèles</h2>' in INDEX
+    assert '<h2>Range adverse</h2>' in INDEX
+    assert 'Importer une range source' not in nav
     assert '>Range adverse</button>' in INDEX
     assert 'Range adverse estimée · ${player.name}' in INDEX
     assert '"Range source importée"' in INDEX
     assert 'Position dans la range source' in INDEX
 
     # Hero terminology is strategy-oriented in H-owned surfaces.
-    assert '>Stratégie Hero</a>' in INDEX
+    assert 'Stratégie Hero <b id="activeStrategyIdentity">Custom</b>' in INDEX
+    assert 'data-product-domain="strategy">Strategy</a>' in INDEX
     assert 'stratégie Hero Custom' in TRAINER
     assert 'ranges Hero Custom' not in TRAINER
     assert ' · range Custom' not in TRAINER

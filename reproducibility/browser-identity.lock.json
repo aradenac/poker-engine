@@ -1,0 +1,41 @@
+{
+  "schema": "poker-engine-browser-identity/v1",
+  "issue": 203,
+  "playwright": {
+    "version": "1.55.0",
+    "source": "microsoft/playwright-python",
+    "release": "v1.55.0"
+  },
+  "browser": {
+    "name": "chromium",
+    "version": "140.0.7339.16",
+    "revision": "1187",
+    "platform": "ubuntu24.04-x64",
+    "architecture": "x86_64"
+  },
+  "archive_identity": {
+    "path_template": "builds/chromium/1187/chromium-linux.zip",
+    "source_urls": [
+      "https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1187/chromium-linux.zip",
+      "https://playwright.download.prss.microsoft.com/dbazure/download/playwright/builds/chromium/1187/chromium-linux.zip",
+      "https://cdn.playwright.dev/builds/chromium/1187/chromium-linux.zip"
+    ],
+    "sha256": null,
+    "sha_pinned": false,
+    "verification_status": "NO_OFFICIAL_ARCHIVE_SHA256_IN_PLAYWRIGHT_1_55_0_METADATA"
+  },
+  "executable_identity": {
+    "relative_path": "chrome-linux/chrome",
+    "expected_version": "140.0.7339.16",
+    "expected_sha256": null,
+    "sha_pinned": false,
+    "verification_status": "RUNTIME_SHA256_FINGERPRINT_REQUIRED"
+  },
+  "provenance": {
+    "browsers_json_url": "https://github.com/microsoft/playwright/blob/v1.55.0/packages/playwright-core/browsers.json",
+    "browsers_json_git_blob_sha": "169663e8ee3ba2e79091cd9332740b2599865fce",
+    "registry_source_url": "https://github.com/microsoft/playwright/blob/v1.55.0/packages/playwright-core/src/server/registry/index.ts",
+    "release_notes_url": "https://github.com/microsoft/playwright-python/releases/tag/v1.55.0",
+    "verified_at": "2026-09-19"
+  }
+}

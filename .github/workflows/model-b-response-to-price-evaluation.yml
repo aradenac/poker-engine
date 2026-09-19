@@ -1,0 +1,269 @@
+name: Model B response-to-price scientific evaluation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent-B/issue-197-scientific-evaluation
+    paths:
+      - 'tools/training/independent_profiles/evaluate_response_to_price_v1.py'
+      - 'tools/simulation/model_b_price_response.py'
+      - 'tools/simulation/model_b_price_diagnostics.py'
+      - 'tools/simulation/model_b_price_arena.py'
+      - 'tests/training/test_evaluate_response_to_price_v1.py'
+      - 'tests/simulation/test_model_b_price_response.py'
+      - 'tests/simulation/test_model_b_price_arena.py'
+      - 'training/runs/20260919_model_b_response_to_price_v1/PROTOCOL.json'
+      - '.github/workflows/model-b-response-to-price-evaluation.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-b-response-to-price-issue-197
+  cancel-in-progress: true
+
+env:
+  POPULATION: legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1
+  RUN_DIR: training/runs/20260919_model_b_response_to_price_v1
+  INCUMBENT: training/runs/20260912_independent_profiles_v2/model
+  ARCHIVE_1: training/datasets/NLHE_100-200/source/NLHE 100-200.zip
+  ARCHIVE_2: training/datasets/NLHE_100-200/snapshots/20260909/source/RoiDePiqueNique_training2.zip
+  ARCHIVE_3: training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip
+
+jobs:
+  scientific-evaluation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Guard frozen protocol and holdout contract
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("training/runs/20260919_model_b_response_to_price_v1/PROTOCOL.json")
+          d=json.loads(p.read_text(encoding="utf-8"))
+          assert d["schema"]=="model-b-response-to-price-protocol/v1"
+          assert d["status"]=="FROZEN_BEFORE_ISSUE_197_EVALUATION"
+          assert d["data"]["split_contract"]["fit"]==["TRAIN"]
+          assert d["data"]["split_contract"]["evaluate"]==["VALIDATION"]
+          assert d["data"]["split_contract"]["hero_sensitivity"]==["VALIDATION"]
+          assert d["data"]["split_contract"]["forbidden"]==["TEST"]
+          assert d["data"]["split_contract"]["test_consumed"] is False
+          assert d["data"]["excluded_players"]==["RoiDePiqueNique"]
+          assert d["candidate"]["forbidden_features"]==[
+              "model_a_ev","model_a_policy","model_a_recommendation","future_cards"
+          ]
+          assert d["decision_contract"]["automatic_promotion"] is False
+          assert d["decision_contract"]["production_effect"]=="NONE"
+          assert d["protected_science"]["issue_107_108_protocols_modified"] is False
+          assert d["protected_science"]["issue_107_108_workflows_modified"] is False
+          assert d["protected_science"]["holdout_ledger_modified"] is False
+          print("protocol guard: PASS")
+          PY
+
+      - name: Verify dataset identities
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=json.loads(Path("training/runs/20260919_model_b_response_to_price_v1/PROTOCOL.json").read_text())
+          for row in p["data"]["archives"]:
+              path=Path(row["path"])
+              h=hashlib.sha256()
+              with path.open("rb") as f:
+                  for chunk in iter(lambda:f.read(1024*1024),b""):
+                      h.update(chunk)
+              actual=h.hexdigest()
+              assert actual==row["sha256"], (path,actual,row["sha256"])
+              print(path, actual)
+          PY
+
+      - name: Compile and run MODEL-B unit guards
+        run: |
+          set -euo pipefail
+          python3 -m py_compile             tools/simulation/model_b_price_response.py             tools/simulation/model_b_price_diagnostics.py             tools/simulation/model_b_price_arena.py             tools/training/independent_profiles/evaluate_response_to_price_v1.py             tests/simulation/test_model_b_price_response.py             tests/simulation/test_model_b_price_arena.py             tests/training/test_evaluate_response_to_price_v1.py
+          PYTHONPATH=. python3 tests/simulation/test_model_b_price_response.py
+          PYTHONPATH=. python3 tests/simulation/test_model_b_price_arena.py
+          PYTHONPATH=. python3 tests/training/test_evaluate_response_to_price_v1.py
+
+      - name: Fit TRAIN and evaluate paired VALIDATION
+        run: |
+          set -euo pipefail
+          rm -rf             "$RUN_DIR/model"             "$RUN_DIR/support_audit.json"             "$RUN_DIR/predictive_evaluation.json"             "$RUN_DIR/sizing_evaluation.json"             "$RUN_DIR/counterfactual_response.json"             "$RUN_DIR/plausible_environments.json"             "$RUN_DIR/RESULT.partial.json"             "$RUN_DIR/RESULT.json"             "$RUN_DIR/hero_sensitivity.json"             "$RUN_DIR/HERO_ARENA_PROVENANCE.json"
+          PYTHONPATH=. python3 -m tools.training.independent_profiles.evaluate_response_to_price_v1 fit-evaluate             --archive "$ARCHIVE_1"             --archive "$ARCHIVE_2"             --archive "$ARCHIVE_3"             --stake 100/200             --exclude-player RoiDePiqueNique             --incumbent-model-dir "$INCUMBENT"             --population-id "$POPULATION"             --output-dir "$RUN_DIR"             --action-min-support 30             --sizing-min-support 12             --alpha 1.0             --bootstrap-samples 5000             --counterfactual-contexts 12
+
+      - name: Guard predictive evidence before Hero arena
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("training/runs/20260919_model_b_response_to_price_v1/RESULT.partial.json").read_text())
+          assert r["fit_split"]=="TRAIN"
+          assert r["evaluation_split"]=="VALIDATION"
+          assert r["test_consumed"] is False
+          assert r["test_metrics_present"] is False
+          assert r["production_effect"]=="NONE"
+          assert r["automatic_promotion"] is False
+          assert r["dataset"]["reserved_holdout"]=="TEST_NOT_CONSUMED"
+          assert "TEST" not in (r["dataset"].get("split_counts") or {})
+          assert r["candidate"]["price_monotonicity_assumption"]=="NONE"
+          assert "model_a_ev" not in r["candidate"]["feature_dimensions"]
+          print(json.dumps({
+              "counts":r["counts"],
+              "gate":r["predictive_gate"],
+              "interim_decision":r["interim_decision"],
+          },indent=2))
+          PY
+
+      - name: Install Chromium for paired Hero sensitivity
+        run: |
+          set -euo pipefail
+          python3 -m pip install --user playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Generate frozen VALIDATION scenarios and reference arena
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue197-hero
+          PYTHONPATH=. python3 -m tools.simulation.baseline_runner             --population "$POPULATION"             --model-b-dir "$INCUMBENT"             --model-b-population "$POPULATION"             --n 32 --reps 2 --seed 20260919 --split VALIDATION --trials 1200             --policies current             --scenario-out /tmp/issue197-hero/reference_scenarios.json             --out /tmp/issue197-hero/reference.json
+
+      - name: Retarget identical scenarios to response candidate
+        run: |
+          set -euo pipefail
+          MODEL_B_RESPONSE_VARIANT=nominal PYTHONPATH=.             python3 -m tools.simulation.model_b_price_arena retarget               --population "$POPULATION"               --manifest /tmp/issue197-hero/reference_scenarios.json               --source-model-dir "$INCUMBENT"               --target-model-dir "$RUN_DIR/model"               --out /tmp/issue197-hero/candidate_scenarios.json
+          python3 - <<'PY'
+          import json
+          a=json.load(open("/tmp/issue197-hero/reference_scenarios.json"))
+          b=json.load(open("/tmp/issue197-hero/candidate_scenarios.json"))
+          assert a["scenario_fingerprint_sha256"]==b["scenario_fingerprint_sha256"]
+          assert len(a["scenarios"])==64==len(b["scenarios"])
+          assert a["split"]=="VALIDATION"==b["split"]
+          print(a["scenario_fingerprint_sha256"])
+          PY
+
+      - name: Run candidate nominal Hero sensitivity arena
+        run: |
+          set -euo pipefail
+          MODEL_B_RESPONSE_VARIANT=nominal PYTHONPATH=.             python3 -m tools.simulation.model_b_price_arena               --population "$POPULATION"               --model-b-dir "$RUN_DIR/model"               --model-b-population "$POPULATION"               --scenario-manifest /tmp/issue197-hero/candidate_scenarios.json               --trials 1200 --policies current               --out /tmp/issue197-hero/candidate_nominal.json
+
+      - name: Run candidate fold-low Hero sensitivity arena
+        run: |
+          set -euo pipefail
+          MODEL_B_RESPONSE_VARIANT=fold_low PYTHONPATH=.             python3 -m tools.simulation.model_b_price_arena               --population "$POPULATION"               --model-b-dir "$RUN_DIR/model"               --model-b-population "$POPULATION"               --scenario-manifest /tmp/issue197-hero/candidate_scenarios.json               --trials 1200 --policies current               --out /tmp/issue197-hero/candidate_fold_low.json
+
+      - name: Run candidate fold-high Hero sensitivity arena
+        run: |
+          set -euo pipefail
+          MODEL_B_RESPONSE_VARIANT=fold_high PYTHONPATH=.             python3 -m tools.simulation.model_b_price_arena               --population "$POPULATION"               --model-b-dir "$RUN_DIR/model"               --model-b-population "$POPULATION"               --scenario-manifest /tmp/issue197-hero/candidate_scenarios.json               --trials 1200 --policies current               --out /tmp/issue197-hero/candidate_fold_high.json
+
+      - name: Summarize Hero sensitivity and finalize issue 197 evidence
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 -m tools.training.independent_profiles.evaluate_response_to_price_v1 summarize-hero             --arena reference=/tmp/issue197-hero/reference.json             --arena candidate_nominal=/tmp/issue197-hero/candidate_nominal.json             --arena candidate_fold_low=/tmp/issue197-hero/candidate_fold_low.json             --arena candidate_fold_high=/tmp/issue197-hero/candidate_fold_high.json             --policy current             --sizing-change-threshold 0.25             --output "$RUN_DIR/hero_sensitivity.json"
+          PYTHONPATH=. python3 -m tools.training.independent_profiles.evaluate_response_to_price_v1 finalize             --run-dir "$RUN_DIR"             --hero-sensitivity "$RUN_DIR/hero_sensitivity.json"
+
+      - name: Persist raw arena provenance
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          names=[
+              "reference_scenarios.json","candidate_scenarios.json","reference.json",
+              "candidate_nominal.json","candidate_fold_low.json","candidate_fold_high.json",
+          ]
+          hashes={}
+          for name in names:
+              path=Path("/tmp/issue197-hero")/name
+              h=hashlib.sha256(path.read_bytes()).hexdigest()
+              hashes[name]={"sha256":h,"size_bytes":path.stat().st_size}
+          doc={
+              "schema":"model-b-response-to-price-hero-arena-provenance/v1",
+              "split":"VALIDATION",
+              "base_hands":32,
+              "reps":2,
+              "scenarios":64,
+              "trials_per_decision":1200,
+              "master_seed":20260919,
+              "policy":"current",
+              "environments":["reference","candidate_nominal","candidate_fold_low","candidate_fold_high"],
+              "environments_weighted":False,
+              "test_consumed":False,
+              "raw_workflow_artifact":"issue-197-response-to-price-raw",
+              "files":hashes,
+          }
+          Path("training/runs/20260919_model_b_response_to_price_v1/HERO_ARENA_PROVENANCE.json").write_text(
+              json.dumps(doc,indent=2,sort_keys=True)+"\n",encoding="utf-8"
+          )
+          PY
+
+      - name: Final scientific and lane-safety guards
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("training/runs/20260919_model_b_response_to_price_v1/RESULT.json").read_text())
+          assert r["schema"]=="model-b-response-to-price-final-decision/v1"
+          assert r["status"]=="COMPLETE"
+          assert r["test_consumed"] is False
+          assert r["production_effect"]=="NONE"
+          assert r["automatic_promotion"] is False
+          assert r["active_model_b_changed"] is False
+          failed_dod=[key for key,value in r["scientific_dod"].items() if value is not True]
+          print(json.dumps({"scientific_dod":r["scientific_dod"],"failed_scientific_dod":failed_dod},indent=2))
+          assert all(r["scientific_dod"].values()), failed_dod
+          h=r["hero_sensitivity"]
+          assert h["scenario_split"]=="VALIDATION"
+          assert h["test_consumed"] is False
+          assert h["environments_weighted"] is False
+          print(json.dumps({
+              "decision":r["decision"],
+              "predictive_gate":r["predictive_gate"],
+              "hero_any_environment":h["any_environment"],
+          },indent=2))
+          PY
+          changed="$(git diff --name-only HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -E '(^|/)(hero-pfpc|107|108|holdout)|training/registry\.json|training/populations/'; then
+            echo "forbidden cross-lane/frozen-science modification detected" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: issue-197-response-to-price-raw
+          path: /tmp/issue197-hero/*.json
+
+      - name: Commit persisted issue 197 evidence to branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$RUN_DIR"
+          if git diff --cached --quiet; then
+            echo "No evidence changes to commit"
+          else
+            git commit -m "[B][#197] Persist response-to-price scientific evidence"
+            for attempt in 1 2 3; do
+              git pull --rebase origin "$GITHUB_REF_NAME"
+              if git push origin "HEAD:$GITHUB_REF_NAME"; then
+                exit 0
+              fi
+              sleep $((attempt * 2))
+            done
+            echo "Unable to persist issue #197 evidence after three race-safe retries." >&2
+            exit 1
+          fi

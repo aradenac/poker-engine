@@ -23,6 +23,171 @@ async def main() -> None:
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
 
+        # Product architecture exposes only the five stable top-level domains.
+        product_architecture = await page.evaluate(
+            """() => ({
+                nav:[...document.querySelectorAll('#quickNav a')].map(a=>({
+                    text:a.textContent.trim(),
+                    href:a.getAttribute('href'),
+                    domain:a.dataset.productDomain||''
+                })),
+                home:[...document.querySelectorAll('.product-home-actions > a,.product-home-actions > button')].map(x=>x.textContent.trim()),
+                packsInSettings:!!document.querySelector('#settingsSection a[href="./packs.html"]'),
+                replayerPresent:!!document.querySelector('#replayerSection'),
+                equityComponents:['opponentsSection','cardsSection','rangeDisplaySection','equitySection'].every(id=>!!document.getElementById(id))
+            })"""
+        )
+        assert [x["text"] for x in product_architecture["nav"]] == ["Review", "Training", "Strategy", "Equity Lab", "Settings"], product_architecture
+        assert [x["domain"] for x in product_architecture["nav"]] == ["review", "training", "strategy", "equity-lab", "settings"], product_architecture
+        assert product_architecture["nav"][2]["href"] == "./hero-ranges.html", product_architecture
+        assert product_architecture["home"] == ["Review", "Training", "Strategy", "Equity Lab"], product_architecture
+        assert product_architecture["packsInSettings"], product_architecture
+        assert product_architecture["replayerPresent"] and product_architecture["equityComponents"], product_architecture
+
+        # Review Inbox consumes the merged backend contract and exposes fail-closed deep-link resolution.
+        review_inbox_ui = await page.evaluate(
+            """() => {
+                const exact=resolveReviewInboxDeepLink(
+                    {schema:PokerReviewInbox.DEEP_LINK_SCHEMA,hand_id:"42",decision_id:"review:42:3",step_index:3},
+                    "42",
+                    [{},{},{},{actionType:"call"}],
+                    {details:[{stepIndex:3}]}
+                );
+                const stale=resolveReviewInboxDeepLink(
+                    {schema:PokerReviewInbox.DEEP_LINK_SCHEMA,hand_id:"42",decision_id:"review:42:3",step_index:3},
+                    "42",
+                    [{},{},{},{actionType:"call"}],
+                    {details:[{stepIndex:2}]}
+                );
+                return {
+                    schema:PokerReviewInbox?.INBOX_SCHEMA,
+                    metadataSchema:PokerReviewInbox?.USER_METADATA_SCHEMA,
+                    exact,stale,
+                    filters:["reviewStatusFilter","reviewCoverageFilter","reviewStreetFilter","reviewPositionFilter","reviewSpotFilter","reviewPlayedFilter","reviewRecommendedFilter","reviewSizingFilter","reviewJamFilter","reviewOverbetFilter"].every(id=>!!document.getElementById(id)),
+                    summary:!!document.getElementById("reviewInboxSummary"),
+                    secondaryCollapsed:!document.querySelector(".review-inbox-filters")?.open
+                };
+            }"""
+        )
+        assert review_inbox_ui["schema"] == "poker-review-inbox/v1", review_inbox_ui
+        assert review_inbox_ui["metadataSchema"] == "poker-review-inbox-user-metadata/v1", review_inbox_ui
+        assert review_inbox_ui["exact"]["exact"] is True and review_inbox_ui["exact"]["stepIndex"] == 3, review_inbox_ui
+        assert review_inbox_ui["stale"]["exact"] is False and review_inbox_ui["stale"]["reason"] == "DECISION_NOT_FOUND", review_inbox_ui
+        assert review_inbox_ui["filters"] and review_inbox_ui["summary"] and review_inbox_ui["secondaryCollapsed"], review_inbox_ui
+
+        exact_review_open = await page.evaluate(
+            """() => {
+                const saved={
+                    hhHands:state.hhHands, reviewScores:state.reviewScores, replaySteps:state.replaySteps,
+                    replayIndex:state.replayIndex, selectedHand:state.selectedHand, hhMode:state.hhMode,
+                    select:window.selectHistoryHandById, setIndex:window.setReplayIndexAndRecalculate,
+                    open:window.openReplayerPage, exportText:replayerExportStatus?.textContent||""
+                };
+                const calls=[];
+                try{
+                    state.hhHands=[{id:"42"}];
+                    state.reviewScores={"42":{details:[{stepIndex:3}]}};
+                    state.replaySteps=[];state.replayIndex=0;state.selectedHand=null;state.hhMode=false;
+                    window.selectHistoryHandById=(id,opts)=>{
+                        calls.push(["select",id,opts?.open]);
+                        state.selectedHand=state.hhHands[0];state.hhMode=true;
+                        state.replaySteps=[{},{},{},{actionType:"call"}];
+                    };
+                    window.setReplayIndexAndRecalculate=(idx)=>{state.replayIndex=idx;calls.push(["step",idx]);};
+                    window.openReplayerPage=(opts)=>calls.push(["open",opts?.scrollTop]);
+                    const result=openReviewInboxDeepLink({
+                        schema:PokerReviewInbox.DEEP_LINK_SCHEMA,
+                        hand_id:"42",decision_id:"review:42:3",step_index:3
+                    });
+                    return {result,calls,replayIndex:state.replayIndex};
+                } finally {
+                    state.hhHands=saved.hhHands;state.reviewScores=saved.reviewScores;state.replaySteps=saved.replaySteps;
+                    state.replayIndex=saved.replayIndex;state.selectedHand=saved.selectedHand;state.hhMode=saved.hhMode;
+                    window.selectHistoryHandById=saved.select;window.setReplayIndexAndRecalculate=saved.setIndex;
+                    window.openReplayerPage=saved.open;
+                    if(replayerExportStatus)replayerExportStatus.textContent=saved.exportText;
+                }
+            }"""
+        )
+        assert exact_review_open["result"]["exact"] is True, exact_review_open
+        assert exact_review_open["replayIndex"] == 3, exact_review_open
+        assert exact_review_open["calls"] == [["select", "42", False], ["step", 3], ["open", True]], exact_review_open
+
+        # Review Dashboard is the useful home and renders only backend-provided metrics/CTAs.
+        dashboard_ui = await page.evaluate(
+            """() => {
+                const savedView=state.reviewDashboardView;
+                const savedFilters={...state.reviewInboxFilters};
+                try{
+                    const base={
+                        schema:PokerReviewDashboard.DASHBOARD_SCHEMA,
+                        scope_key:"scope-smoke",
+                        metrics:{
+                            hands_loaded:12,decisions_to_review:4,total_ev_loss_bb:6.5,
+                            decisions_analyzed:20,review_coverage_pct:90,
+                            source_refs:[{hand_id:"42",decision_id:"review:42:3"}]
+                        },
+                        top_leaks:[{dimension:"spot_family",key:"SRP|PFR|IP",decisions:3,hands:2,total_loss_bb:4.2}],
+                        priority:{
+                            hand:{hand_id:"42",total_loss_bb:3,status:"TO_REVIEW",status_label:"À revoir"},
+                            decision:{decision_id:"review:42:3",step_index:3,street:"FLOP",position:"BTN",spot_family:"SRP|PFR|IP",action_played:"CHECK",action_recommended:"BET",loss_bb:3}
+                        },
+                        ctas:{
+                            review:{enabled:true,target:{schema:PokerReviewInbox.DEEP_LINK_SCHEMA,hand_id:"42",decision_id:"review:42:3",step_index:3}},
+                            leak:{enabled:true,target:{scope_key:"scope-smoke",dimension:"spot_family",key:"SRP|PFR|IP"}},
+                            training:{enabled:true,reason:"TOP_LEAK_TARGET",target:{target_id:"leak-target:smoke"}}
+                        }
+                    };
+                    renderReviewDashboardModel({...base,state:"READY"});
+                    const ready={
+                        schema:PokerReviewDashboard.DASHBOARD_SCHEMA,
+                        state:reviewDashboardState.textContent,
+                        hands:reviewDashboardHands.textContent,
+                        decisions:reviewDashboardDecisions.textContent,
+                        loss:reviewDashboardLoss.textContent,
+                        leak:reviewDashboardLeak.textContent,
+                        priority:reviewDashboardPriority.textContent,
+                        priorityMeta:reviewDashboardPriorityMeta.textContent,
+                        reviewVisible:!reviewDashboardReviewBtn.hidden,
+                        leakVisible:!reviewDashboardLeakBtn.hidden,
+                        trainingVisible:!reviewDashboardTrainingBtn.hidden,
+                        importVisible:!reviewDashboardImportBtn.hidden,
+                        trace:reviewDashboardTrace.textContent
+                    };
+                    renderReviewDashboardModel({...base,state:"READY",ctas:{...base.ctas,training:{enabled:false,reason:"INSUFFICIENT_SOURCE_SUPPORT",target:{target_id:"leak-target:smoke"}}}});
+                    const gatedTrainingHidden=reviewDashboardTrainingBtn.hidden;
+                    const messages={};
+                    for(const stateName of ["NO_HANDS","ANALYSIS_PENDING","ANALYSIS_INCOMPLETE","NO_SIGNIFICANT_LOSS","READY"]){
+                        messages[stateName]=reviewDashboardStateMessage({state:stateName});
+                    }
+                    state.reviewDashboardView={...base,state:"READY"};
+                    const leakOpen=openReviewDashboardLeak();
+                    const leakFilter=state.reviewInboxFilters.spot_family;
+                    state.reviewDashboardView={...base,state:"READY",ctas:{...base.ctas,leak:{enabled:true,target:{scope_key:"scope-smoke",dimension:"position",key:"BTN"}}}};
+                    const unsupported=openReviewDashboardLeak();
+                    return {ready,gatedTrainingHidden,messages,leakOpen,leakFilter,unsupported};
+                } finally {
+                    state.reviewInboxFilters=savedFilters;
+                    state.reviewDashboardView=savedView;
+                    renderReviewDashboard();
+                }
+            }"""
+        )
+        assert dashboard_ui["ready"]["schema"] == "poker-review-dashboard/v1", dashboard_ui
+        assert dashboard_ui["ready"]["state"] == "READY", dashboard_ui
+        assert dashboard_ui["ready"]["hands"] == "12" and dashboard_ui["ready"]["decisions"] == "4", dashboard_ui
+        assert "6,50" in dashboard_ui["ready"]["loss"] or "6.50" in dashboard_ui["ready"]["loss"], dashboard_ui
+        assert dashboard_ui["ready"]["leak"] == "SRP|PFR|IP", dashboard_ui
+        assert "Main #42" in dashboard_ui["ready"]["priority"] and "FLOP" in dashboard_ui["ready"]["priority"], dashboard_ui
+        assert "CHECK" in dashboard_ui["ready"]["priorityMeta"] and "BET" in dashboard_ui["ready"]["priorityMeta"], dashboard_ui
+        assert dashboard_ui["ready"]["reviewVisible"] and dashboard_ui["ready"]["leakVisible"] and dashboard_ui["ready"]["trainingVisible"], dashboard_ui
+        assert not dashboard_ui["ready"]["importVisible"], dashboard_ui
+        assert "1 décision" in dashboard_ui["ready"]["trace"], dashboard_ui
+        assert dashboard_ui["gatedTrainingHidden"] is True, dashboard_ui
+        assert all(dashboard_ui["messages"][name] for name in ["NO_HANDS","ANALYSIS_PENDING","ANALYSIS_INCOMPLETE","NO_SIGNIFICANT_LOSS","READY"]), dashboard_ui
+        assert dashboard_ui["leakOpen"]["opened"] is True and dashboard_ui["leakFilter"] == "SRP|PFR|IP", dashboard_ui
+        assert dashboard_ui["unsupported"]["opened"] is False and dashboard_ui["unsupported"]["reason"] == "UNSUPPORTED_LEAK_DIMENSION", dashboard_ui
+
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(
             "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"
@@ -203,8 +368,93 @@ async def main() -> None:
         assert review_context["afterBack"]["handCount"] == 1, review_context
         assert "leave" in review_context["afterBack"]["calls"], review_context
 
-        await page.wait_for_selector("#trainerOpenBtn", timeout=10_000)
-        await page.click("#trainerOpenBtn")
+        # Local persistence stays compact in the normal path; details are opt-in,
+        # retry performs a real write, and erase cannot proceed without confirmation.
+        local_persistence = await page.evaluate(
+            """async () => {
+                const details=document.querySelector('#localPersistenceDetails');
+                const initial={
+                    chip:document.querySelector('#localPersistenceStatus')?.textContent?.trim(),
+                    open:!!details?.open,
+                    detailsText:document.querySelector('#localPersistenceDetail')?.textContent?.trim()
+                };
+                persistenceStatus("Smoke save in progress",false,true);
+                const busy=document.querySelector('#localPersistenceStatus')?.textContent?.trim();
+                persistenceStatus("Smoke saved",false,false);
+                const saved=document.querySelector('#localPersistenceStatus')?.textContent?.trim();
+                const retryOk=await retryLocalPersistence();
+                const afterRetry=document.querySelector('#localPersistenceStatus')?.textContent?.trim();
+                const realConfirm=window.confirm;
+                try{
+                    window.confirm=()=>false;
+                    const eraseResult=await clearLocalPersistenceWithConfirmation();
+                    return {
+                        initial,busy,saved,retryOk,afterRetry,
+                        eraseResult,
+                        eraseStatus:document.querySelector('#localPersistenceActionStatus')?.textContent?.trim(),
+                        detailsOpenAfterCancel:!!details?.open
+                    };
+                } finally {
+                    window.confirm=realConfirm;
+                }
+            }"""
+        )
+        assert local_persistence["initial"]["open"] is False, local_persistence
+        assert "restent" in folded(local_persistence["initial"]["detailsText"]), local_persistence
+        assert local_persistence["busy"] == "Sauvegarde…", local_persistence
+        assert local_persistence["saved"] == "Sauvegardé localement", local_persistence
+        assert local_persistence["retryOk"] is True, local_persistence
+        assert local_persistence["afterRetry"] == "Sauvegardé localement", local_persistence
+        assert local_persistence["eraseResult"] is False, local_persistence
+        assert "annulé" in folded(local_persistence["eraseStatus"]), local_persistence
+        assert local_persistence["detailsOpenAfterCancel"] is False, local_persistence
+
+        # Desktop modal accessibility: focus enters the dialog, wraps on Tab/Shift+Tab,
+        # Escape closes it, and focus returns to the trigger.
+        await page.evaluate(
+            """() => {
+                const trigger=document.querySelector('#trainerOpenBtn');
+                const body=document.querySelector('#actionDetailModalBody');
+                trigger.focus();
+                body.innerHTML='<button id="a11yFirst" type="button">Premier</button><button id="a11yLast" type="button">Dernier</button>';
+                openAccessibleModal(actionDetailModal,{initialFocus:()=>actionDetailModalClose});
+            }"""
+        )
+        await page.wait_for_function("document.activeElement?.id === 'actionDetailModalClose'")
+        accessibility = await page.evaluate(
+            """() => ({
+                initial:document.activeElement?.id,
+                open:actionDetailModal.classList.contains('open'),
+                ariaHidden:actionDetailModal.getAttribute('aria-hidden')
+            })"""
+        )
+        assert accessibility["initial"] == "actionDetailModalClose", accessibility
+        assert accessibility["open"] is True and accessibility["ariaHidden"] == "false", accessibility
+
+        await page.keyboard.press("Shift+Tab")
+        assert await page.evaluate("document.activeElement?.id") == "a11yLast"
+        await page.keyboard.press("Tab")
+        assert await page.evaluate("document.activeElement?.id") == "actionDetailModalClose"
+        await page.keyboard.press("Escape")
+        await page.wait_for_function("!document.querySelector('#actionDetailModal').classList.contains('open')")
+        await page.wait_for_function("document.activeElement?.id === 'trainerOpenBtn'")
+        assert await page.evaluate("document.activeElement?.id") == "trainerOpenBtn"
+
+        desktop_font = await page.evaluate(
+            """() => {
+                const host=document.createElement('div');
+                host.className='decision-primary-card';
+                host.innerHTML='<span class="k" id="a11yFontProbe">Probe</span>';
+                document.body.appendChild(host);
+                const size=parseFloat(getComputedStyle(host.querySelector('#a11yFontProbe')).fontSize);
+                host.remove();
+                return size;
+            }"""
+        )
+        assert desktop_font >= 10, desktop_font
+
+        await page.wait_for_selector('#quickNav [data-product-domain="training"]', timeout=10_000)
+        await page.click('#quickNav [data-product-domain="training"]')
 
         await page.wait_for_function(
             "document.querySelector('#trainerStatus')?.textContent.includes('Trainer prêt') || document.querySelector('#trainerStatus')?.textContent.includes('À vous de jouer') || document.querySelector('#trainerStatus')?.textContent.includes('Nouvelle main')",
@@ -275,11 +525,15 @@ async def main() -> None:
         assert await page.locator("#trainerPage").is_hidden()
 
         snapshot = {
+            "product_architecture": product_architecture,
             "replayer_hand_classes": hand_classes,
             "delta_ev_quality_contract": quality_contract,
             "prior_posterior_information_boundary": information_boundary,
             "hh_import_ux": hh_import_ux,
             "review_context": review_context,
+            "local_persistence": local_persistence,
+            "desktop_accessibility": accessibility,
+            "desktop_font_px": desktop_font,
             "seats": seats,
             "hero_range": hero_range,
             "guided": guided,

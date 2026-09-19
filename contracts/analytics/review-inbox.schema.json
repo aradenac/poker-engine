@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/analytics/review-inbox.schema.json",
+  "title": "Poker Review Inbox",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "event_schema", "adapter_schema", "scope", "scope_key", "items", "warnings", "user_metadata_schema"],
+  "properties": {
+    "schema": {"const": "poker-review-inbox/v1"},
+    "event_schema": {"const": "poker-leak-decision-event/v1"},
+    "adapter_schema": {"const": "poker-review-leak-adapter/v1"},
+    "user_metadata_schema": {"const": "poker-review-inbox-user-metadata/v1"},
+    "scope_key": {"type": "string", "minLength": 1},
+    "scope": {"$ref": "#/$defs/scope"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}}
+  },
+  "$defs": {
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["population_id", "pack_id", "strategy_id", "strategy_version", "ev_reference"],
+      "properties": {
+        "population_id": {"type": "string", "minLength": 1},
+        "pack_id": {"type": ["string", "null"]},
+        "strategy_id": {"type": "string", "minLength": 1},
+        "strategy_version": {"type": "string", "minLength": 1},
+        "ev_reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "decision": {
+      "type": ["object", "null"],
+      "properties": {
+        "hand_id": {"type": "string"},
+        "decision_id": {"type": "string"},
+        "step_index": {"type": ["integer", "null"]},
+        "loss_bb": {"type": "number"},
+        "nominal_loss_bb": {"type": "number"},
+        "street": {"type": "string"},
+        "position": {"type": "string"},
+        "spot_family": {"type": "string"},
+        "action_played": {"type": "string"},
+        "action_recommended": {"type": "string"},
+        "sizing_error": {"type": "boolean"},
+        "jam": {"type": "boolean"},
+        "overbet": {"type": "boolean"},
+        "covered": {"type": "boolean"},
+        "comparable": {"type": "boolean"},
+        "within_noise": {"type": "boolean"},
+        "error_type": {"type": "string"}
+      }
+    },
+    "deep_link": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["schema", "kind", "hand_id", "decision_id", "step_index", "reason"],
+      "properties": {
+        "schema": {"const": "poker-review-deep-link/v1"},
+        "kind": {"const": "REVIEW_DECISION"},
+        "hand_id": {"type": "string"},
+        "decision_id": {"type": "string"},
+        "step_index": {"type": ["integer", "null"]},
+        "reason": {"enum": ["COSTLIEST_DECISION", "FIRST_COMPARABLE_DECISION", "FIRST_AVAILABLE_DECISION"]}
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "schema", "hand_id", "timestamp", "scope", "total_loss_bb", "nominal_loss_bb",
+        "costliest_decision", "primary_decision", "main_street", "position", "spot_family",
+        "action_played", "action_recommended", "sizing_error", "jam", "overbet",
+        "coverage", "user_review", "status", "status_label", "deep_link", "facets"
+      ],
+      "properties": {
+        "schema": {"const": "poker-review-inbox-item/v1"},
+        "hand_id": {"type": "string", "minLength": 1},
+        "timestamp": {"type": ["string", "null"]},
+        "scope": {"$ref": "#/$defs/scope"},
+        "total_loss_bb": {"type": "number", "minimum": 0},
+        "nominal_loss_bb": {"type": "number", "minimum": 0},
+        "costliest_decision": {"$ref": "#/$defs/decision"},
+        "primary_decision": {"$ref": "#/$defs/decision"},
+        "main_street": {"type": "string"},
+        "position": {"type": "string"},
+        "spot_family": {"type": "string"},
+        "action_played": {"type": "string"},
+        "action_recommended": {"type": "string"},
+        "sizing_error": {"type": "boolean"},
+        "jam": {"type": "boolean"},
+        "overbet": {"type": "boolean"},
+        "coverage": {
+          "type": "object",
+          "required": ["state", "complete", "reasons", "decisions_total", "decisions_covered", "decisions_comparable", "decisions_within_noise", "analyzable_decisions", "finished_decisions"],
+          "properties": {
+            "state": {"enum": ["COMPLETE", "INCOMPLETE"]},
+            "complete": {"type": "boolean"},
+            "reasons": {"type": "array", "items": {"type": "string"}},
+            "decisions_total": {"type": "integer", "minimum": 0},
+            "decisions_covered": {"type": "integer", "minimum": 0},
+            "decisions_comparable": {"type": "integer", "minimum": 0},
+            "decisions_within_noise": {"type": "integer", "minimum": 0},
+            "analyzable_decisions": {"type": ["integer", "null"], "minimum": 0},
+            "finished_decisions": {"type": ["integer", "null"], "minimum": 0}
+          }
+        },
+        "user_review": {
+          "type": "object",
+          "required": ["reviewed", "reviewed_at"],
+          "properties": {"reviewed": {"type": "boolean"}, "reviewed_at": {"type": ["string", "null"]}}
+        },
+        "status": {"enum": ["TO_REVIEW", "REVIEWED", "CORRECT", "INCOMPLETE_ANALYSIS"]},
+        "status_label": {"enum": ["À revoir", "Revue", "Correcte", "Analyse incomplète"]},
+        "deep_link": {"$ref": "#/$defs/deep_link"},
+        "facets": {
+          "type": "object",
+          "required": ["streets", "positions", "spot_families", "played_actions", "recommended_actions", "sizing_error", "jam", "overbet"],
+          "properties": {
+            "streets": {"type": "array", "items": {"type": "string"}},
+            "positions": {"type": "array", "items": {"type": "string"}},
+            "spot_families": {"type": "array", "items": {"type": "string"}},
+            "played_actions": {"type": "array", "items": {"type": "string"}},
+            "recommended_actions": {"type": "array", "items": {"type": "string"}},
+            "sizing_error": {"type": "boolean"},
+            "jam": {"type": "boolean"},
+            "overbet": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}

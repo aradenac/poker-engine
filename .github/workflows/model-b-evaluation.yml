@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   evaluate:
+    if: github.ref_name != 'agent-B/issue-197-scientific-evaluation' && github.ref_name != 'agent-B/issue-272-observed-sim-calibration'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
