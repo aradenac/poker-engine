@@ -12,6 +12,7 @@ from tools.simulation.paired_preflop_grid_evaluator import (
     bridge_integration_file,
     evaluate_preflop_grid_paired,
 )
+from tools.simulation.preflop_grid_evaluator import PreflopEvaluationError
 
 
 class RealGridIntegrationTests(unittest.TestCase):
@@ -96,6 +97,30 @@ class RealGridIntegrationTests(unittest.TestCase):
             result["decision"]["ev_bb"],
         )
         self.assertTrue(result["paired_result"]["pairwise_deltas"])
+
+    def test_validation_materialized_world_requirement_fails_closed_for_generic_rollout(self):
+        def rollout(state, *, actor, seed, sample_index, candidate):
+            del state, actor, seed, sample_index, candidate
+            return {"ending_stack_bb": 100.0}
+
+        with self.assertRaisesRegex(
+            PreflopEvaluationError, "common-world materialization"
+        ):
+            evaluate_preflop_grid_paired(
+                self.state(),
+                actor="CO",
+                context_id=self.CONTEXT_ID,
+                hand_class="AA",
+                population_id=self.POP,
+                raise_targets_bb=[4.0],
+                rollout=rollout,
+                budget=AdaptiveBudget(4, 8, 4, 16),
+                base_seed="issue-338-require-world",
+                call_action="OVERLIMP",
+                raise_action="ISO",
+                include_jam=False,
+                require_materialized_common_world=True,
+            )
 
     def test_exact_fold_never_becomes_measured(self):
         def rollout(state, *, actor, seed, sample_index, candidate):
