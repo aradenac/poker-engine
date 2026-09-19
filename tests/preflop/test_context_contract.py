@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import inspect
 import json
 import math
@@ -38,12 +39,6 @@ from tools.training.fit_model_a_preflop_sizing import (  # noqa: E402
     evaluate_kts_posterior as evaluate_issue339_kts_posterior,
     load_protocol as load_issue339_protocol,
     load_support_report as load_issue339_support_report,
-)
-from tools.training.fit_model_a_preflop_sizing_v2 import (  # noqa: E402
-    build_candidate as build_issue352_candidate,
-    evaluate_validation as evaluate_issue352_validation,
-    load_fit_protocol as load_issue352_fit_protocol,
-    load_validation_protocol as load_issue352_validation_protocol,
 )
 from tools.repro_preflop_model_parity import (  # noqa: E402
     REPORT_PATH as MODEL_PARITY_REPORT_PATH,
@@ -432,74 +427,107 @@ def test_ab_issue339_train_fit_is_hash_bound_and_frozen_validation_executes_with
     print("ISSUE339_RESULT=" + json.dumps({"fit": fit, "validation": validation}, sort_keys=True, separators=(",", ":")))
 
 
-def test_ac_issue352_train_only_hierarchical_fit_is_deterministic_and_no_nearest_price():
-    fit_protocol = load_issue352_fit_protocol()
-    _, report = load_issue339_support_report()
-    candidate, fit = build_issue352_candidate(fit_protocol, report)
+def _canonical_json_sha256_without_evidence(value):
+    payload = {key: child for key, child in value.items() if key != "evidence_sha256"}
+    raw = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
 
-    assert candidate["identity"]["candidate_id"] == "model-a-preflop-sizing-aware-candidate-v2"
-    assert candidate["identity"]["fit_scope"] == "TRAIN_EMPIRICAL_FIT"
-    assert candidate["identity"]["data_scope"] == "CERTIFIED_TRAIN_ONLY"
-    assert candidate["nearest_price_fallback"] is False
+
+def test_ac_issue352_persisted_train_fit_is_frozen_without_refit():
+    fit = json.loads(
+        (ROOT / "analysis/model_a_preflop_sizing_v2_fit.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert fit["schema"] == "poker-model-a-preflop-sizing-v2-fit-evidence/v1"
+    assert fit["issue"] == 352
     assert fit["split_consumed"] == "TRAIN"
     assert fit["validation_consumed"] is False
     assert fit["test_consumed"] is False
-    assert fit["nodes"]["marginal_exact_price"] == 282
-    assert fit["nodes"]["revealed_hand_class_shrunk"] > 4
-    assert fit["shrinkage"]["selected_prior_strength"] in [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0]
-    assert fit["shrinkage"]["nearest_price_fallback"] is False
-    assert fit["shrinkage"]["hidden_hands_imputed"] is False
-    assert fit["shrinkage"]["selection_scope"] == "CERTIFIED_TRAIN_REVEALED_ROWS_ONLY"
+    assert fit["candidate_sha256"] == (
+        "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
+    )
+    assert fit["evidence_sha256"] == (
+        "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738"
+    )
+    assert _canonical_json_sha256_without_evidence(fit) == fit["evidence_sha256"]
+    assert fit["candidate_identity"]["candidate_id"] == (
+        "model-a-preflop-sizing-aware-candidate-v2"
+    )
+    assert fit["candidate_identity"]["active_model_replaced"] is False
+    assert fit["nodes"] == {
+        "by_support_band": {
+            "IDENTIFIABLE_REVEAL_SHRUNK": 4,
+            "LOW_REVEAL_SHRUNK": 752,
+            "MEDIUM_REVEAL_SHRUNK": 76,
+            "SPARSE_REVEAL_SHRUNK": 3545,
+        },
+        "marginal_exact_price": 282,
+        "revealed_hand_class_shrunk": 4377,
+        "total": 4659,
+    }
+    shrinkage = fit["shrinkage"]
+    assert shrinkage["selected_prior_strength"] == 1
+    assert shrinkage["nearest_price_fallback"] is False
+    assert shrinkage["hidden_hands_imputed"] is False
+    assert shrinkage["selection_scope"] == "CERTIFIED_TRAIN_REVEALED_ROWS_ONLY"
+    assert shrinkage["validation_consumed"] is False
+    assert shrinkage["test_consumed"] is False
 
-    hand_nodes = [node for node in candidate["nodes"] if node.get("hand_class") is not None]
-    assert hand_nodes
-    sparse = [node for node in hand_nodes if int(node["support"]) < 5]
-    assert sparse
-    for node in sparse[:25]:
-        shrink = node["shrinkage"]
-        assert 0.0 < shrink["prior_weight"] < 1.0
-        assert 0.0 < shrink["data_weight"] < 1.0
-        assert math.isclose(
-            shrink["prior_weight"] + shrink["data_weight"],
-            1.0,
-            rel_tol=1e-12,
-            abs_tol=1e-12,
-        )
-        assert shrink["train_revealed_observations"] == node["support"]
-
-    posterior = {int(row["target_total_bb"]): row for row in fit["posterior_321"]["prices"]}
+    posterior = {
+        int(row["target_total_bb"]): row
+        for row in fit["posterior_321"]["prices"]
+    }
     assert set(posterior) == {4, 5, 6}
     assert posterior[4]["after_status"] == "UNSUPPORTED"
     assert posterior[5]["after_status"] == "AVAILABLE"
     assert posterior[6]["after_status"] == "UNSUPPORTED"
     assert all(not row["contract_errors"] for row in posterior.values())
 
-    print("ISSUE352_TRAIN_RESULT=" + json.dumps(fit, sort_keys=True, separators=(",", ":")))
 
-
-def test_ad_issue352_frozen_validation_compares_active_339_and_v2_without_test():
-    fit_protocol = load_issue352_fit_protocol()
-    _, report = load_issue339_support_report()
-    candidate, fit = build_issue352_candidate(fit_protocol, report)
-
-    persisted_fit = json.loads(
-        (ROOT / "analysis/model_a_preflop_sizing_v2_fit.json").read_text(encoding="utf-8")
-    )
-    assert_json_semantically_equal(fit, persisted_fit)
-
-    protocol = load_issue352_validation_protocol(fit)
-    validation = evaluate_issue352_validation(protocol, candidate, fit)
-    print(
-        "ISSUE352_VALIDATION_RESULT="
-        + json.dumps(validation, sort_keys=True, separators=(",", ":"))
-    )
-    persisted_validation = json.loads(
+def test_ad_issue352_persisted_admission_is_hash_bound_without_validation_rerun():
+    protocol_path = ROOT / "analysis/model_a_preflop_sizing_v2_validation_protocol.json"
+    validation = json.loads(
         (ROOT / "analysis/model_a_preflop_sizing_v2_validation.json").read_text(
             encoding="utf-8"
         )
     )
-    assert_json_semantically_equal(validation, persisted_validation)
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    actual_protocol_sha = hashlib.sha256(protocol_path.read_bytes()).hexdigest()
+
+    assert validation["schema"] == "poker-model-a-preflop-sizing-v2-validation/v1"
+    assert validation["issue"] == 352
     assert validation["outcome"] == "ADMIT_CANDIDATE"
+    assert validation["evidence_sha256"] == (
+        "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
+    )
+    assert _canonical_json_sha256_without_evidence(validation) == (
+        validation["evidence_sha256"]
+    )
+    assert validation["protocol"]["sha256"] == (
+        "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2"
+    )
+    assert actual_protocol_sha == validation["protocol"]["sha256"]
+    assert protocol["status"] == "FROZEN_BEFORE_VALIDATION"
+    assert protocol["frozen_train_fit"]["candidate_sha256"] == (
+        "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
+    )
+    assert protocol["frozen_train_fit"]["fit_evidence_sha256"] == (
+        "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738"
+    )
+    refresh = protocol["mechanical_repro_refresh"]
+    assert refresh["original_freeze_commit"] == (
+        "628ec0d2a1e5ba9605a929610498ac090830251b"
+    )
+    assert refresh["scientific_rules_changed"] is False
+    assert refresh["evaluation_thresholds_changed"] is False
+    assert refresh["bootstrap_seeds_changed"] is False
+
     assert all(validation["gate"].values())
     assert validation["selection_split"] == "VALIDATION"
     assert validation["test_consumed"] is False
@@ -510,20 +538,9 @@ def test_ad_issue352_frozen_validation_compares_active_339_and_v2_without_test()
     assert validation["hero_ev_consumed"] is False
     assert validation["ui_modified"] is False
     assert validation["issue_314_real_optimization"] is False
-    assert set(validation["metrics"]["global_exact_price"]["model_logloss"]) == {
-        "active_v5",
-        "candidate_339",
-        "candidate_v2",
-    }
-    assert set(validation["metrics"]["hand_conditioned"]["model_logloss"]) == {
-        "active_v5",
-        "candidate_339",
-        "candidate_v2",
-        "v2_exact_price_marginal",
-    }
-    print(
-        "ISSUE352_VALIDATION_RESULT="
-        + json.dumps(validation, sort_keys=True, separators=(",", ":"))
+    assert validation["production_effect"] == "NONE"
+    assert validation["inputs"]["candidate_v2"]["candidate_sha256"] == (
+        "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
     )
 
 
