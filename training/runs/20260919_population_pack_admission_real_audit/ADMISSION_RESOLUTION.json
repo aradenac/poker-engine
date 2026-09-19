@@ -447,26 +447,26 @@
       "application_release"
     ],
     "resolver": {
-      "input_path": "training/runs/20260919_population_pack_admission_real_audit/.generated/EVIDENCE_SET.json",
+      "input_path": "training/runs/20260919_population_pack_admission_real_audit/EVIDENCE_SET.json",
       "input_sha256": "23d0538d56e51bc4657ae5aeef96b4a6172a4cc0730d6d95e13c2fade3f50258",
       "schema": "poker-scientific-component-admission/v1"
     },
     "schema": "poker-population-pack-candidate/v1"
   },
   "input": {
-    "path": "training/runs/20260919_population_pack_admission_real_audit/.generated/EVIDENCE_SET.json",
+    "path": "training/runs/20260919_population_pack_admission_real_audit/EVIDENCE_SET.json",
     "schema": "poker-scientific-component-evidence-set/v1",
     "sha256": "23d0538d56e51bc4657ae5aeef96b4a6172a4cc0730d6d95e13c2fade3f50258"
   },
   "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
   "preflight_input": {
-    "candidate_contract_sha256": "eda681285109d852a3f003181fcd95050943b8043c924c7d29ea10a6b92dafeb",
+    "candidate_contract_sha256": "8120d8e0e44a3823f2d1d4db0dfbb64a6c2977f892f7328cdd6b535d608d8ac9",
     "expected_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
     "materialization_required": true,
     "note": "Serialize candidate_contract canonically to a caller-controlled temporary/output path, then invoke existing preflight. Resolver itself performs no writes.",
     "schema": "poker-population-pack-preflight-input/v1"
   },
-  "resolution_sha256": "c871c39eb8a3030123f62452a0529e9613fcba7de08ba0420ccc0afb9f03bb22",
+  "resolution_sha256": "d9b19db277fd9b9760b3441bfdca3e90cecc83884df6d7564a54e6184a9c4bc4",
   "safety": {
     "catalogue_updates": false,
     "consumes_live_issue_state": false,

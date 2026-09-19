@@ -28,7 +28,7 @@
     "application_release"
   ],
   "resolver": {
-    "input_path": "training/runs/20260919_population_pack_admission_real_audit/.generated/EVIDENCE_SET.json",
+    "input_path": "training/runs/20260919_population_pack_admission_real_audit/EVIDENCE_SET.json",
     "input_sha256": "23d0538d56e51bc4657ae5aeef96b4a6172a4cc0730d6d95e13c2fade3f50258",
     "schema": "poker-scientific-component-admission/v1"
   },

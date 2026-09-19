@@ -59,8 +59,8 @@
   "candidate": {
     "candidate_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1@admission-23d0538d56e51bc4",
     "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION",
-    "contract_path": "training/runs/20260919_population_pack_admission_real_audit/.generated/CANDIDATE_CONTRACT.json",
-    "contract_sha256": "0915e7bf31889f3b491d5197e383eb3481f4384b8b733b667c9ee4b9a792020c",
+    "contract_path": "training/runs/20260919_population_pack_admission_real_audit/CANDIDATE_CONTRACT.json",
+    "contract_sha256": "a93d14ac314b3e5c75dc5f7848f37a02f5705743532c322cb4cd2ebb4ff04d91",
     "declared_blocked_on": [],
     "publication_policy": {
       "catalog_eligible": false,
@@ -287,8 +287,8 @@
   "handoff": {
     "assembly_gate": "tools/build_population_pack.py",
     "candidate_contract_config_field": "candidate_contract",
-    "candidate_contract_path": "training/runs/20260919_population_pack_admission_real_audit/.generated/CANDIDATE_CONTRACT.json",
-    "candidate_contract_sha256": "0915e7bf31889f3b491d5197e383eb3481f4384b8b733b667c9ee4b9a792020c",
+    "candidate_contract_path": "training/runs/20260919_population_pack_admission_real_audit/CANDIDATE_CONTRACT.json",
+    "candidate_contract_sha256": "a93d14ac314b3e5c75dc5f7848f37a02f5705743532c322cb4cd2ebb4ff04d91",
     "ready_without_new_logic": false
   },
   "population": {
