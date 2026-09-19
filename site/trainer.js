@@ -803,11 +803,11 @@ async function trainerComputeRecommendation(){
 }
 function trainerActualLine(hand,kind,cost){
   const s=hand.heroSeat,paid=hand.streetPaid[s],toCall=trainerToCall(hand,s),remaining=hand.stacks[s];kind=kind.toUpperCase();
-  if(kind==="FOLD")return {line:trainerActionLine(hand,s,"FOLD"),kind,cost:0};
-  if(kind==="CHECK")return {line:trainerActionLine(hand,s,"CHECK"),kind,cost:0};
-  if(kind==="CALL"){const c=Math.min(toCall,remaining);return {line:trainerActionLine(hand,s,"CALL",c),kind,cost:c};}
-  if(kind==="BET"){const c=trainerClamp(Number(cost)||1,Math.min(1,remaining),remaining);return {line:trainerActionLine(hand,s,"BET",c,paid+c,c),kind,cost:c};}
-  const minTarget=hand.currentBet+Math.max(hand.lastRaise,1),target=Math.min(paid+remaining,Math.max(minTarget,paid+(Number(cost)||toCall+hand.lastRaise))),c=target-paid,inc=target-hand.currentBet;return {line:trainerActionLine(hand,s,"RAISE",c,target,inc),kind:"RAISE",cost:c};
+  if(kind==="FOLD")return {line:trainerActionLine(hand,s,"FOLD"),kind,cost:0,target:null};
+  if(kind==="CHECK")return {line:trainerActionLine(hand,s,"CHECK"),kind,cost:0,target:paid};
+  if(kind==="CALL"){const c=Math.min(toCall,remaining);return {line:trainerActionLine(hand,s,"CALL",c),kind,cost:c,target:paid+c};}
+  if(kind==="BET"){const c=trainerClamp(Number(cost)||1,Math.min(1,remaining),remaining);return {line:trainerActionLine(hand,s,"BET",c,paid+c,c),kind,cost:c,target:paid+c};}
+  const minTarget=hand.currentBet+Math.max(hand.lastRaise,1),target=Math.min(paid+remaining,Math.max(minTarget,paid+(Number(cost)||toCall+hand.lastRaise))),c=target-paid,inc=target-hand.currentBet;return {line:trainerActionLine(hand,s,"RAISE",c,target,inc),kind:"RAISE",cost:c,target};
 }
 function trainerDecisionClass(detail){
   const rawLoss=Math.max(0,Number(detail?.rawLossBB??detail?.lossBB)||0),effectiveLoss=Math.max(0,Number(detail?.lossBB)||0);
