@@ -1,0 +1,30 @@
+{
+  "active_model_b_changed": false,
+  "artifacts": {
+    "candidate": "model/support_aware_backoff.json",
+    "graph": "BACKOFF_GRAPH.json",
+    "protocol": "PROTOCOL.json",
+    "report": "REPORT.json",
+    "summary": "SUMMARY.json",
+    "train_fit_audit": "TRAIN_FIT_AUDIT.json"
+  },
+  "automatic_promotion": false,
+  "dod": {
+    "deterministic_artifacts": true,
+    "exact_context_used_when_supported": true,
+    "fallback_explicit_when_needed": true,
+    "global_support_aware_tail_metrics_persisted": true,
+    "graph_thresholds_frozen_before_validation": true,
+    "hyperparameters_not_selected_on_validation": true,
+    "no_silent_pooling": true,
+    "prediction_provenance_and_support_exposed": true,
+    "production_effect_none": true,
+    "same_validation_rows_all_models": true,
+    "test_unconsumed": true
+  },
+  "issue": 286,
+  "production_effect": "NONE",
+  "schema": "model-b-support-aware-backoff-result/v1",
+  "status": "COMPLETE",
+  "test_consumed": false
+}

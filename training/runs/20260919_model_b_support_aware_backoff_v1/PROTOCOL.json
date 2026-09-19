@@ -1,0 +1,57 @@
+{
+  "schema": "model-b-support-aware-backoff-protocol/v1",
+  "issue": 286,
+  "version": "2026-09-19.1",
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+  "source_issue_197_run": "training/runs/20260919_model_b_response_to_price_v1",
+  "source_issue_272_run": "training/runs/20260919_model_b_observed_vs_simulated_calibration_v1",
+  "split_contract": {
+    "fit": [
+      "TRAIN"
+    ],
+    "freeze_before": [
+      "VALIDATION"
+    ],
+    "evaluate": [
+      "VALIDATION"
+    ],
+    "forbidden": [
+      "TEST"
+    ],
+    "test_consumed": false
+  },
+  "context_dimensions": [
+    "profile",
+    "street",
+    "relative_position",
+    "pot_type",
+    "sequence",
+    "price_bucket",
+    "spr_bucket"
+  ],
+  "method": {
+    "kind": "DETERMINISTIC_SUPPORT_AWARE_BACKOFF",
+    "action_min_observations": 30,
+    "action_min_distinct_hands": 20,
+    "sizing_min_raises": 12,
+    "sizing_min_distinct_hands": 8,
+    "alpha_per_action": 1,
+    "threshold_source": "Inherited from frozen #272 support contract; not tuned on VALIDATION",
+    "nearest_context_heuristic": false,
+    "silent_pooling": false
+  },
+  "uncertainty": {
+    "paired_model_comparison": "cluster bootstrap by hand_id",
+    "bootstrap_samples": 1000,
+    "seed": 20260919
+  },
+  "scientific_constraints": {
+    "hyperparameters_selected_on_validation": false,
+    "model_a_features_allowed": false,
+    "automatic_promotion": false,
+    "active_model_b_change_allowed": false,
+    "production_effect": "NONE",
+    "issue_108_files_modified": false
+  }
+}
