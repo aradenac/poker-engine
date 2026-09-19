@@ -27,6 +27,8 @@ def main() -> int:
         "site/analytics/leak-analyzer.js",
         "site/analytics/review-score-adapter.js",
         "site/analytics/review-inbox.js",
+        "site/analytics/leak-training-target.js",
+        "site/analytics/review-dashboard.js",
         "site/preflop-contract.js",
         "site/hero-ranges.html",
         "site/hero-ranges.js",
