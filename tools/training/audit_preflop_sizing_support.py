@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import gzip
 import hashlib
 import json
 import math
@@ -325,12 +326,6 @@ def kts_projection(rows: list[dict[str, Any]]) -> dict[str, Any]:
     response_support = []
     for price, group in sorted(by_price.items(), key=lambda kv: (-1 if kv[0] is None else kv[0])):
         by_responder = []
-        for key, sub in sorted(
-            collections.defaultdict(list, {
-                (str(x.get("actor_position") or ""), x["_caller_count"]): [] for x in group
-            }).items()
-        ):
-            pass
         responder_groups: dict[tuple[str, int], list[dict[str, Any]]] = {}
         for r in group:
             responder_groups.setdefault((str(r.get("actor_position") or ""), int(r["_caller_count"])), []).append(r)
@@ -485,6 +480,30 @@ def audit(certification_path: Path = DEFAULT_CERTIFICATION) -> dict[str, Any]:
     return report
 
 
+def summary_report(report: dict[str, Any], full_report_path: str = "analysis/preflop_sizing_support_train.full.json.gz") -> dict[str, Any]:
+    return {
+        "schema": "poker-preflop-sizing-support-audit-summary/v1",
+        "population_id": report["population_id"],
+        "scope": report["scope"],
+        "provenance": report["provenance"],
+        "semantics": report["semantics"],
+        "accounting": report["accounting"],
+        "bin_proposals": report["bin_proposals"],
+        "backoff_contract": report["backoff_contract"],
+        "support_zone_summary": report["support_zone_summary"],
+        "kts_sb_two_limpers_projection": report["kts_sb_two_limpers_projection"],
+        "top_matrix_cells": report["matrix"][:100],
+        "full_report": {
+            "path": full_report_path,
+            "compression": "gzip",
+            "content_schema": report["schema"],
+            "report_hash": report["report_hash"],
+            "matrix_cells": len(report["matrix"]),
+            "revealed_hand_class_cells": len(report["revealed_hand_class_support"]),
+        },
+    }
+
+
 def render_markdown(report: dict[str, Any]) -> str:
     a = report["accounting"]
     p = report["kts_sb_two_limpers_projection"]
@@ -558,7 +577,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "- Revealed hand classes are reveal-selected; marginal support remains the coverage reference.",
         "",
         "Reproduction:",
-        "python3 tools/training/audit_preflop_sizing_support.py --output-json analysis/preflop_sizing_support_train.json --output-md analysis/preflop_sizing_support_train.md",
+        "python3 tools/training/audit_preflop_sizing_support.py --output-json analysis/preflop_sizing_support_train.json --output-md analysis/preflop_sizing_support_train.md --full-json-gz analysis/preflop_sizing_support_train.full.json.gz",
         "",
         "Report hash: " + report["report_hash"],
         "",
@@ -566,11 +585,26 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def write_outputs(report: dict[str, Any], json_path: Path, md_path: Path) -> None:
+def canonical_report_bytes(report: dict[str, Any]) -> bytes:
+    return (json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def write_outputs(
+    report: dict[str, Any],
+    json_path: Path,
+    md_path: Path,
+    full_json_gz_path: Path,
+) -> None:
     json_path.parent.mkdir(parents=True, exist_ok=True)
     md_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+    full_json_gz_path.parent.mkdir(parents=True, exist_ok=True)
+    summary = summary_report(
+        report,
+        full_json_gz_path.relative_to(ROOT).as_posix() if full_json_gz_path.is_relative_to(ROOT) else str(full_json_gz_path),
+    )
+    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
     md_path.write_text(render_markdown(report), encoding="utf-8")
+    full_json_gz_path.write_bytes(gzip.compress(canonical_report_bytes(report), mtime=0))
 
 
 def main() -> int:
@@ -578,16 +612,18 @@ def main() -> int:
     parser.add_argument("--certification", type=Path, default=DEFAULT_CERTIFICATION)
     parser.add_argument("--output-json", type=Path)
     parser.add_argument("--output-md", type=Path)
+    parser.add_argument("--full-json-gz", type=Path)
     parser.add_argument("--print-json", action="store_true")
     args = parser.parse_args()
     cert = args.certification if args.certification.is_absolute() else ROOT / args.certification
     report = audit(cert)
-    if args.output_json or args.output_md:
-        if not (args.output_json and args.output_md):
-            raise SystemExit("--output-json and --output-md must be supplied together")
+    if args.output_json or args.output_md or args.full_json_gz:
+        if not (args.output_json and args.output_md and args.full_json_gz):
+            raise SystemExit("--output-json, --output-md and --full-json-gz must be supplied together")
         jp = args.output_json if args.output_json.is_absolute() else ROOT / args.output_json
         mp = args.output_md if args.output_md.is_absolute() else ROOT / args.output_md
-        write_outputs(report, jp, mp)
+        gp = args.full_json_gz if args.full_json_gz.is_absolute() else ROOT / args.full_json_gz
+        write_outputs(report, jp, mp, gp)
     if args.print_json:
         print(json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
     else:
