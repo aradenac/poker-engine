@@ -1,0 +1,1427 @@
+{
+  "schema": "poker-engine-kts-sb-iso-reference/v1",
+  "scenario_id": "kts_sb_two_limp_iso4_three_calls_v1",
+  "issue": 321,
+  "hand_history_file": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt",
+  "reuse_issues": [
+    312,
+    313,
+    314,
+    315,
+    316
+  ],
+  "scenario": {
+    "format": "6-max",
+    "seats": [
+      "BTN",
+      "Hero",
+      "BB",
+      "UTG",
+      "HJ",
+      "CO"
+    ],
+    "positions": {
+      "BTN": "BTN",
+      "Hero": "SB",
+      "BB": "BB",
+      "UTG": "UTG",
+      "HJ": "HJ",
+      "CO": "CO"
+    },
+    "hero": {
+      "player": "Hero",
+      "position": "SB",
+      "hand_class": "KTs"
+    },
+    "button": "BTN",
+    "starting_stacks_bb": {
+      "BTN": 100,
+      "Hero": 100,
+      "BB": 100,
+      "UTG": 100,
+      "HJ": 100,
+      "CO": 100
+    },
+    "blinds_bb": {
+      "small": 0.5,
+      "big": 1
+    },
+    "actions": [
+      {
+        "id": "utg_fold",
+        "player": "UTG",
+        "action": "FOLD"
+      },
+      {
+        "id": "hj_fold",
+        "player": "HJ",
+        "action": "FOLD"
+      },
+      {
+        "id": "co_limp",
+        "player": "CO",
+        "action": "CALL"
+      },
+      {
+        "id": "btn_limp",
+        "player": "BTN",
+        "action": "CALL"
+      },
+      {
+        "id": "hero_iso",
+        "player": "Hero",
+        "action": "RAISE",
+        "target_total_bb": 4
+      },
+      {
+        "id": "bb_call_iso",
+        "player": "BB",
+        "action": "CALL"
+      },
+      {
+        "id": "co_call_iso",
+        "player": "CO",
+        "action": "CALL"
+      },
+      {
+        "id": "btn_call_iso",
+        "player": "BTN",
+        "action": "CALL"
+      }
+    ],
+    "flop_cards": [
+      "2c",
+      "7d",
+      "Qh"
+    ],
+    "snapshot_points": [
+      {
+        "id": "after_co_limp",
+        "after_action": "co_limp"
+      },
+      {
+        "id": "after_btn_limp",
+        "after_action": "btn_limp"
+      },
+      {
+        "id": "before_hero",
+        "before_action": "hero_iso"
+      },
+      {
+        "id": "after_hero_raise",
+        "after_action": "hero_iso"
+      },
+      {
+        "id": "before_bb_call",
+        "before_action": "bb_call_iso"
+      },
+      {
+        "id": "after_bb_call",
+        "after_action": "bb_call_iso"
+      },
+      {
+        "id": "before_co_call",
+        "before_action": "co_call_iso"
+      },
+      {
+        "id": "after_co_call",
+        "after_action": "co_call_iso"
+      },
+      {
+        "id": "before_btn_call",
+        "before_action": "btn_call_iso"
+      },
+      {
+        "id": "after_btn_call_preflop",
+        "after_action": "btn_call_iso"
+      },
+      {
+        "id": "flop_entry",
+        "after_flop": true
+      }
+    ]
+  },
+  "snapshots": [
+    {
+      "id": "after_co_limp",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 100,
+          "Hero": 99.5,
+          "BB": 99,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 0,
+          "Hero": 0.5,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 0,
+          "Hero": 0.5,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 1,
+        "last_full_raise_bb": 1,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "pending": [
+          "BTN",
+          "Hero",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "BTN",
+        "pot_before_bb": 2.5,
+        "actor_sunk_total_bb": 0,
+        "actor_street_contribution_bb": 0,
+        "actor_remaining_bb": 100,
+        "current_price_bb": 1,
+        "to_call_bb": 1,
+        "full_to_call_bb": 1,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 2,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "Hero",
+          "BB"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 1,
+        "call_target_total_bb": 1,
+        "price_to_pot": 0.4
+      },
+      "public_fingerprint_sha256": "f9be75eb811252e39082c676fe238b128f47aa5eebf6be49f3cacd92e4a93dc9"
+    },
+    {
+      "id": "after_btn_limp",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 99.5,
+          "BB": 99,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 0.5,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 0.5,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 1,
+        "last_full_raise_bb": 1,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "BTN",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "pending": [
+          "Hero",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "Hero",
+        "pot_before_bb": 3.5,
+        "actor_sunk_total_bb": 0.5,
+        "actor_street_contribution_bb": 0.5,
+        "actor_remaining_bb": 99.5,
+        "current_price_bb": 1,
+        "to_call_bb": 0.5,
+        "full_to_call_bb": 0.5,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 2,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "BB"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 0.5,
+        "call_target_total_bb": 1,
+        "price_to_pot": 0.142857143
+      },
+      "public_fingerprint_sha256": "b337ba199b2afa7126b762bd38a8779fa26f5b1c850b3d1e215f56af008aa5fb"
+    },
+    {
+      "id": "before_hero",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 99.5,
+          "BB": 99,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 0.5,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 0.5,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 1,
+        "last_full_raise_bb": 1,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "BTN",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "pending": [
+          "Hero",
+          "BB"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "Hero",
+        "pot_before_bb": 3.5,
+        "actor_sunk_total_bb": 0.5,
+        "actor_street_contribution_bb": 0.5,
+        "actor_remaining_bb": 99.5,
+        "current_price_bb": 1,
+        "to_call_bb": 0.5,
+        "full_to_call_bb": 0.5,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 2,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "BB"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 0.5,
+        "call_target_total_bb": 1,
+        "price_to_pot": 0.142857143
+      },
+      "public_fingerprint_sha256": "b337ba199b2afa7126b762bd38a8779fa26f5b1c850b3d1e215f56af008aa5fb"
+    },
+    {
+      "id": "after_hero_raise",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 96,
+          "BB": 99,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "Hero"
+        ],
+        "pending": [
+          "BB",
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "BB",
+        "pot_before_bb": 7,
+        "actor_sunk_total_bb": 1,
+        "actor_street_contribution_bb": 1,
+        "actor_remaining_bb": 99,
+        "current_price_bb": 4,
+        "to_call_bb": 3,
+        "full_to_call_bb": 3,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 7,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "CO",
+          "BTN"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 3,
+        "call_target_total_bb": 4,
+        "price_to_pot": 0.428571429
+      },
+      "public_fingerprint_sha256": "634144c235fe7f8f7de9cf451b5a2341dcb4db4e60a124fa429941f034dd3ac3"
+    },
+    {
+      "id": "before_bb_call",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 96,
+          "BB": 99,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 1,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "Hero"
+        ],
+        "pending": [
+          "BB",
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "BB",
+        "pot_before_bb": 7,
+        "actor_sunk_total_bb": 1,
+        "actor_street_contribution_bb": 1,
+        "actor_remaining_bb": 99,
+        "current_price_bb": 4,
+        "to_call_bb": 3,
+        "full_to_call_bb": 3,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 7,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "CO",
+          "BTN"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 3,
+        "call_target_total_bb": 4,
+        "price_to_pot": 0.428571429
+      },
+      "public_fingerprint_sha256": "634144c235fe7f8f7de9cf451b5a2341dcb4db4e60a124fa429941f034dd3ac3"
+    },
+    {
+      "id": "after_bb_call",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 96,
+          "BB": 96,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "Hero",
+          "BB"
+        ],
+        "pending": [
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "CO",
+        "pot_before_bb": 10,
+        "actor_sunk_total_bb": 1,
+        "actor_street_contribution_bb": 1,
+        "actor_remaining_bb": 99,
+        "current_price_bb": 4,
+        "to_call_bb": 3,
+        "full_to_call_bb": 3,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 7,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "BTN"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 3,
+        "call_target_total_bb": 4,
+        "price_to_pot": 0.3
+      },
+      "public_fingerprint_sha256": "c5d104f40934011dc79e3f5e78e44923b0be8d28af6b26e0b9adcd8570fc8166"
+    },
+    {
+      "id": "before_co_call",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 96,
+          "BB": 96,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 99
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 1
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "Hero",
+          "BB"
+        ],
+        "pending": [
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "CO",
+        "pot_before_bb": 10,
+        "actor_sunk_total_bb": 1,
+        "actor_street_contribution_bb": 1,
+        "actor_remaining_bb": 99,
+        "current_price_bb": 4,
+        "to_call_bb": 3,
+        "full_to_call_bb": 3,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 7,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": [
+          "BTN"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 3,
+        "call_target_total_bb": 4,
+        "price_to_pot": 0.3
+      },
+      "public_fingerprint_sha256": "c5d104f40934011dc79e3f5e78e44923b0be8d28af6b26e0b9adcd8570fc8166"
+    },
+    {
+      "id": "after_co_call",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 96,
+          "BB": 96,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 96
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "pending": [
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "BTN",
+        "pot_before_bb": 13,
+        "actor_sunk_total_bb": 1,
+        "actor_street_contribution_bb": 1,
+        "actor_remaining_bb": 99,
+        "current_price_bb": 4,
+        "to_call_bb": 3,
+        "full_to_call_bb": 3,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 7,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": []
+      },
+      "pricing": {
+        "to_call_bb": 3,
+        "call_target_total_bb": 4,
+        "price_to_pot": 0.230769231
+      },
+      "public_fingerprint_sha256": "6087a0525dca46b0d9b7fdd0e61a59a3a82690c778563aa07b642c7b5f67441a"
+    },
+    {
+      "id": "before_btn_call",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 99,
+          "Hero": 96,
+          "BB": 96,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 96
+        },
+        "total_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "street_committed_bb": {
+          "BTN": 1,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "pending": [
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "preflop",
+        "actor": "BTN",
+        "pot_before_bb": 13,
+        "actor_sunk_total_bb": 1,
+        "actor_street_contribution_bb": 1,
+        "actor_remaining_bb": 99,
+        "current_price_bb": 4,
+        "to_call_bb": 3,
+        "full_to_call_bb": 3,
+        "free_check": false,
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 7,
+        "max_raise_to_bb": 100,
+        "remaining_to_act": []
+      },
+      "pricing": {
+        "to_call_bb": 3,
+        "call_target_total_bb": 4,
+        "price_to_pot": 0.230769231
+      },
+      "public_fingerprint_sha256": "6087a0525dca46b0d9b7fdd0e61a59a3a82690c778563aa07b642c7b5f67441a"
+    },
+    {
+      "id": "after_btn_call_preflop",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 96,
+          "Hero": 96,
+          "BB": 96,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 96
+        },
+        "total_committed_bb": {
+          "BTN": 4,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "street_committed_bb": {
+          "BTN": 4,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "preflop",
+        "board": [],
+        "current_bet_bb": 4,
+        "last_full_raise_bb": 3,
+        "full_bet_established": true,
+        "acted_since_full_raise": [
+          "BTN",
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "pending": [],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": null,
+      "pricing": null,
+      "public_fingerprint_sha256": "cc5d88b31ea91e0b260432e46afded6b0817bbd3fcf839dabe91d6eb028ead48"
+    },
+    {
+      "id": "flop_entry",
+      "schema": "poker-engine-preflop-public-snapshot/v1",
+      "state": {
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "button": "BTN",
+        "small_blind_player": "Hero",
+        "big_blind_player": "BB",
+        "small_blind_bb": 0.5,
+        "big_blind_bb": 1,
+        "starting_stacks_bb": {
+          "BTN": 100,
+          "Hero": 100,
+          "BB": 100,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 100
+        },
+        "stacks_bb": {
+          "BTN": 96,
+          "Hero": 96,
+          "BB": 96,
+          "UTG": 100,
+          "HJ": 100,
+          "CO": 96
+        },
+        "total_committed_bb": {
+          "BTN": 4,
+          "Hero": 4,
+          "BB": 4,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 4
+        },
+        "street_committed_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        },
+        "folded": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": true,
+          "HJ": true,
+          "CO": false
+        },
+        "all_in": {
+          "BTN": false,
+          "Hero": false,
+          "BB": false,
+          "UTG": false,
+          "HJ": false,
+          "CO": false
+        },
+        "street": "flop",
+        "board": [
+          "2c",
+          "7d",
+          "Qh"
+        ],
+        "current_bet_bb": 0,
+        "last_full_raise_bb": 1,
+        "full_bet_established": false,
+        "acted_since_full_raise": [],
+        "pending": [
+          "Hero",
+          "BB",
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BTN": 0,
+          "Hero": 0,
+          "BB": 0,
+          "UTG": 0,
+          "HJ": 0,
+          "CO": 0
+        }
+      },
+      "legal": {
+        "street": "flop",
+        "actor": "Hero",
+        "pot_before_bb": 16,
+        "actor_sunk_total_bb": 4,
+        "actor_street_contribution_bb": 0,
+        "actor_remaining_bb": 96,
+        "current_price_bb": 0,
+        "to_call_bb": 0,
+        "full_to_call_bb": 0,
+        "free_check": true,
+        "legal_actions": [
+          "CHECK",
+          "RAISE"
+        ],
+        "raise_reopened": true,
+        "min_raise_to_bb": 1,
+        "max_raise_to_bb": 96,
+        "remaining_to_act": [
+          "BB",
+          "CO",
+          "BTN"
+        ]
+      },
+      "pricing": {
+        "to_call_bb": 0,
+        "call_target_total_bb": 0,
+        "price_to_pot": 0
+      },
+      "public_fingerprint_sha256": "58c1c22d4398dc96d59524c943ae0313b2c70441c9ba3e10e76ae085d4e25c01"
+    }
+  ],
+  "public_timeline_sha256": "51585a3dc55fd3ffb8aea8961249ddc97c032ebd3c85f566febfe5b5b2bd0b7b"
+}
