@@ -314,6 +314,22 @@ def test_v5_projection_ignores_new_sizing_candidate_fields():
     assert v5_runtime_signature(base) == v5_runtime_signature(changed)
 
 
+
+def test_sizing_likelihood_schema_locks_candidate_only_and_no_nearest_price():
+    schema = json.loads(
+        (ROOT / "contracts/training/model-a-preflop-sizing-likelihood.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert schema["properties"]["schema"]["const"] == "poker-model-a-preflop-sizing-likelihood/v1"
+    identity = schema["properties"]["identity"]["properties"]
+    assert identity["model_family"]["const"] == "MODEL_A_PREFLOP"
+    assert identity["status"]["const"] == "CANDIDATE_ONLY_NOT_ACTIVE"
+    assert identity["active_model_replaced"]["const"] is False
+    assert schema["properties"]["nearest_price_fallback"]["const"] is False
+    assert schema["properties"]["backoff_policy"]["const"] == list(BACKOFF_POLICY)
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for test in tests:
