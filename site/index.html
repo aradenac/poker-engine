@@ -1041,28 +1041,30 @@
     <div id="actionDetailModalBody"></div>
   </div>
 </div>
-<nav id="quickNav" class="quick-nav" aria-label="Navigation rapide">
+<nav id="quickNav" class="quick-nav" aria-label="Navigation principale">
   <button id="quickNavToggle" type="button" class="quick-nav-toggle" aria-expanded="true" title="Replier / déplier la navigation">❮</button>
-  <div class="quick-nav-title">Navigation</div>
-  <a href="#rangesSection">Sources importées</a>
-  <a href="./hero-ranges.html">Stratégie Hero</a>
-  <a href="#historiesSection">Fichiers HH</a>
-  <a href="#handSelectionSection">Mains</a>
-  <a href="#replayerSection">Replayer</a>
-  <a id="trainerNavLink" href="#trainerPage">Training</a>
-  <a href="#opponentsSection">Adversaires</a>
-  <a href="#cardsSection">Cartes</a>
-  <a href="#rangeDisplaySection">Range adverse</a>
-  <a href="#equitySection">Calcul</a>
+  <div class="quick-nav-title">Espaces</div>
+  <a href="#historiesSection" data-product-domain="review">Review</a>
+  <a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>
+  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>
+  <a href="#equityLabSection" data-product-domain="equity-lab">Equity Lab</a>
+  <a href="#settingsSection" data-product-domain="settings">Settings</a>
 </nav>
 <div id="mainPage" class="wrap">
   <h1>Poker Range Equity</h1>
-  <div class="sub">Calculateur d’équité Hold’em exact, autonome et hors ligne.</div>
-  <div class="actions" style="margin:-10px 0 14px"><button id="trainerOpenBtn" type="button" class="primary">Training 6-max</button><a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Stratégie Hero</a></div>
+  <div class="sub">Review · Training · Strategy · Equity Lab — autonome et hors ligne.</div>
+  <div class="actions product-home-actions" style="margin:-10px 0 14px">
+    <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
+    <button id="trainerOpenBtn" type="button" class="primary">Training</button>
+    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
+    <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
+  </div>
   <div class="product-identity" aria-label="Contexte actif">
     <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
     <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
   </div>
+  <section id="settingsSection" class="product-settings" aria-label="Settings">
+  <div class="product-settings-title">Settings</div>
   <details id="runtimeIdentityDetails" class="runtime-identity">
     <summary>Identité du produit</summary>
     <div class="runtime-identity-grid">
@@ -1088,10 +1090,15 @@
       </div>
     </details>
   </div>
+  </section>
 
   <div class="grid">
+    <div id="equityLabSection" class="domain-heading wide" aria-labelledby="equityLabTitle">
+      <div id="equityLabTitle" class="domain-title">Equity Lab</div>
+      <div class="domain-sub">Configurer une situation, une range adverse et calculer l’équité sans dépendre des mains importées.</div>
+    </div>
     <section id="rangesSection" class="panel wide">
-      <h2>1. Importer une range source</h2>
+      <h2>Sources et modèles</h2>
       <label class="filelabel" for="fileInput">Choisir un fichier JSON</label>
       <input id="fileInput" type="file" accept=".json,application/json">
       <div id="fileMeta" class="filemeta">Aucun fichier importé.</div>
@@ -1129,7 +1136,7 @@
     </section>
 
     <section id="historiesSection" class="panel wide">
-      <h2>2. Mes Hand Histories PokerStars</h2>
+      <h2>Review · Mes Hand Histories PokerStars</h2>
       <div class="hh-import-primary">
         <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
         <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
@@ -1184,7 +1191,7 @@
     </section>
 
     <section id="opponentsSection" class="panel wide">
-      <h2>3. Configurer les adversaires</h2>
+      <h2>Adversaires</h2>
       <div class="row">
         <input id="streetSelect" type="hidden" value="3">
         <div class="field"><label>Méthode de calcul</label>
@@ -1208,7 +1215,7 @@
     </section>
 
     <section id="cardsSection" class="panel wide">
-      <h2>4. Choisir votre main et le board</h2>
+      <h2>Main et board</h2>
       <div class="cards-layout">
         <div>
           <div class="slots-title">Votre main</div>
@@ -1239,7 +1246,7 @@
     </section>
 
     <section id="rangeDisplaySection" class="panel wide">
-      <h2>5. Range adverse affichée</h2>
+      <h2>Range adverse</h2>
       <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range adverse estimée, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
       <div class="range-toolbar">
         <button id="rangeEditionBtn" class="secondary toggle-btn">Édition range adverse : OFF</button>
@@ -1253,7 +1260,7 @@
     </section>
 
     <section id="equitySection" class="panel wide">
-      <h2>6. Calcul d’équité</h2>
+      <h2>Résultat d’équité</h2>
       <div class="row">
         <button id="calcBtn" class="primary" disabled>Recalculer maintenant</button>
       </div>
@@ -1282,7 +1289,7 @@
 <div id="trainerPage" class="trainer-page mode-hidden" aria-hidden="true">
   <div class="trainer-shell">
     <div class="trainer-head">
-      <button id="trainerBackBtn" type="button" class="secondary">← Analyseur</button>
+      <button id="trainerBackBtn" type="button" class="secondary">← Accueil</button>
       <div>
         <div class="trainer-title">Training 6-max</div>
         <div class="trainer-sub">100 BB · <span id="trainerPopulationIdentity">population en chargement</span> · coaching ACTION / SIZING / EV</div>
@@ -7657,15 +7664,15 @@ loadRuntimeReleaseIdentity();
 updateAppView();
 document.querySelectorAll(".quick-nav a").forEach(a=>{
   a.addEventListener("click",e=>{
-    const id=(a.getAttribute("href")||"").replace(/^#/,"");
+    const href=a.getAttribute("href")||"";
+    if(!href.startsWith("#")) return;
     e.preventDefault();
-    if(id==='replayerSection'){
-      if(state.selectedHand){ selectHistoryHandById(state.selectedHand.id); return; }
-      state.appView='main';state.hhMode=false;updateAppView();
-      document.getElementById('historiesSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    const id=href.slice(1);
+    if(id==="trainerPage"){
+      trainerOpenBtn?.click();
       return;
     }
-    if(state.appView==='replayer'){state.appView='main';updateAppView();}
+    if(state.appView==="replayer"){state.appView="main";state.hhMode=false;updateAppView();}
     const target=id?document.getElementById(id):null;
     if(!target)return;
     requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
