@@ -1,0 +1,21 @@
+{
+  "base_sha": "f88ea0ff60b349165f936d2e67c5bf1ad30d9a95",
+  "schema": "poker-repro-composite-factorization/v1",
+  "workflows": {
+    ".github/workflows/dataset-integrity.yml": "7fb5c71bebb98b6ee84bb329809a64446b8afa29",
+    ".github/workflows/full-hand-arena.yml": "718a23fd1a16810359c528f3167fc1b9bcf45a00",
+    ".github/workflows/full-hand-protocol.yml": "3944994f80c41cda2ef0d880c15090193b7c6aba",
+    ".github/workflows/hero-calculated-range-export.yml": "fd7be376bdfe08319a385431e782cd9d4ca8ee59",
+    ".github/workflows/hero-range-compliance.yml": "04b87db74872fd6ff0d0c51d1541812b9a348593",
+    ".github/workflows/hero-range-editor.yml": "a337878facc5da997613bf56c90a204fe95c27c4",
+    ".github/workflows/model-b-card-aware-runtime.yml": "ae4f75290dede588daa3d98a2fc19af8cdc0ae12",
+    ".github/workflows/model-b-reveal-aware.yml": "4df00cb5768279288ca3595b57d3711810d1afd6",
+    ".github/workflows/population-pack-catalog.yml": "408aa18d99fc4f75a03e17273cd20b83409f27a6",
+    ".github/workflows/postflop-response-refit.yml": "248131ff661575da67a0ac6cc98477e54524ed9c",
+    ".github/workflows/preflop-grid-evaluator.yml": "22ee4aa311feb9cbd23a723e220b7fbb28ba2925",
+    ".github/workflows/preflop-policy169.yml": "f5550c2f65019f2b2cb4e2b8f0b82da74076ee6d",
+    ".github/workflows/preflop-search.yml": "ede10523ecf5f3529d525e25371157efd6582fc3",
+    ".github/workflows/release-handoff-contract.yml": "38b2de84322877c841a35805f52d886ddd9c1f49",
+    ".github/workflows/trainer-smoke.yml": "5f214ec7a9a6670217d5d41e2b0ebdbd10afba8a"
+  }
+}

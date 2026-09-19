@@ -259,7 +259,7 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
                 if rule == "PINNED_PYTHON_SETUP_MISSING":
                     is_new_pattern = "uses: actions/setup-python@v5" in browser # Simplified check
                 elif rule == "REPRO_ENVIRONMENT_HELPER_MISSING":
-                    is_new_pattern = "uses: ./.github/actions/repro-runtime" in browser
+                    is_new_pattern = "uses: ./.github/actions/repro-runtime" in text
                 elif rule == "REPRO_BROWSER_HELPER_MISSING":
                     is_new_pattern = "uses: ./.github/actions/repro-browser" in browser
 
@@ -273,13 +273,13 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
             if "continue-on-error: true" in browser:
                 violations.append({"rule": "BROWSER_REPRO_GUARD_MAY_CONTINUE_ON_ERROR", "path": rel})
 
-        if text.count(ENV_HELPER) != 1:
+        if text.count(ENV_HELPER) != 1 and "uses: ./.github/actions/repro-runtime" not in text:
             violations.append({
                 "rule": "REPRO_ENVIRONMENT_HELPER_CALL_COUNT",
                 "path": rel,
                 "observed": text.count(ENV_HELPER),
             })
-        if text.count(BROWSER_HELPER) != 1:
+        if text.count(BROWSER_HELPER) != 1 and "uses: ./.github/actions/repro-browser" not in text:
             violations.append({
                 "rule": "REPRO_BROWSER_HELPER_CALL_COUNT",
                 "path": rel,

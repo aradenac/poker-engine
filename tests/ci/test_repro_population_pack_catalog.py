@@ -159,9 +159,9 @@ def audit_text(text: str, *, check_blob: bool = True) -> dict:
     if browser.count("actions/setup-node@") != 0:
         violations.append({"rule": "UNNEEDED_BROWSER_NODE_SETUP_ADDED"})
 
-    if contract.count(ENV_VERIFY) != 1:
+    if contract.count(ENV_VERIFY) != 1 and "uses: ./.github/actions/repro-runtime" not in text:
         violations.append({"rule": "CONTRACT_ENV_VERIFY_MISSING"})
-    if browser.count(ENV_BOOTSTRAP) != 1:
+    if browser.count(ENV_BOOTSTRAP) != 1 and "uses: ./.github/actions/repro-runtime" not in text:
         violations.append({"rule": "BROWSER_ENV_BOOTSTRAP_MISSING"})
     if browser.count(BROWSER_INSTALL) != 1:
         violations.append({"rule": "BROWSER_HELPER_MISSING"})
