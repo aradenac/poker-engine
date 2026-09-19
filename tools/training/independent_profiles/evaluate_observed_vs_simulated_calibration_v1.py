@@ -25,6 +25,7 @@ from typing import Any, Callable, Iterable, Mapping, Sequence
 from tools.datasets.build_hand_history_increment import split_for
 from tools.simulation.model_b_price_response import (
     ACTIONS,
+    HIERARCHY,
     ResponseToPriceModel,
     artifact_sha256,
     price_bucket,
@@ -50,7 +51,6 @@ EXACT_CONTEXT_DIMENSIONS = (
     "street",
     "relative_position",
     "pot_type",
-    "preflop_role",
     "sequence",
     "price_bucket",
     "spr_bucket",
@@ -186,7 +186,6 @@ def exact_context(row: Mapping[str, Any]) -> dict[str, Any]:
         "street": str(row["street"]).lower(),
         "relative_position": str(row["relative_position"]),
         "pot_type": str(row["pot_type"]),
-        "preflop_role": str(row["preflop_role"]),
         "sequence": str(row["sequence"]),
         "price_bucket": price_bucket(row.get("facing_price_to_pot")),
         "spr_bucket": spr_bucket(row.get("spr")),
@@ -625,6 +624,32 @@ def _domain_groups(
     ]
 
 
+def _dimension_value(row: Mapping[str, Any], dimension: str) -> Any:
+    if dimension == "price_bucket":
+        return price_bucket(row.get("facing_price_to_pot"))
+    if dimension == "spr_bucket":
+        return spr_bucket(row.get("spr"))
+    if dimension == "profile":
+        return int(row["profile"])
+    return str(row[dimension])
+
+
+def _hierarchy_groups(
+    rows: Sequence[Mapping[str, Any]],
+    dimensions: Sequence[str],
+) -> list[tuple[dict[str, Any], list[Mapping[str, Any]]]]:
+    dims = tuple(dimensions)
+    groups: dict[tuple[Any, ...], list[Mapping[str, Any]]] = collections.defaultdict(list)
+    for row in rows:
+        key = tuple(_dimension_value(row, dimension) for dimension in dims)
+        groups[key].append(row)
+    out = []
+    for key in sorted(groups):
+        context = {dimension: value for dimension, value in zip(dims, key)}
+        out.append((context, groups[key]))
+    return out
+
+
 def _context_fingerprint(context_rows: Sequence[Mapping[str, Any]]) -> str:
     payload = [
         {
@@ -660,6 +685,9 @@ def _summary(report: Mapping[str, Any]) -> dict[str, Any]:
     )
     domain_status = collections.Counter(
         row["calibration"]["comparison"] for row in report["domain_summaries"]
+    )
+    hierarchy_status = collections.Counter(
+        row["calibration"]["comparison"] for row in report["hierarchy_summaries"]
     )
 
     def score(row: Mapping[str, Any]) -> float:
@@ -710,6 +738,7 @@ def _summary(report: Mapping[str, Any]) -> dict[str, Any]:
             "comparison": dict(sorted(statuses.items())),
         },
         "domain_comparison_counts": dict(sorted(domain_status.items())),
+        "hierarchy_comparison_counts": dict(sorted(hierarchy_status.items())),
         "candidate_improves_domains": [compact_domain(row) for row in improvements[:20]],
         "similar_domains": [compact_domain(row) for row in similar[:20]],
         "candidate_degrades_domains": [compact_domain(row) for row in degradations[:20]],
@@ -810,6 +839,28 @@ def evaluate(args: argparse.Namespace) -> int:
             "calibration": calibration,
         })
 
+    hierarchy_rows = []
+    for level_index, dimensions in enumerate(HIERARCHY):
+        if tuple(dimensions) == EXACT_CONTEXT_DIMENSIONS:
+            continue
+        for context, group in _hierarchy_groups(validation, dimensions):
+            label = "hierarchy|" + str(level_index) + "|" + json.dumps(
+                context, sort_keys=True, separators=(",", ":")
+            )
+            hierarchy_rows.append({
+                "level_index": level_index,
+                "dimensions": list(dimensions),
+                "aggregation": "DECLARED_ISSUE_197_BACKOFF",
+                "context": context,
+                "calibration": calibrate_rows(
+                    group,
+                    reference=reference,
+                    candidate=candidate,
+                    bootstrap_samples=args.bootstrap_samples,
+                    label=label,
+                ),
+            })
+
     domain_rows = []
     for dimension in DOMAIN_DIMENSIONS:
         for domain, group in _domain_groups(validation, dimension):
@@ -882,13 +933,16 @@ def evaluate(args: argparse.Namespace) -> int:
             "same_validation_rows": True,
             "same_exact_context_set": True,
             "exact_context_dimensions": list(EXACT_CONTEXT_DIMENSIONS),
+            "reference_row_conditioned_extra_dimensions": ["preflop_role"],
             "context_set_fingerprint_sha256": fingerprint,
             "silent_context_pooling": False,
+            "hierarchy_summaries_follow_issue_197_declared_backoff": True,
             "domain_summaries_are_explicit_aggregations": True,
         },
         "source_counts": source_counts,
         "global_calibration": global_calibration,
         "context_rows": context_rows,
+        "hierarchy_summaries": hierarchy_rows,
         "domain_summaries": domain_rows,
         "worst_calibration_gaps": sorted(
             [
