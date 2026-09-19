@@ -240,8 +240,18 @@ function segment(report,dimension,key){
 
 {
   const rows=fixture();
-  rows[0]={...rows[0],identity:{...rows[0].identity,strategy_version:'other-version'}};
+  rows[0]={
+    ...rows[0],
+    identity:{...rows[0].identity,strategy_version:'other-version'},
+    decision_event:{...rows[0].decision_event,strategy_version:'other-version'}
+  };
   assert.throws(()=>Audit.analyzeRecommendationDistribution({records:rows}),/multiple population\/pack\/version\/strategy\/EV identities/);
+}
+
+{
+  const bad=observation('12','CALL');
+  bad.identity={...bad.identity,strategy_version:'other-version'};
+  assert.throws(()=>Audit.analyzeRecommendationDistribution({records:[bad]}),/observation identity does not match decision_event/);
 }
 
 {
