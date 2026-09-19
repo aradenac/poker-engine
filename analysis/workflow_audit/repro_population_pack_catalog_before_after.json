@@ -371,20 +371,30 @@
   },
   "validation": {
     "local": {
-      "status": "PENDING",
-      "commands": [
-        "python3 tests/test_repro_ci_helpers.py",
-        "python3 tests/ci/test_repro_population_pack_catalog.py",
-        "python3 tests/packs/test_pack_catalog_runtime.py",
-        "python3 tools/audit_github_workflows.py --json /tmp/workflow-audit.json",
-        "python3 tools/repro_ci_environment.py verify --require-node",
-        "git diff --check"
-      ]
+      "status": "BLOCKED_BY_EXECUTION_ENVIRONMENT",
+      "blocker": "container environment could not resolve github.com, so a direct local clone/test run was unavailable; no lock or test was weakened to compensate",
+      "attempted_command": "git clone --depth=1 --branch agent-C/issue-371-population-pack-catalog-repro https://github.com/aradenac/poker-engine.git",
+      "result": "FAIL_DNS_COULD_NOT_RESOLVE_GITHUB_COM",
+      "coverage_replaced_by_real_ci": false
     },
     "github_actions": {
       "workflow": "Validate population pack catalogue",
-      "status": "PENDING",
-      "run_id": null
+      "status": "SUCCESS",
+      "run_id": 35458451184,
+      "head_sha": "3d5cd382246dd743cd97abc7a7b0ecc2236ae161",
+      "jobs": {
+        "contract": "SUCCESS",
+        "browser-smoke": "SUCCESS"
+      },
+      "verified_steps": [
+        "locked Python setup",
+        "locked Node setup",
+        "REPRO environment verify --require-node",
+        "static fail-closed contract",
+        "historical catalogue/release gates",
+        "locked browser helper install",
+        "historical browser smoke"
+      ]
     }
   },
   "modified_files": [
