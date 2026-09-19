@@ -33,7 +33,7 @@
   "production_effect": "NONE",
   "projected_request_sha256": "c4ba13679e866c1cd54562d40ad107f2a2ae9bf9a2fdb32a98494ae4d043faa3",
   "real_issue_314_consumed": false,
-  "report_sha256": "0cfd3531ca516114c6e3e7f14abe2f26130bae03dd92114cdabcfdba77874113",
+  "report_sha256": "05b23bcce7ade7616dd42158ecda2d6703bb6e175a4aca478ebec23f144a4c5f",
   "schema": "model-b-preflop-sensitivity-harness-result/v1",
   "status": "COMPLETE_SYNTHETIC_HARNESS_ONLY",
   "synthetic_alternative_status": {

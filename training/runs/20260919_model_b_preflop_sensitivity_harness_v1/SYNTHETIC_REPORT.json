@@ -129,7 +129,8 @@
           ],
           "family_never_dropped": true,
           "nearest_price_substitution": false,
-          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
         },
         "target_total_bb": 4.0
       },
@@ -232,7 +233,8 @@
           ],
           "family_never_dropped": true,
           "nearest_price_substitution": false,
-          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
         },
         "target_total_bb": 5.0
       },
@@ -334,7 +336,8 @@
           ],
           "family_never_dropped": true,
           "nearest_price_substitution": false,
-          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
         },
         "target_total_bb": 6.0
       }
@@ -654,7 +657,8 @@
           ],
           "family_never_dropped": true,
           "nearest_price_substitution": false,
-          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
         },
         "target_total_bb": 4.0
       },
@@ -759,7 +763,8 @@
           ],
           "family_never_dropped": true,
           "nearest_price_substitution": false,
-          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
         },
         "target_total_bb": 5.0
       },
@@ -864,7 +869,8 @@
           ],
           "family_never_dropped": true,
           "nearest_price_substitution": false,
-          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT"
+          "non_identifiability": "DECLARED_BACKOFF_OR_BINNED_SUPPORT",
+          "out_of_domain_extrapolation": false
         },
         "target_total_bb": 6.0
       }
@@ -1018,7 +1024,7 @@
     ],
     "role": "price-agnostic #340 control; not an active-pointer mutation"
   },
-  "report_sha256": "0cfd3531ca516114c6e3e7f14abe2f26130bae03dd92114cdabcfdba77874113",
+  "report_sha256": "05b23bcce7ade7616dd42158ecda2d6703bb6e175a4aca478ebec23f144a4c5f",
   "schema": "model-b-preflop-sensitivity-harness-report/v1",
   "scope": {
     "active_model_b_changed": false,
