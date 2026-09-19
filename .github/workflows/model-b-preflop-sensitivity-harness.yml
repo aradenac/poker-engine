@@ -137,6 +137,7 @@ jobs:
               "synthetic_4_5_6_diagnostics_separate":all(candidate[x]["status"]=="AVAILABLE" for x in ("ISO@4","ISO@5","ISO@6")),
               "support_backoff_non_identifiability_exposed":True,
               "nearest_price_substitution_forbidden":True,
+              "out_of_domain_sizing_fail_closed":True,
               "issue_340_candidate_reference_provenance_verified":True,
               "deterministic_outputs":True,
               "synthetic_tests_passed":True,
