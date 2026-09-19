@@ -204,6 +204,16 @@ function byType(report,type){
 
 {
   const d=baseDecision({
+    coverage_state:'LOW_SUPPORT'
+  });
+  const row=Audit.auditDecision(record(d));
+  assert.equal(row.status,'FAIL');
+  assert.ok(types(row).includes('FAIL_CLOSED_RECOMMENDATION_PRESENT'),
+    'unsupported/non-covered decisions must not expose recommendation evidence');
+}
+
+{
+  const d=baseDecision({
     recommended_action:null,
     recommended_target_sizing:null,
     incremental_cost_bb:null,
@@ -330,6 +340,7 @@ function byType(report,type){
   assert.throws(()=>Audit.auditDecision(record(baseDecision(),null,{split:'TEST'})),/TEST consumption is forbidden/);
   assert.throws(()=>Audit.auditDecision(record(baseDecision(),null,{issue:108})),/#108 consumption is forbidden/);
   assert.throws(()=>Audit.auditDecision(record(baseDecision(),null,{optimization:true})),/optimization output is forbidden/);
+  assert.throws(()=>Audit.auditDecision(record(baseDecision(),null,{promotion:true})),/promotion output is forbidden/);
 }
 
 console.log(JSON.stringify({
