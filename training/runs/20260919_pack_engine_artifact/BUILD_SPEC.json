@@ -1,0 +1,95 @@
+{
+  "schema": "poker-pack-engine-build-spec/v1",
+  "issue": 370,
+  "parent_issue": 201,
+  "predecessor_issue": 360,
+  "target_population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "source_commit": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "source_subset_sha256": "b7f61710817e7bfa391d269bc1452242601c9a4bf10e8f4823e358bd6136b81b",
+  "source_proof": {
+    "path": "training/runs/20260919_pack_runtime_compatibility/SOURCE_PROVENANCE.json",
+    "sha256": "aefbd8fd76b2fe3ff6c31d290075be6eaa2aec215bd76444ca4cb8f3d1be8ff2",
+    "engine_candidate": {
+      "path": "training/runs/20260919_pack_runtime_compatibility/ENGINE_CANDIDATE.json",
+      "sha256": "8a90aac3c659feeb7973515961938b742038b05c904a87a1ffab67203599c8f3",
+      "required_blocker": "NO_FRESH_DISTRIBUTABLE_ENGINE_ARTIFACT"
+    }
+  },
+  "source_files": [
+    {
+      "path": "src/training/nlhe-game-state.js",
+      "git_blob_sha": "57a30094f3e4082c8b5cb990b9d9562cc2ce789e",
+      "sha256": "ddb509a37ba3eb6b96fd12f6048e765bdfa2fb8ffe4dc3ef048133fe575a3245"
+    },
+    {
+      "path": "src/preflop/contract.js",
+      "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9",
+      "sha256": "62d2a718b25111c6ab69e103be43d7676ce4cc409da0afbc5adec140f482ab34"
+    },
+    {
+      "path": "src/preflop/decision.js",
+      "git_blob_sha": "1b2a49c7b2305a53468e36acd3eb687a09514654",
+      "sha256": "5eff67b68541b66c3cc0c812e685f6a8ff9d725f0a3e570d9af805c46d44541a"
+    },
+    {
+      "path": "src/preflop/search.js",
+      "git_blob_sha": "354d3afff68afebce394b8ec7803c4d51ea1ea95",
+      "sha256": "94a5e40c5d312523ef7404bb4cdd3e4719030f5a6d14b4eceba0c1944b8eaed8"
+    },
+    {
+      "path": "src/preflop/guidance.js",
+      "git_blob_sha": "8541cf75b27afbeba2580864ef744da3a9b40457",
+      "sha256": "af0ee5aaedeabc7edd80efbe0eb2c59b1104e9d39922f6780864a89c5311f79e"
+    },
+    {
+      "path": "src/training/preflop-decision-adapter.js",
+      "git_blob_sha": "d5cebf63370ce3d49ccedbcb43bed44f1a55b926",
+      "sha256": "186c87788458a4711798dfca8746620c002253999fea24aa234ef44b4636768a"
+    },
+    {
+      "path": "src/preflop/hero-preflop-alternatives.js",
+      "git_blob_sha": "df44f83c0fe1cd8341851b137f8943d849f70483",
+      "sha256": "11612abce016d73f7f77a60d3a08fb4154dd1112fbbf64ffb89e2b34d96cb8d2"
+    },
+    {
+      "path": "src/preflop/iso-sizing-diagnostics.js",
+      "git_blob_sha": "d78c2b5cdc3c8f8144e61c7c2fa723e52099ed46",
+      "sha256": "d7b5246e8203a11fc1baf31fe921a2493b1763c5d646ec606432400d8c23fe86"
+    }
+  ],
+  "runtime_dependency_closure": {
+    "mode": "SELF_CONTAINED",
+    "additional_files": [
+      {
+        "path": "src/analytics/leak-analyzer.js",
+        "git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd",
+        "sha256": "08b14372da7d47d6ede188725b67b7068dea500c0f511c30b50a9c0c6e041d01",
+        "reason": "required by preflop-decision-adapter to make the distributed API closure self-contained",
+        "forbidden_marker_hits": [],
+        "runtime_requires": []
+      }
+    ],
+    "external_dependencies": []
+  },
+  "format": {
+    "kind": "deterministic_umd_bundle",
+    "schema": "poker-pack-engine-artifact/v1",
+    "commonjs_export": true,
+    "browser_global": "PokerPackEngineArtifact"
+  },
+  "identity": {
+    "artifact_path": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+    "hash_kind": "file_sha256",
+    "sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08",
+    "immutable_path_contains_full_sha256": true
+  },
+  "policies": {
+    "legacy_mixed_relabel": false,
+    "legacy_mixed_bytes_reused": false,
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "test_consumed": false,
+    "production_effect": "NONE"
+  }
+}
