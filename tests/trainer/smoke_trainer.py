@@ -188,6 +188,133 @@ async def main() -> None:
         assert dashboard_ui["leakOpen"]["opened"] is True and dashboard_ui["leakFilter"] == "SRP|PFR|IP", dashboard_ui
         assert dashboard_ui["unsupported"]["opened"] is False and dashboard_ui["unsupported"]["reason"] == "UNSUPPORTED_LEAK_DIMENSION", dashboard_ui
 
+        # Leak -> Training consumes the merged target + selector contracts and fails closed.
+        targeted_training = await page.evaluate(
+            """() => {
+                const saved={
+                    targeted:trainerTargetClone(trainerState.targeted),
+                    mode:trainerState.mode,
+                    dashboard:state.reviewDashboardView,
+                    openTarget:window.trainerOpenTargetedSession
+                };
+                try{
+                    const identity={
+                        population_id:"smoke-pop",
+                        pack_id:"smoke-pack@1",
+                        strategy_id:"hero-custom",
+                        strategy_version:"app-v83@smoke",
+                        ev_reference:"review_score_policy_adjusted_incremental_bb"
+                    };
+                    const target=PokerLeakTrainingTarget.buildTrainingTarget({
+                        identity,
+                        context:{position:"BTN",street:"FLOP",spot_family:"SRP|PFA|IP"},
+                        source_pattern:{played_action:"CHECK",recommended_action:"BET"},
+                        source_leak:{
+                            dimension:"spot_family",key:"SRP|PFA|IP",decisions:3,total_loss_bb:4.2,
+                            source_refs:[{hand_id:"42",decision_id:"review:42:3"}]
+                        },
+                        minimum_support:{decisions:1,scenarios:1}
+                    });
+                    const hand={
+                        id:991,heroSeat:5,activeOppSeat:4,heroRole:"PFA",
+                        positions:["SB","BB","LJ","HJ","CO","BTN"],
+                        stacks:[100,100,100,100,97.5,97.5],streetPaid:[0,0,0,0,0,0],
+                        pot:6,currentBet:0,lastRaise:1,raises:0,street:"flop",boardCount:3,
+                        runout:[0,1,2,3,4],decisionNo:1
+                    };
+                    const detail={
+                        bestLabel:"BET",bestCostBB:3,chosenEV:0,bestEV:1,rawLossBB:1,lossBB:1,
+                        comparable:true,withinNoise:false,
+                        simContext:{potType:"SRP",preflopRole:"PFA",relativePosition:"IP"}
+                    };
+                    const descriptor=trainerTargetDescriptor(target,hand,detail,1);
+                    const plan=PokerLeakScenarioSelector.buildSessionPlan(target,[descriptor],{
+                        session_size:1,seed:"smoke-target",identity
+                    });
+                    const fallback=PokerLeakScenarioSelector.buildSessionPlan(target,[],{
+                        session_size:1,seed:"smoke-fallback",identity
+                    });
+
+                    trainerState.targeted.active=true;
+                    trainerState.targeted.baseTarget=trainerTargetClone(target);
+                    trainerState.targeted.target=trainerTargetClone(target);
+                    trainerState.targeted.requestedSize=1;
+                    trainerTargetHydrate(target);
+                    trainerTargetPosition.value="CO";
+                    trainerTargetAction.value="CHECK";
+                    trainerTargetSessionSize.value="1";
+                    const edited=trainerTargetBuildFromControls();
+
+                    const event=PokerLeakAnalyzer.buildDecisionEvent({
+                        hand_id:"trainer-smoke-1",decision_id:"trainer-smoke-d1",timestamp:"2026-09-19T00:00:00Z",
+                        ...identity,position:"BTN",street:"FLOP",spot_family:"SRP|PFA|IP",
+                        action_played:"CHECK",action_recommended:"BET",played_ev_bb:-1,best_ev_bb:0,
+                        support:{covered:true,source:"smoke"},comparability:{comparable:true}
+                    });
+                    trainerState.targeted.plan=plan;
+                    trainerState.targeted.fallback=null;
+                    trainerState.targeted.events=[event];
+                    trainerState.targeted.summary=PokerLeakScenarioSelector.summarizePlannedSession(
+                        plan,[event],{minimum_trend_decisions:2,minimum_long_term_spots:50}
+                    );
+                    trainerTargetRenderSummary();
+                    const summaryText=trainerTargetSummary.textContent;
+
+                    const calls=[];
+                    window.trainerOpenTargetedSession=t=>{calls.push(t);return Promise.resolve(null);};
+                    state.reviewDashboardView={ctas:{training:{enabled:true,reason:"TOP_LEAK_TARGET",target}}};
+                    const ctaResult=openReviewDashboardTraining();
+
+                    const modes=[];
+                    for(const mode of ["guided","training","test"]){trainerSetMode(mode);modes.push(trainerState.mode);}
+
+                    return {
+                        schemas:{
+                            target:target.schema,
+                            criteria:PokerLeakTrainingTarget.compileScenarioCriteria(target).schema,
+                            plan:plan.schema,
+                            runtimeSummary:trainerState.targeted.summary.schema
+                        },
+                        descriptor:{
+                            context:descriptor.context,policy:descriptor.policy,focus:descriptor.focus,
+                            identity:descriptor.identity,supported:descriptor.supported
+                        },
+                        plan:{ready:plan.ready,selected:plan.selection.length,target_id:plan.target_id},
+                        fallback:{ready:fallback.ready,code:fallback.fallback,selected:fallback.selection.length},
+                        edited:{position:edited.context.position,action:edited.source_pattern.recommended_action,target_id:edited.target_id},
+                        summaryText,
+                        cta:{result:ctaResult,calls:calls.map(t=>t.target_id)},
+                        modes,
+                        fields:["trainerTargetPosition","trainerTargetStreet","trainerTargetSpot","trainerTargetAction","trainerTargetSizing","trainerTargetJam","trainerTargetOverbet","trainerTargetSessionSize"].every(id=>!!document.getElementById(id))
+                    };
+                } finally {
+                    trainerState.targeted=saved.targeted;
+                    trainerState.mode=saved.mode;
+                    state.reviewDashboardView=saved.dashboard;
+                    window.trainerOpenTargetedSession=saved.openTarget;
+                    trainerRender();
+                }
+            }"""
+        )
+        assert targeted_training["schemas"]["target"] == "poker-leak-training-target/v1", targeted_training
+        assert targeted_training["schemas"]["criteria"] == "poker-training-scenario-criteria/v1", targeted_training
+        assert targeted_training["schemas"]["plan"] == "poker-leak-training-session-plan/v1", targeted_training
+        assert targeted_training["schemas"]["runtimeSummary"] == "poker-leak-training-runtime-summary/v1", targeted_training
+        assert targeted_training["descriptor"]["context"] == {"position":"BTN","street":"FLOP","spot_family":"SRP|PFA|IP"}, targeted_training
+        assert targeted_training["descriptor"]["policy"]["recommended_action"] == "BET", targeted_training
+        assert targeted_training["descriptor"]["identity"]["strategy_version"] == "app-v83@smoke", targeted_training
+        assert targeted_training["descriptor"]["supported"] is True, targeted_training
+        assert targeted_training["plan"]["ready"] is True and targeted_training["plan"]["selected"] == 1, targeted_training
+        assert targeted_training["fallback"] == {"ready":False,"code":"INSUFFICIENT_SUPPORTED_SCENARIOS","selected":0}, targeted_training
+        assert targeted_training["edited"]["position"] == "CO" and targeted_training["edited"]["action"] == "CHECK", targeted_training
+        assert targeted_training["edited"]["target_id"] != targeted_training["plan"]["target_id"], targeted_training
+        assert "1/1" in targeted_training["summaryText"] and "perte ΔEV ciblée" in targeted_training["summaryText"], targeted_training
+        assert "progression long terme non inférée" in targeted_training["summaryText"], targeted_training
+        assert targeted_training["cta"]["result"]["reason"] == "TARGET_RUNTIME_REQUESTED", targeted_training
+        assert targeted_training["cta"]["calls"] == [targeted_training["plan"]["target_id"]], targeted_training
+        assert targeted_training["modes"] == ["guided","training","test"], targeted_training
+        assert targeted_training["fields"], targeted_training
+
         # Replayer hand-class helper runs in the real assembled browser application.
         hand_classes = await page.evaluate(
             "() => ({suited:replayHandClass(['As','Ks']), offsuit:replayHandClass(['Ah','Kd']), pair:replayHandClass(['7c','7d']), hidden:replayHandClass(null), backs:replayHandClass([null,null])})"

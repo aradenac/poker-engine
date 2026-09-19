@@ -43,7 +43,7 @@
           "git_blob_sha": "03d5f4490cc7710644a32f9d4c17344e0a926c7c"
         },
         "site/index.html": {
-          "git_blob_sha": "3095a55133a188665797ca4a5424de52881d60e4"
+          "git_blob_sha": "6b33b3e057d74325974a983ff216333d1402798b"
         },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
@@ -52,7 +52,10 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "535032b0f0c63d325c965d95ea656e34f0409940"
+          "git_blob_sha": "a44f3f0058a9a7cdd73ceebb4d4c76dbb22c4b60"
+        },
+        "site/training/leak-scenario-selector.js": {
+          "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"
         }
       }
     },
