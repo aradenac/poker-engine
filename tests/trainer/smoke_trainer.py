@@ -56,6 +56,68 @@ async def main() -> None:
         assert "Recommandé" in shared_presentation["primary"] and "RAISE" in shared_presentation["primary"], shared_presentation
         assert "EV" in shared_presentation["alternatives"] and "CALL" in shared_presentation["alternatives"], shared_presentation
 
+        # #341 browser contract: one deterministic covered CALL/FOLD context and one
+        # explicit VS_LIMPERS fail-closed context, both on the retained #108 reference.
+        preflop_runtime = await page.evaluate(
+            """() => {
+                const seats=["BTN","SB","BB","LJ","HJ","CO"],stacks=Object.fromEntries(seats.map(x=>[x,100]));
+                const coveredCore=new PokerNlheGameState.NoLimitHoldemState({seats,button:"BTN",stacks_bb:stacks});
+                coveredCore.applyAction("LJ","FOLD");
+                coveredCore.applyAction("HJ","RAISE",{target_total_bb:2.5});
+                coveredCore.applyAction("CO","FOLD");
+                const covered=PokerPreflopRuntime.buildCallFold({
+                    public_state:{snapshot:coveredCore.toSnapshot(),legal_view:coveredCore.legalView("BTN")},
+                    context_id:"smoke-covered-vs-rfi",
+                    preflop_context:{context_id:"smoke-covered-vs-rfi",family:"VS_RFI",actor_position:"BTN"},
+                    hero_position:"BTN",hand_id:"smoke-covered",call_ev_bb:.42,
+                    played_action:{action:"CALL",target_total_bb:2.5},samples:2000
+                });
+                const surfaces=PokerPreflopRuntime.surfaceBundle(covered);
+
+                const uncoveredCore=new PokerNlheGameState.NoLimitHoldemState({seats,button:"BTN",stacks_bb:stacks});
+                uncoveredCore.applyAction("LJ","FOLD");
+                uncoveredCore.applyAction("HJ","CALL");
+                uncoveredCore.applyAction("CO","FOLD");
+                uncoveredCore.applyAction("BTN","CALL");
+                const unsupported=PokerPreflopRuntime.buildUnsupported({
+                    public_state:{snapshot:uncoveredCore.toSnapshot(),legal_view:uncoveredCore.legalView("SB")},
+                    context_id:"smoke-kts-sb-two-limp",
+                    preflop_context:{context_id:"smoke-kts-sb-two-limp",family:"VS_LIMPERS",actor_position:"SB"},
+                    hero_position:"SB",hand_id:"smoke-uncovered",
+                    played_action:{action:"RAISE",target_total_bb:4},reason:"SPOT_NON_COUVERT"
+                });
+                return {
+                    reference:PokerPreflopRuntime.REFERENCE,
+                    covered:{
+                        schema:covered.schema,admissible:covered.recommendation_admissibility.admissible,
+                        action:covered.recommended_action,target:covered.recommended_target_sizing?.target_total_bb,
+                        cost:covered.incremental_cost_bb,ev:covered.recommended_ev_bb,
+                        support:covered.support?.observations,alternatives:covered.alternatives.length,
+                        sameSurface:surfaces.feed===surfaces.detail&&surfaces.detail===surfaces.trainer&&surfaces.trainer===surfaces.review
+                    },
+                    unsupported:{
+                        schema:unsupported.schema,admissible:unsupported.recommendation_admissibility.admissible,
+                        coverage:unsupported.coverage_state,action:unsupported.recommended_action,
+                        ev:unsupported.recommended_ev_bb,target:unsupported.recommended_target_sizing,
+                        cost:unsupported.incremental_cost_bb,alternatives:unsupported.alternatives.length,
+                        reasons:unsupported.reason_codes
+                    }
+                };
+            }"""
+        )
+        assert preflop_runtime["reference"]["decision"] == "RETAIN_REFERENCE", preflop_runtime
+        assert preflop_runtime["reference"]["candidate_activated"] is False, preflop_runtime
+        assert preflop_runtime["covered"]["schema"] == "poker-preflop-decision/v1", preflop_runtime
+        assert preflop_runtime["covered"]["admissible"] is True and preflop_runtime["covered"]["action"] == "CALL", preflop_runtime
+        assert preflop_runtime["covered"]["target"] == 2.5 and preflop_runtime["covered"]["cost"] == 2.5, preflop_runtime
+        assert abs(preflop_runtime["covered"]["ev"] - 0.42) < 1e-9 and preflop_runtime["covered"]["support"] == 2000, preflop_runtime
+        assert preflop_runtime["covered"]["alternatives"] == 2 and preflop_runtime["covered"]["sameSurface"], preflop_runtime
+        assert preflop_runtime["unsupported"]["schema"] == "poker-preflop-decision/v1", preflop_runtime
+        assert preflop_runtime["unsupported"]["admissible"] is False and preflop_runtime["unsupported"]["coverage"] == "UNSUPPORTED", preflop_runtime
+        assert preflop_runtime["unsupported"]["action"] is None and preflop_runtime["unsupported"]["ev"] is None, preflop_runtime
+        assert preflop_runtime["unsupported"]["target"] is None and preflop_runtime["unsupported"]["cost"] is None, preflop_runtime
+        assert preflop_runtime["unsupported"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in preflop_runtime["unsupported"]["reasons"], preflop_runtime
+
         # Product architecture exposes only the five stable top-level domains.
         product_architecture = await page.evaluate(
             """() => ({
