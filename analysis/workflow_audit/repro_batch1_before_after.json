@@ -1,0 +1,372 @@
+{
+  "schema": "poker-repro-workflow-migration-batch/v1",
+  "issue": 361,
+  "parent_issue": 204,
+  "base_sha": "5058c463cd5ed07596115153c2e95b2d7d8c949e",
+  "helper_source_issue": 291,
+  "repro_guard_source_issue": 347,
+  "workflow_count": 3,
+  "excluded_reserved_scope": [
+    ".github/workflows/project-state-consistency.yml",
+    "#346",
+    "#206",
+    "n8n"
+  ],
+  "invariants": {
+    "trigger_semantics_changed": false,
+    "concurrency_changed": false,
+    "job_ids_or_dependencies_changed": false,
+    "business_gates_removed": 0,
+    "artifact_names_changed": false,
+    "scientific_test_consumed": false,
+    "production_or_promotion_effect": "NONE"
+  },
+  "aggregate": {
+    "before": {
+      "workflow_lines": 262,
+      "checkout": 6,
+      "setup_python": 0,
+      "setup_node": 1,
+      "direct_pip_install": 3,
+      "direct_playwright_install": 3,
+      "repro_environment_helper_calls": 0,
+      "repro_browser_helper_calls": 0,
+      "continue_on_error_true": 0,
+      "upload_artifact": 0,
+      "static_cost_proxy": 43
+    },
+    "after": {
+      "workflow_lines": 280,
+      "checkout": 6,
+      "setup_python": 3,
+      "setup_node": 1,
+      "direct_pip_install": 0,
+      "direct_playwright_install": 0,
+      "repro_environment_helper_calls": 3,
+      "repro_browser_helper_calls": 3,
+      "continue_on_error_true": 0,
+      "upload_artifact": 0,
+      "static_cost_proxy": 28
+    },
+    "delta": {
+      "workflow_lines": 18,
+      "direct_inline_browser_setup_commands": -6,
+      "shared_helper_calls": 6,
+      "static_cost_proxy": -15
+    }
+  },
+  "representative_changes": [
+    {
+      "path": "site/trainer.css",
+      "before": {
+        "runs": 1,
+        "jobs": 2
+      },
+      "after": {
+        "runs": 1,
+        "jobs": 2
+      }
+    },
+    {
+      "path": "site/hero-ranges.html",
+      "before": {
+        "runs": 1,
+        "jobs": 2
+      },
+      "after": {
+        "runs": 1,
+        "jobs": 2
+      }
+    },
+    {
+      "path": "site/hero-compliance.js",
+      "before": {
+        "runs": 1,
+        "jobs": 2
+      },
+      "after": {
+        "runs": 1,
+        "jobs": 2
+      }
+    },
+    {
+      "path": "site/trainer.js",
+      "before": {
+        "runs": 2,
+        "jobs": 4
+      },
+      "after": {
+        "runs": 2,
+        "jobs": 4
+      }
+    }
+  ],
+  "workflows": [
+    {
+      "path": ".github/workflows/trainer-smoke.yml",
+      "before_git_blob_sha": "cc121f1818b5920157f73429469e5f0b094b262f",
+      "after_git_blob_sha": "452248d0885a2b1e90b9f00d6dc002f17d853828",
+      "contract": {
+        "name": "Validate interactive trainer",
+        "concurrency": {
+          "group": "trainer-smoke-${{ github.ref }}",
+          "cancel_in_progress": true
+        },
+        "jobs": [
+          {
+            "id": "static-contract",
+            "runner": "ubuntu-latest",
+            "needs": []
+          },
+          {
+            "id": "browser-smoke",
+            "runner": "ubuntu-latest",
+            "needs": [
+              "static-contract"
+            ]
+          }
+        ],
+        "triggers": {
+          "push": {
+            "paths": [
+              "site/index.html",
+              "site/trainer.js",
+              "site/trainer.css",
+              "site/RELEASE.json",
+              "site/deployment-meta.css",
+              "site/assets/trainer/**",
+              "tests/trainer/**",
+              "tests/regression/**",
+              "tools/patches/apply_trainer_mvp.py",
+              "tools/write_deployment_metadata.py",
+              "tools/write_site_release.py",
+              "wrangler.jsonc",
+              ".github/workflows/trainer-smoke.yml"
+            ]
+          },
+          "pull_request": {
+            "paths": [
+              "site/index.html",
+              "site/trainer.js",
+              "site/trainer.css",
+              "site/RELEASE.json",
+              "site/deployment-meta.css",
+              "site/assets/trainer/**",
+              "tests/trainer/**",
+              "tests/regression/**",
+              "tools/patches/apply_trainer_mvp.py",
+              "tools/write_deployment_metadata.py",
+              "tools/write_site_release.py",
+              "wrangler.jsonc",
+              ".github/workflows/trainer-smoke.yml"
+            ]
+          }
+        },
+        "artifact_uploads": []
+      },
+      "required_business_tokens": [
+        "node --check site/trainer.js",
+        "python3 tools/write_site_release.py --check",
+        "for test in tests/trainer/test_*.py",
+        "python3 tools/patches/apply_trainer_mvp.py",
+        "python3 -m http.server 8765 --directory site",
+        "python3 tests/trainer/smoke_trainer.py",
+        "python3 tests/regression/smoke_engine_regressions.py",
+        "if: failure()"
+      ],
+      "before": {
+        "lines": 92,
+        "direct_pip_install": 1,
+        "direct_playwright_install": 1,
+        "setup_python": 0,
+        "setup_node": 0,
+        "static_cost_proxy": 15
+      },
+      "after": {
+        "lines": 98,
+        "direct_pip_install": 0,
+        "direct_playwright_install": 0,
+        "setup_python": 1,
+        "setup_node": 0,
+        "static_cost_proxy": 10
+      }
+    },
+    {
+      "path": ".github/workflows/hero-range-editor.yml",
+      "before_git_blob_sha": "72215d13dbe3d427dfb71d781d49ceadcc2078de",
+      "after_git_blob_sha": "8a270f4c1c451165585d2bbb7275b9cf568a5534",
+      "contract": {
+        "name": "Validate Hero range repository and editor",
+        "concurrency": {
+          "group": "hero-range-editor-${{ github.ref }}",
+          "cancel_in_progress": true
+        },
+        "jobs": [
+          {
+            "id": "contract",
+            "runner": "ubuntu-latest",
+            "needs": []
+          },
+          {
+            "id": "browser-smoke",
+            "runner": "ubuntu-latest",
+            "needs": [
+              "contract"
+            ]
+          }
+        ],
+        "triggers": {
+          "push": {
+            "paths": [
+              "site/hero-ranges.html",
+              "site/hero-ranges.js",
+              "site/hero-ranges-app.js",
+              "site/hero-ranges.css",
+              "site/index.html",
+              "site/RELEASE.json",
+              "tests/hero_ranges/**",
+              "tools/patches/apply_hero_range_editor.py",
+              "tools/write_site_release.py",
+              ".github/workflows/hero-range-editor.yml"
+            ]
+          },
+          "pull_request": {
+            "paths": [
+              "site/hero-ranges.html",
+              "site/hero-ranges.js",
+              "site/hero-ranges-app.js",
+              "site/hero-ranges.css",
+              "site/index.html",
+              "site/RELEASE.json",
+              "tests/hero_ranges/**",
+              "tools/patches/apply_hero_range_editor.py",
+              "tools/write_site_release.py",
+              ".github/workflows/hero-range-editor.yml"
+            ]
+          }
+        },
+        "artifact_uploads": []
+      },
+      "required_business_tokens": [
+        "node --check site/hero-ranges.js",
+        "node --check site/hero-ranges-app.js",
+        "node tests/hero_ranges/test_hero_range_repository.mjs",
+        "python3 tools/patches/apply_hero_range_editor.py",
+        "python3 tools/write_site_release.py --check",
+        "python3 -m http.server 8765 --directory site",
+        "python3 tests/hero_ranges/smoke_hero_ranges.py",
+        "if: failure()"
+      ],
+      "before": {
+        "lines": 79,
+        "direct_pip_install": 1,
+        "direct_playwright_install": 1,
+        "setup_python": 0,
+        "setup_node": 0,
+        "static_cost_proxy": 13
+      },
+      "after": {
+        "lines": 85,
+        "direct_pip_install": 0,
+        "direct_playwright_install": 0,
+        "setup_python": 1,
+        "setup_node": 0,
+        "static_cost_proxy": 8
+      }
+    },
+    {
+      "path": ".github/workflows/hero-range-compliance.yml",
+      "before_git_blob_sha": "e2e19e77bbcc5656266bb012d5f984d905ecfa77",
+      "after_git_blob_sha": "68d5b96084070387182e1b469643944ea894f2b5",
+      "contract": {
+        "name": "Validate Hero range compliance",
+        "concurrency": {
+          "group": "hero-range-compliance-${{ github.ref }}",
+          "cancel_in_progress": true
+        },
+        "jobs": [
+          {
+            "id": "contract",
+            "runner": "ubuntu-latest",
+            "needs": []
+          },
+          {
+            "id": "browser-smoke",
+            "runner": "ubuntu-latest",
+            "needs": [
+              "contract"
+            ]
+          }
+        ],
+        "triggers": {
+          "push": {
+            "paths": [
+              "site/hero-compliance.js",
+              "site/hero-compliance-replayer.js",
+              "site/hero-ranges-app.js",
+              "site/trainer.js",
+              "site/RELEASE.json",
+              "tests/hero_ranges/test_hero_compliance.mjs",
+              "tests/hero_ranges/smoke_hero_compliance.py",
+              "tests/hero_ranges/smoke_hero_compliance_browser.py",
+              "tests/regression/hand_262024556922.json",
+              "tools/patches/patch_hero_compliance_replayer_v1.py",
+              "tools/patches/patch_hero_compliance_release_v1.py",
+              "tools/write_site_release.py",
+              ".github/workflows/hero-range-compliance.yml"
+            ]
+          },
+          "pull_request": {
+            "paths": [
+              "site/hero-compliance.js",
+              "site/hero-compliance-replayer.js",
+              "site/hero-ranges-app.js",
+              "site/trainer.js",
+              "site/RELEASE.json",
+              "tests/hero_ranges/test_hero_compliance.mjs",
+              "tests/hero_ranges/smoke_hero_compliance.py",
+              "tests/hero_ranges/smoke_hero_compliance_browser.py",
+              "tests/regression/hand_262024556922.json",
+              "tools/patches/patch_hero_compliance_replayer_v1.py",
+              "tools/patches/patch_hero_compliance_release_v1.py",
+              "tools/write_site_release.py",
+              ".github/workflows/hero-range-compliance.yml"
+            ]
+          }
+        },
+        "artifact_uploads": []
+      },
+      "required_business_tokens": [
+        "node-version: '22'",
+        "node --check site/hero-compliance.js",
+        "node --check site/hero-compliance-replayer.js",
+        "node --check site/hero-ranges-app.js",
+        "node tests/hero_ranges/test_hero_compliance.mjs",
+        "python3 tools/patches/patch_hero_compliance_replayer_v1.py --check",
+        "python3 tests/hero_ranges/smoke_hero_compliance.py",
+        "python3 tools/patches/patch_hero_compliance_release_v1.py --check",
+        "python3 tools/write_site_release.py --check",
+        "node tests/hero_ranges/test_hero_range_repository.mjs",
+        "python3 -m http.server 8765 --directory site",
+        "python3 tests/hero_ranges/smoke_hero_compliance_browser.py",
+        "if: failure()"
+      ],
+      "before": {
+        "lines": 91,
+        "direct_pip_install": 1,
+        "direct_playwright_install": 1,
+        "setup_python": 0,
+        "setup_node": 1,
+        "static_cost_proxy": 15
+      },
+      "after": {
+        "lines": 97,
+        "direct_pip_install": 0,
+        "direct_playwright_install": 0,
+        "setup_python": 1,
+        "setup_node": 1,
+        "static_cost_proxy": 10
+      }
+    }
+  ]
+}
