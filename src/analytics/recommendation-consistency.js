@@ -61,6 +61,7 @@
     if(upper(s.split)==='TEST')throw new Error('TEST consumption is forbidden');
     if(Number(s.issue)===108)throw new Error('#108 consumption is forbidden');
     if(s.optimization===true)throw new Error('optimization output is forbidden');
+    if(s.promotion===true)throw new Error('promotion output is forbidden');
     return {split:upper(s.split)||null,issue:s.issue==null?null:Number(s.issue),source:text(s.source)||null};
   }
   function identityOf(d){
@@ -243,10 +244,15 @@
     const selId=selectedId(decision);
     const selected=selId?alts.find(a=>a.id===selId)||null:null;
 
-    if(!admissible){
+    const coverageState=upper(decision.coverage_state)||'ANALYSIS_MISSING';
+    const recommendationAllowed=admissible&&coverageState==='COVERED';
+    if(!recommendationAllowed){
       const present=tuple.action!=null||tuple.sizing.target_total_bb!=null||tuple.sizing.bet_to_bb!=null||tuple.incremental_cost_bb!=null||tuple.ev_bb!=null||alts.length>0;
       if(policy.fail_closed_requires_null_recommendation&&present){
-        addFinding(findings,'FAIL_CLOSED_RECOMMENDATION_PRESENT','CERTAIN','fail-closed decision exposes recommendation evidence',{tuple,alternative_count:alts.length,status:decision.recommendation_admissibility&&decision.recommendation_admissibility.status});
+        addFinding(findings,'FAIL_CLOSED_RECOMMENDATION_PRESENT','CERTAIN','fail-closed or unsupported decision exposes recommendation evidence',{
+          tuple,alternative_count:alts.length,coverage_state:coverageState,
+          status:decision.recommendation_admissibility&&decision.recommendation_admissibility.status
+        });
       }
     }else{
       auditTupleAgainstSelection(tuple,decision,alts,selected,policy,findings,'canonical decision');
