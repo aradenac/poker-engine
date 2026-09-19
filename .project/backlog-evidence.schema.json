@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poker-backlog-evidence-report/v1",
+  "title": "Poker Engine backlog/evidence reconciliation report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "categories",
+    "coverage",
+    "suggestions",
+    "divergences",
+    "read_errors",
+    "source_of_truth"
+  ],
+  "properties": {
+    "schema": {"const": "poker-backlog-evidence-report/v1"},
+    "status": {"enum": ["PASS", "WARN", "FAIL"]},
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["BLOCKED", "CLOSE_CANDIDATE", "CONTRADICTION", "KEEP_OPEN", "UNKNOWN"],
+      "properties": {
+        "BLOCKED": {"type": "integer", "minimum": 0},
+        "CLOSE_CANDIDATE": {"type": "integer", "minimum": 0},
+        "CONTRADICTION": {"type": "integer", "minimum": 0},
+        "KEEP_OPEN": {"type": "integer", "minimum": 0},
+        "UNKNOWN": {"type": "integer", "minimum": 0}
+      }
+    },
+    "coverage": {"type": "object"},
+    "suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["issue", "category", "justification", "source_refs", "evidence", "contradictions"],
+        "properties": {
+          "issue": {"type": "integer", "minimum": 1},
+          "category": {"enum": ["CLOSE_CANDIDATE", "KEEP_OPEN", "BLOCKED", "CONTRADICTION", "UNKNOWN"]},
+          "justification": {"type": "string", "minLength": 1},
+          "source_refs": {"type": "array", "items": {"type": "string"}},
+          "evidence": {"type": "array", "items": {"type": "object"}},
+          "contradictions": {"type": "array", "items": {"type": "object"}}
+        }
+      }
+    },
+    "divergences": {"type": "array", "items": {"type": "object"}},
+    "read_errors": {"type": "array", "items": {"type": "string"}},
+    "source_of_truth": {"type": "object"}
+  }
+}
