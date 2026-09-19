@@ -1,0 +1,26 @@
+{
+  "schema": "model-b-preflop-sensitivity-harness-run-provenance/v1",
+  "issue": 344,
+  "parent_issue": 315,
+  "workflow_run_id": 35447237663,
+  "workflow_name": "Model B preflop sensitivity synthetic harness",
+  "validated_source_head": "8dd63d6e31546b25592b258ff8af6669f0ae6652",
+  "persisted_evidence_commit": "26da5171b4640cc7963d4e0182ca04f578b34ed2",
+  "workflow_conclusion": "success",
+  "artifact": {
+    "id": 10585645494,
+    "name": "issue-344-model-b-preflop-sensitivity-harness",
+    "zip_sha256": "baedf7f46697e2b08440100248d8e0390812a3520960c05ec280e59e0af6e900"
+  },
+  "evidence": {
+    "report_sha256": "0cfd3531ca516114c6e3e7f14abe2f26130bae03dd92114cdabcfdba77874113",
+    "projected_request_sha256": "c4ba13679e866c1cd54562d40ad107f2a2ae9bf9a2fdb32a98494ae4d043faa3",
+    "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+    "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+    "real_issue_314_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false,
+    "production_effect": "NONE"
+  },
+  "note": "Final user-authored provenance commit after deterministic synthetic evidence persistence; no real #314 sensitivity was executed."
+}
