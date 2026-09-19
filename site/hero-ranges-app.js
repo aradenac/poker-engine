@@ -68,10 +68,10 @@ function sourceFrequency(hand){
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
 function renderSourceBrowser(){
   const entries=legacyEntries();
-  els.sourceBadge.textContent=repo.source?.preserved_verbatim?"source préservée":"aucune source";
-  setStatus(els.sourceStatus,repo.source?.preserved_verbatim?`${entries.length} range(s) source conservée(s) verbatim. Les éditions personnelles sont stockées à part.`:"Aucun range-folder source importé. Les contextes Hero restent éditables.");
+  els.sourceBadge.textContent=repo.source?.preserved_verbatim?"source importée préservée":"aucune source importée";
+  setStatus(els.sourceStatus,repo.source?.preserved_verbatim?`${entries.length} source(s) importée(s) conservée(s) verbatim. Les stratégies personnelles sont stockées à part.`:"Aucune range source importée. Les contextes Hero restent éditables.");
   const oldRange=Number(els.sourceRange.value)||0;
-  els.sourceRange.innerHTML=entries.length?entries.map((x,i)=>`<option value="${i}">${escapeHtml(`${x.path} / ${x.range?.name||"Range"}`)}</option>`).join(""):'<option value="0">—</option>';
+  els.sourceRange.innerHTML=entries.length?entries.map((x,i)=>`<option value="${i}">${escapeHtml(`${x.path} / ${x.range?.name||"Source importée"}`)}</option>`).join(""):'<option value="0">—</option>';
   els.sourceRange.value=String(Math.min(oldRange,Math.max(0,entries.length-1)));
   const range=entries[Number(els.sourceRange.value)||0]?.range,positions=range?.positions||[],oldPos=Number(els.sourcePosition.value)||0;
   els.sourcePosition.innerHTML=positions.length?positions.map((p,i)=>`<option value="${i}">${escapeHtml(p.position||`Position ${i+1}`)}</option>`).join(""):'<option value="0">—</option>';
@@ -79,7 +79,7 @@ function renderSourceBrowser(){
   renderSourceHandDetail();
 }
 function renderSourceHandDetail(){
-  const row=sourceHand(selectedHand);els.sourceHandDetail.textContent=row?`${selectedHand}\n${JSON.stringify(row.actions||[],null,2)}`:`${selectedHand} : absent de la position source sélectionnée.`;
+  const row=sourceHand(selectedHand);els.sourceHandDetail.textContent=row?`${selectedHand}\n${JSON.stringify(row.actions||[],null,2)}`:`${selectedHand} : absent de la position de la range source importée sélectionnée.`;
 }
 
 function nearly(a,b){return Math.abs(Number(a||0)-Number(b||0))<1e-8;}
@@ -108,7 +108,7 @@ function comparisonKind(personal,calculated){
   return "identical";
 }
 const COMP_LABELS={
-  "undefined":"non définie","calculated-only":"calculée seule","personal-only":"personnelle seule",
+  "undefined":"non définie","calculated-only":"stratégie calculée seule","personal-only":"stratégie personnelle seule",
   "identical":"identique","action-mismatch":"désaccord action","sizing-mismatch":"désaccord sizing"
 };
 const COMP_MINI={"undefined":"","calculated-only":"C","personal-only":"P","identical":"=","action-mismatch":"A≠","sizing-mismatch":"S≠"};
@@ -148,7 +148,7 @@ function renderGrid(){
   }).join("");
   const count=selectedHands.size;
   els.selectionSummary.textContent=`${count} main${count>1?"s":""} sélectionnée${count>1?"s":""}`;
-  els.gridSummary.textContent=`sélection ${count} · P ${personal} · C ${calculated} · Δ ${diffs} · source ${source}`;
+  els.gridSummary.textContent=`sélection ${count} · stratégie personnelle ${personal} · stratégie calculée ${calculated} · Δ ${diffs} · source importée ${source}`;
   for(const b of els.grid.querySelectorAll(".hand-cell"))b.addEventListener("click",event=>selectHand(b.dataset.hand,event));
 }
 
@@ -166,8 +166,8 @@ function renderComparison(){
   const rollup=Object.entries(counts).map(([kind,n])=>`${COMP_LABELS[kind]}: ${n}`).join(" · ");
   const p=currentPersonal(),c=currentCalculated(),kind=comparisonKind(p,c);
   els.comparison.innerHTML=
-    `<div class="compare-card"><strong>Calculée · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(c)}</span></div>`+
-    `<div class="compare-card"><strong>Personnelle · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(p)}</span></div>`+
+    `<div class="compare-card"><strong>Stratégie calculée · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(c)}</span></div>`+
+    `<div class="compare-card"><strong>Stratégie personnelle · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(p)}</span></div>`+
     `<div class="compare-rollup">État actif : <strong>${escapeHtml(COMP_LABELS[kind])}</strong>${hands.length>1?` · sélection : ${escapeHtml(rollup)}`:""}</div>`;
 }
 
@@ -200,8 +200,8 @@ function renderActionEditor(){
     </div>`;
   }).join("");
   els.notes.value=strategyValue?.notes||"";
-  const origin=personal?"personnelle":calculated?"calculée":"vide";
-  setStatus(els.handStatus,count===1?`Édition de ${selectedHand} à partir de la couche ${origin}.`:`Édition groupée de ${count} mains. Les valeurs affichées proviennent de ${selectedHand}; seules les mains sélectionnées seront modifiées.`);
+  const origin=personal?"stratégie personnelle":calculated?"stratégie calculée":"aucune stratégie";
+  setStatus(els.handStatus,count===1?`Édition de ${selectedHand} à partir de la ${origin}.`:`Édition groupée de ${count} mains. Les valeurs affichées proviennent de ${selectedHand}; seules les mains sélectionnées seront modifiées.`);
   refreshEditorValidation();
 }
 
@@ -251,16 +251,16 @@ function readEditorStrategy(){
 }
 
 function renderRepository(){
-  const stats=HeroRanges.repositoryStats(repo);els.stats.textContent=`${stats.contexts} contexte(s) · P ${stats.personal_defined_hands} · C ${stats.calculated_defined_hands}`;
+  const stats=HeroRanges.repositoryStats(repo);els.stats.textContent=`${stats.contexts} contexte(s) · stratégie personnelle ${stats.personal_defined_hands} · stratégie calculée ${stats.calculated_defined_hands}`;
   const lines=[];
   for(const node of Object.values(repo.contexts)){
     const p=Object.keys(node.layers.personal.hands||{}).length,c=Object.keys(node.layers.calculated.hands||{}).length;
-    lines.push(`${node.context.position} · ${node.context.effective_stack_bb} BB · ${node.context.spot} · personnel ${p}/169 · calculé ${c}/169`);
+    lines.push(`${node.context.position} · ${node.context.effective_stack_bb} BB · ${node.context.spot} · stratégie personnelle ${p}/169 · stratégie calculée ${c}/169`);
   }
   els.contextList.textContent=lines.length?lines.join("\n"):"Aucun contexte défini.";
 }
 function renderContextStatus(){
-  try{const c=context(),node=currentNode(),p=Object.keys(node?.layers?.personal?.hands||{}).length,calc=Object.keys(node?.layers?.calculated?.hands||{}).length;setStatus(els.contextStatus,`${c.population_id} · ${c.position} · ${c.effective_stack_bb} BB · ${c.spot} · personnel ${p}/169 · calculé ${calc}/169`);}catch(err){setStatus(els.contextStatus,err.message,true);}
+  try{const c=context(),node=currentNode(),p=Object.keys(node?.layers?.personal?.hands||{}).length,calc=Object.keys(node?.layers?.calculated?.hands||{}).length;setStatus(els.contextStatus,`${c.population_id} · ${c.position} · ${c.effective_stack_bb} BB · ${c.spot} · stratégie personnelle ${p}/169 · stratégie calculée ${calc}/169`);}catch(err){setStatus(els.contextStatus,err.message,true);}
 }
 function renderAll(){renderSourceBrowser();renderContextStatus();try{renderGrid();renderComparison();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderRepository();}
 
@@ -268,14 +268,14 @@ function saveSelected(){
   try{
     const value=readEditorStrategy(),hands=selectedList();
     for(const hand of hands)HeroRanges.setHandStrategy(repo,context(),hand,value,{layer:"personal"});
-    persist();renderAll();setStatus(els.handStatus,`${hands.length} main${hands.length>1?"s":""} enregistrée${hands.length>1?"s":""} dans la couche personnelle. La couche calculée est inchangée.`);
+    persist();renderAll();setStatus(els.handStatus,`${hands.length} main${hands.length>1?"s":""} enregistrée${hands.length>1?"s":""} dans la stratégie personnelle. La stratégie calculée est inchangée.`);
   }catch(err){setStatus(els.handStatus,err.message,true);}
 }
 function undefineSelected(){
   try{
     const hands=selectedList();
     for(const hand of hands)HeroRanges.setHandStrategy(repo,context(),hand,null,{layer:"personal"});
-    persist();renderAll();setStatus(els.handStatus,`Override personnel retiré pour ${hands.length} main${hands.length>1?"s":""}. Les stratégies calculées restent intactes.`);
+    persist();renderAll();setStatus(els.handStatus,`Stratégie personnelle retirée pour ${hands.length} main${hands.length>1?"s":""}. La stratégie calculée reste intacte.`);
   }catch(err){setStatus(els.handStatus,err.message,true);}
 }
 function quickApply(){
@@ -292,10 +292,10 @@ function addSizing(action){
 async function importFile(file){
   const text=await file.text(),json=JSON.parse(text);repo=HeroRanges.importDocument(json,{populationId:els.population.value,baseRepository:repo});
   if(repo.defaults?.population_id)els.population.value=repo.defaults.population_id;if(repo.defaults?.effective_stack_bb)els.stack.value=repo.defaults.effective_stack_bb;
-  persist();renderAll();setStatus(els.sourceStatus,`${file.name} importé. Une mise à jour range-folder conserve les couches personnelles et calculées.`);
+  persist();renderAll();setStatus(els.sourceStatus,`${file.name} importé. Une mise à jour de la range source importée conserve les stratégies personnelles et calculées.`);
 }
 function exportFile(){
-  try{const doc=HeroRanges.exportDocument(repo),blob=new Blob([JSON.stringify(doc,null,2)+"\n"],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="hero_ranges_repository_v1.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus(els.sourceStatus,"Dépôt Hero v1 exporté sans conversion destructive de la source.");}catch(err){setStatus(els.sourceStatus,err.message,true);}
+  try{const doc=HeroRanges.exportDocument(repo),blob=new Blob([JSON.stringify(doc,null,2)+"\n"],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="hero_ranges_repository_v1.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus(els.sourceStatus,"Stratégie Hero exportée avec la range source importée conservée sans conversion destructive.");}catch(err){setStatus(els.sourceStatus,err.message,true);}
 }
 
 els.import.addEventListener("change",async e=>{const f=e.target.files?.[0];e.target.value="";if(!f)return;try{await importFile(f);}catch(err){setStatus(els.sourceStatus,`Import impossible : ${err.message}`,true);}});
