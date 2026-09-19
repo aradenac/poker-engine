@@ -28,6 +28,7 @@ env:
   ARCHIVE_3: training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip
 
 jobs:
+  # Dedicated issue #272 analysis; no TEST job exists in this workflow.
   calibration:
     runs-on: ubuntu-latest
     timeout-minutes: 60
