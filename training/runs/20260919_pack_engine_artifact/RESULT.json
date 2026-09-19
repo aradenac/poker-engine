@@ -1,0 +1,46 @@
+{
+  "schema": "poker-pack-engine-artifact-result/v1",
+  "issue": 370,
+  "parent_issue": 201,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "artifact": {
+    "path": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+    "sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08",
+    "immutable": true,
+    "content_addressed": true,
+    "runtime_dependency_closure": "SELF_CONTAINED"
+  },
+  "evidence_set": {
+    "path": "training/runs/20260919_pack_engine_artifact/EVIDENCE_SET.json",
+    "sha256": "8ff96280b7ba816b5115fbf72ca21e2797fa255e81aaa73f68df33463f613df2"
+  },
+  "expected_resolver_305": {
+    "engine_status": "ADMISSIBLE",
+    "required_reason_code": "ROLE_ADMISSIBLE_EXACT",
+    "candidate_engine_source_path": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+    "candidate_engine_sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08",
+    "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION"
+  },
+  "expected_preflight_253": {
+    "result": "BLOCKED",
+    "writes_performed": false,
+    "engine_component_availability": "AVAILABLE",
+    "engine_compatibility": "BLOCKED",
+    "required_blocker_codes": [
+      "APPLICATION_RELEASE_NOT_READY",
+      "POPULATION_STATUS_NOT_PROMOTED"
+    ]
+  },
+  "boundaries": {
+    "application_release_modified": false,
+    "final_pack_created": false,
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "model_a_b_modified": false,
+    "hero_ev": false,
+    "test_consumed": false,
+    "production_effect": "NONE",
+    "parent_201_remains_open": true
+  }
+}
