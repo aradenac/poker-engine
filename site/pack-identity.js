@@ -29,6 +29,40 @@
     return `${entry.population_id}::${entry.pack_id}::${entry.pack_version}::${entry.runtime_revision}`;
   }
 
+  const STORAGE_CONTRACT=Object.freeze({
+    db_name:"poker-population-packs-v1",
+    db_version:2,
+    production:Object.freeze({
+      pack_store:"packs",
+      meta_store:"meta",
+      active_key:"active",
+      previous_key:"previous"
+    }),
+    test_only:Object.freeze({
+      pack_store:"test_packs",
+      meta_store:"test_meta",
+      active_key:"test_active",
+      previous_key:"test_previous"
+    })
+  });
+
+  function storageNamespace(testOnly=false){
+    return testOnly?STORAGE_CONTRACT.test_only:STORAGE_CONTRACT.production;
+  }
+
+  function storageAddress(entry,{testOnly=false}={}){
+    const namespace=storageNamespace(testOnly);
+    return {
+      db_name:STORAGE_CONTRACT.db_name,
+      db_version:STORAGE_CONTRACT.db_version,
+      pack_store:namespace.pack_store,
+      meta_store:namespace.meta_store,
+      active_key:namespace.active_key,
+      previous_key:namespace.previous_key,
+      id:storageId(entry)
+    };
+  }
+
   function packIdentity(record){
     if(!record){
       return {
@@ -62,7 +96,10 @@
     sha256,
     contentIdentity,
     storageId,
+    STORAGE_CONTRACT,
+    storageNamespace,
+    storageAddress,
     packIdentity,
     samePackIdentity
   });
-})(window);
+})(globalThis);
