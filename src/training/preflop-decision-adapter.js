@@ -172,8 +172,7 @@
       reasons
     };
   }
-  function tierFromSupport(support,tier){
-    if(tier&&tier!=='UNKNOWN')return tier;
+  function observedTier(support){
     const n=support&&Number.isInteger(Number(support.observations))?Number(support.observations):null;
     if(n==null)return 'UNKNOWN';
     if(n>=1000)return 'VERY_HIGH';
@@ -181,6 +180,12 @@
     if(n>=20)return 'MEDIUM';
     if(n>=1)return 'LOW';
     return 'SPARSE';
+  }
+  function tierFromSupport(support,tier){
+    const declared=upper(tier)||'UNKNOWN',observed=observedTier(support);
+    const rank={UNKNOWN:0,SPARSE:1,LOW:2,MEDIUM:3,HIGH:4,VERY_HIGH:5};
+    if(declared==='UNKNOWN'||observed==='UNKNOWN')return 'UNKNOWN';
+    return (rank[declared]??0)<=(rank[observed]??0)?declared:observed;
   }
 
   function validateGuidanceEvidence(evidence){
@@ -241,6 +246,7 @@
       surface=Guidance.surfacePayload(guidance);
     }catch(_){reasons.push('INVALID_GUIDANCE');}
     if(surface&&surface.action==null)reasons.push('NO_ADMISSIBLE_STRATEGY');
+    if(surface&&text(surface.ev_reference)&&text(surface.ev_reference)!==identity.ev_reference)reasons.push('ARTIFACT_IDENTITY_MISMATCH');
     const tier=tierFromSupport(surface&&surface.support,coverage.support_tier);
     if(LOW_TIERS.has(tier))reasons.push('LOW_SUPPORT');
 
