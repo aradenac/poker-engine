@@ -231,20 +231,28 @@ function trainerSizingValues(ctx){
 function trainerSampleSizing(ctx){const v=trainerSizingValues(ctx);return v.length?v[trainerRandomInt(v.length)]:.66;}
 
 function trainerDraw(deck){if(!deck.length)throw new Error("Paquet vide");return deck.pop();}
-function trainerBuildHand(){
-  const dealer=trainerRandomInt(6),heroSeat=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
+function trainerBuildHand(hints={},depth=0){
+  if(depth>60)return null;
+  const desiredPosition=String(hints.position||"").toUpperCase(),desiredRole=String(hints.preflopRole||"").toUpperCase(),desiredRelative=String(hints.relativePosition||"").toUpperCase();
+  const dealer=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
+  const hintedSeat=desiredPosition?positions.indexOf(desiredPosition):-1,heroSeat=hintedSeat>=0?hintedSeat:trainerRandomInt(6);
   const heroPos=positions[heroSeat],heroRank=TRAINER_PREFLOP_ORDER.indexOf(heroPos);
   let heroRole=(heroRank<5&&heroRank>0)?(Math.random()<.5?"PFA":"CALLER"):(heroRank===0?"PFA":"CALLER");
+  if(["PFA","CALLER"].includes(desiredRole))heroRole=desiredRole;
   let candidates=[];
   if(heroRole==="PFA")candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r>heroRank);
   else candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat&&x.r<heroRank);
-  if(!candidates.length||!trainerHeroRangeAvailable(heroRole,heroPos))return trainerBuildHand();
+  if(["IP","OOP"].includes(desiredRelative))candidates=candidates.filter(x=>{
+    const heroRelative=trainerPostRank(heroPos)>trainerPostRank(x.p)?"IP":"OOP";
+    return heroRelative===desiredRelative;
+  });
+  if(!candidates.length||!trainerHeroRangeAvailable(heroRole,heroPos))return hints.strict?null:trainerBuildHand(hints,depth+1);
   trainerState.handNo++;
   const oppSeat=candidates[trainerRandomInt(candidates.length)].s,oppPos=positions[oppSeat],pfaSeat=heroRole==="PFA"?heroSeat:oppSeat,callerSeat=heroRole==="CALLER"?heroSeat:oppSeat;
   const names=Array.from({length:6},(_,s)=>s===heroSeat?TRAINER_HERO:`Villain ${s+1}`),profiles=Array(6).fill(null);
   for(let s=0;s<6;s++)if(s!==heroSeat)profiles[s]=trainerSampleProfile();
   const hole=Array.from({length:6},()=>[]),blocked=new Set(),heroCards=trainerSampleHeroRangeCards(heroRole,heroPos,blocked);
-  if(!heroCards)return trainerBuildHand();hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
+  if(!heroCards)return hints.strict?null:trainerBuildHand(hints,depth+1);hole[heroSeat]=heroCards;hole[heroSeat].forEach(c=>blocked.add(c));
   const oppRole=heroRole==="PFA"?"CALLER":"PFA",oppCards=trainerSampleRangeCards(profiles[oppSeat],oppPos,"SRP",oppRole,blocked);
   hole[oppSeat]=oppCards;for(const c of oppCards)blocked.add(c);
   const remaining=Array.from({length:52},(_,i)=>i).filter(c=>!blocked.has(c));trainerShuffle(remaining);
@@ -256,17 +264,17 @@ function trainerBuildHand(){
   const id=990000000000+trainerState.handNo*100;
   const lines=[`PokerStars Hand #${id}: Hold'em No Limit (0.50/1.00) - 2026/09/12 14:00:00 CET`,`Table 'Trainer 6-max' 6-max Seat #${dealer+1} is the button`];
   for(let s=0;s<6;s++)lines.push(`Seat ${s+1}: ${names[s]} (100 in chips)`);
-  lines.push(`${names[sb]}: posts small blind 0.50`,`${names[bb]}: posts big blind 1.00`,`*** HOLE CARDS ***`,`Dealt to ${TRAINER_HERO} [${hole[heroSeat].map(cardCode).join(" ")}]`);
+  lines.push(`${names[sb]}: posts small blind 0.50`,`${names[bb]}: posts big blind 1.00`,"*** HOLE CARDS ***",`Dealt to ${TRAINER_HERO} [${hole[heroSeat].map(cardCode).join(" ")}]`);
   for(const pos of TRAINER_PREFLOP_ORDER){
     const s=trainerSeatForPosition({positions},pos),name=names[s];
     if(s===pfaSeat){const target=2.5,add=target-contrib[s];contrib[s]=target;lines.push(`${name}: raises 1.50 to 2.50`);lastAction[s]="RAISE 2,5 BB";stacks[s]-=add;}
     else if(s===callerSeat){const add=2.5-contrib[s];contrib[s]=2.5;lines.push(`${name}: calls ${trainerNum(add)}`);lastAction[s]=`CALL ${trainerNum(add)} BB`;stacks[s]-=add;}
     else{lines.push(`${name}: folds`);folded[s]=true;lastAction[s]="FOLD";}
   }
-  const pot=contrib.reduce((s,x)=>s+x,0);
+  const pot=contrib.reduce((sum,x)=>sum+x,0);
   lines.push(`*** FLOP *** [${runout.slice(0,3).map(cardCode).join(" ")}]`);
   const hand={id,dealerSeat:dealer,heroSeat,activeOppSeat:oppSeat,pfaSeat,callerSeat,heroRole,oppRole,positions,names,profiles,hole,runout,
-    stacks,folded,lastAction,pot,street:"flop",boardCount:3,streetPaid:Array(6).fill(0),currentBet:0,lastRaise:1,raises:0,queue:[],historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0};
+    stacks,folded,lastAction,pot,street:"flop",boardCount:3,streetPaid:Array(6).fill(0),currentBet:0,lastRaise:1,raises:0,queue:[],historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0,preview:!!hints.preview};
   trainerStartStreet(hand,"flop",false);return hand;
 }
 
@@ -319,7 +327,8 @@ function trainerOpponentAct(hand){
   }
 }
 function trainerEndHand(hand,winnerSeat,showdown){
-  hand.ended=true;hand.queue=[];hand.awaitingHero=false;hand.showdown=!!showdown;hand.winner=winnerSeat===null?"Partage":hand.names[winnerSeat];trainerState.session.hands++;
+  hand.ended=true;hand.queue=[];hand.awaitingHero=false;hand.showdown=!!showdown;hand.winner=winnerSeat===null?"Partage":hand.names[winnerSeat];
+  if(!hand.preview)trainerState.session.hands++;
 }
 function trainerShowdown(hand){
   const heroScore=handScore([...hand.hole[hand.heroSeat],...hand.runout]),oppScore=handScore([...hand.hole[hand.activeOppSeat],...hand.runout]);
