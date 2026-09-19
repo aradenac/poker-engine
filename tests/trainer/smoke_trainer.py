@@ -347,7 +347,8 @@ async def main() -> None:
                 const saved={
                     selectedHand:state.selectedHand,replaySteps:state.replaySteps,hhMode:state.hhMode,
                     populationTraceCache:state.populationTraceCache,postflopTraceCache:state.postflopTraceCache,
-                    populationRangeCache:state.populationRangeCache,postflopRangeCache:state.postflopRangeCache
+                    populationRangeCache:state.populationRangeCache,postflopRangeCache:state.postflopRangeCache,
+                    preflopRuntimeDecisionCache:state.preflopRuntimeDecisionCache
                 };
                 try{
                     const hand=parsePokerStarsHand(raw,"kts_sb_two_limp_iso4_three_calls.hand.txt");
@@ -356,14 +357,16 @@ async def main() -> None:
                     state.selectedHand=hand;state.replaySteps=steps;state.hhMode=true;
                     state.populationTraceCache=Object.create(null);state.postflopTraceCache=Object.create(null);
                     state.populationRangeCache=Object.create(null);state.postflopRangeCache=Object.create(null);
+                    state.preflopRuntimeDecisionCache=Object.create(null);
                     const heroIndex=steps.findIndex(s=>s.street==="Préflop"&&s.activePlayer===hand.heroName&&s.actionType==="raise");
                     const bbIndex=steps.findIndex((s,i)=>i>heroIndex&&s.street==="Préflop"&&s.activePlayer==="BB"&&s.actionType==="call");
                     if(heroIndex<0||bbIndex<0)throw new Error("steps #321 attendus introuvables");
                     const heroStep=steps[heroIndex],bbStep=steps[bbIndex];
                     const heroEvidence=replayObservedDecisionEvidence(heroIndex,heroStep);
                     const bbEvidence=replayObservedDecisionEvidence(bbIndex,bbStep);
+                    const canonical=preflopRuntimeDecisionForStep(heroIndex,heroStep,null,{observedEvidence:heroEvidence});
                     const heroState=replayHeroCommentState(heroIndex,heroStep,null,{
-                        req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,canonicalDecision:null,
+                        req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,canonicalDecision:canonical,
                         observedEvidence:heroEvidence
                     });
                     const bbUnavailable=replayOpponentCommentStateFromEvidence(bbEvidence,bbStep,null);
@@ -371,13 +374,17 @@ async def main() -> None:
                     const bbDetail=actionDetailModalInnerHtml(bbIndex,bbStep);
                     return {
                         hand:{id:hand.id,hero:hand.heroName,cards:reviewHeroCardsText(hand)},
-                        hero:{index:heroIndex,actor:heroStep.activePlayer,action:heroStep.actionType,evidence:heroEvidence,state:heroState},
+                        hero:{index:heroIndex,actor:heroStep.activePlayer,action:heroStep.actionType,evidence:heroEvidence,state:heroState,
+                            canonical:{schema:canonical?.schema,coverage:canonical?.coverage_state,admissible:canonical?.recommendation_admissibility?.admissible,
+                                recommended:canonical?.recommended_action,ev:canonical?.recommended_ev_bb,alternatives:canonical?.alternatives?.length,
+                                reasons:canonical?.reason_codes,reference:canonical?.identity?.strategy_id}},
                         bb:{index:bbIndex,actor:bbStep.activePlayer,action:bbStep.actionType,evidence:bbEvidence,state:bbUnavailable,feed:bbFeed,detail:bbDetail}
                     };
                 } finally {
                     state.selectedHand=saved.selectedHand;state.replaySteps=saved.replaySteps;state.hhMode=saved.hhMode;
                     state.populationTraceCache=saved.populationTraceCache;state.postflopTraceCache=saved.postflopTraceCache;
                     state.populationRangeCache=saved.populationRangeCache;state.postflopRangeCache=saved.postflopRangeCache;
+                    state.preflopRuntimeDecisionCache=saved.preflopRuntimeDecisionCache;
                 }
             }""",
             kts_iso_raw,
@@ -387,6 +394,10 @@ async def main() -> None:
         assert kts_replayer_comment["hero"]["evidence"]["decision"]["family"] == "VS_LIMPERS", kts_replayer_comment
         assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_COUVERT", kts_replayer_comment
         assert "Aucune recommandation EV validée" in kts_replayer_comment["hero"]["state"]["text"], kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["schema"] == "poker-preflop-decision/v1", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["coverage"] == "UNSUPPORTED" and kts_replayer_comment["hero"]["canonical"]["admissible"] is False, kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["recommended"] is None and kts_replayer_comment["hero"]["canonical"]["ev"] is None, kts_replayer_comment
+        assert kts_replayer_comment["hero"]["canonical"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in kts_replayer_comment["hero"]["canonical"]["reasons"], kts_replayer_comment
         assert kts_replayer_comment["bb"]["actor"] == "BB" and kts_replayer_comment["bb"]["action"] == "call", kts_replayer_comment
         assert kts_replayer_comment["bb"]["evidence"]["decision"]["family"] == "VS_ISO", kts_replayer_comment
         assert kts_replayer_comment["bb"]["state"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", kts_replayer_comment
