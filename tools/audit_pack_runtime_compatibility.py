@@ -101,10 +101,11 @@ def validate_source_provenance(
     rows = list(generic.get("files") or [])
     if not rows:
         raise RuntimeCompatibilityError("generic source file set is empty")
-    if generic.get("source_set_sha256") not in (None, _compact_sha256([
+    aggregate = _compact_sha256([
         {"path": row.get("path"), "git_blob_sha": row.get("git_blob_sha"), "sha256": row.get("sha256")}
         for row in rows
-    ])):
+    ])
+    if engine_candidate.get("source_set_sha256") != aggregate:
         raise RuntimeCompatibilityError("generic source-set aggregate hash mismatch")
     for row in rows:
         rel = str(row.get("path") or "")
