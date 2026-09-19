@@ -541,7 +541,7 @@ function trainerBuildHand(hints={},depth=0){
   lines.push(`${names[sb]}: posts small blind 0.50`,`${names[bb]}: posts big blind 1.00`,"*** HOLE CARDS ***",`Dealt to ${TRAINER_HERO} [${hole[heroSeat].map(cardCode).join(" ")}]`);
   const hand={id,dealerSeat:dealer,heroSeat,activeOppSeat:oppSeat,pfaSeat:null,callerSeat:null,heroRole,oppRole:heroRole==="PFA"?"CALLER":"PFA",
     positions,names,profiles,hole,boardDeck,runout,core,stacks:Array(6).fill(100),folded:Array(6).fill(false),lastAction:Array(6).fill(""),
-    pot:0,street:"preflop",boardCount:0,streetPaid:Array(6).fill(0),currentBet:1,lastRaise:1,raises:0,queue:[],preflopHistory:[],
+    pot:0,street:"preflop",boardCount:0,streetPaid:Array(6).fill(0),currentBet:1,lastRaise:1,raises:0,queue:[],preflopHistory:[],preflopRaiseLevel:0,
     historyLines:lines,ended:false,winner:"",showdown:false,awaitingHero:false,decisionNo:0,preview:!!hints.preview};
   trainerSyncFromCore(hand);return hand;
 }
@@ -849,7 +849,7 @@ async function trainerAdvance(){
       else trainerRenderStatus("À vous de jouer · recommandation calculée après votre action.");
       return;
     }
-    trainerRenderStatus(`${hand.names[seat]} réfléchit…`,"busy");trainerRender();await trainerSleep(TRAINER_DELAYS.opponentThink);trainerOpponentAct(hand);trainerRender();await trainerSleep(TRAINER_DELAYS.opponentSettle);
+    trainerRenderStatus(`${hand.names[seat]} réfléchit…`,"busy");trainerRender();await trainerSleep(TRAINER_DELAYS.opponentThink);trainerOpponentAct(hand,seat);trainerRender();await trainerSleep(TRAINER_DELAYS.opponentSettle);
   }
   if(hand.ended)trainerRenderStatus(`Main terminée · ${hand.winner}.`);
   trainerRender();
@@ -868,7 +868,7 @@ async function trainerNewHand(){
     trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
   }
   if(!await trainerEnsureModels())return;
-  trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();trainerRenderStatus("Nouvelle main · préflop SRP simulé, entraînement à partir du flop.");trainerRender();await trainerAdvance();
+  trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();trainerRenderStatus("Nouvelle main · blindes postées, préflop réel actif.");trainerRender();await trainerAdvance();
 }
 
 function trainerBoardHtml(hand){return Array.from({length:5},(_,i)=>{const c=i<hand.boardCount?hand.runout[i]:null;return `<div class="board-card${c===null?" empty":""}">${c===null?"":cardHtml(c)}</div>`;}).join("");}
@@ -884,7 +884,7 @@ function trainerSeatHtml(hand,s){
 function trainerBetSpotsHtml(hand){return hand.streetPaid.map((x,s)=>x>1e-8?`<div class="bet-spot bet${s+1}">${escapeHtml(trainerFmtBB(x))}</div>`:"").join("");}
 function trainerRenderTable(){
   const h=trainerState.hand;if(!trainerTable)return;if(!h){trainerTable.innerHTML='<div class="trainer-note">Cliquez sur « Nouvelle main » pour commencer.</div>';return;}
-  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · SRP · ${escapeHtml(h.heroRole==="PFA"?"Hero PFA":"Hero caller")} · stratégie Hero Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
+  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · ${escapeHtml(trainerPotType(h))} · ${escapeHtml(`Hero ${h.heroRole||"en décision"}`)} · stratégie Hero Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";
