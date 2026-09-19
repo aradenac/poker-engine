@@ -22,7 +22,15 @@ def main() -> None:
     assert 'if(!state.hhMode){saveManualSnapshot();state.hhMode=true;}' in select
     assert 'state.selectedHand=hand' in select
     assert 'loadSelectedHistoryHand(true)' in select
-    assert 'openReplayerPage({scrollTop:true})' in select
+    assert 'id,{open=true,scrollTop=true}={}' in select
+    assert 'if(open)openReplayerPage({scrollTop});' in select
+
+    # Review Inbox may load the hand without opening at step 0, then resolve the
+    # exact backend decision descriptor before presenting Replayer.
+    deep_link = block('function openReviewInboxDeepLink', 'function openReviewInboxItem')
+    assert 'selectHistoryHandById(handId,{open:false})' in deep_link
+    assert 'setReplayIndexAndRecalculate(resolved.stepIndex)' in deep_link
+    assert 'aucune autre décision n’a été sélectionnée' in deep_link
 
     # Leaving Review restores the independent manual Equity Lab but does not destroy the selection.
     back = block('function returnToHandsPage', 'function leaveHistoryMode')
