@@ -1,6 +1,6 @@
-protocol_commit=5b148ecea220ae5f2b6ac25bfe9a098ca623a093
+protocol_commit=798af0be849ed7cff309c55b837051d9dededb3d
 execution=AUTHORIZED_OBSERVABLE_REPLAY_OF_FROZEN_PROTOCOL
-attempt=2
+attempt=3
 candidate_id=model-a-preflop-sizing-aware-candidate-v2
 candidate_sha256=9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19
 admission=ADMIT_CANDIDATE
