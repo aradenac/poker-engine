@@ -3768,13 +3768,29 @@ function reviewRegretForAction(stepIndex,cached){
     return null;
   }
 
-  // Preflop CALL: fold = 0 BB is a valid baseline. Do not invent EVs for raises/bets/folds
-  // where the current model does not provide a validated alternative tree.
+  // Preflop CALL/FOLD: the retained #108 reference is surfaced through the
+  // canonical #278 object. No raise/iso/squeeze EV is invented here.
   if(step.street==="Préflop"&&step.actionType==="call"){
-    const m=actionDecisionMetrics(priorEq,req,null);
-    if(Number.isFinite(m.evBB)){
-      const loss=Math.max(0,-Number(m.evBB));
-      return {lossBB:loss,rawLossBB:loss,chosenEV:Number(m.evBB),bestEV:Math.max(0,Number(m.evBB)),bestLabel:loss>0?"FOLD":"CALL",withinNoise:false,street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true};
+    const canonical=preflopRuntimeDecisionForStep(stepIndex,step,cached);
+    if(canonical&&window.PokerPreflopRuntime?.isCovered(canonical)){
+      const playedEV=Number(canonical.played_ev_bb),bestEV=Number(canonical.recommended_ev_bb);
+      const loss=Number.isFinite(canonical.delta_ev_bb)?Math.max(0,Number(canonical.delta_ev_bb)):Math.max(0,bestEV-playedEV);
+      return {
+        lossBB:loss,rawLossBB:loss,chosenEV:playedEV,bestEV,
+        bestLabel:String(canonical.recommended_action||"—"),
+        bestCostBB:Number(canonical.incremental_cost_bb),
+        withinNoise:false,street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true,
+        preflopDecision:canonical
+      };
+    }
+    // Opponent calls retain their historical analytical baseline; it is never
+    // promoted to a Hero recommendation surface.
+    if(replayActionActorRole(step)!=="HERO"){
+      const m=actionDecisionMetrics(priorEq,req,null);
+      if(Number.isFinite(m.evBB)){
+        const loss=Math.max(0,-Number(m.evBB));
+        return {lossBB:loss,rawLossBB:loss,chosenEV:Number(m.evBB),bestEV:Math.max(0,Number(m.evBB)),bestLabel:loss>0?"FOLD":"CALL",withinNoise:false,street:step.street,action:step.actionType,actor:step.activePlayer||"",comparable:true};
+      }
     }
   }
   return null;
