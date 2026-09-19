@@ -1,0 +1,7 @@
+{
+  "ev_mode": "SYNTHETIC_PLACEHOLDER_ONLY",
+  "rollout_budget": 0,
+  "schema": "synthetic-hero-preflop-generation-parameters/v1",
+  "scientific_effect": "NONE_SYNTHETIC_FIXTURE",
+  "slot_id": "params:SYNTHETIC_CONTRACT_FIXTURE_V1"
+}
