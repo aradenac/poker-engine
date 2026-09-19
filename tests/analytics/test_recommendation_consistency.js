@@ -82,13 +82,14 @@ function baseDecision(overrides={}){
   };
   return {...d,...overrides};
 }
+function clone(v){return JSON.parse(JSON.stringify(v));}
 function surfaces(d){
   return {
-    feed:structuredClone(d),
-    detail:structuredClone(d),
-    replayer:structuredClone(d),
-    trainer:structuredClone(d),
-    review:structuredClone(d)
+    feed:clone(d),
+    detail:clone(d),
+    replayer:clone(d),
+    trainer:clone(d),
+    review:clone(d)
   };
 }
 function record(d=baseDecision(), surfaceOverride=null, source=null){
@@ -219,7 +220,7 @@ function byType(report,type){
   assert.equal(row.status,'PASS','valid fail-closed decision with five matching surfaces is coherent');
   assert.equal(types(row).includes('FAIL_CLOSED_RECOMMENDATION_PRESENT'),false);
 
-  const bad=structuredClone(d);
+  const bad=clone(d);
   bad.recommended_action='CALL';
   bad.recommended_target_sizing={target_total_bb:3,bet_to_bb:3};
   bad.incremental_cost_bb=2;
