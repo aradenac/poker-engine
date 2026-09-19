@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthetic counterfactual diagnostics for #315 tranche 1."""
+"""Synthetic counterfactual diagnostics for #315 tranche 1.\n\nFinal tranche-one integration trigger; scientific semantics unchanged.\n"""
 from __future__ import annotations
 
 import json
