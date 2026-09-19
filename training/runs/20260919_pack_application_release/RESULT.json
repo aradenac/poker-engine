@@ -1,0 +1,60 @@
+{
+  "schema": "poker-pack-application-release-result/v1",
+  "issue": 377,
+  "parent_issue": 201,
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "artifact": {
+    "path": "training/artifacts/application-release/poker-site-release-zoom-100-200-candidate-v1-25afc20cce834fc93ff140f56723548e806034cd892a8b222de21f916d162984.json",
+    "sha256": "25afc20cce834fc93ff140f56723548e806034cd892a8b222de21f916d162984",
+    "status": "candidate_unpublished",
+    "published": false,
+    "content_addressed": true
+  },
+  "boot_contract": {
+    "path": "training/artifacts/application-release/pack-scoped-boot-v1-4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c.js",
+    "sha256": "4af0faa262931e91e49d4e028bf93eed14d508120cfafc29746fbc917f73c38c",
+    "fallback_policy": "NONE_FAIL_CLOSED"
+  },
+  "engine_binding": {
+    "path": "training/artifacts/pack-engine/poker-pack-engine-runtime-v1-15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08.js",
+    "sha256": "15bfa1ba78b463b63b5b9b8ee47a98fd9b29c2a9b79fa455b791a9781c7d7e08"
+  },
+  "evidence_set": {
+    "path": "training/runs/20260919_pack_application_release/EVIDENCE_SET.json",
+    "sha256": "8c25213b90469d4e61dbc6058b57e599d9ca5627d6fc31ea7a208399adacf9e4"
+  },
+  "expected_resolver_305": {
+    "engine_status": "ADMISSIBLE",
+    "application_release_status": "ADMISSIBLE",
+    "candidate_status": "BLOCKED_PENDING_SCIENTIFIC_DECISION",
+    "missing_roles": [
+      "model_a_preflop",
+      "model_a_postflop",
+      "model_b",
+      "hero_strategy",
+      "hero_ranges"
+    ]
+  },
+  "expected_preflight_253": {
+    "result": "BLOCKED",
+    "writes_performed": false,
+    "engine_component_availability": "AVAILABLE",
+    "application_release_availability": "AVAILABLE",
+    "engine_compatibility": "BLOCKED",
+    "required_blocker_codes": [
+      "APPLICATION_RELEASE_NOT_PROMOTED",
+      "POPULATION_STATUS_NOT_PROMOTED"
+    ]
+  },
+  "boundaries": {
+    "final_pack": false,
+    "publication": false,
+    "activation": false,
+    "promotion": false,
+    "registry_mutation": false,
+    "pointer_mutation": false,
+    "test_consumed": false,
+    "production_effect": "NONE",
+    "parent_201_remains_open": true
+  }
+}
