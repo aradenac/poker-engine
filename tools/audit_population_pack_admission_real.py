@@ -486,6 +486,12 @@ def main() -> int:
             "seven_roles_explicit": matrix["invariants"]["all_7_roles_resolved_to_explicit_state"],
             "hashes_and_provenance_verified": all(
                 (row.get("artifact") or {}).get("verified") is True
+                and not any(
+                    code.endswith("_HASH_MISMATCH")
+                    or code.endswith("_EVIDENCE_MISSING")
+                    or code.endswith("_EVIDENCE_INVALID")
+                    for code in (row.get("reason_codes") or [])
+                )
                 for row in resolution["admissions"].values()
             ),
             "issue_108_consumed_without_reinterpretation": source_decisions["issue_108"]["decision"] == "RETAIN_REFERENCE",
