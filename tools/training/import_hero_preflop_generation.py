@@ -33,6 +33,7 @@ EXACT_LOOKUP = "EXACT_CONTEXT_ONLY"
 HAND_ORDER_ID = "poker-hand-class-169-matrix-row-major-v1"
 REPLACEMENT_MODE = "REPLACE_CALCULATED_ATOMIC"
 PLACEHOLDER_STATE = "SYNTHETIC_PLACEHOLDER_METADATA_ONLY"
+INACTIVE_STATE = "INACTIVE_CANDIDATE_METADATA_ONLY"
 ACTIVE_STATE = "ACTIVE_MEASURED"
 SUPPORTED_FAMILIES = {
     "VS_LIMPERS": "VS_LIMPERS",
@@ -291,7 +292,7 @@ def import_generation(
                 active = True
             metadata_by_hand[hand] = _cell_metadata(cell, active=active)
 
-        activation_state = ACTIVE_STATE if active_hands else PLACEHOLDER_STATE
+        activation_state = ACTIVE_STATE if active_hands else (PLACEHOLDER_STATE if manifest.get("synthetic_fixture") else INACTIVE_STATE)
         provenance = {
             "schema": IMPORT_SCHEMA,
             "activation_state": activation_state,
@@ -410,7 +411,11 @@ def import_generation(
         "nearest_context_allowed": False,
         "fallback_states": FALLBACK_STATES,
         "synthetic_fixture": bool(manifest.get("synthetic_fixture")),
-        "activation_state": ACTIVE_STATE if activate_measured and not manifest.get("synthetic_fixture") else PLACEHOLDER_STATE,
+        "activation_state": (
+            ACTIVE_STATE
+            if activate_measured and not manifest.get("synthetic_fixture")
+            else (PLACEHOLDER_STATE if manifest.get("synthetic_fixture") else INACTIVE_STATE)
+        ),
         "context_count": len(prepared),
         "expected_hand_classes_per_context": 169,
         "active_hand_count": sum(len(item["layer"]["hands"]) for item in prepared),
