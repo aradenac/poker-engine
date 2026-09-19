@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: issue-358-hero-preflop-generation
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   preflight:
@@ -37,8 +37,8 @@ jobs:
           import hashlib, json
           from pathlib import Path
           for path in [
-              Path("training/protocols/issue358_hero_preflop_noniso_generation_v1.json"),
-              Path("training/protocols/issue358_hero_preflop_noniso_validation_v1.json"),
+              Path("training/protocols/issue358_hero_preflop_noniso_generation_v2.json"),
+              Path("training/protocols/issue358_hero_preflop_noniso_validation_v2.json"),
           ]:
               data=json.loads(path.read_text())
               assert data["status"].startswith("FROZEN")
@@ -95,7 +95,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 12
+      max-parallel: 64
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
@@ -144,7 +144,7 @@ jobs:
           merge-multiple: true
       - name: Assemble immutable #277 generation
         run: |
-          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v1"
+          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v2"
           GEN_ROOT="$RUN_ROOT/generation"
           python tools/training/generate_hero_preflop_noniso.py assemble             --scope issue358-inputs/scope.json             --representatives issue358-inputs/representatives.json             --parameters issue358-inputs/generation_parameters.json             --environment issue358-inputs/environment_identity.json             --parts-dir issue358-parts             --output-root "$GEN_ROOT"             --code-sha "$GITHUB_SHA"
           cp issue358-inputs/scope.json "$RUN_ROOT/SCOPE.json"
@@ -152,7 +152,7 @@ jobs:
           cp issue358-inputs/certified_decisions_summary.json "$RUN_ROOT/CERTIFIED_DECISIONS_SUMMARY.json"
       - name: Import candidate through #287 without activation
         run: |
-          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v1"
+          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v2"
           cat > "$RUN_ROOT/EMPTY_BASE_REPOSITORY.json" <<'JSON'
           {
             "schema":"poker-hero-range-repository/v1",
@@ -166,7 +166,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          root=Path("training/runs/20260919_hero_preflop_noniso_ready_v1")
+          root=Path("training/runs/20260919_hero_preflop_noniso_ready_v2")
           receipt=json.loads((root/"IMPORT_RECEIPT.json").read_text())
           assert receipt["active_hand_count"] == 0
           assert receipt["activation_state"] == "INACTIVE_CANDIDATE_METADATA_ONLY"
@@ -178,8 +178,8 @@ jobs:
           python - <<'PY'
           import hashlib, json
           from pathlib import Path
-          root=Path("training/runs/20260919_hero_preflop_noniso_ready_v1")
-          protocol=Path("training/protocols/issue358_hero_preflop_noniso_validation_v1.json")
+          root=Path("training/runs/20260919_hero_preflop_noniso_ready_v2")
+          protocol=Path("training/protocols/issue358_hero_preflop_noniso_validation_v2.json")
           receipt=json.loads((root/"IMPORT_RECEIPT.json").read_text())
           generation=json.loads((root/"generation/GENERATION_RESULT.json").read_text())
           result={
@@ -201,7 +201,7 @@ jobs:
           PY
       - name: Revalidate immutable artifact and inactive import
         run: |
-          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v1"
+          RUN_ROOT="training/runs/20260919_hero_preflop_noniso_ready_v2"
           python tools/training/validate_hero_preflop_generation.py             --root "$RUN_ROOT/generation"             --plan analysis/hero_preflop_generation_plan.json
           PYTHONPATH=. python tests/training/test_import_hero_preflop_generation.py
           PYTHONPATH=. python tests/training/test_issue358_generation_contract.py
@@ -209,12 +209,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: issue358-final-generation
-          path: training/runs/20260919_hero_preflop_noniso_ready_v1/
+          path: training/runs/20260919_hero_preflop_noniso_ready_v2/
           retention-days: 30
       - name: Commit immutable generation evidence to execution branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add training/runs/20260919_hero_preflop_noniso_ready_v1
+          git add training/runs/20260919_hero_preflop_noniso_ready_v2
           git commit -m "[D][#358] Persist immutable non-ISO Hero generation evidence"
           git push origin "HEAD:${GITHUB_REF_NAME}"
