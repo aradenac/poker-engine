@@ -1,0 +1,120 @@
+{
+  "schema": "poker-hero-preflop-alternatives-evidence/v1",
+  "issue": 353,
+  "parent_issue": 314,
+  "pr": 355,
+  "branch": "execute/issue-353-hero-preflop-alternatives",
+  "tested_head": "0fa8c396cffca7d7b94bfd355717609d8e613622",
+  "source_contracts": {
+    "game_core": "src/training/nlhe-game-state.js::NoLimitHoldemState.legalView",
+    "canonical_decision": "poker-preflop-decision/v1",
+    "diagnostics": "poker-preflop-iso-sizing-diagnostics/v1",
+    "issue_319_report": "analysis/preflop_sizing_support_train.json",
+    "issue_319_full_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "issue_321_scenario": "kts_sb_two_limp_iso4_three_calls_v1",
+    "issue_321_public_timeline_sha256": "51585a3dc55fd3ffb8aea8961249ddc97c032ebd3c85f566febfe5b5b2bd0b7b"
+  },
+  "canonical_321_proof": {
+    "hero_position": "SB",
+    "legal_actions": [
+      "FOLD",
+      "CALL",
+      "RAISE"
+    ],
+    "pot_before_bb": 3.5,
+    "actor_contribution_bb": 0.5,
+    "to_call_bb": 0.5,
+    "min_raise_to_bb": 2,
+    "max_raise_to_bb": 100,
+    "alternatives": [
+      {
+        "id": "FOLD",
+        "incremental_cost_bb": 0,
+        "support_status": "STRUCTURAL_LEGAL"
+      },
+      {
+        "id": "OVERLIMP@1",
+        "incremental_cost_bb": 0.5,
+        "support_status": "STRUCTURAL_LEGAL"
+      },
+      {
+        "id": "ISO@4",
+        "incremental_cost_bb": 3.5,
+        "support_status": "EXACT_SUPPORTED",
+        "observations": 13
+      },
+      {
+        "id": "ISO@5",
+        "incremental_cost_bb": 4.5,
+        "support_status": "EXACT_SUPPORTED",
+        "observations": 56
+      },
+      {
+        "id": "ISO@6",
+        "incremental_cost_bb": 5.5,
+        "support_status": "EXACT_SUPPORTED",
+        "observations": 9
+      },
+      {
+        "id": "ISO@6.0001",
+        "incremental_cost_bb": 5.5001,
+        "support_status": "LEGAL_BUT_UNSUPPORTED",
+        "observations": 0
+      }
+    ],
+    "illegal_bound_checks": [
+      {
+        "target_total_bb": 1.5,
+        "reason": "BELOW_MIN"
+      },
+      {
+        "target_total_bb": 101,
+        "reason": "ABOVE_MAX"
+      }
+    ],
+    "nearest_price_used": false
+  },
+  "generic_scenarios": [
+    "unopened_rfi",
+    "facing_rfi",
+    "squeeze_candidate",
+    "facing_3bet"
+  ],
+  "ci": {
+    "issue_353_contract": {
+      "workflow": "Validate preflop action sizing search",
+      "run_id": 35450013157,
+      "result_line": "hero preflop legal alternatives tests: 4 passed",
+      "status": "PASS_BEFORE_INHERITED_GATE"
+    },
+    "inherited_failures": [
+      {
+        "workflow": "Validate preflop action sizing search",
+        "run_id": 35450013157,
+        "error": "IsoSizingPosteriorBindingError: posterior reference mismatch: distribution_fingerprint"
+      },
+      {
+        "workflow": "Validate preflop context contract",
+        "run_id": 35450013160,
+        "error": "IsoSizingPosteriorBindingError: posterior reference mismatch: distribution_fingerprint"
+      }
+    ],
+    "baseline_proof": {
+      "prior_run_id": 35446818174,
+      "prior_job_id": 105907064055,
+      "prior_error": "IsoSizingPosteriorBindingError: posterior reference mismatch: distribution_fingerprint",
+      "classification": "PRE_EXISTING_UNRELATED_TO_ISSUE_353"
+    }
+  },
+  "boundaries": {
+    "ev_computed": false,
+    "model_a_fit": false,
+    "model_b_fit": false,
+    "issue_338_or_pr_261_modified": false,
+    "ui_modified": false,
+    "test_consumed": false,
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "recommendation_consumed": false
+  }
+}

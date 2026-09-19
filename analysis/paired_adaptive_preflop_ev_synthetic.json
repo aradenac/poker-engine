@@ -1,0 +1,60 @@
+{
+  "candidate_truth_bb": {
+    "A": 0.3,
+    "B": 0.295,
+    "C": 0.05,
+    "D": -0.4
+  },
+  "comparisons": {
+    "paired_adaptive_vs_fixed": {
+      "delta_variance_ratio": 0.0005235935937970157,
+      "rollout_ratio": 0.568359375
+    },
+    "paired_fixed_vs_fixed": {
+      "delta_variance_ratio": 0.0005278116574036896,
+      "rollout_ratio": 1.0
+    }
+  },
+  "configuration": {
+    "delta_variance_metric": "sample variance of index-matched A-B delta; CRN only in paired modes",
+    "fixed_samples_per_alternative": 32,
+    "paired_batch_size": 8,
+    "paired_initial_samples_per_alternative": 8,
+    "paired_max_samples_per_alternative": 32,
+    "paired_max_total_rollouts": 128,
+    "selection_stability_metric": "fraction selecting known synthetic optimum A"
+  },
+  "corpus": "synthetic/local",
+  "modes": {
+    "fixed_historical": {
+      "max_rollouts": 128,
+      "mean_A_minus_B_sample_variance_bb2": 2.955169696890625,
+      "mean_rollouts": 128.0,
+      "min_rollouts": 128,
+      "replicates": 64,
+      "true_best_id": "A",
+      "true_best_selection_rate": 0.515625
+    },
+    "paired_adaptive": {
+      "max_rollouts": 80,
+      "mean_A_minus_B_sample_variance_bb2": 0.0015473079218749999,
+      "mean_rollouts": 72.75,
+      "min_rollouts": 32,
+      "replicates": 64,
+      "true_best_id": "A",
+      "true_best_selection_rate": 0.6875
+    },
+    "paired_fixed": {
+      "max_rollouts": 128,
+      "mean_A_minus_B_sample_variance_bb2": 0.001559773015625,
+      "mean_rollouts": 128.0,
+      "min_rollouts": 128,
+      "replicates": 64,
+      "true_best_id": "A",
+      "true_best_selection_rate": 0.703125
+    }
+  },
+  "replicates": 64,
+  "schema": "paired-adaptive-preflop-ev-synthetic-benchmark/v1",
+  "scientific_effect": "NONE_PREPARATORY"
+}
