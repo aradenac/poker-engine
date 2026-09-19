@@ -240,3 +240,28 @@ Le besoin est satisfait lorsque :
 - un cas multiway après iso est analysable sans information future ;
 - les contextes sans support suffisant échouent explicitement plutôt que d'inventer une précision ;
 - Model B reste indépendant pour la validation de robustesse.
+
+## Backlog associé
+
+- #311 — réafficher dans Review la main Hero et le résultat réel gagné/perdu ;
+- #312 — exposer les ranges adverses postérieures à chaque action préflop ;
+- #313 — conditionner Model A préflop par le prix/sizing ;
+- #314 — optimiser fold/overlimp/iso et les sizings par EV avec diagnostics de callers ;
+- #315 — éprouver indépendamment ces sizings avec un Model B préflop response-to-price ;
+- #316 — intégrer l'explication et l'évolution des ranges dans Review.
+
+Dépendance fonctionnelle principale :
+
+```
+#312 ----+---------------------> #316
+         |
+#313 ---> #314 ---------------> #316
+            |
+#198 -------+
+            |
+#315 -------+-- robustesse avant promotion
+
+#311 --------------------------> expérience Review cohérente
+```
+
+#196 reste le chantier de génération/couverture Hero qui consommera la capacité #314 pour la famille VS_LIMPERS/ISO ; #195 reste l'intégration complète preflop trainer/replayer et réutilisera #316 côté Review.
