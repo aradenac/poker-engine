@@ -1,0 +1,604 @@
+{
+  "candidate_degrades_domains": [
+    {
+      "candidate_minus_reference_log_loss": 0.13055285605403844,
+      "distinct_hands": 37,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>CALL>FOLD"
+      },
+      "observations": 37,
+      "paired_ci95": [
+        0.008112537159816389,
+        0.2407225958712127
+      ]
+    }
+  ],
+  "candidate_improves_domains": [
+    {
+      "candidate_minus_reference_log_loss": -0.1798053569899154,
+      "distinct_hands": 148,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P75_100"
+      },
+      "observations": 233,
+      "paired_ci95": [
+        -0.23275118470611264,
+        -0.1214216619950759
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.06613458576858755,
+      "distinct_hands": 291,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD"
+      },
+      "observations": 300,
+      "paired_ci95": [
+        -0.10343027514950254,
+        -0.027524386169695665
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.055244409718548604,
+      "distinct_hands": 316,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET>FOLD"
+      },
+      "observations": 322,
+      "paired_ci95": [
+        -0.0902284395513387,
+        -0.018792475450984423
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0506362484559123,
+      "distinct_hands": 1210,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "turn"
+      },
+      "observations": 1999,
+      "paired_ci95": [
+        -0.06619865660926019,
+        -0.03432353610541123
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04918272350842878,
+      "distinct_hands": 950,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET"
+      },
+      "observations": 1229,
+      "paired_ci95": [
+        -0.07103707091823534,
+        -0.0284095476148726
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04765697718856843,
+      "distinct_hands": 1405,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "OOP"
+      },
+      "observations": 2459,
+      "paired_ci95": [
+        -0.06181390035446027,
+        -0.03212117325383543
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04635707667023814,
+      "distinct_hands": 410,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR1_2"
+      },
+      "observations": 521,
+      "paired_ci95": [
+        -0.0791340482723381,
+        -0.014777311276835523
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04282275524173407,
+      "distinct_hands": 1239,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "0"
+      },
+      "observations": 2493,
+      "paired_ci95": [
+        -0.05709719361015994,
+        -0.027585258896261056
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04140621843129222,
+      "distinct_hands": 999,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "street",
+        "value": "river"
+      },
+      "observations": 1564,
+      "paired_ci95": [
+        -0.059796040565422426,
+        -0.021940987144629238
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.04055615626262654,
+      "distinct_hands": 365,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR00_1"
+      },
+      "observations": 518,
+      "paired_ci95": [
+        -0.07646876847375297,
+        -0.0021108175197064125
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.03646199234742831,
+      "distinct_hands": 847,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "SRP"
+      },
+      "observations": 2372,
+      "paired_ci95": [
+        -0.05175769794966258,
+        -0.022332256192285144
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.03607447282538245,
+      "distinct_hands": 1001,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET"
+      },
+      "observations": 1526,
+      "paired_ci95": [
+        -0.05486281968396065,
+        -0.01787821648644758
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0358741383980109,
+      "distinct_hands": 1559,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR8_PLUS"
+      },
+      "observations": 3253,
+      "paired_ci95": [
+        -0.04694726035312494,
+        -0.023596164954262096
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.03359887612957779,
+      "distinct_hands": 1180,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "LIMPED"
+      },
+      "observations": 3862,
+      "paired_ci95": [
+        -0.04520123002830931,
+        -0.022047792870115743
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.030004358768462858,
+      "distinct_hands": 1118,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P00_25"
+      },
+      "observations": 3077,
+      "paired_ci95": [
+        -0.04423870969679203,
+        -0.015133383863650766
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.028594238976298758,
+      "distinct_hands": 1254,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "profile",
+        "value": "2"
+      },
+      "observations": 2734,
+      "paired_ci95": [
+        -0.04327136415276664,
+        -0.014144694512897472
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.027063083898864804,
+      "distinct_hands": 927,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "spr_bucket",
+        "value": "SPR4_8"
+      },
+      "observations": 1293,
+      "paired_ci95": [
+        -0.04712779567672,
+        -0.006021920765953555
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.026763364954281,
+      "distinct_hands": 1405,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "IP"
+      },
+      "observations": 2270,
+      "paired_ci95": [
+        -0.042633035506444816,
+        -0.01028478080165771
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.02416766556429928,
+      "distinct_hands": 845,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "MIDDLE"
+      },
+      "observations": 1498,
+      "paired_ci95": [
+        -0.04230277783191205,
+        -0.006507084436103412
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.02106843603498909,
+      "distinct_hands": 1429,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P25_50"
+      },
+      "observations": 2719,
+      "paired_ci95": [
+        -0.03302450039943575,
+        -0.00984980831469812
+      ]
+    }
+  ],
+  "context_counts": {
+    "comparison": {
+      "INSUFFICIENT_SUPPORT": 3559
+    },
+    "not_fully_supported": 3559,
+    "supported": 0,
+    "total": 3559
+  },
+  "domain_comparison_counts": {
+    "CANDIDATE_DEGRADES": 1,
+    "CANDIDATE_IMPROVES": 21,
+    "INSUFFICIENT_SUPPORT": 96,
+    "SIMILAR": 22
+  },
+  "evaluation_split": "VALIDATION",
+  "insufficiently_supported_contexts": 3559,
+  "interpretation": "Descriptive VALIDATION calibration only. CANDIDATE_IMPROVES/DEGRADES requires SUPPORTED context and a paired hand-cluster bootstrap CI for candidate-minus-reference log-loss that excludes zero. No promotion decision is made.",
+  "issue": 272,
+  "production_effect": "NONE",
+  "schema": "model-b-observed-vs-simulated-calibration-summary/v1",
+  "similar_domains": [
+    {
+      "candidate_minus_reference_log_loss": 0.01906590673292552,
+      "distinct_hands": 256,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "relative_position",
+        "value": "ONLY"
+      },
+      "observations": 256,
+      "paired_ci95": [
+        -0.02895871675588649,
+        0.06874248735574255
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.047703954338473964,
+      "distinct_hands": 87,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "pot_type",
+        "value": "3BP"
+      },
+      "observations": 233,
+      "paired_ci95": [
+        -0.014500596096675549,
+        0.1118702186490941
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.00601616484242562,
+      "distinct_hands": 223,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>CALL"
+      },
+      "observations": 295,
+      "paired_ci95": [
+        -0.041944515667560266,
+        0.03050973557167716
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.01875524906655901,
+      "distinct_hands": 44,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>CALL>CALL"
+      },
+      "observations": 52,
+      "paired_ci95": [
+        -0.0757361515029626,
+        0.04759250886821372
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.0041593713160956725,
+      "distinct_hands": 53,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD>CALL"
+      },
+      "observations": 53,
+      "paired_ci95": [
+        -0.08636737987851413,
+        0.09627384377420811
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.09911225266991253,
+      "distinct_hands": 50,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD>FOLD"
+      },
+      "observations": 50,
+      "paired_ci95": [
+        -0.1909584850358378,
+        0.001572834676851344
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.08053719379386903,
+      "distinct_hands": 46,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>FOLD>FOLD>FOLD"
+      },
+      "observations": 46,
+      "paired_ci95": [
+        -0.18094597561756054,
+        0.019978248093024745
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.06520300435565984,
+      "distinct_hands": 165,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "BET>RAISE"
+      },
+      "observations": 174,
+      "paired_ci95": [
+        -0.142921095174565,
+        0.015806201676270837
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.0003219059348378295,
+      "distinct_hands": 196,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>CALL"
+      },
+      "observations": 244,
+      "paired_ci95": [
+        -0.03877241169635346,
+        0.0399467259330352
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.013865148532856364,
+      "distinct_hands": 71,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>CALL>CALL"
+      },
+      "observations": 77,
+      "paired_ci95": [
+        -0.04537060731000691,
+        0.0737590600146262
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.015792735088623222,
+      "distinct_hands": 100,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>CALL>FOLD"
+      },
+      "observations": 100,
+      "paired_ci95": [
+        -0.046208700071695745,
+        0.07393972614585019
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0035438756447514486,
+      "distinct_hands": 208,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>FOLD"
+      },
+      "observations": 208,
+      "paired_ci95": [
+        -0.057204001240653175,
+        0.05305051767751312
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": 0.022431278343609806,
+      "distinct_hands": 72,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>FOLD>CALL"
+      },
+      "observations": 72,
+      "paired_ci95": [
+        -0.03693200730227963,
+        0.08522915745666988
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.02876885175415922,
+      "distinct_hands": 147,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>FOLD>FOLD"
+      },
+      "observations": 147,
+      "paired_ci95": [
+        -0.08722229501257457,
+        0.036613862364210346
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.004571253417109955,
+      "distinct_hands": 80,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>RAISE"
+      },
+      "observations": 81,
+      "paired_ci95": [
+        -0.08182739495076909,
+        0.08227421790919977
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.014490879745449603,
+      "distinct_hands": 55,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>BET>RAISE>FOLD"
+      },
+      "observations": 55,
+      "paired_ci95": [
+        -0.11744834057250583,
+        0.09723457664021005
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.027389834148266123,
+      "distinct_hands": 437,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET"
+      },
+      "observations": 480,
+      "paired_ci95": [
+        -0.059700725859858285,
+        0.005121537426726815
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.014819001341308535,
+      "distinct_hands": 213,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>BET>CALL"
+      },
+      "observations": 247,
+      "paired_ci95": [
+        -0.05590128859256712,
+        0.025524550935485266
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.041508272451821315,
+      "distinct_hands": 127,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "sequence",
+        "value": "CHECK>CHECK>CHECK>BET"
+      },
+      "observations": 135,
+      "paired_ci95": [
+        -0.10089939503378964,
+        0.022200121551502583
+      ]
+    },
+    {
+      "candidate_minus_reference_log_loss": -0.0391200408727983,
+      "distinct_hands": 307,
+      "domain": {
+        "aggregation": "EXPLICIT_SINGLE_DIMENSION",
+        "dimension": "price_bucket",
+        "value": "P50_75"
+      },
+      "observations": 454,
+      "paired_ci95": [
+        -0.07448726312795237,
+        0.0005295040328496687
+      ]
+    }
+  ],
+  "test_consumed": false,
+  "worst_candidate_calibration_contexts": []
+}
