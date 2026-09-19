@@ -17,6 +17,7 @@ VALIDATION and TEST data are never read by this module.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -61,11 +62,11 @@ SCOPE_SCHEMA = "poker-hero-preflop-noniso-scope/v1"
 REP_SCHEMA = "poker-hero-preflop-representatives/v1"
 PART_SCHEMA = "poker-hero-preflop-generation-part/v1"
 RESULT_SCHEMA = "poker-hero-preflop-noniso-generation-result/v1"
-GENERATION_ID = "20260919_HERO_PREFLOP_NONISO_READY_V2"
-CANDIDATE_ID = "HERO_PREFLOP_NONISO_READY_CANDIDATE_V2"
+GENERATION_ID = "20260919_HERO_PREFLOP_NONISO_READY_V3"
+CANDIDATE_ID = "HERO_PREFLOP_NONISO_READY_CANDIDATE_V3"
 GENERATOR_VERSION = "hero-preflop-noniso-paired-adaptive/1"
-ENV_SLOT = "env:ISSUE358_NONISO_V2"
-PARAMS_SLOT = "params:ISSUE358_NONISO_V2"
+ENV_SLOT = "env:ISSUE358_NONISO_V3"
+PARAMS_SLOT = "params:ISSUE358_NONISO_V3"
 MASTER_SEED = 20260919
 HAND_SHARDS = 8
 ALLOWED_GROUPS = (
@@ -356,6 +357,7 @@ def make_generation_parameters(plan: Mapping[str, Any], scope: Mapping[str, Any]
         "hand_class_order_id": "poker-hand-class-169-matrix-row-major-v1",
         "hand_classes_per_context": 169,
         "hand_shards": HAND_SHARDS,
+        "workers_per_hand_shard": 4,
         "master_seed": MASTER_SEED,
         "paired_adaptive_budget": {
             "initial_samples_per_alternative": 4,
@@ -408,6 +410,124 @@ def _artifact_identity(plan: Mapping[str, Any], params: Mapping[str, Any], code_
     }
 
 
+def _generate_one_hand_task(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Generate one hand-class cell in an isolated process.
+
+    All scientific inputs are frozen in the payload. Parallel execution changes
+    scheduling only; per-hand seeds and paired worlds stay deterministic.
+    """
+    hand = str(payload["hand"])
+    context_id = str(payload["context_id"])
+    state = NoLimitHoldemState.from_snapshot(payload["state_snapshot"])
+    actor = str(payload["actor"])
+    plan_row = dict(payload["plan_row"])
+    params = dict(payload["params"])
+    identity = dict(payload["identity"])
+    raise_targets = [float(x) for x in payload["raise_targets"]]
+    sizing_support = dict(payload["sizing_support"])
+    call_action = str(payload["call_action"])
+    raise_action = str(payload["raise_action"])
+
+    strict_policy = ModelAContinuationPolicy.from_paths(
+        base.DEFAULT_PREFLOP,
+        base.DEFAULT_POSTFLOP,
+        base.DEFAULT_OVERLAY,
+    )
+    opponent_policy = SupportClosedModelAContinuationPolicy(strict_policy)
+    hero_policy = SupportClosedModelAContinuationPolicy(strict_policy)
+    hero_continuation = base.FixedPopulationDerivedHeroContinuation(hero_policy)
+    budget = AdaptiveBudget(**params["paired_adaptive_budget"])
+    cards = base.representative_cards(hand)
+    rollout = ModelAPreflopContinuationRollout(
+        opponent_policy=opponent_policy,
+        hero_hole_cards=cards,
+        hero_continuation_policy=hero_continuation,
+    )
+    seed = int.from_bytes(
+        hashlib.sha256(f"{MASTER_SEED}|{context_id}|{hand}".encode()).digest()[:8],
+        "big",
+    )
+    try:
+        integration = evaluate_preflop_grid_paired(
+            NoLimitHoldemState.from_snapshot(state.to_snapshot()),
+            actor=actor,
+            context_id=context_id,
+            hand_class=hand,
+            population_id=str(payload["population_id"]),
+            raise_targets_bb=raise_targets,
+            rollout=rollout,
+            budget=budget,
+            base_seed=seed,
+            call_action=call_action,
+            raise_action=raise_action,
+            include_jam=True,
+            sizing_grid_source=(
+                "certified TRAIN exact-node empirical p25/p50/p75;"
+                + str(sizing_support.get("decisions_sha256") or "")
+            ),
+            support_provider=lambda candidate: {
+                "observations": int(plan_row["train_observations"]),
+                "backoff_level": "EXACT_TRAIN_READY",
+                "source": context_id,
+            },
+            status="EXPERIMENTAL",
+            notes="Issue #358 real generation; no promotion/activation; TEST unconsumed.",
+            require_materialized_common_world=True,
+        )
+        bridged = bridge_integration_file(
+            integration,
+            artifact_identity=identity,
+            plan_path=Path(payload["plan_path"]),
+        )
+        cell = bridged.get("strategy_cell")
+        if cell is None:
+            return {
+                "hand_class": hand,
+                "cell": None,
+                "deferred": {
+                    "hand_class": hand,
+                    "reason": str(bridged.get("bridge_state") or "NON_MATERIALIZABLE"),
+                    "alternative_id": bridged.get("alternative_id"),
+                },
+                "evidence": None,
+                "support_closure": {
+                    "opponent": opponent_policy.aggregate_audit(),
+                    "hero": hero_policy.aggregate_audit(),
+                },
+            }
+        return {
+            "hand_class": hand,
+            "cell": cell,
+            "deferred": None,
+            "evidence": {
+                "hand_class": hand,
+                "decision_id": integration["decision_id"],
+                "selected_id": integration["decision"]["selected_id"],
+                "action": integration["decision"]["action"],
+                "target_total_bb": integration["decision"]["target_total_bb"],
+                "incremental_cost_bb": integration["decision"]["incremental_cost_bb"],
+                "ev_bb": integration["decision"]["ev_bb"],
+                "uncertainty": integration["decision"]["uncertainty"],
+                "rollout_budget": integration["decision"]["search"]["budget"],
+                "worlds_materialized": integration["paired_result"]["search"]["worlds_materialized"],
+                "paired_result_sha256": bridged["evidence"]["source_result_sha256"],
+                "bridge_state": bridged["bridge_state"],
+            },
+            "support_closure": {
+                "opponent": opponent_policy.aggregate_audit(),
+                "hero": hero_policy.aggregate_audit(),
+            },
+        }
+    except Exception as exc:
+        return {
+            "hand_class": hand,
+            "cell": None,
+            "deferred": {"hand_class": hand, "reason": f"GENERATION_ERROR:{type(exc).__name__}:{exc}"},
+            "evidence": None,
+            "support_closure": None,
+        }
+
+
 def generate_part(
     *,
     plan_path: Path,
@@ -447,9 +567,6 @@ def generate_part(
         base.DEFAULT_POSTFLOP,
         base.DEFAULT_OVERLAY,
     )
-    opponent_policy = SupportClosedModelAContinuationPolicy(strict_policy)
-    hero_policy = SupportClosedModelAContinuationPolicy(strict_policy)
-    hero_continuation = base.FixedPopulationDerivedHeroContinuation(hero_policy)
     try:
         raise_targets, sizing_support = observed_raise_targets(strict_policy, state, actor, decisions_path)
     except Exception as exc:
@@ -462,81 +579,44 @@ def generate_part(
             "test_consumed": False,
         }
     call_action, raise_action = base.semantic_grid_labels(state)
-    budget_cfg = params["paired_adaptive_budget"]
-    budget = AdaptiveBudget(**budget_cfg)
     hands = list(CANONICAL_HAND_CLASSES)[hand_shard_index::hand_shard_count]
     identity = _artifact_identity(plan, params, code_sha)
-    cells: list[dict[str, Any]] = []
-    deferred: list[dict[str, Any]] = []
-    evidence: list[dict[str, Any]] = []
-    for hand in hands:
-        cards = base.representative_cards(hand)
-        rollout = ModelAPreflopContinuationRollout(
-            opponent_policy=opponent_policy,
-            hero_hole_cards=cards,
-            hero_continuation_policy=hero_continuation,
-        )
-        seed = int.from_bytes(
-            hashlib.sha256(f"{MASTER_SEED}|{context_id}|{hand}".encode()).digest()[:8],
-            "big",
-        )
-        try:
-            integration = evaluate_preflop_grid_paired(
-                NoLimitHoldemState.from_snapshot(state.to_snapshot()),
-                actor=actor,
-                context_id=context_id,
-                hand_class=hand,
-                population_id=plan["population_id"],
-                raise_targets_bb=raise_targets,
-                rollout=rollout,
-                budget=budget,
-                base_seed=seed,
-                call_action=call_action,
-                raise_action=raise_action,
-                include_jam=True,
-                sizing_grid_source=(
-                    "certified TRAIN exact-node empirical p25/p50/p75;"
-                    + str(sizing_support.get("decisions_sha256") or "")
-                ),
-                support_provider=lambda candidate: {
-                    "observations": int(plan_row["train_observations"]),
-                    "backoff_level": "EXACT_TRAIN_READY",
-                    "source": context_id,
-                },
-                status="EXPERIMENTAL",
-                notes="Issue #358 real generation; no promotion/activation; TEST unconsumed.",
-                require_materialized_common_world=True,
-            )
-            bridged = bridge_integration_file(
-                integration,
-                artifact_identity=identity,
-                plan_path=plan_path,
-            )
-            cell = bridged.get("strategy_cell")
-            if cell is None:
-                deferred.append({
-                    "hand_class": hand,
-                    "reason": str(bridged.get("bridge_state") or "NON_MATERIALIZABLE"),
-                    "alternative_id": bridged.get("alternative_id"),
-                })
-                continue
-            cells.append(cell)
-            evidence.append({
-                "hand_class": hand,
-                "decision_id": integration["decision_id"],
-                "selected_id": integration["decision"]["selected_id"],
-                "action": integration["decision"]["action"],
-                "target_total_bb": integration["decision"]["target_total_bb"],
-                "incremental_cost_bb": integration["decision"]["incremental_cost_bb"],
-                "ev_bb": integration["decision"]["ev_bb"],
-                "uncertainty": integration["decision"]["uncertainty"],
-                "rollout_budget": integration["decision"]["search"]["budget"],
-                "worlds_materialized": integration["paired_result"]["search"]["worlds_materialized"],
-                "paired_result_sha256": bridged["evidence"]["source_result_sha256"],
-                "bridge_state": bridged["bridge_state"],
-            })
-        except Exception as exc:
-            deferred.append({"hand_class": hand, "reason": f"GENERATION_ERROR:{type(exc).__name__}:{exc}"})
+    payloads = [
+        {
+            "hand": hand,
+            "context_id": context_id,
+            "state_snapshot": state.to_snapshot(),
+            "actor": actor,
+            "plan_row": plan_row,
+            "params": params,
+            "identity": identity,
+            "raise_targets": raise_targets,
+            "sizing_support": sizing_support,
+            "call_action": call_action,
+            "raise_action": raise_action,
+            "population_id": plan["population_id"],
+            "plan_path": str(plan_path),
+        }
+        for hand in hands
+    ]
+    workers = min(int(params.get("workers_per_hand_shard") or 1), len(payloads))
+    workers = max(1, workers)
+    if workers == 1:
+        results = [_generate_one_hand_task(payload) for payload in payloads]
+    else:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as pool:
+            results = list(pool.map(_generate_one_hand_task, payloads))
+
+    order = {hand: index for index, hand in enumerate(hands)}
+    results.sort(key=lambda row: order[row["hand_class"]])
+    cells = [row["cell"] for row in results if row.get("cell") is not None]
+    deferred = [row["deferred"] for row in results if row.get("deferred") is not None]
+    evidence = [row["evidence"] for row in results if row.get("evidence") is not None]
+    support_closure = [
+        {"hand_class": row["hand_class"], **row["support_closure"]}
+        for row in results
+        if row.get("support_closure") is not None
+    ]
     return {
         "schema": PART_SCHEMA,
         "issue": 358,
@@ -563,8 +643,8 @@ def generate_part(
         },
         "sizing_support": sizing_support,
         "support_closure": {
-            "opponent": opponent_policy.aggregate_audit(),
-            "hero": hero_policy.aggregate_audit(),
+            "aggregation": "PER_HAND_ISOLATED_PROCESS",
+            "hands": support_closure,
         },
         "information_boundary": {
             "representative_private_cards_consumed": False,
