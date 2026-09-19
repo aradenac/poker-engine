@@ -13,6 +13,10 @@ from tools.datasets.build_hand_history_increment import (
 from tools.training.audit_hero_preflop_coverage import (
     audit as audit_hero_preflop_coverage, render_markdown as render_hero_preflop_coverage_markdown,
 )
+from tools.training.audit_preflop_sizing_support import (
+    audit as audit_preflop_sizing_support,
+    render_markdown as render_preflop_sizing_support_markdown,
+)
 
 
 class PersistedSnapshotTests(unittest.TestCase):
@@ -64,6 +68,30 @@ class PersistedSnapshotTests(unittest.TestCase):
         persisted_md = (ROOT / 'analysis/hero_preflop_coverage_train.md').read_text(encoding='utf-8')
         self.assertEqual(render_hero_preflop_coverage_markdown(report), persisted_md)
         print('Hero preflop TRAIN coverage audit reproduced:', report['accounting'])
+
+    def test_certified_train_only_preflop_sizing_support_audit(self):
+        subprocess.run(
+            [sys.executable, str(ROOT / 'tests/training/test_audit_preflop_sizing_support.py')],
+            cwd=ROOT,
+            check=True,
+        )
+        report = audit_preflop_sizing_support()
+        self.assertEqual(report['scope']['split_consumed'], 'TRAIN')
+        self.assertFalse(report['scope']['validation_consumed'])
+        self.assertFalse(report['scope']['test_consumed'])
+        self.assertFalse(report['scope']['issue_108_consumed'])
+        self.assertFalse(report['scope']['active_model_consumed'])
+        self.assertFalse(report['scope']['active_model_modified'])
+        self.assertFalse(report['scope']['optimization_performed'])
+        self.assertFalse(report['scope']['ui_modified'])
+        self.assertEqual(report['accounting']['train_hands_expected'], 19016)
+        self.assertEqual(report['accounting']['train_hands_parsed'], 19016)
+        self.assertGreater(report['accounting']['population_preflop_rows_in_scope'], 0)
+        self.assertTrue(report['matrix'])
+        self.assertTrue(report['kts_sb_two_limpers_projection']['scenario']['public_context_only'])
+        self.assertFalse(report['kts_sb_two_limpers_projection']['scenario']['opponent_hidden_cards_consumed'])
+        print('PREFLOP_SIZING_REPORT_JSON=' + json.dumps(report, sort_keys=True, separators=(',', ':')))
+        print('PREFLOP_SIZING_REPORT_MD_JSON=' + json.dumps(render_preflop_sizing_support_markdown(report)))
 
     def test_hero_preflop_generation_contract_fixture(self):
         subprocess.run(
