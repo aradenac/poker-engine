@@ -98,7 +98,7 @@
     "runner": "tools/simulation/hero_preflop_iso_runner.py",
     "runner_git_blob_sha": "d01b7cb6dc73f8773ec8caf01f12de2db93e3289",
     "provider": "tools/simulation/admitted_model_a_iso_provider.py",
-    "provider_git_blob_sha": "374eb7ceef866b94723825249a367596e987a9da",
+    "provider_git_blob_sha": "6edd231d78a6ec9b51774ec4b6e6d12c3a99ab18",
     "executor": "tools/simulation/run_issue367_real_iso_ev.py",
     "executor_git_blob_sha": "240069522735ded5ef38ee44ad2710de8c4d262d",
     "paired_engine": "tools/simulation/paired_adaptive_preflop_ev.py",
@@ -156,7 +156,8 @@
       "postflop": true,
       "nearest_context_substitution": false,
       "invented_likelihood": false,
-      "audit_required": true
+      "audit_required": true,
+      "support_metadata": "Support-closure-only history steps have no learned node/support identity and are omitted; posterior support is anchored only by exact learned nodes, including the admitted v2 exact VS_ISO response."
     }
   },
   "diagnostics": {
@@ -255,5 +256,21 @@
     "indifference_rule_changed": false,
     "previous_provider_git_blob_sha": "ce5b270e7d1f4e9376bc56099dd204df4ada4f7f",
     "refreshed_provider_git_blob_sha": "374eb7ceef866b94723825249a367596e987a9da"
+  },
+  "execution_failure_remediation_3": {
+    "diagnostic_run_id": 35458754396,
+    "failed_before_result": true,
+    "failure": "posterior unavailable after ISO@5 BTN CALL: missing exact non-sizing preflop support node",
+    "root_cause": "posterior_support_for_trace still required a learned support id for BTN's earlier support-closure limp",
+    "scientific_result_observed": false,
+    "remediation": "omit closure-only history steps from support identity; retain exact admitted v2 response support as posterior support provenance",
+    "candidate_changed": false,
+    "seeds_changed": false,
+    "budget_changed": false,
+    "exact_support_grid_changed": false,
+    "selection_rule_changed": false,
+    "indifference_rule_changed": false,
+    "previous_provider_git_blob_sha": "374eb7ceef866b94723825249a367596e987a9da",
+    "refreshed_provider_git_blob_sha": "6edd231d78a6ec9b51774ec4b6e6d12c3a99ab18"
   }
 }
