@@ -44,6 +44,38 @@ ALLOWLIST = frozenset((*WORKFLOWS, RUNTIME, BROWSER, EVIDENCE, *GUARDS,
 ACTION_HASHES = {'.github/actions/repro-runtime/action.yml': '1b90982bdb93f7332a1dd9353afbe8028bcd1e655a9d2ca175e60b1a55e22d42', '.github/actions/repro-browser/action.yml': '50c70f925dc8cb6eaab5c7b0e9a7f647f5eb8d92df22659781ac0f8fa6a64dda'}
 GUARD_HASHES = {'tools/audit_repro_workflow_batch1.py': 'a4a01be7c3b52038bf2211163fd6e55a9035bb05d7cb62982322906e668a16a7', 'tests/ci/test_repro_workflow_batch1.py': '648604cdcd1326680e93df63d7295b5cf04cbe42dc5f02c58b04c2a0395ae7db', 'tests/ci/test_repro_workflow_batch2.py': '8d529bff8497130989461df46153757853896174a21e4f8be2bac61ddfff3e5b', 'tests/ci/test_repro_population_pack_catalog.py': '4fac6d7f33f21c5c6f8745f8dba18fdda560f24029399d12797a346438bfe1d6', 'tools/audit_repro_current_mixed_batch.py': 'a08b85f7c2664bcc0ac96aadf3d15e8113456b6198d749b47cbc3a5175e90487', 'tests/ci/test_repro_current_mixed_batch.py': 'ff7324e98417091debb46ae51c6247bb9661e5cb77fa9afb6e15ae29798562d5', 'tools/audit_residual_repro_dag.py': 'd41a0e56b44a17955d6f4616bb4aff81c7f25942f0a313c930762eb13618470f', 'tests/ci/test_residual_repro_dag.py': '361791ef7658596253dc1c3231e57fa953ec90a851079e08b522a54a37c1fe4e'}
 
+# Content identities captured from BASE_SHA, independently of editable evidence.
+# Unchanged historical sources need no duplicate payload; workflow before texts
+# are carried in the new transition evidence for depth-one consumer checkouts.
+BASELINE_HASHES = {'.github/workflows/continuous-training-cycle.yml': '9516dc6252f51fd7429ed24a415866d1f45ea74050223ad2c39c2f4b739588c5',
+ '.github/workflows/dataset-integrity.yml': 'dc61294edc71f5551c7ecdc0a645b298b1d9a7eed94dc7d4f295048684aa17d3',
+ '.github/workflows/full-hand-arena.yml': '6997be3eae49b673e792dddb740bf6c5b8bf0230197f52f9476feae2744bc187',
+ '.github/workflows/full-hand-protocol.yml': '178c43ba383d865d29f8520b4effbab5c925d2ac02522504da8119e24ea82b99',
+ '.github/workflows/hero-calculated-range-export.yml': 'd8cb95b363e273c8cee78ff206e4a0ea40ba8254e455873b3f0bab23cdcf66c5',
+ '.github/workflows/hero-range-compliance.yml': '30285d84a72f4a9e985ecbc935955229905010e461b28e01ab31bfe8faf78e5d',
+ '.github/workflows/hero-range-editor.yml': '8f47e3b352b2b6c98d3ae6e48afb4feb5ee45dd426fd857316510b64259ba2d2',
+ '.github/workflows/hero-range-pfc-context.yml': '98974ef953442d925c6876abd5968286e6a27d31c1f533c6826f0a7c0308206c',
+ '.github/workflows/ingest-artifacts.yml': 'fca6c2941d017ec3785469d3bcef445fae376c234edfaf10f760747c6e3d0ffc',
+ '.github/workflows/materialize-certified-population.yml': 'b560e997c20b5f2e43ceb0a800695ac135691a0f96f4566a5da3aeccbd088efa',
+ '.github/workflows/model-b-card-aware-runtime.yml': 'eebb7aaac40596f6ae53daa1432aa7682b68423b1afa245bfbd8272a5157bd0b',
+ '.github/workflows/model-b-reveal-aware.yml': 'c44861b492ff485993e9ce244fb21ced855f61883d8227857a522ebaceb17c00',
+ '.github/workflows/plan-ingested-cycle.yml': '0b1d9816a17604f4f76e46390a4aeb11522947e8977b31a854322435a00f4de8',
+ '.github/workflows/population-certification.yml': 'a1d0ce23c35f5240a6d8b97446994574e62711f55a40a030cd518d7939bd10b1',
+ '.github/workflows/population-pack-catalog.yml': 'dc5f481fabfaadb27b39af15f3e2f10e600888bcb9de5138afbda7084c68bab2',
+ '.github/workflows/postflop-response-refit.yml': 'c3f541a99755ff3c98fd59ca76d06429a743ff3fabafb0bce452d15c37b6a914',
+ '.github/workflows/preflop-grid-evaluator.yml': 'c415a1db1b746910aec92aa975bb01a80cc8a49bb738492cedd77102cc1b6478',
+ '.github/workflows/preflop-policy169.yml': '498a26bb9506cd490382de72acf3b6ed684073f09477117ad550f3a5f9589075',
+ '.github/workflows/preflop-search.yml': '4b3264cd7ef5204bc8de32da0817c197a59cff4e62501a81b603dcc383503fb5',
+ '.github/workflows/release-handoff-contract.yml': 'a0c1172d254eb023d389dc9d7b436f77861d5e21968927a2e81804aaf1ff5a50',
+ '.github/workflows/release-no-pending-snapshot-proof.yml': 'a692be020f2104cd7612b52a2964b80b2d43db54955a3396f1d455cd01a9a34d',
+ '.github/workflows/trainer-smoke.yml': 'df5c3226c697515daace3cd4c5484195ba5b85f3111e36061b5220d2df8d0b1d',
+ '.github/workflows/user-artifact-bundle.yml': 'ef0c0b6c53e77752b20a264618c4618ebee987f794b8503eacb7e6b9a2072ee8',
+ 'analysis/workflow_audit/repro_batch1_before_after.json': '2cd38d637a803835b50af2b42fa3610fe6ae39fea229a211ef920547ae020f98',
+ 'analysis/workflow_audit/repro_batch2_before_after.json': '5c0836494e65e5bf1c4d9d5763026fa9a137a12f8dc9087e971b914295005b13',
+ 'analysis/workflow_audit/repro_current_mixed_batch_before_after.json': '5f0024073daa06c711ddca9fb8b46aae875ab7a0f1448d0b32c84fcfe1eb7e5f',
+ 'analysis/workflow_audit/repro_population_pack_catalog_before_after.json': 'fceb4051f190aa73a2435d430016982a2e55630d1fc1cf5874b16f7ab13de8f1',
+ 'analysis/workflow_audit/residual_repro_dag_before_after.json': '20f7421fec174f074764685ccad6d37e16c241c1e1f747ad2dc05c0be4933021'}
+
 class AuditError(ValueError):
     pass
 
@@ -52,7 +84,27 @@ def git(*args):
 
 @lru_cache(maxsize=None)
 def baseline(path):
-    return git('show', f'{BASE_SHA}:{path}')
+    if path not in BASELINE_HASHES:
+        raise AuditError(f'{path}: unbound transition baseline')
+    try:
+        text = subprocess.check_output(
+            ['git', 'show', f'{BASE_SHA}:{path}'], cwd=ROOT,
+            text=True, stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError:
+        # GitHub checkout defaults to depth one. Do not fetch over the network,
+        # change checkout settings, or accept an unverified evidence payload.
+        if git('rev-parse', '--is-shallow-repository').strip() != 'true':
+            raise AuditError(f'{path}: base Git object unavailable in full checkout')
+        if path in WORKFLOWS:
+            evidence = json.loads((ROOT / EVIDENCE).read_text())
+            if evidence.get('base_sha') != BASE_SHA:
+                raise AuditError('transition evidence base SHA changed')
+            text = evidence.get('baseline_workflows', {}).get(path)
+        else:
+            text = (ROOT / path).read_text()
+    if not isinstance(text, str) or sha(text) != BASELINE_HASHES[path]:
+        raise AuditError(f'{path}: transition baseline content identity mismatch')
+    return text
 
 def sha(text):
     return hashlib.sha256(text.encode()).hexdigest()
@@ -237,7 +289,7 @@ def report():
                 workflow(p,t,{'role':'contract'}) for p,t in texts.items()],scenario)
                 for state,texts in [('before',before),('after',after)]}})
     return dict(schema='poker-repro-composite-factorization/v1', base_sha=BASE_SHA,
-        planning_matrix=matrix, historical_links=historical_links(),
+        baseline_workflows=before, planning_matrix=matrix, historical_links=historical_links(),
         jobs_blocked=[r for r in matrix if r['status']=='BLOCKED'],
         measurement_note='Static cost proxy is structural, not billed compute; composite steps still run.',
         workflows=[dict(path=p, before_blob=blob(before[p]),

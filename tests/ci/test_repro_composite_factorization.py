@@ -5,6 +5,7 @@ import itertools
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -17,6 +18,63 @@ from tools import audit_repro_composite_factorization as audit
 
 
 class CompositeTests(unittest.TestCase):
+    def tearDown(self):
+        audit.baseline.cache_clear()
+
+    def test_shallow_baselines_remain_cryptographically_bound(self):
+        evidence = json.loads((ROOT / audit.EVIDENCE).read_text())
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / audit.EVIDENCE
+            target.parent.mkdir(parents=True)
+            target.write_text(json.dumps(evidence))
+            for path in audit.HISTORY:
+                (root / path).write_text((ROOT / path).read_text())
+            with patch.object(audit, 'ROOT', root), patch.object(audit, 'git', return_value='true\n'), \
+                    patch.object(audit.subprocess, 'check_output', side_effect=subprocess.CalledProcessError(128, 'git')):
+                audit.baseline.cache_clear()
+                for path in (*audit.WORKFLOWS, *audit.HISTORY):
+                    self.assertEqual(audit.sha(audit.baseline(path)), audit.BASELINE_HASHES[path])
+                path = audit.WORKFLOWS[0]
+                evidence['baseline_workflows'][path] += '\n# forged baseline\n'
+                target.write_text(json.dumps(evidence))
+                audit.baseline.cache_clear()
+                with self.assertRaises(audit.AuditError):
+                    audit.baseline(path)
+                evidence['base_sha'] = '0' * 40
+                target.write_text(json.dumps(evidence))
+                with self.assertRaises(audit.AuditError):
+                    audit.baseline(path)
+                historical = audit.HISTORY[0]
+                (root / historical).write_text('{}\n')
+                with self.assertRaises(audit.AuditError):
+                    audit.baseline(historical)
+                with patch.object(audit, 'git', return_value='false\n'):
+                    with self.assertRaises(audit.AuditError):
+                        audit.baseline(path)
+
+    def test_historical_consumer_guards_without_base_git_objects(self):
+        # Exercise the actual entry points called by depth-one workflow jobs.
+        # Other Git commands still run normally; no repository is mutated.
+        with tempfile.TemporaryDirectory() as td:
+            wrapper = Path(td) / 'git'
+            wrapper.write_text(
+                '#!' + sys.executable + '\nimport os, sys\n'
+                'args = sys.argv[1:]\n'
+                f'if args[:1] == ["show"] and args[1].startswith({audit.BASE_SHA!r} + ":"):\n'
+                '    sys.exit(128)\n'
+                'if args == ["rev-parse", "--is-shallow-repository"]:\n'
+                '    print("true"); sys.exit(0)\n'
+                f'os.execv({shutil.which("git")!r}, ["git", *args])\n')
+            wrapper.chmod(0o755)
+            env = {**os.environ, 'PATH': td + os.pathsep + os.environ['PATH']}
+            for name in ('test_repro_workflow_batch1.py', 'test_repro_workflow_batch2.py',
+                         'test_repro_population_pack_catalog.py'):
+                with self.subTest(guard=name):
+                    result = subprocess.run([sys.executable, str(ROOT / 'tests/ci' / name)],
+                                            cwd=ROOT, env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def reject(self, path, old, new, before=None):
         before = audit.baseline(path) if before is None else before
         after = audit.migrate(path, before)
