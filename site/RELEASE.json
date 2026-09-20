@@ -12,23 +12,8 @@
         "site/action-sizing-ev.js": {
           "git_blob_sha": "c6c90ba0c77e91a409e278328c53c0cd2d8b1023"
         },
-        "site/analytics/leak-analyzer.js": {
-          "git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd"
-        },
-        "site/analytics/leak-training-target.js": {
-          "git_blob_sha": "765ea9200faa0765fb46fce42228377e644e82e8"
-        },
-        "site/analytics/model-b-robustness.js": {
-          "git_blob_sha": "740a02d9bb9c0f6a2b37fc9c0904bd7aa374a8eb"
-        },
-        "site/analytics/review-dashboard.js": {
-          "git_blob_sha": "8fe8958df456c22168226b305a574451b0a4529d"
-        },
-        "site/analytics/review-inbox.js": {
-          "git_blob_sha": "b6012f242ae633381c125d615e3018a839eded02"
-        },
-        "site/analytics/review-score-adapter.js": {
-          "git_blob_sha": "967d1cb79e2b48259ce0cbc348b754f4b290774c"
+        "site/compute-scheduler.js": {
+          "git_blob_sha": "c21caab928623c6d3ace9b4f58f12f6971e75929"
         },
         "site/hero-compliance-replayer.js": {
           "git_blob_sha": "0be68bd5eaaedde3b2d88289d1845d95cefb07a3"
@@ -49,7 +34,28 @@
           "git_blob_sha": "03d5f4490cc7710644a32f9d4c17344e0a926c7c"
         },
         "site/index.html": {
-          "git_blob_sha": "31a582eff100249e52b4fc687ed3b1a6ec57e1bd"
+          "git_blob_sha": "0e8461d96e7411314fab64f9461db3f4af042bb6"
+        },
+        "site/pack-identity.js": {
+          "git_blob_sha": "fa3fb310e75cff31bf7abe34ec8c83fc3de410ea"
+        },
+        "site/packs-app.js": {
+          "git_blob_sha": "22e0cfe4d8847f95e3bf75cb7ad8c9155b53af03"
+        },
+        "site/packs.css": {
+          "git_blob_sha": "5f23624e19dfceada1afcac7d930ccf15c9b7322"
+        },
+        "site/packs.html": {
+          "git_blob_sha": "873548832ee342d683109cc1cd8420e484cd6f5b"
+        },
+        "site/packs/catalog.json": {
+          "git_blob_sha": "04409c660c3817e068a3bd7d511f617f8e91b6ea"
+        },
+        "site/population-pack-sw.js": {
+          "git_blob_sha": "e9c622a01d63ae6dd5334530644d4e781e2edf2e"
+        },
+        "site/population-packs.js": {
+          "git_blob_sha": "7eb812b4b33f1cdddf7bdfacafd614e15f1085b9"
         },
         "site/preflop-contract.js": {
           "git_blob_sha": "14f0767d909b1919be01053e5c02363a21ec9ab9"
@@ -64,10 +70,7 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "53c06b9943aa5e4f07e43abcd954e81634734d88"
-        },
-        "site/training/leak-scenario-selector.js": {
-          "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"
+          "git_blob_sha": "4fc9538b865499b147237ef3a7d042e108f70874"
         },
         "site/training/nlhe-game-state.js": {
           "git_blob_sha": "57a30094f3e4082c8b5cb990b9d9562cc2ce789e"
@@ -89,7 +92,7 @@
     "postflop": "training/models/postflop_population_model_v5.json",
     "preflop": "training/models/preflop_population_model_v5.json"
   },
-  "notes": "Engine v83 and assembled application identities are distinct. The assembled_site identity is derived from content-addressed Git objects; live production verification remains issue #45.",
+  "notes": "Engine v83 and assembled application identities are distinct. The assembled_site identity is derived from content-addressed Git objects, including the generated population-pack catalogue and build-patched index; live production verification remains issue #45.",
   "publication_verification": {
     "meaning": "Repository/build identity only. A successful build or published=true does not prove the canonical live Cloudflare URL or deployed revision.",
     "status": "UNVERIFIED_LIVE",

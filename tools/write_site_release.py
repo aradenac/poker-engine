@@ -36,6 +36,7 @@ NAV_SOURCE = '<a href="./hero-ranges.html">Stratégie Hero</a>'
 NAV_TARGET = NAV_SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
 FUNCTIONAL_FILES = (
     INDEX_PATH,
+    ROOT / "site" / "compute-scheduler.js",
     ROOT / "site" / "preflop-contract.js",
     ROOT / "site" / "preflop-decision.js",
     ROOT / "site" / "preflop-guidance.js",
