@@ -286,3 +286,8 @@ therefore:
 - `python3 tests/trainer/test_replayer_modal_prior_states.py` — the replayer
   range modal, its explicit `prior_uninformative`/`degenerate` states and its
   unified mass legends.
+- `python3 tests/trainer/smoke_equity_scale_invariance.py` — numeric browser
+  proof that `buildSeatEquityPlayers`, `tableEquitySnapshotForStep`,
+  `postflopRaiseTreeSnapshot` and `aiExportRangeSnapshot` stay invariant under a
+  constant rescaling of the input weights, with a sum-normalized
+  `grid_169_probability_pct` and a distinct `relative_weight_pct`.
