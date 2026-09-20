@@ -12,6 +12,24 @@
         "site/action-sizing-ev.js": {
           "git_blob_sha": "c6c90ba0c77e91a409e278328c53c0cd2d8b1023"
         },
+        "site/analytics/leak-analyzer.js": {
+          "git_blob_sha": "8e86e78d42413bba07a485c4e1d09a579f8838cd"
+        },
+        "site/analytics/leak-training-target.js": {
+          "git_blob_sha": "765ea9200faa0765fb46fce42228377e644e82e8"
+        },
+        "site/analytics/model-b-robustness.js": {
+          "git_blob_sha": "740a02d9bb9c0f6a2b37fc9c0904bd7aa374a8eb"
+        },
+        "site/analytics/review-dashboard.js": {
+          "git_blob_sha": "8fe8958df456c22168226b305a574451b0a4529d"
+        },
+        "site/analytics/review-inbox.js": {
+          "git_blob_sha": "b6012f242ae633381c125d615e3018a839eded02"
+        },
+        "site/analytics/review-score-adapter.js": {
+          "git_blob_sha": "967d1cb79e2b48259ce0cbc348b754f4b290774c"
+        },
         "site/compute-scheduler.js": {
           "git_blob_sha": "c21caab928623c6d3ace9b4f58f12f6971e75929"
         },
@@ -71,6 +89,9 @@
         },
         "site/trainer.js": {
           "git_blob_sha": "4fc9538b865499b147237ef3a7d042e108f70874"
+        },
+        "site/training/leak-scenario-selector.js": {
+          "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"
         },
         "site/training/nlhe-game-state.js": {
           "git_blob_sha": "57a30094f3e4082c8b5cb990b9d9562cc2ce789e"

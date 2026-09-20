@@ -1,0 +1,121 @@
+{
+  "entries": [
+    {
+      "assets": [
+        {
+          "expected_schema": "trainer-population-pack/v1",
+          "key": "population_manifest",
+          "media_type": "application/json",
+          "role": "population_manifest",
+          "sha256": "043a2aee58290a117e569ce417253fd916e4afeee018d75529e2e9831966b8a7",
+          "size_bytes": 1061,
+          "url": "./assets/trainer/population.json"
+        },
+        {
+          "key": "model_a_preflop",
+          "media_type": "application/json",
+          "role": "model_a_preflop",
+          "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+          "size_bytes": 16247726,
+          "url": "./assets/trainer/model_a/preflop_population_model_v5.json"
+        },
+        {
+          "key": "model_a_postflop",
+          "media_type": "application/json",
+          "role": "model_a_postflop",
+          "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+          "size_bytes": 5046315,
+          "url": "./assets/trainer/model_a/postflop_population_model_v5.json"
+        },
+        {
+          "expected_schema": "independent-opponent-profiles/v2",
+          "key": "model_b_profiles",
+          "media_type": "application/json",
+          "role": "model_b",
+          "sha256": "adc8cec670c8fd5f71ecce45ba37c56ac3e4ea7b7062063e58d2b4d271e7c3ea",
+          "size_bytes": 189626,
+          "url": "./assets/trainer/model_b/profiles.json"
+        },
+        {
+          "expected_schema": "independent-preflop-ranges/v2",
+          "key": "model_b_ranges",
+          "media_type": "application/json",
+          "role": "model_b",
+          "sha256": "1fd268d554de88331d21cd672704ae1e3493f66a6f6c5a0b3e9d7c44190c6dcf",
+          "size_bytes": 397620,
+          "url": "./assets/trainer/model_b/preflop_ranges.json"
+        },
+        {
+          "expected_schema": "independent-postflop-actions/v2",
+          "key": "model_b_actions",
+          "media_type": "application/json",
+          "role": "model_b",
+          "sha256": "60086cc91638a3836768f0029871d2d2aa999d2ab0ee4f3c3f8b772b477a1cdb",
+          "size_bytes": 124841,
+          "url": "./assets/trainer/model_b/postflop_actions.json"
+        },
+        {
+          "expected_schema": "independent-postflop-sizing/v2",
+          "key": "model_b_sizing",
+          "media_type": "application/json",
+          "role": "model_b",
+          "sha256": "500a49c220976b46c4633a593a249599a6b640de79cd50791f712ca028c9565e",
+          "size_bytes": 2267193,
+          "url": "./assets/trainer/model_b/sizing.json"
+        },
+        {
+          "key": "model_b_contract",
+          "media_type": "application/json",
+          "role": "model_b",
+          "sha256": "e682e1000006b0bd3128c591af2dba9d5668a06d41219669cbf7cb66f9e2bb4e",
+          "size_bytes": 945,
+          "url": "./assets/trainer/model_b/prediction_contract.json"
+        },
+        {
+          "expected_schema": "trainer-hero-preflop-ranges/v1",
+          "key": "hero_ranges",
+          "media_type": "application/json",
+          "role": "hero_ranges",
+          "sha256": "304dc79b654365fa781cda98420415803eb815e8aa74839a5ebc25e5b49f8eee",
+          "size_bytes": 6040,
+          "url": "./assets/trainer/hero/custom_ranges_v1.json"
+        }
+      ],
+      "compatibility": {
+        "activation_policy": "all_assets_valid_then_atomic_switch",
+        "application_release_schema": "poker-site-release/v3",
+        "engine_version": "v83"
+      },
+      "engine_version": "v83",
+      "hero_strategy": "custom_ranges_v1",
+      "model_a_version": "v5",
+      "model_b_alias": "independent_model_b_v2",
+      "pack_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1@2026.09.15.1",
+      "pack_version": "2026.09.15.1",
+      "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+      "population_identity": {
+        "format": "MIXED_ZOOM_REGULAR",
+        "max_seats": 6,
+        "money": "play",
+        "platform": "PokerStars",
+        "stake": "100/200",
+        "variant": "NLHE"
+      },
+      "recommended": true,
+      "release_tag": "poker-pack-legacy-100-200-v2026.09.15.1",
+      "runtime_revision": "1c0b74eab5cc68815fe0a5e6ede135c1cc33d3accf1213fc1a34739f49e250bf",
+      "schema": "poker-browser-runtime-pack/v1",
+      "source_release": {
+        "kind": "github_release_population_pack",
+        "note": "Runtime subset uses the same promoted population identity; the complete immutable distribution ZIP is owned by #110.",
+        "pack_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1@2026.09.15.1",
+        "tag": "poker-pack-legacy-100-200-v2026.09.15.1"
+      }
+    }
+  ],
+  "generated_from": {
+    "pack_config": "user/packs/legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1/pack.json",
+    "trainer_manifest": "site/assets/trainer/population.json"
+  },
+  "schema": "poker-population-catalog/v1"
+}

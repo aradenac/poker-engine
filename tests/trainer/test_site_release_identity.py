@@ -24,6 +24,7 @@ def main() -> int:
     assembled = release["identity"]["assembled_site"]
     assert set(assembled["functional_files"]) == {
         "site/index.html",
+        "site/compute-scheduler.js",
         "site/analytics/leak-analyzer.js",
         "site/analytics/review-score-adapter.js",
         "site/analytics/review-inbox.js",
@@ -46,6 +47,13 @@ def main() -> int:
         "site/trainer.css",
         "site/trainer.js",
         "site/action-sizing-ev.js",
+        "site/packs.html",
+        "site/packs.css",
+        "site/packs-app.js",
+        "site/pack-identity.js",
+        "site/population-packs.js",
+        "site/population-pack-sw.js",
+        "site/packs/catalog.json",
     }
     assert assembled["assets_tree_git_sha"]
     assert release["publication_verification"]["status"] == "UNVERIFIED_LIVE"
