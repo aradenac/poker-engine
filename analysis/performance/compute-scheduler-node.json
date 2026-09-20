@@ -1,0 +1,75 @@
+{
+  "environment": "v24.21.0",
+  "corpus": [
+    "hand_262024556922",
+    "kts_sb_two_limp_iso4_three_calls"
+  ],
+  "seed": 390,
+  "trials": 2000,
+  "kernelIdentical": true,
+  "outputsIdentical": true,
+  "before": {
+    "durationMs": 92.42247800000001,
+    "maxConcurrency": 8,
+    "eventLoopDelayMaxMs": 0.6652750000000012,
+    "eventLoopDelaysOver50": 0
+  },
+  "after": {
+    "durationMs": 203.237229,
+    "maxConcurrency": 2,
+    "eventLoopDelayMaxMs": 0.9128809999999987,
+    "eventLoopDelaysOver50": 0,
+    "scheduler": {
+      "maxConcurrency": 2,
+      "cancellations": 0,
+      "preemptions": 7,
+      "backgroundPaused": 1,
+      "backgroundResumed": 1,
+      "waitMs": [
+        0.15380399999999383,
+        0.10780300000000409,
+        1.3593350000000015,
+        0.0881029999999896,
+        1.3641350000000045,
+        0.0767020000000116,
+        1.0465269999999975,
+        0.07660199999999406,
+        1.2895330000000058,
+        43.879329,
+        45.801778999999996,
+        87.768559,
+        93.128096,
+        131.154474,
+        162.94809300000003
+      ],
+      "durationMs": [
+        0.6400160000000028,
+        0.892122999999998,
+        0.3669089999999926,
+        0.6852170000000086,
+        0.352209000000002,
+        0.7816199999999895,
+        0.5419139999999913,
+        42.212986000000015,
+        46.169488,
+        42.926705,
+        47.35821900000002,
+        42.639996999999994,
+        37.17045699999997,
+        35.97672600000001,
+        35.823320999999964
+      ],
+      "longTasks": [],
+      "interactionMs": [],
+      "workersActive": 0,
+      "queueLength": {
+        "interaction": 0,
+        "replayer": 0,
+        "explicit": 0,
+        "prefetch": 0,
+        "background": 0
+      }
+    }
+  },
+  "browserLongTasks": null
+}

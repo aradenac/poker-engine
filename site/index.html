@@ -1274,6 +1274,7 @@
             <div class="actions">
               <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
               <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+              <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
               <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
             </div>
           </div>
@@ -1527,6 +1528,7 @@
   </div>
 </div>
 
+<script src="./compute-scheduler.js"></script>
 <script src="./pack-identity.js"></script>
 <script src="./population-packs.js"></script>
 <script src="./manual-import.js"></script>
@@ -3855,7 +3857,16 @@ function buildDefaultReviewOpponentsForHand(hand){
     hhPosition:p.hhPosition,knownCards:p.knownCards?[...p.knownCards]:null,useKnownHand:!!(p.knownCards?.length===2),seat:p.seat,source:"review-batch"
   }));
 }
-function buildReviewBatchPlan(hand){
+async function prepareReviewBatchPlan(hand,ticket){
+  const signature=reviewContextSignature(),actions=[],count=makeReplaySteps(hand).length;
+  for(let i=0;i<count;i++){
+    await new Promise(resolve=>setTimeout(resolve,0));
+    if(ticket!==state.reviewBatchTicket||signature!==reviewContextSignature()||window.pokerComputeScheduler.holds.size)return null;
+    const part=buildReviewBatchPlan(hand,i);if(!part)return null;actions.push(...part.actions);
+  }
+  return {handId:String(hand.id),signature,actions};
+}
+function buildReviewBatchPlan(hand,onlyStep=null){
   if(!hand||state.rangeEdition)return null;
   const saved={hhMode:state.hhMode,selectedHand:state.selectedHand,replaySteps:state.replaySteps,replayIndex:state.replayIndex,
     opponents:state.opponents,nextOpponentId:state.nextOpponentId,activeOpponent:state.activeOpponent,hero:state.hero,board:state.board,
@@ -3866,6 +3877,7 @@ function buildReviewBatchPlan(hand){
     streetSelect.value="3";state.opponents=buildDefaultReviewOpponentsForHand(hand);state.activeOpponent=0;
     const actions=[];
     for(let i=0;i<state.replaySteps.length;i++){
+      if(onlyStep!==null&&i!==onlyStep)continue;
       const step=state.replaySteps[i];if(!isAnalyzableDecisionAction(step))continue;
       const req=requiredEquityInfo(i),sources=actionVerdictSourceKeys(i);if(!req)continue;
       const values={},treeValues={},sizingResults=[],tasks=[];
@@ -3933,19 +3945,18 @@ function finalizeReviewBatchPlan(plan){
   state.reviewScores[String(hand.id)]=summary;hand.reviewScore=summary;schedulePersistReviewScores();scheduleReviewListRefresh(30);
 }
 function reviewBatchWorkerLimit(){
-  if(!document.body.classList.contains('trainer-view-open'))return 1;
-  const hc=Math.max(1,Number(navigator.hardwareConcurrency)||4);
-  return hc>=8?3:hc>=4?2:1;
+  return 1;
 }
-function runReviewBatchPlan(plan){
-  state.reviewBatchBusy=true;
+function runReviewBatchPlan(plan,{kind="background"}={}){
+  const ticket=state.reviewBatchTicket;
+  state.reviewBatchKind=kind;state.reviewBatchBusy=true;
   const all=[];
   for(const a of plan.actions)for(const t of a.tasks)all.push({a,t,order:all.length});
   let pos=0,active=0,finished=false;
   state.reviewBatchWorkers=[];
 
   const finish=()=>{
-    if(finished||pos<all.length||active>0)return;
+    if(finished||ticket!==state.reviewBatchTicket||pos<all.length||active>0)return;
     finished=true;
     for(const a of plan.actions){
       if(!Array.isArray(a.sizingResults))continue;
@@ -3958,7 +3969,7 @@ function runReviewBatchPlan(plan){
 
   const launch=({a,t,order})=>{
     let worker;
-    try{worker=(t.kind==='tree'||t.kind==='sizing')?createPostflopBetRaiseEVWorker():createTableEquityWorker();}
+    try{worker=(t.kind==='tree'||t.kind==='sizing')?createPostflopBetRaiseEVWorker({kind}):createTableEquityWorker({kind});}
     catch(_){a.failed=true;return;}
     active++;
     state.reviewBatchWorkers.push(worker);state.reviewBatchWorker=worker;
@@ -3984,8 +3995,13 @@ function runReviewBatchPlan(plan){
 
   const pump=()=>{
     if(finished)return;
-    if(state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length){
-      if(active===0)setTimeout(pump,80);
+    if(ticket!==state.reviewBatchTicket||plan.signature!==reviewContextSignature()){
+      if(ticket!==state.reviewBatchTicket){finished=true;return;}
+      finished=true;for(const worker of state.reviewBatchWorkers)cleanupReplayWorker(worker);
+      state.reviewBatchWorkers=[];state.reviewBatchWorker=null;state.reviewBatchBusy=false;scheduleBackgroundReviewScoring();return;
+    }
+    if(kind==='background'&&(window.pokerComputeScheduler.holds.size||state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length)){
+      setTimeout(pump,180);
       return;
     }
     const limit=reviewBatchWorkerLimit();
@@ -3997,14 +4013,16 @@ function runReviewBatchPlan(plan){
   pump();
 }
 function scheduleBackgroundReviewScoring(delay=120){
-  if(state.reviewBatchBusy||state.reviewBatchScheduled||state.rangeEdition||!state.hhHands.length)return;
+  if(state.reviewBatchPreparing||state.reviewBatchBusy||state.reviewBatchScheduled||state.rangeEdition||!state.hhHands.length)return;
   state.reviewBatchScheduled=true;const ticket=++state.reviewBatchTicket;
   setTimeout(()=>{
-    const run=()=>{
+    const run=async()=>{
       if(ticket!==state.reviewBatchTicket)return;state.reviewBatchScheduled=false;
-      if(state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length){setTimeout(()=>scheduleBackgroundReviewScoring(0),350);return;}
-      const sig=reviewContextSignature(),hand=state.hhHands.find(h=>{const r=state.reviewScores?.[String(h.id)];return !(r&&r.complete&&r.signature===sig);});
-      if(!hand)return;let plan=null;try{plan=buildReviewBatchPlan(hand);}catch(err){console.warn('Review batch preparation failed',hand.id,err);}
+      if(window.pokerComputeScheduler.holds.size||state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length){setTimeout(()=>scheduleBackgroundReviewScoring(0),350);return;}
+      const visible=new Set([...hhHandsEl.querySelectorAll('[data-hand-id]')].filter(el=>{const r=el.getBoundingClientRect(),p=hhHandsEl.getBoundingClientRect();return r.bottom>p.top&&r.top<p.bottom;}).map(el=>el.dataset.handId));
+      const candidates=state.reviewAnalyzeAll?state.hhHands:[state.selectedHand,...state.hhHands.filter(h=>visible.has(String(h.id)))].filter(Boolean);
+      const sig=reviewContextSignature(),hand=candidates.find(h=>{const r=state.reviewScores?.[String(h.id)];return !(r&&r.complete&&r.signature===sig);});
+      if(!hand){state.reviewAnalyzeAll=false;return;}let plan=null;state.reviewBatchPreparing=true;try{plan=await prepareReviewBatchPlan(hand,ticket);}catch(err){console.warn('Review batch preparation failed',hand.id,err);}finally{state.reviewBatchPreparing=false;}
       if(!plan){setTimeout(()=>scheduleBackgroundReviewScoring(0),500);return;}runReviewBatchPlan(plan);
     };
     if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:600});else run();
@@ -4708,10 +4726,7 @@ function actionAnalysisVisibleStepIndices(){
    Snapshot preparation stays on the UI thread but is sliced through idle callbacks;
    all expensive Monte-Carlo / exact work runs in Web Workers. */
 function replayWorkerLimit(){
-  const hc=Math.max(2,Number(navigator.hardwareConcurrency)||4);
-  if(hc<=4)return 2;
-  if(hc<=6)return 3;
-  return 4;
+  return window.pokerComputeScheduler.maxWorkers;
 }
 function replayRangeEditSignature(){
   if(!state.rangeEdition)return '';
@@ -4780,7 +4795,7 @@ function pumpReplayWorkerPool(){
     const task=state.replayComputeQueue.shift();
     if(task.handId!==handId)continue;
     let worker;
-    try{worker=task.workerFactory();}catch(err){task.onDone?.({type:'error',message:err?.message||String(err)},true);continue;}
+    try{worker=task.workerFactory({kind:task.stepIndex===state.replayIndex?'replayer':'prefetch'});}catch(err){task.onDone?.({type:'error',message:err?.message||String(err)},true);continue;}
     const record={task,worker,cancelled:false};
     state.replayComputeActive.push(record);
     worker.onmessage=e=>finishReplayWorker(record,e.data,e.data?.type!=='result');
@@ -4806,6 +4821,8 @@ function preemptReplayWorkerForCurrentStep(){
   state.replayComputeQueue.push(victim.task);
 }
 function boostReplayPrioritiesForCurrentStep(){
+  for(const record of state.replayComputeActive)record.worker.kind=record.task.stepIndex===state.replayIndex?'replayer':'prefetch';
+  window.pokerComputeScheduler.pump();
   for(const item of state.replayPrepareQueue){
     item.priority=replayStepPriority(item.stepIndex,item.type==='seat'?700:620);
     if(item.stepIndex===state.replayIndex)item.foreground=true;
@@ -5873,6 +5890,7 @@ async function exportCurrentHandForAi(){
 }
 
 function updateAppView({scrollTop=false}={}){
+  window.pokerComputeScheduler.hold('replayer',state.appView==='replayer');
   const showReplay=state.appView==='replayer'&&state.hhMode&&!!state.selectedHand;
   mainPage?.classList.toggle('mode-hidden',showReplay);
   replayerPage?.classList.toggle('mode-hidden',!showReplay);
@@ -5945,11 +5963,17 @@ function loadSelectedHistoryHand(preserveStreet=true){
   updateStreetButtons();renderSlots();renderDeck();renderOpponents();renderMatrix();updateRangeEditionUi();updateHistoryUi();updateCalcReady();scheduleAutoCalculate(120);
   scheduleReplayBackgroundPrefetchSoon();
 }
+function cancelObsoleteReviewComputation(){
+  state.reviewBatchTicket++;state.reviewBatchScheduled=false;
+  for(const worker of state.reviewBatchWorkers||[])cleanupReplayWorker(worker);
+  state.reviewBatchWorkers=[];state.reviewBatchWorker=null;state.reviewBatchBusy=false;
+}
 function selectHistoryHandById(id,{open=true,scrollTop=true}={}){
   const hand=state.hhHands.find(h=>h.id===String(id));
   if(!hand) return;
   if(!state.hhMode){saveManualSnapshot();state.hhMode=true;}
   cancelReplayBackgroundComputation();
+  cancelObsoleteReviewComputation();
   state.selectedHand=hand;
   stopReplayTimer();
   state.replaySteps=[];
@@ -7401,7 +7425,7 @@ function postflopRaiseTreeSnapshot(stepIndex,scenario,overrideCostBB=null,overri
   if(!responders.length)return null;const rake=actionRakeInfo(ctx.hand,grossPotAfter),bb=Number(ctx.hand.bigBlind),finalRakeBB=Number.isFinite(bb)&&bb>0&&Number.isFinite(Number(ctx.hand.rake))?Number(ctx.hand.rake)/bb:0;
   const maxEffectiveCostBB=Math.max(...responders.map(r=>Number(r.effectiveActorCostBB)||0),0);return {actor:{name:ctx.actor,hands:actorHands},responders,board,potBeforeBB:potBefore,grossPotAfterBB:potBefore+Math.min(cost,maxEffectiveCostBB),costBB:cost,maxEffectiveCostBB,rakeRate:rake.effectiveRate||0,rakeCapBB:Math.max(0,finalRakeBB||0),actorAllIn,trials:Math.min(Number(trialsSelect.value)||12000,16000),responseMeta,scenario,street:current.street,continuationAssumption:board.length===5?'river_terminal':'checkdown_to_showdown',potType:current.pot_type,aggressorSizePot:potBefore>0?Math.min(cost,maxEffectiveCostBB)/potBefore:0,nominalAggressorSizePot:potBefore>0?cost/potBefore:0};
 }
-function createPostflopBetRaiseEVWorker(){
+function createPostflopBetRaiseEVWorker(computeOptions){
   const source=`
 "use strict";
 const RANKS=${JSON.stringify(["2","3","4","5","6","7","8","9","T","J","Q","K","A"])};
@@ -7412,7 +7436,7 @@ function sampler(cs){const cum=new Float64Array(cs.length);let t=0;for(let i=0;i
 function straightHigh(mask){for(let hi=12;hi>=4;hi--){let ok=true;for(let d=0;d<5;d++)if(!(mask&(1<<(hi-d)))){ok=false;break;}if(ok)return hi;}if((mask&(1<<12))&&(mask&1)&&(mask&2)&&(mask&4)&&(mask&8))return 3;return -1;}function enc(cat,v){let s=cat;for(let i=0;i<5;i++)s=s*15+(v[i]??0);return s;}function handScore(cards){const rc=new Int8Array(13),sc=new Int8Array(4),sm=new Int32Array(4);let rm=0;for(const c of cards){const r=c%13,s=(c/13)|0;rc[r]++;sc[s]++;rm|=1<<r;sm[s]|=1<<r;}for(let s=0;s<4;s++)if(sc[s]>=5){const h=straightHigh(sm[s]);if(h>=0)return enc(8,[h]);}for(let r=12;r>=0;r--)if(rc[r]===4){let k=12;while(k>=0&&(k===r||!rc[k]))k--;return enc(7,[r,k]);}const tr=[],pa=[];for(let r=12;r>=0;r--){if(rc[r]>=3)tr.push(r);if(rc[r]>=2)pa.push(r);}if(tr.length){const p=pa.find(r=>r!==tr[0]);if(p!==undefined)return enc(6,[tr[0],p]);}for(let s=0;s<4;s++)if(sc[s]>=5){const v=[];for(let r=12;r>=0&&v.length<5;r--)if(sm[s]&(1<<r))v.push(r);return enc(5,v);}const sh=straightHigh(rm);if(sh>=0)return enc(4,[sh]);if(tr.length){const ks=[];for(let r=12;r>=0&&ks.length<2;r--)if(r!==tr[0]&&rc[r])ks.push(r);return enc(3,[tr[0],...ks]);}if(pa.length>=2){let k=12;while(k>=0&&(k===pa[0]||k===pa[1]||!rc[k]))k--;return enc(2,[pa[0],pa[1],k]);}if(pa.length===1){const ks=[];for(let r=12;r>=0&&ks.length<3;r--)if(r!==pa[0]&&rc[r])ks.push(r);return enc(1,[pa[0],...ks]);}const hi=[];for(let r=12;r>=0&&hi.length<5;r--)if(rc[r])hi.push(r);return enc(0,hi);}
 function share(a,cs,b){const scores=[handScore([...a,...b]),...cs.map(c=>handScore([...c,...b]))],best=Math.max(...scores),w=scores.filter(x=>x===best).length;return scores[0]===best?1/w:0;}function resp(r){const x=Math.random(),f=Math.max(0,+r.fold||0),c=Math.max(0,+r.call||0);return x<f?0:x<f+c?1:2;}
 self.onmessage=e=>{try{const d=e.data,ac=combos(d.actor.hands),rc=d.responders.map(r=>combos(r.hands,true));if(!ac.length||rc.some(x=>!x.length))throw Error("Range vide");const sam=[sampler(ac),...rc.map(sampler)],trials=Math.max(1200,+d.trials||8000);let n=0,ev=0,ev2=0,fold=0,call=0,rer=0,eq=0,callers=0,netSum=0,callPay=0,effCostSum=0,uncalledSum=0;while(n<trials){let pick=null;for(let att=0;att<300;att++){const used=new Uint8Array(52);for(const c of d.board||[])used[c]=1;const t=[];let ok=true;for(const sp of sam){const c=sample(sp);if(used[c.cards[0]]||used[c.cards[1]]){ok=false;break;}used[c.cards[0]]=used[c.cards[1]]=1;t.push(c);}if(ok){pick=t;break;}}if(!pick)throw Error("Échantillonnage incompatible");const cc=[],ci=[];let rr=false,add=0,actorEff=0;for(let i=0;i<d.responders.length;i++){const r=resp(pick[i+1].response);if(r===2&&!d.actorAllIn){rr=true;break;}if(r===1||r===2){cc.push(pick[i+1].cards);ci.push(i);add+=+d.responders[i].callAmountBB||0;actorEff=Math.max(actorEff,+d.responders[i].effectiveActorCostBB||0);}}if(rr){const risk=+d.costBB||0;const pay=-risk;ev+=pay;ev2+=pay*pay;rer++;n++;continue;}if(!cc.length){const pay=+d.potBeforeBB||0;ev+=pay;ev2+=pay*pay;fold++;n++;continue;}actorEff=Math.min(+d.costBB||0,Math.max(0,actorEff));const used=new Uint8Array(52);for(const c of d.board||[])used[c]=1;for(const x of pick){used[x.cards[0]]=used[x.cards[1]]=1;}const rem=[];for(let c=0;c<52;c++)if(!used[c])rem.push(c);const board=[...(d.board||[])];while(board.length<5){const j=(Math.random()*rem.length)|0;board.push(rem[j]);rem[j]=rem[rem.length-1];rem.pop();}const sh=share(pick[0].cards,cc,board),gross=(+d.potBeforeBB||0)+actorEff+add,rake=Math.max(0,Math.min(+d.rakeCapBB||0,gross*(+d.rakeRate||0))),net=Math.max(0,gross-rake);const pay=sh*net-actorEff;ev+=pay;ev2+=pay*pay;callPay+=pay;call++;eq+=sh;callers+=cc.length;netSum+=net;effCostSum+=actorEff;uncalledSum+=Math.max(0,(+d.costBB||0)-actorEff);n++;}const mean=ev/n,variance=Math.max(0,ev2/n-mean*mean),se=Math.sqrt(variance/n);postMessage({type:"result",out:{evBB:mean,evStdErrBB:se,evWhenCalledBB:call?callPay/call:NaN,evAllFoldBB:+d.potBeforeBB||0,evReraiseBB:-(+d.costBB||0),pAllFold:fold/n,pCallNoRaise:call/n,pReraise:rer/n,equityWhenCalled:call?eq/call:NaN,avgCallers:call?callers/call:0,avgFinalPotBB:call?netSum/call:NaN,avgEffectiveCostBB:call?effCostSum/call:NaN,avgUncalledReturnBB:call?uncalledSum/call:NaN,trials:n,responseMeta:d.responseMeta||[],continuationAssumption:d.continuationAssumption||"checkdown_to_showdown",conservativeReraise:!d.actorAllIn,street:d.street||"",potType:d.potType||"",potBeforeBB:+d.potBeforeBB||0,costBB:+d.costBB||0,aggressorSizePot:Number.isFinite(+d.aggressorSizePot)?+d.aggressorSizePot:((+d.potBeforeBB||0)>0?(+d.costBB||0)/(+d.potBeforeBB):0),nominalAggressorSizePot:(+d.potBeforeBB||0)>0?(+d.costBB||0)/(+d.potBeforeBB):0}});}catch(err){postMessage({type:"error",message:err.message||String(err)});}};`;
-  const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));const worker=new Worker(url);worker.__url=url;return worker;
+  const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));const worker=window.pokerComputeScheduler.createWorker(url,computeOptions);worker.__url=url;return worker;
 }
 function exactComboPriorFromEntries(entries,heroCards=[]){
   const blocked=new Set(heroCards||[]),map=new Map();
@@ -7640,7 +7664,7 @@ function tableEquitySnapshotForStep(step,scenario="range_ranges",replayIndex=sta
   };
 }
 
-function createTableEquityWorker(){
+function createTableEquityWorker(computeOptions){
   const source = `
 "use strict";
 const RANKS=${JSON.stringify(["2","3","4","5","6","7","8","9","T","J","Q","K","A"])};
@@ -7849,7 +7873,7 @@ self.onmessage=e=>{
   }
 };`;
   const url=URL.createObjectURL(new Blob([source],{type:"text/javascript"}));
-  const worker=new Worker(url);worker.__url=url;return worker;
+  const worker=window.pokerComputeScheduler.createWorker(url,computeOptions);worker.__url=url;return worker;
 }
 function cancelSeatEquityCalculation(){
   // v67: do not kill shared replay workers when the main calculator refreshes.
@@ -8191,7 +8215,7 @@ function calculationSnapshot(){
   };
 }
 
-function createCalcWorker(){
+function createCalcWorker(computeOptions){
   const source = `
 "use strict";
 const RANKS=${JSON.stringify(RANKS)};
@@ -8226,7 +8250,7 @@ function monteCarlo(comboSets,hero,board,trials){const samplers=comboSets.map(ma
 self.onmessage=e=>{try{const d=e.data,comboSets=d.opponents.map(o=>legalCombos(o.hands,d.hero,d.board));if(comboSets.some(s=>!s.length))throw new Error("Au moins une range adverse ne contient aucun combo légal après prise en compte du board et de votre main.");const est=estimate(comboSets,d.hero,d.board);let mode=d.method;if(mode==="auto")mode=est<=2500000?"exact":"mc";if(mode==="exact"&&est>30000000)throw new Error("Le calcul exhaustif est estimé à "+Math.round(est).toLocaleString("fr-FR")+" scénarios. Utilisez Auto ou Monte-Carlo.");const out=mode==="exact"?exact(comboSets,d.hero,d.board):monteCarlo(comboSets,d.hero,d.board,d.trials);postMessage({type:"result",out});}catch(err){postMessage({type:"error",message:err.message||String(err)});}};
 `;
   const url=URL.createObjectURL(new Blob([source],{type:"text/javascript"}));
-  const worker=new Worker(url);worker.__url=url;return worker;
+  const worker=window.pokerComputeScheduler.createWorker(url,computeOptions);worker.__url=url;return worker;
 }
 
 calcBtn.addEventListener("click",()=>startCalculation());
@@ -8499,6 +8523,8 @@ localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
 localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 centralRestorePackBtn?.addEventListener("click",()=>{void centralRestoreActivePack().catch(()=>{});});
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
+hhHandsEl.addEventListener('scroll',()=>scheduleBackgroundReviewScoring(180),{passive:true});
+$('hhAnalyzeAllBtn').addEventListener('click',()=>{state.reviewAnalyzeAll=true;scheduleBackgroundReviewScoring(0);});
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
 reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
 reviewDashboardReviewBtn?.addEventListener("click",openReviewDashboardReview);
