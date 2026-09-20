@@ -1,0 +1,21 @@
+{
+  "DECISION.json": {
+    "canonical_payload_sha256": "d3655f5a794ab0ba0c66b5a7bf31a6331a09ab50fff3ee1aa9555e9d1c88197a",
+    "object": "sha256/b509eb2d829f20f6814788f632e0ed49d20c00041cce262f7ee69e83f0dba4c7.json",
+    "sha256": "b509eb2d829f20f6814788f632e0ed49d20c00041cce262f7ee69e83f0dba4c7"
+  },
+  "REQUIRED_EXACT_TREE.json": {
+    "canonical_payload_sha256": "084565f61482e0cd88987c3e9e4cf868511b85c4da32f52b8979a340f97892a2",
+    "object": "sha256/1e2ec98a8106720bea8a8310a2b10b68373617b27b6aa9d2af6bb05e429d3e3a.json",
+    "sha256": "1e2ec98a8106720bea8a8310a2b10b68373617b27b6aa9d2af6bb05e429d3e3a"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/dfacf3721e88dc64fd4f6a38e6e5e7bb92efe45a276acc448297a62d5c4e7d2a.md",
+    "sha256": "dfacf3721e88dc64fd4f6a38e6e5e7bb92efe45a276acc448297a62d5c4e7d2a"
+  },
+  "TRAIN_RESPONSE_TREE_SUPPORT.json": {
+    "canonical_payload_sha256": "4582c1648dc183f9aa22ad01b568b12e7c8085351566a71f04ac565ce41e3c9d",
+    "object": "sha256/b45a4c4877dbc5832757ef115a112fad31972d8d6120b426d64bf1ce9d8b1cdd.json",
+    "sha256": "b45a4c4877dbc5832757ef115a112fad31972d8d6120b426d64bf1ce9d8b1cdd"
+  }
+}

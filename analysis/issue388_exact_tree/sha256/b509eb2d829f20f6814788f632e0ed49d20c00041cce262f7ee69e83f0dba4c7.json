@@ -1,0 +1,2706 @@
+{
+  "active_pointer_mutated": false,
+  "baseline_candidate": {
+    "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "historical_digest_recomputed_match": false,
+    "historical_reported_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+    "persisted_payload_without_digest_sha256": "ec96d6da20aca0ecb12717ed864ab2df8322a2e28bcb565b8cce9d94a106f367",
+    "train_fit_artifact_sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e",
+    "use": "identity provenance only; no admission inferred or reinterpreted"
+  },
+  "blockers": [
+    {
+      "distinct_hands": 6,
+      "exact_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+      "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+      "observations": 6,
+      "path": [
+        "SB:ISO@5"
+      ],
+      "reason": "INSUFFICIENT_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 4,
+      "exact_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+      "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "observations": 4,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD"
+      ],
+      "reason": "INSUFFICIENT_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 1,
+      "exact_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=bdad5deb937783aa8476196ec2e1c4c464d7221f1d6294d969906b68e0097b1f",
+      "node_id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+      "observations": 1,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:FOLD"
+      ],
+      "reason": "INSUFFICIENT_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95|public=f1713216c63d825dd796dbb37d839cf7ccf50a9f78d004e79f1ff27d2e5a033d",
+      "node_id": "3fd9ad542318313526bcc60e68ea07e536c20bc633598acdd0f61658fb0858b0",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:FOLD",
+        "BTN:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 4,
+      "exact_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=2b7c76eb49290b98d296d593a3f6c948c89a6bc71c93fdf55a62e7e25e54f69a",
+      "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "observations": 4,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL"
+      ],
+      "reason": "INSUFFICIENT_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=a98f4400811e36d77d9805677f205460d2a02b6219d51f1fc286ec346330005e",
+      "node_id": "4910b50cf1cdd1b97cfa26c1240e77aca8533ab773cd3926c09c60eb161cdece",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL",
+        "BTN:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=ea05ac20d26ec53baa6330de73738c753610023f6891f514da6fcb1df8e8d305",
+      "node_id": "2b0b325852d542d87bcbe7ba9304db02db08bde65a7fab8bcf9db01cac63e6ad",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=2e60666acae349984b67131e988825c257ce6bfa7675eb442186db9083644ec9",
+      "node_id": "c11e7e28432fc6ddc45b8d5943af30c6c0929dc288479e59601c77f26af02e19",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99|public=7d020171231b8dd37b5e37a7d66c4581fdef49e3e853294fe6eac52c4535bd2a",
+      "node_id": "af292e858c4e3ab89c1faaa4265fd220ef5bad5343eb5d473f88a20f8176ed49",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95|public=c8b96c9cd625da7f93490ca5753e4a7558666a3e5155609a11489686c2ee2d68",
+      "node_id": "8abcc6ed6d665213f0ca942c803d149072bcf8571ea6ae85139284df9f70d8c1",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:JAM@100",
+        "BTN:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=484959c3f47532580632859efa53057a02d0b518212f023b07fc82166e3b478e",
+      "node_id": "7d26ac51d011e3fa724de90c68e063a7445eed1cd89fb2dfe91a469cc3897a00",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:JAM@100",
+        "BTN:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=ebdd6e0b41a62e1bc9f7dbb07345b3ec888c99efc29bed92515160fc99ab8fc2",
+      "node_id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=298241d5d97f8eacaaf46ecf11e688982d9c9ddbd343559db86d1635727a8225",
+      "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=223692443a9fa62fb78a818e80c9b20fb7f9f7e14f434e3f3d402d68e80a3b73",
+      "node_id": "df10c340efa286e36dcd5a6be2f07940a49ac786eae0c13c9b1c986dd29752a8",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD",
+        "BTN:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=12386f31933668bfda35be438f6b3f29e3cedef9f6e084863cd8296bf515e078",
+      "node_id": "7ae0579a66304ad900f044afd7bfa04029cd7c4899875367a8721a62cf053a05",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD",
+        "BTN:JAM@100",
+        "SB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=e936fc7e3647208d474ae69dfdf53c154b04c5a1bed941038ba198de7b946990",
+      "node_id": "6a7a98c82478e0cc739c9c9a50751b892b087e3902c2e5085f2a9adb5dc596d6",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD",
+        "BTN:JAM@100",
+        "SB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4|public=a7e233cbb17db340a8f39361b08ba90c5e3422cfdfd0224dd6aca033bee5254a",
+      "node_id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2bd5e9af76e08890db692868f41e4cc4330677c546de73e52f0ef71cdc2247f",
+      "node_id": "f205810c4839cc1008610bb1ad87a6a296cf513cc8b8b3592c44249b3ab33ea4",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2ece05f288c624dc10bf0dd60878fef7e0bf8c4acbe3ec7e7f4f253bd7d3b60",
+      "node_id": "c7030a04aebdd344027d7546c431aa7a13cc6f66247daea6e2b43ce3120b5703",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=bcff9e5463ad7428c54f3f13e3895d3509128346d71bef7d3f7fa1342f18f031",
+      "node_id": "bb7e6df64e700d39a8d49b34f84b2766d0af617b8e64c33ae4db54d26a9f3e02",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD",
+        "BB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=c9550cf9d780bda980875292c067d269921b6de0de12497d84478996274874eb",
+      "node_id": "2d12402d24411ccd4e6027ab70a84cd579441467211acf5fd1d1f5866f6ccd87",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD",
+        "BB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=1c047e14f02bd05ff2f6ec45f2adc0b07db0576449ea4a7537dcd22e50c9067c",
+      "node_id": "b01046512efee292a217dde5bd3dc5549b5f1d1a22f4de6c6e3baa6c10bec67a",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=0020904a47247270b12c055022c3700a94559316f8317e5a935d1072495356c4",
+      "node_id": "4087f0c8efc91c1b2a3f445302cc8bdba8b8a6e69324ff017ada2f43fb95508b",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL",
+        "BB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95|public=178a05fcc6bffba15bc408d0eb5ca9755663717c7578921f9b2e860e38a95d8b",
+      "node_id": "6911c7cb48a6a2fb8bb9778f39cf29bad91b7abaefae911f383514932dd2b598",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL",
+        "BB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99|public=3483fabfd76ec1b2386dc74d1f3741a503c1e872ecd817810a069002c01317af",
+      "node_id": "734eeb07d849a9c5b3f111465fa13af71d78cd6ec6384ac10c1d0c9545776653",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=c8e5b82391c0a00facb4e469459b737fa7ce410f8a91276cbccafd7a7ed6cc7f",
+      "node_id": "4d28d3cc7b63d5c7f74c42db1d4ae640a6ffc7cd7d042459cf3e5c519fc49b97",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=ad63c474fb8050b62a313bc4e8d4a9420174e2506b5bb8415d922a24e9d3a2c6",
+      "node_id": "3bba27143b49488f94c1a844c6dcf8d87a7a57bf8569be05fae0921fea9ed624",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:FOLD",
+        "SB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=2516f2969a5e1c12ae53b3bbec37e1aa7178dcf78954c1462d68302e62745745",
+      "node_id": "47bdce68db1066fa54b2b40cd515bbf90662d9b50920f860541f56d1ea79da03",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:FOLD",
+        "SB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=b1905749ed944a88c739ab90e09120b835a15b1e979061406506e849aace5ce5",
+      "node_id": "629727be5d7f746dd5dbb941effd9e16823cb93e1c2e19d55c0d4b77f56310bd",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=53e3ae16c00237f50f3d70dc4d8b7267d89f56c3802c36c46617ebe8f56749af",
+      "node_id": "66ed6f9352caf94fa236005162437dd4e9976f61a0c7f7de9f0ced1378be47c5",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:CALL",
+        "SB:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95|public=5496e4c6be2c9d0750c25614da33b00b0a31ccbb3b9781f730731b29f57eb56d",
+      "node_id": "ae9030283b711afc8b60df92ea7bdd735b9c22d8d1967c57d70e7c9c4309f3f8",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:CALL",
+        "SB:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=33fabc7346d1e70256efde230154c21080d40b206f76c0d8f0c4c1c9ecc17d64",
+      "node_id": "d7d6ca98a026242055e196699a2bbe77d9be48beb229c2d5d9b34e0255248ada",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=a00499e81ff19cbc7dcaf4e3755fbc446ea59108cea73b7ec44346236270e3e5",
+      "node_id": "e3bdbcf92a3e45dc48dec6de365cda2d365a85ef238b0ce2f2974bba98739bae",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95|public=fdb55cdac03e5208165b695f305bc5d92011341ee29b4f94bda2fff94057771c",
+      "node_id": "ab9a36e3aca3b45bb9b84678d9802336393cd0e4d4f01efd54106aefcbddd61f",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:FOLD",
+        "BTN:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=ea2ecf1bc79c21f91e303caa79cd33c585855b8cef19c954a1d65b977841d672",
+      "node_id": "8b3ba0ac09e6229be6b4e8dd044a4f1484cbe8f56d46de6dc783d87de699d1a9",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:FOLD",
+        "BTN:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99|public=d062b9d8f0c739e7a2da63ab6f97d03135fa65e524a1e452473898b588bfd617",
+      "node_id": "857419f1860beb31906c980849a219bab6d2feab9604fc8545bbaa8efe343aab",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=7db167a29a0566237d4cd914609c5dfd49335a54929ac09355fa1ead58dcac1e",
+      "node_id": "4d0a924f8d2997df417e6cb66d16486bf8e07180915376f014c06607bea123f4",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:CALL",
+        "BTN:FOLD"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    },
+    {
+      "distinct_hands": 0,
+      "exact_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95|public=683092a612139c237e14e7515450f95cdf49d38068a0f7b2632af5b996055a66",
+      "node_id": "b1dc19c37214e8abfd75784132d1f6f519ef6934c008dbcffd7fa302541cdcf6",
+      "observations": 0,
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:CALL",
+        "BTN:CALL"
+      ],
+      "reason": "ZERO_EXACT_SUPPORT"
+    }
+  ],
+  "candidate_id": null,
+  "candidate_sha256": null,
+  "canonical_co_coarse_observations": 14,
+  "canonical_co_exact_observations": 4,
+  "code_sha256": "be0acb0116d8cd366b137dedad41398fd471a98e4b60cda456f8a27f55c91c3c",
+  "decision": "UNRESOLVED_EXACT_TREE_GAP",
+  "hero_ev_executed": false,
+  "hero_recommendation": null,
+  "issue": 388,
+  "protected_files_before_after_sha256": {
+    "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+    "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+  },
+  "required_tree_complete": false,
+  "required_tree_sha256": "084565f61482e0cd88987c3e9e4cf868511b85c4da32f52b8979a340f97892a2",
+  "schema": "poker-exact-tree-decision/v1",
+  "source_files_sha256": {
+    "analysis/preflop_sizing_support_train.full.json.gz": "5793d417676dfb556d1f8c9fda84ac648463e0dedfba2c4d23e9922ac3e5236c",
+    "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+    "tools/datasets/build_hand_history_increment.py": "9e482842c8afb3e7408be6ae7de2bbcd8889a1fe4c80f36980b0f7da380af6e3",
+    "tools/preflop/context_contract.py": "9ec3cfc612671e7b6274e8ceba356953310fc7ce56afafdb8b4b90989707d4bc",
+    "tools/preflop/model_a_sizing_likelihood.py": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a",
+    "tools/preflop/policy_context.py": "3377462b58f20ece74782c9f13a21f7b9de9b79b507ec441e4676c001d7f4ebe",
+    "tools/repro_preflop_fixture.py": "1f07d468ab6c34c6232b37d10118ad277b229723357690d2a19a854c01ffe7da",
+    "tools/simulation/game_core.py": "540b38f4b50bf967b17aca6d9c4e3eed42549ec9b60335664d3cf262cd3cb2b7",
+    "tools/simulation/model_a_continuation.py": "498570e6e66ca8abb7441fa07a8fed72fe59f0f6952ce80d060a006e3ec951ff",
+    "tools/training/audit_hero_preflop_coverage.py": "2544732d39776a9b8d75bba4bddca29462a1b9c8d26e607693a59e25e0cf7184",
+    "tools/training/audit_model_a_exact_tree.py": "be0acb0116d8cd366b137dedad41398fd471a98e4b60cda456f8a27f55c91c3c",
+    "tools/training/audit_preflop_sizing_support.py": "3dd236108c1c0788d59b12801634f01e39d815532a5263663e2744cf99654b74",
+    "tools/training/increment_decisions.py": "2074f28eac4b2c844bd4eb27bfc6afba2c07c1636112e4d1fe328a9a7efea3e5",
+    "training/datasets/NLHE_100-200/population_certification.json": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+  },
+  "status": "BLOCKED_SCIENTIFIC",
+  "test_consumed": false,
+  "train_support_sha256": "4582c1648dc183f9aa22ad01b568b12e7c8085351566a71f04ac565ce41e3c9d",
+  "unresolved_sizing_frontiers": [
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 5,
+            "player": "BB",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 6,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": true,
+          "BTN": false,
+          "CO": true,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 99.0,
+          "BTN": 99.0,
+          "CO": 99.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    },
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 5,
+            "player": "BB",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 4.0,
+            "index": 6,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": true,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 99.0,
+          "BTN": 99.0,
+          "CO": 95.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 5.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 5.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    },
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero",
+          "BB"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 5,
+            "player": "BB",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": true,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 99.0,
+          "BTN": 99.0,
+          "CO": 99.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    },
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 4.0,
+            "index": 5,
+            "player": "BB",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 6,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": true,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 95.0,
+          "BTN": 99.0,
+          "CO": 99.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 5.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 5.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    },
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero",
+          "BB",
+          "CO"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 4.0,
+            "index": 5,
+            "player": "BB",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 4.0,
+            "index": 6,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BTN"
+              ],
+              "pot_bb": 16.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 95.0,
+          "BTN": 99.0,
+          "CO": 95.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 5.0,
+          "BTN": 1.0,
+          "CO": 5.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 5.0,
+          "BTN": 1.0,
+          "CO": 5.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    },
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero",
+          "BB"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 4.0,
+            "index": 5,
+            "player": "BB",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 12.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 95.0,
+          "BTN": 99.0,
+          "CO": 99.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 5.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 5.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    },
+    {
+      "action": "RAISE",
+      "descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+      "public_state": {
+        "acted_since_full_raise": [
+          "Hero"
+        ],
+        "action_log": [
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 0,
+            "player": "UTG",
+            "state_after": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "UTG",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "UTG",
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "FOLD",
+            "incremental_cost_bb": 0.0,
+            "index": 1,
+            "player": "HJ",
+            "state_after": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "HJ",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "HJ",
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 2,
+            "player": "CO",
+            "state_after": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "CO",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "CO",
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 1.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "CALL",
+            "incremental_cost_bb": 1.0,
+            "index": 3,
+            "player": "BTN",
+            "state_after": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "BTN",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "BTN",
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 2.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": null
+          },
+          {
+            "action": "RAISE",
+            "incremental_cost_bb": 4.5,
+            "index": 4,
+            "player": "Hero",
+            "state_after": {
+              "actor": "BB",
+              "board": [],
+              "current_bet_bb": 5.0,
+              "pending": [
+                "BB",
+                "CO",
+                "BTN"
+              ],
+              "pot_bb": 8.0,
+              "street": "preflop"
+            },
+            "state_before": {
+              "actor": "Hero",
+              "board": [],
+              "current_bet_bb": 1.0,
+              "pending": [
+                "Hero",
+                "BB"
+              ],
+              "pot_bb": 3.5,
+              "street": "preflop"
+            },
+            "street": "preflop",
+            "target_total_bb": 5.0
+          }
+        ],
+        "all_in": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": false,
+          "Hero": false,
+          "UTG": false
+        },
+        "big_blind_bb": 1.0,
+        "big_blind_player": "BB",
+        "board": [],
+        "button": "BTN",
+        "current_bet_bb": 5.0,
+        "folded": {
+          "BB": false,
+          "BTN": false,
+          "CO": false,
+          "HJ": true,
+          "Hero": false,
+          "UTG": true
+        },
+        "full_bet_established": true,
+        "last_full_raise_bb": 4.0,
+        "pending": [
+          "BB",
+          "CO",
+          "BTN"
+        ],
+        "refunds_bb": {
+          "BB": 0.0,
+          "BTN": 0.0,
+          "CO": 0.0,
+          "HJ": 0.0,
+          "Hero": 0.0,
+          "UTG": 0.0
+        },
+        "schema": "nlhe-game-state/v1",
+        "seats": [
+          "BTN",
+          "Hero",
+          "BB",
+          "UTG",
+          "HJ",
+          "CO"
+        ],
+        "small_blind_bb": 0.5,
+        "small_blind_player": "Hero",
+        "stacks_bb": {
+          "BB": 99.0,
+          "BTN": 99.0,
+          "CO": 99.0,
+          "HJ": 100.0,
+          "Hero": 95.0,
+          "UTG": 100.0
+        },
+        "starting_stacks_bb": {
+          "BB": 100.0,
+          "BTN": 100.0,
+          "CO": 100.0,
+          "HJ": 100.0,
+          "Hero": 100.0,
+          "UTG": 100.0
+        },
+        "street": "preflop",
+        "street_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        },
+        "total_committed_bb": {
+          "BB": 1.0,
+          "BTN": 1.0,
+          "CO": 1.0,
+          "HJ": 0.0,
+          "Hero": 5.0,
+          "UTG": 0.0
+        }
+      },
+      "reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE"
+    }
+  ],
+  "validation_consumed": false
+}
