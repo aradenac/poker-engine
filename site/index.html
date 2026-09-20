@@ -1859,7 +1859,11 @@ function exactKnownOverride(index){
    consumer keeps reading `hand`/`frequency` at the same scale. Adding or
    removing the flag never changes `useKnownHand`. */
 function knownHandOverrideEntry(cards){
-  return cards?.length===2 ? {hand:exactHandCode(cards),frequency:100,exact:true,knownHandOverride:true} : [];
+  // Returns a single-entry *array* so every consumer that expects an entry list
+  // (`effectiveEntriesForOpponent`, `exactEntriesFromCards`, `legalCombosForOpponent`,
+  // `buildComboSets`, `buildSeatEquityPlayers`) keeps reading the same `hand`/`frequency`
+  // pair at the same scale. The `knownHandOverride` flag stays metadata only.
+  return cards?.length===2 ? [{hand:exactHandCode(cards),frequency:100,exact:true,knownHandOverride:true}] : [];
 }
 function entriesAreKnownHandOverride(entries){
   return (entries||[]).some(e=>e&&e.knownHandOverride===true);

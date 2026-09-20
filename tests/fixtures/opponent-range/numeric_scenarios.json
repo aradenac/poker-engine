@@ -1,0 +1,26 @@
+{
+  "schema": "poker-opponent-range-numeric-scenarios/v1",
+  "description": "Deterministic public inputs for tests/trainer/smoke_opponent_range_numeric.py. Only public cards (hero cards, board cards) and a priori 169 policy weights are described; no unrevealed opponent card or future information is used. The known-hand override is listed separately because it is a display mechanism, not a posterior.",
+  "preflop_policy": {
+    "__default__": 0.05,
+    "AA": 1.0,
+    "KK": 0.6,
+    "QQ": 0.4,
+    "AKs": 0.5,
+    "AKo": 0.3,
+    "72o": 0.001
+  },
+  "second_policy": {
+    "__default__": 0.08,
+    "AKs": 2.0,
+    "AQs": 1.5,
+    "KQs": 1.2,
+    "JTs": 1.0
+  },
+  "flop_board": ["As", "Kd", "7c"],
+  "hero_cards": ["Qh", "Jh"],
+  "known_opponent_cards": ["Ah", "Ad"],
+  "consumer_scale_factor": 7.3,
+  "degenerate_single_combo": ["5s", "4d"],
+  "degenerate_blocker": "5s"
+}
