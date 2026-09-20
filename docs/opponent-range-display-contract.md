@@ -61,6 +61,11 @@ produce this normalization; `grid_169_relative_weight_pct` and the replayer
 backend contract there is no equivalent field, because the backend only
 serializes normalized probabilities.
 
+For a uniform prior, this diagnostic is undefined rather than informative:
+`aiExportRangeSnapshot` exports each exact combo's `relative_weight_pct` as
+`null` and retains its canonical `probability_pct`. This prevents max
+normalization from representing every uniform-prior combo as 100 %.
+
 ### (c) Inclusion frequency of a range — `inclusion_frequency`
 
 The a priori value attached to each hand class of an imported/source range
@@ -219,7 +224,14 @@ This postflop path is an explicit **browser-only extension**: there is no
 therefore:
 
 - obey the same four notions and the same mass-sum 169 projection as preflop;
-- obey the same `posteriorState` triggers;
+- obey the same `posteriorState` triggers: the state is computed from the number
+  of exploited public actions (`informativeActions = preMatched + postMatched`),
+  so no exploited action is `prior_uninformative` and at least one is
+  `conditioned`;
+- fail closed on zero surviving mass: a normalization step or a public
+  hero/board blocker filter that removes all positive mass yields an explicit
+  `degenerate` result (no combos, no positive 169 mass, explicit reason), never a
+  silent re-seed from the imported legacy range and never a 100 % grid;
 - use only public information available at the replay step (board cards and hero
   cards are public; unrevealed opponent cards are not);
 - not claim backend-contract provenance (`identity`, `provenance`,

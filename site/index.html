@@ -5353,10 +5353,16 @@ function previousPlayerDecisionRange(playerName,currentIndex){
   return null;
 }
 function gridFreqMapFromEstimate(estimate,player){
+  // Degenerate posterior: fail closed, never fall back to a 100 % imported grid.
+  if(estimate?.posteriorState==="degenerate")return new Map();
   // Diagnostic relative-weight heat grid (notion (b)), not the canonical
   // probability projection: the conditioned engine carries the max-normalized
   // relativeWeightPct alongside its mass; imported/hero ranges keep their
-  // historical inclusion frequency.
+  // historical inclusion frequency. A uniform distribution has no meaningful
+  // relative weight (it would wrap every class at 100 %), so it shows the
+  // canonical mass projection instead.
+  if(estimate?.uniformPrior&&estimate?.gridEntries?.length)
+    return new Map(estimate.gridEntries.map(e=>[e.hand,Math.max(0,Math.min(100,Number(e.frequency)||0))]));
   const entries=estimate?.entries?.length?estimate.entries:legacyRangeEntriesForHistoryPlayer(player);
   const relative=entries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)}));
   return new Map(rangeEntriesForGrid(relative).map(e=>[e.hand,Math.max(0,Math.min(100,Number(e.frequency)||0))]));
@@ -5366,9 +5372,12 @@ function openPopulationRangeModal(playerName){
   const player=currentHandPlayer(playerName);
   if(!player||player.name===state.selectedHand.heroName) return;
   const estimate=populationRangeEstimateForPlayer(player,state.replayIndex);
-  const entries=estimate?.entries?.length ? estimate.entries : legacyRangeEntriesForHistoryPlayer(player);
+  const degenerate=estimate?.posteriorState==="degenerate";
+  const entries=degenerate?[]:(estimate?.entries?.length ? estimate.entries : legacyRangeEntriesForHistoryPlayer(player));
   const freq=gridFreqMapFromEstimate(estimate,player);
-  const source=estimate?.exactComboEngine
+  const source=degenerate
+    ? "Posterior dégénéré · masse nulle après blockers publics"
+    : estimate?.exactComboEngine
     ? (estimate.postflopMatchedActions>0 ? "Modèle dynamique préflop + postflop · combos exacts" : "Modèle dynamique préflop · combos exacts")
     : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range source importée";
   const width=estimate?.width??populationRangeWidthFromEntries(entries);
@@ -5385,6 +5394,12 @@ function openPopulationRangeModal(playerName){
   const topCombos=stats.rows.slice(0,30).map(r=>`<div class="population-combo-row"><b>${escapeHtml(r.hand)}</b><span class="bar"><i style="width:${Math.min(100,r.p/(stats.rows[0]?.p||1)*100)}%"></i></span><span>${(r.p*100).toFixed(2).replace(".",",")}%</span></div>`).join("")||'<div class="tiny">Aucun combo.</div>';
   const deltaGrid=prevFreq?ALL_NOTATIONS.map(n=>{const d=(freq.get(n)||0)-(prevFreq.get(n)||0),cls=d>.15?"pos":d<-.15?"neg":"zero",txt=Math.abs(d)<.05?"≈":`${d>0?"+":""}${d.toFixed(1).replace(".",",")}`;return `<div class="population-delta-cell ${cls}" title="${escapeHtml(n)} · variation ${d.toFixed(2)} points"><div class="hand">${escapeHtml(n)}</div><div class="delta">${escapeHtml(txt)}</div></div>`;}).join(""):"";
   const traceHtml=estimate?.trace?.length?estimate.trace.map((t,i)=>{const target=t.target?Object.entries(t.target).map(([a,v])=>`${a} ${(100*Number(v||0)).toFixed(0)}%`).join(" · "):"";return `<div class="population-modal-trace-row"><div><b>${i+1}. ${escapeHtml(t.action)}</b><div class="tiny">${escapeHtml((t.phase||"preflop").toUpperCase())}${t.street&&t.street!=="preflop"?` · ${escapeHtml(t.street)}`:""}</div></div><div>${t.nodeId?`<span class="node">${escapeHtml(t.nodeId)}</span> · ${escapeHtml(t.family||"")}${target?`<div class="tiny">${escapeHtml(target)}</div>`:""}`:'<span class="tiny">Aucun nœud exploitable</span>'}</div><div>${t.nodeId?`${escapeHtml(t.quality||"")}<div class="tiny">n=${Number(t.nodeObservations||0).toLocaleString("fr-FR")}${t.phase==="postflop"?` · ${escapeHtml(t.nodeConfidence||"")}`:` · ${t.policySource==="policy169_q_b64"?"policy native":"fallback"}`}</div>`:"—"}</div></div>`;}).join(""):`<div class="tiny">Aucune action exploitable de ce joueur à cet instant.</div>`;
+  const gridTitle=degenerate?"Posterior dégénéré · aucune classe":"Range adverse estimée · 169 classes";
+  const gridCaption=degenerate
+    ? "Masse nulle après blockers publics : aucune grille, aucun combo. Résultat fail-closed."
+    : estimate?.uniformPrior
+    ? "Prior non informatif : masse probabiliste projetée (somme = 100 %). Aucun poids relatif n’est défini pour une distribution uniforme."
+    : "Le modèle travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.";
 
   populationRangeModalBody.innerHTML=`
     <div class="population-modal-metrics">
@@ -5398,7 +5413,7 @@ function openPopulationRangeModal(playerName){
     </div>
     <div class="population-modal-warning">L’indice de fiabilité est un diagnostic de couverture (nœuds exacts, volume, actions appariées et street), pas une probabilité que la range soit « vraie ». Les ranges turn/river restent structurellement moins fiables que préflop/flop.</div>
     <div class="population-modal-columns">
-      <div class="section"><div class="section-title">Range adverse estimée · 169 classes</div><div class="tiny">Le modèle travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
+      <div class="section"><div class="section-title">${gridTitle}</div><div class="tiny">${gridCaption}</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
       <div class="section"><div class="section-title">Combos exacts les plus probables</div><div class="tiny">Pourcentage = masse probabiliste après normalisation de tous les combos légaux.</div><div class="population-combo-list">${topCombos}</div></div>
     </div>
     ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
@@ -5792,7 +5807,7 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   const key=`${player.name}|${idx}`;
   if(registry.byKey[key])return registry.byKey[key];
   const estimate=player.name===hand.heroName?null:populationRangeEstimateForPlayer(player,idx);
-  const entries=(estimate?.entries?.length?estimate.entries:rangeEntriesForHistoryPlayer(player,idx))||[];
+  const entries=(estimate?.posteriorState==="degenerate"?[]:(estimate?.entries?.length?estimate.entries:rangeEntriesForHistoryPlayer(player,idx)))||[];
   const board=state.replaySteps[idx]?.board||[];
   const blocked=player.name===hand.heroName?[...board]:[...(hand.heroCards||[]),...board];
   const combos=exactComboPriorFromEntries(entries,blocked);
@@ -5800,7 +5815,11 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   const maxW=Math.max(0,...combos.map(c=>Number(c.weight)||0))||1;
   const exact=combos.map(c=>{
     const p=(Number(c.weight)||0)/total;
-    return {cards:[cardCode(c.cards[0]),cardCode(c.cards[1])],probability_pct:aiExportNumber(100*p,7),relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)};
+    // A uniform posterior has no discriminating relative weight: exporting the
+    // max-normalized value would misleadingly re-wrap every combo as 100 %.
+    // Keep its canonical probability while making the diagnostic value absent.
+    const relativeWeightPct=estimate?.uniformPrior?null:aiExportNumber(100*(Number(c.weight)||0)/maxW,5);
+    return {cards:[cardCode(c.cards[0]),cardCode(c.cards[1])],probability_pct:aiExportNumber(100*p,7),relative_weight_pct:relativeWeightPct};
   }).sort((a,b)=>(b.probability_pct||0)-(a.probability_pct||0));
   // Diagnostic relative-weight heat grid (notion (b)): max-normalized per combo,
   // aggregated per class by mean so classes with different combo counts stay
@@ -5815,7 +5834,8 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   const id=`R${registry.next++}`;
   registry.snapshots[id]={
     id,player:player.name,step_index:idx,reason,street:state.replaySteps[idx]?.street||"",board:aiExportCards(board),
-    source:player.name===hand.heroName?(state.rangeEdition?"hero_manual_range":"hero_imported_range"):(state.rangeEdition?"manual_range_override":estimate?.source||"historical_imported_range"),
+    source:player.name===hand.heroName?(state.rangeEdition?"hero_manual_range":"hero_imported_range"):(estimate?.posteriorState==="degenerate"?"degenerate_posterior":state.rangeEdition?"manual_range_override":estimate?.source||"historical_imported_range"),
+    posterior_state:estimate?.posteriorState||null,
     exact_combo_engine:!!estimate?.exactComboEngine,combo_count:exact.length,width:aiExportNumber(estimate?.width),
     matched_actions:estimate?{total:estimate.totalActions||0,matched:estimate.matchedActions||0,preflop_total:estimate.preflopTotalActions||0,preflop_matched:estimate.preflopMatchedActions||0,postflop_total:estimate.postflopTotalActions||0,postflop_matched:estimate.postflopMatchedActions||0}:null,
     last_node:estimate?{id:estimate.lastNodeId||null,quality:estimate.lastQuality||"",policy_source:estimate.policySource||""}:null,
@@ -6531,7 +6551,7 @@ function renderOpponents(){
     const populationEstimate=state.hhMode&&o.playerName&&state.populationModel
       ? populationRangeEstimateForPlayer(currentHandPlayer(o.playerName),calculatorPopulationReplayIndex())
       : null;
-    const theoreticalLabel=populationEstimate?"range adverse estimée":"range source importée";
+    const theoreticalLabel=populationEstimate?.posteriorState==="degenerate"?"posterior dégénéré (fail-closed)":populationEstimate?"range adverse estimée":"range source importée";
 
     const sourceBtn=document.createElement("button");
     sourceBtn.className="secondary source-btn"+(exactKnownOverride(i)?" active":"");
@@ -6711,7 +6731,11 @@ function renderMatrix(){
     const player=currentHandPlayer(o.playerName);
     matrixPopulationEstimate=populationRangeEstimateForPlayer(player,calculatorPopulationReplayIndex());
     const matrixEntries=matrixPopulationEstimate?.entries?.length?matrixPopulationEstimate.entries:null;
-    const entries=matrixEntries
+    const degenerate=matrixPopulationEstimate?.posteriorState==="degenerate";
+    const massGrid=matrixPopulationEstimate?.uniformPrior&&matrixPopulationEstimate?.gridEntries?.length?matrixPopulationEstimate.gridEntries:null;
+    const entries=degenerate?[]
+      : massGrid?massGrid.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}))
+      : matrixEntries
       ? rangeEntriesForGrid(matrixEntries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)})))
       : legacyRangeEntriesForHistoryPlayer(player);
     for(const h of entries) fileFreq.set(h.hand,Number(h.frequency)||0);
@@ -7569,12 +7593,33 @@ function exactComboRangeResult(combos,meta={}){
   if(!combos?.length)return null;
   const uniformPrior=comboWeightsAreUniform(combos);
   if(!normalizeComboWeightsToMass(combos))return null;
+  const informativeActions=Math.max(0,Number(meta.informativeActions)||0);
+  const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":"prior_uninformative");
   const probabilityMass=combos.reduce((s,c)=>s+(Number(c.weight)||0),0);
   const maxWeight=Math.max(0,...combos.map(c=>Number(c.weight)||0));
-  const entries=combos.map(c=>({hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*(Number(c.weight)||0),relativeWeightPct:maxWeight>0?100*(Number(c.weight)||0)/maxWeight:0,exactCombo:true,population:true})).filter(e=>e.frequency>0);
+  // A uniform distribution (non-informative prior or uninformative conditioning)
+  // has no meaningful relative weight: max-normalizing it would wrap every legal
+  // combo at 100 %. Its canonical output is the mass projection, so
+  // `relativeWeightPct` stays null and consumers fall back to `frequency` (a
+  // probability), never to a 100 % grid.
+  const relativeWeightPctFor=uniformPrior?null:(maxWeight>0?(w=>100*w/maxWeight):null);
+  const entries=combos.map(c=>{const w=Math.max(0,Number(c.weight)||0);return {hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*w,relativeWeightPct:relativeWeightPctFor?relativeWeightPctFor(w):null,exactCombo:true,population:true};}).filter(e=>e.frequency>0);
   if(!entries.length)return null;
   const width=maxWeight>0?probabilityMass/Math.max(1,combos.length)/maxWeight:0;
-  return {...meta,entries,gridEntries:projectCombosTo169Mass(combos),width,probabilityMass,uniformPrior,comboCount:combos.length,exactComboEngine:true};
+  return {...meta,entries,gridEntries:projectCombosTo169Mass(combos),width,probabilityMass,uniformPrior,posteriorState,informativeActions,comboCount:combos.length,exactComboEngine:true};
+}
+/* Fail-closed posterior result: no positive mass survives the public
+   blockers/support, so nothing may be rendered as a probability. The record
+   exposes no combos and no positive 169 mass and carries an explicit reason, so
+   no consumer can silently fall back to a 100 % imported grid. */
+function degenerateComboRangeResult(meta={}){
+  return {...meta,
+    posteriorState:"degenerate",
+    entries:[],gridEntries:[],
+    probabilityMass:0,uniformPrior:false,width:0,comboCount:0,
+    exactComboEngine:true,
+    degenerateReason:meta.degenerateReason||"no_positive_mass_after_public_blockers"
+  };
 }
 function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
   if(!player||!state.hhMode||!state.selectedHand)return null;
@@ -7586,7 +7631,7 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
 
   const heroBlocked=[...(hand.heroCards||[])];
   const allPre=populationPreflopDecisionTrace(hand).slice(0,preCount),preActions=allPre.filter(x=>x.player===player.name);
-  let combos=null,preMatched=0,policySource="legacy_base";
+  let combos=null,preMatched=0,policySource="legacy_base",degenerateReason=null;
   const preTrace=[];
 
   // Persistent exact-combo engine: the first matched preflop decision starts
@@ -7606,7 +7651,9 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
       c.weight*=p;
     }
     if(!normalizeComboWeightsToMass(combos)){
-      combos=exactComboPriorFromEntries(legacyRangeEntriesForHistoryPlayer(player),heroBlocked);
+      // A matched public action removed all mass. Fail closed instead of
+      // silently re-seeding from the imported legacy range.
+      degenerateReason="preflop_action_zero_mass";
       break;
     }
     preMatched++;
@@ -7619,20 +7666,20 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
     combos=exactComboPriorFromEntries(legacyRangeEntriesForHistoryPlayer(player),heroBlocked);
     if(!combos.length)combos=uniformExactComboPrior(heroBlocked);
   }
-  normalizeComboWeightsToMass(combos);
+  if(!normalizeComboWeightsToMass(combos))degenerateReason=degenerateReason||"prior_zero_mass";
 
   const postTrace=[];let postMatched=0;
-  if(state.postflopModel&&postCount>0){
+  if(!degenerateReason&&state.postflopModel&&postCount>0){
     const occurred=postflopDecisionTrace(hand).slice(0,postCount),playerActions=occurred.filter(x=>x.player===player.name);
     for(const d of playerActions){
       combos=filterComboBlockers(combos,[...heroBlocked,...d.board]);
-      if(!normalizeComboWeightsToMass(combos))break;
+      if(!normalizeComboWeightsToMass(combos)){degenerateReason="postflop_blockers_zero_mass";break;}
       const match=findClosestPostflopNode(d);
       if(!match){postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:null,quality:"aucun"});continue;}
       const target=postflopTargetFrequencies(match.node,d),probs=calibratedPostflopObservedProbabilities(combos,d,target);
       if(!probs){postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:match.node.id,quality:match.quality,error:"policy"});continue;}
       for(let i=0;i<combos.length;i++)combos[i].weight*=Math.max(1e-10,Number(probs[i])||0);
-      if(!normalizeComboWeightsToMass(combos))break;
+      if(!normalizeComboWeightsToMass(combos)){degenerateReason="postflop_action_zero_mass";break;}
       postMatched++;
       postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:match.node.id,quality:match.quality,exact:match.exact,nodeObservations:Number(match.node.coverage?.population_decisions)||0,nodeConfidence:match.node.population_model?.confidence||"",family:`${match.node.context?.pot_type||""} · ${match.node.context?.preflop_role||""} · ${match.node.context?.relative_position||""}`,target});
     }
@@ -7642,17 +7689,35 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
   // the street. Remove their blocked combinations at the exact replay step.
   const currentBoard=state.replaySteps?.[idx]?.board||[];
   combos=filterComboBlockers(combos,[...heroBlocked,...currentBoard]);
-  if(!normalizeComboWeightsToMass(combos)){state.postflopRangeCache[cacheKey]=null;return null;}
+  if(!normalizeComboWeightsToMass(combos))degenerateReason=degenerateReason||"public_blockers_removed_all_mass";
 
+  // posteriorState is derived from the representation layer only: at least one
+  // public action was applied and positive mass survives => conditioned;
+  // otherwise the untouched prior is kept => prior_uninformative. Zero surviving
+  // mass is an explicit degenerate (fail-closed) record, never a legacy fallback.
+  const informativeActions=preMatched+postMatched;
+  const totalPostActions=state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0;
   const trace=[...preTrace,...postTrace],last=[...trace].reverse().find(x=>x.nodeId)||null;
-  const result=exactComboRangeResult(combos,{
+  const meta={
     trace,preflopTrace:preTrace,postflopTrace:postTrace,
-    matchedActions:preMatched+postMatched,totalActions:preActions.length+(state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0),
+    matchedActions:informativeActions,totalActions:preActions.length+totalPostActions,
     preflopMatchedActions:preMatched,preflopTotalActions:preActions.length,
-    postflopMatchedActions:postMatched,postflopTotalActions:state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0,
+    postflopMatchedActions:postMatched,postflopTotalActions:totalPostActions,
     source:postCount>0&&state.postflopModel?"dynamic_population":"preflop_population_exact",
-    policySource,lastNodeId:last?.nodeId||null,lastQuality:last?.quality||"",replayIndex:idx
-  });
+    policySource,lastNodeId:last?.nodeId||null,lastQuality:last?.quality||"",replayIndex:idx,informativeActions
+  };
+  if(degenerateReason){
+    const degenerate=degenerateComboRangeResult({...meta,lastNodeId:null,lastQuality:"",degenerateReason});
+    state.postflopRangeCache[cacheKey]=degenerate;
+    return degenerate;
+  }
+  const posteriorState=informativeActions>0?"conditioned":"prior_uninformative";
+  const result=exactComboRangeResult(combos,{...meta,posteriorState});
+  if(!result){
+    const degenerate=degenerateComboRangeResult({...meta,lastNodeId:null,lastQuality:"",degenerateReason:"no_positive_support"});
+    state.postflopRangeCache[cacheKey]=degenerate;
+    return degenerate;
+  }
   state.postflopRangeCache[cacheKey]=result;
   return result;
 }
@@ -7702,6 +7767,10 @@ function rangeEntriesForHistoryPlayer(player,replayIndex=state.replayIndex){
   }
 
   const estimated=populationRangeEstimateForPlayer(player,replayIndex);
+  // Degenerate posterior: the display/export surfaces fail closed on
+  // `posteriorState==="degenerate"`. Here we keep the historical imported-range
+  // fallback so equity consumers (`buildSeatEquityPlayers`,
+  // `postflopRaiseTreeSnapshot`, combos/sampler) stay invariant.
   if(estimated?.entries?.length) return estimated.entries;
 
   // No preflop action / no usable population node => preserve historical behavior.
