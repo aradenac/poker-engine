@@ -16,6 +16,25 @@ on:
       - 'training/models/preflop_population_model_v5.json'
       - 'training/models/postflop_population_model_v5.json'
       - 'training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json'
+      - '.python-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
+      - 'tests/ci/test_repro_current_core_batch.py'
+      - 'analysis/workflow_audit/repro_current_core_batch_before_after.json'
       - '.github/workflows/model-a-continuation.yml'
   push:
     branches: [main]
@@ -26,6 +45,25 @@ on:
       - 'tests/simulation/test_model_a_continuation.py'
       - 'tests/simulation/test_model_a_preflop_rollout.py'
       - 'tests/simulation/test_model_a_support_closure.py'
+      - '.python-version'
+      - 'requirements.lock.txt'
+      - 'package-lock.json'
+      - 'tools/repro_ci_environment.py'
+      - 'tools/repro_environment_identity.py'
+      - 'tools/repro_container.py'
+      - 'tools/repro_hardening.py'
+      - 'tools/repro_environment.py'
+      - 'reproducibility/environment.lock.json'
+      - 'reproducibility/os-base.lock.json'
+      - 'reproducibility/container-base.lock.json'
+      - 'reproducibility/Dockerfile.science'
+      - 'reproducibility/system-packages.apt.txt'
+      - 'reproducibility/apt-snapshot.lock.json'
+      - 'reproducibility/system-packages.resolution.lock.json'
+      - 'reproducibility/browser-identity.lock.json'
+      - 'reproducibility/ubuntu-snapshot.sources'
+      - 'tests/ci/test_repro_current_core_batch.py'
+      - 'analysis/workflow_audit/repro_current_core_batch_before_after.json'
       - '.github/workflows/model-a-continuation.yml'
   workflow_dispatch:
 
@@ -39,7 +77,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version-file: '.python-version'
+      - name: Verify locked REPRO runtime
+        run: python3 tools/repro_ci_environment.py verify
+      - name: REPRO current-core anti-bypass contract
+        run: PYTHONPATH=. python3 tests/ci/test_repro_current_core_batch.py
       - name: Compile
         run: |
           python3 -m py_compile \

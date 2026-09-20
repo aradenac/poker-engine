@@ -1,0 +1,436 @@
+{
+  "schema": "poker-repro-current-core-batch/v1",
+  "issue": 378,
+  "parent_issue": 204,
+  "helper_source_issue": 291,
+  "base_sha": "f88ea0ff60b349165f936d2e67c5bf1ad30d9a95",
+  "workflow_count": 4,
+  "invariants": {
+    "historical_trigger_semantics_changed": false,
+    "permissions_changed": false,
+    "concurrency_changed": false,
+    "job_ids_or_needs_changed": false,
+    "scientific_commands_changed": false,
+    "scientific_gate_changed": false,
+    "artifact_identity_changed": false,
+    "scientific_test_consumed": false,
+    "production_effect": "NONE"
+  },
+  "repro_contract": {
+    "python": "3.11.9",
+    "node": "22.14.0",
+    "environment_helper": "tools/repro_ci_environment.py",
+    "helper_git_blob_sha": "dabc299609eee6ad5dbc965f4902a8123f6c79f4",
+    "python_version_git_blob_sha": "2419ad5b0a329db360c988461d3ca3d7c73d6eef",
+    "node_version_git_blob_sha": "7d41c735d7127c4a2530ebe846b14ffbf38b8031",
+    "requirements_lock_git_blob_sha": "0a50f500a3f52b85155c5e0d1aff04434198e4ed",
+    "package_lock_git_blob_sha": "d3123747039f6370b5a43fd21d9b146b10c98613",
+    "environment_lock_git_blob_sha": "1177458d5119d01244c095a905d20b47c931a8e3"
+  },
+  "workflows": [
+    {
+      "path": ".github/workflows/game-core.yml",
+      "name": "Validate full-hand game core",
+      "before_git_blob_sha": "787b556509047880533c82087abab43bf34d8ac2",
+      "after_git_blob_sha": "a8f4a68d673529cbdb86d557bf491bf22a2ce535",
+      "job": {
+        "id": "game-core",
+        "runner": "ubuntu-24.04",
+        "needs": []
+      },
+      "permissions": null,
+      "concurrency": null,
+      "events": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "historical_paths": {
+        "pull_request": [
+          "tools/simulation/game_core.py",
+          "tools/simulation/hand_history_state.py",
+          "tests/simulation/test_game_core.py",
+          "tests/simulation/test_game_core_consolidated_regressions.py",
+          "tests/simulation/test_hand_history_state.py",
+          "tests/simulation/test_rollout_accounting.py",
+          "docs/full_hand_game_core.md",
+          ".github/workflows/game-core.yml"
+        ]
+      },
+      "repro_paths_added": [
+        ".python-version",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources",
+        "tests/ci/test_repro_current_core_batch.py",
+        "analysis/workflow_audit/repro_current_core_batch_before_after.json"
+      ],
+      "runtime_before": {
+        "python": "runner-implicit",
+        "node": "not-used"
+      },
+      "runtime_after": {
+        "python": "3.11.9 via .python-version",
+        "node": "not-used"
+      },
+      "verify_command": "python3 tools/repro_ci_environment.py verify",
+      "command_fingerprint_sha256": "8014490db997e4d6693f33329649e39e7a6883b6ef1a80a1c4317d3f8c5682ac",
+      "command_tokens": [
+        "python3 -m py_compile",
+        "tools/simulation/game_core.py",
+        "tools/simulation/hand_history_state.py",
+        "tests/simulation/test_game_core.py",
+        "tests/simulation/test_game_core_consolidated_regressions.py",
+        "tests/simulation/test_hand_history_state.py",
+        "python3 tests/simulation/test_game_core.py",
+        "python3 tests/simulation/test_game_core_consolidated_regressions.py",
+        "python3 tests/simulation/test_hand_history_state.py",
+        "python3 tests/simulation/test_rollout_accounting.py"
+      ]
+    },
+    {
+      "path": ".github/workflows/preflop-contract.yml",
+      "name": "Validate preflop context contract",
+      "before_git_blob_sha": "36b8d807d8802321afbe11dd7e73202d41132a79",
+      "after_git_blob_sha": "77a302fd41fad7dc2bc9872391abbcc976e15ce1",
+      "job": {
+        "id": "contract",
+        "runner": "ubuntu-24.04",
+        "needs": []
+      },
+      "permissions": null,
+      "concurrency": null,
+      "events": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "historical_paths": {
+        "pull_request": [
+          "src/preflop/**",
+          "tools/preflop/**",
+          "tools/sync_shared_modules.py",
+          "tools/training/increment_decisions.py",
+          "tools/training/audit_preflop_key_runtime_parity.py",
+          "site/preflop-contract.js",
+          "site/index.html",
+          "site/RELEASE.json",
+          "tools/write_site_release.py",
+          "tests/preflop/**",
+          "tests/fixtures/preflop_contract_cases.json",
+          "tests/training/test_preflop_key_runtime_parity.py",
+          ".github/workflows/preflop-contract.yml"
+        ]
+      },
+      "repro_paths_added": [
+        ".python-version",
+        ".node-version",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources",
+        "tests/ci/test_repro_current_core_batch.py",
+        "analysis/workflow_audit/repro_current_core_batch_before_after.json"
+      ],
+      "runtime_before": {
+        "python": "runner-implicit",
+        "node": "runner-implicit"
+      },
+      "runtime_after": {
+        "python": "3.11.9 via .python-version",
+        "node": "22.14.0 via .node-version"
+      },
+      "verify_command": "python3 tools/repro_ci_environment.py verify --require-node",
+      "command_fingerprint_sha256": "c157c6162848143e330e51be9c4e570f64d43d9ee5aa0bb15cd73293ee10887f",
+      "command_tokens": [
+        "python3 tools/sync_shared_modules.py --check",
+        "python3 -m py_compile tools/sync_shared_modules.py tools/preflop/context_contract.py tools/preflop/probability_contract.py tools/training/increment_decisions.py tools/training/audit_preflop_key_runtime_parity.py",
+        "node --check src/preflop/contract.js",
+        "node --check src/preflop/decision.js",
+        "node --check src/preflop/guidance.js",
+        "node --check site/preflop-contract.js",
+        "node --check /tmp/site-inline.js",
+        "python3 tests/preflop/test_context_contract.py",
+        "python3 tests/preflop/test_probability_contract.py",
+        "node tests/preflop/test_decision_contract.js",
+        "node tests/preflop/test_guidance_contract.js",
+        "python3 tests/preflop/test_increment_decisions_contract.py",
+        "python3 tests/preflop/test_site_preflop_contract.py",
+        "python3 tests/training/test_preflop_key_runtime_parity.py",
+        "python3 tools/write_site_release.py --check"
+      ]
+    },
+    {
+      "path": ".github/workflows/preflop-topology-contract.yml",
+      "name": "Preflop topology contract",
+      "before_git_blob_sha": "d93ea10bc6ec96bd7ca416d7945aeba05097167d",
+      "after_git_blob_sha": "31e0e9554031924b88cdb28aa7ea0698fdd87144",
+      "job": {
+        "id": "contract",
+        "runner": "ubuntu-latest",
+        "needs": []
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "events": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "historical_paths": {
+        "push": [
+          "tools/training/evaluate_preflop_topology_candidate.py",
+          "tools/training/audit_preflop_runtime_topology_overlap.py",
+          "tools/training/audit_preflop_key_runtime_parity.py",
+          "tools/training/explain_preflop_key_runtime_mismatches.py",
+          "tools/training/evaluate_preflop_free_check_matcher.py",
+          "tests/training/test_preflop_topology_candidate.py",
+          "tests/training/test_preflop_key_runtime_parity.py",
+          "tests/training/test_preflop_free_check_matcher.py",
+          "training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json",
+          "training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json",
+          ".github/workflows/preflop-topology-contract.yml"
+        ],
+        "pull_request": [
+          "tools/training/evaluate_preflop_topology_candidate.py",
+          "tools/training/audit_preflop_runtime_topology_overlap.py",
+          "tools/training/audit_preflop_key_runtime_parity.py",
+          "tools/training/explain_preflop_key_runtime_mismatches.py",
+          "tools/training/evaluate_preflop_free_check_matcher.py",
+          "tests/training/test_preflop_topology_candidate.py",
+          "tests/training/test_preflop_key_runtime_parity.py",
+          "tests/training/test_preflop_free_check_matcher.py",
+          "training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json",
+          "training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json",
+          ".github/workflows/preflop-topology-contract.yml"
+        ]
+      },
+      "repro_paths_added": [
+        ".python-version",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources",
+        "tests/ci/test_repro_current_core_batch.py",
+        "analysis/workflow_audit/repro_current_core_batch_before_after.json"
+      ],
+      "runtime_before": {
+        "python": "runner-implicit",
+        "node": "not-used"
+      },
+      "runtime_after": {
+        "python": "3.11.9 via .python-version",
+        "node": "not-used"
+      },
+      "verify_command": "python3 tools/repro_ci_environment.py verify",
+      "command_fingerprint_sha256": "abde0096d503ab183ccdb6b6c697475277e015db1f35de1f827b2cb55fda4827",
+      "command_tokens": [
+        "python3 tests/training/test_preflop_topology_candidate.py",
+        "python3 tests/training/test_preflop_key_runtime_parity.py",
+        "python3 tests/training/test_preflop_free_check_matcher.py",
+        "assert r['selection_split']=='VALIDATION'",
+        "assert r['test_used'] is False",
+        "assert r['test_authorized'] is False",
+        "assert r['production_effect']=='NONE'",
+        "assert r['outcome']=='RETAIN_BASELINE'",
+        "assert r['candidate_contract']['target_nodes']==51",
+        "assert r['candidate_contract']['target_train_rows']==2300",
+        "assert r['runtime_overlap']['conclusion']=='CANONICAL_TOPOLOGY_EXTENSION_IS_RUNTIME_NO_OP'",
+        "assert r['validation']['population_preflop_rows']==1676",
+        "assert r['validation']['target_rows']==287",
+        "assert r['validation']['all_alpha_candidates']['affected_rows']==0",
+        "assert r['validation']['paired_bootstrap']['ci95']==[0.0,0.0]",
+        "assert x['selection_split']=='VALIDATION'",
+        "assert x['test_used'] is False",
+        "assert x['test_authorized'] is False",
+        "assert x['production_effect']=='NONE'",
+        "assert x['decision']=='RETAIN_CURRENT_MATCHER'",
+        "assert x['canonical_key_audit']['mismatch_nodes']==4279",
+        "assert x['canonical_key_audit']['all_mismatches_explained'] is True",
+        "assert x['runtime_equivalence_audit']['collision_classes']==18",
+        "assert x['runtime_equivalence_audit']['all_collisions_free_check_only'] is True",
+        "assert x['strict_free_check_validation']['rows']==1676",
+        "assert x['strict_free_check_validation']['changed_probability_rows']==2",
+        "assert x['strict_free_check_validation']['paired_bootstrap']['ci95'][1]==0.0"
+      ],
+      "scientific_token_counts_before": {
+        "VALIDATION": 2,
+        "test_used": 2,
+        "test_authorized": 2,
+        "production_effect": 2
+      },
+      "scientific_token_counts_after": {
+        "VALIDATION": 2,
+        "test_used": 2,
+        "test_authorized": 2,
+        "production_effect": 2
+      }
+    },
+    {
+      "path": ".github/workflows/model-a-continuation.yml",
+      "name": "Validate Model A multiway continuation",
+      "before_git_blob_sha": "ef310fd9f096d2d0ac14745f071cba4748318a1d",
+      "after_git_blob_sha": "372cb3e4469af954407e3d5280ad745e0aa36412",
+      "job": {
+        "id": "contracts",
+        "runner": "ubuntu-24.04",
+        "needs": []
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "historical_paths": {
+        "pull_request": [
+          "tools/simulation/model_a_continuation.py",
+          "tools/simulation/model_a_preflop_rollout.py",
+          "tools/simulation/model_a_support_closure.py",
+          "tests/simulation/test_model_a_continuation.py",
+          "tests/simulation/test_model_a_preflop_rollout.py",
+          "tests/simulation/test_model_a_support_closure.py",
+          "tools/simulation/game_core.py",
+          "tools/training/model_a_latent_ranges.py",
+          "tools/training/model_a_postflop_runtime.py",
+          "tools/training/refit_postflop_combo_policy.py",
+          "training/models/preflop_population_model_v5.json",
+          "training/models/postflop_population_model_v5.json",
+          "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+          ".github/workflows/model-a-continuation.yml"
+        ],
+        "push": [
+          "tools/simulation/model_a_continuation.py",
+          "tools/simulation/model_a_preflop_rollout.py",
+          "tools/simulation/model_a_support_closure.py",
+          "tests/simulation/test_model_a_continuation.py",
+          "tests/simulation/test_model_a_preflop_rollout.py",
+          "tests/simulation/test_model_a_support_closure.py",
+          ".github/workflows/model-a-continuation.yml"
+        ]
+      },
+      "push_branches_before": [
+        "main"
+      ],
+      "push_branches_after": [
+        "main"
+      ],
+      "repro_paths_added": [
+        ".python-version",
+        "requirements.lock.txt",
+        "package-lock.json",
+        "tools/repro_ci_environment.py",
+        "tools/repro_environment_identity.py",
+        "tools/repro_container.py",
+        "tools/repro_hardening.py",
+        "tools/repro_environment.py",
+        "reproducibility/environment.lock.json",
+        "reproducibility/os-base.lock.json",
+        "reproducibility/container-base.lock.json",
+        "reproducibility/Dockerfile.science",
+        "reproducibility/system-packages.apt.txt",
+        "reproducibility/apt-snapshot.lock.json",
+        "reproducibility/system-packages.resolution.lock.json",
+        "reproducibility/browser-identity.lock.json",
+        "reproducibility/ubuntu-snapshot.sources",
+        "tests/ci/test_repro_current_core_batch.py",
+        "analysis/workflow_audit/repro_current_core_batch_before_after.json"
+      ],
+      "runtime_before": {
+        "python": "3.11 floating minor",
+        "node": "not-used"
+      },
+      "runtime_after": {
+        "python": "3.11.9 via .python-version",
+        "node": "not-used"
+      },
+      "verify_command": "python3 tools/repro_ci_environment.py verify",
+      "command_fingerprint_sha256": "32f770a41ab394861da5f5a87fb8d021b19f1a98d0db04642a14b9cc41a9f8f3",
+      "command_tokens": [
+        "python3 -m py_compile",
+        "tools/simulation/model_a_continuation.py",
+        "tools/simulation/model_a_preflop_rollout.py",
+        "tools/simulation/model_a_support_closure.py",
+        "tests/simulation/test_model_a_continuation.py",
+        "tests/simulation/test_model_a_preflop_rollout.py",
+        "tests/simulation/test_model_a_support_closure.py",
+        "PYTHONPATH=. python3 tests/simulation/test_model_a_continuation.py",
+        "PYTHONPATH=. python3 tests/simulation/test_model_a_preflop_rollout.py",
+        "PYTHONPATH=. python3 tests/simulation/test_model_a_support_closure.py",
+        "PYTHONPATH=. python3 tests/simulation/test_preflop_grid_evaluator.py"
+      ]
+    }
+  ],
+  "validation": {
+    "local": {
+      "status": "PENDING",
+      "commands": [
+        "python3 tests/test_repro_ci_helpers.py",
+        "python3 tests/ci/test_repro_current_core_batch.py"
+      ]
+    },
+    "github_actions": {
+      "status": "PENDING",
+      "required_workflows": [
+        "Validate full-hand game core",
+        "Validate preflop context contract",
+        "Preflop topology contract",
+        "Validate Model A multiway continuation"
+      ],
+      "runs": []
+    }
+  },
+  "scope": {
+    "n8n_issue_384_touched": false,
+    "modified_workflows": [
+      ".github/workflows/game-core.yml",
+      ".github/workflows/preflop-contract.yml",
+      ".github/workflows/preflop-topology-contract.yml",
+      ".github/workflows/model-a-continuation.yml"
+    ],
+    "allowed_support_files": [
+      "tests/ci/test_repro_current_core_batch.py",
+      "analysis/workflow_audit/repro_current_core_batch_before_after.json"
+    ]
+  }
+}
