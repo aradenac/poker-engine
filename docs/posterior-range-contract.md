@@ -96,6 +96,18 @@ record_from_combo_posterior() accepts any object exposing those two attributes a
 
 This is the intended bridge for #312.
 
+## Display-side representation
+
+Rendering surfaces must not relabel the backend quantities. The separate
+`docs/opponent-range-display-contract.md` (`poker-opponent-range-display/v1`)
+fixes the four display notions and their units: sum-normalized combo
+probability, max-normalized relative weight/diagnostic likelihood (never a
+probability), a priori 0-100 inclusion frequency of imported ranges, and the
+non-informative prior. It also fixes the 169 projection as the sum of combo
+probability mass per class and names the derived
+`prior_uninformative`/`conditioned`/`degenerate` states. It is a representation
+contract and introduces no fit or model change.
+
 ## Synthetic verification
 
 Run:

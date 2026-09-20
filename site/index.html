@@ -1557,6 +1557,25 @@ const SUITS = [
   {c:"c", sym:"♣", red:false, cls:"suit-c"}
 ];
 
+/* Opponent-range display contract — see docs/opponent-range-display-contract.md.
+   Representation layer only: it fixes vocabulary/units and never fits or changes
+   Model A/B. The canonical 169 projection is a SUM of combo probability mass. */
+const OPPONENT_RANGE_DISPLAY_CONTRACT=Object.freeze({
+  schema:"poker-opponent-range-display/v1",
+  version:1,
+  backend_schema:"poker-opponent-posterior-range/v1",
+  notions:Object.freeze({
+    posterior_combo_probability:Object.freeze({unit:"probability",range:[0,1],normalization:"sum_to_1",is_probability:true}),
+    relative_weight:Object.freeze({unit:"ratio",range:[0,1],normalization:"max_to_1",is_probability:false}),
+    inclusion_frequency:Object.freeze({unit:"percent",range:[0,100],normalization:"a_priori",scope:"hand_class",is_probability:false}),
+    non_informative_prior:Object.freeze({unit:"probability",normalization:"uniform_over_legal_combos",is_probability:true})
+  }),
+  projection_169:"sum_of_combo_probability_mass",
+  posterior_states:Object.freeze(["prior_uninformative","conditioned","degenerate"])
+});
+window.PokerOpponentRangeDisplayContract=OPPONENT_RANGE_DISPLAY_CONTRACT;
+window.OPPONENT_RANGE_DISPLAY_CONTRACT=OPPONENT_RANGE_DISPLAY_CONTRACT;
+
 const state = {
   ranges: [],
   populationModel:null,
