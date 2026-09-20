@@ -104,6 +104,11 @@ def migrate(path: str, before: str) -> str:
 
 
 def check_workflow(path: str, before: str, after: str) -> None:
+    from tools.audit_repro_composite_factorization import historical_text, AuditError as TransitionError
+    try:
+        after = historical_text(path, after)
+    except TransitionError as exc:
+        raise AuditError(str(exc)) from exc
     if after != migrate(path, before):
         raise AuditError(f'{path}: difference outside exact authorized REPRO migration')
     jobs = job_blocks(after)

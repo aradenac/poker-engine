@@ -3,6 +3,7 @@ name: Validate release handoff contract
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -32,7 +33,6 @@ on:
       - 'tests/training/test_finalize_cycle_release.py'
       - 'tests/training/test_verify_live_release.py'
       - '.github/workflows/release-handoff-contract.yml'
-      - '.github/actions/repro-runtime/action.yml'
   push:
     branches:
       - 'issue-113-release-handoff-contract-sol'
@@ -53,7 +53,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
       - name: Compile handoff validator and builder
         run: |
           python3 -m py_compile \

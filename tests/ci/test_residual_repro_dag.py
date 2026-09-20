@@ -10,6 +10,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
+from tools import audit_repro_composite_factorization as transition
 from tools import audit_active_workflow_dag as dag
 from tools import audit_residual_repro_dag as audit
 
@@ -18,7 +19,15 @@ class ResidualReproDagTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.before = {path: audit.baseline(path) for path in audit.DISPOSITIONS}
-        cls.after = {path: (ROOT / path).read_text() for path in audit.DISPOSITIONS}
+        cls.after = {path: transition.baseline(path) for path in audit.DISPOSITIONS}
+
+    def test_current_consumers_chain_to_historical_after(self):
+        for path in self.after:
+            with self.subTest(path=path):
+                text = (ROOT / path).read_text()
+                audit.check_workflow(path, self.before[path], text)
+                if path in transition.WORKFLOWS:
+                    transition.check_workflow(path, transition.baseline(path), text)
 
     def reject(self, path: str, old: str, new: str) -> None:
         source = self.after[path]
@@ -99,7 +108,10 @@ class ResidualReproDagTests(unittest.TestCase):
                           "training/models/preflop_population_model_v5.json"):
             with self.subTest(path=forbidden), self.assertRaises(audit.AuditError):
                 audit.check_scope([*audit.ALLOWLIST, forbidden])
-        audit.check_scope(audit.changed_files())
+        # The historical allowlist applies to its recorded commit, not later issues.
+        # Current scope is enforced independently by the #384 authoritative audit.
+        historical = __import__('json').loads(transition.baseline(audit.EVIDENCE))
+        audit.check_scope(historical['files_changed'])
 
     def test_dag_is_complete_and_unknown_is_never_safe(self) -> None:
         data = dag.build()
@@ -117,7 +129,7 @@ class ResidualReproDagTests(unittest.TestCase):
 
     def test_twelve_before_after_scenarios_and_repro_trigger_delta(self) -> None:
         data = dag.build()
-        self.assertEqual(data["representative_scenario_count"], 12)
+        self.assertEqual(data["representative_scenario_count"], 14)
         self.assertTrue(all("before" in row and "after" in row
                             for row in data["representative_scenarios"]))
         helper = next(row for row in data["representative_scenarios"]

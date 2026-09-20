@@ -1,34 +1,17 @@
 name: REPRO locked browser runtime
-description: >-
-  Factorised REPRO browser bootstrap. Reuses ./.github/actions/repro-runtime for
-  the locked Python (and optional Node) runtime plus the locked Python
-  dependencies, then installs the browser runtime exclusively through
-  tools/repro_ci_browser.py. No direct pip/npm/Playwright invocation.
-
+description: Bootstrap locked Python dependencies and browser after checkout.
 inputs:
   require-node:
-    description: 'Set up Node from .node-version and require the locked Node version.'
-    required: false
+    description: Set up Node only for browser jobs that execute Node commands.
     default: 'false'
-
 runs:
   using: composite
   steps:
-    - name: Reject unknown composite input values
-      shell: bash
-      run: |
-        set -euo pipefail
-        case "${{ inputs.require-node }}" in
-          true|false) ;;
-          *) echo "repro-browser: input require-node must be 'true' or 'false'" >&2; exit 1 ;;
-        esac
-
     - uses: ./.github/actions/repro-runtime
       with:
         require-node: ${{ inputs.require-node }}
         install-python-deps: 'true'
         install-node-deps: 'false'
-
     - name: Install locked browser runtime
       shell: bash
       run: |

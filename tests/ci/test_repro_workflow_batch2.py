@@ -11,8 +11,12 @@ from pathlib import Path
 import hashlib
 import json
 import unittest
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from tools import audit_repro_composite_factorization as transition
+
 BASE_SHA = 'b2fa125bc5da885d30e15f36a8bb17072f46ca18'
 BASELINES = {'.github/workflows/full-hand-arena.yml': {'sha256': '3635255ff3de95e3cf734d15e0db7cf59a37d5664707f23ba6e95d6d6083d665',
                                            'setups': 2,
@@ -47,6 +51,10 @@ LOCKED_SETUP = "      - uses: actions/setup-python@v5\n        with:\n          
 
 
 def check_workflow(case, path, text):
+    try:
+        text = transition.historical_text(path, text)
+    except transition.AuditError as exc:
+        case.fail(str(exc))
     baseline = BASELINES[path]
     case.assertEqual(text.count("uses: actions/setup-python@"), baseline["setups"])
     case.assertEqual(text.count(LOCKED_SETUP), baseline["setups"],
@@ -85,13 +93,13 @@ class ReproWorkflowBatch2Tests(unittest.TestCase):
         # Issue-scoped baseline guard for the explicitly excluded #361/#346 files.
         for path, digest in PROTECTED.items():
             with self.subTest(path=path):
-                self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
+                self.assertEqual(hashlib.sha256(transition.historical_text(path, (ROOT / path).read_text()).encode()).hexdigest(), digest)
 
     def test_fail_closed_against_gate_and_command_mutations(self):
         path = ".github/workflows/full-hand-arena.yml"
-        original = (ROOT / path).read_text()
+        original = transition.baseline(path)
         mutations = [
-            original.replace("      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n          install-python-deps: 'true'\n", "", 1),
+            original.replace("        run: python3 tools/repro_ci_environment.py verify\n", "", 1),
             original.replace("verify\n", "verify || true\n", 1),
             original.replace("      - name: Verify locked", "        continue-on-error: true\n      - name: Verify locked", 1),
             original.replace("        run: python3 tools/repro_ci_environment.py verify", "        if: false\n        run: python3 tools/repro_ci_environment.py verify", 1),

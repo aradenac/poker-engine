@@ -3,6 +3,7 @@ name: Validate full-hand multiway arena
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
       - 'tools/repro_container.py'
@@ -36,7 +37,6 @@ on:
       - 'docs/full_hand_arena.md'
       - 'training/runs/20260915_model_b_card_aware_v1/RESULT.json'
       - '.github/workflows/full-hand-arena.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -51,7 +51,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
       - name: Compile
         run: |
           python3 -m py_compile \
@@ -84,7 +83,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
       - name: Download immutable issue 104 fit artifact
         env:
           GH_TOKEN: ${{ github.token }}

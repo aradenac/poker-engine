@@ -21,6 +21,8 @@ INVENTORY = "analysis/workflow_audit/workflows.json"
 OUTPUT = "analysis/workflow_audit/active_workflow_dag_v2.json"
 DOC = "docs/ci-workflow-dag.md"
 SCENARIOS = (
+    ("repro_runtime_composite", "pull_request", ".github/actions/repro-runtime/action.yml", "main"),
+    ("repro_browser_composite", "pull_request", ".github/actions/repro-browser/action.yml", "main"),
     ("trainer_js", "pull_request", "site/trainer.js", "main"),
     ("game_core", "pull_request", "tools/simulation/game_core.py", "main"),
     ("preflop_decision", "pull_request", "src/preflop/decision.js", "main"),
@@ -138,6 +140,19 @@ def _cost(text: str, path: str, name: str, jobs: list[dict]) -> dict[str, Any]:
 
 
 def _repro_status(text: str) -> str:
+    if "uses: ./.github/actions/repro-" in text:
+        from tools.audit_repro_composite_factorization import WORKFLOWS, baseline, check_actions, check_workflow, AuditError as TransitionError
+        try:
+            check_actions()
+            for path in WORKFLOWS:
+                try:
+                    check_workflow(path, baseline(path), text)
+                    return "REPRO_COMPOSITE_VERIFIED"
+                except TransitionError:
+                    continue
+        except (TransitionError, OSError):
+            pass
+        return "REPRO_INCOMPLETE"
     if "repro-scientific-environment.yml" in text and "REPRO_ENVIRONMENT_IDENTITY_SHA256" in text:
         return "REPRO_STRONG_IDENTITY_BOUND"
     if "tools/repro_ci_environment.py verify" in text:

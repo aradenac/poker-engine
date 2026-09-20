@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import tempfile
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -116,6 +117,10 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
     checked: list[dict[str, Any]] = []
     parsed_rows: list[dict[str, Any]] = []
 
+    from tools.audit_repro_composite_factorization import baseline
+    if (root / EVIDENCE).read_text() != baseline(EVIDENCE.as_posix()):
+        violations.append({"rule": "IMMUTABLE_HISTORICAL_EVIDENCE_CHANGED"})
+
     # Bind the before state to the exact #291 consumer evidence instead of
     # trusting a hand-written baseline.
     helper_evidence = _json(root / "analysis/workflow_audit/helper_consumers.json")
@@ -187,7 +192,14 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
         if not path.is_file():
             violations.append({"rule": "WORKFLOW_MISSING", "path": rel})
             continue
-        data = path.read_bytes()
+        from tools.audit_repro_composite_factorization import historical_text, AuditError
+        current = path.read_text(encoding="utf-8")
+        try:
+            projected = historical_text(rel, current, root)
+        except (AuditError, OSError) as exc:
+            violations.append({"rule": "COMPOSITE_TRANSITION_INVALID", "path": rel, "detail": str(exc)})
+            projected = current
+        data = projected.encode()
         text = data.decode("utf-8")
         blob = git_blob_sha(data)
         expected_blob = str(row.get("after_git_blob_sha") or "")
@@ -199,7 +211,10 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
                 "observed": blob,
             })
 
-        parsed = parse_workflow(path, root)
+        with tempfile.TemporaryDirectory() as td:
+            projected_path = Path(td) / path.name
+            projected_path.write_text(text)
+            parsed = parse_workflow(projected_path, Path(td))
         parsed_rows.append(parsed)
         contract = row.get("contract") or {}
 
@@ -253,19 +268,8 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
                 (ENV_HELPER, "REPRO_ENVIRONMENT_HELPER_MISSING"),
                 (BROWSER_HELPER, "REPRO_BROWSER_HELPER_MISSING"),
             ):
-                # Check for either the old inline pattern or the new composite action
-                is_old_pattern = token in browser
-                is_new_pattern = False
-                if rule == "PINNED_PYTHON_SETUP_MISSING":
-                    is_new_pattern = "uses: actions/setup-python@v5" in browser # Simplified check
-                elif rule == "REPRO_ENVIRONMENT_HELPER_MISSING":
-                    is_new_pattern = "uses: ./.github/actions/repro-runtime" in text
-                elif rule == "REPRO_BROWSER_HELPER_MISSING":
-                    is_new_pattern = "uses: ./.github/actions/repro-browser" in browser
-
-                if not (is_old_pattern or is_new_pattern):
+                if token not in browser:
                     violations.append({"rule": rule, "path": rel, "token": token})
-
             if DIRECT_PIP_RX.search(browser):
                 violations.append({"rule": "DIRECT_PIP_BROWSER_SETUP_BYPASS", "path": rel})
             if DIRECT_PLAYWRIGHT_RX.search(browser):
@@ -273,13 +277,13 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
             if "continue-on-error: true" in browser:
                 violations.append({"rule": "BROWSER_REPRO_GUARD_MAY_CONTINUE_ON_ERROR", "path": rel})
 
-        if text.count(ENV_HELPER) != 1 and "uses: ./.github/actions/repro-runtime" not in text:
+        if text.count(ENV_HELPER) != 1:
             violations.append({
                 "rule": "REPRO_ENVIRONMENT_HELPER_CALL_COUNT",
                 "path": rel,
                 "observed": text.count(ENV_HELPER),
             })
-        if text.count(BROWSER_HELPER) != 1 and "uses: ./.github/actions/repro-browser" not in text:
+        if text.count(BROWSER_HELPER) != 1:
             violations.append({
                 "rule": "REPRO_BROWSER_HELPER_CALL_COUNT",
                 "path": rel,

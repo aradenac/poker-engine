@@ -5,8 +5,12 @@ import json
 from pathlib import Path
 import shutil
 import tempfile
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
+
+sys.path.insert(0, str(ROOT))
+from tools.audit_repro_composite_factorization import baseline
 
 from tools.audit_repro_workflow_batch1 import EVIDENCE, audit
 
@@ -26,7 +30,7 @@ def _copy_batch(dst: Path) -> None:
         source = ROOT / rel
         target = dst / rel
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
+        target.write_text(baseline(rel))
 
 
 def _rules(report: dict) -> set[str]:
@@ -50,8 +54,8 @@ def test_browser_helper_cannot_be_removed() -> None:
         target = root / TARGETS[0]
         text = target.read_text(encoding="utf-8")
         text = text.replace(
-            "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'true'",
-            "      - run: echo skipped-browser-helper",
+            "python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json",
+            "echo bypass-browser-helper",
         )
         target.write_text(text, encoding="utf-8")
         report = audit(root, check_global_repro=False)
@@ -65,7 +69,7 @@ def test_direct_unlocked_playwright_setup_is_rejected() -> None:
         _copy_batch(root)
         target = root / TARGETS[1]
         text = target.read_text(encoding="utf-8")
-        marker = "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'true'"
+        marker = "          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json"
         text = text.replace(
             marker,
             marker + "\n          python3 -m pip install --user playwright\n          python3 -m playwright install --with-deps chromium",

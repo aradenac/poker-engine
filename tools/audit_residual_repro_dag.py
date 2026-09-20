@@ -123,6 +123,11 @@ def migrate(path: str, before: str) -> str:
 
 
 def check_workflow(path: str, before: str, after: str) -> None:
+    from tools.audit_repro_composite_factorization import historical_text, AuditError as TransitionError
+    try:
+        after = historical_text(path, after)
+    except TransitionError as exc:
+        raise AuditError(str(exc)) from exc
     disposition = DISPOSITIONS.get(path)
     if disposition is None:
         raise AuditError(f"workflow outside ten-workflow audit: {path}")

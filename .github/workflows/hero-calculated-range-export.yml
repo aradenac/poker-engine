@@ -3,6 +3,7 @@ name: Validate calculated Hero range export
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -43,7 +44,6 @@ on:
       - 'training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json'
       - 'docs/hero-calculated-range-candidate.md'
       - '.github/workflows/hero-calculated-range-export.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -58,7 +58,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'true'
-          install-python-deps: 'true'
       - name: Syntax
         run: |
           node --check src/preflop/decision.js

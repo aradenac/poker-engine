@@ -3,6 +3,7 @@ name: Validate preflop grid evaluator
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -29,7 +30,6 @@ on:
       - 'tests/preflop/test_decision_contract.js'
       - 'docs/preflop-grid-evaluator.md'
       - '.github/workflows/preflop-grid-evaluator.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -43,7 +43,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'true'
-          install-python-deps: 'true'
       - name: Syntax
         run: |
           python3 -m py_compile tools/simulation/preflop_grid_evaluator.py tests/simulation/test_preflop_grid_evaluator.py

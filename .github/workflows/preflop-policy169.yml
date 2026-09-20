@@ -3,6 +3,7 @@ name: Validate preflop policy169 refit
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -29,7 +30,6 @@ on:
       - 'tests/training/test_preflop_policy169_rebuild.py'
       - 'tests/training/test_evaluate_preflop_policy169_candidate.py'
       - '.github/workflows/preflop-policy169.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -47,7 +47,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
       - name: Compile candidate path
         run: |
           python3 -m py_compile \

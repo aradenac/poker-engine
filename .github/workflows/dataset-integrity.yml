@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -31,9 +32,9 @@ on:
       - 'tests/datasets/**'
       - 'tests/training/**'
       - '.github/workflows/dataset-integrity.yml'
-      - '.github/actions/repro-runtime/action.yml'
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -60,7 +61,6 @@ on:
       - 'tests/datasets/**'
       - 'tests/training/**'
       - '.github/workflows/dataset-integrity.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 concurrency:
@@ -80,7 +80,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
       - name: Verify exact sources, unseen IDs, splits and materialized payloads
         run: |
           python3 tests/datasets/test_build_hand_history_increment.py

@@ -3,6 +3,7 @@ name: Model B reveal-aware ranges
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -27,7 +28,6 @@ on:
       - 'tests/training/test_reveal_aware_ranges.py'
       - 'training/runs/20260915_model_b_reveal_aware_v3/**'
       - '.github/workflows/model-b-reveal-aware.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -42,8 +42,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
-
       - name: Unit and syntax tests
         run: |
           python3 -m py_compile \

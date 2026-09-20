@@ -4,8 +4,9 @@
   "aggregate": {
     "job_count": 50,
     "repro_statuses": {
+      "REPRO_COMPOSITE_VERIFIED": 15,
       "REPRO_HELPER_VERIFIED": 3,
-      "REPRO_NOT_VERIFIED": 22,
+      "REPRO_NOT_VERIFIED": 7,
       "REPRO_STRONG_IDENTITY_BOUND": 6
     },
     "side_effect_classes": {
@@ -15,14 +16,372 @@
       "REPOSITORY_WRITE": 6,
       "UNKNOWN": 3
     },
-    "static_cost_proxy": 235
+    "static_cost_proxy": 237
   },
   "base_sha": "ac208d26cbf3f16b498fd5333ad3b7c4fa58355b",
   "inventory_sha256": "58994e7bb5ff362c629ccfbd7ba33ca5477c958ae0604830af869dac4448c0b8",
   "inventory_source": "analysis/workflow_audit/workflows.json",
   "issue": 382,
-  "representative_scenario_count": 12,
+  "representative_scenario_count": 14,
   "representative_scenarios": [
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-runtime/action.yml"
+        ],
+        "cost_proxy": 82,
+        "event": "pull_request",
+        "id": "repro_runtime_composite",
+        "job_count": 20,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/hero-range-compliance.yml",
+          ".github/workflows/hero-range-editor.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-policy169.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/release-handoff-contract.yml",
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-compliance.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-editor.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-policy169.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/release-handoff-contract.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "static-contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/trainer-smoke.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 15,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-runtime/action.yml"
+        ],
+        "cost_proxy": 0,
+        "event": "pull_request",
+        "id": "repro_runtime_composite",
+        "job_count": 0,
+        "matched_workflows": [],
+        "matches": [],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 0,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "scenario": "repro_runtime_composite"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-browser/action.yml"
+        ],
+        "cost_proxy": 20,
+        "event": "pull_request",
+        "id": "repro_browser_composite",
+        "job_count": 6,
+        "matched_workflows": [
+          ".github/workflows/hero-range-compliance.yml",
+          ".github/workflows/hero-range-editor.yml",
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-compliance.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-editor.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "static-contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/trainer-smoke.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 3,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-browser/action.yml"
+        ],
+        "cost_proxy": 0,
+        "event": "pull_request",
+        "id": "repro_browser_composite",
+        "job_count": 0,
+        "matched_workflows": [],
+        "matches": [],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 0,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "scenario": "repro_browser_composite"
+    },
     {
       "after": {
         "branch": "main",
@@ -974,7 +1333,7 @@
         "changed_paths": [
           ".python-version"
         ],
-        "cost_proxy": 77,
+        "cost_proxy": 79,
         "event": "pull_request",
         "id": "python_version",
         "job_count": 16,
@@ -1092,7 +1451,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 6,
+            "cost_proxy": 8,
             "jobs": [
               {
                 "id": "contract",
@@ -1369,7 +1728,7 @@
         "changed_paths": [
           ".node-version"
         ],
-        "cost_proxy": 51,
+        "cost_proxy": 53,
         "event": "pull_request",
         "id": "node_version",
         "job_count": 11,
@@ -1456,7 +1815,7 @@
           },
           {
             "activation_event": "pull_request",
-            "cost_proxy": 6,
+            "cost_proxy": 8,
             "jobs": [
               {
                 "id": "contract",
@@ -2101,6 +2460,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2126,12 +2486,12 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/dataset-integrity.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2157,8 +2517,7 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/dataset-integrity.yml"
           ]
         }
       },
@@ -2168,14 +2527,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "dataset_population",
       "scientific_boundaries": {
         "TEST": true,
         "TRAIN": true,
         "VALIDATION": true
       },
-      "sha256": "736fad991156c556a81cd004c9ef16219d0d238c1b6e74b85a2b7c225700da90",
+      "sha256": "2c2abd842aa207760314adbea4c3eb5559094ebe5ee0b43eb347043f8825384a",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -2195,6 +2554,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2220,8 +2580,7 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/dataset-integrity.yml"
           ]
         },
         "push": {
@@ -2229,6 +2588,7 @@
             "main"
           ],
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2254,8 +2614,7 @@
             "tools/training/**",
             "tests/datasets/**",
             "tests/training/**",
-            ".github/workflows/dataset-integrity.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/dataset-integrity.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2311,6 +2670,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
             "tools/repro_container.py",
@@ -2343,8 +2703,7 @@
             "tests/simulation/test_game_core_consolidated_regressions.py",
             "docs/full_hand_arena.md",
             "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
-            ".github/workflows/full-hand-arena.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/full-hand-arena.yml"
           ]
         }
       },
@@ -2355,14 +2714,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "simulation_benchmark",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": true,
         "VALIDATION": false
       },
-      "sha256": "39598a7f6f7df43685010167691803fbd3af76a6b0163f390726f36cd5a2141e",
+      "sha256": "8004230252fc1f1671a8a1f7f9f0348b977afd2c5d4f997bfc402824ef8c1312",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
         "band": "medium",
@@ -2382,6 +2741,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
             "tools/repro_container.py",
@@ -2414,8 +2774,7 @@
             "tests/simulation/test_game_core_consolidated_regressions.py",
             "docs/full_hand_arena.md",
             "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
-            ".github/workflows/full-hand-arena.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/full-hand-arena.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2451,6 +2810,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2476,12 +2836,12 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/full-hand-protocol.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2507,8 +2867,7 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/full-hand-protocol.yml"
           ]
         }
       },
@@ -2518,14 +2877,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "simulation_benchmark",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "b37123a5c67855b15b6762b5a73734f02bd6e823bc6c6ccc199ddbc3564259b1",
+      "sha256": "284d804e657db0eeb85ee45555b660436261d020dcaf80d65f4eeb5eaa9c2631",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -2545,6 +2904,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2570,8 +2930,7 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/full-hand-protocol.yml"
           ]
         },
         "push": {
@@ -2579,6 +2938,7 @@
             "main"
           ],
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -2604,8 +2964,7 @@
             "tools/training/validate_preflop_strategy_benchmark.py",
             "tests/training/test_full_hand_protocol.py",
             "tests/training/test_preflop_strategy_benchmark.py",
-            ".github/workflows/full-hand-protocol.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/full-hand-protocol.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2735,6 +3094,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -2774,8 +3134,7 @@
             "training/models/postflop_population_model_v5.json",
             "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
             "docs/hero-calculated-range-candidate.md",
-            ".github/workflows/hero-calculated-range-export.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/hero-calculated-range-export.yml"
           ]
         }
       },
@@ -2785,14 +3144,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "hero_preflop",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": true,
         "VALIDATION": false
       },
-      "sha256": "465bf41ee5cb951f88cbece35bb75b468e6c6aab27f257551e2ed332690aee03",
+      "sha256": "630322a669e4a87b7898e562424296f4036d9e7e814282aaca7b6280f20b7f0c",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -2812,6 +3171,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -2851,8 +3211,7 @@
             "training/models/postflop_population_model_v5.json",
             "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
             "docs/hero-calculated-range-candidate.md",
-            ".github/workflows/hero-calculated-range-export.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/hero-calculated-range-export.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -2903,6 +3262,8 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-compliance.js",
             "site/hero-compliance-replayer.js",
             "site/hero-ranges-app.js",
@@ -2915,13 +3276,13 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-compliance.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-compliance.js",
             "site/hero-compliance-replayer.js",
             "site/hero-ranges-app.js",
@@ -2934,9 +3295,7 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-compliance.yml"
           ]
         }
       },
@@ -2946,14 +3305,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "product_browser_validation",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "f7dac4157c8dd43926c40057bbdd97d85e7c6f12f7f444c7d87414439d554a67",
+      "sha256": "160c397cde596a4d73794edf5dca9d39a36b731260fe501c71d8e21cb8a4d7a3",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -2973,6 +3332,8 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-compliance.js",
             "site/hero-compliance-replayer.js",
             "site/hero-ranges-app.js",
@@ -2985,13 +3346,13 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-compliance.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-compliance.js",
             "site/hero-compliance-replayer.js",
             "site/hero-ranges-app.js",
@@ -3004,9 +3365,7 @@
             "tools/patches/patch_hero_compliance_replayer_v1.py",
             "tools/patches/patch_hero_compliance_release_v1.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-compliance.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-compliance.yml"
           ]
         }
       },
@@ -3056,6 +3415,8 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-ranges.html",
             "site/hero-ranges.js",
             "site/hero-ranges-app.js",
@@ -3065,13 +3426,13 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-editor.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-ranges.html",
             "site/hero-ranges.js",
             "site/hero-ranges-app.js",
@@ -3081,9 +3442,7 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-editor.yml"
           ]
         }
       },
@@ -3093,14 +3452,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "product_browser_validation",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "7e8f626db1ff46315e8fc89d9bafd7b553182c9773e1b89db6831c88e6671c4d",
+      "sha256": "9f25309b4186d4b4601998138ff8ea0e4c8af0814c2064f6897b5df56939fdd2",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -3120,6 +3479,8 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-ranges.html",
             "site/hero-ranges.js",
             "site/hero-ranges-app.js",
@@ -3129,13 +3490,13 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-editor.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/hero-ranges.html",
             "site/hero-ranges.js",
             "site/hero-ranges-app.js",
@@ -3145,9 +3506,7 @@
             "tests/hero_ranges/**",
             "tools/patches/apply_hero_range_editor.py",
             "tools/write_site_release.py",
-            ".github/workflows/hero-range-editor.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/hero-range-editor.yml"
           ]
         }
       },
@@ -3804,6 +4163,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
             "tools/repro_container.py",
@@ -3827,12 +4187,12 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
             "tools/repro_container.py",
@@ -3856,8 +4216,7 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml"
           ]
         }
       },
@@ -3867,14 +4226,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "model_b",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "b963f4beb40db6d94e8f2ddbf3c6438ed5aba254d3f3e30ecf0b861a494ae878",
+      "sha256": "a9acda0b560e39786529f48c6afb0890c137eafaa7ba19c094624c661e5566eb",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -3894,6 +4253,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
             "tools/repro_container.py",
@@ -3917,12 +4277,12 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
             "tools/repro_container.py",
@@ -3946,8 +4306,7 @@
             "tests/simulation/test_model_b_card_aware_runtime.py",
             "tests/training/test_card_aware_behavior_fit.py",
             "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
-            ".github/workflows/model-b-card-aware-runtime.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/model-b-card-aware-runtime.yml"
           ]
         }
       },
@@ -4070,6 +4429,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -4093,8 +4453,7 @@
             "tools/training/independent_profiles/evaluate_reveal_aware_ranges.py",
             "tests/training/test_reveal_aware_ranges.py",
             "training/runs/20260915_model_b_reveal_aware_v3/**",
-            ".github/workflows/model-b-reveal-aware.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/model-b-reveal-aware.yml"
           ]
         }
       },
@@ -4104,14 +4463,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "model_b",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": true,
         "VALIDATION": true
       },
-      "sha256": "a27230884bfaf68f249301a1bbfa1842574df130a1746498d77102871c3f29b9",
+      "sha256": "180f3c02d87be37ec8c0b86f4205b35b7bb3576f58845064f562c4dbe11ccd2d",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -4131,6 +4490,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -4154,8 +4514,7 @@
             "tools/training/independent_profiles/evaluate_reveal_aware_ranges.py",
             "tests/training/test_reveal_aware_ranges.py",
             "training/runs/20260915_model_b_reveal_aware_v3/**",
-            ".github/workflows/model-b-reveal-aware.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/model-b-reveal-aware.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -4486,6 +4845,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "site/packs.html",
             "site/packs.css",
             "site/packs-app.js",
@@ -4520,9 +4880,7 @@
             "analysis/workflow_audit/helper_consumers.json",
             "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
             "tests/ci/test_repro_population_pack_catalog.py",
-            ".github/workflows/population-pack-catalog.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/population-pack-catalog.yml"
           ]
         }
       },
@@ -4532,17 +4890,17 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "product_browser_validation",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "9cac2f4772e6aa7d93c37ae233a248153c6f9b0e8acc8bf85b0d9013fa8a59f2",
+      "sha256": "36413ce4eb762ed472926a09a2e9e7b4ade463c4e47bbf376a012194c3b0aafc",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
-        "band": "low",
+        "band": "medium",
         "components": {
           "checkout": 2,
           "download_artifact": 0,
@@ -4550,15 +4908,16 @@
           "pip_install": 0,
           "playwright_install": 0,
           "setup_node": 0,
-          "setup_python": 0,
+          "setup_python": 1,
           "upload_artifact": 0
         },
         "method": "static structural proxy; not GitHub-billed minutes",
-        "score": 6
+        "score": 8
       },
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             "site/packs.html",
             "site/packs.css",
             "site/packs-app.js",
@@ -4593,9 +4952,7 @@
             "analysis/workflow_audit/helper_consumers.json",
             "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
             "tests/ci/test_repro_population_pack_catalog.py",
-            ".github/workflows/population-pack-catalog.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/population-pack-catalog.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -4793,6 +5150,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -4824,12 +5182,12 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/postflop-response-refit.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -4861,8 +5219,7 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/postflop-response-refit.yml"
           ]
         }
       },
@@ -4872,14 +5229,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "validation_or_utility",
       "scientific_boundaries": {
         "TEST": true,
         "TRAIN": true,
         "VALIDATION": true
       },
-      "sha256": "beef0a656e6c8b7848c16256b109a30b2e58e9ac1995dfb4ddb4e36629e22a50",
+      "sha256": "2a57596fe797ac014d9046cdc8ce376a1c4899faac212ff3a13e1953cbb05399",
       "side_effect_class": "ARTIFACT_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -4899,6 +5256,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -4930,8 +5288,7 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/postflop-response-refit.yml"
           ]
         },
         "push": {
@@ -4939,6 +5296,7 @@
             "main"
           ],
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -4970,8 +5328,7 @@
             "tests/training/test_model_a_postflop_runtime.py",
             "tests/training/test_postflop_combo_refit.py",
             "training/datasets/NLHE_100-200/population_certification.json",
-            ".github/workflows/postflop-response-refit.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/postflop-response-refit.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -5102,6 +5459,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -5127,8 +5485,7 @@
             "tests/simulation/test_game_core.py",
             "tests/preflop/test_decision_contract.js",
             "docs/preflop-grid-evaluator.md",
-            ".github/workflows/preflop-grid-evaluator.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-grid-evaluator.yml"
           ]
         }
       },
@@ -5138,14 +5495,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "preflop_strategy",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "1ec039df80c9a4d80410a52654714f56a644264b0fda53652351ea341eb43ad9",
+      "sha256": "74bb235bbdc346876bc2601fc1deaf13ce944d85aa17f856ed413124e4fa1b85",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5165,6 +5522,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -5190,8 +5548,7 @@
             "tests/simulation/test_game_core.py",
             "tests/preflop/test_decision_contract.js",
             "docs/preflop-grid-evaluator.md",
-            ".github/workflows/preflop-grid-evaluator.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-grid-evaluator.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -5230,6 +5587,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -5255,8 +5613,7 @@
             "tests/training/test_preflop_policy169.py",
             "tests/training/test_preflop_policy169_rebuild.py",
             "tests/training/test_evaluate_preflop_policy169_candidate.py",
-            ".github/workflows/preflop-policy169.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-policy169.yml"
           ]
         }
       },
@@ -5266,14 +5623,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "preflop_strategy",
       "scientific_boundaries": {
         "TEST": true,
         "TRAIN": false,
         "VALIDATION": true
       },
-      "sha256": "8eef956cab1413fe7e440ffc351a160728660919bfadd4ed64aa028070a61b66",
+      "sha256": "31f41be2c7fe83ba32cc3a2e006886308d577df5dfa31ffab797efa4c7a4fa3a",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5293,6 +5650,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -5318,8 +5676,7 @@
             "tests/training/test_preflop_policy169.py",
             "tests/training/test_preflop_policy169_rebuild.py",
             "tests/training/test_evaluate_preflop_policy169_candidate.py",
-            ".github/workflows/preflop-policy169.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-policy169.yml"
           ]
         },
         "workflow_dispatch": {}
@@ -5358,6 +5715,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -5384,12 +5742,12 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-search.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -5416,8 +5774,7 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-search.yml"
           ]
         }
       },
@@ -5427,14 +5784,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "preflop_strategy",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "c136833b302218ad66c296992333158cc1c7824e6d5c1f76d084816078732d44",
+      "sha256": "97d989fd12e8e7e7bb62ed0be8692dd0d42d2ebc1d1c6291b7b9eb6c6def4cb1",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5454,6 +5811,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -5480,12 +5838,12 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-search.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             ".node-version",
             "tools/repro_ci_environment.py",
@@ -5512,8 +5870,7 @@
             "tests/preflop/test_search.js",
             "tests/hero_ranges/test_calculated_range_export.mjs",
             "docs/preflop-search-orchestrator.md",
-            ".github/workflows/preflop-search.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/preflop-search.yml"
           ]
         }
       },
@@ -5674,6 +6031,7 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -5702,8 +6060,7 @@
             "tests/training/test_build_promote_release_handoff.py",
             "tests/training/test_finalize_cycle_release.py",
             "tests/training/test_verify_live_release.py",
-            ".github/workflows/release-handoff-contract.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/release-handoff-contract.yml"
           ]
         }
       },
@@ -5713,14 +6070,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "release_promotion",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "443230271c5fe990ef41cc5de0b249d55eecdf1ca672590493587d53211e0a94",
+      "sha256": "3287371f23cf7546f12e22b0f5183dce16a28375474f1a2dc3d292d8d394c65f",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",
@@ -5740,6 +6097,7 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
             ".python-version",
             "tools/repro_ci_environment.py",
             "tools/repro_environment_identity.py",
@@ -5768,8 +6126,7 @@
             "tests/training/test_build_promote_release_handoff.py",
             "tests/training/test_finalize_cycle_release.py",
             "tests/training/test_verify_live_release.py",
-            ".github/workflows/release-handoff-contract.yml",
-            ".github/actions/repro-runtime/action.yml"
+            ".github/workflows/release-handoff-contract.yml"
           ]
         },
         "push": {
@@ -6198,6 +6555,8 @@
       "path_filters": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/index.html",
             "site/trainer.js",
             "site/trainer.css",
@@ -6210,13 +6569,13 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/trainer-smoke.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/index.html",
             "site/trainer.js",
             "site/trainer.css",
@@ -6229,9 +6588,7 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/trainer-smoke.yml"
           ]
         }
       },
@@ -6241,14 +6598,14 @@
           "contents": "read"
         }
       },
-      "repro_status": "REPRO_NOT_VERIFIED",
+      "repro_status": "REPRO_COMPOSITE_VERIFIED",
       "role": "product_browser_validation",
       "scientific_boundaries": {
         "TEST": false,
         "TRAIN": false,
         "VALIDATION": false
       },
-      "sha256": "7b26904c25ea90d38342f8566d30af336f5a677f747be53a8af20b524cbf63b2",
+      "sha256": "eddde67e633b99148647a32c6813ebff44df9ecda590aa7602883a938e17a5b0",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "medium",
@@ -6268,6 +6625,8 @@
       "triggers": {
         "pull_request": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/index.html",
             "site/trainer.js",
             "site/trainer.css",
@@ -6280,13 +6639,13 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/trainer-smoke.yml"
           ]
         },
         "push": {
           "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
             "site/index.html",
             "site/trainer.js",
             "site/trainer.css",
@@ -6299,9 +6658,7 @@
             "tools/write_deployment_metadata.py",
             "tools/write_site_release.py",
             "wrangler.jsonc",
-            ".github/workflows/trainer-smoke.yml",
-            ".github/actions/repro-runtime/action.yml",
-            ".github/actions/repro-browser/action.yml"
+            ".github/workflows/trainer-smoke.yml"
           ]
         }
       },

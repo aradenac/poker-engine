@@ -1,21 +1,3156 @@
 {
-  "base_sha": "f88ea0ff60b349165f936d2e67c5bf1ad30d9a95",
+  "actions": {
+    ".github/actions/repro-browser/action.yml": {
+      "expected_sha256": "50c70f925dc8cb6eaab5c7b0e9a7f647f5eb8d92df22659781ac0f8fa6a64dda",
+      "sha256": "50c70f925dc8cb6eaab5c7b0e9a7f647f5eb8d92df22659781ac0f8fa6a64dda"
+    },
+    ".github/actions/repro-runtime/action.yml": {
+      "expected_sha256": "1b90982bdb93f7332a1dd9353afbe8028bcd1e655a9d2ca175e60b1a55e22d42",
+      "sha256": "1b90982bdb93f7332a1dd9353afbe8028bcd1e655a9d2ca175e60b1a55e22d42"
+    }
+  },
+  "base_sha": "571d91b041bad1eef196481148f3eae076a8dcec",
+  "ci": {
+    "observed": false,
+    "reason": "Local worker: no push/PR authorized",
+    "review_table": [
+      {
+        "expected_jobs": [
+          "static-contract",
+          "browser-smoke"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/trainer-smoke.yml"
+      },
+      {
+        "expected_jobs": [
+          "contract",
+          "browser-smoke"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/hero-range-editor.yml"
+      },
+      {
+        "expected_jobs": [
+          "contract",
+          "browser-smoke"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/hero-range-compliance.yml"
+      },
+      {
+        "expected_jobs": [
+          "contract",
+          "browser-smoke"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/population-pack-catalog.yml"
+      },
+      {
+        "expected_jobs": [
+          "integrity"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/dataset-integrity.yml"
+      },
+      {
+        "expected_jobs": [
+          "full-hand-arena",
+          "retained-model-b-smoke"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/full-hand-arena.yml"
+      },
+      {
+        "expected_jobs": [
+          "validate"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/full-hand-protocol.yml"
+      },
+      {
+        "expected_jobs": [
+          "calculated-range-contract"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/hero-calculated-range-export.yml"
+      },
+      {
+        "expected_jobs": [
+          "runtime-contract"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/model-b-card-aware-runtime.yml"
+      },
+      {
+        "expected_jobs": [
+          "validation"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/model-b-reveal-aware.yml"
+      },
+      {
+        "expected_jobs": [
+          "refit"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/postflop-response-refit.yml"
+      },
+      {
+        "expected_jobs": [
+          "preflop-grid"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/preflop-grid-evaluator.yml"
+      },
+      {
+        "expected_jobs": [
+          "contract"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/preflop-policy169.yml"
+      },
+      {
+        "expected_jobs": [
+          "contract"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/preflop-search.yml"
+      },
+      {
+        "expected_jobs": [
+          "contract"
+        ],
+        "observed_jobs": [],
+        "result": "UNOBSERVED",
+        "scientific_job_unchanged": true,
+        "side_effect_unchanged": true,
+        "workflow": ".github/workflows/release-handoff-contract.yml"
+      }
+    ]
+  },
+  "claude_review": "PENDING_EXTERNAL_REVIEW",
+  "historical_evidence": [
+    {
+      "expected_blob": "3a75f00f6b8df3f2b5d04f21d18f5414061fa0d1",
+      "observed_blob": "36066e0413294e5111c5cd712756ce6e43763d9e",
+      "path": "analysis/workflow_audit/repro_batch1_before_after.json",
+      "unchanged": false
+    },
+    {
+      "expected_blob": "63db3d7c58ba5c8019f924fc8f610f5235e41342",
+      "observed_blob": "63db3d7c58ba5c8019f924fc8f610f5235e41342",
+      "path": "analysis/workflow_audit/repro_batch2_before_after.json",
+      "unchanged": true
+    },
+    {
+      "expected_blob": "7a902772f1908b9af2e20e0618d91956642509c6",
+      "observed_blob": "7a902772f1908b9af2e20e0618d91956642509c6",
+      "path": "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
+      "unchanged": true
+    },
+    {
+      "expected_blob": "7e01376aa8e7ed8f85deea1228bed045797e4698",
+      "observed_blob": "7e01376aa8e7ed8f85deea1228bed045797e4698",
+      "path": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "unchanged": true
+    },
+    {
+      "expected_blob": "e378972a131068f27cfd8fe0620ec48bbcf05a38",
+      "observed_blob": "e378972a131068f27cfd8fe0620ec48bbcf05a38",
+      "path": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "unchanged": true
+    }
+  ],
+  "historical_links": [
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_batch1_before_after.json",
+      "historical_after": "452248d0885a2b1e90b9f00d6dc002f17d853828",
+      "transition_before": "452248d0885a2b1e90b9f00d6dc002f17d853828",
+      "workflow": ".github/workflows/trainer-smoke.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_batch1_before_after.json",
+      "historical_after": "8a270f4c1c451165585d2bbb7275b9cf568a5534",
+      "transition_before": "8a270f4c1c451165585d2bbb7275b9cf568a5534",
+      "workflow": ".github/workflows/hero-range-editor.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_batch1_before_after.json",
+      "historical_after": "68d5b96084070387182e1b469643944ea894f2b5",
+      "transition_before": "68d5b96084070387182e1b469643944ea894f2b5",
+      "workflow": ".github/workflows/hero-range-compliance.yml"
+    },
+    {
+      "algorithm": "sha256",
+      "evidence": "analysis/workflow_audit/repro_batch2_before_after.json",
+      "historical_after": "6997be3eae49b673e792dddb740bf6c5b8bf0230197f52f9476feae2744bc187",
+      "transition_before": "6997be3eae49b673e792dddb740bf6c5b8bf0230197f52f9476feae2744bc187",
+      "workflow": ".github/workflows/full-hand-arena.yml"
+    },
+    {
+      "algorithm": "sha256",
+      "evidence": "analysis/workflow_audit/repro_batch2_before_after.json",
+      "historical_after": "eebb7aaac40596f6ae53daa1432aa7682b68423b1afa245bfbd8272a5157bd0b",
+      "transition_before": "eebb7aaac40596f6ae53daa1432aa7682b68423b1afa245bfbd8272a5157bd0b",
+      "workflow": ".github/workflows/model-b-card-aware-runtime.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
+      "historical_after": "56f15bc0b1cef5ec856d8761addf392f1f00a9c3",
+      "transition_before": "56f15bc0b1cef5ec856d8761addf392f1f00a9c3",
+      "workflow": ".github/workflows/population-pack-catalog.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "4c15a9a2e08afaea6b78ff5140b65de8452a23a4",
+      "transition_before": "4c15a9a2e08afaea6b78ff5140b65de8452a23a4",
+      "workflow": ".github/workflows/dataset-integrity.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "c703b80e961084be5bc25bba5a4fe4c0e97381b9",
+      "transition_before": "c703b80e961084be5bc25bba5a4fe4c0e97381b9",
+      "workflow": ".github/workflows/full-hand-protocol.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "e141e4662212837c8abadb472132a4fa85d1effa",
+      "transition_before": "e141e4662212837c8abadb472132a4fa85d1effa",
+      "workflow": ".github/workflows/hero-range-pfc-context.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "ae18388ae29fa786b8ae9a6b0fa773ed5c2fca53",
+      "transition_before": "ae18388ae29fa786b8ae9a6b0fa773ed5c2fca53",
+      "workflow": ".github/workflows/preflop-grid-evaluator.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "ac88ac3e3ea20b6036fcf5e639aafdf8bdc3896f",
+      "transition_before": "ac88ac3e3ea20b6036fcf5e639aafdf8bdc3896f",
+      "workflow": ".github/workflows/preflop-policy169.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "033ade3b219dc22b6bb89b7cc132ccbc0d9bcc2e",
+      "transition_before": "033ade3b219dc22b6bb89b7cc132ccbc0d9bcc2e",
+      "workflow": ".github/workflows/release-handoff-contract.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+      "historical_after": "7dae778efb955de87aa7edeb8f36c528375fff48",
+      "transition_before": "7dae778efb955de87aa7edeb8f36c528375fff48",
+      "workflow": ".github/workflows/release-no-pending-snapshot-proof.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "f0fa905743d8d4202b95894f9724db91fbbb2434",
+      "transition_before": "f0fa905743d8d4202b95894f9724db91fbbb2434",
+      "workflow": ".github/workflows/continuous-training-cycle.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "3aa25d6d4dc05a1f097f1f358e2310330d511d03",
+      "transition_before": "3aa25d6d4dc05a1f097f1f358e2310330d511d03",
+      "workflow": ".github/workflows/ingest-artifacts.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "c61f73c9a9601a12b00fbb418e5b75aebcca073f",
+      "transition_before": "c61f73c9a9601a12b00fbb418e5b75aebcca073f",
+      "workflow": ".github/workflows/materialize-certified-population.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "816cc286f550aadbb0cdf2be990b43023079a81b",
+      "transition_before": "816cc286f550aadbb0cdf2be990b43023079a81b",
+      "workflow": ".github/workflows/plan-ingested-cycle.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "0b275b042b41be044cd363e43e455b20b77b1c21",
+      "transition_before": "0b275b042b41be044cd363e43e455b20b77b1c21",
+      "workflow": ".github/workflows/population-certification.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "a1fe3033479c610aa218aacb03d50d1254b27917",
+      "transition_before": "a1fe3033479c610aa218aacb03d50d1254b27917",
+      "workflow": ".github/workflows/postflop-response-refit.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "2efeb4ad0a95a719c2aa1f20d1a364b5122cc3e2",
+      "transition_before": "2efeb4ad0a95a719c2aa1f20d1a364b5122cc3e2",
+      "workflow": ".github/workflows/preflop-search.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "1ca29c457954b94bd8b15b21f2eab9ead9ddd680",
+      "transition_before": "1ca29c457954b94bd8b15b21f2eab9ead9ddd680",
+      "workflow": ".github/workflows/user-artifact-bundle.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "95baf8419249dbc1968a509edd23347939303c3a",
+      "transition_before": "95baf8419249dbc1968a509edd23347939303c3a",
+      "workflow": ".github/workflows/hero-calculated-range-export.yml"
+    },
+    {
+      "algorithm": "git_blob_sha1",
+      "evidence": "analysis/workflow_audit/residual_repro_dag_before_after.json",
+      "historical_after": "2062adfb7c181075609befba025aad7e4151f515",
+      "transition_before": "2062adfb7c181075609befba025aad7e4151f515",
+      "workflow": ".github/workflows/model-b-reveal-aware.yml"
+    }
+  ],
+  "jobs_blocked": [
+    {
+      "action": ".github/actions/repro-browser/action.yml",
+      "browser": true,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Install locked browser runtime\n        run: |\n          set -euo pipefail\n          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json\n          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": true,
+      "job": "browser-smoke",
+      "justification": "BLOCKED: site assembly executes between Python setup and dependency installation; moving it would change ordering",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'false'\n",
+      "status": "BLOCKED",
+      "workflow": ".github/workflows/population-pack-catalog.yml"
+    }
+  ],
+  "local_tests": [
+    {
+      "command": "python3 tests/test_repro_ci_helpers.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_composite_factorization.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_workflow_batch2.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_population_pack_catalog.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_current_mixed_batch.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_residual_repro_dag.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/audit_active_workflow_dag.py --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/validate_project_state.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/validate_project_state.py --check-status",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_project_state.py",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hero_ranges/test_hero_range_repository.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hero_ranges/test_hero_compliance.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/packs/test_pack_catalog_runtime.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_release_handoff.py",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/ci/test_repro_workflow_batch1.py",
+      "reason": "Historical evidence was rewritten before this worker; historical mutation cases separately pass.",
+      "result": "FAIL"
+    },
+    {
+      "command": "python3 tools/audit_repro_composite_factorization.py --check",
+      "reason": "Historical evidence rewrite and pre-existing files outside allowlist.",
+      "result": "FAIL"
+    }
+  ],
+  "measurement_note": "Static cost proxy is structural, not billed compute; composite steps still run.",
+  "metrics": {
+    "after": {
+      "browser_jobs": 3,
+      "inline_bootstrap": 1,
+      "inline_browser_install": 1,
+      "inline_setup_node": 0,
+      "inline_setup_python": 1,
+      "inline_verify": 0,
+      "jobs": 20,
+      "runtime_jobs": 16,
+      "static_cost_proxy": 82,
+      "workflows": 15,
+      "yaml_bootstrap_lines": 65
+    },
+    "before": {
+      "browser_jobs": 0,
+      "inline_bootstrap": 4,
+      "inline_browser_install": 4,
+      "inline_setup_node": 5,
+      "inline_setup_python": 17,
+      "inline_verify": 13,
+      "jobs": 20,
+      "runtime_jobs": 0,
+      "static_cost_proxy": 124,
+      "workflows": 15,
+      "yaml_bootstrap_lines": 112
+    }
+  },
+  "planning_matrix": [
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "static-contract",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/trainer-smoke.yml"
+    },
+    {
+      "action": ".github/actions/repro-browser/action.yml",
+      "browser": true,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11.9'\n",
+        "      - name: Install locked browser runtime\n        run: |\n          set -euo pipefail\n          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json\n          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": true,
+      "job": "browser-smoke",
+      "justification": "Locked browser Python dependencies; no Node command",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/trainer-smoke.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "contract",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/hero-range-editor.yml"
+    },
+    {
+      "action": ".github/actions/repro-browser/action.yml",
+      "browser": true,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11.9'\n",
+        "      - name: Install locked browser runtime\n        run: |\n          set -euo pipefail\n          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json\n          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": true,
+      "job": "browser-smoke",
+      "justification": "Locked browser Python dependencies; no Node command",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/hero-range-editor.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-node@v4\n        with:\n          node-version: '22'\n"
+      ],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "contract",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/hero-range-compliance.yml"
+    },
+    {
+      "action": ".github/actions/repro-browser/action.yml",
+      "browser": true,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11.9'\n",
+        "      - name: Install locked browser runtime\n        run: |\n          set -euo pipefail\n          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json\n          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": true,
+      "job": "browser-smoke",
+      "justification": "Locked browser Python dependencies; no Node command",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/hero-range-compliance.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - uses: actions/setup-node@v4\n        with:\n          node-version-file: '.node-version'\n",
+        "      - name: Verify locked REPRO runtime\n        run: python3 tools/repro_ci_environment.py verify --require-node\n"
+      ],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "contract",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/population-pack-catalog.yml"
+    },
+    {
+      "action": ".github/actions/repro-browser/action.yml",
+      "browser": true,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Install locked browser runtime\n        run: |\n          set -euo pipefail\n          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json\n          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": true,
+      "job": "browser-smoke",
+      "justification": "BLOCKED: site assembly executes between Python setup and dependency installation; moving it would change ordering",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-browser\n        with:\n          require-node: 'false'\n",
+      "status": "BLOCKED",
+      "workflow": ".github/workflows/population-pack-catalog.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "integrity",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/dataset-integrity.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "full-hand-arena",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/full-hand-arena.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "retained-model-b-smoke",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/full-hand-arena.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "validate",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/full-hand-protocol.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-node@v4\n        with:\n          node-version-file: '.node-version'\n",
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify --require-node\n"
+      ],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "calculated-range-contract",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/hero-calculated-range-export.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "runtime-contract",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/model-b-card-aware-runtime.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "validation",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/model-b-reveal-aware.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "refit",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/postflop-response-refit.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - uses: actions/setup-node@v4\n        with:\n          node-version-file: '.node-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify --require-node\n"
+      ],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "preflop-grid",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/preflop-grid-evaluator.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "contract",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/preflop-policy169.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - uses: actions/setup-node@v4\n        with:\n          node-version-file: '.node-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify --require-node\n"
+      ],
+      "inputs": {
+        "require-node": "true"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "contract",
+      "justification": "Python and Node business commands; verify only",
+      "node": true,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/preflop-search.yml"
+    },
+    {
+      "action": ".github/actions/repro-runtime/action.yml",
+      "browser": false,
+      "inline_steps": [
+        "      - uses: actions/setup-python@v5\n        with:\n          python-version-file: '.python-version'\n",
+        "      - name: Verify locked REPRO environment\n        run: python3 tools/repro_ci_environment.py verify\n"
+      ],
+      "inputs": {
+        "require-node": "false"
+      },
+      "install_node_deps": false,
+      "install_python_deps": false,
+      "job": "contract",
+      "justification": "Python business commands; verify only",
+      "node": false,
+      "python": true,
+      "replacement": "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'false'\n",
+      "status": "MIGRATE",
+      "workflow": ".github/workflows/release-handoff-contract.yml"
+    }
+  ],
   "schema": "poker-repro-composite-factorization/v1",
-  "workflows": {
-    ".github/workflows/dataset-integrity.yml": "7fb5c71bebb98b6ee84bb329809a64446b8afa29",
-    ".github/workflows/full-hand-arena.yml": "718a23fd1a16810359c528f3167fc1b9bcf45a00",
-    ".github/workflows/full-hand-protocol.yml": "3944994f80c41cda2ef0d880c15090193b7c6aba",
-    ".github/workflows/hero-calculated-range-export.yml": "fd7be376bdfe08319a385431e782cd9d4ca8ee59",
-    ".github/workflows/hero-range-compliance.yml": "04b87db74872fd6ff0d0c51d1541812b9a348593",
-    ".github/workflows/hero-range-editor.yml": "a337878facc5da997613bf56c90a204fe95c27c4",
-    ".github/workflows/model-b-card-aware-runtime.yml": "ae4f75290dede588daa3d98a2fc19af8cdc0ae12",
-    ".github/workflows/model-b-reveal-aware.yml": "4df00cb5768279288ca3595b57d3711810d1afd6",
-    ".github/workflows/population-pack-catalog.yml": "408aa18d99fc4f75a03e17273cd20b83409f27a6",
-    ".github/workflows/postflop-response-refit.yml": "248131ff661575da67a0ac6cc98477e54524ed9c",
-    ".github/workflows/preflop-grid-evaluator.yml": "22ee4aa311feb9cbd23a723e220b7fbb28ba2925",
-    ".github/workflows/preflop-policy169.yml": "f5550c2f65019f2b2cb4e2b8f0b82da74076ee6d",
-    ".github/workflows/preflop-search.yml": "ede10523ecf5f3529d525e25371157efd6582fc3",
-    ".github/workflows/release-handoff-contract.yml": "38b2de84322877c841a35805f52d886ddd9c1f49",
-    ".github/workflows/trainer-smoke.yml": "5f214ec7a9a6670217d5d41e2b0ebdbd10afba8a"
-  }
+  "scientific_commands_changed": false,
+  "simulations": [
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-runtime/action.yml"
+        ],
+        "cost_proxy": 41,
+        "event": "push",
+        "id": ".github/actions/repro-runtime/action.yml",
+        "job_count": 11,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-range-compliance.yml",
+          ".github/workflows/hero-range-editor.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-compliance.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-editor.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "static-contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/trainer-smoke.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 8,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-runtime/action.yml"
+        ],
+        "cost_proxy": 0,
+        "event": "push",
+        "id": ".github/actions/repro-runtime/action.yml",
+        "job_count": 0,
+        "matched_workflows": [],
+        "matches": [],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 0,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "push",
+      "path": ".github/actions/repro-runtime/action.yml"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-runtime/action.yml"
+        ],
+        "cost_proxy": 82,
+        "event": "pull_request",
+        "id": ".github/actions/repro-runtime/action.yml",
+        "job_count": 20,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/hero-range-compliance.yml",
+          ".github/workflows/hero-range-editor.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-policy169.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/release-handoff-contract.yml",
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-compliance.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-editor.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-policy169.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/release-handoff-contract.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "static-contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/trainer-smoke.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 15,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-runtime/action.yml"
+        ],
+        "cost_proxy": 0,
+        "event": "pull_request",
+        "id": ".github/actions/repro-runtime/action.yml",
+        "job_count": 0,
+        "matched_workflows": [],
+        "matches": [],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 0,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "pull_request",
+      "path": ".github/actions/repro-runtime/action.yml"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-browser/action.yml"
+        ],
+        "cost_proxy": 20,
+        "event": "push",
+        "id": ".github/actions/repro-browser/action.yml",
+        "job_count": 6,
+        "matched_workflows": [
+          ".github/workflows/hero-range-compliance.yml",
+          ".github/workflows/hero-range-editor.yml",
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-compliance.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-editor.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "static-contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/trainer-smoke.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 3,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-browser/action.yml"
+        ],
+        "cost_proxy": 0,
+        "event": "push",
+        "id": ".github/actions/repro-browser/action.yml",
+        "job_count": 0,
+        "matched_workflows": [],
+        "matches": [],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 0,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "push",
+      "path": ".github/actions/repro-browser/action.yml"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-browser/action.yml"
+        ],
+        "cost_proxy": 20,
+        "event": "pull_request",
+        "id": ".github/actions/repro-browser/action.yml",
+        "job_count": 6,
+        "matched_workflows": [
+          ".github/workflows/hero-range-compliance.yml",
+          ".github/workflows/hero-range-editor.yml",
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-compliance.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 6,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-range-editor.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "static-contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/trainer-smoke.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 3,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".github/actions/repro-browser/action.yml"
+        ],
+        "cost_proxy": 0,
+        "event": "pull_request",
+        "id": ".github/actions/repro-browser/action.yml",
+        "job_count": 0,
+        "matched_workflows": [],
+        "matches": [],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 0,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "pull_request",
+      "path": ".github/actions/repro-browser/action.yml"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          "tools/repro_ci_environment.py"
+        ],
+        "cost_proxy": 21,
+        "event": "push",
+        "id": "tools/repro_ci_environment.py",
+        "job_count": 5,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 5,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          "tools/repro_ci_environment.py"
+        ],
+        "cost_proxy": 33,
+        "event": "push",
+        "id": "tools/repro_ci_environment.py",
+        "job_count": 5,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 5,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "push",
+      "path": "tools/repro_ci_environment.py"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          "tools/repro_ci_environment.py"
+        ],
+        "cost_proxy": 62,
+        "event": "pull_request",
+        "id": "tools/repro_ci_environment.py",
+        "job_count": 14,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-policy169.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/release-handoff-contract.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-policy169.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/release-handoff-contract.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 12,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          "tools/repro_ci_environment.py"
+        ],
+        "cost_proxy": 96,
+        "event": "pull_request",
+        "id": "tools/repro_ci_environment.py",
+        "job_count": 14,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-policy169.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/release-handoff-contract.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 16,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-policy169.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/release-handoff-contract.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 12,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "pull_request",
+      "path": "tools/repro_ci_environment.py"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".python-version"
+        ],
+        "cost_proxy": 21,
+        "event": "push",
+        "id": ".python-version",
+        "job_count": 5,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 5,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".python-version"
+        ],
+        "cost_proxy": 33,
+        "event": "push",
+        "id": ".python-version",
+        "job_count": 5,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 5,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "push",
+      "path": ".python-version"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".python-version"
+        ],
+        "cost_proxy": 62,
+        "event": "pull_request",
+        "id": ".python-version",
+        "job_count": 14,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-policy169.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/release-handoff-contract.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-policy169.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/release-handoff-contract.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 12,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".python-version"
+        ],
+        "cost_proxy": 96,
+        "event": "pull_request",
+        "id": ".python-version",
+        "job_count": 14,
+        "matched_workflows": [
+          ".github/workflows/dataset-integrity.yml",
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/full-hand-protocol.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-policy169.yml",
+          ".github/workflows/preflop-search.yml",
+          ".github/workflows/release-handoff-contract.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "integrity",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/dataset-integrity.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 16,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validate",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-protocol.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-policy169.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/release-handoff-contract.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 12,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "pull_request",
+      "path": ".python-version"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".node-version"
+        ],
+        "cost_proxy": 13,
+        "event": "push",
+        "id": ".node-version",
+        "job_count": 3,
+        "matched_workflows": [
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 3,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".node-version"
+        ],
+        "cost_proxy": 21,
+        "event": "push",
+        "id": ".node-version",
+        "job_count": 3,
+        "matched_workflows": [
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "push",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "push",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 3,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "push",
+      "path": ".node-version"
+    },
+    {
+      "after": {
+        "branch": "main",
+        "changed_paths": [
+          ".node-version"
+        ],
+        "cost_proxy": 46,
+        "event": "pull_request",
+        "id": ".node-version",
+        "job_count": 10,
+        "matched_workflows": [
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 8,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 3,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 8,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "before": {
+        "branch": "main",
+        "changed_paths": [
+          ".node-version"
+        ],
+        "cost_proxy": 72,
+        "event": "pull_request",
+        "id": ".node-version",
+        "job_count": 10,
+        "matched_workflows": [
+          ".github/workflows/full-hand-arena.yml",
+          ".github/workflows/hero-calculated-range-export.yml",
+          ".github/workflows/model-b-card-aware-runtime.yml",
+          ".github/workflows/model-b-reveal-aware.yml",
+          ".github/workflows/population-pack-catalog.yml",
+          ".github/workflows/postflop-response-refit.yml",
+          ".github/workflows/preflop-grid-evaluator.yml",
+          ".github/workflows/preflop-search.yml"
+        ],
+        "matches": [
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 16,
+            "jobs": [
+              {
+                "id": "full-hand-arena",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "retained-model-b-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/full-hand-arena.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "calculated-range-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/hero-calculated-range-export.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "runtime-contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-card-aware-runtime.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "validation",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/model-b-reveal-aware.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 12,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              },
+              {
+                "id": "browser-smoke",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/population-pack-catalog.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 9,
+            "jobs": [
+              {
+                "id": "refit",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/postflop-response-refit.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "preflop-grid",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-grid-evaluator.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 7,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/preflop-search.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
+          }
+        ],
+        "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+        "unknown_job_conditions": [],
+        "workflow_count": 8,
+        "write_capable_jobs_potentially_reachable": []
+      },
+      "event": "pull_request",
+      "path": ".node-version"
+    }
+  ],
+  "test_consumed": false,
+  "violations": [
+    "analysis/workflow_audit/repro_batch1_before_after.json: immutable historical evidence rewritten",
+    "files outside allowlist: ['analysis/workflow_audit/repro_batch1_before_after.json', 'dbg_n8n.sh', 'n8n-execution-157.json', 'n8n-execution-158.json', 'n8n-execution-159.json', 'n8n-execution-160.json', 'n8n-execution-161.json', 'n8n-execution-164.json', 'n8n-execution-165.json', 'n8n-execution-167.json', 'n8n-execution-168.json', 'tools/ai/debug_n8n.sh']"
+  ],
+  "workflows": [
+    {
+      "after_blob": "5e168acf6474c5351a46af8da2f85b58bdb581ce",
+      "before_blob": "452248d0885a2b1e90b9f00d6dc002f17d853828",
+      "path": ".github/workflows/trainer-smoke.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "7fce8dcb0b579bc90f2a138156a9c5c86a4ad3bd",
+      "before_blob": "8a270f4c1c451165585d2bbb7275b9cf568a5534",
+      "path": ".github/workflows/hero-range-editor.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "880f68ce9af28fa4093fee6abd0bc645463b37aa",
+      "before_blob": "68d5b96084070387182e1b469643944ea894f2b5",
+      "path": ".github/workflows/hero-range-compliance.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "1c873f4b47089c2463d9073325ccecbb3fda276b",
+      "before_blob": "56f15bc0b1cef5ec856d8761addf392f1f00a9c3",
+      "path": ".github/workflows/population-pack-catalog.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "078c915fb6c55324b192dbb5863fdc55ea69eaf5",
+      "before_blob": "4c15a9a2e08afaea6b78ff5140b65de8452a23a4",
+      "path": ".github/workflows/dataset-integrity.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "4f57227ebefe52fecb0369ada334ad0b5e2c0466",
+      "before_blob": "aef74a1cdf40736d8af0864ca0c684125d60c79f",
+      "path": ".github/workflows/full-hand-arena.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "587202c60b2b14f1b654710a20427d701dfd55e7",
+      "before_blob": "c703b80e961084be5bc25bba5a4fe4c0e97381b9",
+      "path": ".github/workflows/full-hand-protocol.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "58f17b458ed3ca1912eba7cf8f12469f2fab6adf",
+      "before_blob": "95baf8419249dbc1968a509edd23347939303c3a",
+      "path": ".github/workflows/hero-calculated-range-export.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "925962e847ad98c81a3509c1c495ceb1dc7e5b9b",
+      "before_blob": "802c30d33f920244916fbcec8c899accd6b9af84",
+      "path": ".github/workflows/model-b-card-aware-runtime.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "317b7053bf255958ee995dab7873789a359a960f",
+      "before_blob": "2062adfb7c181075609befba025aad7e4151f515",
+      "path": ".github/workflows/model-b-reveal-aware.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "d39d35a1188115bf559cba303cee1610d1ebbfdd",
+      "before_blob": "a1fe3033479c610aa218aacb03d50d1254b27917",
+      "path": ".github/workflows/postflop-response-refit.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "f037598e5d3d0163e7e42d64ce1ffd347d45927e",
+      "before_blob": "ae18388ae29fa786b8ae9a6b0fa773ed5c2fca53",
+      "path": ".github/workflows/preflop-grid-evaluator.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "c595638ed5b380223d3c17f5d61d6570cff0e715",
+      "before_blob": "ac88ac3e3ea20b6036fcf5e639aafdf8bdc3896f",
+      "path": ".github/workflows/preflop-policy169.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "687396af463cfff1b37680d0ded0c06fa7e07cf2",
+      "before_blob": "2efeb4ad0a95a719c2aa1f20d1a364b5122cc3e2",
+      "path": ".github/workflows/preflop-search.yml",
+      "reconstructible": true
+    },
+    {
+      "after_blob": "6d12ba5895e06179cdbdacff70097c1b2c94fdd8",
+      "before_blob": "033ade3b219dc22b6bb89b7cc132ccbc0d9bcc2e",
+      "path": ".github/workflows/release-handoff-contract.yml",
+      "reconstructible": true
+    }
+  ],
+  "write_surface_expanded": false
 }

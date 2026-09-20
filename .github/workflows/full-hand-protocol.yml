@@ -3,6 +3,7 @@ name: Full-hand evaluation protocol
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -29,11 +30,11 @@ on:
       - 'tests/training/test_full_hand_protocol.py'
       - 'tests/training/test_preflop_strategy_benchmark.py'
       - '.github/workflows/full-hand-protocol.yml'
-      - '.github/actions/repro-runtime/action.yml'
   push:
     branches:
       - main
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -60,7 +61,6 @@ on:
       - 'tests/training/test_full_hand_protocol.py'
       - 'tests/training/test_preflop_strategy_benchmark.py'
       - '.github/workflows/full-hand-protocol.yml'
-      - '.github/actions/repro-runtime/action.yml'
   workflow_dispatch:
 
 permissions:
@@ -75,8 +75,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
-
       - name: Validate syntax and frozen protocol invariants
         run: |
           python3 -m py_compile \

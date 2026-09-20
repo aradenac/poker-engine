@@ -3,6 +3,7 @@ name: Validate preflop action sizing search
 on:
   push:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -30,9 +31,9 @@ on:
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
       - 'docs/preflop-search-orchestrator.md'
       - '.github/workflows/preflop-search.yml'
-      - '.github/actions/repro-runtime/action.yml'
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -60,7 +61,6 @@ on:
       - 'tests/hero_ranges/test_calculated_range_export.mjs'
       - 'docs/preflop-search-orchestrator.md'
       - '.github/workflows/preflop-search.yml'
-      - '.github/actions/repro-runtime/action.yml'
 
 permissions:
   contents: read
@@ -77,7 +77,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'true'
-          install-python-deps: 'true'
       - name: Syntax
         run: |
           node --check src/preflop/search.js

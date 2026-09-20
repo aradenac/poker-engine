@@ -3,6 +3,7 @@ name: Card-aware Model B runtime
 on:
   push:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
       - 'tools/repro_container.py'
@@ -27,9 +28,9 @@ on:
       - 'tests/training/test_card_aware_behavior_fit.py'
       - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
       - '.github/workflows/model-b-card-aware-runtime.yml'
-      - '.github/actions/repro-runtime/action.yml'
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
       - 'tools/repro_container.py'
@@ -54,7 +55,6 @@ on:
       - 'tests/training/test_card_aware_behavior_fit.py'
       - 'training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json'
       - '.github/workflows/model-b-card-aware-runtime.yml'
-      - '.github/actions/repro-runtime/action.yml'
 
 permissions:
   contents: read
@@ -68,8 +68,6 @@ jobs:
       - uses: ./.github/actions/repro-runtime
         with:
           require-node: 'false'
-          install-python-deps: 'true'
-
       - name: Compile runtime, fit seam and tests
         run: |
           python3 -m py_compile \
