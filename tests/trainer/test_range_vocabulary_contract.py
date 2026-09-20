@@ -37,6 +37,19 @@ def main() -> None:
     assert 'state.ranges' in INDEX
     assert 'populationRangeEstimateForPlayer' in INDEX
 
+    # The estimated/conditioned range has its own display vocabulary, and the
+    # non-informative prior is an explicit state rather than a 100 %
+    # max-normalized range.
+    assert 'Prior non informatif · range non estimée' in INDEX
+    assert 'Posterior dégénéré · masse nulle après blockers publics' in INDEX
+    assert 'projection 169 (masse)' in INDEX
+    assert 'masse probabiliste' in INDEX
+    assert 'fréquence d’inclusion' in INDEX
+    assert '100 % = poids relatif maximal' not in INDEX
+    # The known-hand override is its own vocabulary, not a posterior notion.
+    assert 'Override main connue · mécanisme séparé du posterior.' in INDEX
+    assert 'knownHandOverride' in INDEX
+
     print('range vocabulary contract checks: OK')
 
 
