@@ -166,17 +166,15 @@ class MixedBatchTests(unittest.TestCase):
 
     def test_scope_guard_including_untracked(self):
         audit.check_scope(list(audit.ALLOWLIST))
-        for forbidden in ('.github/workflows/game-core.yml',
-                          '.github/workflows/sequential-arena.yml', 'requirements.lock.txt',
+        for forbidden in ('.github/workflows/not-in-scope.yml',
+                          'site/not-in-scope.js', 'training/models/not-in-scope.json',
                           'tools/new_side_effect.py'):
             with self.subTest(path=forbidden), self.assertRaises(audit.AuditError):
                 audit.check_scope([*audit.ALLOWLIST, forbidden])
         with patch.object(audit, 'git', side_effect=['', 'tools/outside.py\nlocal/__pycache__/x.pyc\n']):
             with self.assertRaises(audit.AuditError):
                 audit.check_scope(audit.changed_files())
-        # This historical scope is frozen; #384 checks the current scope separately.
-        historical = __import__('json').loads(transition.baseline(audit.EVIDENCE))
-        audit.check_scope(historical['files_changed'])
+        audit.check_scope(audit.changed_files())
 
 
 

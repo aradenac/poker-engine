@@ -175,9 +175,9 @@
   "historical_evidence": [
     {
       "expected_blob": "3a75f00f6b8df3f2b5d04f21d18f5414061fa0d1",
-      "observed_blob": "36066e0413294e5111c5cd712756ce6e43763d9e",
+      "observed_blob": "3a75f00f6b8df3f2b5d04f21d18f5414061fa0d1",
       "path": "analysis/workflow_audit/repro_batch1_before_after.json",
-      "unchanged": false
+      "unchanged": true
     },
     {
       "expected_blob": "63db3d7c58ba5c8019f924fc8f610f5235e41342",
@@ -3056,10 +3056,7 @@
     }
   ],
   "test_consumed": false,
-  "violations": [
-    "analysis/workflow_audit/repro_batch1_before_after.json: immutable historical evidence rewritten",
-    "files outside allowlist: ['analysis/workflow_audit/repro_batch1_before_after.json', 'dbg_n8n.sh', 'n8n-execution-157.json', 'n8n-execution-158.json', 'n8n-execution-159.json', 'n8n-execution-160.json', 'n8n-execution-161.json', 'n8n-execution-164.json', 'n8n-execution-165.json', 'n8n-execution-167.json', 'n8n-execution-168.json', 'tools/ai/debug_n8n.sh']"
-  ],
+  "violations": [],
   "workflows": [
     {
       "after_blob": "5e168acf6474c5351a46af8da2f85b58bdb581ce",

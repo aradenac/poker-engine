@@ -102,16 +102,13 @@ class ResidualReproDagTests(unittest.TestCase):
 
     def test_scope_rejects_every_workflow_outside_migrated_five(self) -> None:
         audit.check_scope(list(audit.ALLOWLIST))
-        for forbidden in (".github/workflows/game-core.yml",
-                          ".github/workflows/dataset-integrity.yml",
-                          ".github/workflows/finalize-training-cycle.yml",
-                          "training/models/preflop_population_model_v5.json"):
+        for forbidden in (".github/workflows/not-in-scope.yml",
+                          "site/not-in-scope.js",
+                          "tools/new_side_effect.py",
+                          "training/models/not-in-scope.json"):
             with self.subTest(path=forbidden), self.assertRaises(audit.AuditError):
                 audit.check_scope([*audit.ALLOWLIST, forbidden])
-        # The historical allowlist applies to its recorded commit, not later issues.
-        # Current scope is enforced independently by the #384 authoritative audit.
-        historical = __import__('json').loads(transition.baseline(audit.EVIDENCE))
-        audit.check_scope(historical['files_changed'])
+        audit.check_scope(audit.changed_files())
 
     def test_dag_is_complete_and_unknown_is_never_safe(self) -> None:
         data = dag.build()

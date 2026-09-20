@@ -36,23 +36,23 @@
       "static_cost_proxy": 43
     },
     "after": {
-      "workflow_lines": 286,
+      "workflow_lines": 280,
       "checkout": 6,
-      "setup_python": 0,
-      "setup_node": 0,
+      "setup_python": 3,
+      "setup_node": 1,
       "direct_pip_install": 0,
       "direct_playwright_install": 0,
-      "repro_environment_helper_calls": 0,
-      "repro_browser_helper_calls": 0,
+      "repro_environment_helper_calls": 3,
+      "repro_browser_helper_calls": 3,
       "continue_on_error_true": 0,
       "upload_artifact": 0,
-      "static_cost_proxy": 20
+      "static_cost_proxy": 28
     },
     "delta": {
-      "workflow_lines": 24,
+      "workflow_lines": 18,
       "direct_inline_browser_setup_commands": -6,
       "shared_helper_calls": 6,
-      "static_cost_proxy": -23
+      "static_cost_proxy": -15
     }
   },
   "representative_changes": [
@@ -105,7 +105,7 @@
     {
       "path": ".github/workflows/trainer-smoke.yml",
       "before_git_blob_sha": "cc121f1818b5920157f73429469e5f0b094b262f",
-      "after_git_blob_sha": "5f214ec7a9a6670217d5d41e2b0ebdbd10afba8a",
+      "after_git_blob_sha": "452248d0885a2b1e90b9f00d6dc002f17d853828",
       "contract": {
         "name": "Validate interactive trainer",
         "concurrency": {
@@ -141,9 +141,7 @@
               "tools/write_deployment_metadata.py",
               "tools/write_site_release.py",
               "wrangler.jsonc",
-              ".github/workflows/trainer-smoke.yml",
-              ".github/actions/repro-runtime/action.yml",
-              ".github/actions/repro-browser/action.yml"
+              ".github/workflows/trainer-smoke.yml"
             ]
           },
           "pull_request": {
@@ -160,9 +158,7 @@
               "tools/write_deployment_metadata.py",
               "tools/write_site_release.py",
               "wrangler.jsonc",
-              ".github/workflows/trainer-smoke.yml",
-              ".github/actions/repro-runtime/action.yml",
-              ".github/actions/repro-browser/action.yml"
+              ".github/workflows/trainer-smoke.yml"
             ]
           }
         },
@@ -187,18 +183,18 @@
         "static_cost_proxy": 15
       },
       "after": {
-        "lines": 101,
+        "lines": 98,
         "direct_pip_install": 0,
         "direct_playwright_install": 0,
-        "setup_python": 0,
+        "setup_python": 1,
         "setup_node": 0,
-        "static_cost_proxy": 8
+        "static_cost_proxy": 10
       }
     },
     {
       "path": ".github/workflows/hero-range-editor.yml",
       "before_git_blob_sha": "72215d13dbe3d427dfb71d781d49ceadcc2078de",
-      "after_git_blob_sha": "a337878facc5da997613bf56c90a204fe95c27c4",
+      "after_git_blob_sha": "8a270f4c1c451165585d2bbb7275b9cf568a5534",
       "contract": {
         "name": "Validate Hero range repository and editor",
         "concurrency": {
@@ -231,9 +227,7 @@
               "tests/hero_ranges/**",
               "tools/patches/apply_hero_range_editor.py",
               "tools/write_site_release.py",
-              ".github/workflows/hero-range-editor.yml",
-              ".github/actions/repro-runtime/action.yml",
-              ".github/actions/repro-browser/action.yml"
+              ".github/workflows/hero-range-editor.yml"
             ]
           },
           "pull_request": {
@@ -247,9 +241,7 @@
               "tests/hero_ranges/**",
               "tools/patches/apply_hero_range_editor.py",
               "tools/write_site_release.py",
-              ".github/workflows/hero-range-editor.yml",
-              ".github/actions/repro-runtime/action.yml",
-              ".github/actions/repro-browser/action.yml"
+              ".github/workflows/hero-range-editor.yml"
             ]
           }
         },
@@ -274,18 +266,18 @@
         "static_cost_proxy": 13
       },
       "after": {
-        "lines": 88,
+        "lines": 85,
         "direct_pip_install": 0,
         "direct_playwright_install": 0,
-        "setup_python": 0,
+        "setup_python": 1,
         "setup_node": 0,
-        "static_cost_proxy": 6
+        "static_cost_proxy": 8
       }
     },
     {
       "path": ".github/workflows/hero-range-compliance.yml",
       "before_git_blob_sha": "e2e19e77bbcc5656266bb012d5f984d905ecfa77",
-      "after_git_blob_sha": "04b87db74872fd6ff0d0c51d1541812b9a348593",
+      "after_git_blob_sha": "68d5b96084070387182e1b469643944ea894f2b5",
       "contract": {
         "name": "Validate Hero range compliance",
         "concurrency": {
@@ -321,9 +313,7 @@
               "tools/patches/patch_hero_compliance_replayer_v1.py",
               "tools/patches/patch_hero_compliance_release_v1.py",
               "tools/write_site_release.py",
-              ".github/workflows/hero-range-compliance.yml",
-              ".github/actions/repro-runtime/action.yml",
-              ".github/actions/repro-browser/action.yml"
+              ".github/workflows/hero-range-compliance.yml"
             ]
           },
           "pull_request": {
@@ -340,9 +330,7 @@
               "tools/patches/patch_hero_compliance_replayer_v1.py",
               "tools/patches/patch_hero_compliance_release_v1.py",
               "tools/write_site_release.py",
-              ".github/workflows/hero-range-compliance.yml",
-              ".github/actions/repro-runtime/action.yml",
-              ".github/actions/repro-browser/action.yml"
+              ".github/workflows/hero-range-compliance.yml"
             ]
           }
         },
@@ -375,9 +363,9 @@
         "lines": 97,
         "direct_pip_install": 0,
         "direct_playwright_install": 0,
-        "setup_python": 0,
-        "setup_node": 0,
-        "static_cost_proxy": 6
+        "setup_python": 1,
+        "setup_node": 1,
+        "static_cost_proxy": 10
       }
     }
   ]

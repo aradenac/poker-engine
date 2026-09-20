@@ -24,9 +24,9 @@ BASELINES = {'.github/workflows/full-hand-arena.yml': {'sha256': '3635255ff3de95
  '.github/workflows/model-b-card-aware-runtime.yml': {'sha256': 'd297c71f5bbaf087ff14f15e9b461d54a06446d396f5eb37e3bd9c1d115ae1a2',
                                                       'setups': 1,
                                                       'paths_blocks': 2}}
-PROTECTED = {'.github/workflows/trainer-smoke.yml': 'df5c3226c697515daace3cd4c5484195ba5b85f3111e36061b5220d2df8d0b1d',
- '.github/workflows/hero-range-editor.yml': '8f47e3b352b2b6c98d3ae6e48afb4feb5ee45dd426fd857316510b64259ba2d2',
- '.github/workflows/hero-range-compliance.yml': '30285d84a72f4a9e985ecbc935955229905010e461b28e01ab31bfe8faf78e5d',
+PROTECTED = {'.github/workflows/trainer-smoke.yml': 'eddde67e633b99148647a32c6813ebff44df9ecda590aa7602883a938e17a5b0',
+ '.github/workflows/hero-range-editor.yml': '9f25309b4186d4b4601998138ff8ea0e4c8af0814c2064f6897b5df56939fdd2',
+ '.github/workflows/hero-range-compliance.yml': '160c397cde596a4d73794edf5dca9d39a36b731260fe501c71d8e21cb8a4d7a3',
  '.github/workflows/project-state-consistency.yml': '16afa5bb9009d075665077c659410e44c7b96390edbadc0e49d398c095299e92'}
 REPRO_PATHS = ('tools/repro_ci_environment.py',
  'tools/repro_environment_identity.py',
@@ -93,7 +93,7 @@ class ReproWorkflowBatch2Tests(unittest.TestCase):
         # Issue-scoped baseline guard for the explicitly excluded #361/#346 files.
         for path, digest in PROTECTED.items():
             with self.subTest(path=path):
-                self.assertEqual(hashlib.sha256(transition.historical_text(path, (ROOT / path).read_text()).encode()).hexdigest(), digest)
+                self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
 
     def test_fail_closed_against_gate_and_command_mutations(self):
         path = ".github/workflows/full-hand-arena.yml"

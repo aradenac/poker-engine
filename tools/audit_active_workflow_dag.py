@@ -139,20 +139,17 @@ def _cost(text: str, path: str, name: str, jobs: list[dict]) -> dict[str, Any]:
             "method": "static structural proxy; not GitHub-billed minutes", "components": counts}
 
 
-def _repro_status(text: str) -> str:
+def _repro_status(path: str, text: str) -> str:
     if "uses: ./.github/actions/repro-" in text:
         from tools.audit_repro_composite_factorization import WORKFLOWS, baseline, check_actions, check_workflow, AuditError as TransitionError
         try:
             check_actions()
-            for path in WORKFLOWS:
-                try:
-                    check_workflow(path, baseline(path), text)
-                    return "REPRO_COMPOSITE_VERIFIED"
-                except TransitionError:
-                    continue
-        except (TransitionError, OSError):
-            pass
-        return "REPRO_INCOMPLETE"
+            if path not in WORKFLOWS:
+                raise TransitionError(f"{path}: composite consumer outside transition allowlist")
+            check_workflow(path, baseline(path), text)
+        except TransitionError:
+            return "REPRO_INCOMPLETE"
+        return "REPRO_COMPOSITE_VERIFIED"
     if "repro-scientific-environment.yml" in text and "REPRO_ENVIRONMENT_IDENTITY_SHA256" in text:
         return "REPRO_STRONG_IDENTITY_BOUND"
     if "tools/repro_ci_environment.py verify" in text:
@@ -224,7 +221,7 @@ def workflow(path: str, text: str, inventory: dict[str, Any]) -> dict[str, Any]:
         "permissions": {"workflow": top_permissions, "raw": top_raw},
         "concurrency": concurrency, "artifacts": artifacts,
         "static_cost_proxy": _cost(text, path, name, parsed_jobs),
-        "side_effect_class": side_effect, "repro_status": _repro_status(text),
+        "side_effect_class": side_effect, "repro_status": _repro_status(path, text),
         "scientific_boundaries": scientific,
         "concurrency_recommendation": {"has_concurrency": bool(concurrency),
             "group": concurrency.get("group"), "cancel_in_progress": concurrency.get("cancel_in_progress"),
