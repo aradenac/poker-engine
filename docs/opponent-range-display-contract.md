@@ -305,8 +305,15 @@ therefore:
 - `python3 tests/trainer/test_replayer_modal_prior_states.py` — the replayer
   range modal, its explicit `prior_uninformative`/`degenerate` states and its
   unified mass legends.
+- `python3 tests/trainer/smoke_opponent_range_numeric.py` — numeric browser
+  proof of the nine opponent-range scenarios (sum-normalized 169 mass grid and
+  the explicit `prior_uninformative`/`degenerate` states).
 - `python3 tests/trainer/smoke_equity_scale_invariance.py` — numeric browser
   proof that `buildSeatEquityPlayers`, `tableEquitySnapshotForStep`,
   `postflopRaiseTreeSnapshot` and `aiExportRangeSnapshot` stay invariant under a
   constant rescaling of the input weights, with a sum-normalized
   `grid_169_probability_pct` and a distinct `relative_weight_pct`.
+- Both numeric browser smokes above are orchestrated by
+  `python3 tests/trainer/smoke_trainer.py` (via `run_driver_smokes`), not by
+  dedicated steps in `.github/workflows/trainer-smoke.yml`; the workflow stays
+  frozen and exercises them through its single Training-view step.
