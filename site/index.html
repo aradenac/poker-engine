@@ -5271,20 +5271,20 @@ function replaySeatHtml(player,step,hand){
 }
 
 function populationRangeWidthFromEntries(entries){
-  const comboCount=n=>{
-    const s=String(n||"");
-    if(/^[2-9TJQKA]{2}$/.test(s)) return 6;
-    if(s.endsWith("s")) return 4;
-    if(s.endsWith("o")) return 12;
-    return 1;
-  };
-  let weighted=0,total=0;
-  for(const n of ALL_NOTATIONS){
-    const c=comboCount(n);total+=c;
-    const e=(entries||[]).find(x=>x.hand===n);
-    weighted+=c*Math.max(0,Math.min(100,Number(e?.frequency)||0))/100;
-  }
-  return total?weighted/total:0;
+  // Scale-invariant spread metric, compatible with the canonical sum-normalized
+  // mass: width = mean(positive weight) / max(positive weight). Multiplying every
+  // weight by a constant leaves it unchanged, so the metric is identical whether
+  // the entries carry sum-normalized mass (`frequency` sums to 100), the
+  // max-normalized relative weight (notion (b)) or an a priori inclusion
+  // frequency (notion (c)). It matches `exactComboRangeResult.width`
+  // (probabilityMass / n / maxWeight): 1 for a uniform distribution, decreasing
+  // as the mass concentrates, so the displayed “largeur relative” stays coherent
+  // after the switch to sum-normalized mass.
+  const weights=(entries||[]).map(e=>Math.max(0,Number(e.frequency)||0)).filter(w=>w>0);
+  if(!weights.length)return 0;
+  const total=weights.reduce((a,b)=>a+b,0);
+  const peak=Math.max(...weights);
+  return peak>0?total/Math.max(1,weights.length)/peak:0;
 }
 const modalFocusOrigins=new WeakMap();
 function modalDialogElement(backdrop){
@@ -6791,17 +6791,30 @@ function renderMatrix(){
   const {position}=opponentConfig(index);
   const fileFreq=new Map();
   let matrixPopulationEstimate=null;
+  // Notion actually rendered in the cells, so the tooltip legend can never
+  // describe a max-normalized relative weight as a frequency:
+  //   "mass"       -> canonical 169 mass projection (sum-normalized probability);
+  //   "relative"   -> diagnostic max-normalized relative weight (notion (b));
+  //   "inclusion"  -> a priori imported range frequency (notion (c));
+  //   "degenerate" -> fail-closed posterior, no positive mass.
+  let matrixNotion="inclusion";
   if(state.hhMode&&o?.playerName&&!state.rangeEdition){
     const player=currentHandPlayer(o.playerName);
     matrixPopulationEstimate=populationRangeEstimateForPlayer(player,calculatorPopulationReplayIndex());
     const matrixEntries=matrixPopulationEstimate?.entries?.length?matrixPopulationEstimate.entries:null;
     const degenerate=matrixPopulationEstimate?.posteriorState==="degenerate";
     const massGrid=matrixPopulationEstimate?.uniformPrior&&matrixPopulationEstimate?.gridEntries?.length?matrixPopulationEstimate.gridEntries:null;
-    const entries=degenerate?[]
-      : massGrid?massGrid.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}))
-      : matrixEntries
-      ? rangeEntriesForGrid(matrixEntries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)})))
-      : legacyRangeEntriesForHistoryPlayer(player);
+    let entries;
+    if(degenerate){
+      matrixNotion="degenerate";entries=[];
+    }else if(massGrid){
+      matrixNotion="mass";entries=massGrid.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}));
+    }else if(matrixEntries){
+      matrixNotion="relative";
+      entries=rangeEntriesForGrid(matrixEntries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)})));
+    }else{
+      matrixNotion="inclusion";entries=legacyRangeEntriesForHistoryPlayer(player);
+    }
     for(const h of entries) fileFreq.set(h.hand,Number(h.frequency)||0);
   }else{
     for(const h of (position?.hands || [])) fileFreq.set(h.hand,activeFrequency(h));
@@ -6841,9 +6854,23 @@ function renderMatrix(){
         c.style.textShadow='none';
       }
 
-      let title=state.rangeEdition
-        ? `${notation} — ${f}% · cliquer pour basculer`
-        : `${notation} — ${Number(f).toFixed(matrixPopulationEstimate?1:0).replace(".",",")}%${matrixPopulationEstimate?" · estimation population conditionnée":""}`;
+      let title;
+      if(state.rangeEdition){
+        title=`${notation} — ${f}% · cliquer pour basculer`;
+      }else if(matrixNotion==="relative"){
+        // Notion (b): dimensionless max-normalized ratio (max = 1), diagnostic
+        // only. It must never be rendered with a frequency percentage unit,
+        // which would read as a probability.
+        const ratio=Math.max(0,Math.min(1,Number(f)/100));
+        const ratioText=ratio?(ratio<0.01?ratio.toFixed(3):ratio.toFixed(2)).replace(".",","):"0";
+        title=`${notation} — poids relatif ${ratioText} (max = 1) · diagnostic, pas une probabilité`;
+      }else if(matrixNotion==="mass"){
+        title=`${notation} — ${Number(f).toFixed(1).replace(".",",")} % · masse probabiliste (projection 169)${matrixPopulationEstimate?.posteriorState==="prior_uninformative"?" · prior non informatif":""}`;
+      }else if(matrixNotion==="degenerate"){
+        title=`${notation} — posterior dégénéré · masse nulle après blockers publics`;
+      }else{
+        title=`${notation} — ${Number(f).toFixed(0).replace(".",",")} % · fréquence d’inclusion (range source)`;
+      }
       if(isExactClass) title+=` · main HH exacte utilisée : ${o.knownCards.map(cardLabel).join(" ")}`;
       else if(o?.knownCards?.length===2 && notation===exactNotation) title+=` · classe de la main HH connue`;
       c.title=title;
