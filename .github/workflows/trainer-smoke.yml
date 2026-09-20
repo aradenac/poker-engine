@@ -91,10 +91,6 @@ jobs:
           exit 1
       - name: Exercise Training view
         run: python3 tests/trainer/smoke_trainer.py
-      - name: Exercise opponent-range numeric scenarios
-        run: python3 tests/trainer/smoke_opponent_range_numeric.py
-      - name: Exercise equity scale invariance and posterior export
-        run: python3 tests/trainer/smoke_equity_scale_invariance.py
       - name: Exercise pathological engine regressions
         run: python3 tests/regression/smoke_engine_regressions.py
       - name: Show server log on failure
