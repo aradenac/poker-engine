@@ -1,0 +1,25 @@
+{
+  "schema": "compute-scheduler-hh-corpus/v1",
+  "archive": "training/datasets/NLHE_100-200/increments/20260912/source/selected_100_200.zip",
+  "archiveSha256": "00de0085ebe3f090388879409d19e6c84c4896b2761298876f0f4f8dee7c57ed",
+  "sourceMember": "HH20260902 Almach V - 100-200 - Argent fictif Hold'em No Limit.txt",
+  "selection": "first 16 hands with dealt Hero cards and a flop, from lexicographically first archive member",
+  "hands": [
+    {"handId":"261948788234","hero":["9c","4h"],"flop":["Ks","9d","4c"]},
+    {"handId":"261948792274","hero":["Ac","4s"],"flop":["7c","Th","6h"]},
+    {"handId":"261948803715","hero":["4s","Ah"],"flop":["As","4h","Js"]},
+    {"handId":"261948815427","hero":["9h","8c"],"flop":["Tc","2s","4s"]},
+    {"handId":"261948823305","hero":["4c","5s"],"flop":["6c","Js","Jh"]},
+    {"handId":"261948831131","hero":["6s","Qd"],"flop":["9s","Kc","Kd"]},
+    {"handId":"261948841174","hero":["7d","6c"],"flop":["8s","6d","6s"]},
+    {"handId":"261948854602","hero":["5d","3d"],"flop":["6s","4c","4s"]},
+    {"handId":"261948862399","hero":["Kc","5s"],"flop":["4d","Jh","7d"]},
+    {"handId":"261948873852","hero":["3d","4c"],"flop":["Ad","Kc","9s"]},
+    {"handId":"261948885572","hero":["9h","Td"],"flop":["7c","8h","4h"]},
+    {"handId":"261948901112","hero":["5s","Jh"],"flop":["Kc","5d","4d"]},
+    {"handId":"261948907136","hero":["6c","3s"],"flop":["8s","9d","Jc"]},
+    {"handId":"261948912173","hero":["7c","5h"],"flop":["Qs","8h","7s"]},
+    {"handId":"261948919067","hero":["Jd","6s"],"flop":["8h","2h","Ad"]},
+    {"handId":"261948928115","hero":["6d","8c"],"flop":["8d","7h","Ts"]}
+  ]
+}

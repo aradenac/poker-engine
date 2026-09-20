@@ -708,7 +708,7 @@ async function trainerTimedReviewText(text){
   finally{const ms=performance.now()-started;trainerState.perf.lastMs=ms;trainerState.perf.totalMs+=ms;}
 }
 async function trainerReviewText(text){
-  if(state.reviewBatchKind!=="explicit")cancelObsoleteReviewComputation();
+  if(!state.reviewBatchBusy||state.reviewBatchRun?.kind!=="explicit")cancelObsoleteReviewComputation();
   await trainerWaitFor(()=>!state.reviewBatchBusy,30000);
   const hand=parsePokerStarsHand(text,"trainer");
   if(!hand)throw new Error("Le moteur n'a pas pu parser le spot Training.");
@@ -719,7 +719,7 @@ async function trainerReviewText(text){
     state.replaySteps=[];state.replayIndex=0;state.hhHands=[hand];state.selectedHand=hand;state.hhMode=true;delete state.reviewScores[key];
     const steps=makeReplaySteps(hand),lastHeroStep=steps.map((step,i)=>step.activePlayer===hand.heroName&&isAnalyzableDecisionAction(step)?i:-1).filter(i=>i>=0).pop();
     const plan=buildReviewBatchPlan(hand,lastHeroStep??-1);plan.actions=plan.actions.filter(a=>a.actor===hand.heroName).slice(-1);if(!plan.actions.length)throw new Error("Aucune décision Hero analysable dans ce spot.");
-    state.reviewBatchBusy=false;runReviewBatchPlan(plan,{kind:"explicit"});
+    runReviewBatchPlan(plan,{kind:"explicit"});
     await trainerWaitFor(()=>!state.reviewBatchBusy&&!!state.reviewScores?.[key],45000);
     const score=state.reviewScores[key],detail=score?.details?.[score.details.length-1];if(!detail)throw new Error("Aucun verdict produit par le moteur.");return JSON.parse(JSON.stringify(detail));
   }finally{

@@ -10,13 +10,9 @@ function kernel(html){
 }
 const source=kernel(html),before=kernel(fs.readFileSync(process.argv[2]||'/tmp/compute-before.html','utf8'));
 assert.equal(source,before,'Scientific kernel must remain byte-identical');
-const corpus=[JSON.parse(fs.readFileSync('tests/regression/hand_262024556922.json')).raw_hand_history,fs.readFileSync('tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt','utf8')];
+const corpus=JSON.parse(fs.readFileSync('analysis/performance/compute-scheduler-corpus.json','utf8'));
 const card=c=>'shdc'.indexOf(c[1])*13+'23456789TJQKA'.indexOf(c[0]);
-const snapshots=corpus.flatMap(raw=>{
- const hero=raw.match(/Dealt to .*?\[(.*?)\]/)[1].split(' ').map(card);
- const flop=raw.match(/\*\*\* FLOP \*\*\* \[(.*?)\]/)[1].split(' ').map(card);
- return [[],flop].map(board=>({hero,board,method:'mc',trials:2000,opponents:[{hands:[{hand:'AA',frequency:100},{hand:'KQs',frequency:100},{hand:'76s',frequency:100}]}]}));
-});
+const snapshots=corpus.hands.map(hand=>({hero:hand.hero.map(card),board:hand.flop.map(card),method:'mc',trials:4000,opponents:[{hands:[{hand:'AA',frequency:100},{hand:'KQs',frequency:100},{hand:'76s',frequency:100}]}]}));
 let alive=0,maxAlive=0;
 class Adapter{
  constructor(){alive++;maxAlive=Math.max(maxAlive,alive);this.dead=false;
@@ -29,11 +25,12 @@ class Adapter{
 async function run(scheduled){
  maxAlive=0;const scheduler=new ComputeScheduler({WorkerClass:Adapter}),delays=[],start=performance.now();let last=start;
  const timer=setInterval(()=>{const now=performance.now();delays.push(Math.max(0,now-last-10));last=now;},10);
- const kinds=['background','prefetch','explicit','replayer','interaction','explicit','prefetch','background'];
+ const priorityCycle=['background','prefetch','explicit','replayer','interaction','explicit','prefetch','background'];
+ const kinds=snapshots.map((_,i)=>priorityCycle[i%priorityCycle.length]);
  const results=await Promise.all(kinds.map((kind,i)=>new Promise((resolve,reject)=>{
   const w=scheduled?scheduler.createWorker('',{kind}):new Adapter();
   w.onmessage=e=>{if(e.data.type==='progress')return;w.terminate();if(e.data.type==='error')reject(Error(e.data.message));else resolve(e.data.out);};w.onerror=reject;w.postMessage(snapshots[i%snapshots.length]);
  })));
  clearInterval(timer);return {results,metrics:{durationMs:performance.now()-start,maxConcurrency:maxAlive,eventLoopDelayMaxMs:Math.max(...delays),eventLoopDelaysOver50:delays.filter(x=>x>50).length,...(scheduled?{scheduler:scheduler.snapshot()}:{})}};
 }
-(async()=>{const a=await run(false),b=await run(true);assert.deepEqual(b.results,a.results);assert.ok(b.metrics.maxConcurrency<=2);console.log(JSON.stringify({environment:process.version,corpus:['hand_262024556922','kts_sb_two_limp_iso4_three_calls'],seed:390,trials:2000,kernelIdentical:true,outputsIdentical:true,before:a.metrics,after:b.metrics,browserLongTasks:null},null,2));})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{const a=await run(false),b=await run(true);assert.deepEqual(b.results,a.results);assert.ok(b.metrics.maxConcurrency<=2);console.log(JSON.stringify({environment:process.version,corpus:{schema:corpus.schema,archive:corpus.archive,archiveSha256:corpus.archiveSha256,hands:corpus.hands.length,handIds:corpus.hands.map(h=>h.handId)},seed:390,trials:4000,kernelIdentical:true,outputsIdentical:true,before:a.metrics,after:b.metrics,browserLongTasks:null},null,2));})().catch(e=>{console.error(e);process.exitCode=1;});

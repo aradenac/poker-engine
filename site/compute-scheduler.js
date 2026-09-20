@@ -15,7 +15,7 @@ class ComputeScheduler {
   createWorker(url,{kind='explicit'}={}){
     if(!classes.includes(kind))throw new Error('Unknown compute priority');
     const s=this,t={url,kind,worker:null,payload:null,submitted:false,done:false,onmessage:null,onerror:null};
-    t.postMessage=payload=>{if(t.submitted||t.done)throw new Error('Compute task already submitted');t.submitted=true;t.payload=structuredClone(payload);t.queued=s.now();s.queue.push(t);s.pump();};
+    t.postMessage=payload=>{if(t.submitted||t.done)throw new Error('Compute task already submitted');t.submitted=true;t.payload=payload;t.queued=s.now();s.queue.push(t);s.pump();};
     t.terminate=()=>{if(t.done)return;t.done=true;s.metrics.cancellations++;s.stop(t);s.queue=s.queue.filter(x=>x!==t);s.pump();};
     return t;
   }
@@ -25,9 +25,14 @@ class ComputeScheduler {
     if(paused!==this.paused){this.metrics[paused?'backgroundPaused':'backgroundResumed']++;this.paused=paused;}
     const eligible=t=>!(t.kind==='background'&&(paused||[...this.active].some(x=>x.kind==='background')));
     this.queue.sort((a,b)=>classes.indexOf(a.kind)-classes.indexOf(b.kind)||a.queued-b.queued);
-    for(const t of [...this.active]){
-      const next=this.queue.find(eligible);
-      if((paused&&t.kind==='background')||(next&&classes.indexOf(next.kind)<classes.indexOf(t.kind))){this.stop(t);this.metrics.preemptions++;this.queue.push(t);}
+    if(this.active.size>=this.maxWorkers){
+      const waiting=this.queue.filter(eligible);
+      const active=[...this.active].sort((a,b)=>classes.indexOf(b.kind)-classes.indexOf(a.kind));
+      for(const next of waiting){
+        const victimIndex=active.findIndex(t=>classes.indexOf(next.kind)<classes.indexOf(t.kind));
+        if(victimIndex<0)break;
+        const victim=active.splice(victimIndex,1)[0];this.stop(victim);this.metrics.preemptions++;this.queue.push(victim);
+      }
     }
     this.queue.sort((a,b)=>classes.indexOf(a.kind)-classes.indexOf(b.kind)||a.queued-b.queued);
     while(this.active.size<this.maxWorkers){

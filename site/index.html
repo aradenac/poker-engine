@@ -1596,9 +1596,12 @@ const state = {
   reviewListRefreshTimer:null,
   reviewBatchQueue:[],
   reviewBatchBusy:false,
+  reviewBatchPreparing:false,
   reviewBatchScheduled:false,
   reviewBatchTicket:0,
   reviewBatchWorker:null,
+  reviewBatchWorkers:[],
+  reviewBatchRun:null,
   hhImportMode:"replace",
   hhMode:false,
   appView:"main",
@@ -3857,56 +3860,72 @@ function buildDefaultReviewOpponentsForHand(hand){
     hhPosition:p.hhPosition,knownCards:p.knownCards?[...p.knownCards]:null,useKnownHand:!!(p.knownCards?.length===2),seat:p.seat,source:"review-batch"
   }));
 }
-async function prepareReviewBatchPlan(hand,ticket){
-  const signature=reviewContextSignature(),actions=[],count=makeReplaySteps(hand).length;
-  for(let i=0;i<count;i++){
-    await new Promise(resolve=>setTimeout(resolve,0));
-    if(ticket!==state.reviewBatchTicket||signature!==reviewContextSignature()||window.pokerComputeScheduler.holds.size)return null;
-    const part=buildReviewBatchPlan(hand,i);if(!part)return null;actions.push(...part.actions);
-  }
-  return {handId:String(hand.id),signature,actions};
-}
-function buildReviewBatchPlan(hand,onlyStep=null){
+function createReviewBatchPlanContext(hand){
   if(!hand||state.rangeEdition)return null;
+  return {hand,signature:reviewContextSignature(),replaySteps:makeReplaySteps(hand),opponents:buildDefaultReviewOpponentsForHand(hand)};
+}
+function withReviewBatchPlanContext(context,callback){
+  const hand=context.hand;
   const saved={hhMode:state.hhMode,selectedHand:state.selectedHand,replaySteps:state.replaySteps,replayIndex:state.replayIndex,
     opponents:state.opponents,nextOpponentId:state.nextOpponentId,activeOpponent:state.activeOpponent,hero:state.hero,board:state.board,
     hhFullBoard:state.hhFullBoard,street:streetSelect.value};
   try{
-    state.hhMode=true;state.selectedHand=hand;state.replaySteps=makeReplaySteps(hand);state.replayIndex=0;
+    state.hhMode=true;state.selectedHand=hand;state.replaySteps=context.replaySteps;state.replayIndex=0;
     state.hero=[...hand.heroCards];state.hhFullBoard=[...hand.board];state.board=hand.board.length>=3?hand.board.slice(0,3):Array(3).fill(null);
-    streetSelect.value="3";state.opponents=buildDefaultReviewOpponentsForHand(hand);state.activeOpponent=0;
-    const actions=[];
-    for(let i=0;i<state.replaySteps.length;i++){
-      if(onlyStep!==null&&i!==onlyStep)continue;
-      const step=state.replaySteps[i];if(!isAnalyzableDecisionAction(step))continue;
-      const req=requiredEquityInfo(i),sources=actionVerdictSourceKeys(i);if(!req)continue;
-      const values={},treeValues={},sizingResults=[],tasks=[];
-      for(const scenario of ['range_ranges','range_real','hand_ranges','hand_real']){
-        const snap=actionScenarioSnapshot(i,scenario);if(snap)tasks.push({kind:'equity',scenario,snapshot:snap});else values[scenario]=NaN;
-      }
-      if(ctxPostflopMoneyAction(step)&&state.postflopModel){
-        for(const [label,scenario] of [['prior',sources.prior],['post',sources.post]]){
-          const snap=postflopRaiseTreeSnapshot(i,scenario);if(snap)tasks.push({kind:'tree',scenario:label,snapshot:snap});else treeValues[label]=null;
-        }
-      }
-      if(state.postflopModel&&['Flop','Turn','River'].includes(step.street)&&['check','fold','call','bet','raise'].includes(step.actionType)){
-        for(const c of postflopSizingCandidates(i)){
-          const forced=(step.actionType==='call'||step.actionType==='fold')?'raise':step.actionType==='check'?'bet':null;
-          const snap=postflopRaiseTreeSnapshot(i,sources.prior,c.costBB,forced);
-          if(snap){snap.trials=Math.min(6000,Math.max(2500,Math.round((Number(trialsSelect.value)||12000)/2)));tasks.push({kind:'sizing',candidate:c,snapshot:snap});}
-        }
-      }
-      const rs=postflopStreetRaiseState(i),actx=actionDecisionContext(i),traceDecision=(['Flop','Turn','River'].includes(step.street)?postflopDecisionTrace(hand)[postflopDecisionOrdinalBeforeStep(i)]:null);
-      const simContext=actx?{board:[...(actx.before.board||[])],potBeforeBB:Number(req.potBefore)||0,actor:step.activePlayer||'',heroName:hand.heroName,heroCards:[...(hand.heroCards||[])],street:step.street,actionType:step.actionType,toCallBB:Number(rs?.toCall)||0,potType:traceDecision?.pot_type||'',preflopRole:traceDecision?.preflop_role||'',relativePosition:traceDecision?.relative_position||'',activePlayers:actx.active.map(p=>({name:p.name,position:p.hhPosition||'',knownCards:p.knownCards?[...p.knownCards]:null,startingStackBB:historyPlayerStackBB(hand,p.name),stateBefore:aiExportPlain(actx.before.state?.[p.name]||{})}))}:null;
-      actions.push({stepIndex:i,street:step.street,actionType:step.actionType,actor:step.activePlayer||'',heroName:hand.heroName,
-        req,sources,toCallBB:Number(rs?.toCall)||0,hand,values,treeValues,sizingResults,tasks,simContext});
-    }
-    return {handId:String(hand.id),signature:reviewContextSignature(),actions};
+    streetSelect.value="3";state.opponents=context.opponents;state.activeOpponent=0;
+    return callback();
   }finally{
     state.hhMode=saved.hhMode;state.selectedHand=saved.selectedHand;state.replaySteps=saved.replaySteps;state.replayIndex=saved.replayIndex;
     state.opponents=saved.opponents;state.nextOpponentId=saved.nextOpponentId;state.activeOpponent=saved.activeOpponent;
     state.hero=saved.hero;state.board=saved.board;state.hhFullBoard=saved.hhFullBoard;streetSelect.value=saved.street;
   }
+}
+function buildReviewBatchAction(context,i){
+  const hand=context.hand,step=state.replaySteps[i];if(!isAnalyzableDecisionAction(step))return null;
+  const req=requiredEquityInfo(i),sources=actionVerdictSourceKeys(i);if(!req)return null;
+  const values={},treeValues={},sizingResults=[],tasks=[];
+  for(const scenario of ['range_ranges','range_real','hand_ranges','hand_real']){
+    const snap=actionScenarioSnapshot(i,scenario);if(snap)tasks.push({kind:'equity',scenario,snapshot:snap});else values[scenario]=NaN;
+  }
+  if(ctxPostflopMoneyAction(step)&&state.postflopModel){
+    for(const [label,scenario] of [['prior',sources.prior],['post',sources.post]]){
+      const snap=postflopRaiseTreeSnapshot(i,scenario);if(snap)tasks.push({kind:'tree',scenario:label,snapshot:snap});else treeValues[label]=null;
+    }
+  }
+  if(state.postflopModel&&['Flop','Turn','River'].includes(step.street)&&['check','fold','call','bet','raise'].includes(step.actionType)){
+    for(const c of postflopSizingCandidates(i)){
+      const forced=(step.actionType==='call'||step.actionType==='fold')?'raise':step.actionType==='check'?'bet':null;
+      const snap=postflopRaiseTreeSnapshot(i,sources.prior,c.costBB,forced);
+      if(snap){snap.trials=Math.min(6000,Math.max(2500,Math.round((Number(trialsSelect.value)||12000)/2)));tasks.push({kind:'sizing',candidate:c,snapshot:snap});}
+    }
+  }
+  const rs=postflopStreetRaiseState(i),actx=actionDecisionContext(i),traceDecision=(['Flop','Turn','River'].includes(step.street)?postflopDecisionTrace(hand)[postflopDecisionOrdinalBeforeStep(i)]:null);
+  const simContext=actx?{board:[...(actx.before.board||[])],potBeforeBB:Number(req.potBefore)||0,actor:step.activePlayer||'',heroName:hand.heroName,heroCards:[...(hand.heroCards||[])],street:step.street,actionType:step.actionType,toCallBB:Number(rs?.toCall)||0,potType:traceDecision?.pot_type||'',preflopRole:traceDecision?.preflop_role||'',relativePosition:traceDecision?.relative_position||'',activePlayers:actx.active.map(p=>({name:p.name,position:p.hhPosition||'',knownCards:p.knownCards?[...p.knownCards]:null,startingStackBB:historyPlayerStackBB(hand,p.name),stateBefore:aiExportPlain(actx.before.state?.[p.name]||{})}))}:null;
+  return {stepIndex:i,street:step.street,actionType:step.actionType,actor:step.activePlayer||'',heroName:hand.heroName,
+    req,sources,toCallBB:Number(rs?.toCall)||0,hand,values,treeValues,sizingResults,tasks,simContext};
+}
+async function prepareReviewBatchPlan(hand,ticket){
+  const context=createReviewBatchPlanContext(hand);if(!context)return null;
+  const actions=[];
+  for(let i=0;i<context.replaySteps.length;i++){
+    do{
+      await new Promise(resolve=>setTimeout(resolve,window.pokerComputeScheduler.holds.size?50:0));
+      if(ticket!==state.reviewBatchTicket||context.signature!==reviewContextSignature())return null;
+    }while(window.pokerComputeScheduler.holds.size);
+    const action=withReviewBatchPlanContext(context,()=>buildReviewBatchAction(context,i));if(action)actions.push(action);
+  }
+  return {handId:String(hand.id),signature:context.signature,actions};
+}
+function buildReviewBatchPlan(hand,onlyStep=null){
+  const context=createReviewBatchPlanContext(hand);if(!context)return null;
+  const actions=[];
+  withReviewBatchPlanContext(context,()=>{
+    for(let i=0;i<context.replaySteps.length;i++){
+      if(onlyStep!==null&&i!==onlyStep)continue;
+      const action=buildReviewBatchAction(context,i);if(action)actions.push(action);
+    }
+  });
+  return {handId:String(hand.id),signature:context.signature,actions};
 }
 function reviewBatchRegret(a){
   const priorEq=a.values?.[a.sources?.prior],req=a.req,kind=a.actionType;
@@ -3945,25 +3964,35 @@ function finalizeReviewBatchPlan(plan){
   state.reviewScores[String(hand.id)]=summary;hand.reviewScore=summary;schedulePersistReviewScores();scheduleReviewListRefresh(30);
 }
 function reviewBatchWorkerLimit(){
-  return 1;
+  if(!document.body.classList.contains('trainer-view-open'))return 1;
+  const hc=Math.max(1,Number(navigator.hardwareConcurrency)||4);
+  return Math.min(window.pokerComputeScheduler.maxWorkers,hc>=8?3:hc>=4?2:1);
 }
 function runReviewBatchPlan(plan,{kind="background"}={}){
   const ticket=state.reviewBatchTicket;
-  state.reviewBatchKind=kind;state.reviewBatchBusy=true;
+  const batch={ticket,kind,workers:[]};
+  state.reviewBatchRun=batch;state.reviewBatchBusy=true;
   const all=[];
   for(const a of plan.actions)for(const t of a.tasks)all.push({a,t,order:all.length});
   let pos=0,active=0,finished=false;
-  state.reviewBatchWorkers=[];
+  state.reviewBatchWorkers=batch.workers;
+
+  const clearBatch=terminate=>{
+    if(terminate)for(const worker of [...batch.workers])cleanupReplayWorker(worker);
+    batch.workers.length=0;
+    if(state.reviewBatchRun!==batch)return;
+    state.reviewBatchRun=null;state.reviewBatchWorker=null;state.reviewBatchWorkers=[];state.reviewBatchBusy=false;
+  };
 
   const finish=()=>{
-    if(finished||ticket!==state.reviewBatchTicket||pos<all.length||active>0)return;
+    if(finished||ticket!==state.reviewBatchTicket||state.reviewBatchRun!==batch||pos<all.length||active>0)return;
     finished=true;
     for(const a of plan.actions){
       if(!Array.isArray(a.sizingResults))continue;
       a.sizingResults.sort((x,y)=>Number(x.__reviewOrder||0)-Number(y.__reviewOrder||0));
       for(const z of a.sizingResults)delete z.__reviewOrder;
     }
-    state.reviewBatchWorker=null;state.reviewBatchWorkers=[];state.reviewBatchBusy=false;
+    clearBatch(false);
     finalizeReviewBatchPlan(plan);scheduleBackgroundReviewScoring(20);
   };
 
@@ -3972,13 +4001,13 @@ function runReviewBatchPlan(plan,{kind="background"}={}){
     try{worker=(t.kind==='tree'||t.kind==='sizing')?createPostflopBetRaiseEVWorker({kind}):createTableEquityWorker({kind});}
     catch(_){a.failed=true;return;}
     active++;
-    state.reviewBatchWorkers.push(worker);state.reviewBatchWorker=worker;
+    batch.workers.push(worker);if(state.reviewBatchRun===batch)state.reviewBatchWorker=worker;
     let settled=false;
     const done=(m,isError)=>{
       if(settled)return;settled=true;
       cleanupReplayWorker(worker);
-      const wi=state.reviewBatchWorkers.indexOf(worker);if(wi>=0)state.reviewBatchWorkers.splice(wi,1);
-      state.reviewBatchWorker=state.reviewBatchWorkers[state.reviewBatchWorkers.length-1]||null;
+      const wi=batch.workers.indexOf(worker);if(wi>=0)batch.workers.splice(wi,1);
+      if(state.reviewBatchRun===batch)state.reviewBatchWorker=batch.workers[batch.workers.length-1]||null;
       active=Math.max(0,active-1);
       if(t.kind==='equity'){
         if(!isError&&m?.type==='result'&&m.out?.names){const idx=m.out.names.indexOf(a.actor);a.values[t.scenario]=idx>=0?m.out.equities[idx]:NaN;}
@@ -3996,9 +4025,9 @@ function runReviewBatchPlan(plan,{kind="background"}={}){
   const pump=()=>{
     if(finished)return;
     if(ticket!==state.reviewBatchTicket||plan.signature!==reviewContextSignature()){
-      if(ticket!==state.reviewBatchTicket){finished=true;return;}
-      finished=true;for(const worker of state.reviewBatchWorkers)cleanupReplayWorker(worker);
-      state.reviewBatchWorkers=[];state.reviewBatchWorker=null;state.reviewBatchBusy=false;scheduleBackgroundReviewScoring();return;
+      finished=true;clearBatch(true);
+      if(ticket===state.reviewBatchTicket)scheduleBackgroundReviewScoring();
+      return;
     }
     if(kind==='background'&&(window.pokerComputeScheduler.holds.size||state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length)){
       setTimeout(pump,180);
@@ -4018,12 +4047,15 @@ function scheduleBackgroundReviewScoring(delay=120){
   setTimeout(()=>{
     const run=async()=>{
       if(ticket!==state.reviewBatchTicket)return;state.reviewBatchScheduled=false;
+      if(state.reviewBatchPreparing||state.reviewBatchBusy){setTimeout(()=>scheduleBackgroundReviewScoring(0),350);return;}
       if(window.pokerComputeScheduler.holds.size||state.appView==='replayer'||state.replayComputeActive.length||state.replayComputeQueue.length){setTimeout(()=>scheduleBackgroundReviewScoring(0),350);return;}
       const visible=new Set([...hhHandsEl.querySelectorAll('[data-hand-id]')].filter(el=>{const r=el.getBoundingClientRect(),p=hhHandsEl.getBoundingClientRect();return r.bottom>p.top&&r.top<p.bottom;}).map(el=>el.dataset.handId));
       const candidates=state.reviewAnalyzeAll?state.hhHands:[state.selectedHand,...state.hhHands.filter(h=>visible.has(String(h.id)))].filter(Boolean);
       const sig=reviewContextSignature(),hand=candidates.find(h=>{const r=state.reviewScores?.[String(h.id)];return !(r&&r.complete&&r.signature===sig);});
       if(!hand){state.reviewAnalyzeAll=false;return;}let plan=null;state.reviewBatchPreparing=true;try{plan=await prepareReviewBatchPlan(hand,ticket);}catch(err){console.warn('Review batch preparation failed',hand.id,err);}finally{state.reviewBatchPreparing=false;}
-      if(!plan){setTimeout(()=>scheduleBackgroundReviewScoring(0),500);return;}runReviewBatchPlan(plan);
+      if(!plan){setTimeout(()=>scheduleBackgroundReviewScoring(0),500);return;}
+      if(state.reviewBatchBusy){setTimeout(()=>scheduleBackgroundReviewScoring(0),350);return;}
+      runReviewBatchPlan(plan);
     };
     if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:600});else run();
   },Math.max(0,delay));
@@ -5965,8 +5997,10 @@ function loadSelectedHistoryHand(preserveStreet=true){
 }
 function cancelObsoleteReviewComputation(){
   state.reviewBatchTicket++;state.reviewBatchScheduled=false;
-  for(const worker of state.reviewBatchWorkers||[])cleanupReplayWorker(worker);
-  state.reviewBatchWorkers=[];state.reviewBatchWorker=null;state.reviewBatchBusy=false;
+  const batch=state.reviewBatchRun;
+  for(const worker of [...(batch?.workers||state.reviewBatchWorkers||[])])cleanupReplayWorker(worker);
+  if(batch?.workers)batch.workers.length=0;
+  state.reviewBatchRun=null;state.reviewBatchWorkers=[];state.reviewBatchWorker=null;state.reviewBatchBusy=false;
 }
 function selectHistoryHandById(id,{open=true,scrollTop=true}={}){
   const hand=state.hhHands.find(h=>h.id===String(id));
