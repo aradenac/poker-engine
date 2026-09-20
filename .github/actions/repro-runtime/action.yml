@@ -1,0 +1,56 @@
+name: REPRO locked runtime
+description: Set up exact runtimes and verify or install locked dependencies after checkout.
+inputs:
+  require-node:
+    description: Set up and verify the locked Node runtime.
+    default: 'false'
+  install-python-deps:
+    description: Install locked Python dependencies through the REPRO helper.
+    default: 'false'
+  install-node-deps:
+    description: Install locked Node dependencies through the REPRO helper.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Validate boolean inputs
+      shell: bash
+      env:
+        REQUIRE_NODE: ${{ inputs.require-node }}
+        PYTHON_DEPS: ${{ inputs.install-python-deps }}
+        NODE_DEPS: ${{ inputs.install-node-deps }}
+      run: |
+        set -euo pipefail
+        for value in "$REQUIRE_NODE" "$PYTHON_DEPS" "$NODE_DEPS"; do
+          case "$value" in
+            true|false) ;;
+            *) echo 'REPRO inputs must be true or false' >&2; exit 1 ;;
+          esac
+        done
+        if [[ "$NODE_DEPS" == true && "$REQUIRE_NODE" != true ]]; then
+          echo 'Node dependencies require require-node=true' >&2
+          exit 1
+        fi
+    - uses: actions/setup-python@v5
+      with:
+        python-version-file: '.python-version'
+    - if: inputs.require-node == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.node-version'
+    - name: Verify or bootstrap locked environment
+      shell: bash
+      env:
+        REQUIRE_NODE: ${{ inputs.require-node }}
+        PYTHON_DEPS: ${{ inputs.install-python-deps }}
+        NODE_DEPS: ${{ inputs.install-node-deps }}
+      run: |
+        set -euo pipefail
+        args=(verify)
+        if [[ "$PYTHON_DEPS" == true || "$NODE_DEPS" == true ]]; then
+          args=(bootstrap)
+          if [[ "$PYTHON_DEPS" == true ]]; then args+=(--python-deps); fi
+          if [[ "$NODE_DEPS" == true ]]; then args+=(--node-deps); fi
+        fi
+        if [[ "$REQUIRE_NODE" == true ]]; then args+=(--require-node); fi
+        python3 tools/repro_ci_environment.py "${args[@]}"

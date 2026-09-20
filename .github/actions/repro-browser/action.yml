@@ -1,0 +1,19 @@
+name: REPRO locked browser runtime
+description: Bootstrap locked Python dependencies and browser after checkout.
+inputs:
+  require-node:
+    description: Set up Node only for browser jobs that execute Node commands.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/repro-runtime
+      with:
+        require-node: ${{ inputs.require-node }}
+        install-python-deps: 'true'
+        install-node-deps: 'false'
+    - name: Install locked browser runtime
+      shell: bash
+      run: |
+        set -euo pipefail
+        python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json

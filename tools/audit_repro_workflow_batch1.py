@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import tempfile
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -116,6 +117,10 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
     checked: list[dict[str, Any]] = []
     parsed_rows: list[dict[str, Any]] = []
 
+    from tools.audit_repro_composite_factorization import baseline
+    if (root / EVIDENCE).read_text() != baseline(EVIDENCE.as_posix()):
+        violations.append({"rule": "IMMUTABLE_HISTORICAL_EVIDENCE_CHANGED"})
+
     # Bind the before state to the exact #291 consumer evidence instead of
     # trusting a hand-written baseline.
     helper_evidence = _json(root / "analysis/workflow_audit/helper_consumers.json")
@@ -187,7 +192,14 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
         if not path.is_file():
             violations.append({"rule": "WORKFLOW_MISSING", "path": rel})
             continue
-        data = path.read_bytes()
+        from tools.audit_repro_composite_factorization import historical_text, AuditError
+        current = path.read_text(encoding="utf-8")
+        try:
+            projected = historical_text(rel, current, root)
+        except (AuditError, OSError) as exc:
+            violations.append({"rule": "COMPOSITE_TRANSITION_INVALID", "path": rel, "detail": str(exc)})
+            projected = current
+        data = projected.encode()
         text = data.decode("utf-8")
         blob = git_blob_sha(data)
         expected_blob = str(row.get("after_git_blob_sha") or "")
@@ -199,7 +211,10 @@ def audit(root: Path = ROOT, *, check_global_repro: bool = True) -> dict[str, An
                 "observed": blob,
             })
 
-        parsed = parse_workflow(path, root)
+        with tempfile.TemporaryDirectory() as td:
+            projected_path = Path(td) / path.name
+            projected_path.write_text(text)
+            parsed = parse_workflow(projected_path, Path(td))
         parsed_rows.append(parsed)
         contract = row.get("contract") or {}
 

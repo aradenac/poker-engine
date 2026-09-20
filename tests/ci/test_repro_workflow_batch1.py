@@ -5,9 +5,11 @@ import json
 from pathlib import Path
 import shutil
 import tempfile
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(ROOT))
 from tools.audit_repro_workflow_batch1 import EVIDENCE, audit
 
 TARGETS = (
@@ -15,11 +17,16 @@ TARGETS = (
     ".github/workflows/hero-range-editor.yml",
     ".github/workflows/hero-range-compliance.yml",
 )
+BROWSER_CALL = ("      - uses: ./.github/actions/repro-browser\n"
+                "        with:\n"
+                "          require-node: 'false'\n")
 
 
 def _copy_batch(dst: Path) -> None:
     for rel in (
         *TARGETS,
+        ".github/actions/repro-runtime/action.yml",
+        ".github/actions/repro-browser/action.yml",
         EVIDENCE.as_posix(),
         "analysis/workflow_audit/helper_consumers.json",
     ):
@@ -49,10 +56,7 @@ def test_browser_helper_cannot_be_removed() -> None:
         _copy_batch(root)
         target = root / TARGETS[0]
         text = target.read_text(encoding="utf-8")
-        text = text.replace(
-            "python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json",
-            "echo bypass-browser-helper",
-        )
+        text = text.replace(BROWSER_CALL, "      - run: echo bypass-browser-helper\n")
         target.write_text(text, encoding="utf-8")
         report = audit(root, check_global_repro=False)
         assert report["status"] == "FAIL"
@@ -65,10 +69,10 @@ def test_direct_unlocked_playwright_setup_is_rejected() -> None:
         _copy_batch(root)
         target = root / TARGETS[1]
         text = target.read_text(encoding="utf-8")
-        marker = "          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json"
+        marker = BROWSER_CALL
         text = text.replace(
             marker,
-            marker + "\n          python3 -m pip install --user playwright\n          python3 -m playwright install --with-deps chromium",
+            marker + "      - run: |\n          python3 -m pip install --user playwright\n          python3 -m playwright install --with-deps chromium\n",
         )
         target.write_text(text, encoding="utf-8")
         report = audit(root, check_global_repro=False)
@@ -141,11 +145,9 @@ def test_repro_guard_cannot_continue_on_error() -> None:
         _copy_batch(root)
         target = root / TARGETS[2]
         text = target.read_text(encoding="utf-8")
-        text = text.replace(
-            "      - name: Install locked browser runtime\n",
-            "      - name: Install locked browser runtime\n        continue-on-error: true\n",
-            1,
-        )
+        text = text.replace("      - uses: ./.github/actions/repro-browser\n",
+                            "      - uses: ./.github/actions/repro-browser\n        continue-on-error: true\n",
+                            1)
         target.write_text(text, encoding="utf-8")
         report = audit(root, check_global_repro=False)
         assert "BROWSER_REPRO_GUARD_MAY_CONTINUE_ON_ERROR" in _rules(report)

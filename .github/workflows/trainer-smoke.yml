@@ -4,6 +4,8 @@ name: Validate interactive trainer
 on:
   push:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
+      - '.github/actions/repro-browser/action.yml'
       - 'site/index.html'
       - 'site/trainer.js'
       - 'site/trainer.css'
@@ -19,6 +21,8 @@ on:
       - '.github/workflows/trainer-smoke.yml'
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
+      - '.github/actions/repro-browser/action.yml'
       - 'site/index.html'
       - 'site/trainer.js'
       - 'site/trainer.css'
@@ -45,6 +49,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/repro-runtime
+        with:
+          require-node: 'true'
       - name: REPRO batch-1 anti-bypass contract
         run: PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
       - name: JavaScript syntax
@@ -69,14 +76,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-browser
         with:
-          python-version: '3.11.9'
-      - name: Install locked browser runtime
-        run: |
-          set -euo pipefail
-          python3 tools/repro_ci_environment.py bootstrap --python-deps > /tmp/repro-ci-environment.json
-          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json
+          require-node: 'false'
       - name: Serve static application
         run: |
           python3 -m http.server 8765 --directory site >/tmp/trainer-http.log 2>&1 &

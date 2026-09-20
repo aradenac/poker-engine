@@ -3,6 +3,7 @@ name: Validate calculated Hero range export
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -54,14 +55,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/repro-runtime
         with:
-          node-version-file: '.node-version'
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify --require-node
+          require-node: 'true'
       - name: Syntax
         run: |
           node --check src/preflop/decision.js

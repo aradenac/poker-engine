@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -38,6 +39,7 @@ on:
       - '.github/workflows/postflop-response-refit.yml'
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - '.node-version'
       - 'tools/repro_ci_environment.py'
@@ -89,13 +91,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
-
+          require-node: 'false'
       - name: Contract tests
         run: |
           python3 - <<'PY'

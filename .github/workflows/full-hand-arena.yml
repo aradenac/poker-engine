@@ -3,6 +3,7 @@ name: Validate full-hand multiway arena
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
       - 'tools/repro_container.py'
@@ -47,11 +48,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
       - name: Compile
         run: |
           python3 -m py_compile \
@@ -81,11 +80,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
       - name: Download immutable issue 104 fit artifact
         env:
           GH_TOKEN: ${{ github.token }}

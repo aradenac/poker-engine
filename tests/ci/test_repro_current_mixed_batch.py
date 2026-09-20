@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
+from tools import audit_repro_composite_factorization as transition
 from tools import audit_repro_current_mixed_batch as audit
 
 
@@ -14,7 +15,15 @@ class MixedBatchTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.before = {p: audit.baseline(p) for p in audit.WORKFLOWS}
-        cls.after = {p: (ROOT / p).read_text() for p in audit.WORKFLOWS}
+        cls.after = {p: transition.baseline(p) for p in audit.WORKFLOWS}
+
+    def test_current_consumers_chain_to_historical_after(self):
+        for path in self.after:
+            with self.subTest(path=path):
+                text = (ROOT / path).read_text()
+                audit.check_workflow(path, self.before[path], text)
+                if path in transition.WORKFLOWS:
+                    transition.check_workflow(path, transition.baseline(path), text)
 
     def reject(self, path, old, new, *, before=None, after=None):
         source = self.after[path] if after is None else after
@@ -157,8 +166,8 @@ class MixedBatchTests(unittest.TestCase):
 
     def test_scope_guard_including_untracked(self):
         audit.check_scope(list(audit.ALLOWLIST))
-        for forbidden in ('.github/workflows/game-core.yml',
-                          '.github/workflows/sequential-arena.yml', 'requirements.lock.txt',
+        for forbidden in ('.github/workflows/not-in-scope.yml',
+                          'site/not-in-scope.js', 'training/models/not-in-scope.json',
                           'tools/new_side_effect.py'):
             with self.subTest(path=forbidden), self.assertRaises(audit.AuditError):
                 audit.check_scope([*audit.ALLOWLIST, forbidden])
@@ -166,6 +175,7 @@ class MixedBatchTests(unittest.TestCase):
             with self.assertRaises(audit.AuditError):
                 audit.check_scope(audit.changed_files())
         audit.check_scope(audit.changed_files())
+
 
 
 if __name__ == '__main__':

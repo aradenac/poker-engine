@@ -3,6 +3,7 @@ name: Card-aware Model B runtime
 on:
   push:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
       - 'tools/repro_container.py'
@@ -29,6 +30,7 @@ on:
       - '.github/workflows/model-b-card-aware-runtime.yml'
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
       - 'tools/repro_container.py'
@@ -63,12 +65,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
-
+          require-node: 'false'
       - name: Compile runtime, fit seam and tests
         run: |
           python3 -m py_compile \

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path
@@ -35,6 +36,40 @@ NODE = frozenset(p for p, d in DISPOSITIONS.items() if "NODE" in d)
 ALLOWLIST = frozenset((*MIGRATED, "tools/audit_active_workflow_dag.py",
     "tools/audit_residual_repro_dag.py", "tests/ci/test_residual_repro_dag.py",
     ACTIVE_EVIDENCE, EVIDENCE, DOC))
+CHAIN_BASE_SHA = "571d91b041bad1eef196481148f3eae076a8dcec"
+ISSUE_384_ALLOWLIST = frozenset((
+    ".github/actions/repro-browser/action.yml",
+    ".github/actions/repro-runtime/action.yml",
+    ".github/workflows/dataset-integrity.yml",
+    ".github/workflows/full-hand-arena.yml",
+    ".github/workflows/full-hand-protocol.yml",
+    ".github/workflows/hero-calculated-range-export.yml",
+    ".github/workflows/hero-range-compliance.yml",
+    ".github/workflows/hero-range-editor.yml",
+    ".github/workflows/model-b-card-aware-runtime.yml",
+    ".github/workflows/model-b-reveal-aware.yml",
+    ".github/workflows/population-pack-catalog.yml",
+    ".github/workflows/postflop-response-refit.yml",
+    ".github/workflows/preflop-grid-evaluator.yml",
+    ".github/workflows/preflop-policy169.yml",
+    ".github/workflows/preflop-search.yml",
+    ".github/workflows/release-handoff-contract.yml",
+    ".github/workflows/trainer-smoke.yml",
+    "analysis/workflow_audit/active_workflow_dag_v2.json",
+    "analysis/workflow_audit/repro_composite_factorization_v1.json",
+    "docs/ci-workflow-dag.md",
+    "tests/ci/test_repro_composite_factorization.py",
+    "tests/ci/test_repro_current_mixed_batch.py",
+    "tests/ci/test_repro_population_pack_catalog.py",
+    "tests/ci/test_repro_workflow_batch1.py",
+    "tests/ci/test_repro_workflow_batch2.py",
+    "tests/ci/test_residual_repro_dag.py",
+    "tools/audit_active_workflow_dag.py",
+    "tools/audit_repro_composite_factorization.py",
+    "tools/audit_repro_current_mixed_batch.py",
+    "tools/audit_repro_workflow_batch1.py",
+    "tools/audit_residual_repro_dag.py",
+))
 
 # These are the versioned sources traversed by verify -> identity -> container.
 REPRO_PATHS = (
@@ -123,6 +158,11 @@ def migrate(path: str, before: str) -> str:
 
 
 def check_workflow(path: str, before: str, after: str) -> None:
+    from tools.audit_repro_composite_factorization import historical_text, AuditError as TransitionError
+    try:
+        after = historical_text(path, after)
+    except TransitionError as exc:
+        raise AuditError(str(exc)) from exc
     disposition = DISPOSITIONS.get(path)
     if disposition is None:
         raise AuditError(f"workflow outside ten-workflow audit: {path}")
@@ -149,8 +189,14 @@ def changed_files() -> list[str]:
                    if "__pycache__" not in Path(p).parts and not p.endswith(".pyc")})
 
 
+@lru_cache(maxsize=1)
+def inherited_scope() -> frozenset[str]:
+    """Files already changed on main before the #384 transition base."""
+    return frozenset(git("diff", "--name-only", BASE_SHA, CHAIN_BASE_SHA, "--").splitlines())
+
+
 def check_scope(paths: list[str]) -> None:
-    extra = set(paths) - ALLOWLIST
+    extra = set(paths) - ALLOWLIST - inherited_scope() - ISSUE_384_ALLOWLIST
     if extra:
         raise AuditError(f"files outside exact allowlist: {sorted(extra)}")
 

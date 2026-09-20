@@ -3,6 +3,7 @@ name: Validate release handoff contract
 on:
   pull_request:
     paths:
+      - '.github/actions/repro-runtime/action.yml'
       - '.python-version'
       - 'tools/repro_ci_environment.py'
       - 'tools/repro_environment_identity.py'
@@ -49,11 +50,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/repro-runtime
         with:
-          python-version-file: '.python-version'
-      - name: Verify locked REPRO environment
-        run: python3 tools/repro_ci_environment.py verify
+          require-node: 'false'
       - name: Compile handoff validator and builder
         run: |
           python3 -m py_compile \

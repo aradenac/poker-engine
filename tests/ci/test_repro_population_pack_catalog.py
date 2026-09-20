@@ -7,8 +7,12 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from tools import audit_repro_composite_factorization as transition
+
 WORKFLOW = ROOT / ".github/workflows/population-pack-catalog.yml"
 EVIDENCE = ROOT / "analysis/workflow_audit/repro_population_pack_catalog_before_after.json"
 HELPER_CONSUMERS = ROOT / "analysis/workflow_audit/helper_consumers.json"
@@ -75,6 +79,10 @@ def _product_hash(tokens: list[str]) -> str:
 
 
 def audit_text(text: str, *, check_blob: bool = True) -> dict:
+    try:
+        text = transition.historical_text('.github/workflows/population-pack-catalog.yml', text)
+    except transition.AuditError as exc:
+        return {"status": "FAIL", "violations": [{"rule": "COMPOSITE_TRANSITION_INVALID", "detail": str(exc)}]}
     evidence = _json(EVIDENCE)
     violations: list[dict] = []
     parsed = _parse_workflow(text)
@@ -267,12 +275,12 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
         self.assertEqual("PASS", report["status"], report)
 
     def test_env_verify_cannot_be_removed(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(ENV_VERIFY, "echo bypass-env")
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(ENV_VERIFY, "echo bypass-env")
         rules = {x["rule"] for x in audit_text(text, check_blob=False)["violations"]}
         self.assertIn("CONTRACT_ENV_VERIFY_MISSING", rules)
 
     def test_python_runtime_cannot_float(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(
             "python-version-file: '.python-version'",
             "python-version: '3.11'",
             1,
@@ -282,7 +290,7 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
         self.assertIn("INLINE_OR_FLOATING_PYTHON_VERSION_PRESENT", rules)
 
     def test_node_runtime_cannot_float(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(
             "node-version-file: '.node-version'",
             "node-version: '22'",
             1,
@@ -292,18 +300,18 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
 
     def test_release_assertion_cannot_be_removed(self) -> None:
         token = "assert doc['publication_verification']['tracked_by_issue']==45"
-        text = WORKFLOW.read_text(encoding="utf-8").replace(token, "assert True")
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(token, "assert True")
         rules = {x["rule"] for x in audit_text(text, check_blob=False)["violations"]}
         self.assertIn("PRODUCT_GATE_REMOVED_OR_CHANGED", rules)
 
     def test_browser_smoke_cannot_be_removed(self) -> None:
         token = "python3 tests/packs/smoke_population_packs.py"
-        text = WORKFLOW.read_text(encoding="utf-8").replace(token, "echo skipped-smoke")
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(token, "echo skipped-smoke")
         rules = {x["rule"] for x in audit_text(text, check_blob=False)["violations"]}
         self.assertIn("PRODUCT_GATE_REMOVED_OR_CHANGED", rules)
 
     def test_browser_helper_cannot_be_bypassed(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(
             BROWSER_INSTALL,
             "python3 -m playwright install --with-deps chromium",
         )
@@ -312,7 +320,7 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
         self.assertIn("DIRECT_PLAYWRIGHT_BROWSER_BYPASS", rules)
 
     def test_needs_cannot_be_removed(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(
             "  browser-smoke:\n    needs: contract\n",
             "  browser-smoke:\n",
             1,
@@ -321,7 +329,7 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
         self.assertIn("JOB_IDENTITY_OR_NEEDS_CHANGED", rules)
 
     def test_concurrency_cannot_change(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(
             "group: population-pack-catalog-${{ github.ref }}",
             "group: changed-${{ github.ref }}",
             1,
@@ -330,7 +338,7 @@ class PopulationPackCatalogueReproTests(unittest.TestCase):
         self.assertIn("CONCURRENCY_CHANGED", rules)
 
     def test_no_new_error_masking(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8").replace(
+        text = transition.baseline('.github/workflows/population-pack-catalog.yml').replace(
             "run: python3 tests/packs/smoke_population_packs.py",
             "continue-on-error: true\n        run: python3 tests/packs/smoke_population_packs.py",
             1,
