@@ -25,7 +25,7 @@ rendered with the same unit.
 | # | Notion (canonical) | UI label | Unit | Normalization | Backend key |
 |---|---|---|---|---|---|
 | a | `posterior_combo_probability` | « masse probabiliste », « probabilité » | probability `p` in `[0,1]`, displayed as `%` | **sum-normalized**: the mass over the legal exact combos sums to `1` | `exact_combo_weights[].weight`, `probability_mass`, `normalization.output_mass` |
-| b | `relative_weight` | « poids relatif », « fiabilité diagnostique » | dimensionless ratio, `max = 1`, displayed as `100 % = poids relatif maximal` | **max-normalized**: the largest legal weight becomes `1`; the values do **not** sum to `1` | display-only; backend does not emit it |
+| b | `relative_weight` | « poids relatif » (grille matrice et exports) | dimensionless ratio, `max = 1`; the strongest legal weight is the top of the diagnostic heat scale | **max-normalized**: the largest legal weight becomes `1`; the values do **not** sum to `1` | display-only; backend does not emit it |
 | c | `inclusion_frequency` | « fréquence d'inclusion » / « Position dans la range source » | percent, integer/real in `[0,100]`, per hand class | **a priori input**: not normalized to `1` and not conditioned on observed actions | imported range `positions[].hands[].frequency` |
 | d | `non_informative_prior` | « prior non informatif » | probability per legal exact combo | **uniform**: every legal exact combo after PUBLIC blockers gets the same probability `1/N` | `UNCONDITIONED_COMBO_PRIOR` (see `docs/model-a-posterior-runtime.md`), projected as normalized combo probability |
 
@@ -46,20 +46,22 @@ mass, so the sum over all retained combos equals `1`.
 
 ### (b) Relative weight / diagnostic likelihood — `relative_weight`
 
-A **diagnostic** quantity used for heat maps, deltas, and visual comparison. It
+A **diagnostic** quantity used for the matrix heat map and visual comparison. It
 is obtained by dividing every legal exact-combo weight by the maximum weight, so
 the strongest legal weight is `1` and everything else is a ratio in `[0,1]`. It
 is a likelihood-like score, **never a probability**:
 
 - it does not sum to `1`;
 - it must never be labelled `%` as if it were a probability;
-- its UI caption is « 100 % = poids relatif maximal ».
+- its strongest value is shown at the top of the diagnostic heat scale, and the
+  scale is always labelled as a diagnostic ratio rather than a probability.
 
 `normalizeComboWeightsInPlace` and `exactComboRangeResult` in `site/index.html`
-produce this normalization; `grid_169_relative_weight_pct` and the replayer
-« poids relatif » / « fiabilité diagnostique » surfaces consume it. In the
-backend contract there is no equivalent field, because the backend only
-serializes normalized probabilities.
+produce this normalization; `grid_169_relative_weight_pct` and the matrix
+diagnostic consume it. The replayer range modal does **not** use it: it renders
+the canonical mass projection of §2 (grid, combo list and delta) so every legend
+describes the same probability value. In the backend contract there is no
+equivalent field, because the backend only serializes normalized probabilities.
 
 For a uniform prior, this diagnostic is undefined rather than informative:
 `aiExportRangeSnapshot` exports each exact combo's `relative_weight_pct` as
@@ -144,7 +146,7 @@ normalization, support), never from the model fit.
 
 | `posteriorState` | Meaning | Mass | UI behaviour |
 |---|---|---|---|
-| `prior_uninformative` | No public conditioning action has been applied, or the engine is explicitly rendering the uniform/non-informative prior. | prior (unnormalized as a likelihood; normalized only when projected) | label « prior non informatif »; must not be shown as a 100 % range |
+| `prior_uninformative` | No public conditioning action has been applied, or the engine is explicitly rendering the uniform/non-informative prior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « prior non informatif · range non estimée »; no numeric 169 grid and never a 100 % range |
 | `conditioned` | At least one public conditioning action matched, retained positive mass exists, and the output mass normalizes to `1`. | `1` | full posterior display |
 | `degenerate` | No positive support survives, all positive mass was blocked, or the record is invalid. | `0` | fail-closed; no combos, no positive 169 mass, explicit reason |
 
@@ -259,3 +261,6 @@ therefore:
   UI boundary.
 - `python3 tests/trainer/test_opponent_range_display_contract.py` — this
   document, the exported constant, the four notions and the mass-sum projection.
+- `python3 tests/trainer/test_replayer_modal_prior_states.py` — the replayer
+  range modal, its explicit `prior_uninformative`/`degenerate` states and its
+  unified mass legends.
