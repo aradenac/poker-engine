@@ -10,6 +10,7 @@ from playwright.async_api import async_playwright
 URL = "http://127.0.0.1:8765/index.html"
 ROOT = Path(__file__).resolve().parents[2]
 KTS_ISO_FIXTURE = ROOT / "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt"
+RANGE_NUMERIC_FIXTURE = ROOT / "tests/fixtures/opponent-range/numeric_scenarios.json"
 
 
 def folded(text: str) -> str:
@@ -18,6 +19,7 @@ def folded(text: str) -> str:
 
 async def main() -> None:
     kts_iso_raw = KTS_ISO_FIXTURE.read_text(encoding="utf-8")
+    range_numeric_cfg = json.loads(RANGE_NUMERIC_FIXTURE.read_text(encoding="utf-8"))
     page_errors: list[str] = []
     console_errors: list[str] = []
     async with async_playwright() as p:
@@ -441,6 +443,138 @@ async def main() -> None:
         assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
         assert "alternative EV Hero" in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
         assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
+
+        # #391 Replayer range modal browser rendering: open the real modal on a
+        # public fixture that yields a uniform prior (explicit non-informative
+        # state, no numeric 169 grid) and on a conditioned posterior (canonical
+        # sum-normalized 169 mass grid). Only public hero/board cards and the
+        # a priori 169 policy from the numeric fixture are consumed.
+        opponent_range_modal = await page.evaluate(
+            """async (payload) => {
+                const {ktsRaw,policy}=payload;
+                const parseFreq=text=>{
+                    const s=String(text||"").replace(/\\s*%\\s*$/,"").replace(",",".").trim();
+                    const v=Number(s);return Number.isFinite(v)?v:null;
+                };
+                const saved={
+                    selectedHand:state.selectedHand,replaySteps:state.replaySteps,replayIndex:state.replayIndex,
+                    hhMode:state.hhMode,postflopRangeCache:state.postflopRangeCache,populationRangeCache:state.populationRangeCache,
+                    populationTraceCache:state.populationTraceCache,postflopTraceCache:state.postflopTraceCache,
+                    opponents:state.opponents,ranges:state.ranges,rangeEdition:state.rangeEdition,
+                    populationModel:state.populationModel,populationNodeIndex:state.populationNodeIndex,
+                    populationPolicyCache:state.populationPolicyCache
+                };
+                try{
+                    const hand=parsePokerStarsHand(ktsRaw,"kts_sb_two_limp_iso4_three_calls.hand.txt");
+                    if(!hand)throw new Error("fixture modale range non parsée");
+                    const steps=makeReplaySteps(hand);
+                    state.selectedHand=hand;state.replaySteps=steps;state.hhMode=true;
+                    state.postflopRangeCache=Object.create(null);state.populationRangeCache=Object.create(null);
+                    state.populationTraceCache=Object.create(null);state.postflopTraceCache=Object.create(null);
+                    state.populationModel=null;state.populationNodeIndex=null;state.populationPolicyCache=Object.create(null);
+                    state.opponents=[];state.ranges=[];state.rangeEdition=false;
+                    const player=currentHandPlayer("CO");
+                    if(!player)throw new Error("joueur CO introuvable dans la fixture");
+                    const coIndex=steps.findIndex(s=>s.street==="Préflop"&&s.activePlayer==="CO"&&s.actionType==="call");
+                    if(coIndex<0)throw new Error("action CO de la fixture introuvable");
+                    const policyFor=h=>Object.prototype.hasOwnProperty.call(policy,h)?Number(policy[h]):Number(policy.__default__??1);
+
+                    // (1) Uniform prior: no population model and no imported
+                    // legacy range => the untouched prior is uniform and the
+                    // posterior state is explicitly non-informative.
+                    state.replayIndex=0;
+                    const uniformEstimate=populationRangeEstimateForPlayer(player,0);
+                    openPopulationRangeModal("CO");
+                    const uniformBody=populationRangeModalBody;
+                    const uniform={
+                        open:populationRangeModal.classList.contains("open"),
+                        ariaHidden:populationRangeModal.getAttribute("aria-hidden"),
+                        state:uniformEstimate?.posteriorState,
+                        uniformPrior:uniformEstimate?.uniformPrior===true,
+                        informativeActions:Number(uniformEstimate?.informativeActions)||0,
+                        gridTitle:uniformBody.querySelector(".section-title")?.textContent||"",
+                        gridCount:uniformBody.querySelectorAll(".population-modal-grid").length,
+                        cellCount:uniformBody.querySelectorAll(".population-modal-cell").length,
+                        warningText:uniformBody.querySelector(".population-modal-warning")?.textContent||"",
+                        text:uniformBody.textContent
+                    };
+                    closePopulationRangeModal();
+
+                    // (2) Conditioned posterior: apply one a priori 169 policy to
+                    // the uniform exact-combo prior (public hero blockers only),
+                    // then render the modal over the same sum-normalized mass
+                    // estimate the equity consumers are fed.
+                    state.replayIndex=coIndex;
+                    const combos=uniformExactComboPrior([...(hand.heroCards||[])]);
+                    for(const c of combos)c.weight*=Math.max(0,policyFor(cardsToNotation(c.cards)));
+                    if(!normalizeComboWeightsToMass(combos))throw new Error("normalisation de masse conditionnée échouée");
+                    const conditionedEstimate=exactComboRangeResult(combos,{informativeActions:1});
+                    if(!conditionedEstimate)throw new Error("estimate conditionnée indisponible");
+                    const preCount=replayPreflopDecisionCount(coIndex),postCount=replayPostflopDecisionCount(coIndex);
+                    state.postflopRangeCache[`dyn47:${hand.id}:CO:${coIndex}:${preCount}:${postCount}`]=conditionedEstimate;
+                    openPopulationRangeModal("CO");
+                    const conditionedBody=populationRangeModalBody;
+                    const cells=[...conditionedBody.querySelectorAll(".population-modal-cell")];
+                    const displayed=cells.map(c=>parseFreq(c.querySelector(".freq")?.textContent));
+                    const numeric=displayed.filter(v=>v!==null);
+                    const aaCell=cells.find(c=>c.querySelector(".hand")?.textContent.trim()==="AA");
+                    const conditioned={
+                        open:populationRangeModal.classList.contains("open"),
+                        ariaHidden:populationRangeModal.getAttribute("aria-hidden"),
+                        state:conditionedEstimate.posteriorState,
+                        informativeActions:Number(conditionedEstimate.informativeActions)||0,
+                        gridTitle:conditionedBody.querySelector(".section-title")?.textContent||"",
+                        gridCount:conditionedBody.querySelectorAll(".population-modal-grid").length,
+                        cellCount:cells.length,
+                        displayedSum:displayed.reduce((s,v)=>s+(v??0),0),
+                        displayedMax:numeric.length?Math.max(...numeric):0,
+                        displayedAt100:numeric.filter(v=>Math.abs(v-100)<1e-9).length,
+                        gridEstimateSum:(conditionedEstimate.gridEntries||[]).reduce((s,e)=>s+Math.max(0,Number(e.frequency)||0),0),
+                        gridEstimateLen:(conditionedEstimate.gridEntries||[]).length,
+                        aaDisplayed:aaCell?parseFreq(aaCell.querySelector(".freq")?.textContent):null,
+                        aaMass:Number((conditionedEstimate.gridEntries||[]).find(e=>e.hand==="AA")?.frequency)||0,
+                        deltaPresent:!!conditionedBody.querySelector(".population-delta-grid")
+                    };
+                    closePopulationRangeModal();
+                    return {uniform,conditioned};
+                }finally{
+                    state.selectedHand=saved.selectedHand;state.replaySteps=saved.replaySteps;state.replayIndex=saved.replayIndex;
+                    state.hhMode=saved.hhMode;state.postflopRangeCache=saved.postflopRangeCache;state.populationRangeCache=saved.populationRangeCache;
+                    state.populationTraceCache=saved.populationTraceCache;state.postflopTraceCache=saved.postflopTraceCache;
+                    state.opponents=saved.opponents;state.ranges=saved.ranges;state.rangeEdition=saved.rangeEdition;
+                    state.populationModel=saved.populationModel;state.populationNodeIndex=saved.populationNodeIndex;
+                    state.populationPolicyCache=saved.populationPolicyCache;
+                }
+            }""",
+            {"ktsRaw": kts_iso_raw, "policy": range_numeric_cfg["preflop_policy"]},
+        )
+        # The non-informative prior is rendered as an explicit state, never as a
+        # numeric 100 % grid, and the modal is genuinely open.
+        assert opponent_range_modal["uniform"]["open"] is True, opponent_range_modal
+        assert opponent_range_modal["uniform"]["ariaHidden"] == "false", opponent_range_modal
+        assert opponent_range_modal["uniform"]["state"] == "prior_uninformative", opponent_range_modal
+        assert opponent_range_modal["uniform"]["uniformPrior"] is True, opponent_range_modal
+        assert opponent_range_modal["uniform"]["informativeActions"] == 0, opponent_range_modal
+        assert "Prior non informatif" in opponent_range_modal["uniform"]["gridTitle"], opponent_range_modal
+        assert opponent_range_modal["uniform"]["gridCount"] == 0, opponent_range_modal
+        assert opponent_range_modal["uniform"]["cellCount"] == 0, opponent_range_modal
+        assert "Aucune grille 169" in opponent_range_modal["uniform"]["text"], opponent_range_modal
+        # The conditioned posterior renders the canonical sum-normalized mass
+        # grid: 169 classes, values summing to ~100, none pinned at 100 %.
+        assert opponent_range_modal["conditioned"]["open"] is True, opponent_range_modal
+        assert opponent_range_modal["conditioned"]["ariaHidden"] == "false", opponent_range_modal
+        assert opponent_range_modal["conditioned"]["state"] == "conditioned", opponent_range_modal
+        assert opponent_range_modal["conditioned"]["informativeActions"] == 1, opponent_range_modal
+        assert "projection 169 (masse)" in opponent_range_modal["conditioned"]["gridTitle"], opponent_range_modal
+        assert opponent_range_modal["conditioned"]["gridCount"] == 1, opponent_range_modal
+        assert opponent_range_modal["conditioned"]["cellCount"] == 169, opponent_range_modal
+        assert abs(opponent_range_modal["conditioned"]["gridEstimateSum"] - 100.0) < 1e-6, opponent_range_modal
+        assert opponent_range_modal["conditioned"]["gridEstimateLen"] == 169, opponent_range_modal
+        assert abs(opponent_range_modal["conditioned"]["displayedSum"] - 100.0) < 3.0, opponent_range_modal
+        assert opponent_range_modal["conditioned"]["displayedMax"] < 100.0, opponent_range_modal
+        assert opponent_range_modal["conditioned"]["displayedAt100"] == 0, opponent_range_modal
+        assert abs(opponent_range_modal["conditioned"]["aaDisplayed"] - opponent_range_modal["conditioned"]["aaMass"]) < 0.1, opponent_range_modal
+        assert opponent_range_modal["conditioned"]["deltaPresent"] is True, opponent_range_modal
 
         exact_review_open = await page.evaluate(
             """() => {
@@ -1189,6 +1323,10 @@ async def main() -> None:
             "replayer_hand_classes": hand_classes,
             "delta_ev_quality_contract": quality_contract,
             "prior_posterior_information_boundary": information_boundary,
+            "opponent_range_modal": {
+                "uniform": {k: v for k, v in opponent_range_modal["uniform"].items() if k != "text"},
+                "conditioned": opponent_range_modal["conditioned"],
+            },
             "hh_import_ux": hh_import_ux,
             "review_context": review_context,
             "local_persistence": local_persistence,
@@ -1207,6 +1345,8 @@ async def main() -> None:
         print(json.dumps(snapshot, ensure_ascii=False, indent=2))
         if page_errors:
             raise AssertionError(f"page errors: {page_errors}")
+        if console_errors:
+            raise AssertionError(f"console errors: {console_errors}")
         await browser.close()
 
 
