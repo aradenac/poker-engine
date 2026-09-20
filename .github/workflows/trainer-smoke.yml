@@ -7,11 +7,13 @@ on:
       - '.github/actions/repro-runtime/action.yml'
       - '.github/actions/repro-browser/action.yml'
       - 'site/index.html'
+      - 'site/compute-scheduler.js'
       - 'site/trainer.js'
       - 'site/trainer.css'
       - 'site/RELEASE.json'
       - 'site/deployment-meta.css'
       - 'site/assets/trainer/**'
+      - 'tests/compute/**'
       - 'tests/trainer/**'
       - 'tests/regression/**'
       - 'tools/patches/apply_trainer_mvp.py'
@@ -24,11 +26,13 @@ on:
       - '.github/actions/repro-runtime/action.yml'
       - '.github/actions/repro-browser/action.yml'
       - 'site/index.html'
+      - 'site/compute-scheduler.js'
       - 'site/trainer.js'
       - 'site/trainer.css'
       - 'site/RELEASE.json'
       - 'site/deployment-meta.css'
       - 'site/assets/trainer/**'
+      - 'tests/compute/**'
       - 'tests/trainer/**'
       - 'tests/regression/**'
       - 'tools/patches/apply_trainer_mvp.py'
@@ -55,7 +59,13 @@ jobs:
       - name: REPRO batch-1 anti-bypass contract
         run: PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
       - name: JavaScript syntax
-        run: node --check site/trainer.js
+        run: |
+          node --check site/compute-scheduler.js
+          node --check site/trainer.js
+      - name: Compute scheduler contracts
+        run: |
+          node --test --test-isolation=none tests/compute/scheduler.test.cjs
+          python3 tests/compute/mutations.py
       - name: Release identity
         run: python3 tools/write_site_release.py --check
       - name: All trainer regression contracts
@@ -89,6 +99,8 @@ jobs:
           done
           cat /tmp/trainer-http.log
           exit 1
+      - name: Exercise compute scheduler under browser contention
+        run: python3 tests/compute/smoke_browser.py
       - name: Exercise Training view
         run: python3 tests/trainer/smoke_trainer.py
       - name: Exercise pathological engine regressions
@@ -96,4 +108,3 @@ jobs:
       - name: Show server log on failure
         if: failure()
         run: cat /tmp/trainer-http.log || true
-
