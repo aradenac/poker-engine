@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import subprocess
 import sys
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -11,6 +12,21 @@ URL = "http://127.0.0.1:8765/index.html"
 ROOT = Path(__file__).resolve().parents[2]
 KTS_ISO_FIXTURE = ROOT / "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt"
 RANGE_NUMERIC_FIXTURE = ROOT / "tests/fixtures/opponent-range/numeric_scenarios.json"
+# Numeric browser smokes driven from this script so that the frozen browser-smoke
+# workflow can exercise #391 without adding a workflow step. Each stays a
+# standalone module (own static guards, own browser session); the opponent-range
+# script connects to the already-served 127.0.0.1:8765, while the scale-invariance
+# script starts its own ephemeral local server.
+DRIVER_SMOKES = (
+    Path(__file__).resolve().parent / "smoke_opponent_range_numeric.py",
+    Path(__file__).resolve().parent / "smoke_equity_scale_invariance.py",
+)
+
+
+def run_driver_smokes() -> None:
+    for script in DRIVER_SMOKES:
+        print(f"running driver smoke: {script}", flush=True)
+        subprocess.run([sys.executable, str(script)], check=True)
 
 
 def folded(text: str) -> str:
@@ -1353,6 +1369,7 @@ async def main() -> None:
 if __name__ == "__main__":
     try:
         asyncio.run(main())
+        run_driver_smokes()
     except Exception as exc:
         print(f"trainer smoke failed: {exc}", file=sys.stderr)
         raise
