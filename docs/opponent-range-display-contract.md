@@ -102,6 +102,28 @@ with `source_observations: 0` and projects it as normalized combo probability.
 It must never be displayed as “all 169 classes at 100 %”; `100 %` is reserved
 for `relative_weight` (b) and would be wrong for a prior or a posterior.
 
+### (e) Known-hand override — `knownHandOverride`
+
+A separate mechanism, **not** a fifth range notion: when `useKnownHand` is active
+for an opponent whose exact cards are revealed in the hand history,
+`effectiveEntriesForOpponent` / `exactEntriesFromCards` return a single entry
+tagged with the additive flag
+
+    {hand, frequency:100, exact:true, knownHandOverride:true}
+
+Consequences:
+
+- it is the **only** legitimate representation in which a single hand class may
+  be displayed at `100 %`; a posterior or a non-informative prior never is;
+- it must **never** be merged with the posterior mass projection of
+  `populationRangeEstimateForPlayer` / `posterior_range.py`: display surfaces
+  (opponent row, range modal) render it as its own banner, distinct from the
+  posterior grid;
+- the flag is metadata only. `useKnownHand` is unchanged and every equity
+  consumer (`legalCombosForOpponent`, `exactComboPriorFromEntries`,
+  `buildSeatEquityPlayers`, `postflopRaiseTreeSnapshot`) keeps reading the same
+  `hand`/`frequency` pair at the same scale.
+
 ## 2. The 169 projection is a mass sum
 
 The canonical projection from exact combos to the 169 hand classes is the

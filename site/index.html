@@ -1571,7 +1571,15 @@ const OPPONENT_RANGE_DISPLAY_CONTRACT=Object.freeze({
     non_informative_prior:Object.freeze({unit:"probability",normalization:"uniform_over_legal_combos",is_probability:true})
   }),
   projection_169:"sum_of_combo_probability_mass",
-  posterior_states:Object.freeze(["prior_uninformative","conditioned","degenerate"])
+  posterior_states:Object.freeze(["prior_uninformative","conditioned","degenerate"]),
+  known_hand_override:Object.freeze({
+    flag:"knownHandOverride",
+    producers:Object.freeze(["effectiveEntriesForOpponent","exactEntriesFromCards"]),
+    semantics:"exact_known_hand_single_class",
+    display:"single_class_100_allowed",
+    is_posterior:false,
+    merge_with_posterior:false
+  })
 });
 window.PokerOpponentRangeDisplayContract=OPPONENT_RANGE_DISPLAY_CONTRACT;
 window.OPPONENT_RANGE_DISPLAY_CONTRACT=OPPONENT_RANGE_DISPLAY_CONTRACT;
@@ -1843,6 +1851,25 @@ function exactKnownOverride(index){
   const o=state.opponents[index];
   return !!(state.hhMode && o?.useKnownHand && o?.knownCards?.length===2);
 }
+/* Additive marker of the known-hand override. The override is the ONLY
+   legitimate representation that renders a single hand class at 100 %: it is an
+   exact known hand, not a posterior. It must never be folded into
+   `populationRangeEstimateForPlayer`'s sum-normalized mass projection and it
+   must not read as a 100 % grid. The flag is metadata only: every equity
+   consumer keeps reading `hand`/`frequency` at the same scale. Adding or
+   removing the flag never changes `useKnownHand`. */
+function knownHandOverrideEntry(cards){
+  return cards?.length===2 ? {hand:exactHandCode(cards),frequency:100,exact:true,knownHandOverride:true} : [];
+}
+function entriesAreKnownHandOverride(entries){
+  return (entries||[]).some(e=>e&&e.knownHandOverride===true);
+}
+/* Cards of the active known-hand override for a player, or null when the
+   calculator uses the posterior/imported range for that player. */
+function knownHandOverrideCardsForPlayer(playerName){
+  const index=(state.opponents||[]).findIndex(o=>o.playerName===playerName);
+  return index>=0&&exactKnownOverride(index) ? (state.opponents[index].knownCards||null) : null;
+}
 function finalPreflopReplayIndex(){
   let last=0;
   for(let i=0;i<(state.replaySteps||[]).length;i++){
@@ -1866,7 +1893,7 @@ function calculatorPopulationReplayIndex(){
 }
 function effectiveEntriesForOpponent(index){
   const o=state.opponents[index];
-  if(exactKnownOverride(index)) return [{hand:exactHandCode(o.knownCards),frequency:100,exact:true}];
+  if(exactKnownOverride(index)) return knownHandOverrideEntry(o.knownCards); // tagged knownHandOverride:true
 
   // In Hand History mode, a loaded population model becomes the preferred
   // theoretical source after at least one usable preflop action by this player.
@@ -5374,6 +5401,9 @@ function openPopulationRangeModal(playerName){
   const player=currentHandPlayer(playerName);
   if(!player||player.name===state.selectedHand.heroName) return;
   const estimate=populationRangeEstimateForPlayer(player,state.replayIndex);
+  // The known-hand override is a distinct mechanism from the posterior: it is
+  // surfaced here as a separate banner and never merged into the grid below.
+  const overrideCards=knownHandOverrideCardsForPlayer(player.name);
   const degenerate=estimate?.posteriorState==="degenerate";
   const uninformative=estimate?.posteriorState==="prior_uninformative";
   // A numeric 169 grid is only meaningful for a conditioned posterior. The
@@ -5403,7 +5433,12 @@ function openPopulationRangeModal(playerName){
   const deltaVisible=hasNumericGrid&&!!prevFreq&&prevFreq.size>0;
 
   populationRangeModalTitle.textContent=`Range adverse estimée · ${player.name}`;
-  populationRangeModalSub.textContent=`${player.hhPosition||"?"} · étape ${state.replayIndex+1}/${state.replaySteps.length} · ${source}`;
+  populationRangeModalSub.textContent=`${player.hhPosition||"?"} · étape ${state.replayIndex+1}/${state.replaySteps.length} · ${source}${overrideCards?" · override main connue actif":""}`;
+  // Separate surface for the known-hand override: it is the only legitimate
+  // single-class 100 % display and is explicitly not the posterior.
+  const overrideNotice=overrideCards
+    ? `<div class="population-modal-warning population-modal-override" data-known-hand-override="true"><b>Override main connue · mécanisme séparé du posterior.</b> Le calculateur utilise la main exacte ${overrideCards.map(cardLabel).join(" ")} : une classe unique à 100 %, seul cas légitime d’un affichage à 100 %. Cet override n’est pas fusionné avec le posterior population : la grille et les combos ci-dessous restent la projection de masse sum-normalisée du posterior.</div>`
+    : "";
   const modalMaxFreq=Math.max(1,...ALL_NOTATIONS.map(n=>Number(freq.get(n)||0)));
   const grid=hasNumericGrid?ALL_NOTATIONS.map(n=>{const f=Number(freq.get(n)||0);const heat=heatColorForPercent(f,modalMaxFreq);const opacity=Math.max(.10,Math.min(.92,Math.pow(f/modalMaxFreq||0,0.58)*.92));const valueText=f?`${f.toFixed(f>=10?0:1).replace(".",",")} %`:"—";return `<div class="population-modal-cell" style="background:${heat.bg};border-color:${heat.border};color:${heat.text};text-shadow:${heat.shadow}" title="${escapeHtml(n)} — ${f.toFixed(1).replace(".",",")} %"><div class="heat" style="opacity:${opacity};background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 40%,rgba(0,0,0,.06))"></div><div class="hand">${escapeHtml(n)}</div><div class="freq">${valueText}</div></div>`;}).join(""):"";
   const topCombos=stats.rows.slice(0,30).map(r=>`<div class="population-combo-row"><b>${escapeHtml(r.hand)}</b><span class="bar"><i style="width:${Math.min(100,r.p/(stats.rows[0]?.p||1)*100)}%"></i></span><span>${(r.p*100).toFixed(2).replace(".",",")}%</span></div>`).join("")||'<div class="tiny">Aucun combo.</div>';
@@ -5430,6 +5465,7 @@ function openPopulationRangeModal(playerName){
     : `<div class="population-modal-warning">${escapeHtml(gridCaption)}</div>`;
 
   populationRangeModalBody.innerHTML=`
+    ${overrideNotice}
     <div class="population-modal-metrics">
       <div class="population-modal-metric">Source<b>${escapeHtml(source)}</b></div>
       <div class="population-modal-metric">Largeur relative<b>${(width*100).toFixed(1).replace(".",",")} %</b></div>
@@ -6584,10 +6620,10 @@ function renderOpponents(){
     const sourceBtn=document.createElement("button");
     sourceBtn.className="secondary source-btn"+(exactKnownOverride(i)?" active":"");
     if(o.knownCards?.length===2){
-      sourceBtn.textContent=exactKnownOverride(i)?"Source : main HH":`Source : ${theoreticalLabel}`;
+      sourceBtn.textContent=exactKnownOverride(i)?"Override : main connue HH":`Source : ${theoreticalLabel}`;
       sourceBtn.title=exactKnownOverride(i)
-        ? `Calcul avec ${o.knownCards.map(cardLabel).join(" ")}. Cliquer pour revenir à la range adverse estimée.`
-        : `Calcul avec la ${theoreticalLabel}. Cliquer pour utiliser la main exacte connue dans l'historique.`;
+        ? `Override main connue HH · mécanisme séparé du posterior : calcul avec ${o.knownCards.map(cardLabel).join(" ")} (classe unique à 100 %). Cliquer pour revenir à la range adverse estimée.`
+        : `Calcul avec la ${theoreticalLabel}. Cliquer pour utiliser la main exacte connue dans l'historique (override).`;
       sourceBtn.onclick=()=>{
         o.useKnownHand=!o.useKnownHand;
         state.activeOpponent=i;
@@ -6608,8 +6644,8 @@ function renderOpponents(){
 
     const active=effectiveEntriesForOpponent(i);
     const info=document.createElement("div");info.className="tiny";info.style.gridColumn="2 / -1";
-    if(exactKnownOverride(i)){
-      info.textContent=`Main exacte HH utilisée : ${o.knownCards.map(cardLabel).join(" ")} · la range adverse estimée reste disponible et sera réutilisée si vous repassez sur cette source.`;
+    if(entriesAreKnownHandOverride(active)){
+      info.textContent=`Override main connue HH (classe unique à 100 %) : ${o.knownCards.map(cardLabel).join(" ")} · mécanisme séparé du posterior ; la range adverse estimée reste disponible dans la modale et sera réutilisée si vous repassez sur cette source.`;
     }else if(populationEstimate){
       info.textContent=`Range adverse estimée · ${populationEstimate.postflopMatchedActions>0?`${populationEstimate.entries.length} combos exacts`:`${populationEstimate.entries.length} classes pondérées`} · ${populationEstimate.matchedActions}/${populationEstimate.totalActions} action(s) appariée(s) · dernier nœud ${populationEstimate.lastNodeId||"—"} (${populationEstimate.lastQuality||"—"}).`;
     }else if(position){
@@ -7761,7 +7797,9 @@ function legacyUnderlyingRangeEntriesForOpponent(index){
 
 
 function exactEntriesFromCards(cards){
-  return cards?.length===2 ? [{hand:exactHandCode(cards),frequency:100,exact:true}] : [];
+  // Exact known hand (hero or opponent): tagged with the additive
+  // `knownHandOverride:true` flag by `knownHandOverrideEntry`, never a posterior.
+  return knownHandOverrideEntry(cards);
 }
 function defaultRangeEntriesForHistoryPlayer(player){
   if(!player || !state.ranges.length) return [];
