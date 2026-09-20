@@ -160,6 +160,25 @@ combo counts stay visually comparable. That diagnostic aggregation is *not* the
 posterior projection and must not be exported, cited, or labelled as a
 probability. Only the mass sum above is the probability projection.
 
+### 2.1 Replayer surfaces
+
+The reference UI is the Replayer range modal and its exports in
+`site/index.html`; each contract element maps to a concrete surface:
+
+| Contract element | Replayer surface |
+|---|---|
+| (a) `posterior_combo_probability` | grid, combo list and delta of `openPopulationRangeModal`, fed by `massGridFreqMapFromEstimate` → `estimate.gridEntries` = `projectCombosTo169Mass`; export `grid_169_probability_pct` and `exact_combos[].probability_pct` |
+| (b) `relative_weight` | diagnostic matrix heat grid and export `grid_169_relative_weight_pct` / `relative_weight_pct`; never the modal grid, and `null` for a uniform prior |
+| (c) `inclusion_frequency` | imported range editor and « Position dans la range source »; expanded to combos by `exactComboPriorFromEntries` |
+| (d) `non_informative_prior` | explicit « Prior non informatif · range non estimée » state; `gridFreqMapFromEstimate` returns an empty map so no numeric grid is drawn |
+| `conditioned` | the numeric 169 mass grid and the estimated-range title |
+| `degenerate` | explicit « Posterior dégénéré · masse nulle après blockers publics » state; empty map and a fail-closed `aiExportRangeSnapshot` (`posterior_state:"degenerate"`) |
+| known-hand override | separate `data-known-hand-override="true"` banner, never merged into the grid |
+
+The Python string-contracts `tests/trainer/test_prior_posterior_ui_contract.py`
+and `tests/trainer/test_range_vocabulary_contract.py` pin these surfaces; the
+mass-sum projection also feeds `aiExportRangeSnapshot` as described in §2.
+
 ## 3. `posteriorState`
 
 Every rendered opponent distribution carries exactly one `posteriorState`. The

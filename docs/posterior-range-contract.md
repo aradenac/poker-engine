@@ -96,17 +96,109 @@ record_from_combo_posterior() accepts any object exposing those two attributes a
 
 This is the intended bridge for #312.
 
-## Display-side representation
+## Displayed semantics and Replayer UI mapping
 
-Rendering surfaces must not relabel the backend quantities. The separate
-`docs/opponent-range-display-contract.md` (`poker-opponent-range-display/v1`)
-fixes the four display notions and their units: sum-normalized combo
-probability, max-normalized relative weight/diagnostic likelihood (never a
-probability), a priori 0-100 inclusion frequency of imported ranges, and the
-non-informative prior. It also fixes the 169 projection as the sum of combo
-probability mass per class and names the derived
-`prior_uninformative`/`conditioned`/`degenerate` states. It is a representation
-contract and introduces no fit or model change.
+Rendering surfaces must not relabel the backend quantities. The versioned
+display companion is `docs/opponent-range-display-contract.md`
+(`poker-opponent-range-display/v1`, exported as
+`OPPONENT_RANGE_DISPLAY_CONTRACT` from `site/index.html`). It is a
+representation contract and introduces no fit or model change. This backend
+document and that display contract are aligned; where they name the same value
+they use the same unit and normalization.
+
+### The four notions stay separate
+
+| Notion | Canonical name | Unit and normalization | Backend field |
+|---|---|---|---|
+| (a) posterior combo probability | `posterior_combo_probability` | probability in `[0,1]`, **sum-normalized** over legal exact combos so the mass is `1`; displayed as `%` | `exact_combo_weights[].weight`, `probability_mass`, `normalization.output_mass` |
+| (b) diagnostic relative weight | `relative_weight` | dimensionless ratio in `[0,1]`, **max-normalized** (the strongest legal weight becomes `1`); never a probability and never a sum to `1` | none — display-only, no backend field |
+| (c) a priori inclusion frequency | `inclusion_frequency` | percent in `[0,100]` per hand class; an **input** from an imported/source range, not conditioned on observed actions | none in this contract; imported range `positions[].hands[].frequency` |
+| (d) non-informative prior | `non_informative_prior` | probability, **uniform** over the legal exact combos after PUBLIC blockers (`1/N` each) | `UNCONDITIONED_COMBO_PRIOR` from the Model A adapter (`support.source_observations = 0`, `support.backoff.level = UNCONDITIONED_COMBO_PRIOR`), projected as normalized combo probability |
+
+Only (a) and (d) are probabilities, and only (a) is the conditioned posterior
+output of `project_exact_combo_weights`. (b) is a display-only diagnostic
+normalization; (c) is an imported-range input. No surface may render (b) or (c)
+with the unit or label of (a), and a uniform prior must never be displayed as a
+`100 %` range. The single-class `100 %` display belongs exclusively to the
+separate known-hand override, which is not a posterior.
+
+### The 169 projection is a mass sum
+
+`projection_169.classes[hand_class]` is the **sum of the exact-combo
+probabilities** belonging to that class:
+
+    classes[hand_class] = Σ posterior_combo_probability(combo)
+                          for combo in legal_combos(hand_class)
+
+- it is not a mean and not a max over the combos of the class;
+- because the exact-combo probabilities sum to `1`, the 169 class masses also
+  sum to `1` (display surfaces show them as `%`, summing to `100 %`);
+- `full_combo_multiplicity` (canonical 1326) and `legal_combo_multiplicity`
+  (post-PUBLIC-blocker) travel with `classes`, so a class mass is never read as
+  a per-combo probability;
+- the separate 169 **relative-weight** heat grid (notion (b)) aggregates
+  max-normalized combo weights per class (by mean in the browser) for visual
+  comparison only. It is not this projection and must not be exported, cited or
+  labelled as a probability.
+
+### posteriorState
+
+The backend serializes `status ∈ {AVAILABLE, UNSUPPORTED, INVALID}`. The
+display layer derives exactly one `posteriorState` for every rendered
+distribution; the state comes from the representation layer (blockers,
+normalization, support, conditioning actions), never from the model fit.
+
+| `posteriorState` | Backend correspondence | Mass | Replayer rendering |
+|---|---|---|---|
+| `prior_uninformative` | no conditioning action matched, or `UNCONDITIONED_COMBO_PRIOR` with `source_observations = 0`; a positive-mass prior may still be `AVAILABLE` | prior (normalized only when projected) | explicit « Prior non informatif · range non estimée » state; no numeric 169 grid |
+| `conditioned` | `status = AVAILABLE`, `probability_mass = 1`, positive `exact_combo_support`, and at least one matched public action | `1` | full posterior display |
+| `degenerate` | `status ∈ {UNSUPPORTED, INVALID}` (`probability_mass = 0`, no `exact_combo_weights`, all-zero 169 projection, non-empty `reason`), or the browser removed all positive mass | `0` | fail-closed; no combos, no positive 169 mass, explicit reason, never a silent re-seed from the imported range and never a `100 %` grid |
+
+A concentrated but `AVAILABLE` posterior is not `degenerate`: low
+`support.effective_support` and `support.entropy_nats` are diagnostics only,
+are not probabilities, and are not the notion (b) relative weight.
+
+### Replayer UI mapping
+
+`site/index.html` is a static vanilla-JS application; its Replayer surfaces
+consume exactly the values above:
+
+- `populationRangeEstimateForPlayer` builds the estimate, derives
+  `posteriorState` from `informativeActions = preMatched + postMatched`, and
+  returns `gridEntries = projectCombosTo169Mass(combos)` — the canonical 169
+  mass sum. `projectCombosTo169Mass` divides each retained weight by the total
+  and accumulates `w / total` per hand class.
+- `gridFreqMapFromEstimate` returns an empty map for `degenerate` and
+  `prior_uninformative`, so no numeric grid is drawn for those states;
+  `massGridFreqMapFromEstimate` otherwise reads `estimate.gridEntries` unchanged.
+- `openPopulationRangeModal` renders the explicit state titles
+  « Prior non informatif · range non estimée » and
+  « Posterior dégénéré · masse nulle après blockers publics ». The legends
+  « projection 169 (masse) » and « Chaque classe = somme des probabilités de ses
+  combos légaux (masse probabiliste, somme = 100 %) », the combo list
+  « masse probabiliste après normalisation » and the delta panel (variation in
+  mass points) all describe notion (a). Display surfaces never relabel it as a
+  max-normalized ratio.
+- the known-hand override is a **separate banner**
+  (`data-known-hand-override="true"`, `knownHandOverride:true`) and is never
+  merged into the posterior grid; it is the only legitimate single-class
+  `100 %` display.
+- `aiExportRangeSnapshot` exports `posterior_state`,
+  `exact_combos[].probability_pct = 100 * weight / total` and
+  `grid_169_probability_pct` (the 169 mass sum). It additionally exports the
+  diagnostic `grid_169_relative_weight_pct` and per-combo `relative_weight_pct`
+  (max-normalized notion (b)); for a uniform prior those diagnostics are `null`
+  while the canonical `probability_pct` is retained.
+- the equity consumers (`combos`/sampler, `buildSeatEquityPlayers`,
+  `postflopRaiseTreeSnapshot`) keep reading `hand`/`frequency` at the same
+  scale: the display normalization above never rescales their inputs.
+
+The postflop path (`populationRangeEstimateForPlayer` on flop/turn/river) is a
+browser-only extension: it obeys the same four notions, the same mass-sum 169
+projection and the same `posteriorState` triggers, but has no
+`posterior_range.py` equivalent and no JSON schema. It never consumes an
+unrevealed opponent card; only PUBLIC blockers (board and hero cards) are
+applied.
 
 ## Synthetic verification
 
