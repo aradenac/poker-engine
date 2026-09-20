@@ -5353,8 +5353,13 @@ function previousPlayerDecisionRange(playerName,currentIndex){
   return null;
 }
 function gridFreqMapFromEstimate(estimate,player){
+  // Diagnostic relative-weight heat grid (notion (b)), not the canonical
+  // probability projection: the conditioned engine carries the max-normalized
+  // relativeWeightPct alongside its mass; imported/hero ranges keep their
+  // historical inclusion frequency.
   const entries=estimate?.entries?.length?estimate.entries:legacyRangeEntriesForHistoryPlayer(player);
-  return new Map(rangeEntriesForGrid(entries).map(e=>[e.hand,Math.max(0,Math.min(100,Number(e.frequency)||0))]));
+  const relative=entries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)}));
+  return new Map(rangeEntriesForGrid(relative).map(e=>[e.hand,Math.max(0,Math.min(100,Number(e.frequency)||0))]));
 }
 function openPopulationRangeModal(playerName){
   if(!populationRangeModal||!state.selectedHand) return;
@@ -5793,16 +5798,20 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   const combos=exactComboPriorFromEntries(entries,blocked);
   const total=combos.reduce((a,c)=>a+(Number(c.weight)||0),0)||1;
   const maxW=Math.max(0,...combos.map(c=>Number(c.weight)||0))||1;
-  const classMass=Object.create(null);
   const exact=combos.map(c=>{
     const p=(Number(c.weight)||0)/total;
-    const cls=cardsToNotation(c.cards);classMass[cls]=(classMass[cls]||0)+p;
     return {cards:[cardCode(c.cards[0]),cardCode(c.cards[1])],probability_pct:aiExportNumber(100*p,7),relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)};
   }).sort((a,b)=>(b.probability_pct||0)-(a.probability_pct||0));
+  // Diagnostic relative-weight heat grid (notion (b)): max-normalized per combo,
+  // aggregated per class by mean so classes with different combo counts stay
+  // comparable. It is never the canonical posterior projection below.
+  const relativeEntries=entries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)}));
   const gridRelative=Object.create(null);
-  for(const e of rangeEntriesForGrid(entries))if(Number(e.frequency)>0.000001)gridRelative[e.hand]=aiExportNumber(e.frequency,5);
+  for(const e of rangeEntriesForGrid(relativeEntries))if(Number(e.frequency)>0.000001)gridRelative[e.hand]=aiExportNumber(e.frequency,5);
+  // Canonical posterior projection (§2): sum of the normalized combo probability
+  // mass per hand class; the class values sum to 100.
   const gridProbability=Object.create(null);
-  for(const [h,p] of Object.entries(classMass).sort((a,b)=>b[1]-a[1]))gridProbability[h]=aiExportNumber(100*p,7);
+  for(const e of projectCombosTo169Mass(combos).sort((a,b)=>b.frequency-a.frequency))if(e.frequency>0.000001)gridProbability[e.hand]=aiExportNumber(e.frequency,7);
   const id=`R${registry.next++}`;
   registry.snapshots[id]={
     id,player:player.name,step_index:idx,reason,street:state.replaySteps[idx]?.street||"",board:aiExportCards(board),
@@ -6701,8 +6710,9 @@ function renderMatrix(){
   if(state.hhMode&&o?.playerName&&!state.rangeEdition){
     const player=currentHandPlayer(o.playerName);
     matrixPopulationEstimate=populationRangeEstimateForPlayer(player,calculatorPopulationReplayIndex());
-    const entries=matrixPopulationEstimate?.entries?.length
-      ? rangeEntriesForGrid(matrixPopulationEstimate.entries)
+    const matrixEntries=matrixPopulationEstimate?.entries?.length?matrixPopulationEstimate.entries:null;
+    const entries=matrixEntries
+      ? rangeEntriesForGrid(matrixEntries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)})))
       : legacyRangeEntriesForHistoryPlayer(player);
     for(const h of entries) fileFreq.set(h.hand,Number(h.frequency)||0);
   }else{
@@ -7502,11 +7512,47 @@ function rangeEntriesForGrid(entries){
   const sum=Object.create(null),count=Object.create(null);for(const e of entries||[]){const c=expandNotation(e.hand)?.[0];if(!c)continue;const n=cardsToNotation(c);sum[n]=(sum[n]||0)+(Number(e.frequency)||0);count[n]=(count[n]||0)+1;}
   return ALL_NOTATIONS.map(hand=>({hand,frequency:count[hand]?sum[hand]/count[hand]:0})).filter(e=>e.frequency>.001);
 }
+/* Canonical posterior normalization (notion (a) posterior_combo_probability):
+   divide the retained exact-combo weights by their total mass so the legal
+   combos sum to 1. This is the only normalization used for posterior output. */
+function normalizeComboWeightsToMass(combos){
+  const list=combos||[];
+  let sum=0;for(const c of list)sum+=Math.max(0,Number(c.weight)||0);
+  if(!(sum>0)) return false;
+  for(const c of list)c.weight=Math.max(0,Number(c.weight)||0)/sum;
+  return true;
+}
+/* Diagnostic-only (notion (b) relative_weight): max-normalize so the strongest
+   legal weight becomes 1. This is NEVER the posterior output; the canonical
+   distribution is normalizeComboWeightsToMass above. */
 function normalizeComboWeightsInPlace(combos){
   const mx=Math.max(0,...(combos||[]).map(c=>Number(c.weight)||0));
   if(!(mx>0)) return false;
   for(const c of combos)c.weight=(Number(c.weight)||0)/mx;
   return true;
+}
+/* A non-informative prior is uniform over the legal exact combos, so every
+   positive weight is equal (notion (d) non_informative_prior). */
+function comboWeightsAreUniform(combos){
+  let ref=null;
+  for(const c of combos||[]){
+    const w=Math.max(0,Number(c.weight)||0);
+    if(!(w>0))continue;
+    if(ref===null){ref=w;continue;}
+    if(Math.abs(w-ref)>1e-9*Math.max(1,Math.abs(ref)))return false;
+  }
+  return ref!==null;
+}
+/* Canonical 169 projection (§2 of the display contract): sum the combo
+   probabilities belonging to each hand class. Input weights are treated as a
+   probability mass (self-normalizing), so the class values sum to 100. */
+function projectCombosTo169Mass(combos){
+  const list=combos||[];
+  let total=0;for(const c of list)total+=Math.max(0,Number(c.weight)||0);
+  if(!(total>0))return [];
+  const mass=Object.create(null);
+  for(const c of list){const w=Math.max(0,Number(c.weight)||0);if(!(w>0))continue;const cls=cardsToNotation(c.cards);mass[cls]=(mass[cls]||0)+w/total;}
+  return ALL_NOTATIONS.map(hand=>({hand,frequency:100*(mass[hand]||0)})).filter(e=>e.frequency>1e-9);
 }
 function uniformExactComboPrior(blockedCards=[]){
   const blocked=new Set(blockedCards||[]),out=[];
@@ -7520,11 +7566,15 @@ function uniformExactComboPrior(blockedCards=[]){
   return out;
 }
 function exactComboRangeResult(combos,meta={}){
-  if(!combos?.length||!normalizeComboWeightsInPlace(combos))return null;
-  const entries=combos.map(c=>({hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*c.weight,exactCombo:true,population:true})).filter(e=>e.frequency>.001);
+  if(!combos?.length)return null;
+  const uniformPrior=comboWeightsAreUniform(combos);
+  if(!normalizeComboWeightsToMass(combos))return null;
+  const probabilityMass=combos.reduce((s,c)=>s+(Number(c.weight)||0),0);
+  const maxWeight=Math.max(0,...combos.map(c=>Number(c.weight)||0));
+  const entries=combos.map(c=>({hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*(Number(c.weight)||0),relativeWeightPct:maxWeight>0?100*(Number(c.weight)||0)/maxWeight:0,exactCombo:true,population:true})).filter(e=>e.frequency>0);
   if(!entries.length)return null;
-  const width=combos.reduce((s,c)=>s+c.weight,0)/Math.max(1,combos.length);
-  return {...meta,entries,gridEntries:rangeEntriesForGrid(entries),width,comboCount:combos.length,exactComboEngine:true};
+  const width=maxWeight>0?probabilityMass/Math.max(1,combos.length)/maxWeight:0;
+  return {...meta,entries,gridEntries:projectCombosTo169Mass(combos),width,probabilityMass,uniformPrior,comboCount:combos.length,exactComboEngine:true};
 }
 function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
   if(!player||!state.hhMode||!state.selectedHand)return null;
@@ -7555,7 +7605,7 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
       const h=cardsToNotation(c.cards),p=Math.max(0,Number(policy[h]?.[d.action])||0);
       c.weight*=p;
     }
-    if(!normalizeComboWeightsInPlace(combos)){
+    if(!normalizeComboWeightsToMass(combos)){
       combos=exactComboPriorFromEntries(legacyRangeEntriesForHistoryPlayer(player),heroBlocked);
       break;
     }
@@ -7569,20 +7619,20 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
     combos=exactComboPriorFromEntries(legacyRangeEntriesForHistoryPlayer(player),heroBlocked);
     if(!combos.length)combos=uniformExactComboPrior(heroBlocked);
   }
-  normalizeComboWeightsInPlace(combos);
+  normalizeComboWeightsToMass(combos);
 
   const postTrace=[];let postMatched=0;
   if(state.postflopModel&&postCount>0){
     const occurred=postflopDecisionTrace(hand).slice(0,postCount),playerActions=occurred.filter(x=>x.player===player.name);
     for(const d of playerActions){
       combos=filterComboBlockers(combos,[...heroBlocked,...d.board]);
-      if(!normalizeComboWeightsInPlace(combos))break;
+      if(!normalizeComboWeightsToMass(combos))break;
       const match=findClosestPostflopNode(d);
       if(!match){postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:null,quality:"aucun"});continue;}
       const target=postflopTargetFrequencies(match.node,d),probs=calibratedPostflopObservedProbabilities(combos,d,target);
       if(!probs){postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:match.node.id,quality:match.quality,error:"policy"});continue;}
       for(let i=0;i<combos.length;i++)combos[i].weight*=Math.max(1e-10,Number(probs[i])||0);
-      if(!normalizeComboWeightsInPlace(combos))break;
+      if(!normalizeComboWeightsToMass(combos))break;
       postMatched++;
       postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:match.node.id,quality:match.quality,exact:match.exact,nodeObservations:Number(match.node.coverage?.population_decisions)||0,nodeConfidence:match.node.population_model?.confidence||"",family:`${match.node.context?.pot_type||""} · ${match.node.context?.preflop_role||""} · ${match.node.context?.relative_position||""}`,target});
     }
@@ -7592,7 +7642,7 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
   // the street. Remove their blocked combinations at the exact replay step.
   const currentBoard=state.replaySteps?.[idx]?.board||[];
   combos=filterComboBlockers(combos,[...heroBlocked,...currentBoard]);
-  if(!normalizeComboWeightsInPlace(combos)){state.postflopRangeCache[cacheKey]=null;return null;}
+  if(!normalizeComboWeightsToMass(combos)){state.postflopRangeCache[cacheKey]=null;return null;}
 
   const trace=[...preTrace,...postTrace],last=[...trace].reverse().find(x=>x.nodeId)||null;
   const result=exactComboRangeResult(combos,{
