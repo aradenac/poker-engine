@@ -27,6 +27,42 @@ async def main() -> None:
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
         await page.goto(URL, wait_until="domcontentloaded", timeout=45_000)
 
+        # #390 browser contract: exercise the real global scheduler under concurrent
+        # production worker load while injecting user interactions.
+        await page.evaluate(
+            """() => {
+                window.__computeSchedulerSmokeDone=false;
+                const snapshot={
+                    hero:[8,24],board:[41,19,25],method:"mc",trials:20000,
+                    opponents:[{hands:[{hand:"AA",frequency:100},{hand:"76s",frequency:100}]}]
+                };
+                const kinds=["background","prefetch","explicit","replayer","explicit","background"];
+                window.__computeSchedulerSmokePromise=Promise.all(kinds.map(kind=>new Promise((resolve,reject)=>{
+                    const worker=createCalcWorker({kind});
+                    worker.onmessage=e=>{
+                        if(e.data?.type==="progress")return;
+                        cleanupReplayWorker(worker);
+                        if(e.data?.type==="error")reject(Error(e.data.message));else resolve(e.data.out);
+                    };
+                    worker.onerror=e=>reject(Error(e?.message||"worker error"));
+                    worker.postMessage(snapshot);
+                }))).then(results=>{
+                    window.__computeSchedulerSmokeResults=results;
+                    window.__computeSchedulerSmokeDone=true;
+                });
+            }"""
+        )
+        for _ in range(10):
+            await page.keyboard.press("Tab")
+            await page.wait_for_timeout(25)
+        await page.wait_for_function("window.__computeSchedulerSmokeDone === true", timeout=60_000)
+        scheduler_metrics = await page.evaluate("window.pokerComputeScheduler.snapshot()")
+        assert scheduler_metrics["maxConcurrency"] <= 2, scheduler_metrics
+        assert scheduler_metrics["workersActive"] == 0, scheduler_metrics
+        assert scheduler_metrics["interactionMs"], scheduler_metrics
+        assert max(scheduler_metrics["interactionMs"]) < 250, scheduler_metrics
+        print(json.dumps({"compute_scheduler_smoke": scheduler_metrics}, indent=2))
+
         shared_presentation = await page.evaluate(
             """() => {
                 const api=window.PokerActionSizingEV;

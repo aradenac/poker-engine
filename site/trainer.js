@@ -708,6 +708,7 @@ async function trainerTimedReviewText(text){
   finally{const ms=performance.now()-started;trainerState.perf.lastMs=ms;trainerState.perf.totalMs+=ms;}
 }
 async function trainerReviewText(text){
+  if(!state.reviewBatchBusy||state.reviewBatchRun?.kind!=="explicit")cancelObsoleteReviewComputation();
   await trainerWaitFor(()=>!state.reviewBatchBusy,30000);
   const hand=parsePokerStarsHand(text,"trainer");
   if(!hand)throw new Error("Le moteur n'a pas pu parser le spot Training.");
@@ -716,8 +717,9 @@ async function trainerReviewText(text){
   try{
     state.populationTraceCache=Object.create(null);state.populationRangeCache=Object.create(null);state.postflopTraceCache=Object.create(null);state.postflopRangeCache=Object.create(null);state.actionEquityCache=Object.create(null);state.seatEquityCache=Object.create(null);state.preflopRuntimeDecisionCache=Object.create(null);
     state.replaySteps=[];state.replayIndex=0;state.hhHands=[hand];state.selectedHand=hand;state.hhMode=true;delete state.reviewScores[key];
-    const plan=buildReviewBatchPlan(hand);plan.actions=plan.actions.filter(a=>a.actor===hand.heroName).slice(-1);if(!plan.actions.length)throw new Error("Aucune décision Hero analysable dans ce spot.");
-    state.reviewBatchBusy=false;runReviewBatchPlan(plan);
+    const steps=makeReplaySteps(hand),lastHeroStep=steps.map((step,i)=>step.activePlayer===hand.heroName&&isAnalyzableDecisionAction(step)?i:-1).filter(i=>i>=0).pop();
+    const plan=buildReviewBatchPlan(hand,lastHeroStep??-1);plan.actions=plan.actions.filter(a=>a.actor===hand.heroName).slice(-1);if(!plan.actions.length)throw new Error("Aucune décision Hero analysable dans ce spot.");
+    runReviewBatchPlan(plan,{kind:"explicit"});
     await trainerWaitFor(()=>!state.reviewBatchBusy&&!!state.reviewScores?.[key],45000);
     const score=state.reviewScores[key],detail=score?.details?.[score.details.length-1];if(!detail)throw new Error("Aucun verdict produit par le moteur.");return JSON.parse(JSON.stringify(detail));
   }finally{
@@ -1074,10 +1076,10 @@ function trainerRender(){
 }
 async function trainerOpen(options={}){
   const deferHand=options&&options.deferHand===true;
-  trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();
+  window.pokerComputeScheduler.hold('training',true);trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();
   if(await trainerEnsureModels()){if(!deferHand&&!trainerState.hand)await trainerNewHand();}
 }
-function trainerClose(){trainerState.open=false;trainerPage?.classList.add("mode-hidden");trainerPage?.setAttribute("aria-hidden","true");document.body.classList.remove("trainer-view-open");if(quickNav)quickNav.style.display="";state.appView="main";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
+function trainerClose(){window.pokerComputeScheduler.hold('training',false);trainerState.open=false;trainerPage?.classList.add("mode-hidden");trainerPage?.setAttribute("aria-hidden","true");document.body.classList.remove("trainer-view-open");if(quickNav)quickNav.style.display="";state.appView="main";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
 function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));const needGuide=mode==="guided"&&trainerState.hand?.awaitingHero&&!trainerState.recommendation&&!trainerState.busy;trainerRender();if(needGuide)void trainerComputeRecommendation();}
 
 trainerOpenBtn?.addEventListener("click",trainerOpen);

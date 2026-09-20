@@ -1,0 +1,30 @@
+{
+  "schema": "compute-scheduler-browser-validation/v1",
+  "date": "2026-09-20",
+  "status": "BLOCKED_ENVIRONMENT",
+  "smokeCommand": "python3 tests/compute/smoke_browser.py",
+  "smokeError": "ModuleNotFoundError: No module named 'playwright'",
+  "lockedBrowserVerification": {
+    "command": "python3 tools/repro_ci_browser.py verify",
+    "status": "FAIL",
+    "expectedPlaywright": "1.55.0",
+    "observedPlaywright": null,
+    "expectedChromium": "140.0.7339.16",
+    "observedChromium": null,
+    "expectedRevision": "1187",
+    "observedRevision": null
+  },
+  "metrics": {
+    "before": {
+      "longTasksOver50Ms": null,
+      "navigationLatencyMs": null
+    },
+    "after": {
+      "longTasksOver50Ms": null,
+      "navigationLatencyMs": null,
+      "maxConcurrency": null
+    }
+  },
+  "validated": false,
+  "note": "No browser metrics were fabricated. Run the locked browser install in an authorized networked environment, serve site/ on 127.0.0.1:8765, then rerun the smoke."
+}

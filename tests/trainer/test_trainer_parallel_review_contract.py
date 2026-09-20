@@ -11,7 +11,7 @@ def require(needle: str) -> None:
 
 require("function reviewBatchWorkerLimit(){")
 require("if(!document.body.classList.contains('trainer-view-open'))return 1;")
-require("return hc>=8?3:hc>=4?2:1;")
+require("return Math.min(window.pokerComputeScheduler.maxWorkers,hc>=8?3:hc>=4?2:1);")
 require("state.reviewBatchWorkers=[];")
 require("while(active<limit&&pos<all.length)")
 require("queueMicrotask(pump);")
@@ -23,7 +23,7 @@ require("for(const z of a.sizingResults)delete z.__reviewOrder;")
 assert "trainer-view-open" in HTML and "return 1;" in HTML
 
 # Old serialized loop must be gone from the patched function.
-start = HTML.index("function runReviewBatchPlan(plan){")
+start = HTML.index('function runReviewBatchPlan(plan,{kind="background"}={}){')
 end = HTML.index("function scheduleBackgroundReviewScoring(delay=120){", start)
 block = HTML[start:end]
 assert "const next=()=>" not in block

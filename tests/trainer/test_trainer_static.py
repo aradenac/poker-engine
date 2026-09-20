@@ -28,7 +28,7 @@ def main() -> None:
 
     # Trainer must call the existing analyser rather than fork Model A EV logic.
     for needle in (
-        "buildReviewBatchPlan(hand)", "runReviewBatchPlan(plan)",
+        "buildReviewBatchPlan(hand,lastHeroStep??-1)", 'runReviewBatchPlan(plan,{kind:"explicit"})',
         "applyPopulationModelSnapshot", "applyPostflopModelSnapshot",
         "parsePokerStarsHand", "reviewScores",
     ):
