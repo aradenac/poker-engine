@@ -365,6 +365,20 @@
   // must all agree with the active calculated layer; otherwise the resolver
   // fails closed with a precise, deterministic reason code. A bare ADMISSIBLE
   // status token can never authorize an arbitrary local repository.
+  //
+  // The admission is consumed in its canonical #305 shape
+  // (`tools/population_pack_admission.py`):
+  // `{role,status,reason_codes,reasons,source_refs,artifact,lineage,
+  //   scientific_decision,registered_source_owners}`.
+  // That shape carries no role-level `provenance` key and no top-level
+  // candidate/generation/binding, so provenance is accepted either as a runtime
+  // hero_provenance object or, when absent, as a canonical lineage with a
+  // mandatory matching population_id (and optional format) plus a source_refs
+  // evidence set (kind `artifact` / `provenance_evidence` with path+sha256).
+  // The runtime layer must still carry
+  // manifest_sha256, binding_sha256, candidate_id and generation_id; otherwise
+  // the repository is not bound to the admission. Declared identities, when
+  // present, must match the runtime layer exactly.
   function declaredValues(entries){
     const values=[];
     for(const [owner,key] of entries){
@@ -373,30 +387,40 @@
     return values;
   }
 
+  const PROVENANCE_REF_KINDS=new Set(['ARTIFACT','PROVENANCE_EVIDENCE']);
+
   function admissionArtifactIdentity(admissionObject,reasons){
     if(!isObject(admissionObject))return null;
     const artifact=isObject(admissionObject.artifact)?admissionObject.artifact:null;
     const lineage=isObject(admissionObject.lineage)?admissionObject.lineage:null;
     const provenance=isObject(admissionObject.provenance)?admissionObject.provenance:null;
+    const sourceRefs=Array.isArray(admissionObject.source_refs)?admissionObject.source_refs:[];
+    const refField=(key)=>sourceRefs.map(ref=>[ref,key]);
     const hashValues=declaredValues([
       [artifact,'actual_sha256'],[artifact,'declared_sha256'],
       [admissionObject,'artifact_sha256']
     ]);
     const bindingValues=declaredValues([
-      [artifact,'binding_sha256'],[admissionObject,'binding_sha256']
+      [artifact,'binding_sha256'],[admissionObject,'binding_sha256'],
+      [lineage,'binding_sha256'],
+      ...refField('binding_sha256')
     ]);
     const candidateValues=declaredValues([
       [admissionObject,'candidate_id'],[artifact,'candidate_id'],
-      [lineage,'candidate_id']
+      [lineage,'candidate_id'],
+      ...refField('candidate_id')
     ]);
     const generationValues=declaredValues([
       [admissionObject,'generation_id'],[artifact,'generation_id'],
-      [lineage,'generation_id']
+      [lineage,'generation_id'],
+      ...refField('generation_id')
     ]);
     return {
       role:upper(admissionObject.role).replace(/-/g,'_')||null,
       artifact,
+      lineage,
       provenance,
+      source_refs:sourceRefs,
       hash_values:hashValues,
       hashes:hashValues.map(hex).filter(Boolean),
       binding_values:bindingValues,
@@ -406,6 +430,33 @@
       generation_values:generationValues,
       generation_ids:generationValues.map(value=>token(value,reasons)).filter(Boolean)
     };
+  }
+
+  // Canonical #305 provenance evidence: no role-level `provenance` key, but a
+  // population-bound lineage and an artifact/provenance_evidence source_refs
+  // set. Returns the reason code to emit, or null when the evidence is valid.
+  function canonicalProvenanceEvidence(admitted,activePopulation,admittedHash){
+    const lineage=admitted.lineage;
+    const lineagePopulation=lineage?text(lineage.population_id):'';
+    if(!lineagePopulation)return 'ADMISSION_PROVENANCE_MISSING';
+    if(lineagePopulation!==activePopulation)return 'ADMISSION_PROVENANCE_MISMATCH';
+    const artifactRefHashes=[];
+    let evidenceRefs=0;
+    for(const ref of admitted.source_refs){
+      if(!isObject(ref))continue;
+      const kind=upper(ref.kind);
+      if(!PROVENANCE_REF_KINDS.has(kind))continue;
+      const path=text(ref.path);
+      const sha=hex(ref.sha256);
+      if(!path||!sha)continue;
+      evidenceRefs+=1;
+      if(kind==='ARTIFACT')artifactRefHashes.push(sha);
+    }
+    if(evidenceRefs===0)return 'ADMISSION_PROVENANCE_MISSING';
+    for(const refHash of artifactRefHashes){
+      if(admittedHash&&refHash!==admittedHash)return 'ADMISSION_PROVENANCE_MISMATCH';
+    }
+    return null;
   }
 
   function bindAdmittedArtifact(admissionObject,candidate,activeCalculated,input,activePopulation,reasons){
@@ -424,42 +475,20 @@
     const admittedCandidates=new Set(admitted.candidate_ids);
     const admittedGenerations=new Set(admitted.generation_ids);
 
-    // (c) Admission provenance is mandatory and must bind both the source
-    // population and the same exact artifact identities declared by the
-    // admission. Merely attaching an unrelated provenance object is not enough.
-    if(!admitted.provenance){
-      fail('ADMISSION_PROVENANCE_MISSING');
-    }else{
-      const populationValues=declaredValues([
-        [admitted.provenance,'source_population_id'],
-        [admitted.provenance,'population_id']
-      ]).map(text).filter(Boolean);
-      const populations=new Set(populationValues);
-      const provenanceManifest=hex(admitted.provenance.manifest_sha256);
-      const provenanceBinding=hex(admitted.provenance.binding_sha256);
-      const provenanceCandidate=token(admitted.provenance.candidate_id,reasons);
-      const provenanceGeneration=token(admitted.provenance.generation_id,reasons);
-      if(
-        populations.size!==1||[...populations][0]!==activePopulation||
-        !provenanceManifest||provenanceManifest!==admittedHash||
-        !provenanceBinding||admittedBindings.size!==1||provenanceBinding!==[...admittedBindings][0]||
-        !provenanceCandidate||admittedCandidates.size!==1||provenanceCandidate!==[...admittedCandidates][0]||
-        !provenanceGeneration||admittedGenerations.size!==1||provenanceGeneration!==[...admittedGenerations][0]
-      )fail('ADMISSION_PROVENANCE_MISMATCH');
-    }
-
     // Runtime artifact identity, derived from every active calculated layer.
+    // The runtime layer must carry the complete identity (manifest, binding,
+    // candidate_id and generation_id); a layer missing any of them is not bound
+    // to any admission, whatever the admission status token claims.
     const manifestHashes=new Set();
     const bindingHashes=new Set();
     const layerCandidates=new Set();
     const layerGenerations=new Set();
     let unbound=false;
-    let layerCandidateMissing=false;
-    let layerGenerationMissing=false;
+    let layerIdentityMissing=false;
     for(const entry of activeCalculated){
       const provenance=isObject(entry.provenance)?entry.provenance:null;
-      const manifest=hex(provenance&&provenance.manifest_sha256);
-      if(!provenance){unbound=true;layerCandidateMissing=true;layerGenerationMissing=true;continue;}
+      if(!provenance){unbound=true;layerIdentityMissing=true;continue;}
+      const manifest=hex(provenance.manifest_sha256);
       if(manifest)manifestHashes.add(manifest);
       else unbound=true;
       const binding=hex(provenance.binding_sha256);
@@ -467,18 +496,63 @@
       else unbound=true;
       const layerCandidate=token(provenance.candidate_id,reasons);
       if(layerCandidate)layerCandidates.add(layerCandidate);
-      else layerCandidateMissing=true;
+      else layerIdentityMissing=true;
       const layerGeneration=token(provenance.generation_id,reasons);
       if(layerGeneration)layerGenerations.add(layerGeneration);
-      else layerGenerationMissing=true;
+      else layerIdentityMissing=true;
     }
-    if(unbound||manifestHashes.size===0)fail('REPOSITORY_NOT_BOUND_TO_ADMISSION');
+    if(unbound||manifestHashes.size===0||layerIdentityMissing)fail('REPOSITORY_NOT_BOUND_TO_ADMISSION');
     if(manifestHashes.size>1)fail('ADMISSION_HASH_MISMATCH');
     const layerManifest=manifestHashes.size===1?[...manifestHashes][0]:null;
+    if(bindingHashes.size>1)fail('ADMISSION_BINDING_MISMATCH');
+    const layerBinding=bindingHashes.size===1?[...bindingHashes][0]:null;
+    if(!layerBinding)fail('REPOSITORY_NOT_BOUND_TO_ADMISSION');
+    if(layerCandidates.size>1)fail('ADMISSION_CANDIDATE_MISMATCH');
+    const layerCandidate=layerCandidates.size===1?[...layerCandidates][0]:null;
+    if(layerGenerations.size>1)fail('ADMISSION_GENERATION_MISMATCH');
+    const layerGeneration=layerGenerations.size===1?[...layerGenerations][0]:null;
+
+    // (c) Admission provenance is mandatory: either a runtime hero_provenance
+    // object, or the canonical #305 lineage + source_refs evidence. Merely
+    // attaching an unrelated provenance object is not enough, and the absence of
+    // a role-level provenance key is tolerated only for a valid canonical set.
+    if(admitted.provenance){
+      const populationValues=declaredValues([
+        [admitted.provenance,'source_population_id'],
+        [admitted.provenance,'population_id']
+      ]).map(text).filter(Boolean);
+      const populations=new Set(populationValues);
+      if(populations.size!==1||[...populations][0]!==activePopulation)fail('ADMISSION_PROVENANCE_MISMATCH');
+      const provenanceManifest=hex(admitted.provenance.manifest_sha256);
+      if(!provenanceManifest)fail('ADMISSION_PROVENANCE_MISSING');
+      else{
+        if(admittedHash&&provenanceManifest!==admittedHash)fail('ADMISSION_PROVENANCE_MISMATCH');
+        if(layerManifest&&provenanceManifest!==layerManifest)fail('ADMISSION_PROVENANCE_MISMATCH');
+      }
+      const provenanceBinding=hex(admitted.provenance.binding_sha256);
+      if(provenanceBinding){
+        if(admittedBindings.size===1&&provenanceBinding!==[...admittedBindings][0])fail('ADMISSION_PROVENANCE_MISMATCH');
+        if(layerBinding&&provenanceBinding!==layerBinding)fail('ADMISSION_PROVENANCE_MISMATCH');
+      }
+      const provenanceCandidate=token(admitted.provenance.candidate_id,reasons);
+      if(provenanceCandidate){
+        if(admittedCandidates.size===1&&provenanceCandidate!==[...admittedCandidates][0])fail('ADMISSION_PROVENANCE_MISMATCH');
+        if(layerCandidate&&provenanceCandidate!==layerCandidate)fail('ADMISSION_PROVENANCE_MISMATCH');
+      }
+      const provenanceGeneration=token(admitted.provenance.generation_id,reasons);
+      if(provenanceGeneration){
+        if(admittedGenerations.size===1&&provenanceGeneration!==[...admittedGenerations][0])fail('ADMISSION_PROVENANCE_MISMATCH');
+        if(layerGeneration&&provenanceGeneration!==layerGeneration)fail('ADMISSION_PROVENANCE_MISMATCH');
+      }
+    }else{
+      const provenanceCode=canonicalProvenanceEvidence(admitted,activePopulation,admittedHash);
+      if(provenanceCode)fail(provenanceCode);
+    }
 
     // (b) The admitted content hash must equal the runtime calculated hash and
     // any explicit candidate/input hash token. Otherwise the admission is bound
-    // to a different artifact than the one used at runtime.
+    // to a different artifact than the one used at runtime. Both sides must
+    // carry the hash: the runtime layer is enforced above, the admission here.
     if(admittedHash&&layerManifest&&admittedHash!==layerManifest)fail('ADMISSION_HASH_MISMATCH');
     if(isObject(candidate)&&Object.prototype.hasOwnProperty.call(candidate,'strategy_sha256')&&!hex(candidate.strategy_sha256))fail('ADMISSION_HASH_MISMATCH');
     for(const observed of [hex(candidate&&candidate.strategy_sha256),hex(input&&input.strategy_sha256)]){
@@ -486,29 +560,30 @@
       if(observed&&layerManifest&&observed!==layerManifest)fail('ADMISSION_HASH_MISMATCH');
     }
 
-    // (e) The relevant binding hash must be present on both sides and agree.
-    if(bindingHashes.size>1)fail('ADMISSION_BINDING_MISMATCH');
-    const layerBinding=bindingHashes.size===1?[...bindingHashes][0]:null;
-    if(!layerBinding)fail('REPOSITORY_NOT_BOUND_TO_ADMISSION');
-    if(admitted.binding_values.length===0||admitted.binding_values.some(value=>!hex(value)))fail('ADMISSION_BINDING_MISMATCH');
-    if(admittedBindings.size!==1)fail('ADMISSION_BINDING_MISMATCH');
-    const admittedBinding=admittedBindings.size===1?[...admittedBindings][0]:null;
-    if(layerBinding&&admittedBinding&&admittedBinding!==layerBinding)fail('ADMISSION_BINDING_MISMATCH');
+    // (e) When the admission declares a binding it must equal the runtime
+    // binding; a binding declared only by the runtime layer is authoritative.
+    if(admitted.binding_values.length>0){
+      if(admitted.binding_values.some(value=>!hex(value)))fail('ADMISSION_BINDING_MISMATCH');
+      if(admittedBindings.size!==1)fail('ADMISSION_BINDING_MISMATCH');
+      const admittedBinding=admittedBindings.size===1?[...admittedBindings][0]:null;
+      if(!layerBinding||admittedBinding!==layerBinding)fail('ADMISSION_BINDING_MISMATCH');
+    }
 
-    // (d) candidate_id / generation_id must identify the calculated layer.
-    if(layerCandidateMissing||layerCandidates.size>1)fail('ADMISSION_CANDIDATE_MISMATCH');
-    const layerCandidate=layerCandidates.size===1?[...layerCandidates][0]:null;
+    // (d) When the admission declares candidate_id/generation_id they must
+    // identify the calculated layer exactly.
+    if(admitted.candidate_values.length>0){
+      if(admittedCandidates.size!==1)fail('ADMISSION_CANDIDATE_MISMATCH');
+      const admittedCandidate=admittedCandidates.size===1?[...admittedCandidates][0]:null;
+      if(!layerCandidate||admittedCandidate!==layerCandidate)fail('ADMISSION_CANDIDATE_MISMATCH');
+    }
     const candidateObjectId=token(candidate&&candidate.candidate_id,reasons);
-    if(admitted.candidate_values.length===0||admittedCandidates.size!==1)fail('ADMISSION_CANDIDATE_MISMATCH');
-    const admittedCandidate=admittedCandidates.size===1?[...admittedCandidates][0]:null;
-    if(!layerCandidate||admittedCandidate!==layerCandidate)fail('ADMISSION_CANDIDATE_MISMATCH');
     if(candidate&&text(candidate.candidate_id)&&(!candidateObjectId||candidateObjectId!==layerCandidate))fail('ADMISSION_CANDIDATE_MISMATCH');
 
-    if(layerGenerationMissing||layerGenerations.size>1)fail('ADMISSION_GENERATION_MISMATCH');
-    const layerGeneration=layerGenerations.size===1?[...layerGenerations][0]:null;
-    if(admitted.generation_values.length===0||admittedGenerations.size!==1)fail('ADMISSION_GENERATION_MISMATCH');
-    const admittedGeneration=admittedGenerations.size===1?[...admittedGenerations][0]:null;
-    if(!layerGeneration||admittedGeneration!==layerGeneration)fail('ADMISSION_GENERATION_MISMATCH');
+    if(admitted.generation_values.length>0){
+      if(admittedGenerations.size!==1)fail('ADMISSION_GENERATION_MISMATCH');
+      const admittedGeneration=admittedGenerations.size===1?[...admittedGenerations][0]:null;
+      if(!layerGeneration||admittedGeneration!==layerGeneration)fail('ADMISSION_GENERATION_MISMATCH');
+    }
     const candidateGeneration=token(candidate&&candidate.generation_id,reasons);
     if(candidate&&text(candidate.generation_id)&&(!candidateGeneration||candidateGeneration!==layerGeneration))fail('ADMISSION_GENERATION_MISMATCH');
 

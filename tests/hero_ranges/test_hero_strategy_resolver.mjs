@@ -58,6 +58,53 @@ function boundAdmission({
   return admission;
 }
 
+// A canonical #305 admission
+// (tools/population_pack_admission.py:613-623): the resolved object is
+// {role,status,reason_codes,reasons,source_refs,artifact,lineage,
+//  scientific_decision,registered_source_owners}. It carries NO role-level
+// `provenance` key and no top-level candidate/generation/binding. Provenance is
+// carried by the population-bound lineage plus the artifact/provenance_evidence
+// source_refs; the runtime layer supplies candidate/generation/binding.
+function canonicalAdmission({
+  status='ADMISSIBLE',populationId=POP,role='hero_strategy',
+  sha=SHA_MANIFEST,artifactRefSha,
+  candidateId,binding,generationId,
+  artifact=true,lineage=true,lineagePopulation=true,sourceRefs=true
+}={}){
+  const admission={role,status,reason_codes:[],reasons:[],registered_source_owners:[]};
+  if(artifact){
+    admission.artifact={
+      actual_sha256:sha,
+      declared_sha256:sha,
+      hash_kind:'file_sha256',
+      source_path:'training/runs/196_hero_candidate/HERO_RANGE_REPOSITORY_PFPC.json',
+      verified:true
+    };
+  }
+  if(lineage){
+    admission.lineage={format:'ZOOM'};
+    if(lineagePopulation)admission.lineage.population_id=populationId;
+  }
+  if(sourceRefs){
+    admission.source_refs=[
+      {
+        kind:'artifact',hash_kind:'file_sha256',
+        path:'training/runs/196_hero_candidate/HERO_RANGE_REPOSITORY_PFPC.json',
+        sha256:artifactRefSha===undefined?sha:artifactRefSha
+      },
+      {
+        kind:'provenance_evidence',
+        path:'training/runs/196_hero_candidate/SOURCE_RUN.json',
+        sha256:SHA_REFERENCE
+      }
+    ];
+  }
+  if(candidateId!==undefined)admission.candidate_id=candidateId;
+  if(generationId!==undefined)admission.generation_id=generationId;
+  if(binding!==undefined)admission.binding_sha256=binding;
+  return admission;
+}
+
 function contextFor(populationId){return {...CONTEXT,population_id:populationId};}
 function contextAt(spot){return {...CONTEXT,spot};}
 
@@ -722,5 +769,158 @@ const bareCompleteAgain=R.resolveHeroStrategy({population_id:POP,repository:repo
 assert.deepEqual(bareComplete,bareCompleteAgain);
 assert.equal(JSON.stringify(bareComplete),JSON.stringify(bareCompleteAgain));
 assert.notEqual(bareComplete.status,R.STATUSES.PARTIAL);
+
+// --- #task-iuz: accept the canonical #305 admission shape --------------------
+// The resolved hero_strategy admission has no role-level provenance key and no
+// top-level candidate/generation/binding. It must still bind to the exact
+// runtime layer through artifact/lineage/source_refs; a bare status token or a
+// missing/divergent hash never activates the repository.
+
+// (1) A real #305-shaped admission (artifact + lineage + source_refs, no
+//     provenance) bound to the runtime layer and authoritatively bounded is
+//     ADMISSIBLE_CALCULATED. The runtime layer supplies candidate/generation.
+const canonicalBound=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission()},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(canonicalBound.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(canonicalBound.source,R.SOURCES.POPULATION);
+assert.equal(canonicalBound.fail_closed,false);
+assert.equal(canonicalBound.population_id,POP);
+assert.equal(canonicalBound.strategy_id,'hero-candidate-196');
+assert.equal(canonicalBound.strategy_sha256,SHA_MANIFEST);
+assert.equal(canonicalBound.provenance.origin,'CALCULATED_POPULATION');
+assert.equal(canonicalBound.provenance.manifest_sha256,SHA_MANIFEST);
+assert.equal(canonicalBound.provenance.generation_id,'gen-196');
+assert.ok(canonicalBound.reason_codes.includes('ADMITTED_CALCULATED_STRATEGY'));
+assert.ok(!canonicalBound.reason_codes.includes('ADMISSION_PROVENANCE_MISSING'));
+assert.deepEqual(canonicalBound.reason_codes,[...canonicalBound.reason_codes].sort());
+assert.equal(new Set(canonicalBound.reason_codes).size,canonicalBound.reason_codes.length);
+assert.ok(schemaHasNoCustom(canonicalBound));
+
+// The canonical role token may be lowercase or uppercase; both normalize to
+// HERO_STRATEGY.
+const canonicalUpperRole=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({role:'HERO_STRATEGY'})},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(canonicalUpperRole.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+
+// The canonical form also works when nested in a full admission document.
+const canonicalNested=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{schema:'poker-scientific-component-admission/v1',admissions:{
+    hero_strategy:canonicalAdmission()
+  }},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(canonicalNested.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+
+// When the canonical admission declares candidate/generation/binding itself,
+// matching values bind exactly as well.
+const canonicalDeclaredIdentity=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({
+    candidateId:'hero-candidate-196',generationId:'gen-196',binding:SHA_BINDING
+  })},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(canonicalDeclaredIdentity.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(canonicalDeclaredIdentity.strategy_id,'hero-candidate-196');
+
+// (2) A divergent content hash does not describe the runtime artifact.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({sha:'f'.repeat(64)})}
+}),'ADMISSION_HASH_MISMATCH');
+
+// (3) No provenance, no lineage and no source_refs = no identity at all.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({lineage:false,sourceRefs:false})}
+}),'ADMISSION_PROVENANCE_MISSING');
+
+// A role-level artifact with neither lineage nor source_refs is still missing
+// its provenance identity.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({lineage:false,sourceRefs:false,artifact:true})}
+}),'ADMISSION_PROVENANCE_MISSING');
+
+// (4) candidate_id/generation_id/binding_sha256 declared by the canonical
+//     admission must agree with the runtime layer.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({candidateId:'other-candidate'})}
+}),'ADMISSION_CANDIDATE_MISMATCH');
+
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({generationId:'other-generation'})}
+}),'ADMISSION_GENERATION_MISMATCH');
+
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({binding:'e'.repeat(64)})}
+}),'ADMISSION_BINDING_MISMATCH');
+
+// (5) A non-hero_strategy role never authorizes the calculated strategy.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({role:'hero_ranges'})}
+}),'ADMISSION_ROLE_MISMATCH');
+
+// A canonical lineage bound to another population never binds.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({populationId:OTHER})}
+}),'ADMISSION_PROVENANCE_MISMATCH');
+
+// A lineage format is descriptive metadata, not a population binding. The
+// canonical path therefore fails closed when lineage.population_id is absent.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:canonicalAdmission({lineagePopulation:false})}
+}),'ADMISSION_PROVENANCE_MISSING');
+
+// A bare ADMISSIBLE status with no artifact/identity never activates anything.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:{role:'hero_strategy',status:'ADMISSIBLE'}}
+}),'ADMISSION_ARTIFACT_MISSING');
+
+// A canonical admission cannot bind to a runtime layer that does not carry the
+// full identity (manifest, binding, candidate_id, generation_id).
+const unboundCanonicalLayer=H.emptyRepository({populationId:POP});
+H.setLayerMetadata(unboundCanonicalLayer,CONTEXT,'calculated',{
+  version:'unbound-v1',
+  provenance:{schema:R.IMPORT_SCHEMA,activation_state:'ACTIVE_MEASURED'}
+});
+for(const hand of H.HAND_CLASSES)H.setHandStrategy(unboundCanonicalLayer,CONTEXT,hand,{actions:{FOLD:1}},{layer:'calculated'});
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:unboundCanonicalLayer,
+  admissions:{hero_strategy:canonicalAdmission()}
+}),'REPOSITORY_NOT_BOUND_TO_ADMISSION');
+
+// A layer that carries only some of the identity elements is equally unbound.
+const missingBindingProvenance={...LAYER_PROVENANCE};
+delete missingBindingProvenance.binding_sha256;
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169,provenance:missingBindingProvenance}),
+  admissions:{hero_strategy:canonicalAdmission()}
+}),'REPOSITORY_NOT_BOUND_TO_ADMISSION');
+
+const missingCandidateProvenance={...LAYER_PROVENANCE};
+delete missingCandidateProvenance.candidate_id;
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169,provenance:missingCandidateProvenance}),
+  admissions:{hero_strategy:canonicalAdmission()}
+}),'REPOSITORY_NOT_BOUND_TO_ADMISSION');
 
 console.log('Hero strategy resolution contract: PASS');

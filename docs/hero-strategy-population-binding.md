@@ -203,24 +203,30 @@ calculated branch when it is **explicitly bound** to the exact runtime
 calculated artifact. The resolver compares the admission object (flat
 `hero_strategy`/`hero_ranges` role map or
 `poker-scientific-component-admission/v1.admissions`) with every active
-calculated layer and fails closed on any divergence:
+calculated layer and fails closed on any divergence. The admission is consumed
+in its canonical #305 shape
+(`{role,status,reason_codes,reasons,source_refs,artifact,lineage,
+scientific_decision,registered_source_owners}`), which carries no role-level
+`provenance` key and no top-level candidate/generation/binding:
 
 | Binding dimension | Admission side | Runtime artifact side | Reason code on divergence |
 | --- | --- | --- | --- |
-| Role | `role`, normalized (`hero-strategy` → `HERO_STRATEGY`) | the Hero strategy role | `ADMISSION_ROLE_MISMATCH` |
-| Content hash | `artifact.actual_sha256` / `artifact.declared_sha256` / `artifact_sha256` (all present must agree and be 64-hex) | `provenance.manifest_sha256` of the active calculated contexts | `ADMISSION_HASH_MISSING`, `ADMISSION_HASH_MISMATCH` |
-| Provenance | mandatory `admission.provenance` whose `source_population_id`/`population_id` equals the active population and whose `manifest_sha256`, `binding_sha256`, `candidate_id` and `generation_id` match the admission tokens | the same identities recorded on the calculated layer | `ADMISSION_PROVENANCE_MISSING`, `ADMISSION_PROVENANCE_MISMATCH` |
-| Candidate | `candidate_id` on the admission, its `artifact` or its `lineage` | `provenance.candidate_id` of the active calculated contexts | `ADMISSION_CANDIDATE_MISMATCH` |
-| Generation | `generation_id` on the admission, its `artifact` or its `lineage` | `provenance.generation_id` of the active calculated contexts | `ADMISSION_GENERATION_MISMATCH` |
-| Binding hash | `artifact.binding_sha256` / `binding_sha256` | `provenance.binding_sha256` of the active calculated contexts | `ADMISSION_BINDING_MISMATCH`, `REPOSITORY_NOT_BOUND_TO_ADMISSION` |
+| Role | `role`, normalized (`hero_strategy` / `hero-strategy` → `HERO_STRATEGY`) | the Hero strategy role | `ADMISSION_ROLE_MISMATCH` |
+| Content hash | `artifact.actual_sha256` / `artifact.declared_sha256` / `artifact_sha256` (all present must agree and be 64-hex) | `provenance.manifest_sha256` of the active calculated contexts (mandatory both sides) | `ADMISSION_HASH_MISSING`, `ADMISSION_HASH_MISMATCH` |
+| Provenance | either the runtime `admission.provenance` (`source_population_id`/`population_id` equals the active population, `manifest_sha256` equals the admitted hash and the layer manifest, `binding_sha256`/`candidate_id`/`generation_id` when present match the layer) **or** the canonical `lineage` (`population_id`/`format`, population-bound) plus `source_refs` evidence (`kind: artifact` / `provenance_evidence` with `path`+`sha256`) | the same identities recorded on the calculated layer | `ADMISSION_PROVENANCE_MISSING`, `ADMISSION_PROVENANCE_MISMATCH` |
+| Candidate | `candidate_id` on the admission, its `artifact`, its `lineage` or its `source_refs` (optional) | `provenance.candidate_id` of the active calculated contexts | `ADMISSION_CANDIDATE_MISMATCH` |
+| Generation | `generation_id` on the admission, its `artifact`, its `lineage` or its `source_refs` (optional) | `provenance.generation_id` of the active calculated contexts | `ADMISSION_GENERATION_MISMATCH` |
+| Binding hash | `artifact.binding_sha256` / `binding_sha256` / `lineage` / `source_refs` (optional) | `provenance.binding_sha256` of the active calculated contexts | `ADMISSION_BINDING_MISMATCH`, `REPOSITORY_NOT_BOUND_TO_ADMISSION` |
 
 An admission with neither an `artifact` object nor an `artifact_sha256` is
 `ADMISSION_ARTIFACT_MISSING`. A calculated context whose layer lacks explicit
 `manifest_sha256`/`binding_sha256`/`candidate_id`/`generation_id` provenance is
-unbound and yields `REPOSITORY_NOT_BOUND_TO_ADMISSION`. Any of these codes
-prevents both the `ADMISSIBLE_CALCULATED` and the `PARTIAL` (population)
-calculated branches: the answer is `UNAVAILABLE` with no strategy identity, so a
-bare `ADMISSIBLE` token can never authorize an arbitrary local repository.
+unbound and yields `REPOSITORY_NOT_BOUND_TO_ADMISSION`; when the admission
+declares candidate/generation/binding itself, the declared values must equal the
+runtime layer exactly. Any of these codes prevents both the
+`ADMISSIBLE_CALCULATED` and the `PARTIAL` (population) calculated branches: the
+answer is `UNAVAILABLE` with no strategy identity, so a bare `ADMISSIBLE` token
+can never authorize an arbitrary local repository.
 
 ## Precedence
 
