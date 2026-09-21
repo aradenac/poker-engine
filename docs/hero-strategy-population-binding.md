@@ -8,8 +8,9 @@ This document is the normative description of:
 
 - the resolver contract `poker-hero-strategy-resolution/v1`
   (`site/hero-strategy-resolver.js`);
-- the storage migration contract `poker-hero-range-migration/v1` and the
-  personal-override artifact `poker-hero-personal-override/v1`
+- the storage migration contract `poker-hero-range-migration/v1`, the
+  personal-override artifact `poker-hero-personal-override/v1` and its
+  contextual status `poker-hero-personal-override-status/v1`
   (`site/hero-range-migration.js`);
 - the population binding of the range repository
   `poker-hero-range-repository/v1` (`site/hero-ranges.js`, see
@@ -157,6 +158,7 @@ generic path):
   `HERO_RANGES_ADMISSION_INCOMPATIBLE`, `ADMISSION_MISSING`;
 - admission/artifact binding (#task-fnc): `ADMISSION_ARTIFACT_MISSING`,
   `ADMISSION_HASH_MISSING`, `ADMISSION_HASH_MISMATCH`, `ADMISSION_ROLE_MISMATCH`,
+  `ADMISSION_PROVENANCE_MISSING`, `ADMISSION_PROVENANCE_MISMATCH`,
   `ADMISSION_CANDIDATE_MISMATCH`, `ADMISSION_GENERATION_MISMATCH`,
   `ADMISSION_BINDING_MISMATCH`, `REPOSITORY_NOT_BOUND_TO_ADMISSION`;
 - calculated strategy: `ADMITTED_CALCULATED_STRATEGY`,
@@ -193,6 +195,32 @@ A malformed repository (`REPOSITORY_INVALID`) fails closed even when an admissio
 claims `ADMISSIBLE`. Both `hero_strategy` and `hero_ranges` roles must be
 compatible; a role map may be flat or nested under
 `poker-scientific-component-admission/v1.admissions`.
+
+## Admission artifact binding (#task-fnc)
+
+An `ADMISSIBLE` admission is never a bare token: it only authorizes the
+calculated branch when it is **explicitly bound** to the exact runtime
+calculated artifact. The resolver compares the admission object (flat
+`hero_strategy`/`hero_ranges` role map or
+`poker-scientific-component-admission/v1.admissions`) with every active
+calculated layer and fails closed on any divergence:
+
+| Binding dimension | Admission side | Runtime artifact side | Reason code on divergence |
+| --- | --- | --- | --- |
+| Role | `role`, normalized (`hero-strategy` → `HERO_STRATEGY`) | the Hero strategy role | `ADMISSION_ROLE_MISMATCH` |
+| Content hash | `artifact.actual_sha256` / `artifact.declared_sha256` / `artifact_sha256` (all present must agree and be 64-hex) | `provenance.manifest_sha256` of the active calculated contexts | `ADMISSION_HASH_MISSING`, `ADMISSION_HASH_MISMATCH` |
+| Provenance | mandatory `admission.provenance` whose `source_population_id`/`population_id` equals the active population and whose `manifest_sha256`, `binding_sha256`, `candidate_id` and `generation_id` match the admission tokens | the same identities recorded on the calculated layer | `ADMISSION_PROVENANCE_MISSING`, `ADMISSION_PROVENANCE_MISMATCH` |
+| Candidate | `candidate_id` on the admission, its `artifact` or its `lineage` | `provenance.candidate_id` of the active calculated contexts | `ADMISSION_CANDIDATE_MISMATCH` |
+| Generation | `generation_id` on the admission, its `artifact` or its `lineage` | `provenance.generation_id` of the active calculated contexts | `ADMISSION_GENERATION_MISMATCH` |
+| Binding hash | `artifact.binding_sha256` / `binding_sha256` | `provenance.binding_sha256` of the active calculated contexts | `ADMISSION_BINDING_MISMATCH`, `REPOSITORY_NOT_BOUND_TO_ADMISSION` |
+
+An admission with neither an `artifact` object nor an `artifact_sha256` is
+`ADMISSION_ARTIFACT_MISSING`. A calculated context whose layer lacks explicit
+`manifest_sha256`/`binding_sha256`/`candidate_id`/`generation_id` provenance is
+unbound and yields `REPOSITORY_NOT_BOUND_TO_ADMISSION`. Any of these codes
+prevents both the `ADMISSIBLE_CALCULATED` and the `PARTIAL` (population)
+calculated branches: the answer is `UNAVAILABLE` with no strategy identity, so a
+bare `ADMISSIBLE` token can never authorize an arbitrary local repository.
 
 ## Precedence
 
@@ -242,6 +270,19 @@ the two are kept distinct end to end:
   `origin/source: PERSONAL_OVERRIDE`, `layer: personal`, `population_id`,
   `context_key`, `repository_schema`, `repository_version`, `layer_version`,
   `active_population_id`, `population_match` and `inherited`.
+- **Contextual status (available vs active).** `personalOverrideStatus` emits a
+  `poker-hero-personal-override-status/v1` document with `source`
+  (`PERSONAL_OVERRIDE`), `population_id`, `available`, `active`,
+  `active_context_key`, `context_keys` and `count`. `available` is true when an
+  override exists anywhere in the requested population; `active` is true only
+  when an override is actually resolved on the exact `context` handed in (via
+  `HeroRanges.contextKey`). A missing population or an unresolvable context
+  (missing fields, unknown position/spot, invalid stack) is a fail-safe inactive
+  state: a population-wide presence is never promoted to an active override, and
+  the status is always sourced from `PERSONAL_OVERRIDE`, never `POPULATION`.
+  Consumers render it as `actif`, `disponible · inactif` (present elsewhere) or
+  absent; the resolver's `PARTIAL`/`PERSONAL_OVERRIDE` state remains the only
+  strategy outcome.
 - **Foreign overrides.** An override whose `population_id` differs from the active
   one is retained verbatim with `inherited: true` and `population_match: false`.
   It is never relabelled; callers may filter it with
@@ -338,25 +379,42 @@ repository is what the runtime reloads, and it stays schema-valid after migratio
 - **Shared accessor.** `identity(resolution)` is the single read surface for
   `population_id`, `strategy_id`, `strategy_version`, `strategy_sha256`, `status`,
   `source`, `fail_closed` and `reason_codes`.
-- **Review scope** (`src/analytics/review-score-adapter.js`, `site/leaks.js`)
-  builds a `poker-review-resolution-scope/v1` from the resolver. Only
-  `ADMISSIBLE_CALCULATED` with a non-`Custom` id/version yields a real scope;
-  every other state becomes an explicit `UNAVAILABLE_STRATEGY` /
+- **Review scope** (`src/analytics/review-score-adapter.js`, mirrored in
+  `site/analytics/review-score-adapter.js` and `site/review-score-adapter.js`)
+  builds a `poker-review-resolution-scope/v1` from `Resolver.identity()` — the
+  same normalized accessor as the header/Trainer — plus the contextual override
+  status. Only `ADMISSIBLE_CALCULATED` with a non-`Custom` id/version yields a
+  real scope; every other state becomes an explicit `UNAVAILABLE_STRATEGY` /
   `UNAVAILABLE@<status>` token that still carries the population identity, so the
-  scope stays selectable and never falls back to "Custom".
+  scope stays selectable and never falls back to "Custom". The scope exposes the
+  normalized `identity` and the `override` status; a `Custom` token is scrubbed
+  and reported with `CUSTOM_LABEL_REJECTED` instead of surfaced.
+- **Leak Review page** (`site/leaks.js`) reuses the same resolver input and
+  override normalizer and renders a scope-identity line
+  (`population · stratégie Hero · override personnel`), so an override on another
+  perimeter is shown as `disponible · inactif` rather than active. When the
+  resolver module itself cannot be loaded it degrades to an explicit
+  `UNAVAILABLE` scope with `HERO_STRATEGY_RESOLVER_UNAVAILABLE`, never to a
+  fabricated or `Custom` identity.
 - **Trainer** (`site/trainer.js`) resolves the Hero identity from the population
   manifest, repository, active pack, admission and retained reference. It requires
   `resolution.status === "ADMISSIBLE_CALCULATED"`, independently of
   `fail_closed`, otherwise it shows `Stratégie indisponible pour cette
-  population`. Retained references stay provenance only.
+  population`. Retained references stay provenance only. The personal override
+  chip is refreshed per Hero decision from `personalOverrideStatus`, so it reads
+  `actif` only on the exact played context.
 - **Product header** (`site/index.html`) shows the population, the resolved Hero
   strategy source/version, a dedicated fail-close chip and a separate personal
-  override chip.
+  override chip whose `actif`/`inactif` label is driven by the contextual
+  `active` flag only.
 - **Compliance/replayer** (`site/hero-compliance.js`,
   `site/hero-compliance-replayer.js`) only authorize a population verdict for an
   `ADMISSIBLE_CALCULATED`, non-fail-closed, population-compatible resolution.
   Retained references, partial coverage and unresolved artifacts never do, and a
-  mismatching population is a hard boundary.
+  mismatching population is a hard boundary. The replayer reads the identity
+  through `Resolver.identity()`, resolves the override against the exact decision
+  context and reports `actif` / `disponible · inactif sur ce contexte`, never as
+  the population strategy.
 
 ## Validation
 
@@ -367,15 +425,16 @@ node --check site/hero-ranges.js
 node tests/hero_ranges/test_hero_strategy_resolver.mjs
 node tests/hero_ranges/test_hero_range_migration.mjs
 node tests/hero_ranges/test_population_bound_hero_strategy.mjs
+node tests/analytics/test_review_scope_resolution.js
 node tests/analytics/test_review_score_adapter.js
 python3 tools/write_site_release.py --check
 ```
 
-`.github/workflows/hero-population-strategy.yml` runs the resolver, migration and
-end-to-end contracts plus the release-identity check. The end-to-end suite walks
-nine scenarios: population compatible, population incompatible, no strategy,
-personal override, pack change, rollback, persistence, provenance and fail-closed
-activation.
+`.github/workflows/hero-population-strategy.yml` runs the resolver, migration,
+end-to-end, Review scope-identity and Review adapter contracts plus the
+release-identity check. The end-to-end suite walks nine scenarios: population
+compatible, population incompatible, no strategy, personal override, pack change,
+rollback, persistence, provenance and fail-closed activation.
 
 ## Related documents
 

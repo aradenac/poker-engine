@@ -21,8 +21,13 @@ on:
       - 'site/hero-ranges-app.js'
       - 'site/index.html'
       - 'site/trainer.js'
+      - 'site/analytics/review-score-adapter.js'
+      - 'site/review-score-adapter.js'
+      - 'src/analytics/review-score-adapter.js'
       - 'site/RELEASE.json'
       - 'tests/hero_ranges/**'
+      - 'tests/analytics/test_review_scope_resolution.js'
+      - 'tests/analytics/test_review_score_adapter.js'
       - 'tools/write_site_release.py'
       - '.github/workflows/hero-population-strategy.yml'
   pull_request:
@@ -36,8 +41,13 @@ on:
       - 'site/hero-ranges-app.js'
       - 'site/index.html'
       - 'site/trainer.js'
+      - 'site/analytics/review-score-adapter.js'
+      - 'site/review-score-adapter.js'
+      - 'src/analytics/review-score-adapter.js'
       - 'site/RELEASE.json'
       - 'tests/hero_ranges/**'
+      - 'tests/analytics/test_review_scope_resolution.js'
+      - 'tests/analytics/test_review_score_adapter.js'
       - 'tools/write_site_release.py'
       - '.github/workflows/hero-population-strategy.yml'
 
@@ -67,5 +77,9 @@ jobs:
         run: node tests/hero_ranges/test_hero_range_migration.mjs
       - name: Population-bound Hero strategy E2E contract
         run: node tests/hero_ranges/test_population_bound_hero_strategy.mjs
+      - name: Review scope identity derives from the resolver contract
+        run: node tests/analytics/test_review_scope_resolution.js
+      - name: Review scope adapter contract
+        run: node tests/analytics/test_review_score_adapter.js
       - name: Release identity includes the resolver and migration modules
         run: python3 tools/write_site_release.py --check
