@@ -13,6 +13,26 @@
   "model_a_version": "v5",
   "model_b_alias": "independent_model_b_v2",
   "hero_strategy": "custom_ranges_v1",
+  "hero_provenance": {
+    "schema": "trainer-hero-provenance/v1",
+    "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+    "strategy_id": "custom_ranges_v1",
+    "source_type": "legacy_range_folder",
+    "source": {
+      "export_type": "range-folder",
+      "folder": "Custom",
+      "exported_at": "2026-09-06T07:11:06.613Z",
+      "sha256": "1248258112562757e49df545e97f9e54b2dde163fdc755adf0029e89e580e8cb"
+    },
+    "ranges_path": "./assets/trainer/hero/custom_ranges_v1.json",
+    "sha256": "304dc79b654365fa781cda98420415803eb815e8aa74839a5ebc25e5b49f8eee",
+    "status": "RETAIN_REFERENCE",
+    "coverage_status": "PARTIAL",
+    "admissible": false,
+    "promotable": false,
+    "calculated": false,
+    "note": "Preserved legacy user range-folder source retained as a population-bound reference. It is not an optimized or admissible calculated Hero strategy, must never be relabelled Zoom, and never activates the inactive #358 candidate."
+  },
   "assets": {
     "modelA": {
       "preflop": "./assets/trainer/model_a/preflop_population_model_v5.json",

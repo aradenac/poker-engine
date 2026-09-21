@@ -18,6 +18,8 @@ PACK_CONFIG = ROOT / "user/packs/legacy_pokerstars_nlhe_100-200_play_6max_mixed_
 OUTPUT = SITE / "packs/catalog.json"
 CATALOG_SCHEMA = "poker-population-catalog/v1"
 RUNTIME_SCHEMA = "poker-browser-runtime-pack/v1"
+HERO_PROVENANCE_SCHEMA = "trainer-hero-provenance/v1"
+HERO_PROVENANCE_STATUSES = ("RETAIN_REFERENCE", "PARTIAL")
 
 
 def load(path: Path) -> dict:
@@ -58,6 +60,50 @@ def assert_public_catalog_entry(entry: dict) -> dict:
     return entry
 
 
+def hero_provenance(trainer: dict) -> dict:
+    """Return the explicit, population-bound Hero provenance from the trainer manifest.
+
+    The provenance is fail-closed: it must stay bound to the manifest population,
+    describe the preserved legacy ``Custom`` range-folder source, match the exact
+    Hero ranges bytes, and remain explicitly non-admissible/non-promotable so no
+    retained reference or inactive candidate can drift into the active strategy.
+    """
+    provenance = trainer.get("hero_provenance")
+    if not isinstance(provenance, dict):
+        raise ValueError("trainer population manifest is missing hero_provenance")
+    if provenance.get("schema") != HERO_PROVENANCE_SCHEMA:
+        raise ValueError("unsupported trainer hero provenance schema")
+    if provenance.get("population_id") != trainer.get("population_id"):
+        raise ValueError("trainer hero provenance population disagrees with the manifest")
+    ranges_url = trainer["assets"]["hero"]["ranges"]
+    if not ranges_url.startswith("./"):
+        raise ValueError(f"hero ranges must be same-origin relative: {ranges_url}")
+    if provenance.get("ranges_path") != ranges_url:
+        raise ValueError("trainer hero provenance ranges_path disagrees with the manifest")
+    ranges_file = SITE / ranges_url.removeprefix("./")
+    if not ranges_file.is_file():
+        raise FileNotFoundError(ranges_file)
+    if provenance.get("sha256") != sha256(ranges_file):
+        raise ValueError("trainer hero provenance sha256 does not match the Hero ranges bytes")
+    source = provenance.get("source")
+    ranges_source = load(ranges_file).get("source", {})
+    if not isinstance(source, dict) or not isinstance(ranges_source, dict):
+        raise ValueError("trainer hero provenance source is missing")
+    if source.get("folder") != "Custom" or ranges_source.get("folder") != "Custom":
+        raise ValueError("trainer hero provenance must preserve the legacy Custom range-folder")
+    if source.get("export_type") != "range-folder" or ranges_source.get("exportType") != "range-folder":
+        raise ValueError("trainer hero provenance must preserve the legacy range-folder export")
+    if source.get("sha256") != ranges_source.get("sha256"):
+        raise ValueError("trainer hero provenance source sha256 disagrees with the Hero ranges source")
+    if provenance.get("status") not in HERO_PROVENANCE_STATUSES:
+        raise ValueError("trainer hero provenance status must be RETAIN_REFERENCE or PARTIAL")
+    if provenance.get("admissible") is not False or provenance.get("promotable") is not False:
+        raise ValueError("trainer hero provenance must remain non-admissible and non-promotable")
+    if trainer.get("hero_strategy") != provenance.get("strategy_id"):
+        raise ValueError("trainer hero_strategy disagrees with the Hero provenance strategy_id")
+    return provenance
+
+
 def build_catalog() -> dict:
     trainer = load(TRAINER_MANIFEST)
     pack = load(PACK_CONFIG)
@@ -69,6 +115,7 @@ def build_catalog() -> dict:
         raise ValueError("trainer and distribution pack populations disagree")
 
     a = trainer["assets"]
+    provenance = hero_provenance(trainer)
     assets = [
         asset("population_manifest", "population_manifest", "./assets/trainer/population.json", "trainer-population-pack/v1"),
         asset("model_a_preflop", "model_a_preflop", a["modelA"]["preflop"]),
@@ -99,6 +146,7 @@ def build_catalog() -> dict:
         "model_a_version": trainer.get("model_a_version"),
         "model_b_alias": trainer.get("model_b_alias"),
         "hero_strategy": trainer.get("hero_strategy"),
+        "hero_provenance": provenance,
         "compatibility": {
             "application_release_schema": "poker-site-release/v3",
             "engine_version": trainer.get("engine_version"),
