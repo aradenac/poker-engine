@@ -123,12 +123,47 @@
     return {status:'UNCOVERED_DEPTH',context:base,node:null,nearest_context:best.context,depth_delta_bb:best.abs,depth_delta_fraction:best.rel};
   }
 
-  function layerStrategy(node,hand){
+  const STRATEGY_SOURCE=Object.freeze({POPULATION:'POPULATION',PERSONAL_OVERRIDE:'PERSONAL_OVERRIDE',NONE:'NONE'});
+
+  function text(value){return value==null?'':String(value).trim();}
+  function isObject(value){return !!value&&typeof value==='object'&&!Array.isArray(value);}
+
+  function contextLayers(node,hand){
     const personal=node?.layers?.personal?.hands?.[hand]||null;
-    if(personal)return {strategy:personal,layer:'personal',version:node.layers.personal.version??null,provenance:node.layers.personal.provenance??null};
     const calculated=node?.layers?.calculated?.hands?.[hand]||null;
-    if(calculated)return {strategy:calculated,layer:'calculated',version:node.layers.calculated.version??null,provenance:node.layers.calculated.provenance??null};
-    return {strategy:null,layer:null,version:null,provenance:null};
+    return {
+      personal:personal?{strategy:personal,layer:'personal',version:node.layers.personal.version??null,provenance:node.layers.personal.provenance??null}:null,
+      calculated:calculated?{strategy:calculated,layer:'calculated',version:node.layers.calculated.version??null,provenance:node.layers.calculated.provenance??null}:null
+    };
+  }
+
+  function materializedCalculatedPopulations(repo){
+    const populations=[];
+    for(const node of Object.values(repo?.contexts||{})){
+      const calculated=isObject(node)&&isObject(node.layers)?node.layers.calculated:null;
+      if(!isObject(calculated))continue;
+      const defined=Object.keys(isObject(calculated.hands)?calculated.hands:{}).length;
+      const materialized=defined>0||calculated.version!=null||calculated.provenance!=null;
+      if(!materialized)continue;
+      const population=isObject(node.context)?text(node.context.population_id):'';
+      if(population)populations.push(population);
+    }
+    return Array.from(new Set(populations));
+  }
+
+  // A compliance verdict is only legitimate against the population it was
+  // resolved for. If the repository defaults or any materialized calculated
+  // context belong to a different population, fail closed instead of reading a
+  // foreign strategy. The runtime resolver (#392) is authoritative when it is
+  // supplied, but this local guard keeps direct callers honest too.
+  function populationCompatibility(repo,requestedPopulation){
+    const requested=text(requestedPopulation),defaults=text(repo?.defaults?.population_id);
+    if(requested&&defaults&&requested!==defaults)return {compatible:false,status:'POPULATION_INCOMPATIBLE',reason:'REPOSITORY_DEFAULTS_POPULATION_MISMATCH'};
+    if(requested){
+      const foreign=materializedCalculatedPopulations(repo).filter(population=>population!==requested);
+      if(foreign.length)return {compatible:false,status:'POPULATION_INCOMPATIBLE',reason:'CALCULATED_CONTEXT_POPULATION_MISMATCH'};
+    }
+    return {compatible:true,status:'RESOLVED',reason:null};
   }
 
   function sizingCompliance(strategy,plannedAction,decision){
@@ -153,8 +188,14 @@
     return `./hero-ranges.html?${p.toString()}`;
   }
 
-  function evaluateDecision({repo,decision,handClass,populationId=null}={}){
+  function evaluateDecision({repo,decision,handClass,populationId=null,strategyResolution=null}={}){
     const repository_token=repositoryVersionToken(repo);
+    const resolution=isObject(strategyResolution)?strategyResolution:null;
+    const resolutionStatus=resolution?text(resolution.status):null;
+    const resolutionSource=resolution?text(resolution.source):null;
+    const resolutionFailClosed=resolution?resolution.fail_closed===true:false;
+    const requestedPopulation=text(populationId||repo?.defaults?.population_id);
+    const population=resolution?text(resolution.population_id||requestedPopulation):requestedPopulation;
     const base={
       schema:SCHEMA,
       repository_token,
@@ -169,24 +210,75 @@
       layer:null,
       layer_version:null,
       provenance:null,
+      population_id:population||null,
+      strategy_source:STRATEGY_SOURCE.NONE,
+      strategy_status:resolutionStatus,
+      strategy_fail_closed:resolutionFailClosed,
+      personal_override:false,
       ev_deviation_bb:null,
       ev_status:'NOT_EVALUATED',
       frequency_calibration_status:'NOT_EVALUATED_PER_SINGLE_DECISION'
     };
     if(!HeroRanges||!repo||repo.schema!==HeroRanges.SCHEMA)return {...base,context_status:'NO_REPOSITORY',action_status:'NO_VERDICT',editor_href:'./hero-ranges.html'};
     if(!HeroRanges.HAND_CLASSES.includes(base.hand_class))return {...base,context_status:'UNKNOWN_HAND',action_status:'NO_VERDICT',editor_href:'./hero-ranges.html'};
-    const resolved=resolveContext(repo,decision,{populationId});
+
+    // A mismatching population is a hard boundary: no context may be read from
+    // another population's strategy, not even to score a personal overlay.
+    if(resolution&&resolutionStatus==='POPULATION_INCOMPATIBLE'){
+      return {...base,context_status:'POPULATION_INCOMPATIBLE',action_status:'NO_VERDICT',strategy_source:STRATEGY_SOURCE.NONE,editor_href:'./hero-ranges.html'};
+    }
+    const compatibility=populationCompatibility(repo,population);
+    if(!compatibility.compatible){
+      return {...base,context_status:compatibility.status,action_status:'NO_VERDICT',strategy_source:STRATEGY_SOURCE.NONE,strategy_reason:compatibility.reason,editor_href:'./hero-ranges.html'};
+    }
+
+    // Only an explicitly admitted, fully-covered calculated strategy authorizes
+    // a population verdict (#201/#305/#196). Retained references, partial
+    // coverage and unresolved artifacts never do. Without a resolution, legacy
+    // direct callers keep the local compatibility guarantee above.
+    const populationAuthorized=resolution
+      ?(resolutionSource===STRATEGY_SOURCE.POPULATION&&resolutionStatus==='ADMISSIBLE_CALCULATED'&&!resolutionFailClosed)
+      :true;
+
+    const resolved=resolveContext(repo,decision,{populationId:population});
     if(resolved.status!=='RESOLVED')return {...base,context_status:resolved.status,resolved_context:resolved.context||null,nearest_context:resolved.nearest_context||null,depth_delta_bb:resolved.depth_delta_bb??null,action_status:'NO_VERDICT',editor_href:editorHref({...base,resolved_context:resolved.context||null})};
+
     const planned=plannedActionForDecision(decision);
-    const layer=layerStrategy(resolved.node,base.hand_class);
-    const common={...base,context_status:'RESOLVED',resolved_context:resolved.context,depth_match:resolved.depth_match,depth_delta_bb:resolved.depth_delta_bb,layer:layer.layer,layer_version:layer.version,provenance:layer.provenance,planned_action:planned};
-    if(!layer.strategy)return {...common,action_status:'UNCOVERED_HAND',editor_href:editorHref({...common,hand_class:base.hand_class})};
+    const layers=contextLayers(resolved.node,base.hand_class);
+    const personalAvailable=!!layers.personal;
+    let selected=null,effectiveSource=STRATEGY_SOURCE.NONE;
+    if(populationAuthorized&&layers.calculated){selected=layers.calculated;effectiveSource=STRATEGY_SOURCE.POPULATION;}
+    else if(layers.personal){selected=layers.personal;effectiveSource=STRATEGY_SOURCE.PERSONAL_OVERRIDE;}
+    const strategySource=selected?effectiveSource:(personalAvailable?STRATEGY_SOURCE.PERSONAL_OVERRIDE:STRATEGY_SOURCE.NONE);
+    const common={
+      ...base,
+      context_status:'RESOLVED',
+      resolved_context:resolved.context,
+      depth_match:resolved.depth_match,
+      depth_delta_bb:resolved.depth_delta_bb,
+      layer:selected?selected.layer:null,
+      layer_version:selected?selected.version:null,
+      provenance:selected?selected.provenance:null,
+      planned_action:planned,
+      strategy_source:strategySource,
+      personal_override:personalAvailable
+    };
+    if(!selected){
+      if(!populationAuthorized&&resolution&&resolutionSource===STRATEGY_SOURCE.POPULATION){
+        return {...common,context_status:'STRATEGY_UNAVAILABLE',action_status:'NO_VERDICT',strategy_source:STRATEGY_SOURCE.POPULATION,editor_href:editorHref({...common,hand_class:base.hand_class})};
+      }
+      if(!populationAuthorized&&resolution&&resolutionSource===STRATEGY_SOURCE.NONE){
+        return {...common,context_status:'STRATEGY_UNAVAILABLE',action_status:'NO_VERDICT',strategy_source:STRATEGY_SOURCE.NONE,editor_href:editorHref({...common,hand_class:base.hand_class})};
+      }
+      return {...common,action_status:'UNCOVERED_HAND',editor_href:editorHref({...common,hand_class:base.hand_class})};
+    }
     if(!planned||!HeroRanges.ACTIONS.includes(planned))return {...common,action_status:'UNKNOWN_ACTION',editor_href:editorHref({...common,hand_class:base.hand_class})};
-    const probability=Number(layer.strategy.actions?.[planned]||0);
+    const strategy=selected.strategy;
+    const probability=Number(strategy.actions?.[planned]||0);
     const actionStatus=probability>1e-12?(probability<1-1e-12?'MIXED_ALLOWED':'COMPLIANT'):'OUT_OF_RANGE';
     const aggressive=['OPEN','ISO','3BET','4BET','SHOVE'].includes(planned);
-    const sizing=aggressive&&probability>1e-12?sizingCompliance(layer.strategy,planned,decision):{status:'NOT_APPLICABLE',expected:[]};
-    const result={...common,action_probability:probability,action_status:actionStatus,sizing,notes:String(layer.strategy.notes||'')};
+    const sizing=aggressive&&probability>1e-12?sizingCompliance(strategy,planned,decision):{status:'NOT_APPLICABLE',expected:[]};
+    const result={...common,action_probability:probability,action_status:actionStatus,sizing,notes:String(strategy.notes||'')};
     result.editor_href=editorHref(result);
     return result;
   }
@@ -218,5 +310,5 @@
     };
   }
 
-  return {SCHEMA,repositoryVersionToken,spotForDecision,plannedActionForDecision,effectiveStackForDecision,resolveContext,evaluateDecision,summarize,editorHref};
+  return {SCHEMA,STRATEGY_SOURCE,repositoryVersionToken,spotForDecision,plannedActionForDecision,effectiveStackForDecision,resolveContext,populationCompatibility,evaluateDecision,summarize,editorHref};
 });

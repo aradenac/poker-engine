@@ -51,40 +51,117 @@
   function traceForHand(hand){
     try{return typeof populationPreflopDecisionTrace==='function'?populationPreflopDecisionTrace(hand):[];}catch(err){console.warn('Hero compliance trace unavailable',err);return [];}
   }
-  function evaluate(hand,decision,repo){
+
+  // The compliance verdict is only meaningful against the population the
+  // analyser is currently running. Resolve that identity from the same sources
+  // the product header uses, then fall back to the repository defaults only when
+  // no runtime population is known.
+  function activePopulationId(repo){
+    try{
+      if(typeof trainerState!=='undefined'&&trainerState?.populationId)return String(trainerState.populationId);
+    }catch(_){}
+    try{
+      if(typeof state!=='undefined'){
+        const model=state?.populationModel,id=model?.population_id||model?.populationId;
+        if(id)return String(id);
+        const pack=state?.manualOverrideContract?.base_active_pack;
+        if(pack?.population_id)return String(pack.population_id);
+      }
+    }catch(_){}
+    return repo?.defaults?.population_id?String(repo.defaults.population_id):null;
+  }
+  function heroManifest(){
+    try{if(typeof trainerWarmAssets!=='undefined'&&trainerWarmAssets?.population)return trainerWarmAssets.population;}catch(_){}
+    return null;
+  }
+  function heroPackIdentity(){
+    try{if(typeof state!=='undefined')return state?.manualOverrideContract?.base_active_pack||null;}catch(_){}
+    return null;
+  }
+  function heroRetainedReference(manifest){
+    const provenance=manifest?.hero_provenance;
+    if(!provenance?.population_id)return null;
+    return {
+      schema:provenance.schema||null,issue:null,population_id:provenance.population_id,
+      strategy_id:provenance.strategy_id||null,
+      strategy_version:provenance.sha256?String(provenance.sha256).slice(0,16):null,
+      strategy_sha256:provenance.sha256||null
+    };
+  }
+  function strategyResolutionFor(repo){
+    const Resolver=root.PokerHeroStrategyResolver,population=activePopulationId(repo);
+    if(Resolver&&typeof Resolver.resolveHeroStrategy==='function'){
+      // Only bind the trainer manifest when it describes the active population;
+      // a stale manifest from another population must not make the resolver
+      // reject an otherwise valid active population.
+      let manifest=heroManifest();
+      if(manifest&&String(manifest.population_id||'')!==String(population||''))manifest=null;
+      const provenance=manifest?.hero_provenance||null;
+      try{
+        return Resolver.resolveHeroStrategy({
+          population_id:population,
+          repository:repo,
+          trainer_manifest:manifest,
+          pack_identity:heroPackIdentity(),
+          admissions:provenance?.status?{hero_strategy:{status:provenance.status,population_id:provenance.population_id||population}}:null,
+          retained_reference:heroRetainedReference(manifest)
+        });
+      }catch(err){console.warn('Hero strategy resolution unavailable',err);}
+    }
+    try{if(typeof trainerState!=='undefined'&&trainerState?.heroStrategyResolution)return trainerState.heroStrategyResolution;}catch(_){}
+    return null;
+  }
+
+  function evaluate(hand,decision,repo,resolution){
     const C=root.PokerHeroCompliance;if(!C)return null;
-    return C.evaluateDecision({repo,decision,handClass:handClass(hand?.heroCards||[]),populationId:repo?.defaults?.population_id||null});
+    return C.evaluateDecision({repo,decision,handClass:handClass(hand?.heroCards||[]),populationId:resolution?.population_id||repo?.defaults?.population_id||null,strategyResolution:resolution||null});
   }
   function heroTrace(hand){return traceForHand(hand).filter(d=>d?.player===hand?.heroName);}
 
-  function currentEvaluation(hand,repo){
-    if(!hand)return {result:null,decision:null,label:'Aucune main sélectionnée'};
+  function currentEvaluation(hand,repo,providedResolution){
+    if(!hand)return {result:null,decision:null,resolution:null,label:'Aucune main sélectionnée'};
+    const resolution=providedResolution===undefined?strategyResolutionFor(repo):providedResolution;
     const all=traceForHand(hand),count=replayPreflopCount(typeof state!=='undefined'?state.replayIndex:0),occurred=all.slice(0,count);
     const hero=occurred.filter(d=>d?.player===hand.heroName);
-    if(!hero.length)return {result:null,decision:null,label:'Aucune décision Hero préflop encore jouée'};
+    if(!hero.length)return {result:null,decision:null,resolution,label:'Aucune décision Hero préflop encore jouée'};
     const decision=hero[hero.length-1];
-    return {result:evaluate(hand,decision,repo),decision,label:'Dernière décision Hero préflop'};
+    return {result:evaluate(hand,decision,repo,resolution),decision,resolution,label:'Dernière décision Hero préflop'};
   }
 
-  function sessionSummary(repo){
+  function sessionSummary(repo,providedResolution){
     const C=root.PokerHeroCompliance;
     if(!C||typeof state==='undefined')return null;
+    const resolution=providedResolution===undefined?strategyResolutionFor(repo):providedResolution;
     const hands=Array.isArray(state.hhHands)?state.hhHands:[];
     const token=C.repositoryVersionToken(repo)||'none';
     const ids=hands.length?`${hands[0]?.id||''}:${hands[hands.length-1]?.id||''}`:'';
-    const key=`${token}:${hands.length}:${ids}`;
+    const key=`${token}:${hands.length}:${ids}:${resolution?.strategy_sha256||resolution?.strategy_version||resolution?.status||'none'}`;
     if(sessionCache.key===key)return sessionCache.summary;
     const rows=[];
     for(const hand of hands){
       const hc=handClass(hand?.heroCards||[]);if(!hc)continue;
-      for(const d of heroTrace(hand))rows.push(C.evaluateDecision({repo,decision:d,handClass:hc,populationId:repo?.defaults?.population_id||null}));
+      for(const d of heroTrace(hand))rows.push(C.evaluateDecision({repo,decision:d,handClass:hc,populationId:resolution?.population_id||repo?.defaults?.population_id||null,strategyResolution:resolution||null}));
     }
     const summary=C.summarize(rows);sessionCache={key,summary};return summary;
   }
 
   function statusLabel(result){
-    const map={COMPLIANT:'Conforme',MIXED_ALLOWED:'Action mixée autorisée',OUT_OF_RANGE:'Hors range',UNCOVERED_HAND:'Main non couverte',UNKNOWN_ACTION:'Action non couverte',NO_VERDICT:'Contexte non couvert'};
+    if(result?.context_status==='POPULATION_INCOMPATIBLE')return 'Hors population';
+    if(result?.context_status==='STRATEGY_UNAVAILABLE')return 'Stratégie indisponible';
+    const map={COMPLIANT:'Conforme',MIXED_ALLOWED:'Action mixée autorisée',OUT_OF_RANGE:'Hors range',UNCOVERED_HAND:'Main non couverte',UNKNOWN_ACTION:'Action non couverte',NO_VERDICT:'Pas de verdict'};
     return map[result?.action_status]||'Pas de verdict';
+  }
+  function strategySourceText(result){
+    if(result?.strategy_source==='PERSONAL_OVERRIDE')return 'override personnel';
+    if(result?.strategy_source==='POPULATION')return 'stratégie population';
+    return 'aucune stratégie admissible';
+  }
+  function resolutionText(resolution){
+    if(!resolution)return 'résolution indisponible';
+    const parts=[String(resolution.status||'STATUS'),String(resolution.source||'SOURCE')];
+    if(resolution.population_id)parts.push(String(resolution.population_id));
+    if(resolution.fail_closed)parts.push('fail-closed');
+    return parts.join(' · ');
   }
   function statusClass(result){
     if(result?.action_status==='OUT_OF_RANGE')return 'bad';
@@ -138,23 +215,28 @@
     }else if(!repo){
       markup='<div class="hc-head"><b>Conformité range Hero</b><span class="hc-status neutral">Pas de range</span></div><div class="hc-empty">Aucun dépôt Hero enregistré. Le moteur de recommandation reste indépendant de ce contrôle.</div><a class="hc-link" href="./hero-ranges.html">Définir / importer les ranges Hero</a>';
     }else{
-      const current=currentEvaluation(hand,repo),result=current.result,summary=sessionSummary(repo),token=root.PokerHeroCompliance.repositoryVersionToken(repo);
+      const current=currentEvaluation(hand,repo),resolution=current.resolution,result=current.result,summary=sessionSummary(repo,resolution),token=root.PokerHeroCompliance.repositoryVersionToken(repo);
       if(!result){
-        markup=`<div class="hc-head"><b>Conformité range Hero</b><span class="hc-status neutral">Pas de verdict</span></div><div class="hc-empty">${esc(current.label)}</div>${summaryHtml(summary)}<div class="hc-foot">Range ${esc(token)} · conformité au plan Hero distincte de la recommandation moteur · écart EV non évalué.</div><a class="hc-link" href="./hero-ranges.html">Ouvrir la grille Hero</a>`;
+        markup=`<div class="hc-head"><b>Conformité range Hero</b><span class="hc-status neutral">Pas de verdict</span></div><div class="hc-empty">${esc(current.label)}</div>${summaryHtml(summary)}<div class="hc-foot">Range ${esc(token)} · ${esc(resolutionText(resolution))} · conformité au plan Hero distincte de la recommandation moteur · écart EV non évalué.</div><a class="hc-link" href="./hero-ranges.html">Ouvrir la grille Hero</a>`;
       }else{
         const layer=result.layer?`${result.layer}${result.layer_version!=null?` v${result.layer_version}`:''}`:'—';
+        const overrideNote=result.strategy_source==='PERSONAL_OVERRIDE'
+          ?'<div class="hc-note">Override personnel : ce verdict porte sur votre couche personnelle et ne représente pas la stratégie calculée de la population.</div>'
+          :'';
         markup=`<div class="hc-head"><div><b>Conformité range Hero</b><small>${esc(current.label)}</small></div><span class="hc-status ${statusClass(result)}">${esc(statusLabel(result))}</span></div>
           <div class="hc-metrics">
             <div><span>Contexte</span><b>${esc(contextText(result))}</b></div>
             <div><span>Main / action</span><b>${esc(result.hand_class||'—')} · ${esc(result.planned_action||result.observed_runtime_action||'—')}</b></div>
             <div><span>Fréquence prescrite</span><b>${esc(frequencyText(result))}</b></div>
             <div><span>Couche / version</span><b>${esc(layer)}</b></div>
+            <div class="hc-wide"><span>Origine de la stratégie</span><b>${esc(strategySourceText(result))} · population ${esc(result.population_id||'—')} · ${esc(resolutionText(resolution))}</b></div>
             <div class="hc-wide"><span>Sizing</span><b>${esc(sizingText(result))}</b></div>
             <div><span>Écart EV</span><b>non évalué</b></div>
           </div>
           <div class="hc-note">Une action mixée à fréquence positive est autorisée sur une occurrence isolée ; la calibration des fréquences nécessite un échantillon adapté. Ce verdict n’utilise que les cartes Hero connues dès le départ et l’état antérieur à l’action.</div>
+          ${overrideNote}
           ${summaryHtml(summary)}
-          <div class="hc-foot">Range ${esc(result.repository_token)} · recommandation moteur et conformité personnelle sont deux axes distincts.</div>
+          <div class="hc-foot">Range ${esc(result.repository_token)} · ${esc(strategySourceText(result))} · population ${esc(result.population_id||'—')} · recommandation moteur et conformité Hero sont deux axes distincts.</div>
           <a class="hc-link" href="${esc(result.editor_href||'./hero-ranges.html')}">Voir / modifier cette grille</a>`;
       }
     }
@@ -177,5 +259,5 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
     setInterval(render,500);
   }
-  root.PokerHeroComplianceReplayer={STORAGE_KEY,handClass,loadRepository,currentEvaluation,sessionSummary,render,invalidate};
+  root.PokerHeroComplianceReplayer={STORAGE_KEY,handClass,loadRepository,activePopulationId,strategyResolutionFor,currentEvaluation,sessionSummary,render,invalidate};
 })(typeof globalThis!=='undefined'?globalThis:this);

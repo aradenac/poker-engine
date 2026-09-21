@@ -28,4 +28,18 @@ assert "MIXED_ALLOWED" in contract
 assert "UNCOVERED_HAND" in contract and "NO_VERDICT" in contract
 assert "sizingCompliance" in contract
 
+# The verdict is population-bound and fail-closed: it never evaluates a strategy
+# from another population and it distinguishes a personal override from the
+# calculated population strategy it is allowed to score.
+assert "populationCompatibility" in contract, "compliance must gate on population compatibility"
+assert "POPULATION_INCOMPATIBLE" in contract, "a foreign population must fail closed explicitly"
+assert "STRATEGY_UNAVAILABLE" in contract, "an unresolved strategy must fail closed explicitly"
+assert "PERSONAL_OVERRIDE" in contract and "STRATEGY_SOURCE" in contract, "override vs calculated source must be explicit"
+assert "strategyResolution" in contract, "evaluateDecision must accept the resolved population strategy"
+
+assert "PokerHeroStrategyResolver" in adapter and "resolveHeroStrategy" in adapter, "replayer must resolve the population strategy at runtime"
+assert "strategyResolutionFor" in adapter, "replayer must expose its population-bound resolution"
+assert "strategyResolution:resolution" in adapter, "replayer must forward the resolution to evaluateDecision"
+assert "Origine de la stratégie" in adapter and "override personnel" in adapter, "the panel must report the personal override distinctly"
+
 print("Hero compliance replayer integration: PASS")
