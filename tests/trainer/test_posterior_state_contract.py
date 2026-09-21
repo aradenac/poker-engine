@@ -16,6 +16,7 @@ This is a representation-layer contract only. It pins that:
 """
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -103,6 +104,53 @@ def main() -> None:
     assert old_relative_fallback not in export
     assert old_relative_fallback not in matrix
     assert "matrixEntries.some(e=>e.relativeWeightPct!=null)" in matrix
+
+    # Point 3 (#391): `rangeEntriesForHistoryPlayer` must never substitute the
+    # legacy imported range for a degenerate population estimate. The legacy
+    # fallback is reachable only when no estimate exists at all (no model /
+    # historical imported path); a degenerate estimate returns [] so every
+    # equity/EV/tree consumer fails closed on zero length instead of silently
+    # re-seeding the imported range.
+    history_range = section(
+        "function rangeEntriesForHistoryPlayer(",
+        "function resetSeatEquities(",
+    )
+    assert 'if(estimated.posteriorState==="degenerate") return [];' in history_range
+    assert "const estimated=populationRangeEstimateForPlayer(player,replayIndex);" in history_range
+    assert "if(estimated){" in history_range
+    assert "if(estimated.entries?.length) return estimated.entries;" in history_range
+    # The legacy fallback is the unconditional final return: it is reached only
+    # after the `if(estimated){...}` early returns, i.e. only when no estimate
+    # record exists (no population model / historical imported path).
+    estimated_idx = history_range.index("if(estimated){")
+    legacy_idx = history_range.index("return legacyRangeEntriesForHistoryPlayer(player);")
+    assert estimated_idx < legacy_idx
+    assert history_range.rfind("return legacyRangeEntriesForHistoryPlayer(player);") == legacy_idx
+    # Inside the estimate branch there is no legacy substitution: empty entries
+    # fail closed with [].
+    estimate_branch = history_range.split("if(estimated){", 1)[1].split("\n  }", 1)[0]
+    assert "return [];" in estimate_branch
+    assert "return legacyRangeEntriesForHistoryPlayer" not in estimate_branch
+
+    # Downstream equity/EV/tree consumers fail closed on a zero-length range:
+    # they return null / skip rather than re-seeding or emitting a 100 % value.
+    assert "if(!hands.length)return null;" in INDEX  # buildActionScenarioPlayers
+    assert "if(!rangeHands.length)return null;" in INDEX  # buildActionScenarioPlayers
+    assert "if(!actorHands.length)return null;" in INDEX  # postflopRaiseTreeSnapshot
+    assert "if(!baseEntries.length)continue;" in INDEX  # postflopRaiseTreeSnapshot responder
+    assert "if(!priorEntries.length)return null;" in INDEX  # postflopFoldSelectedRange
+    assert "if(players.length===0||players.some(p=>!p.hands.length))return null;" in INDEX  # tableEquitySnapshotForStep
+    assert "const hasRange=rangeHands.length>0;" in INDEX  # buildSeatEquityPlayers
+    assert "hasRange[p.name]=rangeEntriesForHistoryPlayer(p,replayIndex).length>0;" in INDEX  # updateSeatEquityMeta
+
+    # Executable proof: the production `rangeEntriesForHistoryPlayer` extracted
+    # from site/index.html returns [] for a degenerate estimate and never reaches
+    # the legacy imported-range fallback, while no estimate at all keeps it.
+    subprocess.run(
+        ["node", "tests/trainer/degenerate_legacy_failclose_runtime.js"],
+        cwd=ROOT,
+        check=True,
+    )
 
     print("posterior state contract checks: OK")
 

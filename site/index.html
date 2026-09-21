@@ -7908,13 +7908,20 @@ function rangeEntriesForHistoryPlayer(player,replayIndex=state.replayIndex){
   }
 
   const estimated=populationRangeEstimateForPlayer(player,replayIndex);
-  // Degenerate posterior: the display/export surfaces fail closed on
-  // `posteriorState==="degenerate"`. Here we keep the historical imported-range
-  // fallback so equity consumers (`buildSeatEquityPlayers`,
-  // `postflopRaiseTreeSnapshot`, combos/sampler) stay invariant.
-  if(estimated?.entries?.length) return estimated.entries;
+  if(estimated){
+    // Degenerate posterior: no positive mass survives the public blockers. The
+    // representation layer already fail-closes (`posteriorState==="degenerate"`);
+    // do NOT silently re-seed the historical imported range here. Returning no
+    // entries lets every equity/EV/tree consumer fail closed on zero length.
+    if(estimated.posteriorState==="degenerate") return [];
+    if(estimated.entries?.length) return estimated.entries;
+    // A non-degenerate estimate always carries entries; stay defensive and fail
+    // closed instead of substituting the legacy imported range.
+    return [];
+  }
 
-  // No preflop action / no usable population node => preserve historical behavior.
+  // No population estimate at all (no model / historical imported path) =>
+  // preserve the historical legacy range behavior.
   return legacyRangeEntriesForHistoryPlayer(player);
 }
 function resetSeatEquities(message=""){
