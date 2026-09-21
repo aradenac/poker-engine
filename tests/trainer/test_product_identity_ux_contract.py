@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -62,6 +63,41 @@ def main() -> None:
     assert 'Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2' not in TRAINER
     assert 'Chargement de la population et de la stratégie…' in TRAINER
     assert 'Calcul de la recommandation Model A…' not in TRAINER
+
+    # #task-0jt: the Trainer forwards the complete admission binding
+    # (role/hash/provenance/candidate/generation/binding) and the declared
+    # coverage bound, instead of a bare {status,population_id} token.
+    for marker in (
+        'trainerHeroAdmissionFromProvenance',
+        'role:"hero_strategy"',
+        'declared_sha256',
+        'actual_sha256',
+        'source_path',
+        'binding_sha256',
+        'candidate_id',
+        'generation_id',
+        'trainerHeroCoverageBound',
+        'required_context_keys',
+        'generation_manifest',
+    ):
+        assert marker in TRAINER, marker
+    assert 'status:provenance.status,population_id:provenance.population_id' not in TRAINER
+    assert 'Custom' not in TRAINER
+
+    # The population provenance exposes the explicit binding tokens. The legacy
+    # reference keeps its candidate/generation/binding null and stays
+    # RETAIN_REFERENCE: it is never promoted, never relabelled MIXED -> Zoom.
+    population = json.loads((ROOT / 'site/assets/trainer/population.json').read_text(encoding='utf-8'))
+    provenance = population['hero_provenance']
+    assert provenance['status'] == 'RETAIN_REFERENCE'
+    assert provenance['admissible'] is False
+    assert provenance['promotable'] is False
+    assert provenance['candidate_id'] is None
+    assert provenance['generation_id'] is None
+    assert provenance['binding_sha256'] is None
+    assert provenance['sha256'] and provenance['ranges_path'] and provenance['source_type']
+    assert 'zoom' not in provenance['population_id']
+    assert population['population_identity']['format'] == 'MIXED_ZOOM_REGULAR'
 
     # The header computes the identity trio dynamically: population, Hero strategy
     # source/version and the personal-override active state.

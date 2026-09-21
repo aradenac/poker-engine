@@ -83,6 +83,33 @@ class PackCatalogContractTests(unittest.TestCase):
         hero_asset = next(asset for asset in entry["assets"] if asset["key"] == "hero_ranges")
         self.assertEqual(provenance["sha256"], hero_asset["sha256"])
 
+    def test_retained_hero_provenance_carries_the_null_admission_binding(self) -> None:
+        entry = build_catalog()["entries"][0]
+        manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+        provenance = entry["hero_provenance"]
+        self.assertEqual(provenance, manifest["hero_provenance"])
+        # #task-0jt: the retained reference exposes the explicit binding tokens as
+        # null so the runtime never fabricates a candidate identity or a hash.
+        for field in ("candidate_id", "generation_id", "binding_sha256"):
+            self.assertIn(field, provenance)
+            self.assertIsNone(provenance[field])
+        self.assertEqual(provenance["status"], "RETAIN_REFERENCE")
+
+    def test_retained_hero_provenance_cannot_fabricate_a_candidate_binding(self) -> None:
+        manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+        fabricated_binding = json.loads(json.dumps(manifest))
+        fabricated_binding["hero_provenance"]["binding_sha256"] = "a" * 64
+        with self.assertRaises(ValueError):
+            hero_provenance(fabricated_binding)
+        fabricated_candidate = json.loads(json.dumps(manifest))
+        fabricated_candidate["hero_provenance"]["candidate_id"] = "hero-candidate-196"
+        with self.assertRaises(ValueError):
+            hero_provenance(fabricated_candidate)
+        fabricated_generation = json.loads(json.dumps(manifest))
+        fabricated_generation["hero_provenance"]["generation_id"] = "gen-196"
+        with self.assertRaises(ValueError):
+            hero_provenance(fabricated_generation)
+
     def test_hero_provenance_rejects_relabel_and_admissibility_drift(self) -> None:
         manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
 

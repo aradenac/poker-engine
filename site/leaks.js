@@ -33,19 +33,66 @@
   }
   async function manifest(){try{const r=await fetch('./assets/trainer/population.json',{cache:'no-store'});return r.ok?await r.json():null;}catch(_){return null;}}
   function heroProvenance(m){return m&&m.hero_provenance&&typeof m.hero_provenance==='object'?m.hero_provenance:null;}
+  // #task-0jt: forward the complete admission binding (role/hash/provenance/
+  // candidate/generation/binding) instead of a bare {status,population_id}. The
+  // legacy reference has no calculated candidate, so the candidate/generation/
+  // binding tokens stay null and the resolution stays RETAIN_REFERENCE.
+  function heroAdmissionFromProvenance(provenance,population_id){
+    if(!provenance||!provenance.status)return null;
+    const populationId=provenance.population_id||population_id||null;
+    const sha=provenance.sha256||null;
+    const candidateId=provenance.candidate_id||null;
+    const generationId=provenance.generation_id||null;
+    const bindingSha=provenance.binding_sha256||null;
+    return {
+      status:provenance.status,
+      role:'hero_strategy',
+      population_id:populationId,
+      strategy_id:provenance.strategy_id||null,
+      strategy_version:provenance.strategy_version||(sha?String(sha).slice(0,16):null),
+      candidate_id:candidateId,
+      generation_id:generationId,
+      binding_sha256:bindingSha,
+      artifact:{
+        declared_sha256:sha,
+        actual_sha256:sha,
+        hash_kind:'file_sha256',
+        source_path:provenance.ranges_path||null,
+        verified:sha!=null
+      },
+      provenance:{
+        source_population_id:populationId,
+        manifest_sha256:sha,
+        binding_sha256:bindingSha,
+        candidate_id:candidateId,
+        generation_id:generationId
+      }
+    };
+  }
+  function heroCoverageBound(manifest,provenance){
+    const keys=manifest&&manifest.required_context_keys||provenance&&provenance.required_context_keys||null;
+    const generation=manifest&&manifest.generation_manifest||provenance&&provenance.generation_manifest||null;
+    return {
+      required_context_keys:Array.isArray(keys)&&keys.length?keys:null,
+      generation_manifest:generation&&typeof generation==='object'?generation:null
+    };
+  }
   function scopeResolutionInput(m,active,population_id){
     const entry=active&&active.entry?active.entry:null;
     const provenance=heroProvenance(entry)||heroProvenance(m);
-    const admissions=provenance&&provenance.status?{hero_strategy:{status:provenance.status,population_id:provenance.population_id||population_id}}:null;
+    const admissions=provenance&&provenance.status?{hero_strategy:heroAdmissionFromProvenance(provenance,population_id)}:null;
     const retained_reference=provenance?{schema:provenance.schema||null,issue:null,population_id:provenance.population_id||population_id,
       strategy_id:provenance.strategy_id||null,strategy_version:provenance.sha256?String(provenance.sha256).slice(0,16):null,
       strategy_sha256:provenance.sha256||null}:null;
+    const coverage=heroCoverageBound(m||entry,provenance);
     return {
       population_id,
       trainer_manifest:m||entry||null,
       pack_identity:active?{population_id:active.population_id,pack_id:active.pack_id,pack_version:active.pack_version}:null,
       admissions,
-      retained_reference
+      retained_reference,
+      required_context_keys:coverage.required_context_keys,
+      generation_manifest:coverage.generation_manifest
     };
   }
   // The Review scope identity is population-bound and derived from the Hero

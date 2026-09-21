@@ -20,6 +20,10 @@ CATALOG_SCHEMA = "poker-population-catalog/v1"
 RUNTIME_SCHEMA = "poker-browser-runtime-pack/v1"
 HERO_PROVENANCE_SCHEMA = "trainer-hero-provenance/v1"
 HERO_PROVENANCE_STATUSES = ("RETAIN_REFERENCE", "PARTIAL")
+# #task-0jt: the population provenance carries the explicit admission binding
+# tokens the runtime forwards to the resolver. A retained reference declares them
+# as null: it never fabricates a candidate/generation identity or a binding hash.
+HERO_BINDING_FIELDS = ("candidate_id", "generation_id", "binding_sha256")
 
 
 def load(path: Path) -> dict:
@@ -97,6 +101,15 @@ def hero_provenance(trainer: dict) -> dict:
         raise ValueError("trainer hero provenance source sha256 disagrees with the Hero ranges source")
     if provenance.get("status") not in HERO_PROVENANCE_STATUSES:
         raise ValueError("trainer hero provenance status must be RETAIN_REFERENCE or PARTIAL")
+    for field in HERO_BINDING_FIELDS:
+        if field not in provenance:
+            raise ValueError(f"trainer hero provenance is missing admission binding field: {field}")
+    if provenance.get("status") == "RETAIN_REFERENCE":
+        for field in HERO_BINDING_FIELDS:
+            if provenance.get(field) not in (None, ""):
+                raise ValueError(
+                    f"retained trainer hero provenance must not fabricate a candidate binding: {field}"
+                )
     if provenance.get("admissible") is not False or provenance.get("promotable") is not False:
         raise ValueError("trainer hero provenance must remain non-admissible and non-promotable")
     if trainer.get("hero_strategy") != provenance.get("strategy_id"):

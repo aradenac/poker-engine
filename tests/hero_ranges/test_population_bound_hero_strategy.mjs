@@ -24,9 +24,11 @@
   9. fail-closed                -> rejected/unresolved/invalid/inactive never activate.
 */
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {createRequire} from 'node:module';
 
 const require=createRequire(import.meta.url);
+const TRAINER_MANIFEST_URL=new URL('../../site/assets/trainer/population.json',import.meta.url);
 const H=require('../../site/hero-ranges.js');
 const M=require('../../site/hero-range-migration.js');
 const R=require('../../site/hero-strategy-resolver.js');
@@ -131,6 +133,43 @@ function hasExactCustomLabel(value){
 }
 function assertNoCustom(value,message){
   assert.equal(hasExactCustomLabel(value),false,message||'the literal Custom label must never be emitted');
+}
+
+// #task-0jt: the exact admission binding the runtime callers (trainer.js,
+// leaks.js, hero-compliance-replayer.js) must forward to the resolver. The
+// candidate/generation/binding tokens are optional and stay null when the
+// provenance declares no calculated candidate (legacy retained reference).
+function runtimeAdmissionFromProvenance(provenance,population){
+  if(!provenance||!provenance.status)return null;
+  const populationId=provenance.population_id||population||null;
+  const sha=provenance.sha256||null;
+  const candidateId=provenance.candidate_id||null;
+  const generationId=provenance.generation_id||null;
+  const bindingSha=provenance.binding_sha256||null;
+  return {
+    status:provenance.status,
+    role:'hero_strategy',
+    population_id:populationId,
+    strategy_id:provenance.strategy_id||null,
+    strategy_version:provenance.strategy_version||(sha?String(sha).slice(0,16):null),
+    candidate_id:candidateId,
+    generation_id:generationId,
+    binding_sha256:bindingSha,
+    artifact:{
+      declared_sha256:sha,
+      actual_sha256:sha,
+      hash_kind:'file_sha256',
+      source_path:provenance.ranges_path||null,
+      verified:sha!=null
+    },
+    provenance:{
+      source_population_id:populationId,
+      manifest_sha256:sha,
+      binding_sha256:bindingSha,
+      candidate_id:candidateId,
+      generation_id:generationId
+    }
+  };
 }
 
 const scenarios=[];
@@ -546,6 +585,57 @@ scenarios.push(['9. fail-closed',()=>{
   assert.equal(customAttempt.strategy_id,'hero-candidate-196');
   assert.ok(customAttempt.reason_codes.includes('CUSTOM_LABEL_REJECTED'));
   assertNoCustom(customAttempt);
+}]);
+
+// ---------------------------------------------------------------------------
+// 10. runtime admission wiring: the real legacy population provenance is
+//     transmitted as a complete binding and stays RETAIN_REFERENCE, never Custom.
+// ---------------------------------------------------------------------------
+scenarios.push(['10. runtime admission wiring',()=>{
+  const manifest=JSON.parse(fs.readFileSync(TRAINER_MANIFEST_URL,'utf8'));
+  const provenance=manifest.hero_provenance;
+  const admission=runtimeAdmissionFromProvenance(provenance,manifest.population_id);
+
+  // The complete binding is forwarded: role, content hash, explicit provenance
+  // and the (explicitly absent) candidate/generation/binding tokens.
+  assert.equal(admission.role,'hero_strategy');
+  assert.equal(admission.status,'RETAIN_REFERENCE');
+  assert.equal(admission.population_id,manifest.population_id);
+  assert.equal(admission.artifact.declared_sha256,provenance.sha256);
+  assert.equal(admission.artifact.actual_sha256,provenance.sha256);
+  assert.equal(admission.artifact.source_path,provenance.ranges_path);
+  assert.equal(admission.candidate_id,provenance.candidate_id);
+  assert.equal(admission.generation_id,provenance.generation_id);
+  assert.equal(admission.binding_sha256,provenance.binding_sha256);
+  assert.equal(admission.provenance.source_population_id,manifest.population_id);
+  assert.equal(admission.provenance.manifest_sha256,provenance.sha256);
+
+  const resolved=R.resolveHeroStrategy({
+    population_id:manifest.population_id,
+    repository:null,
+    trainer_manifest:manifest,
+    pack_identity:{population_id:manifest.population_id},
+    admissions:{hero_strategy:admission},
+    retained_reference:{
+      schema:provenance.schema,issue:null,population_id:provenance.population_id,
+      strategy_id:provenance.strategy_id,
+      strategy_version:provenance.sha256?String(provenance.sha256).slice(0,16):null,
+      strategy_sha256:provenance.sha256
+    },
+    required_context_keys:null,
+    generation_manifest:null
+  });
+  assert.equal(resolved.status,R.STATUSES.RETAIN_REFERENCE);
+  assert.notEqual(resolved.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+  assert.equal(resolved.source,R.SOURCES.POPULATION);
+  assert.equal(resolved.strategy_id,provenance.strategy_id);
+  assert.equal(resolved.provenance.admission_status,'RETAIN_REFERENCE');
+  assertNoCustom(resolved);
+  assert.notEqual(String(resolved.strategy_id).toLowerCase(),'custom');
+
+  // The legacy MIXED repository is never relabelled as the Zoom population.
+  assert.notEqual(manifest.population_id,POP);
+  assert.ok(!resolved.population_id.includes('zoom'));
 }]);
 
 for(const [name,run] of scenarios){

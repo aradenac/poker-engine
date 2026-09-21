@@ -88,6 +88,51 @@
       strategy_sha256:provenance.sha256||null
     };
   }
+  // #task-0jt: build the complete admission binding the resolver expects
+  // (role/hash/provenance/candidate/generation/binding) instead of a bare
+  // {status,population_id}. The legacy range-folder reference declares its
+  // candidate/generation/binding as null, so it stays RETAIN_REFERENCE and is
+  // never activated or relabelled.
+  function heroAdmissionFromProvenance(provenance,population){
+    if(!provenance?.status)return null;
+    const populationId=provenance.population_id||population||null;
+    const sha=provenance.sha256||null;
+    const candidateId=provenance.candidate_id||null;
+    const generationId=provenance.generation_id||null;
+    const bindingSha=provenance.binding_sha256||null;
+    return {
+      status:provenance.status,
+      role:'hero_strategy',
+      population_id:populationId,
+      strategy_id:provenance.strategy_id||null,
+      strategy_version:provenance.strategy_version||(sha?String(sha).slice(0,16):null),
+      candidate_id:candidateId,
+      generation_id:generationId,
+      binding_sha256:bindingSha,
+      artifact:{
+        declared_sha256:sha,
+        actual_sha256:sha,
+        hash_kind:'file_sha256',
+        source_path:provenance.ranges_path||null,
+        verified:sha!=null
+      },
+      provenance:{
+        source_population_id:populationId,
+        manifest_sha256:sha,
+        binding_sha256:bindingSha,
+        candidate_id:candidateId,
+        generation_id:generationId
+      }
+    };
+  }
+  function heroCoverageBound(manifest,provenance){
+    const keys=manifest?.required_context_keys||provenance?.required_context_keys||null;
+    const generation=manifest?.generation_manifest||provenance?.generation_manifest||null;
+    return {
+      required_context_keys:Array.isArray(keys)&&keys.length?keys:null,
+      generation_manifest:generation&&typeof generation==='object'?generation:null
+    };
+  }
   function strategyResolutionFor(repo){
     const Resolver=root.PokerHeroStrategyResolver,population=activePopulationId(repo);
     if(Resolver&&typeof Resolver.resolveHeroStrategy==='function'){
@@ -97,14 +142,17 @@
       let manifest=heroManifest();
       if(manifest&&String(manifest.population_id||'')!==String(population||''))manifest=null;
       const provenance=manifest?.hero_provenance||null;
+      const coverage=heroCoverageBound(manifest,provenance);
       try{
         return Resolver.resolveHeroStrategy({
           population_id:population,
           repository:repo,
           trainer_manifest:manifest,
           pack_identity:heroPackIdentity(),
-          admissions:provenance?.status?{hero_strategy:{status:provenance.status,population_id:provenance.population_id||population}}:null,
-          retained_reference:heroRetainedReference(manifest)
+          admissions:provenance?.status?{hero_strategy:heroAdmissionFromProvenance(provenance,population)}:null,
+          retained_reference:heroRetainedReference(manifest),
+          required_context_keys:coverage.required_context_keys,
+          generation_manifest:coverage.generation_manifest
         });
       }catch(err){console.warn('Hero strategy resolution unavailable',err);}
     }

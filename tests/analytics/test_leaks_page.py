@@ -52,5 +52,34 @@ class LeakPageContract(unittest.TestCase):
         self.assertIn("NON COMPARABLE", js)
         self.assertIn("WITHIN NOISE", js)
 
+    def test_review_scope_transmits_the_admission_binding(self):
+        js = (ROOT / "site/leaks.js").read_text(encoding="utf-8")
+        # #task-0jt: the Review scope forwards the complete admission binding
+        # (role/hash/provenance/candidate/generation/binding) and the coverage
+        # bound, not a bare {status,population_id} token.
+        for marker in (
+            "heroAdmissionFromProvenance",
+            "role:'hero_strategy'",
+            "declared_sha256",
+            "actual_sha256",
+            "source_path",
+            "binding_sha256",
+            "candidate_id",
+            "generation_id",
+            "artifact:{",
+            "provenance:{",
+            "required_context_keys",
+            "generation_manifest",
+        ):
+            self.assertIn(marker, js, marker)
+        self.assertNotIn("status:provenance.status,population_id:provenance.population_id", js)
+        # The legacy reference is not fabricated into an admissible strategy and
+        # is never presented under a "Custom" identity.
+        self.assertIn("provenance.candidate_id||null", js)
+        self.assertIn("provenance.generation_id||null", js)
+        self.assertIn("provenance.binding_sha256||null", js)
+        self.assertNotIn("strategy_id:'Custom'", js)
+        self.assertNotIn('strategy_id:"Custom"', js)
+
 if __name__ == "__main__":
     unittest.main()

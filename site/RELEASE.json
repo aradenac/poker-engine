@@ -34,7 +34,7 @@
           "git_blob_sha": "c21caab928623c6d3ace9b4f58f12f6971e75929"
         },
         "site/hero-compliance-replayer.js": {
-          "git_blob_sha": "a0c14475f183bfd34b13a2d9157e933d2375708b"
+          "git_blob_sha": "eb8e13ea09f86a4de3e1ae5c8a525f02b40a7f1d"
         },
         "site/hero-compliance.js": {
           "git_blob_sha": "1096df1bebb41cfa79743c530f891fd30c6b76d4"
@@ -55,7 +55,7 @@
           "git_blob_sha": "fb9dbcf4546fdad467ff623296a800f91d7ffe25"
         },
         "site/hero-strategy-resolver.js": {
-          "git_blob_sha": "e8941235fd729a4840b64793e9160418e6bd118c"
+          "git_blob_sha": "161cb59a4e6db30a6c0dfc93c7e3c12f582ae84a"
         },
         "site/index.html": {
           "git_blob_sha": "70f32b0407de206fd2eb51168e3fdbd534980c18"
@@ -73,7 +73,7 @@
           "git_blob_sha": "873548832ee342d683109cc1cd8420e484cd6f5b"
         },
         "site/packs/catalog.json": {
-          "git_blob_sha": "273144213b85c12f5010d3eb14615598e0a2994f"
+          "git_blob_sha": "9ce17debfd672614050104aa8e1ca8dd88e19fc2"
         },
         "site/population-pack-sw.js": {
           "git_blob_sha": "e9c622a01d63ae6dd5334530644d4e781e2edf2e"
@@ -94,7 +94,7 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "2bfb87bfeb43693f83ebd7bc165c3825ca7c5d93"
+          "git_blob_sha": "8361c45048f4e09647e34204c1f425e197239218"
         },
         "site/training/leak-scenario-selector.js": {
           "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"

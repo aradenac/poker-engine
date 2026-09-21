@@ -177,12 +177,61 @@ function trainerHeroPersonalOverride(manifest){
     population_id:population||null
   };
 }
+// #task-0jt: build the complete population-bound admission object for the
+// resolver (role/hash/provenance/candidate/generation/binding) instead of a bare
+// {status,population_id} token. The legacy range-folder reference has no
+// calculated candidate, so candidate_id/generation_id/binding_sha256 stay null:
+// it remains RETAIN_REFERENCE and is never promoted or relabelled.
+function trainerHeroAdmissionFromProvenance(provenance,population){
+  if(!provenance?.status)return null;
+  const populationId=provenance.population_id||population||null;
+  const sha=provenance.sha256||null;
+  const candidateId=provenance.candidate_id||null;
+  const generationId=provenance.generation_id||null;
+  const bindingSha=provenance.binding_sha256||null;
+  return {
+    status:provenance.status,
+    role:"hero_strategy",
+    population_id:populationId,
+    strategy_id:provenance.strategy_id||null,
+    strategy_version:provenance.strategy_version||(sha?String(sha).slice(0,16):null),
+    candidate_id:candidateId,
+    generation_id:generationId,
+    binding_sha256:bindingSha,
+    artifact:{
+      declared_sha256:sha,
+      actual_sha256:sha,
+      hash_kind:"file_sha256",
+      source_path:provenance.ranges_path||null,
+      verified:sha!=null
+    },
+    provenance:{
+      source_population_id:populationId,
+      manifest_sha256:sha,
+      binding_sha256:bindingSha,
+      candidate_id:candidateId,
+      generation_id:generationId
+    }
+  };
+}
+// The coverage bound is only forwarded when an authoritative source declares it
+// (generation manifest / required_context_keys). Absent means "unknown", never a
+// self-referential completeness claim.
+function trainerHeroCoverageBound(manifest,provenance){
+  const keys=manifest?.required_context_keys||provenance?.required_context_keys||null;
+  const generation=manifest?.generation_manifest||provenance?.generation_manifest||null;
+  return {
+    required_context_keys:Array.isArray(keys)&&keys.length?keys:null,
+    generation_manifest:generation&&typeof generation==="object"?generation:null
+  };
+}
 function trainerRefreshHeroStrategyIdentity(manifest){
   const populationManifest=manifest||trainerWarmAssets.population||null;
   const population=populationManifest?.population_id||trainerState.populationId||null;
   const provenance=populationManifest?.hero_provenance||null;
   const Resolver=window.PokerHeroStrategyResolver;
   if(population)trainerState.populationId=population;
+  const coverage=trainerHeroCoverageBound(populationManifest,provenance);
   let resolution=null;
   if(population&&Resolver?.resolveHeroStrategy){
     resolution=Resolver.resolveHeroStrategy({
@@ -190,8 +239,10 @@ function trainerRefreshHeroStrategyIdentity(manifest){
       repository:trainerHeroRepository(),
       trainer_manifest:populationManifest,
       pack_identity:trainerHeroPackIdentity(),
-      admissions:provenance?.status?{hero_strategy:{status:provenance.status,population_id:provenance.population_id||population}}:null,
-      retained_reference:trainerHeroRetainedReference(populationManifest)
+      admissions:provenance?.status?{hero_strategy:trainerHeroAdmissionFromProvenance(provenance,population)}:null,
+      retained_reference:trainerHeroRetainedReference(populationManifest),
+      required_context_keys:coverage.required_context_keys,
+      generation_manifest:coverage.generation_manifest
     });
   }
   trainerState.heroStrategyResolution=resolution;

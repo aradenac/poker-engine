@@ -7,8 +7,8 @@
           "key": "population_manifest",
           "media_type": "application/json",
           "role": "population_manifest",
-          "sha256": "3a60e8eba64b1637b0f6ddba08eab27d772267d3d741c4b3096edd9b93035781",
-          "size_bytes": 2038,
+          "sha256": "ffca546f7786eded6cc4c48016fe794e8edb1d6e9ef8a765c9719bd03e7efd31",
+          "size_bytes": 2119,
           "url": "./assets/trainer/population.json"
         },
         {
@@ -89,8 +89,11 @@
       "engine_version": "v83",
       "hero_provenance": {
         "admissible": false,
+        "binding_sha256": null,
         "calculated": false,
+        "candidate_id": null,
         "coverage_status": "PARTIAL",
+        "generation_id": null,
         "note": "Preserved legacy user range-folder source retained as a population-bound reference. It is not an optimized or admissible calculated Hero strategy, must never be relabelled Zoom, and never activates the inactive #358 candidate.",
         "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
         "promotable": false,
@@ -123,7 +126,7 @@
       },
       "recommended": true,
       "release_tag": "poker-pack-legacy-100-200-v2026.09.15.1",
-      "runtime_revision": "2f77c55b174597b37eec10d7dc92a1aa7bc6ff4dcb1fb28938bdbf8f314c5798",
+      "runtime_revision": "b282f1970da88af5b5618f3b0a02707d7fdf18f4e6670a5cbcc8a72841eeb3e7",
       "schema": "poker-browser-runtime-pack/v1",
       "source_release": {
         "kind": "github_release_population_pack",
