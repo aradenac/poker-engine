@@ -32,6 +32,7 @@
 
   const SCHEMA='poker-hero-range-migration/v1';
   const OVERRIDE_SCHEMA='poker-hero-personal-override/v1';
+  const OVERRIDE_STATUS_SCHEMA='poker-hero-personal-override-status/v1';
   const REPOSITORY_SCHEMA='poker-hero-range-repository/v1';
   const STORAGE_KEY='poker.hero.range.repository.v1';
   const PREVIOUS_STORAGE_KEY=STORAGE_KEY+'.previous';
@@ -218,6 +219,56 @@
       out.push(buildOverride(entry,repository,activePopulationId));
     }
     return out.sort((a,b)=>String(a.context_key).localeCompare(String(b.context_key)));
+  }
+
+  /*
+    Pure contextual status of the personal override layer.
+
+    `available` is true when an override exists somewhere in the requested
+    population; it says nothing about the context the user is looking at.
+    `active` is true only when an override is actually resolved on the exact
+    `context` handed in (via HeroRanges.contextKey). An unresolvable context
+    (missing fields, unknown position/spot, invalid stack) is a fail-safe
+    inactive state: a global presence is never promoted to an active override,
+    and the status is always sourced from PERSONAL_OVERRIDE, never POPULATION.
+  */
+  function personalOverrideStatus(repository,{populationId=null,activePopulationId=null,context=null}={}){
+    const population=text(populationId||activePopulationId)||null;
+    if(!population){
+      return {
+        schema:OVERRIDE_STATUS_SCHEMA,
+        source:SOURCES.PERSONAL_OVERRIDE,
+        population_id:null,
+        available:false,
+        active:false,
+        active_context_key:null,
+        context_keys:[],
+        count:0
+      };
+    }
+    const overrides=extractPersonalOverrides(repository,{populationId:population,includeInherited:false});
+    const contextKeys=uniqueSorted(overrides.map(override=>override.context_key));
+    let activeContextKey=null;
+    let active=false;
+    if(context){
+      try{
+        activeContextKey=contextKey(context);
+        active=contextKeys.includes(activeContextKey);
+      }catch(_){
+        activeContextKey=null;
+        active=false;
+      }
+    }
+    return {
+      schema:OVERRIDE_STATUS_SCHEMA,
+      source:SOURCES.PERSONAL_OVERRIDE,
+      population_id:population,
+      available:contextKeys.length>0,
+      active,
+      active_context_key:activeContextKey,
+      context_keys:contextKeys,
+      count:contextKeys.length
+    };
   }
 
   function detectPopulationIds(repository,{activePopulationId=null}={}){
@@ -409,8 +460,8 @@
   }
 
   return {
-    SCHEMA,OVERRIDE_SCHEMA,REPOSITORY_SCHEMA,STORAGE_KEY,PREVIOUS_STORAGE_KEY,SOURCES,STATUSES,
-    contextKey,extractPersonalOverride,extractPersonalOverrides,detectPopulationIds,
+    SCHEMA,OVERRIDE_SCHEMA,OVERRIDE_STATUS_SCHEMA,REPOSITORY_SCHEMA,STORAGE_KEY,PREVIOUS_STORAGE_KEY,SOURCES,STATUSES,
+    contextKey,extractPersonalOverride,extractPersonalOverrides,personalOverrideStatus,detectPopulationIds,
     migrationOf,isMigrated,planMigration,migrateRepository,migrateStorage,rollbackStorage,
     loadRepository,persistRepository
   };

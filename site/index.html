@@ -1997,8 +1997,11 @@ function updateProductIdentityUi(){
   const strategyAdmissible=!!(resolution&&!resolution.fail_closed&&resolution.status==="ADMISSIBLE_CALCULATED");
   if(activeStrategyFailClose) activeStrategyFailClose.hidden=!(resolution&&!strategyAdmissible);
 
+  // The chip reflects the contextual `active` flag only: a population-wide
+  // override that does not apply to the resolved context stays "inactif", and a
+  // personal override is never reported as the population strategy.
   const override=productPersonalOverrideState();
-  const overrideActive=override?override.active===true:(resolution?resolution.source==="PERSONAL_OVERRIDE":false);
+  const overrideActive=!!(override&&override.active===true);
   if(personalOverrideIdentity){
     personalOverrideIdentity.textContent=overrideActive?"actif":"inactif";
     personalOverrideIdentity.dataset.state=overrideActive?"active":"inactive";

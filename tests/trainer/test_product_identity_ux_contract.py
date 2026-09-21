@@ -56,6 +56,18 @@ def main() -> None:
     assert 'PokerHeroStrategyResolver' in TRAINER
     assert 'PokerHeroRangeMigration' in TRAINER
     assert 'trainerRefreshHeroStrategyIdentity' in TRAINER
+    # #task-8zr: the personal override is contextual. `available` reports a
+    # population-wide presence; `active` is resolved on the exact current context
+    # and defaults to false (fail-safe) when the context is not resolvable. A bare
+    # global presence must never be reported as an active override.
+    assert 'trainerHeroOverrideContext' in TRAINER
+    assert 'personalOverrideStatus' in TRAINER
+    assert 'personalOverrideStatus(repository,{populationId:population,activePopulationId:population,context})' in TRAINER
+    assert 'ctx.context_id' in TRAINER
+    assert 'context.preflop_context_id=preflopContextId' in TRAINER
+    assert '/^PFC_[0-9a-f]{16}$/i.test(contextId)' in TRAINER
+    assert 'available:false,active:false' in TRAINER
+    assert 'active:overrides.length>0' not in TRAINER
     # A retained reference is provenance only: Trainer surfaces require the
     # calculated strategy admission status, independently of fail_closed.
     assert 'resolution.status!=="ADMISSIBLE_CALCULATED"' in TRAINER
@@ -106,6 +118,11 @@ def main() -> None:
     assert 'activeStrategySourceIdentity.textContent' in ui
     assert 'activeStrategyFailClose' in ui
     assert 'personalOverrideIdentity.textContent' in ui
+    # #task-8zr: the override chip reflects the contextual `active` flag only,
+    # never the mere global presence of an override (nor the resolver source).
+    assert 'overrideActive=!!(override&&override.active===true)' in ui
+    assert 'personalOverrideIdentity.textContent=overrideActive?"actif":"inactif"' in ui
+    assert 'override?override.active===true:(resolution?resolution.source==="PERSONAL_OVERRIDE":false)' not in ui
     assert 'heroStrategyResolution' in ui
     assert 'identity:"Stratégie indisponible pour cette population"' in ui
     assert 'retenue non admissible' in ui

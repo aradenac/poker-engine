@@ -98,6 +98,87 @@ assert.equal(personalResolution.status,R.STATUSES.PARTIAL);
 assert.equal(personalResolution.source,R.SOURCES.PERSONAL_OVERRIDE);
 assert.equal(M.extractPersonalOverride(personalOnly,CONTEXT,{activePopulationId:ZOOM}).source,M.SOURCES.PERSONAL_OVERRIDE);
 
+// --- contextual personal-override status: available vs active ----------------
+// `available` reports the population-wide presence of an override; `active` is
+// only true when an override is resolved on the exact current context. The
+// status is always sourced from PERSONAL_OVERRIDE, never POPULATION.
+const OVERRIDE_CONTEXT={population_id:ZOOM,table_size:6,position:'CO',effective_stack_bb:100,spot:'VS_RFI'};
+const OTHER_CONTEXT={population_id:ZOOM,table_size:6,position:'SB',effective_stack_bb:100,spot:'VS_RFI'};
+const multi=H.emptyRepository({populationId:ZOOM});
+H.setHandStrategy(multi,CONTEXT,'AA',{actions:{OPEN:1}},{layer:'personal'});
+H.setHandStrategy(multi,OVERRIDE_CONTEXT,'AKs',{actions:{'3BET':1}},{layer:'personal'});
+
+assert.equal(M.OVERRIDE_STATUS_SCHEMA,'poker-hero-personal-override-status/v1');
+
+// Override present elsewhere in the population but not on the current context.
+const elsewhere=M.personalOverrideStatus(multi,{populationId:ZOOM,activePopulationId:ZOOM,context:OTHER_CONTEXT});
+assert.equal(elsewhere.schema,M.OVERRIDE_STATUS_SCHEMA);
+assert.equal(elsewhere.source,M.SOURCES.PERSONAL_OVERRIDE);
+assert.notEqual(elsewhere.source,M.SOURCES.POPULATION,'an override is never reported as the population source');
+assert.equal(elsewhere.population_id,ZOOM);
+assert.equal(elsewhere.available,true,'an override elsewhere in the population keeps `available` true');
+assert.equal(elsewhere.active,false,'an override on another context is not active here');
+assert.equal(elsewhere.active_context_key,H.contextKey(OTHER_CONTEXT));
+assert.deepEqual(elsewhere.context_keys,[H.contextKey(CONTEXT),H.contextKey(OVERRIDE_CONTEXT)].sort());
+assert.equal(elsewhere.count,2);
+
+// Override on the exact current context: both available and active.
+const onContext=M.personalOverrideStatus(multi,{populationId:ZOOM,activePopulationId:ZOOM,context:CONTEXT});
+assert.equal(onContext.available,true);
+assert.equal(onContext.active,true);
+assert.equal(onContext.active_context_key,H.contextKey(CONTEXT));
+assert.equal(onContext.count,2);
+
+// An unresolvable context is a fail-safe inactive state; available stays true.
+const unresolvable=M.personalOverrideStatus(multi,{populationId:ZOOM,activePopulationId:ZOOM,context:{population_id:ZOOM,table_size:6,position:'BTN',effective_stack_bb:100,spot:'NOT_A_SPOT'}});
+assert.equal(unresolvable.available,true);
+assert.equal(unresolvable.active,false);
+assert.equal(unresolvable.active_context_key,null);
+
+// A missing context never activates an override either.
+const noContext=M.personalOverrideStatus(multi,{populationId:ZOOM,activePopulationId:ZOOM});
+assert.equal(noContext.available,true);
+assert.equal(noContext.active,false);
+assert.equal(noContext.active_context_key,null);
+
+// Without a resolved population, the reusable helper fails closed instead of
+// aggregating overrides belonging to unrelated populations.
+const noPopulation=M.personalOverrideStatus(multi,{context:CONTEXT});
+assert.equal(noPopulation.population_id,null);
+assert.equal(noPopulation.available,false);
+assert.equal(noPopulation.active,false);
+assert.equal(noPopulation.active_context_key,null);
+assert.deepEqual(noPopulation.context_keys,[]);
+assert.equal(noPopulation.count,0);
+
+// Exact preflop identifiers participate in HeroRanges.contextKey and must be
+// preserved when resolving whether the current override is active.
+const PREFLOP_CONTEXT_ID='PFC_0123456789abcdef';
+const exactContext={...CONTEXT,preflop_context_id:PREFLOP_CONTEXT_ID};
+const exactRepo=H.emptyRepository({populationId:ZOOM});
+H.setHandStrategy(exactRepo,exactContext,'AA',{actions:{OPEN:1}},{layer:'personal'});
+const exactStatus=M.personalOverrideStatus(exactRepo,{populationId:ZOOM,context:exactContext});
+assert.equal(exactStatus.available,true);
+assert.equal(exactStatus.active,true);
+assert.equal(exactStatus.active_context_key,H.contextKey(exactContext));
+const legacyContextStatus=M.personalOverrideStatus(exactRepo,{populationId:ZOOM,context:CONTEXT});
+assert.equal(legacyContextStatus.available,true);
+assert.equal(legacyContextStatus.active,false,'the legacy key must not activate an exact preflop-context override');
+
+// A foreign-population override is not part of the active population.
+const foreignRepo=H.emptyRepository({populationId:MIXED});
+H.setHandStrategy(foreignRepo,MIXED_CONTEXT,'AKs',{actions:{'3BET':1}},{layer:'personal'});
+const foreignStatus=M.personalOverrideStatus(foreignRepo,{populationId:ZOOM,activePopulationId:ZOOM,context:CONTEXT});
+assert.equal(foreignStatus.available,false,'a foreign override is not available in the active population');
+assert.equal(foreignStatus.active,false);
+assert.equal(foreignStatus.count,0);
+
+// An empty / missing repository never invents an override.
+const emptyStatus=M.personalOverrideStatus(H.emptyRepository({populationId:ZOOM}),{populationId:ZOOM,context:CONTEXT});
+assert.equal(emptyStatus.available,false);
+assert.equal(emptyStatus.active,false);
+assert.equal(emptyStatus.count,0);
+
 // --- migration is additive, idempotent, persistent and reversible -----------
 const original=clone(repo);
 const originalRaw=JSON.stringify(original);

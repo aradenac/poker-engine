@@ -161,22 +161,58 @@ function trainerHeroRetainedReference(manifest){
     strategy_sha256:provenance.sha256||null
   };
 }
+// The personal override chip must never be driven by the mere global presence of
+// an override. `active` is recomputed from the context actually resolved for the
+// current Hero situation (population/position/stack/spot via
+// HeroRanges.contextKey); an unresolvable context is a fail-safe inactive state
+// while `available` can still report an override elsewhere in the population.
+function trainerHeroOverrideContext(manifest){
+  const hand=trainerState.hand;
+  if(!hand||hand.ended)return null;
+  const hero=Number(hand.heroSeat);
+  if(!Number.isInteger(hero)||hero<0)return null;
+  const position=String(hand.positions?.[hero]||"").toUpperCase();
+  if(!position)return null;
+  const population=String(manifest?.population_id||trainerState.populationId||"").trim();
+  let table_size=Number(hand.names?.length||0),effective_stack_bb=null,spot=null,preflopContextId=null;
+  try{
+    if(window.PokerPreflopContract?.buildContext&&hand.core&&!hand.folded?.[hero]&&typeof hand.core.legalView==="function"){
+      const ctx=trainerPreflopContext(hand,hero),ctxTable=Number(ctx.table_size);
+      if(Number.isInteger(ctxTable)&&ctxTable>=2)table_size=ctxTable;
+      effective_stack_bb=Number(ctx.effective_stack_bb);
+      spot=String(ctx.family||"").toUpperCase()||null;
+      const contextId=String(ctx.context_id||"").trim();
+      if(/^PFC_[0-9a-f]{16}$/i.test(contextId))preflopContextId=contextId;
+    }
+  }catch(_){/* fall through to the raw hand stack, still fail-safe */}
+  if(!Number.isFinite(effective_stack_bb)||effective_stack_bb<=0)effective_stack_bb=Number(hand.stacks?.[hero]);
+  if(!Number.isInteger(table_size)||table_size<2||!Number.isFinite(effective_stack_bb)||effective_stack_bb<=0||!spot)return null;
+  const context={population_id:population,table_size,position,effective_stack_bb,spot};
+  if(preflopContextId)context.preflop_context_id=preflopContextId;
+  return context;
+}
 function trainerHeroPersonalOverride(manifest){
   const population=manifest?.population_id||trainerState.populationId||null;
   const repository=trainerHeroRepository(),Migration=window.PokerHeroRangeMigration;
-  let overrides=[];
-  if(repository&&Migration?.extractPersonalOverrides){
-    try{overrides=Migration.extractPersonalOverrides(repository,{activePopulationId:population,includeInherited:false})||[];}catch(_){overrides=[];}
+  const context=trainerHeroOverrideContext(manifest);
+  if(repository&&Migration?.personalOverrideStatus){
+    try{return Migration.personalOverrideStatus(repository,{populationId:population,activePopulationId:population,context});}catch(_){}
   }
+  // Fail-safe: an unavailable repository never activates an override and is
+  // never presented as the population strategy.
   return {
     schema:"poker-hero-personal-override-status/v1",
-    active:overrides.length>0,
     source:"PERSONAL_OVERRIDE",
-    count:overrides.length,
-    context_keys:overrides.map(override=>override.context_key).filter(Boolean).sort(),
-    population_id:population||null
+    population_id:population||null,
+    available:false,active:false,active_context_key:null,context_keys:[],count:0
   };
 }
+function trainerRefreshPersonalOverride(manifest){
+  trainerState.personalOverride=trainerHeroPersonalOverride(manifest||trainerWarmAssets.population||null);
+  if(typeof updateProductIdentityUi==="function")updateProductIdentityUi();
+  return trainerState.personalOverride;
+}
+window.trainerRefreshPersonalOverride=trainerRefreshPersonalOverride;
 // #task-0jt: build the complete population-bound admission object for the
 // resolver (role/hash/provenance/candidate/generation/binding) instead of a bare
 // {status,population_id} token. The legacy range-folder reference has no
@@ -1053,7 +1089,7 @@ async function trainerAdvance(){
     const seat=hand.queue.shift();if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
     if(seat===hand.heroSeat){
       hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;trainerState.sizingTouched=false;
-      trainerRender();
+      trainerRefreshPersonalOverride();trainerRender();
       if(trainerState.mode==="guided")await trainerComputeRecommendation();
       else trainerRenderStatus("À vous de jouer · recommandation calculée après votre action.");
       return;
@@ -1077,7 +1113,7 @@ async function trainerNewHand(){
     trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
   }
   if(!await trainerEnsureModels())return;
-  trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();trainerRenderStatus("Nouvelle main · blindes postées, préflop réel actif.");trainerRender();await trainerAdvance();
+  trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();if(trainerState.hand)trainerRefreshPersonalOverride();trainerRenderStatus("Nouvelle main · blindes postées, préflop réel actif.");trainerRender();await trainerAdvance();
 }
 
 function trainerBoardHtml(hand){return Array.from({length:5},(_,i)=>{const c=i<hand.boardCount?hand.runout[i]:null;return `<div class="board-card${c===null?" empty":""}">${c===null?"":cardHtml(c)}</div>`;}).join("");}
