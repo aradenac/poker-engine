@@ -240,6 +240,23 @@
     };
   }
 
+  // Normalized identity + availability of a resolution. Downstream consumers
+  // (Review scope, training target) must derive their strategy identity from
+  // this accessor rather than re-reading manifests or inventing a label.
+  function identity(resolution){
+    const r=isObject(resolution)?resolution:{};
+    return {
+      population_id:r.population_id==null?null:String(r.population_id),
+      strategy_id:r.strategy_id==null?null:String(r.strategy_id),
+      strategy_version:r.strategy_version==null?null:String(r.strategy_version),
+      strategy_sha256:r.strategy_sha256==null?null:String(r.strategy_sha256),
+      status:text(r.status)||STATUSES.UNAVAILABLE,
+      source:text(r.source)||SOURCES.NONE,
+      fail_closed:r.fail_closed===true,
+      reason_codes:uniqueSorted(Array.isArray(r.reason_codes)?r.reason_codes:[])
+    };
+  }
+
   function resolveHeroStrategy(input={}){
     const reasons=[];
     const activePopulation=text(input.population_id||input.populationId||input.active_population_id);
@@ -358,6 +375,6 @@
   return {
     SCHEMA,STATUSES,SOURCES,ADMISSION_STATUSES,CANDIDATE_SCHEMA,REPOSITORY_SCHEMA,
     TRAINER_MANIFEST_SCHEMA,PACK_RUNTIME_SCHEMA,IMPORT_SCHEMA,GENERATION_MANIFEST_SCHEMA,
-    resolveHeroStrategy
+    identity,resolveHeroStrategy
   };
 });

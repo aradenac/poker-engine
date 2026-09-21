@@ -7,10 +7,16 @@
   'use strict';
 
   const ADAPTER_SCHEMA='poker-review-leak-adapter/v1';
+  const RESOLUTION_SCOPE_SCHEMA='poker-review-resolution-scope/v1';
   const DEFAULT_EV_REFERENCE='review_score_policy_adjusted_incremental_bb';
+  const UNAVAILABLE_STRATEGY_ID='UNAVAILABLE_STRATEGY';
+  const UNAVAILABLE_STRATEGY_VERSION='UNAVAILABLE';
+  const ADMISSIBLE_RESOLUTION_STATUSES=Object.freeze(['ADMISSIBLE_CALCULATED']);
+  const CUSTOM_LABEL=/^custom$/i;
 
   function text(v){return v==null?'':String(v).trim();}
   function upper(v){return text(v).toUpperCase();}
+  function isCustomStrategyId(v){return CUSTOM_LABEL.test(text(v));}
   function num(v){const n=Number(v);return Number.isFinite(n)?n:null;}
   function parseAmount(raw){
     let s=text(raw).replace(/\s+/g,'').replace(/[€$£]/g,'');
@@ -103,13 +109,51 @@
     return parts.length?parts.join('|'):(normalizeStreet(step&&step.street)+'|'+normalizeAction(step&&step.actionType));
   }
   function recommendedAction(detail,played){const a=normalizeAction(detail&&detail.bestLabel);return a==='UNKNOWN'?played:a;}
+  function reviewScopeAvailability(resolution,available){
+    const r=resolution&&typeof resolution==='object'&&!Array.isArray(resolution)?resolution:{};
+    return {
+      available:!!available,
+      status:text(r.status)||'UNAVAILABLE',
+      source:text(r.source)||'NONE',
+      fail_closed:available?false:true,
+      reason_codes:Array.isArray(r.reason_codes)?Array.from(new Set(r.reason_codes.map(text).filter(Boolean))).sort():[]
+    };
+  }
+  // Bridges the population-bound Hero strategy resolver output (#392) into a
+  // Review analytics scope. The strategy identity is only ever taken from an
+  // admitted calculated resolution; every other state stays explicit as an
+  // UNAVAILABLE strategy token that still carries the population/pack identity,
+  // so the scope remains selectable/filterable and never falls back to "Custom".
+  function reviewScopeFromResolution(resolution,options={}){
+    const r=resolution&&typeof resolution==='object'&&!Array.isArray(resolution)?resolution:{};
+    const population_id=text(r.population_id)||text(options.population_id);
+    if(!population_id)throw new Error('resolution.population_id is required');
+    const status=text(r.status)||'UNAVAILABLE';
+    const resolvedId=text(r.strategy_id);
+    const resolvedVersion=text(r.strategy_version);
+    const available=ADMISSIBLE_RESOLUTION_STATUSES.includes(status)&&r.fail_closed!==true&&
+      !!resolvedId&&!!resolvedVersion&&!isCustomStrategyId(resolvedId)&&!isCustomStrategyId(resolvedVersion);
+    return {
+      schema:RESOLUTION_SCOPE_SCHEMA,
+      population_id,
+      pack_id:text(options.pack_id)||text(r.pack_id)||null,
+      strategy_id:available?resolvedId:UNAVAILABLE_STRATEGY_ID,
+      strategy_version:available?resolvedVersion:(UNAVAILABLE_STRATEGY_VERSION+'@'+status),
+      ev_reference:text(options.ev_reference)||text(r.ev_reference)||DEFAULT_EV_REFERENCE,
+      availability:reviewScopeAvailability(r,available)
+    };
+  }
   function deriveScope(scope,summary){
     if(!scope||!text(scope.population_id))throw new Error('scope.population_id is required');
-    if(!text(scope.strategy_id))throw new Error('scope.strategy_id is required');
-    const signature=text(summary&&summary.signature)||text(scope.strategy_version)||'UNKNOWN_REVIEW_SIGNATURE';
+    const rawStrategyId=text(scope.strategy_id);if(!rawStrategyId)throw new Error('scope.strategy_id is required');
+    const custom=isCustomStrategyId(rawStrategyId);
+    const strategyId=custom?UNAVAILABLE_STRATEGY_ID:rawStrategyId;
+    const rawVersion=text(scope.strategy_version);
+    const signature=text(summary&&summary.signature)||rawVersion||'UNKNOWN_REVIEW_SIGNATURE';
+    const versionPrefix=custom?UNAVAILABLE_STRATEGY_VERSION+'@':(rawVersion?rawVersion+'@':'');
     return {
-      population_id:text(scope.population_id),pack_id:text(scope.pack_id)||null,strategy_id:text(scope.strategy_id),
-      strategy_version:(text(scope.strategy_version)?text(scope.strategy_version)+'@':'')+signature,
+      population_id:text(scope.population_id),pack_id:text(scope.pack_id)||null,strategy_id:strategyId,
+      strategy_version:versionPrefix+signature,
       ev_reference:text(scope.ev_reference)||DEFAULT_EV_REFERENCE
     };
   }
@@ -170,5 +214,5 @@
     return {hand_id:String(hand.id),decision_id:String(decisionId||''),source_name:hand.sourceName,timestamp:hand.timestamp,hero_name:hand.heroName,hero_position:hand.heroPosition,action_line:step&&step.rawLine||'',raw_hand_history:hand.raw};
   }
 
-  return {ADAPTER_SCHEMA,DEFAULT_EV_REFERENCE,splitHands,parseStoredHand,parseStoredHandHistories,adaptPersistedReviewData,handSource,normalizeAction,normalizeStreet};
+  return {ADAPTER_SCHEMA,RESOLUTION_SCOPE_SCHEMA,DEFAULT_EV_REFERENCE,UNAVAILABLE_STRATEGY_ID,UNAVAILABLE_STRATEGY_VERSION,splitHands,parseStoredHand,parseStoredHandHistories,adaptPersistedReviewData,handSource,normalizeAction,normalizeStreet,reviewScopeFromResolution};
 });

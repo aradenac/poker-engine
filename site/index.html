@@ -3517,12 +3517,24 @@ const REVIEW_INBOX_METADATA_DB_KEY="reviewInboxUserMetadataByScope";
 function reviewInboxScopeInput(){
   const population=state.populationModel?.population_id||state.populationModel?.populationId||state.populationModelMeta?.name||"review-local";
   const pack=state.populationModel?.pack_id||state.populationModel?.packId||null;
+  const packId=pack==null?null:String(pack);
+  const Adapter=window.PokerReviewLeakAdapter;
+  const evReference=Adapter?.DEFAULT_EV_REFERENCE||"review_score_policy_adjusted_incremental_bb";
+  if(Adapter?.reviewScopeFromResolution){
+    let resolution=productHeroStrategyResolution();
+    if(!resolution&&typeof window.trainerRefreshHeroStrategyIdentity==="function"){
+      try{resolution=window.trainerRefreshHeroStrategyIdentity();}catch(_){resolution=null;}
+    }
+    return Adapter.reviewScopeFromResolution(resolution||{},{
+      population_id:String(population),pack_id:packId,ev_reference:evReference
+    });
+  }
   return {
     population_id:String(population),
-    pack_id:pack==null?null:String(pack),
-    strategy_id:"hero-custom",
-    strategy_version:"app-v83",
-    ev_reference:window.PokerReviewLeakAdapter?.DEFAULT_EV_REFERENCE||"review_score_policy_adjusted_incremental_bb"
+    pack_id:packId,
+    strategy_id:"UNAVAILABLE_STRATEGY",
+    strategy_version:"UNAVAILABLE",
+    ev_reference:evReference
   };
 }
 function modelBRobustnessDecisionId(handId,stepIndex){

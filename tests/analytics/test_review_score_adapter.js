@@ -156,4 +156,23 @@ const missing=Adapter.adaptPersistedReviewData({reviewScores:{'999999':{signatur
 assert.equal(missing.events.length,0);
 assert.deepEqual(missing.warnings,['Missing HH source for review score 999999']);
 
+// #392: the Review scope can be derived from the population-bound resolver.
+{
+  const resolvedScope=Adapter.reviewScopeFromResolution({
+    population_id:scope.population_id,status:'ADMISSIBLE_CALCULATED',source:'POPULATION',fail_closed:false,
+    strategy_id:'hero-candidate-196',strategy_version:'gen-196'
+  },{pack_id:scope.pack_id});
+  assert.equal(resolvedScope.strategy_id,'hero-candidate-196');
+  assert.equal(resolvedScope.strategy_version,'gen-196');
+  assert.equal(resolvedScope.availability.available,true);
+
+  const unavailableScope=Adapter.reviewScopeFromResolution({
+    population_id:scope.population_id,status:'UNAVAILABLE',source:'NONE',fail_closed:true,reason_codes:['NO_ADMISSIBLE_STRATEGY']
+  },{pack_id:scope.pack_id});
+  assert.equal(unavailableScope.strategy_id,Adapter.UNAVAILABLE_STRATEGY_ID);
+  assert.equal(unavailableScope.strategy_version,'UNAVAILABLE@UNAVAILABLE');
+  assert.equal(unavailableScope.availability.available,false);
+  assert.ok(unavailableScope.availability.reason_codes.includes('NO_ADMISSIBLE_STRATEGY'));
+}
+
 console.log(JSON.stringify({status:'PASS',schema:Adapter.ADAPTER_SCHEMA,events:adapted.events.length,total_loss_bb:report.summary.total_loss_bb}));

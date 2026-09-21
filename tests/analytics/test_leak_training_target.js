@@ -196,4 +196,14 @@ assert.throws(()=>Target.buildTrainingTarget({identity:{...ID,population_id:''},
 assert.throws(()=>Target.buildTrainingTarget({identity:ID,source_leak:{dimension:'unknown',key:'x'}}),/unsupported/);
 assert.throws(()=>Target.targetFromLeakReport(report,{dimension:'position',key:'UTG'}),/leak group not found/);
 
+// #392: an explicit unavailable strategy identity still builds a population-bound target.
+{
+  const unavailableId={...ID,strategy_id:'UNAVAILABLE_STRATEGY',strategy_version:'UNAVAILABLE@RETAIN_REFERENCE@review-sig-A'};
+  const unavailableReport=Leak.analyzeLeaks([event(1,unavailableId),event(2,unavailableId)]);
+  const target=Target.targetFromLeakReport(unavailableReport,{dimension:'action_pair',key:'CALL->FOLD',minimum_decisions:1,minimum_scenarios:1});
+  assert.equal(target.identity.population_id,ID.population_id);
+  assert.equal(target.identity.strategy_id,'UNAVAILABLE_STRATEGY');
+  assert.equal(target.identity.strategy_version,'UNAVAILABLE@RETAIN_REFERENCE@review-sig-A');
+}
+
 console.log(JSON.stringify({status:'PASS',target_schema:Target.TARGET_SCHEMA,session_schema:Target.SESSION_SCHEMA}));

@@ -7,13 +7,21 @@ class LeakPageContract(unittest.TestCase):
     def test_browser_modules_are_exact_source_copies(self):
         self.assertEqual((ROOT / "src/analytics/leak-analyzer.js").read_bytes(), (ROOT / "site/leak-analyzer.js").read_bytes())
         self.assertEqual((ROOT / "src/analytics/review-score-adapter.js").read_bytes(), (ROOT / "site/review-score-adapter.js").read_bytes())
+        self.assertEqual((ROOT / "src/analytics/review-score-adapter.js").read_bytes(), (ROOT / "site/analytics/review-score-adapter.js").read_bytes())
 
     def test_standalone_page_contract(self):
         html = (ROOT / "site/leaks.html").read_text(encoding="utf-8")
         js = (ROOT / "site/leaks.js").read_text(encoding="utf-8")
-        for asset in ("population-packs.js", "leak-analyzer.js", "review-score-adapter.js", "leaks.js", "leaks.css"):
+        for asset in ("population-packs.js", "hero-ranges.js", "hero-strategy-resolver.js",
+                      "leak-analyzer.js", "review-score-adapter.js", "leaks.js", "leaks.css"):
             self.assertIn(asset, html)
         self.assertNotIn('src="./trainer.js"', html)
+        # The resolver must be wired before the page derives its Review scope.
+        for earlier, later in (
+            ("hero-ranges.js", "hero-strategy-resolver.js"),
+            ("hero-strategy-resolver.js", "leaks.js"),
+        ):
+            self.assertLess(html.index(earlier), html.index(later), (earlier, later))
         for marker in (
             "scopeSelect", "filterPosition", "filterStreet", "filterFamily", "filterPlayed",
             "filterRecommended", "filterSizingError", "filterJam", "filterOverbet",
@@ -28,6 +36,13 @@ class LeakPageContract(unittest.TestCase):
             "exportReportJSON", "exportReportCSV", "handSource"
         ):
             self.assertIn(marker, js)
+        # The Review scope identity is population-bound and comes from the resolver.
+        for marker in ("PokerHeroStrategyResolver", "resolveHeroStrategy", "Resolver.identity",
+                       "reviewScopeFromResolution", "hero_provenance"):
+            self.assertIn(marker, js)
+        self.assertNotIn("'review-engine'", js)
+        self.assertNotIn('"hero-custom"', js)
+        self.assertNotIn("hero-custom", js)
 
     def test_statuses_are_explicit(self):
         html = (ROOT / "site/leaks.html").read_text(encoding="utf-8")

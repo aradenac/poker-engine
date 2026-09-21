@@ -250,6 +250,18 @@ assert.equal(Math.round(reconstructed*1e9)/1e9,dashboard.metrics.total_ev_loss_b
   assert.throws(()=>Dashboard.buildReviewDashboard({reviewScores:splitScores,hhSources,scope:SCOPE,user_metadata:{}}),/spans 2/);
 }
 
+// #392: an unavailable resolver state stays explicit instead of becoming Custom.
+{
+  const unavailableScope=Adapter.reviewScopeFromResolution(
+    {population_id:SCOPE.population_id,status:'UNAVAILABLE',source:'NONE',fail_closed:true,reason_codes:['NO_ADMISSIBLE_STRATEGY']},
+    {pack_id:SCOPE.pack_id,ev_reference:Adapter.DEFAULT_EV_REFERENCE}
+  );
+  const d=Dashboard.buildReviewDashboard({reviewScores,hhSources,scope:unavailableScope,user_metadata:{}});
+  assert.equal(d.scope.strategy_id,Adapter.UNAVAILABLE_STRATEGY_ID);
+  assert.equal(d.scope.strategy_version,'UNAVAILABLE@UNAVAILABLE@sig-A');
+  assert.equal(d.scope.availability,undefined,'scope key stays the canonical five-field identity');
+}
+
 assert.equal(dashboard.traceability.inbox_schema,Inbox.INBOX_SCHEMA);
 assert.equal(dashboard.traceability.leak_report_schema,Leak.REPORT_SCHEMA);
 assert.equal(dashboard.traceability.event_schema,Leak.EVENT_SCHEMA);

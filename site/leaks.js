@@ -32,14 +32,42 @@
     });
   }
   async function manifest(){try{const r=await fetch('./assets/trainer/population.json',{cache:'no-store'});return r.ok?await r.json():null;}catch(_){return null;}}
+  function heroProvenance(m){return m&&m.hero_provenance&&typeof m.hero_provenance==='object'?m.hero_provenance:null;}
+  function scopeResolutionInput(m,active,population_id){
+    const entry=active&&active.entry?active.entry:null;
+    const provenance=heroProvenance(entry)||heroProvenance(m);
+    const admissions=provenance&&provenance.status?{hero_strategy:{status:provenance.status,population_id:provenance.population_id||population_id}}:null;
+    const retained_reference=provenance?{schema:provenance.schema||null,issue:null,population_id:provenance.population_id||population_id,
+      strategy_id:provenance.strategy_id||null,strategy_version:provenance.sha256?String(provenance.sha256).slice(0,16):null,
+      strategy_sha256:provenance.sha256||null}:null;
+    return {
+      population_id,
+      trainer_manifest:m||entry||null,
+      pack_identity:active?{population_id:active.population_id,pack_id:active.pack_id,pack_version:active.pack_version}:null,
+      admissions,
+      retained_reference
+    };
+  }
+  // The Review scope identity is population-bound and derived from the Hero
+  // strategy resolver (#392). When the final #196 strategy is not admissible the
+  // adapter keeps an explicit UNAVAILABLE state instead of a "Custom" label.
+  function resolveHeroStrategyInput(m,active,population_id){
+    const Resolver=window.PokerHeroStrategyResolver;
+    if(Resolver&&typeof Resolver.resolveHeroStrategy==='function'){
+      try{
+        const resolution=Resolver.resolveHeroStrategy(scopeResolutionInput(m,active,population_id));
+        return typeof Resolver.identity==='function'?Resolver.identity(resolution):resolution;
+      }catch(_){}
+    }
+    return {population_id,status:'UNAVAILABLE',source:'NONE',fail_closed:true,reason_codes:['HERO_STRATEGY_RESOLVER_UNAVAILABLE']};
+  }
   async function resolveScope(){
     const [m,active]=await Promise.all([manifest(),window.PokerPopulationPacks&&window.PokerPopulationPacks.active?window.PokerPopulationPacks.active().catch(()=>null):Promise.resolve(null)]);
-    const population_id=active&&active.population_id||m&&m.population_id;
+    const population_id=(active&&active.population_id)||(m&&m.population_id);
     if(!population_id)throw new Error('Identité de population introuvable.');
     const pack_id=active?(active.pack_id+'@'+active.pack_version):('static-trainer@'+(m&&m.engine_version||'unknown'));
-    const strategy_id=active&&active.entry&&(active.entry.hero_strategy||active.entry.hero_strategy_id)||m&&m.hero_strategy||'review-engine';
-    const strategy_version=active&&active.runtime_revision||[m&&m.engine_version,m&&m.model_a_version].filter(Boolean).join('+')||'unknown-runtime';
-    return {population_id,pack_id,strategy_id,strategy_version,ev_reference:Adapter.DEFAULT_EV_REFERENCE};
+    const resolution=resolveHeroStrategyInput(m,active,population_id);
+    return Adapter.reviewScopeFromResolution(resolution,{population_id,pack_id,ev_reference:Adapter.DEFAULT_EV_REFERENCE});
   }
   function groupByScope(events){
     const map=new Map();for(const e of events){const k=Leak.scopeKey(Leak.scopeOf(e));if(!map.has(k))map.set(k,[]);map.get(k).push(e);}return map;

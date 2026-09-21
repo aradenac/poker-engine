@@ -39,6 +39,17 @@ def main() -> None:
     assert 'POSITION_ASC' in index
     assert 'HAND_ID_ASC' in index
 
+    # The Review scope identity is population-bound: it derives from the Hero
+    # strategy resolver and never from a hard-coded "Custom"/"hero-custom" token.
+    assert 'hero-custom' not in index
+    assert 'strategy_id:"hero-custom"' not in index
+    assert 'reviewScopeFromResolution' in index
+    assert 'UNAVAILABLE_STRATEGY' in index
+    scope_block = index[index.index('function reviewInboxScopeInput()'):index.index('function modelBRobustnessDecisionId')]
+    assert 'productHeroStrategyResolution()' in scope_block
+    assert 'reviewScopeFromResolution' in scope_block
+    assert 'population_id:String(population)' in scope_block
+
     print("review inbox runtime mirror/UI contract checks: OK")
 
 if __name__ == "__main__":

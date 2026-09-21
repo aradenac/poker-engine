@@ -305,6 +305,23 @@ assert.throws(()=>Inbox.setReviewed({},'x',true,'invalid-date'),/valid timestamp
 assert.throws(()=>Inbox.queryInbox(inbox,{min_loss_bb:-1}),/non-negative/);
 assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
 
+// #392: an unavailable resolver state flows through as an explicit, filterable scope.
+{
+  const unavailableScope=Adapter.reviewScopeFromResolution(
+    {population_id:SCOPE.population_id,status:'RETAIN_REFERENCE',source:'POPULATION',fail_closed:false,
+     strategy_id:'legacy-ranges-v1',strategy_version:'2026-09-19.1',reason_codes:['RETAINED_REFERENCE']},
+    {pack_id:SCOPE.pack_id,ev_reference:Adapter.DEFAULT_EV_REFERENCE}
+  );
+  const scoped=Inbox.buildReviewInbox({
+    reviewScores:{'100001':reviewScores['100001']},
+    hhSources:[{name:'all.txt',content:HH1}],
+    scope:unavailableScope,user_metadata:metadata0
+  });
+  assert.equal(scoped.scope.strategy_id,Adapter.UNAVAILABLE_STRATEGY_ID);
+  assert.equal(scoped.scope.strategy_version,'UNAVAILABLE@RETAIN_REFERENCE@sig-A');
+  assert.notEqual(scoped.scope_key,Leak.scopeKey({...SCOPE,strategy_version:'runtime-r1@sig-A'}),'unavailable scope must stay distinct from an admissible scope');
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:Inbox.INBOX_SCHEMA,
