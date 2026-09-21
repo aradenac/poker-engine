@@ -156,7 +156,7 @@ const admittedRepo=H.emptyRepository({populationId:POP});
 H.setLayerMetadata(admittedRepo,context,'calculated',{version:'gen-196',provenance:{source:'fixture',candidate_id:'hero-candidate-196',generation_id:'gen-196',manifest_sha256:SHA_MANIFEST,binding_sha256:SHA_BINDING}});
 for(const hand of H.HAND_CLASSES)H.setHandStrategy(admittedRepo,context,hand,{actions:{FOLD:1}},{layer:'calculated'});
 H.setHandStrategy(admittedRepo,context,'AKs',{actions:{FOLD:.8,OPEN:.2},sizings:{OPEN:[{target_total_bb:2.5,probability:1}]},notes:'20% open fixture'},{layer:'calculated'});
-const admittedResolution=S.resolveHeroStrategy({population_id:POP,repository:admittedRepo,admissions:boundAdmission()});
+const admittedResolution=S.resolveHeroStrategy({population_id:POP,repository:admittedRepo,admissions:boundAdmission(),required_context_keys:[H.contextKey(context)]});
 assert.equal(admittedResolution.status,'ADMISSIBLE_CALCULATED');
 
 const authorized=C.evaluateDecision({repo:admittedRepo,decision:decision('RAISE'),handClass:'AKs',strategyResolution:admittedResolution});

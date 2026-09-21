@@ -117,6 +117,9 @@ with sync_playwright() as p:
           const admittedResolution = Resolver.resolveHeroStrategy({
             population_id: activePopulation,
             repository: admitted,
+            // #task-ewo: completeness must be bounded by an explicit
+            // authoritative required context set.
+            required_context_keys: [H.contextKey(contextFor(activePopulation))],
             admissions: {hero_strategy: {
               status: 'ADMISSIBLE',
               role: 'hero_strategy',

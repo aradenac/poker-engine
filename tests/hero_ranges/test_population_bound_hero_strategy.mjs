@@ -108,6 +108,9 @@ const ADMISSIBLE={hero_strategy:{
     generation_id:'gen-196'
   }
 }};
+// #task-ewo: ADMISSIBLE_CALCULATED requires an explicit authoritative required
+// context set covered by complete contexts. The single runtime context is the
+// only required one here.
 function compatibleInput(extra={}){
   return {
     population_id:POP,
@@ -115,6 +118,7 @@ function compatibleInput(extra={}){
     admissions:ADMISSIBLE,
     pack_identity:{population_id:POP},
     trainer_manifest:{schema:R.TRAINER_MANIFEST_SCHEMA,population_id:POP},
+    required_context_keys:[H.contextKey(CONTEXT)],
     ...extra
   };
 }
@@ -270,7 +274,7 @@ scenarios.push(['4. override personnel',()=>{
   // A layered override coexists with the population strategy but does not replace it.
   const layered=calculatedRepository();
   H.setHandStrategy(layered,CONTEXT,'AA',{actions:{LIMP:1}},{layer:'personal'});
-  const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layered,admissions:ADMISSIBLE});
+  const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layered,admissions:ADMISSIBLE,required_context_keys:[H.contextKey(CONTEXT)]});
   assert.equal(layeredResolution.status,R.STATUSES.ADMISSIBLE_CALCULATED);
   assert.equal(layeredResolution.source,R.SOURCES.POPULATION,'the override must not become the population source');
 
@@ -387,7 +391,7 @@ scenarios.push(['7. persistence',()=>{
   assert.equal(M.isMigrated(persisted),true);
 
   // The runtime resolves the persisted repository (admission + complete calculated).
-  const resolved=R.resolveHeroStrategy({population_id:POP,repository:persisted,admissions:ADMISSIBLE});
+  const resolved=R.resolveHeroStrategy({population_id:POP,repository:persisted,admissions:ADMISSIBLE,required_context_keys:[H.contextKey(CONTEXT)]});
   assert.equal(resolved.status,R.STATUSES.ADMISSIBLE_CALCULATED);
   assert.equal(resolved.source,R.SOURCES.POPULATION);
   const override=M.extractPersonalOverride(persisted,CONTEXT,{activePopulationId:POP});
@@ -420,7 +424,22 @@ scenarios.push(['8. provenance',()=>{
   assert.equal(resolved.provenance.manifest_sha256,SHA_MANIFEST);
   assert.equal(resolved.provenance.binding_sha256,SHA_BINDING);
   assert.equal(resolved.provenance.source_plan_sha256,SHA_PLAN);
-  assert.deepEqual(resolved.provenance.coverage,{contexts:1,defined_hand_classes:169,complete:true});
+  assert.deepEqual(resolved.provenance.coverage,{
+    authoritative:true,
+    complete:true,
+    required:1,
+    covered:1,
+    missing:0,
+    contexts:1,
+    defined_hand_classes:169,
+    required_context_keys:[H.contextKey(CONTEXT)],
+    covered_context_keys:[H.contextKey(CONTEXT)],
+    missing_context_keys:[],
+    incomplete_context_keys:[],
+    expected_context_ids:[],
+    ready_context_count:null,
+    source:'REQUIRED_CONTEXT_KEYS'
+  });
   assert.deepEqual(resolved.provenance.context_keys,[H.contextKey(CONTEXT)]);
 
   // Determinism: identical input -> byte-identical output, sorted unique reasons.

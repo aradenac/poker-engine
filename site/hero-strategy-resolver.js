@@ -20,13 +20,18 @@
       the persisted admission set and any retained reference. Otherwise the answer
       is POPULATION_INCOMPATIBLE and no strategy identity is returned.
     - A calculated artifact only becomes ADMISSIBLE_CALCULATED when an explicit
-      ADMISSIBLE admission exists AND it is complete (169 hand classes per active
-      calculated context) AND the admission is explicitly bound to the exact
-      runtime calculated artifact (role, SHA-256 content identity, explicit
-      provenance, candidate_id/generation_id and binding_sha256). A bare
-      ADMISSIBLE token never authorizes an arbitrary local repository.
-      Un-admitted, unresolved, rejected, unbound or inactive metadata never
-      becomes the active strategy.
+      ADMISSIBLE admission exists AND the admission is explicitly bound to the
+      exact runtime calculated artifact (role, SHA-256 content identity, explicit
+      provenance, candidate_id/generation_id and binding_sha256) AND its coverage
+      is bounded by an explicit, authoritative required context set
+      (`required_context_keys` and/or a
+      poker-hero-preflop-generation-manifest/v1 with `expected_context_ids` /
+      `plan_projection.ready_context_count`) that is fully covered by complete
+      (169 hand classes) calculated contexts. Completeness is never inferred from
+      the artifact itself: without an authoritative bound the answer is PARTIAL,
+      never ADMISSIBLE_CALCULATED. A bare ADMISSIBLE token never authorizes an
+      arbitrary local repository. Un-admitted, unresolved, rejected, unbound or
+      inactive metadata never becomes the active strategy.
     - An inactive candidate (#358 metadata only) is reported as UNAVAILABLE; it is
       never auto-activated.
     - A user personal override is surfaced only as source PERSONAL_OVERRIDE with
@@ -102,7 +107,7 @@
     return {status:null,object:null};
   }
 
-  function populationBindings({repository,candidate,trainerManifest,packIdentity,admissionRoot,heroStrategyAdmission,heroRangesAdmission,reference,context}){
+  function populationBindings({repository,candidate,trainerManifest,packIdentity,admissionRoot,heroStrategyAdmission,heroRangesAdmission,reference,context,generationManifest}){
     const bindings=[];
     const push=(source,value)=>{const population=text(value);if(population)bindings.push({source,population_id:population});};
     push('REPOSITORY_DEFAULTS',repository&&repository.defaults&&repository.defaults.population_id);
@@ -117,6 +122,7 @@
     push('CANDIDATE',candidate&&candidate.population_id);
     push('CANDIDATE_CONTEXT',candidate&&isObject(candidate.context)?candidate.context.population_id:null);
     push('TRAINER_MANIFEST',trainerManifest&&trainerManifest.population_id);
+    push('GENERATION_MANIFEST',generationManifest&&generationManifest.population_id);
     push('PACK_IDENTITY',packIdentity&&(packIdentity.population_id||(isObject(packIdentity.entry)?packIdentity.entry.population_id:null)));
     push('ADMISSION',isObject(admissionRoot)?admissionRoot.population_id:null);
     push('ADMISSION_HERO_STRATEGY',heroStrategyAdmission&&heroStrategyAdmission.population_id);
@@ -133,6 +139,37 @@
     if(candidate.promotion_authorized===true)out.push('CANDIDATE_PROMOTION_FORBIDDEN');
     if(upper(candidate.status)==='PROMOTED')out.push('CANDIDATE_SELF_PROMOTED');
     return out;
+  }
+
+  // #task-ewo: a repository context is only ever identified by its canonical
+  // repository key, its explicit preflop_context_id and the exact generation
+  // source context id recorded in the calculated layer provenance (when the
+  // layer was imported from a generation). A required/authoritative context set
+  // is matched against these tokens only: nothing is inferred from a "near"
+  // context (fail-closed lookup).
+  function contextIdentityTokens(key,node,provenance){
+    const tokens=[String(key)];
+    const context=isObject(node)&&isObject(node.context)?node.context:null;
+    if(context){
+      const preflopId=text(context.preflop_context_id);
+      if(preflopId)tokens.push(preflopId);
+      if(HeroRanges&&typeof HeroRanges.contextKey==='function'){
+        try{tokens.push(String(HeroRanges.contextKey(context)));}catch(_){/* fall back to the raw key */}
+      }
+    }
+    if(isObject(provenance)){
+      const exact=isObject(provenance.exact_context)?provenance.exact_context:null;
+      if(exact){
+        const sourceContextId=text(exact.context_id);
+        if(sourceContextId)tokens.push(sourceContextId);
+      }
+      const projection=isObject(provenance.repository_projection)?provenance.repository_projection:null;
+      if(projection){
+        const projectedPreflopId=text(projection.preflop_context_id);
+        if(projectedPreflopId)tokens.push(projectedPreflopId);
+      }
+    }
+    return uniqueSorted(tokens);
   }
 
   function calculatedLayers(repository){
@@ -152,6 +189,8 @@
         key,
         layer,
         provenance,
+        context:isObject(node)&&isObject(node.context)?node.context:null,
+        identity_tokens:contextIdentityTokens(key,node,provenance),
         defined,
         complete:defined===HAND_CLASSES_TOTAL,
         inactive,
@@ -159,6 +198,122 @@
       });
     }
     return out.sort((a,b)=>String(a.key).localeCompare(String(b.key)));
+  }
+
+  // A required context set is authoritative when it is declared explicitly
+  // (`required_context_keys`) and/or derived from a
+  // poker-hero-preflop-generation-manifest/v1 (`expected_context_ids` and
+  // `plan_projection.ready_context_count`). Without such a bound nothing may be
+  // inferred from the calculated artifact itself.
+  const REQUIRED_CONTEXT_SOURCES=Object.freeze({
+    UNKNOWN:'UNKNOWN',
+    REQUIRED_CONTEXT_KEYS:'REQUIRED_CONTEXT_KEYS',
+    GENERATION_MANIFEST:'GENERATION_MANIFEST',
+    REQUIRED_CONTEXT_KEYS_AND_GENERATION_MANIFEST:'REQUIRED_CONTEXT_KEYS+GENERATION_MANIFEST'
+  });
+
+  function normalizeRequiredContextKeys(value){
+    const out=[];
+    const push=item=>{const normalized=text(item);if(normalized)out.push(normalized);};
+    if(value==null)return out;
+    if(Array.isArray(value)){for(const item of value)push(item);}
+    else if(typeof value==='string'){for(const part of value.split(','))push(part);}
+    return uniqueSorted(out);
+  }
+
+  function generationManifestRequirement(manifest){
+    const requirement={present:false,schema:null,population_id:null,expected_context_ids:[],ready_context_count:null,reason:null};
+    if(manifest==null)return requirement;
+    requirement.present=true;
+    if(!isObject(manifest)){requirement.reason='GENERATION_MANIFEST_INVALID';return requirement;}
+    requirement.schema=text(manifest.schema)||null;
+    requirement.population_id=text(manifest.population_id)||null;
+    if(requirement.schema!==GENERATION_MANIFEST_SCHEMA){requirement.reason='GENERATION_MANIFEST_SCHEMA_MISMATCH';return requirement;}
+    if(Array.isArray(manifest.expected_context_ids)){
+      requirement.expected_context_ids=uniqueSorted(manifest.expected_context_ids.map(value=>text(value)));
+    }
+    const projection=isObject(manifest.plan_projection)?manifest.plan_projection:null;
+    const ready=projection?Number(projection.ready_context_count):NaN;
+    if(Number.isInteger(ready)&&ready>0)requirement.ready_context_count=ready;
+    if(!requirement.expected_context_ids.length&&requirement.ready_context_count==null){
+      requirement.reason='GENERATION_MANIFEST_COVERAGE_MISSING';
+    }
+    return requirement;
+  }
+
+  // Compare the active calculated contexts against the authoritative required
+  // set. Only complete (169 hand classes) contexts cover a required context.
+  // Without an explicit authoritative set the result is never complete; a
+  // required set that is not fully covered is incomplete.
+  function requiredCoverage(input,generationManifest,activeCalculated,reasons){
+    const explicitKeys=normalizeRequiredContextKeys(
+      input.required_context_keys!=null?input.required_context_keys:input.requiredContextKeys
+    );
+    const requirement=generationManifestRequirement(generationManifest);
+    if(requirement.reason)reasons.push(requirement.reason);
+    const manifestIds=requirement.schema===GENERATION_MANIFEST_SCHEMA?requirement.expected_context_ids:[];
+    const readyContextCount=requirement.schema===GENERATION_MANIFEST_SCHEMA?requirement.ready_context_count:null;
+
+    const requiredContextKeys=uniqueSorted([...explicitKeys,...manifestIds]);
+    const requiredSetKnown=requiredContextKeys.length>0||(readyContextCount!=null&&readyContextCount>0);
+    const completeContexts=activeCalculated.filter(entry=>entry.complete);
+
+    const coveredContextKeys=[];
+    const missingContextKeys=[];
+    const incompleteContextKeys=[];
+    for(const requiredKey of requiredContextKeys){
+      const covered=completeContexts.some(entry=>entry.identity_tokens.includes(requiredKey));
+      if(covered){
+        coveredContextKeys.push(requiredKey);
+      }else{
+        missingContextKeys.push(requiredKey);
+        if(activeCalculated.some(entry=>entry.identity_tokens.includes(requiredKey)))incompleteContextKeys.push(requiredKey);
+      }
+    }
+
+    let required=0;
+    let covered=0;
+    let missing=0;
+    if(requiredSetKnown){
+      if(requiredContextKeys.length>0){
+        required=Math.max(requiredContextKeys.length,readyContextCount||0);
+        covered=coveredContextKeys.length;
+      }else{
+        required=readyContextCount||0;
+        covered=Math.min(completeContexts.length,required);
+      }
+      missing=Math.max(0,required-covered);
+    }
+
+    const complete=requiredSetKnown&&missing===0&&
+      missingContextKeys.length===0&&incompleteContextKeys.length===0&&
+      completeContexts.length>0;
+
+    if(!requiredSetKnown)reasons.push('REQUIRED_CONTEXT_SET_UNKNOWN');
+    if(requiredSetKnown&&missingContextKeys.length)reasons.push('REQUIRED_CONTEXT_MISSING');
+    if(!complete)reasons.push('COVERAGE_INCOMPLETE');
+
+    let source=REQUIRED_CONTEXT_SOURCES.UNKNOWN;
+    if(explicitKeys.length&&manifestIds.length)source=REQUIRED_CONTEXT_SOURCES.REQUIRED_CONTEXT_KEYS_AND_GENERATION_MANIFEST;
+    else if(manifestIds.length||(readyContextCount!=null&&readyContextCount>0))source=REQUIRED_CONTEXT_SOURCES.GENERATION_MANIFEST;
+    else if(explicitKeys.length)source=REQUIRED_CONTEXT_SOURCES.REQUIRED_CONTEXT_KEYS;
+
+    return {
+      authoritative:requiredSetKnown,
+      complete,
+      required,
+      covered,
+      missing,
+      contexts:activeCalculated.length,
+      defined_hand_classes:activeCalculated.reduce((sum,entry)=>sum+entry.defined,0),
+      required_context_keys:requiredContextKeys,
+      covered_context_keys:coveredContextKeys,
+      missing_context_keys:missingContextKeys,
+      incomplete_context_keys:incompleteContextKeys,
+      expected_context_ids:manifestIds,
+      ready_context_count:readyContextCount,
+      source
+    };
   }
 
   function personalLayers(repository,activePopulation){
@@ -175,18 +330,13 @@
     return {available:context_keys.length>0,context_keys};
   }
 
-  function calculatedResolution(input,calculated,candidate,activePopulation,admissionStatus,reasons){
+  function calculatedResolution(input,calculated,candidate,activePopulation,admissionStatus,coverage,reasons){
     const primary=calculated[0]||{};
     const provenance=isObject(primary.provenance)?primary.provenance:{};
     const layer=isObject(primary.layer)?primary.layer:{};
     const strategyVersion=token(input.strategy_version,reasons)||token(layer.version,reasons)||token(candidate&&candidate.version,reasons);
     const strategySha=hex(input.strategy_sha256)||hex(candidate&&candidate.strategy_sha256)||hex(provenance.manifest_sha256)||hex(provenance.binding_sha256)||hex(provenance.code);
     const strategyId=token(input.strategy_id,reasons)||token(candidate&&candidate.strategy_id,reasons)||token(provenance.candidate_id,reasons)||token(candidate&&candidate.candidate_id,reasons)||(activePopulation?`hero-population:${activePopulation}`:null);
-    const coverage={
-      contexts:calculated.length,
-      defined_hand_classes:calculated.reduce((sum,entry)=>sum+entry.defined,0),
-      complete:calculated.every(entry=>entry.complete)
-    };
     return {
       identity:{strategy_id:strategyId,strategy_version:strategyVersion,strategy_sha256:strategySha},
       provenance:{
@@ -423,6 +573,7 @@
 
     const packIdentity=isObject(input.pack_identity)?input.pack_identity:(isObject(input.packIdentity)?input.packIdentity:(isObject(input.pack)?input.pack:null));
     const trainerManifest=isObject(input.trainer_manifest)?input.trainer_manifest:(isObject(input.population_manifest)?input.population_manifest:null);
+    const generationManifest=isObject(input.generation_manifest)?input.generation_manifest:(isObject(input.generationManifest)?input.generationManifest:null);
     const candidate=isObject(input.candidate)?input.candidate:null;
     const context=isObject(input.context)?input.context:null;
     const reference=isObject(input.retained_reference)?input.retained_reference:(isObject(input.retainedReference)?input.retainedReference:(isObject(input.reference)?input.reference:null));
@@ -461,7 +612,7 @@
       repository,candidate,trainerManifest,packIdentity,admissionRoot,
       heroStrategyAdmission:heroStrategy.object,
       heroRangesAdmission:heroRanges.object,
-      reference,context
+      reference,context,generationManifest
     });
     const mismatches=bindings.filter(binding=>binding.population_id!==activePopulation);
     if(mismatches.length){
@@ -484,7 +635,6 @@
     const calculated=calculatedLayers(repositoryUsable?repository:null);
     const activeCalculated=calculated.filter(entry=>entry.defined>0&&!entry.inactive);
     const inactiveMetadata=calculated.filter(entry=>entry.inactive||entry.metadata_only);
-    const allComplete=activeCalculated.length>0&&activeCalculated.every(entry=>entry.complete);
     const admitted=admissionStatus==='ADMISSIBLE';
     const retained=admissionStatus==='RETAIN_REFERENCE';
     const personal=personalLayers(repositoryUsable?repository:null,activePopulation);
@@ -504,14 +654,19 @@
     let identity=null;
     let provenance=null;
 
-    if(admittedBound&&!candidateBlocked&&activeCalculated.length>0&&allComplete){
-      status=STATUSES.ADMISSIBLE_CALCULATED;source=SOURCES.POPULATION;failClosed=false;
-      ({identity,provenance}=calculatedResolution(input,activeCalculated,candidate,activePopulation,admissionStatus,reasons));
-      reasons.push('ADMITTED_CALCULATED_STRATEGY');
-    }else if(admittedBound&&!candidateBlocked&&activeCalculated.length>0){
-      status=STATUSES.PARTIAL;source=SOURCES.POPULATION;failClosed=true;
-      ({identity,provenance}=calculatedResolution(input,activeCalculated,candidate,activePopulation,admissionStatus,reasons));
-      reasons.push('STRATEGY_PARTIAL_COVERAGE');
+    if(admittedBound&&!candidateBlocked&&activeCalculated.length>0){
+      // #task-ewo: completeness is never self-referential. The calculated
+      // artifact is only complete when an explicit authoritative required
+      // context set is fully covered by complete (169 hand classes) contexts.
+      const coverage=requiredCoverage(input,generationManifest,activeCalculated,reasons);
+      ({identity,provenance}=calculatedResolution(input,activeCalculated,candidate,activePopulation,admissionStatus,coverage,reasons));
+      if(coverage.complete){
+        status=STATUSES.ADMISSIBLE_CALCULATED;source=SOURCES.POPULATION;failClosed=false;
+        reasons.push('ADMITTED_CALCULATED_STRATEGY');
+      }else{
+        status=STATUSES.PARTIAL;source=SOURCES.POPULATION;failClosed=true;
+        reasons.push('STRATEGY_PARTIAL_COVERAGE');
+      }
     }else if(retained){
       status=STATUSES.RETAIN_REFERENCE;source=SOURCES.POPULATION;failClosed=false;
       ({identity,provenance}=retainedResolution(input,reference,heroStrategy.object,activePopulation,reasons));

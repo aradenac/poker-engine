@@ -59,12 +59,20 @@ function boundAdmission({
 }
 
 function contextFor(populationId){return {...CONTEXT,population_id:populationId};}
+function contextAt(spot){return {...CONTEXT,spot};}
 
-function repository({populationId=POP,hands=169,version=GENERATION_VERSION,provenance=LAYER_PROVENANCE}={}){
+// #task-ewo: completeness must be bounded by an authoritative required context
+// set. `required_context_keys` is the explicit form; a generation manifest is
+// the derived form. Either one is required before ADMISSIBLE_CALCULATED.
+const REQUIRED_CONTEXT_KEYS=[H.contextKey(CONTEXT)];
+function requiredContextKeys(...spots){return spots.map(spot=>H.contextKey(contextAt(spot)));}
+
+function repository({populationId=POP,hands=169,spot=CONTEXT.spot,version=GENERATION_VERSION,provenance=LAYER_PROVENANCE}={}){
   const repo=H.emptyRepository({populationId});
-  H.setLayerMetadata(repo,contextFor(populationId),'calculated',{version,provenance});
+  const context={...CONTEXT,population_id:populationId,spot};
+  H.setLayerMetadata(repo,context,'calculated',{version,provenance});
   for(const hand of H.HAND_CLASSES.slice(0,hands)){
-    H.setHandStrategy(repo,contextFor(populationId),hand,{actions:{FOLD:1}},{layer:'calculated'});
+    H.setHandStrategy(repo,context,hand,{actions:{FOLD:1}},{layer:'calculated'});
   }
   return repo;
 }
@@ -93,7 +101,8 @@ const compatibleInput={
   repository:repository({hands:169}),
   admissions:{hero_strategy:boundAdmission()},
   pack_identity:{population_id:POP},
-  trainer_manifest:{schema:R.TRAINER_MANIFEST_SCHEMA,population_id:POP}
+  trainer_manifest:{schema:R.TRAINER_MANIFEST_SCHEMA,population_id:POP},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
 };
 const compatible=R.resolveHeroStrategy(compatibleInput);
 assert.equal(compatible.schema,R.SCHEMA);
@@ -108,7 +117,16 @@ assert.equal(compatible.provenance.origin,'CALCULATED_POPULATION');
 assert.equal(compatible.provenance.generation_id,'gen-196');
 assert.equal(compatible.provenance.manifest_sha256,SHA_MANIFEST);
 assert.equal(compatible.provenance.coverage.complete,true);
+assert.equal(compatible.provenance.coverage.authoritative,true);
+assert.equal(compatible.provenance.coverage.required,1);
+assert.equal(compatible.provenance.coverage.covered,1);
+assert.equal(compatible.provenance.coverage.missing,0);
+assert.deepEqual(compatible.provenance.coverage.required_context_keys,REQUIRED_CONTEXT_KEYS);
+assert.deepEqual(compatible.provenance.coverage.covered_context_keys,REQUIRED_CONTEXT_KEYS);
+assert.deepEqual(compatible.provenance.coverage.missing_context_keys,[]);
 assert.ok(compatible.reason_codes.includes('ADMITTED_CALCULATED_STRATEGY'));
+assert.ok(!compatible.reason_codes.includes('COVERAGE_INCOMPLETE'));
+assert.ok(!compatible.reason_codes.includes('REQUIRED_CONTEXT_SET_UNKNOWN'));
 assert.ok(schemaHasNoCustom(compatible),'resolution must never contain the Custom label');
 
 // A full poker-scientific-component-admission/v1 document nests the role map.
@@ -118,7 +136,8 @@ const nestedAdmission=R.resolveHeroStrategy({
   admissions:{population_id:POP,admissions:{
     hero_strategy:boundAdmission(),
     hero_ranges:{status:'ADMISSIBLE',population_id:POP}
-  }}
+  }},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
 });
 assert.equal(nestedAdmission.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.equal(nestedAdmission.source,R.SOURCES.POPULATION);
@@ -142,7 +161,8 @@ const overridden=R.resolveHeroStrategy({
   admissions:{hero_strategy:boundAdmission()},
   strategy_id:'hero-strategy-token',
   strategy_version:'2026-09-21.1',
-  strategy_sha256:SHA_MANIFEST
+  strategy_sha256:SHA_MANIFEST,
+  required_context_keys:REQUIRED_CONTEXT_KEYS
 });
 assert.equal(overridden.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.equal(overridden.strategy_id,'hero-strategy-token');
@@ -280,6 +300,212 @@ assert.notEqual(admittedIncomplete.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.ok(admittedIncomplete.reason_codes.includes('STRATEGY_PARTIAL_COVERAGE'));
 assert.ok(schemaHasNoCustom(admittedIncomplete));
 
+// --- #task-ewo: completeness is bounded by an authoritative required set -----
+// A hand-complete calculated context alone is not evidence of completeness: the
+// resolver refuses to infer coverage from the artifact itself.
+
+// (1) A single 169-hand context, validly admitted, but without any required set
+//     is not complete. It must be PARTIAL, never ADMISSIBLE_CALCULATED.
+const unboundedComplete=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()}
+});
+assert.equal(unboundedComplete.status,R.STATUSES.PARTIAL);
+assert.notEqual(unboundedComplete.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(unboundedComplete.fail_closed,true);
+assert.equal(unboundedComplete.provenance.coverage.authoritative,false);
+assert.equal(unboundedComplete.provenance.coverage.complete,false);
+assert.equal(unboundedComplete.provenance.coverage.required,0);
+assert.equal(unboundedComplete.provenance.coverage.covered,0);
+assert.equal(unboundedComplete.provenance.coverage.missing,0);
+assert.ok(unboundedComplete.reason_codes.includes('REQUIRED_CONTEXT_SET_UNKNOWN'));
+assert.ok(unboundedComplete.reason_codes.includes('COVERAGE_INCOMPLETE'));
+assert.ok(unboundedComplete.reason_codes.includes('STRATEGY_PARTIAL_COVERAGE'));
+
+// (2) Partial coverage (#358-like): VS_LIMPERS is present but the required
+//     VS_ISO/VS_RFI context is missing. A valid admission cannot make this
+//     complete.
+const partialCoverageRepo=repository({hands:169,spot:'VS_LIMPERS'});
+const partialCoverage=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:partialCoverageRepo,
+  admissions:{hero_strategy:boundAdmission()},
+  required_context_keys:requiredContextKeys('VS_LIMPERS','VS_RFI')
+});
+assert.equal(partialCoverage.status,R.STATUSES.PARTIAL);
+assert.notEqual(partialCoverage.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(partialCoverage.provenance.coverage.authoritative,true);
+assert.equal(partialCoverage.provenance.coverage.complete,false);
+assert.equal(partialCoverage.provenance.coverage.required,2);
+assert.equal(partialCoverage.provenance.coverage.covered,1);
+assert.equal(partialCoverage.provenance.coverage.missing,1);
+assert.deepEqual(partialCoverage.provenance.coverage.covered_context_keys,requiredContextKeys('VS_LIMPERS'));
+assert.deepEqual(partialCoverage.provenance.coverage.missing_context_keys,requiredContextKeys('VS_RFI'));
+assert.ok(partialCoverage.reason_codes.includes('REQUIRED_CONTEXT_MISSING'));
+assert.ok(partialCoverage.reason_codes.includes('COVERAGE_INCOMPLETE'));
+
+// The same partial state is detected when the required set comes from a
+// poker-hero-preflop-generation-manifest/v1 instead of explicit keys.
+const manifestPartial=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:partialCoverageRepo,
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:requiredContextKeys('VS_LIMPERS','VS_RFI'),
+    plan_projection:{ready_context_count:2}
+  }
+});
+assert.equal(manifestPartial.status,R.STATUSES.PARTIAL);
+assert.equal(manifestPartial.provenance.coverage.source,'GENERATION_MANIFEST');
+assert.equal(manifestPartial.provenance.coverage.required,2);
+assert.equal(manifestPartial.provenance.coverage.covered,1);
+assert.equal(manifestPartial.provenance.coverage.missing,1);
+assert.ok(manifestPartial.reason_codes.includes('REQUIRED_CONTEXT_MISSING'));
+
+// A required context present but only partially defined (12 hands) is not
+// covered by a complete context.
+const incompleteRequired=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:12}),
+  admissions:{hero_strategy:boundAdmission()},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(incompleteRequired.status,R.STATUSES.PARTIAL);
+assert.notEqual(incompleteRequired.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(incompleteRequired.provenance.coverage.covered,0);
+assert.equal(incompleteRequired.provenance.coverage.missing,1);
+assert.deepEqual(incompleteRequired.provenance.coverage.incomplete_context_keys,REQUIRED_CONTEXT_KEYS);
+assert.ok(incompleteRequired.reason_codes.includes('REQUIRED_CONTEXT_MISSING'));
+
+// (3) An authoritative required set fully covered by complete contexts is
+//     ADMISSIBLE_CALCULATED.
+const boundedComplete=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(boundedComplete.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(boundedComplete.source,R.SOURCES.POPULATION);
+assert.equal(boundedComplete.fail_closed,false);
+assert.equal(boundedComplete.provenance.coverage.authoritative,true);
+assert.equal(boundedComplete.provenance.coverage.complete,true);
+assert.equal(boundedComplete.provenance.coverage.required,1);
+assert.equal(boundedComplete.provenance.coverage.covered,1);
+assert.equal(boundedComplete.provenance.coverage.missing,0);
+assert.deepEqual(boundedComplete.provenance.coverage.missing_context_keys,[]);
+assert.deepEqual(boundedComplete.reason_codes,[...boundedComplete.reason_codes].sort());
+assert.ok(schemaHasNoCustom(boundedComplete));
+
+// Completeness is scoped to the authoritative required set. An incomplete
+// calculated context outside that set must not make a fully covered required
+// set incomplete.
+const boundedWithIncompleteExtraRepo=repository({hands:169});
+const incompleteExtraContext=contextAt('VS_LIMPERS');
+H.setLayerMetadata(boundedWithIncompleteExtraRepo,incompleteExtraContext,'calculated',{
+  version:GENERATION_VERSION,
+  provenance:LAYER_PROVENANCE
+});
+for(const hand of H.HAND_CLASSES.slice(0,12)){
+  H.setHandStrategy(boundedWithIncompleteExtraRepo,incompleteExtraContext,hand,{actions:{FOLD:1}},{layer:'calculated'});
+}
+const boundedWithIncompleteExtra=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:boundedWithIncompleteExtraRepo,
+  admissions:{hero_strategy:boundAdmission()},
+  required_context_keys:REQUIRED_CONTEXT_KEYS
+});
+assert.equal(boundedWithIncompleteExtra.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(boundedWithIncompleteExtra.provenance.coverage.complete,true);
+assert.equal(boundedWithIncompleteExtra.provenance.coverage.required,1);
+assert.equal(boundedWithIncompleteExtra.provenance.coverage.covered,1);
+assert.equal(boundedWithIncompleteExtra.provenance.coverage.missing,0);
+assert.equal(boundedWithIncompleteExtra.provenance.coverage.contexts,2);
+assert.ok(!boundedWithIncompleteExtra.reason_codes.includes('COVERAGE_INCOMPLETE'));
+
+// The generation manifest path also accepts expected_context_ids expressed as
+// the repository preflop_context_id token.
+const PFC_ID='PFC_0123456789abcdef';
+const pfcContext={...CONTEXT,preflop_context_id:PFC_ID};
+const pfcRepo=H.emptyRepository({populationId:POP});
+H.setLayerMetadata(pfcRepo,pfcContext,'calculated',{version:GENERATION_VERSION,provenance:LAYER_PROVENANCE});
+for(const hand of H.HAND_CLASSES)H.setHandStrategy(pfcRepo,pfcContext,hand,{actions:{FOLD:1}},{layer:'calculated'});
+const manifestComplete=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:pfcRepo,
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:[PFC_ID],
+    plan_projection:{ready_context_count:1}
+  }
+});
+assert.equal(manifestComplete.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(manifestComplete.provenance.coverage.source,'GENERATION_MANIFEST');
+assert.deepEqual(manifestComplete.provenance.coverage.expected_context_ids,[PFC_ID]);
+assert.equal(manifestComplete.provenance.coverage.ready_context_count,1);
+assert.equal(manifestComplete.provenance.coverage.covered,1);
+assert.equal(manifestComplete.provenance.coverage.missing,0);
+
+// A real generation manifest lists the generation source context id, which the
+// imported calculated layer records under provenance.exact_context.context_id.
+const SOURCE_CONTEXT_ID='pfgen:v1:family=VS_LIMPERS:hero=CO:opener=NONE:lastagg=NONE:callers=0:limpers=1:jam=0:stack=B3_P50_P75';
+const sourceProvenance={...LAYER_PROVENANCE,exact_context:{context_id:SOURCE_CONTEXT_ID}};
+const sourceRepo=H.emptyRepository({populationId:POP});
+H.setLayerMetadata(sourceRepo,CONTEXT,'calculated',{version:GENERATION_VERSION,provenance:sourceProvenance});
+for(const hand of H.HAND_CLASSES)H.setHandStrategy(sourceRepo,CONTEXT,hand,{actions:{FOLD:1}},{layer:'calculated'});
+const manifestSourceId=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:sourceRepo,
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:[SOURCE_CONTEXT_ID],
+    plan_projection:{ready_context_count:1}
+  }
+});
+assert.equal(manifestSourceId.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(manifestSourceId.provenance.coverage.covered,1);
+assert.equal(manifestSourceId.provenance.coverage.missing,0);
+
+// A manifest that announces more ready contexts than are covered stays PARTIAL.
+const manifestOverclaim=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:REQUIRED_CONTEXT_KEYS,
+    plan_projection:{ready_context_count:2}
+  }
+});
+assert.equal(manifestOverclaim.status,R.STATUSES.PARTIAL);
+assert.equal(manifestOverclaim.provenance.coverage.required,2);
+assert.equal(manifestOverclaim.provenance.coverage.covered,1);
+assert.equal(manifestOverclaim.provenance.coverage.missing,1);
+assert.ok(manifestOverclaim.reason_codes.includes('COVERAGE_INCOMPLETE'));
+
+// A generation manifest bound to another population fails closed.
+const manifestForeign=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:OTHER,
+    expected_context_ids:REQUIRED_CONTEXT_KEYS,
+    plan_projection:{ready_context_count:1}
+  }
+});
+assert.equal(manifestForeign.status,R.STATUSES.POPULATION_INCOMPATIBLE);
+assert.ok(manifestForeign.reason_codes.includes('GENERATION_MANIFEST_POPULATION_MISMATCH'));
+
 // Inactive #358 candidate metadata must never be auto-activated.
 const inactive=H.emptyRepository({populationId:POP});
 H.setLayerMetadata(inactive,CONTEXT,'calculated',{
@@ -305,7 +531,7 @@ assert.ok(personalResolution.reason_codes.includes('PERSONAL_OVERRIDE_NOT_POPULA
 
 const layeredOverride=repository({hands:169});
 H.setHandStrategy(layeredOverride,CONTEXT,'AA',{actions:{LIMP:1}},{layer:'personal'});
-const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layeredOverride,admissions:{hero_strategy:boundAdmission()}});
+const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layeredOverride,admissions:{hero_strategy:boundAdmission()},required_context_keys:REQUIRED_CONTEXT_KEYS});
 assert.equal(layeredResolution.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.equal(layeredResolution.source,R.SOURCES.POPULATION,'personal override must not become the population source');
 
@@ -349,7 +575,8 @@ const customOverride=R.resolveHeroStrategy({
   population_id:POP,
   repository:repository({hands:169}),
   admissions:{hero_strategy:boundAdmission()},
-  strategy_id:'Custom'
+  strategy_id:'Custom',
+  required_context_keys:REQUIRED_CONTEXT_KEYS
 });
 assert.notEqual(String(customOverride.strategy_id).toLowerCase(),'custom');
 assert.equal(customOverride.strategy_id,'hero-candidate-196');

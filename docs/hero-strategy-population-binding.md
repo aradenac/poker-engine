@@ -22,8 +22,10 @@ The three invariants that motivate the whole design are:
 1. **No admissible artifact, no active strategy.** An artifact that is absent,
    un-admitted, retained-only, unresolved, rejected, incompatible, malformed or
    inactive never becomes the active Hero strategy. An `ADMISSIBLE` status must
-   additionally be explicitly bound to the exact runtime calculated artifact;
-   a bare `ADMISSIBLE` token never authorizes a local repository.
+   additionally be explicitly bound to the exact runtime calculated artifact
+   **and** its coverage must be bounded by an explicit authoritative required
+   context set; a bare `ADMISSIBLE` token never authorizes a local repository,
+   and completeness is never inferred from the artifact itself.
 2. **No silent relabel.** A legacy `MIXED` repository, context, override or
    candidate is never relabelled to the active (for example Zoom) population, and
    the inactive #358 candidate is never auto-activated.
@@ -46,6 +48,7 @@ Bindings checked by the resolver:
 | `CALCULATED_CONTEXT` | `context.population_id` of every materialized `calculated` layer |
 | `CANDIDATE` / `CANDIDATE_CONTEXT` | calculated candidate root and its exact context |
 | `TRAINER_MANIFEST` | `trainer-population-pack/v1` manifest (`site/assets/trainer/population.json`) |
+| `GENERATION_MANIFEST` | `poker-hero-preflop-generation-manifest/v1` `population_id` when supplied as the authoritative coverage bound |
 | `PACK_IDENTITY` | active pack descriptor, including a nested `entry` descriptor |
 | `ADMISSION` / `ADMISSION_HERO_STRATEGY` / `ADMISSION_HERO_RANGES` | persisted `poker-scientific-component-admission/v1` |
 | `RETAINED_REFERENCE` | retained reference provenance |
@@ -61,6 +64,52 @@ read or write a context whose population does not match
 `repository.defaults.population_id`. Editing is not allowed to create a context
 under a foreign population, so an override cannot smuggle one identity into
 another.
+
+## Authoritative required context set
+
+Completeness is an external statement, never a self-referential property of the
+calculated layers. `ADMISSIBLE_CALCULATED` requires an explicit authoritative
+required context set, declared through either (or both) of:
+
+- `required_context_keys` — an explicit list (or comma-separated string) of
+  repository context keys;
+- `generation_manifest` — a `poker-hero-preflop-generation-manifest/v1` whose
+  `expected_context_ids` and `plan_projection.ready_context_count` define the
+  expected coverage. A manifest bound to another population fails closed with
+  `GENERATION_MANIFEST_POPULATION_MISMATCH`.
+
+Repository contexts are identified by their canonical repository key
+(`HeroRanges.contextKey`, `site/hero-ranges.js`) and, when present, their
+explicit `context.preflop_context_id`. A required context is covered only by a complete
+active calculated context (169 hand classes); a missing or partially defined
+context is never a substitute.
+
+The resolution provenance exposes the comparison explicitly:
+
+```json
+"coverage": {
+  "authoritative": true,
+  "complete": true,
+  "required": 2,
+  "covered": 2,
+  "missing": 0,
+  "contexts": 2,
+  "defined_hand_classes": 338,
+  "required_context_keys": ["..."],
+  "covered_context_keys": ["..."],
+  "missing_context_keys": [],
+  "incomplete_context_keys": [],
+  "expected_context_ids": ["..."],
+  "ready_context_count": 2,
+  "source": "REQUIRED_CONTEXT_KEYS|GENERATION_MANIFEST|REQUIRED_CONTEXT_KEYS+GENERATION_MANIFEST|UNKNOWN"
+}
+```
+
+Without an authoritative bound the resolver never returns
+`ADMISSIBLE_CALCULATED`: it returns `PARTIAL` when admitted calculated contexts
+exist (`REQUIRED_CONTEXT_SET_UNKNOWN`) and `UNAVAILABLE` otherwise. A required set
+that is not fully covered yields `PARTIAL` with `REQUIRED_CONTEXT_MISSING` and/or
+`COVERAGE_INCOMPLETE`.
 
 ## Resolver contract surface
 
@@ -85,8 +134,8 @@ input yields byte-identical JSON.
 
 | `status` | `source` | `fail_closed` | Meaning |
 | --- | --- | --- | --- |
-| `ADMISSIBLE_CALCULATED` | `POPULATION` | `false` | An explicit `ADMISSIBLE` admission is explicitly bound to the exact runtime calculated artifact (role, SHA-256 content identity, provenance, candidate_id/generation_id and binding_sha256) and covers a complete calculated population strategy (169 hand classes per active calculated context). A bare `ADMISSIBLE` token authorizes nothing. |
-| `PARTIAL` | `POPULATION` | `true` | An `ADMISSIBLE` admission bound to the calculated layer exists but its coverage is incomplete. Identity/provenance are reported, but the strategy is not usable. |
+| `ADMISSIBLE_CALCULATED` | `POPULATION` | `false` | An explicit `ADMISSIBLE` admission is explicitly bound to the exact runtime calculated artifact (role, SHA-256 content identity, provenance, candidate_id/generation_id and binding_sha256) and an explicit authoritative required context set is fully covered by complete calculated contexts (169 hand classes each). A bare `ADMISSIBLE` token, or any calculated layer without an authoritative bound, authorizes nothing. |
+| `PARTIAL` | `POPULATION` | `true` | An `ADMISSIBLE` admission bound to the calculated layer exists but its coverage is incomplete or not authoritatively bounded. Identity/provenance are reported, but the strategy is not usable. |
 | `RETAIN_REFERENCE` | `POPULATION` | `false` | The admission is `RETAIN_REFERENCE`: a population-bound reference is kept as provenance only. It is not an admissible calculated strategy. |
 | `PARTIAL` | `PERSONAL_OVERRIDE` | `true` | No population strategy is available; only a personal override exists for the active population. |
 | `UNAVAILABLE` | `NONE` | `true` | No admissible strategy: missing, retained-without-identity, unresolved, rejected, un-admitted, inactive or malformed. |
@@ -113,6 +162,10 @@ generic path):
 - calculated strategy: `ADMITTED_CALCULATED_STRATEGY`,
   `STRATEGY_PARTIAL_COVERAGE`, `STRATEGY_NOT_ADMITTED`, `STRATEGY_REJECTED`,
   `STRATEGY_UNRESOLVED`, `NO_ADMISSIBLE_STRATEGY`, `REPOSITORY_INVALID`;
+- authoritative coverage (#task-ewo): `REQUIRED_CONTEXT_SET_UNKNOWN`,
+  `REQUIRED_CONTEXT_MISSING`, `COVERAGE_INCOMPLETE`,
+  `GENERATION_MANIFEST_SCHEMA_MISMATCH`, `GENERATION_MANIFEST_INVALID`,
+  `GENERATION_MANIFEST_COVERAGE_MISSING`, `GENERATION_MANIFEST_POPULATION_MISMATCH`;
 - retained reference: `RETAINED_REFERENCE`, `RETAINED_REFERENCE_IDENTITY_MISSING`;
 - personal override: `PERSONAL_OVERRIDE_NOT_POPULATION_STRATEGY`;
 - inactive candidate: `INACTIVE_CANDIDATE_NOT_ACTIVATED`;
@@ -129,7 +182,7 @@ follows:
 
 | Admission status | Resolver outcome |
 | --- | --- |
-| `ADMISSIBLE` | `ADMISSIBLE_CALCULATED` when the admission is explicitly bound to the exact runtime calculated artifact and the active calculated layer is complete; otherwise `PARTIAL` (bound but incomplete) or `UNAVAILABLE` (unbound). An `ADMISSIBLE` admission over an empty layer authorizes nothing. |
+| `ADMISSIBLE` | `ADMISSIBLE_CALCULATED` when the admission is explicitly bound to the exact runtime calculated artifact **and** an explicit authoritative required context set is fully covered by complete calculated contexts; otherwise `PARTIAL` (bound but incomplete or not authoritatively bounded) or `UNAVAILABLE` (unbound). An `ADMISSIBLE` admission over an empty layer authorizes nothing. |
 | `RETAIN_REFERENCE` | `RETAIN_REFERENCE` with `source: POPULATION`; reference identity only. |
 | `UNRESOLVED` | `UNAVAILABLE` with `STRATEGY_UNRESOLVED`. |
 | `REJECTED` | `UNAVAILABLE` with `STRATEGY_REJECTED`. |
@@ -148,12 +201,14 @@ Resolution is a strict ordered decision. The first matching branch wins:
 1. **Missing active population** → `POPULATION_INCOMPATIBLE`, no identity.
 2. **Any population binding mismatch** → `POPULATION_INCOMPATIBLE`, no identity.
 3. **`INCOMPATIBLE` admission** (either Hero role) → `POPULATION_INCOMPATIBLE`.
-4. **Admitted + bound to the runtime artifact + not blocked candidate + complete
-   calculated** → `ADMISSIBLE_CALCULATED`. An `ADMISSIBLE` admission that is not
-   explicitly bound to the active calculated artifact fails closed with an
+4. **Admitted + bound to the runtime artifact + not blocked candidate +
+   authoritatively bounded and fully covered calculated** →
+   `ADMISSIBLE_CALCULATED`. An `ADMISSIBLE` admission that is not explicitly bound
+   to the active calculated artifact fails closed with an
    `ADMISSION_*`/`REPOSITORY_NOT_BOUND_TO_ADMISSION` code and no identity.
-5. **Admitted + bound + calculated present but incomplete** → `PARTIAL` (population
-   source).
+5. **Admitted + bound + calculated present but incomplete or not authoritatively
+   bounded** → `PARTIAL` (population source) with
+   `STRATEGY_PARTIAL_COVERAGE` plus the dedicated coverage codes.
 6. **Retained reference** → `RETAIN_REFERENCE`.
 7. **Blocked candidate, or any materialized active calculated layer that is not
    admissible** → `UNAVAILABLE`. This branch deliberately precedes the personal
@@ -201,8 +256,10 @@ The final full-hand Hero strategy (#196) is not promoted yet. Until it exists an
 is admitted, the runtime must remain explicitly partial/unavailable rather than
 invent a default strategy:
 
-- no calculated layer, or an `ADMISSIBLE` layer with incomplete coverage, yields
-  `UNAVAILABLE` / `PARTIAL` with an explicit reason;
+- no calculated layer, or an `ADMISSIBLE` layer with incomplete coverage or
+  without an authoritative required context set, yields `UNAVAILABLE` / `PARTIAL`
+  with an explicit reason (`REQUIRED_CONTEXT_SET_UNKNOWN`,
+  `REQUIRED_CONTEXT_MISSING`, `COVERAGE_INCOMPLETE`);
 - the identity accessor returns `null` identity tokens and the real status
   (`UNAVAILABLE@…` downstream), never a placeholder;
 - the literal label `Custom` is rejected as an identity token
@@ -234,7 +291,9 @@ this tranche. The resolver:
   and `PARTIAL` calculated branches.
 
 A candidate may be *evaluated*, but only an explicit, separately granted
-admission makes a complete calculated layer usable.
+admission bound to an authoritative required context set makes a complete
+calculated layer usable. #358 stays metadata-only: this tranche does not activate
+it and does not grant the required context set.
 
 ## Storage migration
 
