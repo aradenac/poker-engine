@@ -288,6 +288,57 @@ def main() -> None:
     assert "grid_169_probability_pct" in doc_flat
 
     # ------------------------------------------------------------------
+    # Final integration decisions: the three semantic decisions that the four
+    # corrections converge on, pinned once as a single explicit block. It is
+    # intentionally redundant with the per-correction checks above so a later
+    # refactor of an individual section cannot silently drop one of them.
+    # ------------------------------------------------------------------
+    # (i) `prior_uninformative` trigger requires a full-support uniform kept
+    # prior: uniformity AND support covering every legal exact combo after the
+    # public blockers. The trigger names the public hero+board blockers; the
+    # support test compares against the legal-combo count (or its uniform
+    # reference), never the number of actions.
+    assert (
+        'const posteriorState=informativeActions>0?"conditioned":'
+        '(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned")'
+        in estimate
+    ), estimate
+    assert (
+        "const count=hasLegalCount?Math.max(0,Math.floor(Number(legalComboCount))):"
+        "uniformExactComboPrior(blockedCards||[]).length;" in INDEX
+    )
+    assert "return (combos||[]).length===count;" in INDEX
+    assert "if(!comboWeightsAreUniform(combos))return false;" in INDEX
+
+    # (ii) `renderMatrix` keeps both non-conditioned priors textual: each
+    # textual branch sets `entries=[]` and is evaluated before the first
+    # conditioned numeric path, so a uniform prior (full-support or strict
+    # subset) can never be painted as a numeric/conditioned grid.
+    textual_prior_branch = "else if(priorUninformative){"
+    textual_source_branch = "else if(sourcePriorUnconditioned){"
+    first_conditioned_numeric_branch = (
+        "else if(conditioned&&matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){"
+    )
+    assert textual_prior_branch in matrix
+    assert textual_source_branch in matrix
+    assert 'matrixNotion="prior_uninformative";entries=[];' in matrix
+    assert 'matrixNotion="source_prior_unconditioned";entries=[];' in matrix
+    assert matrix.index(textual_prior_branch) < matrix.index(first_conditioned_numeric_branch)
+    assert matrix.index(textual_source_branch) < matrix.index(first_conditioned_numeric_branch)
+
+    # (iii) The relative diagnostic is exported only for a `conditioned`
+    # posterior: both gates name `conditioned` and none of the other three
+    # states, so `prior_uninformative` / `source_prior_unconditioned` /
+    # `degenerate` can never surface a max-normalized value.
+    export_relative_gate = export.split("const relativeWeightDefined=", 1)[1].split(";", 1)[0]
+    assert '"conditioned"' in export_relative_gate, export_relative_gate
+    combo_relative_gate = combo_result.split("const relativeWeightPctFor=", 1)[1].split(";", 1)[0]
+    assert '"conditioned"' in combo_relative_gate, combo_relative_gate
+    for other_state in ("prior_uninformative", "source_prior_unconditioned", "degenerate"):
+        assert other_state not in export_relative_gate, (other_state, export_relative_gate)
+        assert other_state not in combo_relative_gate, (other_state, combo_relative_gate)
+
+    # ------------------------------------------------------------------
     # Runtime proof: execute the production functions extracted from the app.
     # ------------------------------------------------------------------
     for script in (
