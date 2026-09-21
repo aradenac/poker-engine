@@ -4,8 +4,10 @@
 This is a representation-layer contract only. It pins that:
 
 - `posteriorState` is derived from the number of exploited public actions
-  (`prior_uninformative` vs `conditioned`) and that zero surviving mass is an
-  explicit `degenerate` (fail-closed) result;
+  (`conditioned` when at least one matched) plus the uniformity of the kept prior
+  (`prior_uninformative` only for a uniform legal-combo prior, otherwise the
+  distinct `source_prior_unconditioned`), and zero surviving mass is an explicit
+  `degenerate` (fail-closed) result;
 - the silent re-seed from `legacyRangeEntriesForHistoryPlayer` on a failed
   conditioning normalization is gone;
 - a uniform distribution is never re-wrapped as a 100 % relative-weight grid;
@@ -33,10 +35,15 @@ def main() -> None:
     export = section("function aiExportRangeSnapshot(", "function aiExportSeatEquityForStep(")
     matrix = section("function renderMatrix(", "function normalizePopulationPosition(")
 
-    # posteriorState is computed from the exploited public actions only.
+    # posteriorState is computed from the exploited public actions plus the
+    # uniformity of the kept prior: at least one exploited action => conditioned;
+    # zero action with a uniform legal-combo prior => prior_uninformative; zero
+    # action with a non-uniform imported/source prior => the distinct
+    # source_prior_unconditioned state (never prior_uninformative/degenerate).
     assert "const informativeActions=preMatched+postMatched" in estimate
-    assert 'const posteriorState=informativeActions>0?"conditioned":"prior_uninformative"' in estimate
+    assert 'const posteriorState=informativeActions>0?"conditioned":(comboWeightsAreUniform(combos)?"prior_uninformative":"source_prior_unconditioned")' in estimate
     assert "informativeActions" in estimate
+    assert 'const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(uniformPrior?"prior_uninformative":"source_prior_unconditioned"))' in INDEX
 
     # Zero surviving mass is explicit and fail-closed: no null return and no
     # silent re-seed from the imported legacy range.
@@ -62,14 +69,25 @@ def main() -> None:
     assert "const relativeWeightPctFor=uniformPrior?null:" in INDEX
     assert "relativeWeightPct:relativeWeightPctFor?relativeWeightPctFor(w):null" in INDEX
 
-    # Display surfaces fail closed on a degenerate posterior.
+    # Display surfaces fail closed on a degenerate posterior, and render both
+    # zero-action priors as explicit states (uniform => prior_uninformative,
+    # non-uniform imported/source => source_prior_unconditioned).
     assert 'if(estimate?.posteriorState==="degenerate")return new Map();' in display
+    assert 'if(estimate?.posteriorState==="prior_uninformative")return new Map();' in display
+    assert 'if(estimate?.posteriorState==="source_prior_unconditioned")return new Map();' in display
     assert 'const degenerate=estimate?.posteriorState==="degenerate";' in display
+    assert 'const sourcePriorUnconditioned=estimate?.posteriorState==="source_prior_unconditioned";' in display
+    assert "const hasNumericGrid=!!estimate&&!degenerate&&!uninformative&&!sourcePriorUnconditioned;" in display
     assert "Posterior dégénéré" in display
     assert 'matrixPopulationEstimate?.posteriorState==="degenerate"' in matrix
+    assert 'const sourcePriorUnconditioned=matrixPopulationEstimate?.posteriorState==="source_prior_unconditioned";' in matrix
+    assert 'matrixNotion="source_prior_unconditioned";entries=[];' in matrix
+    assert matrix.index('matrixNotion="source_prior_unconditioned";entries=[];') < matrix.index("matrixEntries.some(e=>e.relativeWeightPct!=null)")
+    assert 'matrixNotion==="source_prior_unconditioned"' in matrix
     assert "gridEntries" in display and "gridEntries" in matrix
     assert 'posterior_state:estimate?.posteriorState||null' in export
     assert 'estimate?.posteriorState==="degenerate"?[]:' in export
+    assert 'estimate?.posteriorState==="source_prior_unconditioned"?"source_prior_unconditioned"' in export
     assert "const relativeWeightPct=estimate?.uniformPrior?null:" in export
     assert "relative_weight_pct:relativeWeightPct" in export
     assert "relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)" not in export

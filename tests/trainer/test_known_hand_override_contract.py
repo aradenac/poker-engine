@@ -71,6 +71,7 @@ def main() -> None:
     assert "knownHandOverrideCardsForPlayer" not in grid_fn
     assert 'if(estimate?.posteriorState==="degenerate")return new Map();' in grid_fn
     assert 'if(estimate?.posteriorState==="prior_uninformative")return new Map();' in grid_fn
+    assert 'if(estimate?.posteriorState==="source_prior_unconditioned")return new Map();' in grid_fn
     assert "const freq=gridFreqMapFromEstimate(estimate,player);" in modal
 
     # The versioned display contract documents the override as not a posterior.

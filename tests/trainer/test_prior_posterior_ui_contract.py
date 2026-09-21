@@ -48,9 +48,10 @@ def main() -> None:
 
     # ---- Displayed semantics of the estimated opponent range (#391) ----
     # The canonical 169 projection is a SUM of combo probability mass. The
-    # non-informative prior and the degenerate posterior are explicit text
-    # states rendered in place of a numeric grid, never a max-normalized 100 %
-    # range; the `knownHandOverride` flag is the only single-class 100 % surface.
+    # non-informative prior, the unconditioned source prior and the degenerate
+    # posterior are explicit text states rendered in place of a numeric grid,
+    # never a max-normalized 100 % range; the `knownHandOverride` flag is the only
+    # single-class 100 % surface.
     range_modal = section('function openPopulationRangeModal(', 'populationRangeModalClose?.addEventListener')
     grid_fn = section('function gridFreqMapFromEstimate(', 'function openPopulationRangeModal(')
     projection = section('function projectCombosTo169Mass(', 'function uniformExactComboPrior(')
@@ -58,14 +59,18 @@ def main() -> None:
     range_export = section('function aiExportRangeSnapshot(', 'function aiExportSeatEquityForStep(')
     display_contract = section('const OPPONENT_RANGE_DISPLAY_CONTRACT=Object.freeze({', 'const state = {')
 
-    # Explicit non-informative / degenerate states: clear vocabulary and no
-    # numeric grid, so a uniform prior can never read as a 100 % range.
+    # Explicit non-informative / unconditioned-source / degenerate states: clear
+    # vocabulary and no numeric grid, so a uniform prior can never read as a 100 %
+    # range and a non-uniform imported prior is never assimilated to a posterior.
     assert 'Prior non informatif · range non estimée' in range_modal
     assert range_modal.count('Prior non informatif · range non estimée') >= 2
+    assert 'Prior source non conditionné · range importée non conditionnée' in range_modal
+    assert range_modal.count('Prior source non conditionné · range importée non conditionnée') >= 2
     assert 'Posterior dégénéré · masse nulle après blockers publics' in range_modal
     assert 'Aucune grille 169 n’est affichée.' in range_modal
     assert 'if(estimate?.posteriorState==="degenerate")return new Map();' in grid_fn
     assert 'if(estimate?.posteriorState==="prior_uninformative")return new Map();' in grid_fn
+    assert 'if(estimate?.posteriorState==="source_prior_unconditioned")return new Map();' in grid_fn
 
     # Every legend of the grid, the combo list and the delta panel describes the
     # same displayed probability mass.

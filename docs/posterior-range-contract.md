@@ -150,7 +150,8 @@ normalization, support, conditioning actions), never from the model fit.
 
 | `posteriorState` | Backend correspondence | Mass | Replayer rendering |
 |---|---|---|---|
-| `prior_uninformative` | no conditioning action matched, or `UNCONDITIONED_COMBO_PRIOR` with `source_observations = 0`; a positive-mass prior may still be `AVAILABLE` | prior (normalized only when projected) | explicit « Prior non informatif · range non estimée » state; no numeric 169 grid |
+| `prior_uninformative` | no conditioning action matched and the kept prior is uniform over the legal exact combos, or `UNCONDITIONED_COMBO_PRIOR` with `source_observations = 0`; a positive-mass prior may still be `AVAILABLE` | prior (normalized only when projected) | explicit « Prior non informatif · range non estimée » state; no numeric 169 grid |
+| `source_prior_unconditioned` | no conditioning action matched while the kept imported/source prior is non-uniform, so it is a genuine a priori distribution that is not a conditioned posterior | prior (normalized only when projected) | explicit « Prior source non conditionné · range importée non conditionnée » state; no numeric 169 grid, never a 100 % range and never assimilated to `conditioned` |
 | `conditioned` | `status = AVAILABLE`, `probability_mass = 1`, positive `exact_combo_support`, and at least one matched public action | `1` | full posterior display |
 | `degenerate` | `status ∈ {UNSUPPORTED, INVALID}` (`probability_mass = 0`, no `exact_combo_weights`, all-zero 169 projection, non-empty `reason`), or the browser removed all positive mass | `0` | fail-closed; no combos, no positive 169 mass, explicit reason, never a silent re-seed from the imported range and never a `100 %` grid |
 
@@ -163,16 +164,22 @@ are not probabilities, and are not the notion (b) relative weight.
 `site/index.html` is a static vanilla-JS application; its Replayer surfaces
 consume exactly the values above:
 
-- `populationRangeEstimateForPlayer` builds the estimate, derives
-  `posteriorState` from `informativeActions = preMatched + postMatched`, and
-  returns `gridEntries = projectCombosTo169Mass(combos)` — the canonical 169
+- `populationRangeEstimateForPlayer` builds the estimate and derives
+  `posteriorState`: at least one exploited public action
+  (`informativeActions = preMatched + postMatched > 0`) is `conditioned`;
+  otherwise it checks whether the kept prior is uniform over the legal exact
+  combos (`comboWeightsAreUniform`): a uniform prior is `prior_uninformative`, a
+  non-uniform imported/source prior is the distinct `source_prior_unconditioned`.
+  It returns `gridEntries = projectCombosTo169Mass(combos)` — the canonical 169
   mass sum. `projectCombosTo169Mass` divides each retained weight by the total
   and accumulates `w / total` per hand class.
-- `gridFreqMapFromEstimate` returns an empty map for `degenerate` and
-  `prior_uninformative`, so no numeric grid is drawn for those states;
+- `gridFreqMapFromEstimate` returns an empty map for `degenerate`,
+  `prior_uninformative` and `source_prior_unconditioned`, so no numeric grid is
+  drawn for those states (and none can read as a `100 %` range);
   `massGridFreqMapFromEstimate` otherwise reads `estimate.gridEntries` unchanged.
 - `openPopulationRangeModal` renders the explicit state titles
-  « Prior non informatif · range non estimée » and
+  « Prior non informatif · range non estimée »,
+  « Prior source non conditionné · range importée non conditionnée » and
   « Posterior dégénéré · masse nulle après blockers publics ». The legends
   « projection 169 (masse) » and « Chaque classe = somme des probabilités de ses
   combos légaux (masse probabiliste, somme = 100 %) », the combo list

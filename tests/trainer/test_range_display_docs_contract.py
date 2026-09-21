@@ -32,7 +32,7 @@ NOTIONS = (
     "inclusion_frequency",
     "non_informative_prior",
 )
-STATES = ("prior_uninformative", "conditioned", "degenerate")
+STATES = ("prior_uninformative", "source_prior_unconditioned", "conditioned", "degenerate")
 def flat(text: str) -> str:
     """Collapse markdown line wrapping so phrase assertions are stable."""
     return " ".join(text.split())
@@ -79,8 +79,10 @@ def main() -> None:
         assert surface in INDEX, surface
     assert "Prior non informatif · range non estimée" in BACKEND_DOC
     assert "Posterior dégénéré · masse nulle après blockers publics" in BACKEND_DOC
+    assert "Prior source non conditionné" in BACKEND_DOC
     assert "Prior non informatif · range non estimée" in INDEX
     assert "Posterior dégénéré · masse nulle après blockers publics" in INDEX
+    assert "Prior source non conditionné" in INDEX
 
     # The Model A hand-off explains the UNCONDITIONED_COMBO_PRIOR state mapping.
     assert "UNCONDITIONED_COMBO_PRIOR" in MODEL_DOC

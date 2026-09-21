@@ -171,6 +171,7 @@ The reference UI is the Replayer range modal and its exports in
 | (b) `relative_weight` | diagnostic matrix heat grid and export `grid_169_relative_weight_pct` / `relative_weight_pct`; never the modal grid, and `null` for a uniform prior |
 | (c) `inclusion_frequency` | imported range editor and « Position dans la range source »; expanded to combos by `exactComboPriorFromEntries` |
 | (d) `non_informative_prior` | explicit « Prior non informatif · range non estimée » state; `gridFreqMapFromEstimate` returns an empty map so no numeric grid is drawn |
+| `source_prior_unconditioned` | explicit « Prior source non conditionné · range importée non conditionnée » state; non-uniform imported/source prior kept with zero matched public action; empty map so no numeric grid and never a `100 %` range |
 | `conditioned` | the numeric 169 mass grid and the estimated-range title |
 | `degenerate` | explicit « Posterior dégénéré · masse nulle après blockers publics » state; empty map and a fail-closed `aiExportRangeSnapshot` (`posterior_state:"degenerate"`) |
 | known-hand override | separate `data-known-hand-override="true"` banner, never merged into the grid |
@@ -187,7 +188,8 @@ normalization, support), never from the model fit.
 
 | `posteriorState` | Meaning | Mass | UI behaviour |
 |---|---|---|---|
-| `prior_uninformative` | No public conditioning action has been applied, or the engine is explicitly rendering the uniform/non-informative prior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « prior non informatif · range non estimée »; no numeric 169 grid and never a 100 % range |
+| `prior_uninformative` | No public conditioning action has been applied **and the kept prior is uniform over the legal exact combos**, or the engine is explicitly rendering the uniform/non-informative prior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « prior non informatif · range non estimée »; no numeric 169 grid and never a 100 % range |
+| `source_prior_unconditioned` | No public conditioning action matched **and the kept imported/source prior is non-uniform**, so it is a real (a priori) distribution but not a conditioned posterior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « Prior source non conditionné · range importée non conditionnée »; no numeric 169 grid, never a 100 % range and never assimilated to the `conditioned` posterior |
 | `conditioned` | At least one public conditioning action matched, retained positive mass exists, and the output mass normalizes to `1`. | `1` | full posterior display |
 | `degenerate` | No positive support survives, all positive mass was blocked, or the record is invalid. | `0` | fail-closed; no combos, no positive 169 mass, explicit reason |
 
@@ -196,11 +198,22 @@ normalization, support), never from the model fit.
 `prior_uninformative`
 
 - the target has no voluntary public action at the replay step
-  (`playerActions.length === 0`), so the imported/uniform source prior is kept;
+  (`playerActions.length === 0`) **and** the kept prior is uniform over the legal
+  exact combos (`comboWeightsAreUniform` is true);
 - the first observed action matched no usable population node, so no conditioning
-  was applied;
+  was applied, and the kept prior is uniform;
 - an explicit `uniformExactComboPrior` / `UNCONDITIONED_COMBO_PRIOR` is being
   rendered (`source_observations = 0` in the backend runtime).
+
+`source_prior_unconditioned`
+
+- the target has no matched public action at the replay step
+  (`informativeActions === 0`) **and** the kept imported/source prior is
+  non-uniform (`comboWeightsAreUniform` is false): it is a genuine a priori
+  distribution, but the representation never conditions it and never assimilates
+  it to the conditioned posterior nor to the uniform non-informative prior;
+- it is rendered as an explicit state with its own label and no numeric 169 grid,
+  so it can never read as a 100 % range.
 
 `conditioned`
 
@@ -268,9 +281,11 @@ therefore:
 
 - obey the same four notions and the same mass-sum 169 projection as preflop;
 - obey the same `posteriorState` triggers: the state is computed from the number
-  of exploited public actions (`informativeActions = preMatched + postMatched`),
-  so no exploited action is `prior_uninformative` and at least one is
-  `conditioned`;
+  of exploited public actions (`informativeActions = preMatched + postMatched`)
+  and from whether the kept prior is uniform, so at least one exploited action is
+  `conditioned`, zero actions over a uniform prior is `prior_uninformative`, and
+  zero actions over a non-uniform imported/source prior is the distinct
+  `source_prior_unconditioned`;
 - fail closed on zero surviving mass: a normalization step or a public
   hero/board blocker filter that removes all positive mass yields an explicit
   `degenerate` result (no combos, no positive 169 mass, explicit reason), never a

@@ -5,8 +5,8 @@ This is a representation/display contract only. It pins that the replayer range
 modal:
 
 - replaces the numeric 169 grid with an explicit state for
-  `prior_uninformative` and `degenerate`, and never renders a 100 % grid for a
-  uniform prior;
+  `prior_uninformative`, `source_prior_unconditioned` and `degenerate`, and never
+  renders a 100 % grid for a uniform prior;
 - displays the canonical mass projection (`projectCombosTo169Mass` through
   `estimate.gridEntries`) for a conditioned posterior;
 - uses one and the same mass notion for the grid, the exact-combo list and the
@@ -34,10 +34,11 @@ def main() -> None:
     mass_fn = section("function massGridFreqMapFromEstimate(", "function gridFreqMapFromEstimate(")
     export = section("function aiExportRangeSnapshot(", "function aiExportSeatEquityForStep(")
 
-    # The two explicit states return no numeric grid; the conditioned state uses
+    # The three explicit states return no numeric grid; the conditioned state uses
     # the canonical mass projection carried by estimate.gridEntries.
     assert 'if(estimate?.posteriorState==="degenerate")return new Map();' in grid_fn
     assert 'if(estimate?.posteriorState==="prior_uninformative")return new Map();' in grid_fn
+    assert 'if(estimate?.posteriorState==="source_prior_unconditioned")return new Map();' in grid_fn
     assert "massGridFreqMapFromEstimate(estimate)" in grid_fn
     assert "estimate?.gridEntries?.length?estimate.gridEntries:[]" in mass_fn
     assert "projectCombosTo169Mass" in mass_fn
@@ -47,12 +48,14 @@ def main() -> None:
 
     # The modal gates the numeric grid on the posterior state.
     assert 'const uninformative=estimate?.posteriorState==="prior_uninformative";' in modal
-    assert "const hasNumericGrid=!!estimate&&!degenerate&&!uninformative;" in modal
+    assert 'const sourcePriorUnconditioned=estimate?.posteriorState==="source_prior_unconditioned";' in modal
+    assert "const hasNumericGrid=!!estimate&&!degenerate&&!uninformative&&!sourcePriorUnconditioned;" in modal
     assert "const grid=hasNumericGrid?" in modal
 
     # Dedicated explicit states are rendered instead of the 169 grid.
     assert "Posterior dégénéré · masse nulle après blockers publics" in modal
     assert "Prior non informatif · range non estimée" in modal
+    assert "Prior source non conditionné · range importée non conditionnée" in modal
 
     # Every legend describes the displayed mass value: grid, combo list and delta.
     assert "projection 169 (masse)" in modal

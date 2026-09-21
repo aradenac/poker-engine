@@ -44,10 +44,11 @@ def main() -> None:
     assert "it is **not** a max" in DOC
     assert "the 169 class masses also sum" in DOC
 
-    # The three posterior states and their triggers are documented.
-    for state in ("prior_uninformative", "conditioned", "degenerate"):
+    # The four posterior states and their triggers are documented.
+    for state in ("prior_uninformative", "source_prior_unconditioned", "conditioned", "degenerate"):
         assert state in DOC, state
     assert "`prior_uninformative`" in DOC
+    assert "`source_prior_unconditioned`" in DOC
     assert "`conditioned`" in DOC
     assert "`degenerate`" in DOC
 
@@ -61,7 +62,7 @@ def main() -> None:
     assert "const OPPONENT_RANGE_DISPLAY_CONTRACT=Object.freeze({" in INDEX
     assert "window.PokerOpponentRangeDisplayContract=OPPONENT_RANGE_DISPLAY_CONTRACT;" in INDEX
     assert "projection_169:\"sum_of_combo_probability_mass\"" in INDEX
-    assert "posterior_states:Object.freeze([\"prior_uninformative\",\"conditioned\",\"degenerate\"])" in INDEX
+    assert "posterior_states:Object.freeze([\"prior_uninformative\",\"source_prior_unconditioned\",\"conditioned\",\"degenerate\"])" in INDEX
     assert "backend_schema:\"poker-opponent-posterior-range/v1\"" in INDEX
 
     # The display contract stays aligned to the backend semantic reference and
