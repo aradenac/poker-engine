@@ -140,6 +140,13 @@ class PopulationPackTests(unittest.TestCase):
         catalog = build_catalog()
         self.assertNotIn(TARGET_ZOOM, {entry["population_id"] for entry in catalog["entries"]})
         self.assertTrue(all(entry.get("recommended") is True for entry in catalog["entries"]))
+        entry = catalog["entries"][0]
+        provenance = entry["hero_provenance"]
+        self.assertEqual(provenance["population_id"], LEGACY_POPULATION)
+        self.assertEqual(provenance["source"]["folder"], "Custom")
+        self.assertNotEqual(provenance["source"]["folder"], "Zoom")
+        self.assertFalse(provenance["admissible"])
+        self.assertFalse(provenance["promotable"])
 
 
 if __name__ == "__main__":

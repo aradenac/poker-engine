@@ -8,6 +8,7 @@
     pos:$('filterPosition'),street:$('filterStreet'),family:$('filterFamily'),played:$('filterPlayed'),recommended:$('filterRecommended'),coverageFilter:$('filterCoverage'),
     sizingError:$('filterSizingError'),jam:$('filterJam'),overbet:$('filterOverbet'),sizeMin:$('filterSizingMin'),sizeMax:$('filterSizingMax'),from:$('filterFrom'),to:$('filterTo'),
     dimension:$('leakDimension'),leaks:$('leaksBody'),decisions:$('decisionsBody'),diagnostics:$('diagnosticsBody'),reset:$('resetFiltersBtn'),
+    scopeIdentity:$('scopeIdentity'),
     sourcePanel:$('sourcePanel'),sourceTitle:$('sourceTitle'),sourceMeta:$('sourceMeta'),sourceAction:$('sourceAction'),sourceRaw:$('sourceRaw'),closeSource:$('closeSourceBtn')};
   const state={adapted:null,scopeKey:'',baseEvents:[],report:null};
 
@@ -32,14 +33,129 @@
     });
   }
   async function manifest(){try{const r=await fetch('./assets/trainer/population.json',{cache:'no-store'});return r.ok?await r.json():null;}catch(_){return null;}}
+  function heroProvenance(m){return m&&m.hero_provenance&&typeof m.hero_provenance==='object'?m.hero_provenance:null;}
+  // #task-0jt: forward the complete admission binding (role/hash/provenance/
+  // candidate/generation/binding) instead of a bare {status,population_id}. The
+  // legacy reference has no calculated candidate, so the candidate/generation/
+  // binding tokens stay null and the resolution stays RETAIN_REFERENCE.
+  function heroAdmissionFromProvenance(provenance,population_id){
+    if(!provenance||!provenance.status)return null;
+    const populationId=provenance.population_id||population_id||null;
+    const sha=provenance.sha256||null;
+    const candidateId=provenance.candidate_id||null;
+    const generationId=provenance.generation_id||null;
+    const bindingSha=provenance.binding_sha256||null;
+    return {
+      status:provenance.status,
+      role:'hero_strategy',
+      population_id:populationId,
+      strategy_id:provenance.strategy_id||null,
+      strategy_version:provenance.strategy_version||(sha?String(sha).slice(0,16):null),
+      candidate_id:candidateId,
+      generation_id:generationId,
+      binding_sha256:bindingSha,
+      artifact:{
+        declared_sha256:sha,
+        actual_sha256:sha,
+        hash_kind:'file_sha256',
+        source_path:provenance.ranges_path||null,
+        verified:sha!=null
+      },
+      provenance:{
+        source_population_id:populationId,
+        manifest_sha256:sha,
+        binding_sha256:bindingSha,
+        candidate_id:candidateId,
+        generation_id:generationId
+      }
+    };
+  }
+  function heroCoverageBound(manifest,provenance){
+    const keys=manifest&&manifest.required_context_keys||provenance&&provenance.required_context_keys||null;
+    const generation=manifest&&manifest.generation_manifest||provenance&&provenance.generation_manifest||null;
+    return {
+      required_context_keys:Array.isArray(keys)&&keys.length?keys:null,
+      generation_manifest:generation&&typeof generation==='object'?generation:null
+    };
+  }
+  function scopeResolutionInput(m,active,population_id){
+    const entry=active&&active.entry?active.entry:null;
+    const provenance=heroProvenance(entry)||heroProvenance(m);
+    const admissions=provenance&&provenance.status?{hero_strategy:heroAdmissionFromProvenance(provenance,population_id)}:null;
+    const retained_reference=provenance?{schema:provenance.schema||null,issue:null,population_id:provenance.population_id||population_id,
+      strategy_id:provenance.strategy_id||null,strategy_version:provenance.sha256?String(provenance.sha256).slice(0,16):null,
+      strategy_sha256:provenance.sha256||null}:null;
+    const coverage=heroCoverageBound(m||entry,provenance);
+    return {
+      population_id,
+      trainer_manifest:m||entry||null,
+      pack_identity:active?{population_id:active.population_id,pack_id:active.pack_id,pack_version:active.pack_version}:null,
+      admissions,
+      retained_reference,
+      required_context_keys:coverage.required_context_keys,
+      generation_manifest:coverage.generation_manifest
+    };
+  }
+  // The Review scope identity is population-bound and derived from the Hero
+  // strategy resolver (#392). When the final #196 strategy is not admissible the
+  // adapter keeps an explicit UNAVAILABLE state instead of a "Custom" label.
+  function resolveHeroStrategyInput(m,active,population_id){
+    const Resolver=window.PokerHeroStrategyResolver;
+    if(Resolver&&typeof Resolver.resolveHeroStrategy==='function'){
+      try{
+        const resolution=Resolver.resolveHeroStrategy(scopeResolutionInput(m,active,population_id));
+        return typeof Resolver.identity==='function'?Resolver.identity(resolution):resolution;
+      }catch(_){}
+    }
+    return {population_id,status:'UNAVAILABLE',source:'NONE',fail_closed:true,reason_codes:['HERO_STRATEGY_RESOLVER_UNAVAILABLE']};
+  }
+  // The contextual personal-override status is shared with the Trainer/header
+  // (#task-8zr): `available` reports an override anywhere in the active
+  // population, `active` only when it is resolved on the exact context handed
+  // in. The Review page aggregates every hand context, so no single poker
+  // context is resolved here: the status stays fail-safe inactive while still
+  // reporting availability, and it is always sourced from PERSONAL_OVERRIDE.
+  function heroRepository(){
+    const Migration=window.PokerHeroRangeMigration;
+    if(!Migration||typeof Migration.loadRepository!=='function')return null;
+    try{const loaded=Migration.loadRepository();return loaded&&loaded.repo?loaded.repo:null;}catch(_){return null;}
+  }
+  function personalOverrideStatusFor(population_id,context){
+    const Migration=window.PokerHeroRangeMigration,repository=heroRepository();
+    if(Migration&&typeof Migration.personalOverrideStatus==='function'){
+      try{return Migration.personalOverrideStatus(repository,{populationId:population_id,activePopulationId:population_id,context:context||null});}catch(_){}
+    }
+    // Fail-safe: an unavailable repository/helper never activates an override
+    // and is never presented as the population strategy.
+    return {
+      schema:'poker-hero-personal-override-status/v1',source:'PERSONAL_OVERRIDE',
+      population_id:population_id||null,available:false,active:false,active_context_key:null,context_keys:[],count:0
+    };
+  }
   async function resolveScope(){
     const [m,active]=await Promise.all([manifest(),window.PokerPopulationPacks&&window.PokerPopulationPacks.active?window.PokerPopulationPacks.active().catch(()=>null):Promise.resolve(null)]);
-    const population_id=active&&active.population_id||m&&m.population_id;
+    const population_id=(active&&active.population_id)||(m&&m.population_id);
     if(!population_id)throw new Error('Identité de population introuvable.');
     const pack_id=active?(active.pack_id+'@'+active.pack_version):('static-trainer@'+(m&&m.engine_version||'unknown'));
-    const strategy_id=active&&active.entry&&(active.entry.hero_strategy||active.entry.hero_strategy_id)||m&&m.hero_strategy||'review-engine';
-    const strategy_version=active&&active.runtime_revision||[m&&m.engine_version,m&&m.model_a_version].filter(Boolean).join('+')||'unknown-runtime';
-    return {population_id,pack_id,strategy_id,strategy_version,ev_reference:Adapter.DEFAULT_EV_REFERENCE};
+    const resolution=resolveHeroStrategyInput(m,active,population_id);
+    const override=personalOverrideStatusFor(population_id,null);
+    return Adapter.reviewScopeFromResolution(resolution,{population_id,pack_id,ev_reference:Adapter.DEFAULT_EV_REFERENCE,override});
+  }
+  function overrideLabel(override){
+    if(!override||!override.population_id)return 'override personnel indisponible';
+    if(override.active)return 'override personnel actif';
+    if(override.available)return 'override personnel disponible · inactif sur ce périmètre';
+    return 'aucun override personnel';
+  }
+  function scopeIdentityText(scope){
+    if(!scope)return '';
+    const strategy=scope.strategy_id===Adapter.UNAVAILABLE_STRATEGY_ID
+      ? 'stratégie Hero indisponible ('+scope.strategy_version+')'
+      : 'stratégie Hero '+scope.strategy_id+' · '+scope.strategy_version;
+    return scope.population_id+' · '+strategy+' · '+overrideLabel(scope.override);
+  }
+  function renderScopeIdentity(scope){
+    if(ui.scopeIdentity)ui.scopeIdentity.textContent=scopeIdentityText(scope);
   }
   function groupByScope(events){
     const map=new Map();for(const e of events){const k=Leak.scopeKey(Leak.scopeOf(e));if(!map.has(k))map.set(k,[]);map.get(k).push(e);}return map;
@@ -132,6 +248,7 @@
     setStatus('Lecture des reviewScores et Hand Histories locales…');
     try{
       const [reviewScores,hhSources,scope]=await Promise.all([idbGet('reviewScores'),idbGet('hhSources'),resolveScope()]);
+      state.scope=scope;renderScopeIdentity(scope);
       state.adapted=Adapter.adaptPersistedReviewData({reviewScores:reviewScores||{},hhSources:Array.isArray(hhSources)?hhSources:[],scope});
       const groups=groupByScope(state.adapted.events);
       if(!groups.size){

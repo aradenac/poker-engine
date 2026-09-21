@@ -28,4 +28,69 @@ assert "MIXED_ALLOWED" in contract
 assert "UNCOVERED_HAND" in contract and "NO_VERDICT" in contract
 assert "sizingCompliance" in contract
 
+# The verdict is population-bound and fail-closed: it never evaluates a strategy
+# from another population and it distinguishes a personal override from the
+# calculated population strategy it is allowed to score.
+assert "populationCompatibility" in contract, "compliance must gate on population compatibility"
+assert "POPULATION_INCOMPATIBLE" in contract, "a foreign population must fail closed explicitly"
+assert "STRATEGY_UNAVAILABLE" in contract, "an unresolved strategy must fail closed explicitly"
+assert "PERSONAL_OVERRIDE" in contract and "STRATEGY_SOURCE" in contract, "override vs calculated source must be explicit"
+assert "strategyResolution" in contract, "evaluateDecision must accept the resolved population strategy"
+
+assert "PokerHeroStrategyResolver" in adapter and "resolveHeroStrategy" in adapter, "replayer must resolve the population strategy at runtime"
+assert "strategyResolutionFor" in adapter, "replayer must expose its population-bound resolution"
+assert "strategyResolution:resolution" in adapter, "replayer must forward the resolution to evaluateDecision"
+assert "Origine de la stratégie" in adapter and "override personnel" in adapter, "the panel must report the personal override distinctly"
+
+# #task-0jt: the replayer must forward the complete admission binding
+# (role/hash/provenance/candidate/generation/binding) and the authoritative
+# coverage bound when one is declared, instead of a bare {status,population_id}.
+for marker in (
+    "heroAdmissionFromProvenance",
+    "role:'hero_strategy'",
+    "declared_sha256",
+    "actual_sha256",
+    "source_path",
+    "binding_sha256",
+    "candidate_id",
+    "generation_id",
+    "artifact:{",
+    "provenance:{",
+    "required_context_keys",
+    "generation_manifest",
+):
+    assert marker in adapter, f"replayer must transmit the admission binding: {marker}"
+assert "status:provenance.status,population_id:provenance.population_id" not in adapter, (
+    "the replayer must not forward a bare admission status token"
+)
+# The legacy reference declares its non-promotable binding tokens as explicit
+# null: it is never fabricated into an admissible calculated strategy.
+assert "provenance.candidate_id||null" in adapter
+assert "provenance.generation_id||null" in adapter
+assert "provenance.binding_sha256||null" in adapter
+
+# #task-a0n: the replayer derives the population-bound identity from the shared
+# Resolver.identity() accessor and the contextual override status from the same
+# personalOverrideStatus helper as the Trainer/header. The displayed override is
+# tied to the context actually resolved (active), never to a global presence.
+for marker in (
+    "identityOf",
+    "Resolver.identity",
+    "PokerHeroRangeMigration",
+    "personalOverrideStatus",
+    "personalOverrideStatusFor",
+    "decisionOverrideContext",
+    "overrideActive=!!(override&&override.active===true)",
+    "overrideText",
+    "Override personnel",
+):
+    assert marker in adapter, f"replayer must consume the contextual identity/override: {marker}"
+assert "const overrideNote=result.strategy_source==='PERSONAL_OVERRIDE'" not in adapter, (
+    "the override note must key off the contextual `active` flag, not the global resolver source"
+)
+assert "override personnel ${esc(overrideText(override))}" in adapter
+assert "identityOf,decisionOverrideContext,personalOverrideStatusFor" in adapter, (
+    "the replayer must expose its identity/override read surfaces"
+)
+
 print("Hero compliance replayer integration: PASS")

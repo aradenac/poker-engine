@@ -22,6 +22,21 @@ assert.equal(canonical(repo.source.range_folder),canonical(source),'range-folder
 const context={population_id:'pokerstars_nlhe_100-200_zoom_play_6max_v1',table_size:6,position:'BTN',effective_stack_bb:100,spot:'UNOPENED'};
 const legacyKey='pokerstars_nlhe_100-200_zoom_play_6max_v1|6|BTN|100|UNOPENED';
 assert.equal(H.contextKey(context),legacyKey,'legacy context keys must remain byte-for-byte stable');
+
+// The repository is population-bound: the editor may only present or edit the
+// population strategy and its personal override for a context whose
+// population_id matches the declared binding. A foreign context is never
+// silently relabelled.
+const FOREIGN='legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1';
+assert.equal(H.repositoryPopulationId(repo),context.population_id);
+assert.equal(H.repositoryPopulationId(H.emptyRepository({populationId:''})),null);
+assert.deepEqual(H.populationBound(repo,context),{
+  population_id:context.population_id,
+  repository_population_id:context.population_id,
+  compatible:true
+});
+assert.equal(H.populationBound(repo,{...context,population_id:FOREIGN}).compatible,false,'a foreign context must never inherit the repository population binding');
+assert.throws(()=>H.populationBound(repo,{...context,population_id:''}),/population_id is required/,'the context population_id stays mandatory');
 H.setHandStrategy(repo,context,'AKs',{
   actions:{OPEN:.75,LIMP:.25},
   sizings:{OPEN:[{target_total_bb:2.2,probability:.4},{target_total_bb:2.5,probability:.6}]},

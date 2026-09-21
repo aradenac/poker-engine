@@ -11,7 +11,13 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.patches.apply_pack_manager_link import patch_text  # noqa: E402
-from tools.write_pack_catalog import CATALOG_SCHEMA, RUNTIME_SCHEMA, SITE, build_catalog  # noqa: E402
+from tools.write_pack_catalog import (  # noqa: E402
+    CATALOG_SCHEMA,
+    RUNTIME_SCHEMA,
+    SITE,
+    build_catalog,
+    hero_provenance,
+)
 
 
 class PackCatalogContractTests(unittest.TestCase):
@@ -57,6 +63,75 @@ class PackCatalogContractTests(unittest.TestCase):
             separators=(",", ":"),
         ).encode()
         self.assertEqual(entry["runtime_revision"], hashlib.sha256(fingerprint).hexdigest())
+
+    def test_catalog_carries_the_population_bound_retained_hero_provenance(self) -> None:
+        entry = build_catalog()["entries"][0]
+        manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+        provenance = entry["hero_provenance"]
+        self.assertEqual(provenance, manifest["hero_provenance"])
+        self.assertEqual(provenance["population_id"], entry["population_id"])
+        self.assertEqual(provenance["strategy_id"], entry["hero_strategy"])
+        self.assertEqual(provenance["source"]["folder"], "Custom")
+        self.assertEqual(provenance["source"]["export_type"], "range-folder")
+        self.assertEqual(provenance["ranges_path"], manifest["assets"]["hero"]["ranges"])
+        self.assertIn(provenance["status"], ("RETAIN_REFERENCE", "PARTIAL"))
+        self.assertEqual(provenance["coverage_status"], "PARTIAL")
+        self.assertIs(provenance["admissible"], False)
+        self.assertIs(provenance["promotable"], False)
+        self.assertNotEqual(entry["hero_strategy"], "Custom")
+        self.assertNotIn("zoom", provenance["population_id"])
+        hero_asset = next(asset for asset in entry["assets"] if asset["key"] == "hero_ranges")
+        self.assertEqual(provenance["sha256"], hero_asset["sha256"])
+
+    def test_retained_hero_provenance_carries_the_null_admission_binding(self) -> None:
+        entry = build_catalog()["entries"][0]
+        manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+        provenance = entry["hero_provenance"]
+        self.assertEqual(provenance, manifest["hero_provenance"])
+        # #task-0jt: the retained reference exposes the explicit binding tokens as
+        # null so the runtime never fabricates a candidate identity or a hash.
+        for field in ("candidate_id", "generation_id", "binding_sha256"):
+            self.assertIn(field, provenance)
+            self.assertIsNone(provenance[field])
+        self.assertEqual(provenance["status"], "RETAIN_REFERENCE")
+
+    def test_retained_hero_provenance_cannot_fabricate_a_candidate_binding(self) -> None:
+        manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+        fabricated_binding = json.loads(json.dumps(manifest))
+        fabricated_binding["hero_provenance"]["binding_sha256"] = "a" * 64
+        with self.assertRaises(ValueError):
+            hero_provenance(fabricated_binding)
+        fabricated_candidate = json.loads(json.dumps(manifest))
+        fabricated_candidate["hero_provenance"]["candidate_id"] = "hero-candidate-196"
+        with self.assertRaises(ValueError):
+            hero_provenance(fabricated_candidate)
+        fabricated_generation = json.loads(json.dumps(manifest))
+        fabricated_generation["hero_provenance"]["generation_id"] = "gen-196"
+        with self.assertRaises(ValueError):
+            hero_provenance(fabricated_generation)
+
+    def test_hero_provenance_rejects_relabel_and_admissibility_drift(self) -> None:
+        manifest = json.loads((SITE / "assets/trainer/population.json").read_text(encoding="utf-8"))
+
+        relabelled_population = json.loads(json.dumps(manifest))
+        relabelled_population["hero_provenance"]["population_id"] = "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+        with self.assertRaises(ValueError):
+            hero_provenance(relabelled_population)
+
+        relabelled_folder = json.loads(json.dumps(manifest))
+        relabelled_folder["hero_provenance"]["source"]["folder"] = "Zoom"
+        with self.assertRaises(ValueError):
+            hero_provenance(relabelled_folder)
+
+        admissible = json.loads(json.dumps(manifest))
+        admissible["hero_provenance"]["admissible"] = True
+        with self.assertRaises(ValueError):
+            hero_provenance(admissible)
+
+        stale_hash = json.loads(json.dumps(manifest))
+        stale_hash["hero_provenance"]["sha256"] = "0" * 64
+        with self.assertRaises(ValueError):
+            hero_provenance(stale_hash)
 
     def test_distribution_and_runtime_population_identity_agree(self) -> None:
         entry = build_catalog()["entries"][0]

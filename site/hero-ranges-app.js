@@ -1,34 +1,92 @@
 "use strict";
 
 const HeroRanges=window.PokerHeroRanges;
+const Migration=window.PokerHeroRangeMigration;
+const Resolver=window.PokerHeroStrategyResolver;
 const STORAGE_KEY="poker.hero.range.repository.v1";
+const DEFAULT_POPULATION="pokerstars_nlhe_100-200_zoom_play_6max_v1";
 const $=id=>document.getElementById(id);
 const els={
   import:$("heroRangeImport"),export:$("heroRangeExport"),sourceBadge:$("sourceBadge"),sourceStatus:$("sourceStatus"),
   sourceRange:$("sourceRangeSelect"),sourcePosition:$("sourcePositionSelect"),sourceHandDetail:$("sourceHandDetail"),
   population:$("populationInput"),position:$("positionSelect"),stack:$("stackInput"),spot:$("spotSelect"),contextStatus:$("contextStatus"),
+  bindingBadge:$("populationBindingBadge"),strategySource:$("strategySourceBadge"),overrideBadge:$("overrideBadge"),
+  resolutionStatus:$("resolutionStatus"),migrationStatus:$("migrationStatus"),
   grid:$("heroGrid"),gridSummary:$("gridSummary"),selectionSummary:$("selectionSummary"),title:$("selectedHandTitle"),state:$("selectedHandState"),
   comparison:$("comparisonSummary"),actions:$("actionEditor"),actionTotal:$("actionTotal"),notes:$("handNotes"),save:$("saveHand"),
   undefine:$("undefineHand"),quickAction:$("quickAction"),quickApply:$("quickApply"),handStatus:$("handStatus"),
   stats:$("repositoryStats"),contextList:$("contextList")
 };
+let migrationReport=null;
 let repo=restoreRepository();
 let selectedHand="AA";
 let selectionAnchor="AA";
 let selectedHands=new Set(["AA"]);
 
+// The editor is population-bound. The persisted repository keeps its own
+// `defaults.population_id`; the deep link may request another population but the
+// runtime never relabels a repository, so an incompatible context is surfaced as
+// an explicit fail-closed state instead of being treated as the population
+// strategy.
+function deepLinkPopulation(){try{return String(new URLSearchParams(location.search||"").get("population")||"").trim();}catch(_){return "";}}
+function bootstrapPopulationId(){return deepLinkPopulation()||DEFAULT_POPULATION;}
 function restoreRepository(){
+  const active=bootstrapPopulationId();
+  // Safe migration at load: additive, reversible and idempotent. It imports a
+  // legacy range-folder payload losslessly as a repository before validating it,
+  // snapshots the exact pre-migration bytes under the previous key, and never
+  // relabels a foreign population.
+  if(Migration&&typeof Migration.migrateStorage==="function"){
+    try{
+      migrationReport=Migration.migrateStorage(localStorage,{activePopulationId:active});
+      if(migrationReport&&migrationReport.repository)return migrationReport.repository;
+    }catch(err){
+      migrationReport={status:"UNAVAILABLE",reason_codes:["MIGRATION_FAILED"],error:String(err&&err.message||err),rollback_available:false,inherited_population_ids:[]};
+    }
+  }
   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return HeroRanges.importDocument(JSON.parse(raw));}catch(_){}
-  return HeroRanges.emptyRepository({populationId:"pokerstars_nlhe_100-200_zoom_play_6max_v1"});
+  return HeroRanges.emptyRepository({populationId:active});
 }
-function persist(){HeroRanges.validateRepository(repo);localStorage.setItem(STORAGE_KEY,JSON.stringify(repo));}
+function persist(){
+  HeroRanges.validateRepository(repo);
+  if(Migration&&typeof Migration.persistRepository==="function"){Migration.persistRepository(localStorage,repo);return;}
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(repo));
+}
 function setStatus(el,message,error=false){el.textContent=message;el.classList.toggle("error",!!error);}
 function context(){return HeroRanges.normalizeContext({population_id:els.population.value,table_size:6,position:els.position.value,effective_stack_bb:Number(els.stack.value),spot:els.spot.value});}
+function repositoryPopulationId(){return HeroRanges.repositoryPopulationId(repo);}
+function populationBound(){try{return HeroRanges.populationBound(repo,context());}catch(_){return {population_id:null,repository_population_id:repositoryPopulationId(),compatible:false};}}
+function requirePopulationBinding(){
+  const bound=populationBound();
+  if(!bound.compatible)throw new Error(`contexte ${bound.population_id||"—"} incompatible avec la population liée ${bound.repository_population_id||"—"} : la stratégie population et son override ne peuvent pas être édités hors population`);
+  return bound;
+}
 function currentNode(){try{return repo.contexts[HeroRanges.contextKey(context())]||null;}catch(_){return null;}}
 function strategy(hand,layer){return HeroRanges.getHandStrategy(repo,context(),hand,{layer});}
 function currentPersonal(){return strategy(selectedHand,"personal");}
 function currentCalculated(){return strategy(selectedHand,"calculated");}
 function selectedList(){return HeroRanges.HAND_CLASSES.filter(hand=>selectedHands.has(hand));}
+
+// Population-bound resolution of the active strategy. The resolver is
+// fail-closed: an un-admitted calculated layer, an inactive candidate and a
+// foreign population all resolve to an explicit UNAVAILABLE / incompatible
+// state, and a personal override is only ever reported as PERSONAL_OVERRIDE.
+function currentResolution(){
+  if(!Resolver||typeof Resolver.resolveHeroStrategy!=="function")return null;
+  try{const c=context();return Resolver.resolveHeroStrategy({population_id:c.population_id,repository:repo,context:c});}
+  catch(_){return null;}
+}
+function layerInfo(kind){
+  const node=currentNode(),layer=node?.layers?.[kind]||null,hands=layer?.hands&&typeof layer.hands==="object"?layer.hands:{};
+  return {defined:Object.keys(hands).length,version:layer?.version==null?null:String(layer.version),provenance:layer?.provenance||null};
+}
+function migrationSummary(){
+  if(!migrationReport)return "Migration non exécutée.";
+  const status=migrationReport.status||"UNKNOWN";
+  const rollback=migrationReport.rollback_available?"copie de retour disponible":"copie de retour indisponible";
+  const inherited=(migrationReport.inherited_population_ids||[]).length;
+  return `Migration du stockage : ${status} · ${rollback} · populations héritées ${inherited}.`;
+}
 
 function initOptions(){
   els.position.innerHTML=HeroRanges.POSITIONS.map(p=>`<option>${p}</option>`).join("");els.position.value="BTN";
@@ -144,7 +202,8 @@ function renderGrid(){
     const p=strategy(hand,"personal"),c=strategy(hand,"calculated"),sf=sourceFrequency(hand),kind=comparisonKind(p,c);
     if(p)personal++;if(c)calculated++;if(sf!=null)source++;if(kind==="action-mismatch"||kind==="sizing-mismatch")diffs++;
     const cls=["hand-cell",kind,sf!=null?"source-only":"",selectedHands.has(hand)?"selected":""].filter(Boolean).join(" ");
-    return `<button type="button" class="${cls}" data-hand="${hand}" data-comparison="${kind}" title="${escapeHtml(COMP_LABELS[kind])}">${hand}<span class="mini">${COMP_MINI[kind]}</span></button>`;
+    const sourceKind=p?"PERSONAL_OVERRIDE":c?"CALCULATED":"NONE";
+    return `<button type="button" class="${cls}" data-hand="${hand}" data-comparison="${kind}" data-source="${sourceKind}"${p?' data-override="true"':""} title="${escapeHtml(COMP_LABELS[kind])}">${hand}<span class="mini">${COMP_MINI[kind]}</span></button>`;
   }).join("");
   const count=selectedHands.size;
   els.selectionSummary.textContent=`${count} main${count>1?"s":""} sélectionnée${count>1?"s":""}`;
@@ -166,8 +225,8 @@ function renderComparison(){
   const rollup=Object.entries(counts).map(([kind,n])=>`${COMP_LABELS[kind]}: ${n}`).join(" · ");
   const p=currentPersonal(),c=currentCalculated(),kind=comparisonKind(p,c);
   els.comparison.innerHTML=
-    `<div class="compare-card"><strong>Stratégie calculée · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(c)}</span></div>`+
-    `<div class="compare-card"><strong>Stratégie personnelle · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(p)}</span></div>`+
+    `<div class="compare-card calculated" data-layer="calculated" data-source="CALCULATED"><strong>Stratégie calculée · ${escapeHtml(selectedHand)}</strong><span>${strategyLine(c)}</span></div>`+
+    `<div class="compare-card personal override" data-layer="personal" data-source="${p?"PERSONAL_OVERRIDE":"NONE"}"><strong>Stratégie personnelle · ${escapeHtml(selectedHand)} <span class="override-tag">override personnel</span></strong><span>${strategyLine(p)}</span></div>`+
     `<div class="compare-rollup">État actif : <strong>${escapeHtml(COMP_LABELS[kind])}</strong>${hands.length>1?` · sélection : ${escapeHtml(rollup)}`:""}</div>`;
 }
 
@@ -200,7 +259,7 @@ function renderActionEditor(){
     </div>`;
   }).join("");
   els.notes.value=strategyValue?.notes||"";
-  const origin=personal?"stratégie personnelle":calculated?"stratégie calculée":"aucune stratégie";
+  const origin=personal?"override personnel (couche personnelle)":calculated?"stratégie calculée (population)":"aucune stratégie";
   setStatus(els.handStatus,count===1?`Édition de ${selectedHand} à partir de la ${origin}.`:`Édition groupée de ${count} mains. Les valeurs affichées proviennent de ${selectedHand}; seules les mains sélectionnées seront modifiées.`);
   refreshEditorValidation();
 }
@@ -262,20 +321,50 @@ function renderRepository(){
 function renderContextStatus(){
   try{const c=context(),node=currentNode(),p=Object.keys(node?.layers?.personal?.hands||{}).length,calc=Object.keys(node?.layers?.calculated?.hands||{}).length;setStatus(els.contextStatus,`${c.population_id} · ${c.position} · ${c.effective_stack_bb} BB · ${c.spot} · stratégie personnelle ${p}/169 · stratégie calculée ${calc}/169`);}catch(err){setStatus(els.contextStatus,err.message,true);}
 }
-function renderAll(){renderSourceBrowser();renderContextStatus();try{renderGrid();renderComparison();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderRepository();}
+function renderResolutionStatus(){
+  const bound=populationBound(),calc=layerInfo("calculated"),personal=layerInfo("personal");
+  if(els.bindingBadge){
+    els.bindingBadge.textContent=bound.compatible?`population liée : ${bound.population_id}`:`hors population liée (${bound.population_id||"—"} ≠ ${bound.repository_population_id||"—"})`;
+    els.bindingBadge.classList.toggle("ok",bound.compatible);
+    els.bindingBadge.classList.toggle("bad",!bound.compatible);
+  }
+  if(els.overrideBadge){
+    els.overrideBadge.textContent=personal.defined>0?`override personnel · ${personal.defined}/169`:"override personnel : aucun";
+    els.overrideBadge.classList.toggle("override",personal.defined>0);
+    els.overrideBadge.dataset.source=personal.defined>0?"PERSONAL_OVERRIDE":"NONE";
+  }
+  const resolution=currentResolution(),source=resolution?resolution.source:"NONE";
+  if(els.strategySource){
+    els.strategySource.textContent=source==="POPULATION"?"source : stratégie population":source==="PERSONAL_OVERRIDE"?"source : override personnel":"source : indisponible";
+    els.strategySource.dataset.source=source;
+  }
+  const provenance=calc.provenance?`stratégie calculée v${calc.version||"—"} · provenance ${calc.provenance.candidate_id||calc.provenance.generation_id||calc.provenance.schema||"présente"}`:`stratégie calculée ${calc.defined}/169`;
+  if(!resolution)setStatus(els.resolutionStatus,`Résolution indisponible · ${provenance}`,true);
+  else{
+    const reasons=Array.isArray(resolution.reason_codes)&&resolution.reason_codes.length?` · motifs ${resolution.reason_codes.join(", ")}`:"";
+    const identity=resolution.strategy_id?` · stratégie ${resolution.strategy_id}`:"";
+    const version=resolution.strategy_version?` · version ${resolution.strategy_version}`:"";
+    const error=!bound.compatible||resolution.status==="POPULATION_INCOMPATIBLE";
+    setStatus(els.resolutionStatus,`${bound.compatible?"population liée":"hors population"} · statut ${resolution.status} · source ${source}${identity}${version} · ${provenance} · override personnel ${personal.defined}/169${reasons}`,error);
+  }
+  if(els.migrationStatus)setStatus(els.migrationStatus,migrationSummary(),false);
+}
+function renderAll(){renderSourceBrowser();renderContextStatus();try{renderGrid();renderComparison();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderResolutionStatus();renderRepository();}
 
 function saveSelected(){
   try{
+    requirePopulationBinding();
     const value=readEditorStrategy(),hands=selectedList();
     for(const hand of hands)HeroRanges.setHandStrategy(repo,context(),hand,value,{layer:"personal"});
-    persist();renderAll();setStatus(els.handStatus,`${hands.length} main${hands.length>1?"s":""} enregistrée${hands.length>1?"s":""} dans la stratégie personnelle. La stratégie calculée est inchangée.`);
+    persist();renderAll();setStatus(els.handStatus,`${hands.length} main${hands.length>1?"s":""} enregistrée${hands.length>1?"s":""} comme override personnel. La stratégie calculée est inchangée.`);
   }catch(err){setStatus(els.handStatus,err.message,true);}
 }
 function undefineSelected(){
   try{
+    requirePopulationBinding();
     const hands=selectedList();
     for(const hand of hands)HeroRanges.setHandStrategy(repo,context(),hand,null,{layer:"personal"});
-    persist();renderAll();setStatus(els.handStatus,`Stratégie personnelle retirée pour ${hands.length} main${hands.length>1?"s":""}. La stratégie calculée reste intacte.`);
+    persist();renderAll();setStatus(els.handStatus,`Override personnel retiré pour ${hands.length} main${hands.length>1?"s":""}. La stratégie calculée reste intacte.`);
   }catch(err){setStatus(els.handStatus,err.message,true);}
 }
 function quickApply(){

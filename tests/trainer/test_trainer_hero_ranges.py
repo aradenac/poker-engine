@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -18,6 +19,27 @@ assert pack["schema"] == "trainer-population-pack/v1"
 assert pack["population_id"] == "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1"
 assert pack["assets"]["hero"]["ranges"] == "./assets/trainer/hero/custom_ranges_v1.json"
 assert ROOT / "site" / pack["assets"]["hero"]["ranges"].removeprefix("./") == ASSET
+
+# The manifest exposes an explicit, population-bound, statuted Hero provenance.
+provenance = pack["hero_provenance"]
+assert provenance["schema"] == "trainer-hero-provenance/v1"
+assert provenance["population_id"] == pack["population_id"]
+assert provenance["strategy_id"] == pack["hero_strategy"] == "custom_ranges_v1"
+assert provenance["source_type"] == "legacy_range_folder"
+assert provenance["source"]["export_type"] == "range-folder"
+assert provenance["source"]["folder"] == "Custom"
+assert provenance["source"]["sha256"] == data["source"]["sha256"]
+assert provenance["ranges_path"] == pack["assets"]["hero"]["ranges"]
+assert provenance["sha256"] == hashlib.sha256(ASSET.read_bytes()).hexdigest()
+assert provenance["status"] in {"RETAIN_REFERENCE", "PARTIAL"}
+assert provenance["coverage_status"] == "PARTIAL"
+assert provenance["admissible"] is False
+assert provenance["promotable"] is False
+# No misleading "Custom" strategy identity and no MIXED -> Zoom relabel.
+assert pack["hero_strategy"] != "Custom"
+assert provenance["strategy_id"] != "Custom"
+assert pack["population_identity"]["format"] == "MIXED_ZOOM_REGULAR"
+assert "zoom" not in provenance["population_id"]
 
 expected_positions = {"BTN", "CO", "HJ", "LJ", "SB"}
 assert set(data["ranges"]["PFA"]) == expected_positions

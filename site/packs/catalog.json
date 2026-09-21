@@ -7,8 +7,8 @@
           "key": "population_manifest",
           "media_type": "application/json",
           "role": "population_manifest",
-          "sha256": "043a2aee58290a117e569ce417253fd916e4afeee018d75529e2e9831966b8a7",
-          "size_bytes": 1061,
+          "sha256": "ffca546f7786eded6cc4c48016fe794e8edb1d6e9ef8a765c9719bd03e7efd31",
+          "size_bytes": 2119,
           "url": "./assets/trainer/population.json"
         },
         {
@@ -87,6 +87,29 @@
         "engine_version": "v83"
       },
       "engine_version": "v83",
+      "hero_provenance": {
+        "admissible": false,
+        "binding_sha256": null,
+        "calculated": false,
+        "candidate_id": null,
+        "coverage_status": "PARTIAL",
+        "generation_id": null,
+        "note": "Preserved legacy user range-folder source retained as a population-bound reference. It is not an optimized or admissible calculated Hero strategy, must never be relabelled Zoom, and never activates the inactive #358 candidate.",
+        "population_id": "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1",
+        "promotable": false,
+        "ranges_path": "./assets/trainer/hero/custom_ranges_v1.json",
+        "schema": "trainer-hero-provenance/v1",
+        "sha256": "304dc79b654365fa781cda98420415803eb815e8aa74839a5ebc25e5b49f8eee",
+        "source": {
+          "export_type": "range-folder",
+          "exported_at": "2026-09-06T07:11:06.613Z",
+          "folder": "Custom",
+          "sha256": "1248258112562757e49df545e97f9e54b2dde163fdc755adf0029e89e580e8cb"
+        },
+        "source_type": "legacy_range_folder",
+        "status": "RETAIN_REFERENCE",
+        "strategy_id": "custom_ranges_v1"
+      },
       "hero_strategy": "custom_ranges_v1",
       "model_a_version": "v5",
       "model_b_alias": "independent_model_b_v2",
@@ -103,7 +126,7 @@
       },
       "recommended": true,
       "release_tag": "poker-pack-legacy-100-200-v2026.09.15.1",
-      "runtime_revision": "1c0b74eab5cc68815fe0a5e6ede135c1cc33d3accf1213fc1a34739f49e250bf",
+      "runtime_revision": "b282f1970da88af5b5618f3b0a02707d7fdf18f4e6670a5cbcc8a72841eeb3e7",
       "schema": "poker-browser-runtime-pack/v1",
       "source_release": {
         "kind": "github_release_population_pack",

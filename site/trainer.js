@@ -122,6 +122,7 @@ async function trainerLoadWarmAssets(){
       trainerWarmAssets.modelA={preflop,postflop};trainerWarmAssets.heroRanges=heroRanges;
       trainerWarmAssets.finishedAt=performance.now();
       trainerState.perf.warmupMs=trainerWarmAssets.finishedAt-trainerWarmAssets.startedAt;
+      trainerRefreshHeroStrategyIdentity(population);
       return {population,modelA:trainerWarmAssets.modelA,modelB:trainerWarmAssets.modelB,heroRanges:trainerWarmAssets.heroRanges};
     }catch(err){trainerWarmAssets.error=err;trainerWarmAssets.promise=null;throw err;}
   })();
@@ -132,6 +133,171 @@ function trainerScheduleWarmup(){
   if("requestIdleCallback" in window)window.requestIdleCallback(start,{timeout:2500});
   else window.setTimeout(start,1200);
 }
+
+const TRAINER_HERO_REPOSITORY_KEY="poker.hero.range.repository.v1";
+const TRAINER_HERO_FAIL_CLOSE="Stratégie indisponible pour cette population";
+
+function trainerHeroRepository(){
+  try{
+    const Migration=window.PokerHeroRangeMigration;
+    if(Migration?.loadRepository&&window.localStorage)return Migration.loadRepository(window.localStorage)||null;
+    const raw=window.localStorage?.getItem(TRAINER_HERO_REPOSITORY_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(_){return null;}
+}
+function trainerHeroPackIdentity(){
+  const pack=(typeof state!=="undefined"?state:null)?.manualOverrideContract?.base_active_pack||null;
+  return pack&&pack.population_id?{population_id:pack.population_id,pack_id:pack.pack_id||null,pack_version:pack.pack_version||null}:null;
+}
+function trainerHeroRetainedReference(manifest){
+  const provenance=manifest?.hero_provenance;
+  if(!provenance?.population_id)return null;
+  return {
+    schema:provenance.schema||null,
+    issue:null,
+    population_id:provenance.population_id,
+    strategy_id:provenance.strategy_id||null,
+    strategy_version:provenance.sha256?String(provenance.sha256).slice(0,16):null,
+    strategy_sha256:provenance.sha256||null
+  };
+}
+// The personal override chip must never be driven by the mere global presence of
+// an override. `active` is recomputed from the context actually resolved for the
+// current Hero situation (population/position/stack/spot via
+// HeroRanges.contextKey); an unresolvable context is a fail-safe inactive state
+// while `available` can still report an override elsewhere in the population.
+function trainerHeroOverrideContext(manifest){
+  const hand=trainerState.hand;
+  if(!hand||hand.ended)return null;
+  const hero=Number(hand.heroSeat);
+  if(!Number.isInteger(hero)||hero<0)return null;
+  const position=String(hand.positions?.[hero]||"").toUpperCase();
+  if(!position)return null;
+  const population=String(manifest?.population_id||trainerState.populationId||"").trim();
+  let table_size=Number(hand.names?.length||0),effective_stack_bb=null,spot=null,preflopContextId=null;
+  try{
+    if(window.PokerPreflopContract?.buildContext&&hand.core&&!hand.folded?.[hero]&&typeof hand.core.legalView==="function"){
+      const ctx=trainerPreflopContext(hand,hero),ctxTable=Number(ctx.table_size);
+      if(Number.isInteger(ctxTable)&&ctxTable>=2)table_size=ctxTable;
+      effective_stack_bb=Number(ctx.effective_stack_bb);
+      spot=String(ctx.family||"").toUpperCase()||null;
+      const contextId=String(ctx.context_id||"").trim();
+      if(/^PFC_[0-9a-f]{16}$/i.test(contextId))preflopContextId=contextId;
+    }
+  }catch(_){/* fall through to the raw hand stack, still fail-safe */}
+  if(!Number.isFinite(effective_stack_bb)||effective_stack_bb<=0)effective_stack_bb=Number(hand.stacks?.[hero]);
+  if(!Number.isInteger(table_size)||table_size<2||!Number.isFinite(effective_stack_bb)||effective_stack_bb<=0||!spot)return null;
+  const context={population_id:population,table_size,position,effective_stack_bb,spot};
+  if(preflopContextId)context.preflop_context_id=preflopContextId;
+  return context;
+}
+function trainerHeroPersonalOverride(manifest){
+  const population=manifest?.population_id||trainerState.populationId||null;
+  const repository=trainerHeroRepository(),Migration=window.PokerHeroRangeMigration;
+  const context=trainerHeroOverrideContext(manifest);
+  if(repository&&Migration?.personalOverrideStatus){
+    try{return Migration.personalOverrideStatus(repository,{populationId:population,activePopulationId:population,context});}catch(_){}
+  }
+  // Fail-safe: an unavailable repository never activates an override and is
+  // never presented as the population strategy.
+  return {
+    schema:"poker-hero-personal-override-status/v1",
+    source:"PERSONAL_OVERRIDE",
+    population_id:population||null,
+    available:false,active:false,active_context_key:null,context_keys:[],count:0
+  };
+}
+function trainerRefreshPersonalOverride(manifest){
+  trainerState.personalOverride=trainerHeroPersonalOverride(manifest||trainerWarmAssets.population||null);
+  if(typeof updateProductIdentityUi==="function")updateProductIdentityUi();
+  return trainerState.personalOverride;
+}
+window.trainerRefreshPersonalOverride=trainerRefreshPersonalOverride;
+// #task-0jt: build the complete population-bound admission object for the
+// resolver (role/hash/provenance/candidate/generation/binding) instead of a bare
+// {status,population_id} token. The legacy range-folder reference has no
+// calculated candidate, so candidate_id/generation_id/binding_sha256 stay null:
+// it remains RETAIN_REFERENCE and is never promoted or relabelled.
+function trainerHeroAdmissionFromProvenance(provenance,population){
+  if(!provenance?.status)return null;
+  const populationId=provenance.population_id||population||null;
+  const sha=provenance.sha256||null;
+  const candidateId=provenance.candidate_id||null;
+  const generationId=provenance.generation_id||null;
+  const bindingSha=provenance.binding_sha256||null;
+  return {
+    status:provenance.status,
+    role:"hero_strategy",
+    population_id:populationId,
+    strategy_id:provenance.strategy_id||null,
+    strategy_version:provenance.strategy_version||(sha?String(sha).slice(0,16):null),
+    candidate_id:candidateId,
+    generation_id:generationId,
+    binding_sha256:bindingSha,
+    artifact:{
+      declared_sha256:sha,
+      actual_sha256:sha,
+      hash_kind:"file_sha256",
+      source_path:provenance.ranges_path||null,
+      verified:sha!=null
+    },
+    provenance:{
+      source_population_id:populationId,
+      manifest_sha256:sha,
+      binding_sha256:bindingSha,
+      candidate_id:candidateId,
+      generation_id:generationId
+    }
+  };
+}
+// The coverage bound is only forwarded when an authoritative source declares it
+// (generation manifest / required_context_keys). Absent means "unknown", never a
+// self-referential completeness claim.
+function trainerHeroCoverageBound(manifest,provenance){
+  const keys=manifest?.required_context_keys||provenance?.required_context_keys||null;
+  const generation=manifest?.generation_manifest||provenance?.generation_manifest||null;
+  return {
+    required_context_keys:Array.isArray(keys)&&keys.length?keys:null,
+    generation_manifest:generation&&typeof generation==="object"?generation:null
+  };
+}
+function trainerRefreshHeroStrategyIdentity(manifest){
+  const populationManifest=manifest||trainerWarmAssets.population||null;
+  const population=populationManifest?.population_id||trainerState.populationId||null;
+  const provenance=populationManifest?.hero_provenance||null;
+  const Resolver=window.PokerHeroStrategyResolver;
+  if(population)trainerState.populationId=population;
+  const coverage=trainerHeroCoverageBound(populationManifest,provenance);
+  let resolution=null;
+  if(population&&Resolver?.resolveHeroStrategy){
+    resolution=Resolver.resolveHeroStrategy({
+      population_id:population,
+      repository:trainerHeroRepository(),
+      trainer_manifest:populationManifest,
+      pack_identity:trainerHeroPackIdentity(),
+      admissions:provenance?.status?{hero_strategy:trainerHeroAdmissionFromProvenance(provenance,population)}:null,
+      retained_reference:trainerHeroRetainedReference(populationManifest),
+      required_context_keys:coverage.required_context_keys,
+      generation_manifest:coverage.generation_manifest
+    });
+  }
+  trainerState.heroStrategyResolution=resolution;
+  trainerState.personalOverride=trainerHeroPersonalOverride(populationManifest);
+  if(typeof updateProductIdentityUi==="function")updateProductIdentityUi();
+  return resolution;
+}
+function trainerHeroStrategyLabel(){
+  const resolution=trainerState.heroStrategyResolution;
+  if(!resolution||resolution.fail_closed||resolution.status!=="ADMISSIBLE_CALCULATED")return TRAINER_HERO_FAIL_CLOSE;
+  return String(resolution.strategy_id||"stratégie Hero");
+}
+function trainerHeroStrategySummary(){
+  const resolution=trainerState.heroStrategyResolution;
+  if(!resolution||resolution.fail_closed||resolution.status!=="ADMISSIBLE_CALCULATED")return TRAINER_HERO_FAIL_CLOSE;
+  const version=resolution.strategy_version?` · version ${resolution.strategy_version}`:"";
+  return `stratégie Hero ${resolution.strategy_id||"indisponible"}${version}`;
+}
+window.trainerRefreshHeroStrategyIdentity=trainerRefreshHeroStrategyIdentity;
 
 async function trainerEnsureModels(){
   if(trainerState.ready)return true;
@@ -150,7 +316,7 @@ async function trainerEnsureModels(){
     if(assets.heroRanges?.schema!=="trainer-hero-preflop-ranges/v1")throw new Error("Ranges Hero : schéma inattendu.");
     trainerState.populationId=assets.population.population_id;trainerState.modelB=assets.modelB;trainerState.heroRanges=assets.heroRanges;
     if(trainerPopulationIdentity)trainerPopulationIdentity.textContent=trainerState.populationId;
-    if(typeof updateProductIdentityUi==="function")updateProductIdentityUi();
+    trainerRefreshHeroStrategyIdentity(assets.population);
 
     if(!state.populationModel){
       const content=assets.modelA.preflop;
@@ -164,8 +330,8 @@ async function trainerEnsureModels(){
     }
     trainerState.perf.modelLoadMs=performance.now()-loadStarted;
     trainerState.ready=true;
-    if(trainerTechnicalIdentity)trainerTechnicalIdentity.textContent=`Population ${trainerState.populationId} · Model A v5 · Model B v2 · stratégie Hero Custom · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`;
-    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · stratégie Hero Custom.`);
+    if(trainerTechnicalIdentity)trainerTechnicalIdentity.textContent=`Population ${trainerState.populationId} · Model A v5 · Model B v2 · ${trainerHeroStrategySummary()} · init ${trainerState.perf.modelLoadMs.toFixed(0)} ms${trainerState.perf.warmHit?" · assets préchargés":""}.`;
+    trainerRenderStatus(`Trainer prêt · ${trainerState.populationId} · ${trainerHeroStrategySummary()}.`);
     return true;
   }catch(err){
     trainerState.error=err?.message||String(err);trainerRenderStatus(`Trainer indisponible : ${trainerState.error}`,"error");return false;
@@ -923,7 +1089,7 @@ async function trainerAdvance(){
     const seat=hand.queue.shift();if(hand.folded[seat]||hand.stacks[seat]<=1e-8)continue;
     if(seat===hand.heroSeat){
       hand.awaitingHero=true;hand.decisionNo++;trainerState.feedback=null;trainerState.recommendation=null;trainerState.sizingTouched=false;
-      trainerRender();
+      trainerRefreshPersonalOverride();trainerRender();
       if(trainerState.mode==="guided")await trainerComputeRecommendation();
       else trainerRenderStatus("À vous de jouer · recommandation calculée après votre action.");
       return;
@@ -947,7 +1113,7 @@ async function trainerNewHand(){
     trainerState.feedback=null;trainerState.pauseAfterDecision=false;trainerTargetNext();return;
   }
   if(!await trainerEnsureModels())return;
-  trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();trainerRenderStatus("Nouvelle main · blindes postées, préflop réel actif.");trainerRender();await trainerAdvance();
+  trainerState.feedback=null;trainerState.recommendation=null;trainerState.pauseAfterDecision=false;trainerState.testLog=[];trainerState.hand=trainerBuildHand();if(trainerState.hand)trainerRefreshPersonalOverride();trainerRenderStatus("Nouvelle main · blindes postées, préflop réel actif.");trainerRender();await trainerAdvance();
 }
 
 function trainerBoardHtml(hand){return Array.from({length:5},(_,i)=>{const c=i<hand.boardCount?hand.runout[i]:null;return `<div class="board-card${c===null?" empty":""}">${c===null?"":cardHtml(c)}</div>`;}).join("");}
@@ -963,7 +1129,7 @@ function trainerSeatHtml(hand,s){
 function trainerBetSpotsHtml(hand){return hand.streetPaid.map((x,s)=>x>1e-8?`<div class="bet-spot bet${s+1}">${escapeHtml(trainerFmtBB(x))}</div>`:"").join("");}
 function trainerRenderTable(){
   const h=trainerState.hand;if(!trainerTable)return;if(!h){trainerTable.innerHTML='<div class="trainer-note">Cliquez sur « Nouvelle main » pour commencer.</div>';return;}
-  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · ${escapeHtml(trainerPotType(h))} · ${escapeHtml(`Hero ${h.heroRole||"en décision"}`)} · stratégie Hero Custom</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
+  trainerTable.innerHTML=`<div class="trainer-table-wrap"><div class="poker-table"><div class="table-center"><div class="table-pot">Pot<br><b>${escapeHtml(trainerFmtBB(h.pot))}</b></div><div class="table-board">${trainerBoardHtml(h)}</div><div class="tiny" style="margin-top:8px">${escapeHtml(h.street.toUpperCase())} · ${escapeHtml(trainerPotType(h))} · ${escapeHtml(`Hero ${h.heroRole||"en décision"}`)} · stratégie Hero ${escapeHtml(trainerHeroStrategyLabel())}</div></div>${replayDealerButtonHtml({buttonSeat:h.dealerSeat+1})}${trainerBetSpotsHtml(h)}${Array.from({length:6},(_,s)=>trainerSeatHtml(h,s)).join("")}</div></div>`;
 }
 function trainerPreflopTargetText(target){
   const v=Number(target?.target_total_bb);return Number.isFinite(v)?`total ${trainerFmtBB(v)}`:"0 BB";

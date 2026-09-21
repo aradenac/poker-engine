@@ -39,6 +39,16 @@ def main() -> None:
     assert 'if(!cta?.enabled||!cta.target)' in index
     assert 'trainerOpenBtn?.click();' in index
 
+    # Dashboard and inbox consume the same population-bound Review scope derived
+    # from the Hero strategy resolver, never a hard-coded "Custom" identity.
+    assert 'scope:reviewInboxScopeInput()' in index
+    assert 'reviewScopeFromResolution' in index
+    assert 'UNAVAILABLE_STRATEGY' in index
+    assert 'hero-custom' not in index
+    # The dashboard inherits the contextual override status carried by the shared
+    # Review scope (same value as the Trainer/header chip).
+    assert 'override:productPersonalOverrideState()' in index
+
     # The generic one-click destinations remain independent from gated dashboard CTAs.
     home = index.split('<div class="actions product-home-actions"', 1)[1].split('</div>', 1)[0]
     for label in ("Review", "Training", "Strategy", "Equity Lab"):

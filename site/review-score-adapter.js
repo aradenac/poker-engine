@@ -7,10 +7,19 @@
   'use strict';
 
   const ADAPTER_SCHEMA='poker-review-leak-adapter/v1';
+  const RESOLUTION_SCOPE_SCHEMA='poker-review-resolution-scope/v1';
   const DEFAULT_EV_REFERENCE='review_score_policy_adjusted_incremental_bb';
+  const UNAVAILABLE_STRATEGY_ID='UNAVAILABLE_STRATEGY';
+  const UNAVAILABLE_STRATEGY_VERSION='UNAVAILABLE';
+  const ADMISSIBLE_RESOLUTION_STATUSES=Object.freeze(['ADMISSIBLE_CALCULATED']);
+  const CUSTOM_LABEL=/^custom$/i;
+  const OVERRIDE_STATUS_SCHEMA='poker-hero-personal-override-status/v1';
+  const OVERRIDE_SOURCE='PERSONAL_OVERRIDE';
 
   function text(v){return v==null?'':String(v).trim();}
   function upper(v){return text(v).toUpperCase();}
+  function isCustomStrategyId(v){return CUSTOM_LABEL.test(text(v));}
+  function uniqueSorted(values){return Array.from(new Set((Array.isArray(values)?values:[]).map(text).filter(Boolean))).sort();}
   function num(v){const n=Number(v);return Number.isFinite(n)?n:null;}
   function parseAmount(raw){
     let s=text(raw).replace(/\s+/g,'').replace(/[€$£]/g,'');
@@ -103,13 +112,108 @@
     return parts.length?parts.join('|'):(normalizeStreet(step&&step.street)+'|'+normalizeAction(step&&step.actionType));
   }
   function recommendedAction(detail,played){const a=normalizeAction(detail&&detail.bestLabel);return a==='UNKNOWN'?played:a;}
+  function reviewScopeAvailability(resolution,available){
+    const r=resolution&&typeof resolution==='object'&&!Array.isArray(resolution)?resolution:{};
+    return {
+      available:!!available,
+      status:text(r.status)||'UNAVAILABLE',
+      source:text(r.source)||'NONE',
+      fail_closed:available?false:true,
+      reason_codes:Array.isArray(r.reason_codes)?Array.from(new Set(r.reason_codes.map(text).filter(Boolean))).sort():[]
+    };
+  }
+  // Normalized identity of a Hero strategy resolution. This mirrors the
+  // Resolver.identity() accessor (#392) so every downstream surface (Review,
+  // Replayer/Compliance, Trainer/header) reads the exact same population-bound
+  // population/strategy token instead of re-reading a manifest or inventing a
+  // label. A resolution passed through Resolver.identity() is idempotent here.
+  function reviewResolutionIdentity(resolution){
+    const r=resolution&&typeof resolution==='object'&&!Array.isArray(resolution)?resolution:{};
+    const reasons=Array.isArray(r.reason_codes)?Array.from(r.reason_codes):[];
+    const rejectCustom=value=>{
+      if(!isCustomStrategyId(value))return value==null?null:text(value);
+      reasons.push('CUSTOM_LABEL_REJECTED');
+      return null;
+    };
+    const strategy_id=rejectCustom(r.strategy_id);
+    const strategy_version=rejectCustom(r.strategy_version);
+    return {
+      population_id:r.population_id==null?null:text(r.population_id),
+      strategy_id,
+      strategy_version,
+      strategy_sha256:r.strategy_sha256==null?null:text(r.strategy_sha256),
+      status:text(r.status)||'UNAVAILABLE',
+      source:text(r.source)||'NONE',
+      fail_closed:r.fail_closed===true,
+      reason_codes:uniqueSorted(reasons)
+    };
+  }
+  // Normalized contextual personal-override status (#task-8zr). `available`
+  // reports the presence of an override somewhere in the active population;
+  // `active` is only true when the override is actually resolved on the context
+  // handed in. A missing population or an unresolvable context is a fail-safe
+  // inactive state: the global presence is never promoted to an active override
+  // and the status is always sourced from PERSONAL_OVERRIDE, never POPULATION.
+  // Literal "Custom" tokens are scrubbed instead of being surfaced.
+  function normalizeOverrideStatus(status,options={}){
+    const s=status&&typeof status==='object'&&!Array.isArray(status)?status:{};
+    const population_id=text(s.population_id)||text(options.population_id)||null;
+    const context_keys=uniqueSorted((Array.isArray(s.context_keys)?s.context_keys:[]).filter(key=>!isCustomStrategyId(key)));
+    const rawActiveKey=isCustomStrategyId(s.active_context_key)?null:(text(s.active_context_key)||null);
+    const available=!!population_id&&(s.available===true||context_keys.length>0);
+    const active=available&&s.active===true&&!!rawActiveKey;
+    return {
+      schema:OVERRIDE_STATUS_SCHEMA,
+      source:OVERRIDE_SOURCE,
+      population_id,
+      available,
+      active,
+      active_context_key:active?rawActiveKey:null,
+      context_keys,
+      count:context_keys.length
+    };
+  }
+  // Bridges the population-bound Hero strategy resolver output (#392) into a
+  // Review analytics scope. The strategy identity is only ever taken from an
+  // admitted calculated resolution; every other state stays explicit as an
+  // UNAVAILABLE strategy token that still carries the population/pack identity,
+  // so the scope remains selectable/filterable and never falls back to "Custom".
+  // The contextual override status is attached verbatim (normalized) so the
+  // Review surface reports the same active/inactive state as the Trainer/header.
+  function reviewScopeFromResolution(resolution,options={}){
+    const raw=resolution&&typeof resolution==='object'&&!Array.isArray(resolution)?resolution:{};
+    const normalized=reviewResolutionIdentity(raw);
+    const population_id=normalized.population_id||text(options.population_id);
+    if(!population_id)throw new Error('resolution.population_id is required');
+    const status=normalized.status;
+    const resolvedId=normalized.strategy_id||'';
+    const resolvedVersion=normalized.strategy_version||'';
+    const available=ADMISSIBLE_RESOLUTION_STATUSES.includes(status)&&normalized.fail_closed!==true&&
+      !!resolvedId&&!!resolvedVersion&&!isCustomStrategyId(resolvedId)&&!isCustomStrategyId(resolvedVersion);
+    const override=normalizeOverrideStatus(options.override!=null?options.override:raw.override,{population_id});
+    return {
+      schema:RESOLUTION_SCOPE_SCHEMA,
+      population_id,
+      pack_id:text(options.pack_id)||text(raw.pack_id)||null,
+      strategy_id:available?resolvedId:UNAVAILABLE_STRATEGY_ID,
+      strategy_version:available?resolvedVersion:(UNAVAILABLE_STRATEGY_VERSION+'@'+status),
+      ev_reference:text(options.ev_reference)||text(raw.ev_reference)||DEFAULT_EV_REFERENCE,
+      identity:{...normalized,population_id},
+      override,
+      availability:reviewScopeAvailability(normalized,available)
+    };
+  }
   function deriveScope(scope,summary){
     if(!scope||!text(scope.population_id))throw new Error('scope.population_id is required');
-    if(!text(scope.strategy_id))throw new Error('scope.strategy_id is required');
-    const signature=text(summary&&summary.signature)||text(scope.strategy_version)||'UNKNOWN_REVIEW_SIGNATURE';
+    const rawStrategyId=text(scope.strategy_id);if(!rawStrategyId)throw new Error('scope.strategy_id is required');
+    const custom=isCustomStrategyId(rawStrategyId);
+    const strategyId=custom?UNAVAILABLE_STRATEGY_ID:rawStrategyId;
+    const rawVersion=text(scope.strategy_version);
+    const signature=text(summary&&summary.signature)||rawVersion||'UNKNOWN_REVIEW_SIGNATURE';
+    const versionPrefix=custom?UNAVAILABLE_STRATEGY_VERSION+'@':(rawVersion?rawVersion+'@':'');
     return {
-      population_id:text(scope.population_id),pack_id:text(scope.pack_id)||null,strategy_id:text(scope.strategy_id),
-      strategy_version:(text(scope.strategy_version)?text(scope.strategy_version)+'@':'')+signature,
+      population_id:text(scope.population_id),pack_id:text(scope.pack_id)||null,strategy_id:strategyId,
+      strategy_version:versionPrefix+signature,
       ev_reference:text(scope.ev_reference)||DEFAULT_EV_REFERENCE
     };
   }
@@ -170,5 +274,5 @@
     return {hand_id:String(hand.id),decision_id:String(decisionId||''),source_name:hand.sourceName,timestamp:hand.timestamp,hero_name:hand.heroName,hero_position:hand.heroPosition,action_line:step&&step.rawLine||'',raw_hand_history:hand.raw};
   }
 
-  return {ADAPTER_SCHEMA,DEFAULT_EV_REFERENCE,splitHands,parseStoredHand,parseStoredHandHistories,adaptPersistedReviewData,handSource,normalizeAction,normalizeStreet};
+  return {ADAPTER_SCHEMA,RESOLUTION_SCOPE_SCHEMA,OVERRIDE_STATUS_SCHEMA,OVERRIDE_SOURCE,DEFAULT_EV_REFERENCE,UNAVAILABLE_STRATEGY_ID,UNAVAILABLE_STRATEGY_VERSION,splitHands,parseStoredHand,parseStoredHandHistories,adaptPersistedReviewData,handSource,normalizeAction,normalizeStreet,reviewResolutionIdentity,normalizeOverrideStatus,reviewScopeFromResolution};
 });
