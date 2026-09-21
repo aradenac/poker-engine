@@ -5,10 +5,12 @@ This module is the single, versioned integration contract that pins the four
 semantic corrections of the opponent-range rework together, so a regression of
 one fix cannot hide behind a green per-fix contract:
 
-1. ``prior_uninformative`` is uniform-only. The state is derived from the
-   uniformity of the kept legal-combo prior (``comboWeightsAreUniform`` /
-   ``uniformPrior``); a non-uniform prior with zero matched public action is
-   never relabelled ``prior_uninformative``.
+1. ``prior_uninformative`` is full-support-uniform-only. The state is derived
+   from ``priorIsNonInformative``: the kept weights must be uniform
+   (``comboWeightsAreUniform``) **and** the support must cover every legal exact
+   combo after the PUBLIC hero/board blockers. A non-uniform prior, or a uniform
+   prior over a strict subset, with zero matched public action is never
+   relabelled ``prior_uninformative``.
 2. The distinct ``source_prior_unconditioned`` state is present end to end:
    exported in ``OPPONENT_RANGE_DISPLAY_CONTRACT.posterior_states``, derived by
    ``populationRangeEstimateForPlayer`` / ``exactComboRangeResult``, and rendered
@@ -96,38 +98,50 @@ def main() -> None:
         assert f'"{state}"' in contract, state
 
     # ------------------------------------------------------------------
-    # Correction 1 (#391 · Point 1): prior_uninformative is uniform-only.
+    # Correction 1 (#391 · Point 1): prior_uninformative is uniform-only AND
+    # full-support.
     # ------------------------------------------------------------------
     # The production derivation only picks `prior_uninformative` when the kept
-    # legal-combo prior is uniform; otherwise the non-uniform prior is the
-    # distinct `source_prior_unconditioned` (never `prior_uninformative`).
+    # legal-combo prior is uniform AND covers every legal exact combo after the
+    # public hero/board blockers; otherwise it is the distinct
+    # `source_prior_unconditioned` (never `prior_uninformative`).
     assert (
         'const posteriorState=informativeActions>0?"conditioned":'
-        '(comboWeightsAreUniform(combos)?"prior_uninformative":"source_prior_unconditioned")'
+        '(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned")'
         in estimate
     ), estimate
     assert "const uniformPrior=comboWeightsAreUniform(combos);" in combo_result
     assert (
+        'const nonInformativePrior=priorIsNonInformative(combos,meta.blockedCards,meta.legalComboCount);'
+        in combo_result
+    )
+    assert (
         'const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":'
-        '(uniformPrior?"prior_uninformative":"source_prior_unconditioned"))'
+        '(nonInformativePrior?"prior_uninformative":"source_prior_unconditioned"))'
         in combo_result
     ), combo_result
-    # Uniformity is defined from the positive legal-combo weights, not from the
-    # number of actions.
+    # Uniformity is defined from the positive legal-combo weights, and full
+    # support from the number of legal exact combos after the public blockers,
+    # not from the number of actions.
     assert "function comboWeightsAreUniform(combos){" in INDEX
     assert "if(Math.abs(w-ref)>1e-9*Math.max(1,Math.abs(ref)))return false;" in INDEX
-    # UI: a uniform prior is an explicit non-numeric state.
+    assert "function priorIsNonInformative(combos,blockedCards,legalComboCount){" in INDEX
+    assert "if(!comboWeightsAreUniform(combos))return false;" in INDEX
+    assert "return (combos||[]).length===count;" in INDEX
+    assert "uniformExactComboPrior(blockedCards||[]).length" in INDEX
+    # UI: a uniform full-support prior is an explicit non-numeric state.
     assert 'if(estimate?.posteriorState==="prior_uninformative")return new Map();' in grid_fn
-    # Docs: the trigger explicitly requires a uniform kept prior.
-    assert "the kept prior is uniform over the legal exact combos" in doc_flat
+    # Docs: the trigger explicitly requires a full-support uniform kept prior.
+    assert "the kept prior is the full-support uniform prior over the legal exact combos" in doc_flat
 
     # ------------------------------------------------------------------
     # Correction 2 (#391 · Point 2): distinct source/imported unconditioned state.
     # ------------------------------------------------------------------
-    # Derivation: zero matched actions + non-uniform kept prior => distinct state.
+    # Derivation: zero matched actions + non-full-support kept prior => distinct
+    # state (this covers both a non-uniform prior and a uniform strict subset).
     assert (
         'const posteriorState=informativeActions>0?"conditioned":'
-        '(comboWeightsAreUniform(combos)?"prior_uninformative":"source_prior_unconditioned")'
+        '(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned")'
         in estimate
     )
     # UI: no numeric grid, never a conditioned posterior, never a 100 % range.

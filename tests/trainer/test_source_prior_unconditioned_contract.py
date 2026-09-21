@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Distinct `source_prior_unconditioned` state contract (#391).
 
-Representation-layer contract only. It pins that a non-uniform imported/source
-prior kept with zero matched public action is a distinct explicit state:
+Representation-layer contract only. It pins that an imported/source prior kept
+with zero matched public action is a distinct explicit state:
 
 - `source_prior_unconditioned`, never `prior_uninformative` (reserved for a
-  uniform legal-combo prior) and never `degenerate`;
+  uniform prior whose support covers the full legal exact-combo set after the
+  PUBLIC blockers) and never `degenerate`;
 - present in `OPPONENT_RANGE_DISPLAY_CONTRACT.posterior_states`;
 - rendered by the replayer modal/export with its own label, never as a numeric
   169 grid and never as a 100 % range.
@@ -49,13 +50,21 @@ def main() -> None:
         in INDEX
     )
 
-    # 2. The derivation reserves prior_uninformative for a truly uniform prior.
+    # 2. The derivation reserves prior_uninformative for a full-support uniform
+    #    prior: uniform weights AND every legal exact combo after the PUBLIC
+    #    hero/board blockers. A uniform prior over a strict subset is
+    #    source_prior_unconditioned.
+    assert "function priorIsNonInformative(combos,blockedCards,legalComboCount){" in INDEX
     assert (
-        'const posteriorState=informativeActions>0?"conditioned":(comboWeightsAreUniform(combos)?"prior_uninformative":"source_prior_unconditioned")'
+        'const posteriorState=informativeActions>0?"conditioned":(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned")'
         in estimate
     )
     assert (
-        'const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(uniformPrior?"prior_uninformative":"source_prior_unconditioned"))'
+        'const nonInformativePrior=priorIsNonInformative(combos,meta.blockedCards,meta.legalComboCount);'
+        in combo_result
+    )
+    assert (
+        'const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(nonInformativePrior?"prior_uninformative":"source_prior_unconditioned"))'
         in combo_result
     )
 
@@ -86,8 +95,8 @@ def main() -> None:
     assert 'posterior_state:estimate?.posteriorState||null' in export
     assert 'estimate?.posteriorState==="source_prior_unconditioned"?"source_prior_unconditioned"' in export
 
-    # 5. Runtime proof on a deliberately non-uniform imported prior with zero
-    #    matched public action.
+    # 5. Runtime proof on a deliberately non-uniform imported prior, and on a
+    #    uniform prior over a strict subset, with zero matched public action.
     subprocess.run(
         ["node", "tests/trainer/source_prior_unconditioned_runtime.js"],
         cwd=ROOT,

@@ -4,9 +4,10 @@
 This is a representation-layer contract only. It pins that:
 
 - `posteriorState` is derived from the number of exploited public actions
-  (`conditioned` when at least one matched) plus the uniformity of the kept prior
-  (`prior_uninformative` only for a uniform legal-combo prior, otherwise the
-  distinct `source_prior_unconditioned`), and zero surviving mass is an explicit
+  (`conditioned` when at least one matched) plus the full-support uniformity of
+  the kept prior (`prior_uninformative` only for a uniform prior covering every
+  legal exact combo after the PUBLIC blockers, otherwise the distinct
+  `source_prior_unconditioned`), and zero surviving mass is an explicit
   `degenerate` (fail-closed) result;
 - the silent re-seed from `legacyRangeEntriesForHistoryPlayer` on a failed
   conditioning normalization is gone;
@@ -37,14 +38,17 @@ def main() -> None:
     matrix = section("function renderMatrix(", "function normalizePopulationPosition(")
 
     # posteriorState is computed from the exploited public actions plus the
-    # uniformity of the kept prior: at least one exploited action => conditioned;
-    # zero action with a uniform legal-combo prior => prior_uninformative; zero
-    # action with a non-uniform imported/source prior => the distinct
+    # full-support uniformity of the kept prior: at least one exploited action
+    # => conditioned; zero action with a full-support uniform legal-combo prior
+    # => prior_uninformative; zero action with any other imported/source prior
+    # (non-uniform, or uniform over a strict subset) => the distinct
     # source_prior_unconditioned state (never prior_uninformative/degenerate).
     assert "const informativeActions=preMatched+postMatched" in estimate
-    assert 'const posteriorState=informativeActions>0?"conditioned":(comboWeightsAreUniform(combos)?"prior_uninformative":"source_prior_unconditioned")' in estimate
+    assert 'const posteriorState=informativeActions>0?"conditioned":(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned")' in estimate
     assert "informativeActions" in estimate
-    assert 'const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(uniformPrior?"prior_uninformative":"source_prior_unconditioned"))' in INDEX
+    assert "function priorIsNonInformative(combos,blockedCards,legalComboCount){" in INDEX
+    assert "return (combos||[]).length===count;" in INDEX
+    assert 'const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(nonInformativePrior?"prior_uninformative":"source_prior_unconditioned"))' in INDEX
 
     # Zero surviving mass is explicit and fail-closed: no null return and no
     # silent re-seed from the imported legacy range.

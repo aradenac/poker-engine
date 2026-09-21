@@ -70,6 +70,12 @@ def main() -> None:
     assert "`conditioned`" in DOC
     assert "`degenerate`" in DOC
 
+    # The non-informative trigger is the full-support uniform prior over the legal
+    # exact combos after the PUBLIC hero/board blockers, not mere weight
+    # uniformity; the browser derives it with the dedicated predicate.
+    assert "full-support uniform" in doc_flat
+    assert "priorIsNonInformative" in INDEX
+
     # The postflop path is documented as a display extension with no backend
     # contract.
     assert "no backend contract" in DOC or "browser-only extension" in DOC

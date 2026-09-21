@@ -89,6 +89,9 @@ def main() -> None:
     assert 'w/total' in projection and 'maxWeight' not in projection
     assert 'gridEntries:projectCombosTo169Mass(combos)' in combo_result
     assert 'const relativeWeightPctFor=uniformPrior?null:' in combo_result
+    # The non-informative state is gated by full support: uniform weights AND the
+    # complete legal support after the public hero/board blockers.
+    assert 'const nonInformativePrior=priorIsNonInformative(combos,meta.blockedCards,meta.legalComboCount);' in combo_result
     assert 'return massGridFreqMapFromEstimate(estimate);' in grid_fn
     assert 'const freq=gridFreqMapFromEstimate(estimate,player);' in range_modal
     assert 'normalizeComboWeightsInPlace' not in range_modal

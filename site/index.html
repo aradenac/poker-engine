@@ -7719,17 +7719,34 @@ function uniformExactComboPrior(blockedCards=[]){
   }
   return out;
 }
+/* Full-support test for the non-informative prior (notion (d)): the kept prior
+   is the true uniform non-informative prior only when every positive weight is
+   equal AND the support covers every exact combo still legal after the public
+   hero/board blockers. Uniform weights over a strict subset (a single class, an
+   imported sub-range, or a support reduced by public blockers) are a genuine a
+   priori source distribution, not the non-informative prior. `blockedCards` is
+   the public blocker list; a precomputed `legalComboCount` may be supplied when
+   the caller already knows the legal support size. */
+function priorIsNonInformative(combos,blockedCards,legalComboCount){
+  if(!comboWeightsAreUniform(combos))return false;
+  const hasLegalCount=legalComboCount!=null&&Number.isFinite(Number(legalComboCount));
+  const count=hasLegalCount?Math.max(0,Math.floor(Number(legalComboCount))):uniformExactComboPrior(blockedCards||[]).length;
+  return (combos||[]).length===count;
+}
 function exactComboRangeResult(combos,meta={}){
   if(!combos?.length)return null;
   const uniformPrior=comboWeightsAreUniform(combos);
+  const nonInformativePrior=priorIsNonInformative(combos,meta.blockedCards,meta.legalComboCount);
   if(!normalizeComboWeightsToMass(combos))return null;
   const informativeActions=Math.max(0,Number(meta.informativeActions)||0);
   // State derivation is representation-only: with at least one exploited public
-  // action the record is `conditioned`; with none, a uniform legal-combo prior is
-  // the true non-informative prior (`prior_uninformative`) while a non-uniform
-  // imported/source range is the distinct `source_prior_unconditioned`, never
-  // assimilated to the uniform-prior state nor to a conditioned posterior.
-  const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(uniformPrior?"prior_uninformative":"source_prior_unconditioned"));
+  // action the record is `conditioned`; with none, a full-support uniform
+  // legal-combo prior is the true non-informative prior (`prior_uninformative`)
+  // while any other imported/source prior (non-uniform, or uniform over a strict
+  // subset such as a single class or a support reduced by public blockers) is the
+  // distinct `source_prior_unconditioned`, never assimilated to the
+  // uniform-prior state nor to a conditioned posterior.
+  const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(nonInformativePrior?"prior_uninformative":"source_prior_unconditioned"));
   const probabilityMass=combos.reduce((s,c)=>s+(Number(c.weight)||0),0);
   const maxWeight=Math.max(0,...combos.map(c=>Number(c.weight)||0));
   // A uniform distribution (non-informative prior or uninformative conditioning)
@@ -7828,12 +7845,13 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
 
   // posteriorState is derived from the representation layer only: at least one
   // public action was applied and positive mass survives => conditioned. With no
-  // exploited action, a uniform prior over the legal combos is the true
-  // non-informative prior => prior_uninformative; a non-uniform imported/source
-  // range kept unchanged => source_prior_unconditioned, a distinct explicit state
-  // never assimilated to the uniform prior nor to a conditioned posterior. Zero
-  // surviving mass is an explicit degenerate (fail-closed) record, never a legacy
-  // fallback.
+  // exploited action, only a full-support uniform prior over the legal combos is
+  // the true non-informative prior => prior_uninformative; any other
+  // imported/source prior kept unchanged (non-uniform, or uniform over a strict
+  // subset, e.g. a single class or a support reduced by public blockers) =>
+  // source_prior_unconditioned, a distinct explicit state never assimilated to
+  // the uniform prior nor to a conditioned posterior. Zero surviving mass is an
+  // explicit degenerate (fail-closed) record, never a legacy fallback.
   const informativeActions=preMatched+postMatched;
   const totalPostActions=state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0;
   const trace=[...preTrace,...postTrace],last=[...trace].reverse().find(x=>x.nodeId)||null;
@@ -7850,7 +7868,7 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
     state.postflopRangeCache[cacheKey]=degenerate;
     return degenerate;
   }
-  const posteriorState=informativeActions>0?"conditioned":(comboWeightsAreUniform(combos)?"prior_uninformative":"source_prior_unconditioned");
+  const posteriorState=informativeActions>0?"conditioned":(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned");
   const result=exactComboRangeResult(combos,{...meta,posteriorState});
   if(!result){
     const degenerate=degenerateComboRangeResult({...meta,lastNodeId:null,lastQuality:"",degenerateReason:"no_positive_support"});

@@ -39,6 +39,10 @@ def main() -> None:
     assert 'if(estimate?.posteriorState==="degenerate")return new Map();' in grid_fn
     assert 'if(estimate?.posteriorState==="prior_uninformative")return new Map();' in grid_fn
     assert 'if(estimate?.posteriorState==="source_prior_unconditioned")return new Map();' in grid_fn
+    # `prior_uninformative` is reserved for the full-support uniform prior over
+    # the legal combos after the public hero/board blockers; the derivation uses
+    # the dedicated `priorIsNonInformative` predicate.
+    assert "function priorIsNonInformative(combos,blockedCards,legalComboCount){" in INDEX
     assert "massGridFreqMapFromEstimate(estimate)" in grid_fn
     assert "estimate?.gridEntries?.length?estimate.gridEntries:[]" in mass_fn
     assert "projectCombosTo169Mass" in mass_fn

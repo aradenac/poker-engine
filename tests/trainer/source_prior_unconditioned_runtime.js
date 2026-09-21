@@ -4,9 +4,13 @@
 //
 // A non-uniform imported/source prior kept with zero matched public action must
 // derive to `source_prior_unconditioned`, never to `prior_uninformative` (which
-// is reserved for a uniform legal-combo prior) and never to `degenerate`. It is
-// rendered as an explicit state, so `gridFreqMapFromEstimate` returns no numeric
-// grid and the canonical mass projection can never read as a 100 % range.
+// is reserved for a uniform prior over the FULL legal support) and never to
+// `degenerate`. The same holds for a uniform imported/source prior over a strict
+// subset of the legal exact combos (a single class, an imported sub-range, or a
+// support reduced by public blockers): uniform weights alone are not enough, the
+// support must cover every legal combo. It is rendered as an explicit state, so
+// `gridFreqMapFromEstimate` returns no numeric grid and the canonical mass
+// projection can never read as a 100 % range.
 //
 // The functions are extracted from `site/index.html` and evaluated in isolation,
 // exactly like `range_width_scale_invariance.js`; no model/fit surface is touched.
@@ -38,13 +42,14 @@ const source = [
   section('function exactComboRangeResult(combos,meta={}){', '/* Fail-closed posterior result'),
   section('function massGridFreqMapFromEstimate(estimate){', 'function gridFreqMapFromEstimate('),
   section('function gridFreqMapFromEstimate(estimate,player){', 'function openPopulationRangeModal('),
-  'return {exactComboRangeResult,gridFreqMapFromEstimate,comboWeightsAreUniform,uniformExactComboPrior,projectCombosTo169Mass};',
+  'return {exactComboRangeResult,gridFreqMapFromEstimate,comboWeightsAreUniform,priorIsNonInformative,uniformExactComboPrior,projectCombosTo169Mass,cardsToNotation};',
 ].join('\n');
 
 const api = new Function(source)();
 const copyCombos = (combos) => combos.map((c) => ({ cards: [c.cards[0], c.cards[1]], weight: Number(c.weight) || 0 }));
 
-// 1. Uniform legal-combo prior with no matched action stays `prior_uninformative`.
+// 1. Full-support uniform legal-combo prior with no matched action stays
+//    `prior_uninformative`.
 const uniform = api.exactComboRangeResult(copyCombos(api.uniformExactComboPrior([])), { informativeActions: 0 });
 assert.equal(uniform.posteriorState, 'prior_uninformative', 'uniform prior must stay prior_uninformative');
 assert.equal(uniform.uniformPrior, true);
@@ -77,5 +82,39 @@ assert.ok(Math.abs(massSum - 100) < 1e-6, `source prior mass must sum to 100, go
 const conditioned = api.exactComboRangeResult(copyCombos(imported), { informativeActions: 1 });
 assert.equal(conditioned.posteriorState, 'conditioned');
 assert.equal(api.gridFreqMapFromEstimate(conditioned, null).size > 0, true);
+
+// 5. A uniform imported/source prior over a strict subset (here every combo of a
+//    single hand class) is NOT the non-informative prior: the weights are
+//    uniform but the support does not cover all legal exact combos, so the state
+//    must be the distinct `source_prior_unconditioned`, never
+//    `prior_uninformative` and never `degenerate`.
+const singleClassCombos = api.uniformExactComboPrior([]).filter(
+  (c) => api.cardsToNotation(c.cards) === 'AA'
+);
+assert.ok(singleClassCombos.length > 0 && singleClassCombos.length < 1326, 'fixture must be a strict subset');
+assert.equal(api.comboWeightsAreUniform(singleClassCombos), true, 'fixture must be uniform');
+assert.equal(api.priorIsNonInformative(singleClassCombos, []), false, 'strict subset is not full support');
+const subsetPrior = api.exactComboRangeResult(copyCombos(singleClassCombos), { informativeActions: 0 });
+assert.equal(subsetPrior.posteriorState, 'source_prior_unconditioned', 'uniform strict subset must be source_prior_unconditioned');
+assert.notEqual(subsetPrior.posteriorState, 'prior_uninformative');
+assert.notEqual(subsetPrior.posteriorState, 'degenerate');
+assert.equal(subsetPrior.uniformPrior, true, 'weights are still uniform; only the full-support state is withheld');
+assert.equal(api.gridFreqMapFromEstimate(subsetPrior, null).size, 0, 'uniform subset must not render a numeric grid');
+
+// 6. The full-support test counts the PUBLIC blockers: the same uniform combos
+//    are the non-informative prior for their own blocker set, but a support
+//    reduced by blockers (a strict subset of the unblocked legal set) is a source
+//    prior, never `prior_uninformative` and never `degenerate`.
+const heroBlock = [0, 1, 2, 3];
+const legalUniform = api.uniformExactComboPrior(heroBlock);
+assert.ok(legalUniform.length < 1326, 'fixture must remove some legal combos');
+assert.equal(api.priorIsNonInformative(legalUniform, heroBlock), true, 'full support after blockers is non-informative');
+assert.equal(api.priorIsNonInformative(legalUniform, []), false, 'a strict subset of the unblocked legal combos is not full support');
+const legalEstimate = api.exactComboRangeResult(copyCombos(legalUniform), { informativeActions: 0, blockedCards: heroBlock });
+assert.equal(legalEstimate.posteriorState, 'prior_uninformative', 'full-support uniform after blockers stays prior_uninformative');
+const blockedEstimate = api.exactComboRangeResult(copyCombos(legalUniform), { informativeActions: 0 });
+assert.equal(blockedEstimate.posteriorState, 'source_prior_unconditioned', 'support reduced by blockers is a source prior');
+assert.notEqual(blockedEstimate.posteriorState, 'prior_uninformative');
+assert.notEqual(blockedEstimate.posteriorState, 'degenerate');
 
 console.log('source prior unconditioned runtime: PASS');
