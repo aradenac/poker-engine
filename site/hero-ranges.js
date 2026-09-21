@@ -164,6 +164,26 @@
     return null;
   }
 
+  // A Hero repository is population-bound: its defaults declare the single
+  // population it answers for. The editor must require a context whose
+  // population_id matches that binding before it may present or edit the
+  // population strategy, so a foreign context can never silently inherit the
+  // identity of another population.
+  function repositoryPopulationId(repo){
+    const value=repo&&repo.defaults?repo.defaults.population_id:'';
+    return value?String(value):null;
+  }
+
+  function populationBound(repo,context){
+    const c=normalizeContext(context);
+    const repository_population_id=repositoryPopulationId(repo);
+    return {
+      population_id:c.population_id,
+      repository_population_id,
+      compatible:!!repository_population_id&&c.population_id===repository_population_id
+    };
+  }
+
   function validateLayer(layer,kind,key){
     if(!layer||typeof layer!=='object')throw new Error(`missing ${kind} layer ${key}`);
     if(layer.kind!==kind)throw new Error(`layer kind mismatch ${key}/${kind}`);
@@ -208,5 +228,5 @@
     return {contexts:Object.keys(repo.contexts).length,personal_defined_hands:personal,calculated_defined_hands:calculated,personal_combo_slots:personalCombos,calculated_combo_slots:calculatedCombos,legacy_ranges:legacyRanges(repo.source?.range_folder).length};
   }
 
-  return {SCHEMA,LAYERS,ACTIONS,POSITIONS,SPOTS,HAND_CLASSES,comboMultiplicity,normalizeContext,contextKey,emptyRepository,importDocument,normalizeHandStrategy,ensureContext,setLayerMetadata,setHandStrategy,getHandStrategy,resolvedLayer,validateRepository,exportDocument,legacyRanges,repositoryStats};
+  return {SCHEMA,LAYERS,ACTIONS,POSITIONS,SPOTS,HAND_CLASSES,comboMultiplicity,normalizeContext,contextKey,emptyRepository,importDocument,normalizeHandStrategy,ensureContext,setLayerMetadata,setHandStrategy,getHandStrategy,resolvedLayer,repositoryPopulationId,populationBound,validateRepository,exportDocument,legacyRanges,repositoryStats};
 });

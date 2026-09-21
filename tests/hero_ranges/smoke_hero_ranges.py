@@ -33,6 +33,16 @@ async def main() -> None:
     assert "Stratégie calculée" in visible_sources
     assert "Stratégie personnelle" in visible_sources
     assert "Range source importée" in visible_sources
+
+    # The editor is wired to the population-bound resolver and the safe migration:
+    # the shared modules load in contract order before the editor application.
+    ordered_scripts = ["./hero-ranges.js", "./hero-range-migration.js", "./hero-strategy-resolver.js", "./hero-ranges-app.js"]
+    script_positions = [html_source.index(name) for name in ordered_scripts]
+    assert script_positions == sorted(script_positions), "Hero editor dependencies must load before the app"
+    assert "PokerHeroRangeMigration" in app_source and "migrateStorage" in app_source
+    assert "PokerHeroStrategyResolver" in app_source and "resolveHeroStrategy" in app_source
+    assert "PERSONAL_OVERRIDE" in app_source, "the personal layer must be labelled as an override"
+    assert "override personnel" in app_source
     source_bytes = archived_custom_bytes()
     source = json.loads(source_bytes)
     async with async_playwright() as p:
@@ -48,6 +58,54 @@ async def main() -> None:
         assert "Ranges Hero" not in visible_text
         assert "Stratégie calculée" in visible_text
         assert "Stratégie personnelle" in visible_text
+        assert "override personnel" in visible_text.casefold()
+
+        # The default repository context is population-bound.
+        assert "population liée" in (await page.locator("#populationBindingBadge").inner_text()).casefold()
+
+        # Safe migration at load: a pre-migration payload is upgraded additively,
+        # the exact previous bytes are snapshotted, and source/layers survive.
+        pre_raw = await page.evaluate(
+            f"""() => {{
+              const H = window.PokerHeroRanges;
+              const repo = H.emptyRepository({{populationId:'pokerstars_nlhe_100-200_zoom_play_6max_v1'}});
+              repo.source = {{format:'range-folder',preserved_verbatim:true,meta:null,range_folder:{{folder:{{name:'Seed',folders:[],ranges:[]}}}}}};
+              const context = {{population_id:'pokerstars_nlhe_100-200_zoom_play_6max_v1',table_size:6,position:'BTN',effective_stack_bb:100,spot:'UNOPENED'}};
+              H.setHandStrategy(repo, context, 'AA', {{actions:{{OPEN:0.5,LIMP:0.5}},notes:'seed override'}}, {{layer:'personal'}});
+              localStorage.removeItem('{STORAGE_KEY}.previous');
+              const raw = JSON.stringify(repo);
+              localStorage.setItem('{STORAGE_KEY}', raw);
+              return raw;
+            }}"""
+        )
+        await page.reload(wait_until="domcontentloaded")
+        pre = json.loads(pre_raw)
+        migrated = await page.evaluate(f"JSON.parse(localStorage.getItem('{STORAGE_KEY}'))")
+        assert migrated["migration"]["schema"] == "poker-hero-range-migration/v1"
+        assert migrated["migration"]["active_population_id"] == "pokerstars_nlhe_100-200_zoom_play_6max_v1"
+        assert migrated["source"] == pre["source"], "migration must preserve the verbatim source"
+        assert migrated["contexts"] == pre["contexts"], "migration must preserve contexts and layers"
+        previous_raw = await page.evaluate(f"localStorage.getItem('{STORAGE_KEY}.previous')")
+        assert previous_raw == pre_raw, "migration must snapshot the exact pre-migration bytes"
+        assert (await page.locator('[data-hand="AA"]').get_attribute("data-override")) == "true"
+        assert (await page.locator('[data-hand="AA"]').get_attribute("data-source")) == "PERSONAL_OVERRIDE"
+        assert "override personnel" in (await page.locator("#handStatus").inner_text()).casefold()
+
+        # A context whose population_id does not match the bound repository fails
+        # closed and can never persist an edit.
+        before_save = await page.evaluate(f"localStorage.getItem('{STORAGE_KEY}')")
+        await page.fill("#populationInput", "legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1")
+        await page.locator("#populationInput").dispatch_event("change")
+        assert "hors population" in (await page.locator("#populationBindingBadge").inner_text()).casefold()
+        assert "POPULATION_INCOMPATIBLE" in (await page.locator("#resolutionStatus").inner_text())
+        await page.click("#saveHand")
+        assert "incompatible" in (await page.locator("#handStatus").inner_text()).casefold()
+        after_save = await page.evaluate(f"localStorage.getItem('{STORAGE_KEY}')")
+        assert before_save == after_save, "an out-of-population edit must never be persisted"
+        await page.fill("#populationInput", "pokerstars_nlhe_100-200_zoom_play_6max_v1")
+        await page.locator("#populationInput").dispatch_event("change")
+        assert "population liée" in (await page.locator("#populationBindingBadge").inner_text()).casefold()
+        assert "stratégie calculée" in (await page.locator("#resolutionStatus").inner_text()).casefold()
 
         # Seed a calculated strategy and verify that the comparison layer is visible
         # before any personal override is created.
@@ -109,6 +167,15 @@ async def main() -> None:
             {"target_total_bb": 2.5, "probability": 0.6},
         ]
         assert "action-mismatch" in (await page.locator('[data-hand="AA"]').get_attribute("class") or "")
+        # The personal layer is explicitly marked as an override, distinct from
+        # the calculated strategy, in the grid and in the editor surfaces.
+        assert (await page.locator('[data-hand="AA"]').get_attribute("data-override")) == "true"
+        assert (await page.locator('[data-hand="AA"]').get_attribute("data-source")) == "PERSONAL_OVERRIDE"
+        assert "override personnel" in (await page.locator("#overrideBadge").inner_text()).casefold()
+        assert (await page.locator("#overrideBadge").get_attribute("data-source")) == "PERSONAL_OVERRIDE"
+        assert "override personnel" in (await page.locator("#handStatus").inner_text()).casefold()
+        assert "override personnel" in (await page.locator(".compare-card.personal").inner_text()).casefold()
+        assert "stratégie calculée" in (await page.locator("#resolutionStatus").inner_text()).casefold()
 
         # Category selection gives a fast bulk-selection path while keeping 169 cells.
         await page.locator('[data-select-kind="pairs"]').click()
@@ -163,6 +230,10 @@ async def main() -> None:
             "structured_sizings": True,
             "calculated_layer_preserved": True,
             "comparison_states": True,
+            "population_bound": "population liée" in (await page.locator("#populationBindingBadge").inner_text()).casefold(),
+            "override_labelled": (await page.locator("#overrideBadge").get_attribute("data-source")) == "PERSONAL_OVERRIDE",
+            "migration_schema": migrated["migration"]["schema"],
+            "migration_source_preserved": migrated["source"] == pre["source"],
             "errors": errors,
         }
         print(json.dumps(snapshot, ensure_ascii=False, indent=2))

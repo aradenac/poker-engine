@@ -39,7 +39,14 @@
       <label>Profondeur effective (BB)<input id="stackInput" type="number" min="1" step="1" value="100"></label>
       <label>Contexte<select id="spotSelect"></select></label>
     </div>
+    <div class="identity-row">
+      <span id="populationBindingBadge" class="badge">population liée : —</span>
+      <span id="strategySourceBadge" class="badge">source : indisponible</span>
+      <span id="overrideBadge" class="badge">override personnel : aucun</span>
+    </div>
     <div id="contextStatus" class="status"></div>
+    <div id="resolutionStatus" class="status"></div>
+    <div id="migrationStatus" class="status"></div>
   </section>
 
   <section class="editor-layout">
@@ -94,6 +101,8 @@
   </section>
 </main>
 <script src="./hero-ranges.js"></script>
+<script src="./hero-range-migration.js"></script>
+<script src="./hero-strategy-resolver.js"></script>
 <script src="./hero-ranges-app.js"></script>
 </body>
 </html>
