@@ -74,6 +74,18 @@ def main() -> None:
     assert "relative_weight_pct:relativeWeightPct" in export
     assert "relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)" not in export
 
+    # The diagnostic relative-weight grid never falls back to the canonical
+    # frequency/mass when the relative weight is undefined: it is absent (null)
+    # for a uniform prior or when no entry carries a relativeWeightPct.
+    assert "const relativeDefined=estimate?.uniformPrior!==true&&entries.some(e=>e.relativeWeightPct!=null);" in export
+    assert "let gridRelative=null;" in export
+    assert "gridRelative=Object.create(null);" in export
+    assert "frequency:Number(e.relativeWeightPct)||0" in export
+    old_relative_fallback = "frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)"
+    assert old_relative_fallback not in export
+    assert old_relative_fallback not in matrix
+    assert "matrixEntries.some(e=>e.relativeWeightPct!=null)" in matrix
+
     print("posterior state contract checks: OK")
 
 

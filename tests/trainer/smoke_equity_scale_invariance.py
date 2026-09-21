@@ -326,6 +326,11 @@ async (cfg) => {
             probabilityMax: mapMax(uni.grid_169_probability_pct),
             at100: mapValues(uni.grid_169_probability_pct).filter(v => Math.abs(v - 100) < 1e-6).length,
             relativeNullAll: (uni.exact_combos || []).every(c => c.relative_weight_pct === null),
+            // A uniform prior has no defined relative weight: the diagnostic
+            // 169 grid must be absent/empty, never a mass grid.
+            relativeGridNull: uni.grid_169_relative_weight_pct === null
+                || Object.keys(uni.grid_169_relative_weight_pct || {}).length === 0,
+            relativeGridPositive: mapValues(uni.grid_169_relative_weight_pct).filter(v => v > 0).length,
             exactProbabilitySum: sum((uni.exact_combos || []).map(c => c.probability_pct))
         };
 
@@ -463,6 +468,10 @@ async def main() -> None:
     assert abs(uni["exactProbabilitySum"] - 100.0) < 1e-3, uni
     assert uni["probabilityMax"] < 100.0 and uni["at100"] == 0, uni
     assert uni["relativeNullAll"] is True, uni
+    # The undefined relative weight is never derived from the canonical mass:
+    # the diagnostic 169 grid is absent/empty with no positive entry.
+    assert uni["relativeGridNull"] is True, uni
+    assert uni["relativeGridPositive"] == 0, uni
 
     # ---- 5. the detector would fail a scale-dependent consumer ------------
     neg = result["negativeControl"]

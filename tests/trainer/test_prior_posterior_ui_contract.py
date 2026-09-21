@@ -92,6 +92,10 @@ def main() -> None:
     assert 'probability_pct:aiExportNumber(100*p,7)' in range_export
     assert 'grid_169_probability_pct:gridProbability' in range_export
     assert 'gridProbability[e.hand]=aiExportNumber(e.frequency,7)' in range_export
+    # A uniform prior (or any estimate without a defined relativeWeightPct)
+    # exports no relative-weight projection: the mass is never substituted.
+    assert 'const relativeDefined=estimate?.uniformPrior!==true&&entries.some(e=>e.relativeWeightPct!=null);' in range_export
+    assert 'let gridRelative=null;' in range_export
 
     # The known-hand override is a separate, explicitly flagged mechanism: it is
     # the only legitimate 100 % single-class display and never a posterior.

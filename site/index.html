@@ -5891,10 +5891,17 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   }).sort((a,b)=>(b.probability_pct||0)-(a.probability_pct||0));
   // Diagnostic relative-weight heat grid (notion (b)): max-normalized per combo,
   // aggregated per class by mean so classes with different combo counts stay
-  // comparable. It is never the canonical posterior projection below.
-  const relativeEntries=entries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)}));
-  const gridRelative=Object.create(null);
-  for(const e of rangeEntriesForGrid(relativeEntries))if(Number(e.frequency)>0.000001)gridRelative[e.hand]=aiExportNumber(e.frequency,5);
+  // comparable. It is never the canonical posterior projection below. When the
+  // relative weight is undefined (uniform prior, or no entry carrying a
+  // relativeWeightPct) the diagnostic is absent (null): the canonical mass is
+  // never substituted for it.
+  const relativeDefined=estimate?.uniformPrior!==true&&entries.some(e=>e.relativeWeightPct!=null);
+  let gridRelative=null;
+  if(relativeDefined){
+    const relativeEntries=entries.map(e=>({hand:e.hand,frequency:Number(e.relativeWeightPct)||0}));
+    gridRelative=Object.create(null);
+    for(const e of rangeEntriesForGrid(relativeEntries))if(Number(e.frequency)>0.000001)gridRelative[e.hand]=aiExportNumber(e.frequency,5);
+  }
   // Canonical posterior projection (§2): sum of the normalized combo probability
   // mass per hand class; the class values sum to 100.
   const gridProbability=Object.create(null);
@@ -6813,9 +6820,12 @@ function renderMatrix(){
       matrixNotion="degenerate";entries=[];
     }else if(massGrid){
       matrixNotion="mass";entries=massGrid.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}));
-    }else if(matrixEntries){
+    }else if(matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){
+      // Diagnostic relative weight only: an undefined relativeWeightPct is
+      // never replaced by the canonical frequency/mass (that would relabel a
+      // probability as a max-normalized ratio).
       matrixNotion="relative";
-      entries=rangeEntriesForGrid(matrixEntries.map(e=>({hand:e.hand,frequency:e.relativeWeightPct!=null?Number(e.relativeWeightPct):(Number(e.frequency)||0)})));
+      entries=rangeEntriesForGrid(matrixEntries.filter(e=>e.relativeWeightPct!=null).map(e=>({hand:e.hand,frequency:Number(e.relativeWeightPct)||0})));
     }else{
       matrixNotion="inclusion";entries=legacyRangeEntriesForHistoryPlayer(player);
     }
