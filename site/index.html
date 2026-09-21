@@ -1557,6 +1557,33 @@ const SUITS = [
   {c:"c", sym:"♣", red:false, cls:"suit-c"}
 ];
 
+/* Opponent-range display contract — see docs/opponent-range-display-contract.md.
+   Representation layer only: it fixes vocabulary/units and never fits or changes
+   Model A/B. The canonical 169 projection is a SUM of combo probability mass. */
+const OPPONENT_RANGE_DISPLAY_CONTRACT=Object.freeze({
+  schema:"poker-opponent-range-display/v1",
+  version:1,
+  backend_schema:"poker-opponent-posterior-range/v1",
+  notions:Object.freeze({
+    posterior_combo_probability:Object.freeze({unit:"probability",range:[0,1],normalization:"sum_to_1",is_probability:true}),
+    relative_weight:Object.freeze({unit:"ratio",range:[0,1],normalization:"max_to_1",is_probability:false}),
+    inclusion_frequency:Object.freeze({unit:"percent",range:[0,100],normalization:"a_priori",scope:"hand_class",is_probability:false}),
+    non_informative_prior:Object.freeze({unit:"probability",normalization:"uniform_over_legal_combos",is_probability:true})
+  }),
+  projection_169:"sum_of_combo_probability_mass",
+  posterior_states:Object.freeze(["prior_uninformative","source_prior_unconditioned","conditioned","degenerate"]),
+  known_hand_override:Object.freeze({
+    flag:"knownHandOverride",
+    producers:Object.freeze(["effectiveEntriesForOpponent","exactEntriesFromCards"]),
+    semantics:"exact_known_hand_single_class",
+    display:"single_class_100_allowed",
+    is_posterior:false,
+    merge_with_posterior:false
+  })
+});
+window.PokerOpponentRangeDisplayContract=OPPONENT_RANGE_DISPLAY_CONTRACT;
+window.OPPONENT_RANGE_DISPLAY_CONTRACT=OPPONENT_RANGE_DISPLAY_CONTRACT;
+
 const state = {
   ranges: [],
   populationModel:null,
@@ -1824,6 +1851,29 @@ function exactKnownOverride(index){
   const o=state.opponents[index];
   return !!(state.hhMode && o?.useKnownHand && o?.knownCards?.length===2);
 }
+/* Additive marker of the known-hand override. The override is the ONLY
+   legitimate representation that renders a single hand class at 100 %: it is an
+   exact known hand, not a posterior. It must never be folded into
+   `populationRangeEstimateForPlayer`'s sum-normalized mass projection and it
+   must not read as a 100 % grid. The flag is metadata only: every equity
+   consumer keeps reading `hand`/`frequency` at the same scale. Adding or
+   removing the flag never changes `useKnownHand`. */
+function knownHandOverrideEntry(cards){
+  // Returns a single-entry *array* so every consumer that expects an entry list
+  // (`effectiveEntriesForOpponent`, `exactEntriesFromCards`, `legalCombosForOpponent`,
+  // `buildComboSets`, `buildSeatEquityPlayers`) keeps reading the same `hand`/`frequency`
+  // pair at the same scale. The `knownHandOverride` flag stays metadata only.
+  return cards?.length===2 ? [{hand:exactHandCode(cards),frequency:100,exact:true,knownHandOverride:true}] : [];
+}
+function entriesAreKnownHandOverride(entries){
+  return (entries||[]).some(e=>e&&e.knownHandOverride===true);
+}
+/* Cards of the active known-hand override for a player, or null when the
+   calculator uses the posterior/imported range for that player. */
+function knownHandOverrideCardsForPlayer(playerName){
+  const index=(state.opponents||[]).findIndex(o=>o.playerName===playerName);
+  return index>=0&&exactKnownOverride(index) ? (state.opponents[index].knownCards||null) : null;
+}
 function finalPreflopReplayIndex(){
   let last=0;
   for(let i=0;i<(state.replaySteps||[]).length;i++){
@@ -1847,7 +1897,7 @@ function calculatorPopulationReplayIndex(){
 }
 function effectiveEntriesForOpponent(index){
   const o=state.opponents[index];
-  if(exactKnownOverride(index)) return [{hand:exactHandCode(o.knownCards),frequency:100,exact:true}];
+  if(exactKnownOverride(index)) return knownHandOverrideEntry(o.knownCards); // tagged knownHandOverride:true
 
   // In Hand History mode, a loaded population model becomes the preferred
   // theoretical source after at least one usable preflop action by this player.
@@ -5225,20 +5275,20 @@ function replaySeatHtml(player,step,hand){
 }
 
 function populationRangeWidthFromEntries(entries){
-  const comboCount=n=>{
-    const s=String(n||"");
-    if(/^[2-9TJQKA]{2}$/.test(s)) return 6;
-    if(s.endsWith("s")) return 4;
-    if(s.endsWith("o")) return 12;
-    return 1;
-  };
-  let weighted=0,total=0;
-  for(const n of ALL_NOTATIONS){
-    const c=comboCount(n);total+=c;
-    const e=(entries||[]).find(x=>x.hand===n);
-    weighted+=c*Math.max(0,Math.min(100,Number(e?.frequency)||0))/100;
-  }
-  return total?weighted/total:0;
+  // Scale-invariant spread metric, compatible with the canonical sum-normalized
+  // mass: width = mean(positive weight) / max(positive weight). Multiplying every
+  // weight by a constant leaves it unchanged, so the metric is identical whether
+  // the entries carry sum-normalized mass (`frequency` sums to 100), the
+  // max-normalized relative weight (notion (b)) or an a priori inclusion
+  // frequency (notion (c)). It matches `exactComboRangeResult.width`
+  // (probabilityMass / n / maxWeight): 1 for a uniform distribution, decreasing
+  // as the mass concentrates, so the displayed “largeur relative” stays coherent
+  // after the switch to sum-normalized mass.
+  const weights=(entries||[]).map(e=>Math.max(0,Number(e.frequency)||0)).filter(w=>w>0);
+  if(!weights.length)return 0;
+  const total=weights.reduce((a,b)=>a+b,0);
+  const peak=Math.max(...weights);
+  return peak>0?total/Math.max(1,weights.length)/peak:0;
 }
 const modalFocusOrigins=new WeakMap();
 function modalDialogElement(backdrop){
@@ -5333,18 +5383,52 @@ function previousPlayerDecisionRange(playerName,currentIndex){
   }
   return null;
 }
+function massGridFreqMapFromEstimate(estimate){
+  // Canonical 169 projection (§2 of the display contract): estimate.gridEntries
+  // is `projectCombosTo169Mass(combos)`, the per-class sum of the combo
+  // probabilities. The same mass value feeds the grid, the combo list and the
+  // delta panel; relative_weight is a separate diagnostic surface that this
+  // modal does not display.
+  const gridEntries=estimate?.gridEntries?.length?estimate.gridEntries:[];
+  return new Map(gridEntries.map(e=>[e.hand,Math.max(0,Math.min(100,Number(e.frequency)||0))]));
+}
 function gridFreqMapFromEstimate(estimate,player){
-  const entries=estimate?.entries?.length?estimate.entries:legacyRangeEntriesForHistoryPlayer(player);
-  return new Map(rangeEntriesForGrid(entries).map(e=>[e.hand,Math.max(0,Math.min(100,Number(e.frequency)||0))]));
+  // Degenerate posterior: fail closed, never fall back to a 100 % imported grid.
+  if(estimate?.posteriorState==="degenerate")return new Map();
+  // Non-informative prior: rendered as an explicit state, never as a numeric
+  // 169 grid (a uniform prior has no discriminating range to display).
+  if(estimate?.posteriorState==="prior_uninformative")return new Map();
+  // Imported/source prior kept unchanged with no matched public action: a
+  // distinct explicit state, never a numeric grid (so it can never be read as a
+  // 100 % range) and never assimilated to a conditioned posterior.
+  if(estimate?.posteriorState==="source_prior_unconditioned")return new Map();
+  return massGridFreqMapFromEstimate(estimate);
 }
 function openPopulationRangeModal(playerName){
   if(!populationRangeModal||!state.selectedHand) return;
   const player=currentHandPlayer(playerName);
   if(!player||player.name===state.selectedHand.heroName) return;
   const estimate=populationRangeEstimateForPlayer(player,state.replayIndex);
-  const entries=estimate?.entries?.length ? estimate.entries : legacyRangeEntriesForHistoryPlayer(player);
+  // The known-hand override is a distinct mechanism from the posterior: it is
+  // surfaced here as a separate banner and never merged into the grid below.
+  const overrideCards=knownHandOverrideCardsForPlayer(player.name);
+  const degenerate=estimate?.posteriorState==="degenerate";
+  const uninformative=estimate?.posteriorState==="prior_uninformative";
+  const sourcePriorUnconditioned=estimate?.posteriorState==="source_prior_unconditioned";
+  // A numeric 169 grid is only meaningful for a conditioned posterior. The
+  // non-informative prior, the unconditioned source prior and the degenerate
+  // posterior are rendered as explicit text states; none may silently fall back
+  // to the legacy imported range.
+  const hasNumericGrid=!!estimate&&!degenerate&&!uninformative&&!sourcePriorUnconditioned;
+  const entries=estimate?.entries?.length?estimate.entries:[];
   const freq=gridFreqMapFromEstimate(estimate,player);
-  const source=estimate?.exactComboEngine
+  const source=degenerate
+    ? "Posterior dégénéré · masse nulle après blockers publics"
+    : uninformative
+    ? "Prior non informatif · range non estimée"
+    : sourcePriorUnconditioned
+    ? "Prior source non conditionné · range importée non conditionnée"
+    : estimate?.exactComboEngine
     ? (estimate.postflopMatchedActions>0 ? "Modèle dynamique préflop + postflop · combos exacts" : "Modèle dynamique préflop · combos exacts")
     : estimate?.postflopMatchedActions>0 ? "Modèles population préflop + postflop" : estimate ? "Modèle population préflop conditionné" : "Range source importée";
   const width=estimate?.width??populationRangeWidthFromEntries(entries);
@@ -5352,17 +5436,53 @@ function openPopulationRangeModal(playerName){
   const postOccurred=postflopDecisionTrace(state.selectedHand).slice(0,replayPostflopDecisionCount(state.replayIndex));
   const preCount=preOccurred.filter(x=>x.player===player.name).length,postCount=postOccurred.filter(x=>x.player===player.name).length,actionCount=preCount+postCount;
   const stats=normalizedExactRangeStats(entries),diag=rangeTraceDiagnostic(estimate);
-  const prev=previousPlayerDecisionRange(playerName,state.replayIndex),prevFreq=prev?.estimate?gridFreqMapFromEstimate(prev.estimate,player):null;
+  // The delta compares the same notion as the main grid: the canonical 169 mass
+  // projection. The previous step is read without the explicit-state gate so a
+  // first conditioning action can still be compared to its uniform prior, and
+  // the delta is shown only when the current grid is numeric and a previous mass
+  // projection exists, so it can never contradict the displayed value.
+  const prev=previousPlayerDecisionRange(playerName,state.replayIndex),prevFreq=prev?.estimate?massGridFreqMapFromEstimate(prev.estimate):null;
+  const deltaVisible=hasNumericGrid&&!!prevFreq&&prevFreq.size>0;
 
   populationRangeModalTitle.textContent=`Range adverse estimée · ${player.name}`;
-  populationRangeModalSub.textContent=`${player.hhPosition||"?"} · étape ${state.replayIndex+1}/${state.replaySteps.length} · ${source}`;
+  populationRangeModalSub.textContent=`${player.hhPosition||"?"} · étape ${state.replayIndex+1}/${state.replaySteps.length} · ${source}${overrideCards?" · override main connue actif":""}`;
+  // Separate surface for the known-hand override: it is the only legitimate
+  // single-class 100 % display and is explicitly not the posterior.
+  const overrideNotice=overrideCards
+    ? `<div class="population-modal-warning population-modal-override" data-known-hand-override="true"><b>Override main connue · mécanisme séparé du posterior.</b> Le calculateur utilise la main exacte ${overrideCards.map(cardLabel).join(" ")} : une classe unique à 100 %, seul cas légitime d’un affichage à 100 %. Cet override n’est pas fusionné avec le posterior population : la grille et les combos ci-dessous restent la projection de masse sum-normalisée du posterior.</div>`
+    : "";
   const modalMaxFreq=Math.max(1,...ALL_NOTATIONS.map(n=>Number(freq.get(n)||0)));
-  const grid=ALL_NOTATIONS.map(n=>{const f=Number(freq.get(n)||0);const heat=heatColorForPercent(f,modalMaxFreq);const opacity=Math.max(.10,Math.min(.92,Math.pow(f/modalMaxFreq||0,0.58)*.92));const valueText=f?`${f.toFixed(f>=10?0:1).replace(".",",")} %`:"—";return `<div class="population-modal-cell" style="background:${heat.bg};border-color:${heat.border};color:${heat.text};text-shadow:${heat.shadow}" title="${escapeHtml(n)} — ${f.toFixed(1).replace(".",",")} %"><div class="heat" style="opacity:${opacity};background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 40%,rgba(0,0,0,.06))"></div><div class="hand">${escapeHtml(n)}</div><div class="freq">${valueText}</div></div>`;}).join("");
+  const grid=hasNumericGrid?ALL_NOTATIONS.map(n=>{const f=Number(freq.get(n)||0);const heat=heatColorForPercent(f,modalMaxFreq);const opacity=Math.max(.10,Math.min(.92,Math.pow(f/modalMaxFreq||0,0.58)*.92));const valueText=f?`${f.toFixed(f>=10?0:1).replace(".",",")} %`:"—";return `<div class="population-modal-cell" style="background:${heat.bg};border-color:${heat.border};color:${heat.text};text-shadow:${heat.shadow}" title="${escapeHtml(n)} — ${f.toFixed(1).replace(".",",")} %"><div class="heat" style="opacity:${opacity};background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 40%,rgba(0,0,0,.06))"></div><div class="hand">${escapeHtml(n)}</div><div class="freq">${valueText}</div></div>`;}).join(""):"";
   const topCombos=stats.rows.slice(0,30).map(r=>`<div class="population-combo-row"><b>${escapeHtml(r.hand)}</b><span class="bar"><i style="width:${Math.min(100,r.p/(stats.rows[0]?.p||1)*100)}%"></i></span><span>${(r.p*100).toFixed(2).replace(".",",")}%</span></div>`).join("")||'<div class="tiny">Aucun combo.</div>';
-  const deltaGrid=prevFreq?ALL_NOTATIONS.map(n=>{const d=(freq.get(n)||0)-(prevFreq.get(n)||0),cls=d>.15?"pos":d<-.15?"neg":"zero",txt=Math.abs(d)<.05?"≈":`${d>0?"+":""}${d.toFixed(1).replace(".",",")}`;return `<div class="population-delta-cell ${cls}" title="${escapeHtml(n)} · variation ${d.toFixed(2)} points"><div class="hand">${escapeHtml(n)}</div><div class="delta">${escapeHtml(txt)}</div></div>`;}).join(""):"";
+  const deltaGrid=deltaVisible?ALL_NOTATIONS.map(n=>{const d=(freq.get(n)||0)-(prevFreq.get(n)||0),cls=d>.15?"pos":d<-.15?"neg":"zero",txt=Math.abs(d)<.05?"≈":`${d>0?"+":""}${d.toFixed(1).replace(".",",")}`;return `<div class="population-delta-cell ${cls}" title="${escapeHtml(n)} · variation ${d.toFixed(2)} points de masse"><div class="hand">${escapeHtml(n)}</div><div class="delta">${escapeHtml(txt)}</div></div>`;}).join(""):"";
   const traceHtml=estimate?.trace?.length?estimate.trace.map((t,i)=>{const target=t.target?Object.entries(t.target).map(([a,v])=>`${a} ${(100*Number(v||0)).toFixed(0)}%`).join(" · "):"";return `<div class="population-modal-trace-row"><div><b>${i+1}. ${escapeHtml(t.action)}</b><div class="tiny">${escapeHtml((t.phase||"preflop").toUpperCase())}${t.street&&t.street!=="preflop"?` · ${escapeHtml(t.street)}`:""}</div></div><div>${t.nodeId?`<span class="node">${escapeHtml(t.nodeId)}</span> · ${escapeHtml(t.family||"")}${target?`<div class="tiny">${escapeHtml(target)}</div>`:""}`:'<span class="tiny">Aucun nœud exploitable</span>'}</div><div>${t.nodeId?`${escapeHtml(t.quality||"")}<div class="tiny">n=${Number(t.nodeObservations||0).toLocaleString("fr-FR")}${t.phase==="postflop"?` · ${escapeHtml(t.nodeConfidence||"")}`:` · ${t.policySource==="policy169_q_b64"?"policy native":"fallback"}`}</div>`:"—"}</div></div>`;}).join(""):`<div class="tiny">Aucune action exploitable de ce joueur à cet instant.</div>`;
+  const gridTitle=degenerate
+    ? "Posterior dégénéré · masse nulle après blockers publics"
+    : uninformative
+    ? "Prior non informatif · range non estimée"
+    : sourcePriorUnconditioned
+    ? "Prior source non conditionné · range importée non conditionnée"
+    : !estimate
+    ? "Range non estimée · source indisponible"
+    : "Range adverse estimée · projection 169 (masse)";
+  const gridCaption=degenerate
+    ? "Aucune masse positive ne survit aux blockers publics : aucun combo, aucune projection 169. Résultat fail-closed."
+    : uninformative
+    ? "Aucune action publique exploitable n’a été appliquée à cette étape et le prior est uniforme sur les combos légaux : aucune range discriminante n’est disponible, sans estimation. Aucune grille 169 n’est affichée."
+    : sourcePriorUnconditioned
+    ? "Aucune action publique exploitable n’a été appliquée à cette étape : la range source importée (non uniforme) est conservée telle quelle, sans conditionnement. Ce n’est ni le prior uniforme non informatif ni un posterior conditionné ; aucune grille 169 n’est affichée."
+    : !estimate
+    ? "Aucune estimation population n’est disponible pour ce joueur à cette étape. Aucune grille n’est affichée."
+    : "Chaque classe = somme des probabilités de ses combos légaux (masse probabiliste, somme = 100 %). Le modèle travaille sur les combos exacts ; cette grille en est la projection agrégée.";
+  // Explicit state for a non-informative prior, an unconditioned source prior or
+  // a degenerate posterior: the 169 numeric grid is replaced by its reason, never
+  // shown as a 100 % range.
+  const gridBody=hasNumericGrid
+    ? `<div class="tiny">${escapeHtml(gridCaption)}</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div>`
+    : `<div class="population-modal-warning">${escapeHtml(gridCaption)}</div>`;
 
   populationRangeModalBody.innerHTML=`
+    ${overrideNotice}
     <div class="population-modal-metrics">
       <div class="population-modal-metric">Source<b>${escapeHtml(source)}</b></div>
       <div class="population-modal-metric">Largeur relative<b>${(width*100).toFixed(1).replace(".",",")} %</b></div>
@@ -5374,10 +5494,10 @@ function openPopulationRangeModal(playerName){
     </div>
     <div class="population-modal-warning">L’indice de fiabilité est un diagnostic de couverture (nœuds exacts, volume, actions appariées et street), pas une probabilité que la range soit « vraie ». Les ranges turn/river restent structurellement moins fiables que préflop/flop.</div>
     <div class="population-modal-columns">
-      <div class="section"><div class="section-title">Range adverse estimée · 169 classes</div><div class="tiny">Le modèle travaille sur les combos exacts ; cette grille n’est qu’une agrégation visuelle. 100 % = poids relatif maximal.</div><div class="population-modal-grid-wrap"><div class="population-modal-grid">${grid}</div></div></div>
-      <div class="section"><div class="section-title">Combos exacts les plus probables</div><div class="tiny">Pourcentage = masse probabiliste après normalisation de tous les combos légaux.</div><div class="population-combo-list">${topCombos}</div></div>
+      <div class="section"><div class="section-title">${gridTitle}</div>${gridBody}</div>
+      <div class="section"><div class="section-title">Combos exacts les plus probables</div><div class="tiny">Pourcentage = masse probabiliste après normalisation de tous les combos légaux (somme = 100 %).</div><div class="population-combo-list">${topCombos}</div></div>
     </div>
-    ${prevFreq?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de poids relatif dans la grille 169. Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
+    ${deltaVisible?`<div class="section"><div class="section-title">Effet de la dernière action de ${escapeHtml(player.name)} · avant → maintenant</div><div class="tiny">Variation en points de masse probabiliste (projection 169). Vert = classe renforcée ; rouge = classe affaiblie.</div><div class="population-modal-grid-wrap"><div class="population-delta-grid">${deltaGrid}</div></div></div>`:""}
     <div class="section"><div class="section-title">Historique de conditionnement</div><div class="population-modal-trace">${traceHtml}</div></div>`;
   openAccessibleModal(populationRangeModal,{initialFocus:()=>populationRangeModalClose});
 }
@@ -5768,26 +5888,45 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   const key=`${player.name}|${idx}`;
   if(registry.byKey[key])return registry.byKey[key];
   const estimate=player.name===hand.heroName?null:populationRangeEstimateForPlayer(player,idx);
-  const entries=(estimate?.entries?.length?estimate.entries:rangeEntriesForHistoryPlayer(player,idx))||[];
+  const entries=(estimate?.posteriorState==="degenerate"?[]:(estimate?.entries?.length?estimate.entries:rangeEntriesForHistoryPlayer(player,idx)))||[];
   const board=state.replaySteps[idx]?.board||[];
   const blocked=player.name===hand.heroName?[...board]:[...(hand.heroCards||[]),...board];
   const combos=exactComboPriorFromEntries(entries,blocked);
   const total=combos.reduce((a,c)=>a+(Number(c.weight)||0),0)||1;
   const maxW=Math.max(0,...combos.map(c=>Number(c.weight)||0))||1;
-  const classMass=Object.create(null);
+  // The max-normalized relative diagnostic is defined only for a conditioned
+  // posterior with non-uniform weights. A non-informative prior and an
+  // unconditioned source prior must never surface a max-normalized 100 %: for
+  // them the diagnostic is absent (null) while the canonical probability below
+  // is retained. The canonical mass is never substituted for the diagnostic.
+  const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;
   const exact=combos.map(c=>{
     const p=(Number(c.weight)||0)/total;
-    const cls=cardsToNotation(c.cards);classMass[cls]=(classMass[cls]||0)+p;
-    return {cards:[cardCode(c.cards[0]),cardCode(c.cards[1])],probability_pct:aiExportNumber(100*p,7),relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)};
+    const relativeWeightPct=relativeWeightDefined?aiExportNumber(100*(Number(c.weight)||0)/maxW,5):null;
+    return {cards:[cardCode(c.cards[0]),cardCode(c.cards[1])],probability_pct:aiExportNumber(100*p,7),relative_weight_pct:relativeWeightPct};
   }).sort((a,b)=>(b.probability_pct||0)-(a.probability_pct||0));
-  const gridRelative=Object.create(null);
-  for(const e of rangeEntriesForGrid(entries))if(Number(e.frequency)>0.000001)gridRelative[e.hand]=aiExportNumber(e.frequency,5);
+  // Diagnostic relative-weight heat grid (notion (b)): max-normalized per combo,
+  // aggregated per class by mean so classes with different combo counts stay
+  // comparable. It is never the canonical posterior projection below. When the
+  // relative weight is undefined (non-conditioned posterior, or no entry
+  // carrying a relativeWeightPct) the diagnostic is absent (null): the canonical
+  // mass is never substituted for it.
+  const relativeDefined=relativeWeightDefined&&entries.some(e=>e.relativeWeightPct!=null);
+  let gridRelative=null;
+  if(relativeDefined){
+    const relativeEntries=entries.map(e=>({hand:e.hand,frequency:Number(e.relativeWeightPct)||0}));
+    gridRelative=Object.create(null);
+    for(const e of rangeEntriesForGrid(relativeEntries))if(Number(e.frequency)>0.000001)gridRelative[e.hand]=aiExportNumber(e.frequency,5);
+  }
+  // Canonical posterior projection (§2): sum of the normalized combo probability
+  // mass per hand class; the class values sum to 100.
   const gridProbability=Object.create(null);
-  for(const [h,p] of Object.entries(classMass).sort((a,b)=>b[1]-a[1]))gridProbability[h]=aiExportNumber(100*p,7);
+  for(const e of projectCombosTo169Mass(combos).sort((a,b)=>b.frequency-a.frequency))if(e.frequency>0.000001)gridProbability[e.hand]=aiExportNumber(e.frequency,7);
   const id=`R${registry.next++}`;
   registry.snapshots[id]={
     id,player:player.name,step_index:idx,reason,street:state.replaySteps[idx]?.street||"",board:aiExportCards(board),
-    source:player.name===hand.heroName?(state.rangeEdition?"hero_manual_range":"hero_imported_range"):(state.rangeEdition?"manual_range_override":estimate?.source||"historical_imported_range"),
+    source:player.name===hand.heroName?(state.rangeEdition?"hero_manual_range":"hero_imported_range"):(estimate?.posteriorState==="degenerate"?"degenerate_posterior":estimate?.posteriorState==="source_prior_unconditioned"?"source_prior_unconditioned":state.rangeEdition?"manual_range_override":estimate?.source||"historical_imported_range"),
+    posterior_state:estimate?.posteriorState||null,
     exact_combo_engine:!!estimate?.exactComboEngine,combo_count:exact.length,width:aiExportNumber(estimate?.width),
     matched_actions:estimate?{total:estimate.totalActions||0,matched:estimate.matchedActions||0,preflop_total:estimate.preflopTotalActions||0,preflop_matched:estimate.preflopMatchedActions||0,postflop_total:estimate.postflopTotalActions||0,postflop_matched:estimate.postflopMatchedActions||0}:null,
     last_node:estimate?{id:estimate.lastNodeId||null,quality:estimate.lastQuality||"",policy_source:estimate.policySource||""}:null,
@@ -6503,15 +6642,15 @@ function renderOpponents(){
     const populationEstimate=state.hhMode&&o.playerName&&state.populationModel
       ? populationRangeEstimateForPlayer(currentHandPlayer(o.playerName),calculatorPopulationReplayIndex())
       : null;
-    const theoreticalLabel=populationEstimate?"range adverse estimée":"range source importée";
+    const theoreticalLabel=populationEstimate?.posteriorState==="degenerate"?"posterior dégénéré (fail-closed)":populationEstimate?.posteriorState==="source_prior_unconditioned"?"range source non conditionnée":populationEstimate?"range adverse estimée":"range source importée";
 
     const sourceBtn=document.createElement("button");
     sourceBtn.className="secondary source-btn"+(exactKnownOverride(i)?" active":"");
     if(o.knownCards?.length===2){
-      sourceBtn.textContent=exactKnownOverride(i)?"Source : main HH":`Source : ${theoreticalLabel}`;
+      sourceBtn.textContent=exactKnownOverride(i)?"Override : main connue HH":`Source : ${theoreticalLabel}`;
       sourceBtn.title=exactKnownOverride(i)
-        ? `Calcul avec ${o.knownCards.map(cardLabel).join(" ")}. Cliquer pour revenir à la range adverse estimée.`
-        : `Calcul avec la ${theoreticalLabel}. Cliquer pour utiliser la main exacte connue dans l'historique.`;
+        ? `Override main connue HH · mécanisme séparé du posterior : calcul avec ${o.knownCards.map(cardLabel).join(" ")} (classe unique à 100 %). Cliquer pour revenir à la range adverse estimée.`
+        : `Calcul avec la ${theoreticalLabel}. Cliquer pour utiliser la main exacte connue dans l'historique (override).`;
       sourceBtn.onclick=()=>{
         o.useKnownHand=!o.useKnownHand;
         state.activeOpponent=i;
@@ -6519,7 +6658,9 @@ function renderOpponents(){
       };
     }else{
       sourceBtn.textContent=`Source : ${theoreticalLabel}`;
-      sourceBtn.title=populationEstimate
+      sourceBtn.title=populationEstimate?.posteriorState==="source_prior_unconditioned"
+        ? "Range source importée non conditionnée : aucune action publique exploitable n'a été appariée, aucun posterior n'est affiché."
+        : populationEstimate
         ? "Range théorique conditionnée par les actions préflop et le modèle population."
         : "Aucune main exacte n'est disponible ; la range théorique est utilisée.";
       sourceBtn.disabled=true;
@@ -6532,8 +6673,8 @@ function renderOpponents(){
 
     const active=effectiveEntriesForOpponent(i);
     const info=document.createElement("div");info.className="tiny";info.style.gridColumn="2 / -1";
-    if(exactKnownOverride(i)){
-      info.textContent=`Main exacte HH utilisée : ${o.knownCards.map(cardLabel).join(" ")} · la range adverse estimée reste disponible et sera réutilisée si vous repassez sur cette source.`;
+    if(entriesAreKnownHandOverride(active)){
+      info.textContent=`Override main connue HH (classe unique à 100 %) : ${o.knownCards.map(cardLabel).join(" ")} · mécanisme séparé du posterior ; la range adverse estimée reste disponible dans la modale et sera réutilisée si vous repassez sur cette source.`;
     }else if(populationEstimate){
       info.textContent=`Range adverse estimée · ${populationEstimate.postflopMatchedActions>0?`${populationEstimate.entries.length} combos exacts`:`${populationEstimate.entries.length} classes pondérées`} · ${populationEstimate.matchedActions}/${populationEstimate.totalActions} action(s) appariée(s) · dernier nœud ${populationEstimate.lastNodeId||"—"} (${populationEstimate.lastQuality||"—"}).`;
     }else if(position){
@@ -6679,12 +6820,55 @@ function renderMatrix(){
   const {position}=opponentConfig(index);
   const fileFreq=new Map();
   let matrixPopulationEstimate=null;
+  // Notion actually rendered in the cells, so the tooltip legend can never
+  // describe a max-normalized relative weight as a frequency:
+  //   "mass"       -> canonical 169 mass projection (sum-normalized probability);
+  //   "relative"   -> diagnostic max-normalized relative weight (notion (b));
+  //   "inclusion"  -> a priori imported range frequency (notion (c));
+  //   "source_prior_unconditioned" -> imported/source prior with no matched
+  //                                    action; explicit state, no numeric grid;
+  //   "degenerate" -> fail-closed posterior, no positive mass.
+  let matrixNotion="inclusion";
   if(state.hhMode&&o?.playerName&&!state.rangeEdition){
     const player=currentHandPlayer(o.playerName);
     matrixPopulationEstimate=populationRangeEstimateForPlayer(player,calculatorPopulationReplayIndex());
-    const entries=matrixPopulationEstimate?.entries?.length
-      ? rangeEntriesForGrid(matrixPopulationEstimate.entries)
-      : legacyRangeEntriesForHistoryPlayer(player);
+    const matrixEntries=matrixPopulationEstimate?.entries?.length?matrixPopulationEstimate.entries:null;
+    const degenerate=matrixPopulationEstimate?.posteriorState==="degenerate";
+    const priorUninformative=matrixPopulationEstimate?.posteriorState==="prior_uninformative";
+    const sourcePriorUnconditioned=matrixPopulationEstimate?.posteriorState==="source_prior_unconditioned";
+    const conditioned=matrixPopulationEstimate?.posteriorState==="conditioned";
+    // A numeric 169 grid (mass projection or relative diagnostic) is only
+    // defined for a conditioned posterior. The non-informative prior and the
+    // unconditioned source prior are explicit textual states with empty entries,
+    // so a uniform prior (including a uniform prior over a strict subset) can
+    // never surface as a numeric grid nor as a misleading 100 % cell.
+    let entries;
+    if(degenerate){
+      matrixNotion="degenerate";entries=[];
+    }else if(priorUninformative){
+      // Keep this state textual: rendering the uniform prior mass projection
+      // would look like a conditioned posterior. It stays available to equity
+      // consumers through estimate.gridEntries.
+      matrixNotion="prior_uninformative";entries=[];
+    }else if(sourcePriorUnconditioned){
+      // Keep this state textual: rendering its max-normalized source weights
+      // would produce a misleading 100 % cell and look like a conditioned
+      // posterior. The source prior remains available to equity consumers.
+      matrixNotion="source_prior_unconditioned";entries=[];
+    }else if(conditioned&&matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){
+      // Diagnostic relative weight only: an undefined relativeWeightPct is
+      // never replaced by the canonical frequency/mass (that would relabel a
+      // probability as a max-normalized ratio).
+      matrixNotion="relative";
+      entries=rangeEntriesForGrid(matrixEntries.filter(e=>e.relativeWeightPct!=null).map(e=>({hand:e.hand,frequency:Number(e.relativeWeightPct)||0})));
+    }else if(conditioned&&matrixPopulationEstimate?.gridEntries?.length){
+      // Conditioned posterior without a defined relative diagnostic (uniform
+      // weights): fall back to the canonical mass projection, still numeric only
+      // for a conditioned posterior.
+      matrixNotion="mass";entries=matrixPopulationEstimate.gridEntries.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}));
+    }else{
+      matrixNotion="inclusion";entries=legacyRangeEntriesForHistoryPlayer(player);
+    }
     for(const h of entries) fileFreq.set(h.hand,Number(h.frequency)||0);
   }else{
     for(const h of (position?.hands || [])) fileFreq.set(h.hand,activeFrequency(h));
@@ -6724,9 +6908,27 @@ function renderMatrix(){
         c.style.textShadow='none';
       }
 
-      let title=state.rangeEdition
-        ? `${notation} — ${f}% · cliquer pour basculer`
-        : `${notation} — ${Number(f).toFixed(matrixPopulationEstimate?1:0).replace(".",",")}%${matrixPopulationEstimate?" · estimation population conditionnée":""}`;
+      let title;
+      if(state.rangeEdition){
+        title=`${notation} — ${f}% · cliquer pour basculer`;
+      }else if(matrixNotion==="relative"){
+        // Notion (b): dimensionless max-normalized ratio (max = 1), diagnostic
+        // only. It must never be rendered with a frequency percentage unit,
+        // which would read as a probability.
+        const ratio=Math.max(0,Math.min(1,Number(f)/100));
+        const ratioText=ratio?(ratio<0.01?ratio.toFixed(3):ratio.toFixed(2)).replace(".",","):"0";
+        title=`${notation} — poids relatif ${ratioText} (max = 1) · diagnostic, pas une probabilité`;
+      }else if(matrixNotion==="mass"){
+        title=`${notation} — ${Number(f).toFixed(1).replace(".",",")} % · masse probabiliste (projection 169)`;
+      }else if(matrixNotion==="prior_uninformative"){
+        title=`${notation} — prior non informatif · range non estimée · aucune valeur numérique affichée`;
+      }else if(matrixNotion==="degenerate"){
+        title=`${notation} — posterior dégénéré · masse nulle après blockers publics`;
+      }else if(matrixNotion==="source_prior_unconditioned"){
+        title=`${notation} — range source importée non conditionnée · aucune valeur numérique affichée`;
+      }else{
+        title=`${notation} — ${Number(f).toFixed(0).replace(".",",")} % · fréquence d’inclusion (range source)`;
+      }
       if(isExactClass) title+=` · main HH exacte utilisée : ${o.knownCards.map(cardLabel).join(" ")}`;
       else if(o?.knownCards?.length===2 && notation===exactNotation) title+=` · classe de la main HH connue`;
       c.title=title;
@@ -7483,11 +7685,47 @@ function rangeEntriesForGrid(entries){
   const sum=Object.create(null),count=Object.create(null);for(const e of entries||[]){const c=expandNotation(e.hand)?.[0];if(!c)continue;const n=cardsToNotation(c);sum[n]=(sum[n]||0)+(Number(e.frequency)||0);count[n]=(count[n]||0)+1;}
   return ALL_NOTATIONS.map(hand=>({hand,frequency:count[hand]?sum[hand]/count[hand]:0})).filter(e=>e.frequency>.001);
 }
+/* Canonical posterior normalization (notion (a) posterior_combo_probability):
+   divide the retained exact-combo weights by their total mass so the legal
+   combos sum to 1. This is the only normalization used for posterior output. */
+function normalizeComboWeightsToMass(combos){
+  const list=combos||[];
+  let sum=0;for(const c of list)sum+=Math.max(0,Number(c.weight)||0);
+  if(!(sum>0)) return false;
+  for(const c of list)c.weight=Math.max(0,Number(c.weight)||0)/sum;
+  return true;
+}
+/* Diagnostic-only (notion (b) relative_weight): max-normalize so the strongest
+   legal weight becomes 1. This is NEVER the posterior output; the canonical
+   distribution is normalizeComboWeightsToMass above. */
 function normalizeComboWeightsInPlace(combos){
   const mx=Math.max(0,...(combos||[]).map(c=>Number(c.weight)||0));
   if(!(mx>0)) return false;
   for(const c of combos)c.weight=(Number(c.weight)||0)/mx;
   return true;
+}
+/* A non-informative prior is uniform over the legal exact combos, so every
+   positive weight is equal (notion (d) non_informative_prior). */
+function comboWeightsAreUniform(combos){
+  let ref=null;
+  for(const c of combos||[]){
+    const w=Math.max(0,Number(c.weight)||0);
+    if(!(w>0))continue;
+    if(ref===null){ref=w;continue;}
+    if(Math.abs(w-ref)>1e-9*Math.max(1,Math.abs(ref)))return false;
+  }
+  return ref!==null;
+}
+/* Canonical 169 projection (§2 of the display contract): sum the combo
+   probabilities belonging to each hand class. Input weights are treated as a
+   probability mass (self-normalizing), so the class values sum to 100. */
+function projectCombosTo169Mass(combos){
+  const list=combos||[];
+  let total=0;for(const c of list)total+=Math.max(0,Number(c.weight)||0);
+  if(!(total>0))return [];
+  const mass=Object.create(null);
+  for(const c of list){const w=Math.max(0,Number(c.weight)||0);if(!(w>0))continue;const cls=cardsToNotation(c.cards);mass[cls]=(mass[cls]||0)+w/total;}
+  return ALL_NOTATIONS.map(hand=>({hand,frequency:100*(mass[hand]||0)})).filter(e=>e.frequency>1e-9);
 }
 function uniformExactComboPrior(blockedCards=[]){
   const blocked=new Set(blockedCards||[]),out=[];
@@ -7500,12 +7738,61 @@ function uniformExactComboPrior(blockedCards=[]){
   }
   return out;
 }
+/* Full-support test for the non-informative prior (notion (d)): the kept prior
+   is the true uniform non-informative prior only when every positive weight is
+   equal AND the support covers every exact combo still legal after the public
+   hero/board blockers. Uniform weights over a strict subset (a single class, an
+   imported sub-range, or a support reduced by public blockers) are a genuine a
+   priori source distribution, not the non-informative prior. `blockedCards` is
+   the public blocker list; a precomputed `legalComboCount` may be supplied when
+   the caller already knows the legal support size. */
+function priorIsNonInformative(combos,blockedCards,legalComboCount){
+  if(!comboWeightsAreUniform(combos))return false;
+  const hasLegalCount=legalComboCount!=null&&Number.isFinite(Number(legalComboCount));
+  const count=hasLegalCount?Math.max(0,Math.floor(Number(legalComboCount))):uniformExactComboPrior(blockedCards||[]).length;
+  return (combos||[]).length===count;
+}
 function exactComboRangeResult(combos,meta={}){
-  if(!combos?.length||!normalizeComboWeightsInPlace(combos))return null;
-  const entries=combos.map(c=>({hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*c.weight,exactCombo:true,population:true})).filter(e=>e.frequency>.001);
+  if(!combos?.length)return null;
+  const uniformPrior=comboWeightsAreUniform(combos);
+  const nonInformativePrior=priorIsNonInformative(combos,meta.blockedCards,meta.legalComboCount);
+  if(!normalizeComboWeightsToMass(combos))return null;
+  const informativeActions=Math.max(0,Number(meta.informativeActions)||0);
+  // State derivation is representation-only: with at least one exploited public
+  // action the record is `conditioned`; with none, a full-support uniform
+  // legal-combo prior is the true non-informative prior (`prior_uninformative`)
+  // while any other imported/source prior (non-uniform, or uniform over a strict
+  // subset such as a single class or a support reduced by public blockers) is the
+  // distinct `source_prior_unconditioned`, never assimilated to the
+  // uniform-prior state nor to a conditioned posterior.
+  const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(nonInformativePrior?"prior_uninformative":"source_prior_unconditioned"));
+  const probabilityMass=combos.reduce((s,c)=>s+(Number(c.weight)||0),0);
+  const maxWeight=Math.max(0,...combos.map(c=>Number(c.weight)||0));
+  // The max-normalized relative diagnostic is defined only for a conditioned
+  // posterior with non-uniform weights. A uniform distribution (non-informative
+  // prior, unconditioned source prior over a strict subset, or uninformative
+  // conditioning) has no meaningful relative weight: max-normalizing it would
+  // wrap every legal combo at 100 %. Its canonical output is the mass
+  // projection, so `relativeWeightPct` stays null and consumers fall back to
+  // `frequency` (a probability), never to a 100 % grid.
+  const relativeWeightPctFor=(posteriorState==="conditioned"&&!uniformPrior)?(maxWeight>0?(w=>100*w/maxWeight):null):null;
+  const entries=combos.map(c=>{const w=Math.max(0,Number(c.weight)||0);return {hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*w,relativeWeightPct:relativeWeightPctFor?relativeWeightPctFor(w):null,exactCombo:true,population:true};}).filter(e=>e.frequency>0);
   if(!entries.length)return null;
-  const width=combos.reduce((s,c)=>s+c.weight,0)/Math.max(1,combos.length);
-  return {...meta,entries,gridEntries:rangeEntriesForGrid(entries),width,comboCount:combos.length,exactComboEngine:true};
+  const width=maxWeight>0?probabilityMass/Math.max(1,combos.length)/maxWeight:0;
+  return {...meta,entries,gridEntries:projectCombosTo169Mass(combos),width,probabilityMass,uniformPrior,posteriorState,informativeActions,comboCount:combos.length,exactComboEngine:true};
+}
+/* Fail-closed posterior result: no positive mass survives the public
+   blockers/support, so nothing may be rendered as a probability. The record
+   exposes no combos and no positive 169 mass and carries an explicit reason, so
+   no consumer can silently fall back to a 100 % imported grid. */
+function degenerateComboRangeResult(meta={}){
+  return {...meta,
+    posteriorState:"degenerate",
+    entries:[],gridEntries:[],
+    probabilityMass:0,uniformPrior:false,width:0,comboCount:0,
+    exactComboEngine:true,
+    degenerateReason:meta.degenerateReason||"no_positive_mass_after_public_blockers"
+  };
 }
 function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
   if(!player||!state.hhMode||!state.selectedHand)return null;
@@ -7517,7 +7804,7 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
 
   const heroBlocked=[...(hand.heroCards||[])];
   const allPre=populationPreflopDecisionTrace(hand).slice(0,preCount),preActions=allPre.filter(x=>x.player===player.name);
-  let combos=null,preMatched=0,policySource="legacy_base";
+  let combos=null,preMatched=0,policySource="legacy_base",degenerateReason=null;
   const preTrace=[];
 
   // Persistent exact-combo engine: the first matched preflop decision starts
@@ -7536,8 +7823,10 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
       const h=cardsToNotation(c.cards),p=Math.max(0,Number(policy[h]?.[d.action])||0);
       c.weight*=p;
     }
-    if(!normalizeComboWeightsInPlace(combos)){
-      combos=exactComboPriorFromEntries(legacyRangeEntriesForHistoryPlayer(player),heroBlocked);
+    if(!normalizeComboWeightsToMass(combos)){
+      // A matched public action removed all mass. Fail closed instead of
+      // silently re-seeding from the imported legacy range.
+      degenerateReason="preflop_action_zero_mass";
       break;
     }
     preMatched++;
@@ -7550,20 +7839,20 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
     combos=exactComboPriorFromEntries(legacyRangeEntriesForHistoryPlayer(player),heroBlocked);
     if(!combos.length)combos=uniformExactComboPrior(heroBlocked);
   }
-  normalizeComboWeightsInPlace(combos);
+  if(!normalizeComboWeightsToMass(combos))degenerateReason=degenerateReason||"prior_zero_mass";
 
   const postTrace=[];let postMatched=0;
-  if(state.postflopModel&&postCount>0){
+  if(!degenerateReason&&state.postflopModel&&postCount>0){
     const occurred=postflopDecisionTrace(hand).slice(0,postCount),playerActions=occurred.filter(x=>x.player===player.name);
     for(const d of playerActions){
       combos=filterComboBlockers(combos,[...heroBlocked,...d.board]);
-      if(!normalizeComboWeightsInPlace(combos))break;
+      if(!normalizeComboWeightsToMass(combos)){degenerateReason="postflop_blockers_zero_mass";break;}
       const match=findClosestPostflopNode(d);
       if(!match){postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:null,quality:"aucun"});continue;}
       const target=postflopTargetFrequencies(match.node,d),probs=calibratedPostflopObservedProbabilities(combos,d,target);
       if(!probs){postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:match.node.id,quality:match.quality,error:"policy"});continue;}
       for(let i=0;i<combos.length;i++)combos[i].weight*=Math.max(1e-10,Number(probs[i])||0);
-      if(!normalizeComboWeightsInPlace(combos))break;
+      if(!normalizeComboWeightsToMass(combos)){degenerateReason="postflop_action_zero_mass";break;}
       postMatched++;
       postTrace.push({phase:"postflop",street:d.street,action:d.action,nodeId:match.node.id,quality:match.quality,exact:match.exact,nodeObservations:Number(match.node.coverage?.population_decisions)||0,nodeConfidence:match.node.population_model?.confidence||"",family:`${match.node.context?.pot_type||""} · ${match.node.context?.preflop_role||""} · ${match.node.context?.relative_position||""}`,target});
     }
@@ -7573,17 +7862,40 @@ function populationRangeEstimateForPlayer(player,replayIndex=state.replayIndex){
   // the street. Remove their blocked combinations at the exact replay step.
   const currentBoard=state.replaySteps?.[idx]?.board||[];
   combos=filterComboBlockers(combos,[...heroBlocked,...currentBoard]);
-  if(!normalizeComboWeightsInPlace(combos)){state.postflopRangeCache[cacheKey]=null;return null;}
+  if(!normalizeComboWeightsToMass(combos))degenerateReason=degenerateReason||"public_blockers_removed_all_mass";
 
+  // posteriorState is derived from the representation layer only: at least one
+  // public action was applied and positive mass survives => conditioned. With no
+  // exploited action, only a full-support uniform prior over the legal combos is
+  // the true non-informative prior => prior_uninformative; any other
+  // imported/source prior kept unchanged (non-uniform, or uniform over a strict
+  // subset, e.g. a single class or a support reduced by public blockers) =>
+  // source_prior_unconditioned, a distinct explicit state never assimilated to
+  // the uniform prior nor to a conditioned posterior. Zero surviving mass is an
+  // explicit degenerate (fail-closed) record, never a legacy fallback.
+  const informativeActions=preMatched+postMatched;
+  const totalPostActions=state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0;
   const trace=[...preTrace,...postTrace],last=[...trace].reverse().find(x=>x.nodeId)||null;
-  const result=exactComboRangeResult(combos,{
+  const meta={
     trace,preflopTrace:preTrace,postflopTrace:postTrace,
-    matchedActions:preMatched+postMatched,totalActions:preActions.length+(state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0),
+    matchedActions:informativeActions,totalActions:preActions.length+totalPostActions,
     preflopMatchedActions:preMatched,preflopTotalActions:preActions.length,
-    postflopMatchedActions:postMatched,postflopTotalActions:state.postflopModel?postflopDecisionTrace(hand).slice(0,postCount).filter(x=>x.player===player.name).length:0,
+    postflopMatchedActions:postMatched,postflopTotalActions:totalPostActions,
     source:postCount>0&&state.postflopModel?"dynamic_population":"preflop_population_exact",
-    policySource,lastNodeId:last?.nodeId||null,lastQuality:last?.quality||"",replayIndex:idx
-  });
+    policySource,lastNodeId:last?.nodeId||null,lastQuality:last?.quality||"",replayIndex:idx,informativeActions
+  };
+  if(degenerateReason){
+    const degenerate=degenerateComboRangeResult({...meta,lastNodeId:null,lastQuality:"",degenerateReason});
+    state.postflopRangeCache[cacheKey]=degenerate;
+    return degenerate;
+  }
+  const posteriorState=informativeActions>0?"conditioned":(priorIsNonInformative(combos,[...heroBlocked,...currentBoard])?"prior_uninformative":"source_prior_unconditioned");
+  const result=exactComboRangeResult(combos,{...meta,posteriorState});
+  if(!result){
+    const degenerate=degenerateComboRangeResult({...meta,lastNodeId:null,lastQuality:"",degenerateReason:"no_positive_support"});
+    state.postflopRangeCache[cacheKey]=degenerate;
+    return degenerate;
+  }
   state.postflopRangeCache[cacheKey]=result;
   return result;
 }
@@ -7599,7 +7911,9 @@ function legacyUnderlyingRangeEntriesForOpponent(index){
 
 
 function exactEntriesFromCards(cards){
-  return cards?.length===2 ? [{hand:exactHandCode(cards),frequency:100,exact:true}] : [];
+  // Exact known hand (hero or opponent): tagged with the additive
+  // `knownHandOverride:true` flag by `knownHandOverrideEntry`, never a posterior.
+  return knownHandOverrideEntry(cards);
 }
 function defaultRangeEntriesForHistoryPlayer(player){
   if(!player || !state.ranges.length) return [];
@@ -7633,9 +7947,20 @@ function rangeEntriesForHistoryPlayer(player,replayIndex=state.replayIndex){
   }
 
   const estimated=populationRangeEstimateForPlayer(player,replayIndex);
-  if(estimated?.entries?.length) return estimated.entries;
+  if(estimated){
+    // Degenerate posterior: no positive mass survives the public blockers. The
+    // representation layer already fail-closes (`posteriorState==="degenerate"`);
+    // do NOT silently re-seed the historical imported range here. Returning no
+    // entries lets every equity/EV/tree consumer fail closed on zero length.
+    if(estimated.posteriorState==="degenerate") return [];
+    if(estimated.entries?.length) return estimated.entries;
+    // A non-degenerate estimate always carries entries; stay defensive and fail
+    // closed instead of substituting the legacy imported range.
+    return [];
+  }
 
-  // No preflop action / no usable population node => preserve historical behavior.
+  // No population estimate at all (no model / historical imported path) =>
+  // preserve the historical legacy range behavior.
   return legacyRangeEntriesForHistoryPlayer(player);
 }
 function resetSeatEquities(message=""){

@@ -1,0 +1,49 @@
+{
+  "schema": "poker-opponent-range-numeric-scenarios/v1",
+  "description": "Deterministic public inputs for tests/trainer/smoke_opponent_range_numeric.py. Only public cards (hero cards, board cards) and a priori 169 policy weights are described; no unrevealed opponent card or future information is used. The known-hand override is listed separately because it is a display mechanism, not a posterior.",
+  "preflop_policy": {
+    "__default__": 0.05,
+    "AA": 1.0,
+    "KK": 0.6,
+    "QQ": 0.4,
+    "AKs": 0.5,
+    "AKo": 0.3,
+    "72o": 0.001
+  },
+  "second_policy": {
+    "__default__": 0.08,
+    "AKs": 2.0,
+    "AQs": 1.5,
+    "KQs": 1.2,
+    "JTs": 1.0
+  },
+  "flop_board": ["As", "Kd", "7c"],
+  "hero_cards": ["Qh", "Jh"],
+  "source_range": {
+    "description": "Deliberately non-uniform imported/source range (a priori frequencies, no hidden card). With zero matched public action it must stay a distinct `source_prior_unconditioned` state, never the uniform non-informative prior and never a conditioned posterior.",
+    "position": "CO",
+    "hands": [
+      {"hand": "AA", "actions": [{"name": "RAISE", "frequency": 70}, {"name": "FOLD", "frequency": 30}]},
+      {"hand": "KK", "actions": [{"name": "RAISE", "frequency": 40}, {"name": "FOLD", "frequency": 60}]},
+      {"hand": "AKs", "actions": [{"name": "RAISE", "frequency": 25}, {"name": "FOLD", "frequency": 75}]}
+    ]
+  },
+  "uniform_subset_source_range": {
+    "description": "Deliberately uniform imported/source range over a strict subset: three hand classes at equal a priori frequency (a flat subset) with zero matched public action. Equal weights alone are NOT the non-informative prior because the support is a strict subset of the legal exact combos, so the derived state must be `source_prior_unconditioned`, never `prior_uninformative` and never `degenerate`. The flat subset also guarantees the canonical 169 mass projection never pins a single class at 100 %.",
+    "position": "CO",
+    "hands": [
+      {"hand": "AA", "actions": [{"name": "RAISE", "frequency": 100}]},
+      {"hand": "KK", "actions": [{"name": "RAISE", "frequency": 100}]},
+      {"hand": "AKs", "actions": [{"name": "RAISE", "frequency": 100}]}
+    ]
+  },
+  "degenerate_source_hand": {
+    "hand": "AA",
+    "actions": [{"name": "RAISE", "frequency": 100}]
+  },
+  "degenerate_board": ["As", "Ah", "Ad", "Ac"],
+  "known_opponent_cards": ["Ah", "Ad"],
+  "consumer_scale_factor": 7.3,
+  "degenerate_single_combo": ["5s", "4d"],
+  "degenerate_blocker": "5s"
+}
