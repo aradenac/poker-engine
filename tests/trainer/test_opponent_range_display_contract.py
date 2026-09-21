@@ -17,6 +17,11 @@ BACKEND = (ROOT / "src/ranges/posterior_range.py").read_text(encoding="utf-8")
 SCHEMA = (ROOT / "contracts/posterior-range.schema.json").read_text(encoding="utf-8")
 
 
+def flat(text: str) -> str:
+    """Collapse markdown line wrapping so phrase assertions are stable."""
+    return " ".join(text.split())
+
+
 def main() -> None:
     # The doc names the four notions explicitly, each with its unit.
     for notion in (
@@ -36,6 +41,19 @@ def main() -> None:
     assert "max-normalized" in DOC
     assert "a priori input" in DOC
     assert "uniform" in DOC
+
+    # The conditioned exact-combo engine stores the canonical sum-normalized mass
+    # in `entries[].frequency` (notion (a)) and keeps the relative diagnostic in
+    # the separate `entries[].relativeWeightPct` (notion (b)). The diagnostic is
+    # absent for a uniform prior and is never derived from the canonical mass.
+    doc_flat = flat(DOC)
+    assert "sum-normalized probability mass" in doc_flat
+    assert "entries[].frequency" in doc_flat
+    assert "entries[].relativeWeightPct" in doc_flat
+    assert "max-normalized `relative_weight` diagnostic of notion (b)" in doc_flat
+    assert "max-normalized `relative_weight` semantics of notion (b)" not in doc_flat
+    assert "grid_169_relative_weight_pct" in doc_flat
+    assert "`null`/empty" in doc_flat
 
     # The canonical 169 projection is a SUM of combo probability mass, never a
     # mean or a max.

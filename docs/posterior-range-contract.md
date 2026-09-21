@@ -138,8 +138,10 @@ probabilities** belonging to that class:
   a per-combo probability;
 - the separate 169 **relative-weight** heat grid (notion (b)) aggregates
   max-normalized combo weights per class (by mean in the browser) for visual
-  comparison only. It is not this projection and must not be exported, cited or
-  labelled as a probability.
+  comparison only. It is not this projection: it is exported only under the
+  explicit relative-weight field `grid_169_relative_weight_pct` (and per combo
+  `relative_weight_pct`) and must never be exported, cited or labelled as a
+  probability.
 
 ### posteriorState
 
@@ -195,7 +197,10 @@ consume exactly the values above:
   `grid_169_probability_pct` (the 169 mass sum). It additionally exports the
   diagnostic `grid_169_relative_weight_pct` and per-combo `relative_weight_pct`
   (max-normalized notion (b)); for a uniform prior those diagnostics are `null`
-  while the canonical `probability_pct` is retained.
+  (or an empty grid) while the canonical `probability_pct` is retained. The
+  conditioned engine's `entries[].frequency` carries the same sum-normalized mass
+  of notion (a) and its `entries[].relativeWeightPct` the same separate diagnostic
+  of notion (b).
 - the equity consumers (`combos`/sampler, `buildSeatEquityPlayers`,
   `postflopRaiseTreeSnapshot`) keep reading `hand`/`frequency` at the same
   scale: the display normalization above never rescales their inputs.

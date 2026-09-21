@@ -97,6 +97,16 @@ def main() -> None:
     # The display contract surfaces the Replayer mapping too.
     assert "Replayer surfaces" in DISPLAY_DOC
 
+    # ...and states the canonical mass / relative-diagnostic split of the
+    # conditioned engine and the null relative grid for a uniform prior.
+    display_flat = flat(DISPLAY_DOC)
+    assert "sum-normalized probability mass" in display_flat
+    assert "entries[].frequency" in display_flat
+    assert "entries[].relativeWeightPct" in display_flat
+    assert "grid_169_relative_weight_pct" in display_flat
+    assert "`null`/empty" in display_flat
+    assert "max-normalized `relative_weight` semantics of notion (b)" not in display_flat
+
     # No divergence with the backend semantic reference.
     assert "poker-opponent-posterior-range/v1" in BACKEND_DOC
     assert "poker-opponent-posterior-range/v1" in BACKEND
