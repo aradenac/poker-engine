@@ -28,19 +28,19 @@
           "git_blob_sha": "b6012f242ae633381c125d615e3018a839eded02"
         },
         "site/analytics/review-score-adapter.js": {
-          "git_blob_sha": "13b0792b9e15330639f19b0f92d333dc6a066d68"
+          "git_blob_sha": "ac22e12d564916844b96ec657e3f92732b18a7ea"
         },
         "site/compute-scheduler.js": {
           "git_blob_sha": "c21caab928623c6d3ace9b4f58f12f6971e75929"
         },
         "site/hero-compliance-replayer.js": {
-          "git_blob_sha": "eb8e13ea09f86a4de3e1ae5c8a525f02b40a7f1d"
+          "git_blob_sha": "0c8f25280b251ad278c980540f890251047b3fee"
         },
         "site/hero-compliance.js": {
           "git_blob_sha": "1096df1bebb41cfa79743c530f891fd30c6b76d4"
         },
         "site/hero-range-migration.js": {
-          "git_blob_sha": "25253420f4e40b8dca23a02ce8f559a14ccc4afe"
+          "git_blob_sha": "98ff74011c1b425c2664627a29032a3427af4cbb"
         },
         "site/hero-ranges-app.js": {
           "git_blob_sha": "ac1e8ea8bb9108e01dae87651920431cdd5a6587"
@@ -58,7 +58,7 @@
           "git_blob_sha": "161cb59a4e6db30a6c0dfc93c7e3c12f582ae84a"
         },
         "site/index.html": {
-          "git_blob_sha": "80ab90c440a2bc9d3d09faf109b79b4ebef984ab"
+          "git_blob_sha": "aa2c4a762c1cd9f7d1ecaaba9a264618756fed34"
         },
         "site/pack-identity.js": {
           "git_blob_sha": "fa3fb310e75cff31bf7abe34ec8c83fc3de410ea"
@@ -94,7 +94,7 @@
           "git_blob_sha": "4e865e60ddd13a05517d26847ab0b8425f9cd897"
         },
         "site/trainer.js": {
-          "git_blob_sha": "980bdf4d09dc6a13a084140d611b8f5aa1cf472f"
+          "git_blob_sha": "c5af6ff29053fb60a04ff381ad477c67ec93f46a"
         },
         "site/training/leak-scenario-selector.js": {
           "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"

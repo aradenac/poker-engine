@@ -8,6 +8,7 @@
     pos:$('filterPosition'),street:$('filterStreet'),family:$('filterFamily'),played:$('filterPlayed'),recommended:$('filterRecommended'),coverageFilter:$('filterCoverage'),
     sizingError:$('filterSizingError'),jam:$('filterJam'),overbet:$('filterOverbet'),sizeMin:$('filterSizingMin'),sizeMax:$('filterSizingMax'),from:$('filterFrom'),to:$('filterTo'),
     dimension:$('leakDimension'),leaks:$('leaksBody'),decisions:$('decisionsBody'),diagnostics:$('diagnosticsBody'),reset:$('resetFiltersBtn'),
+    scopeIdentity:$('scopeIdentity'),
     sourcePanel:$('sourcePanel'),sourceTitle:$('sourceTitle'),sourceMeta:$('sourceMeta'),sourceAction:$('sourceAction'),sourceRaw:$('sourceRaw'),closeSource:$('closeSourceBtn')};
   const state={adapted:null,scopeKey:'',baseEvents:[],report:null};
 
@@ -108,13 +109,53 @@
     }
     return {population_id,status:'UNAVAILABLE',source:'NONE',fail_closed:true,reason_codes:['HERO_STRATEGY_RESOLVER_UNAVAILABLE']};
   }
+  // The contextual personal-override status is shared with the Trainer/header
+  // (#task-8zr): `available` reports an override anywhere in the active
+  // population, `active` only when it is resolved on the exact context handed
+  // in. The Review page aggregates every hand context, so no single poker
+  // context is resolved here: the status stays fail-safe inactive while still
+  // reporting availability, and it is always sourced from PERSONAL_OVERRIDE.
+  function heroRepository(){
+    const Migration=window.PokerHeroRangeMigration;
+    if(!Migration||typeof Migration.loadRepository!=='function')return null;
+    try{const loaded=Migration.loadRepository();return loaded&&loaded.repo?loaded.repo:null;}catch(_){return null;}
+  }
+  function personalOverrideStatusFor(population_id,context){
+    const Migration=window.PokerHeroRangeMigration,repository=heroRepository();
+    if(Migration&&typeof Migration.personalOverrideStatus==='function'){
+      try{return Migration.personalOverrideStatus(repository,{populationId:population_id,activePopulationId:population_id,context:context||null});}catch(_){}
+    }
+    // Fail-safe: an unavailable repository/helper never activates an override
+    // and is never presented as the population strategy.
+    return {
+      schema:'poker-hero-personal-override-status/v1',source:'PERSONAL_OVERRIDE',
+      population_id:population_id||null,available:false,active:false,active_context_key:null,context_keys:[],count:0
+    };
+  }
   async function resolveScope(){
     const [m,active]=await Promise.all([manifest(),window.PokerPopulationPacks&&window.PokerPopulationPacks.active?window.PokerPopulationPacks.active().catch(()=>null):Promise.resolve(null)]);
     const population_id=(active&&active.population_id)||(m&&m.population_id);
     if(!population_id)throw new Error('Identité de population introuvable.');
     const pack_id=active?(active.pack_id+'@'+active.pack_version):('static-trainer@'+(m&&m.engine_version||'unknown'));
     const resolution=resolveHeroStrategyInput(m,active,population_id);
-    return Adapter.reviewScopeFromResolution(resolution,{population_id,pack_id,ev_reference:Adapter.DEFAULT_EV_REFERENCE});
+    const override=personalOverrideStatusFor(population_id,null);
+    return Adapter.reviewScopeFromResolution(resolution,{population_id,pack_id,ev_reference:Adapter.DEFAULT_EV_REFERENCE,override});
+  }
+  function overrideLabel(override){
+    if(!override||!override.population_id)return 'override personnel indisponible';
+    if(override.active)return 'override personnel actif';
+    if(override.available)return 'override personnel disponible · inactif sur ce périmètre';
+    return 'aucun override personnel';
+  }
+  function scopeIdentityText(scope){
+    if(!scope)return '';
+    const strategy=scope.strategy_id===Adapter.UNAVAILABLE_STRATEGY_ID
+      ? 'stratégie Hero indisponible ('+scope.strategy_version+')'
+      : 'stratégie Hero '+scope.strategy_id+' · '+scope.strategy_version;
+    return scope.population_id+' · '+strategy+' · '+overrideLabel(scope.override);
+  }
+  function renderScopeIdentity(scope){
+    if(ui.scopeIdentity)ui.scopeIdentity.textContent=scopeIdentityText(scope);
   }
   function groupByScope(events){
     const map=new Map();for(const e of events){const k=Leak.scopeKey(Leak.scopeOf(e));if(!map.has(k))map.set(k,[]);map.get(k).push(e);}return map;
@@ -207,6 +248,7 @@
     setStatus('Lecture des reviewScores et Hand Histories locales…');
     try{
       const [reviewScores,hhSources,scope]=await Promise.all([idbGet('reviewScores'),idbGet('hhSources'),resolveScope()]);
+      state.scope=scope;renderScopeIdentity(scope);
       state.adapted=Adapter.adaptPersistedReviewData({reviewScores:reviewScores||{},hhSources:Array.isArray(hhSources)?hhSources:[],scope});
       const groups=groupByScope(state.adapted.events);
       if(!groups.size){

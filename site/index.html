@@ -3529,7 +3529,11 @@ function reviewInboxScopeInput(){
       try{resolution=window.trainerRefreshHeroStrategyIdentity();}catch(_){resolution=null;}
     }
     return Adapter.reviewScopeFromResolution(resolution||{},{
-      population_id:String(population),pack_id:packId,ev_reference:evReference
+      population_id:String(population),pack_id:packId,ev_reference:evReference,
+      // #task-a0n: the Review scope carries the same contextual override status
+      // as the Trainer/header chip, so a global presence is never promoted to an
+      // active override here either.
+      override:productPersonalOverrideState()
     });
   }
   return {

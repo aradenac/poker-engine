@@ -12,20 +12,23 @@ class LeakPageContract(unittest.TestCase):
     def test_standalone_page_contract(self):
         html = (ROOT / "site/leaks.html").read_text(encoding="utf-8")
         js = (ROOT / "site/leaks.js").read_text(encoding="utf-8")
-        for asset in ("population-packs.js", "hero-ranges.js", "hero-strategy-resolver.js",
-                      "leak-analyzer.js", "review-score-adapter.js", "leaks.js", "leaks.css"):
+        for asset in ("population-packs.js", "hero-ranges.js", "hero-range-migration.js",
+                      "hero-strategy-resolver.js", "leak-analyzer.js", "review-score-adapter.js",
+                      "leaks.js", "leaks.css"):
             self.assertIn(asset, html)
         self.assertNotIn('src="./trainer.js"', html)
-        # The resolver must be wired before the page derives its Review scope.
+        # The resolver, the shared contextual override helper and the adapter must
+        # be wired before the page derives its Review scope/identity.
         for earlier, later in (
-            ("hero-ranges.js", "hero-strategy-resolver.js"),
+            ("hero-ranges.js", "hero-range-migration.js"),
+            ("hero-range-migration.js", "hero-strategy-resolver.js"),
             ("hero-strategy-resolver.js", "leaks.js"),
         ):
             self.assertLess(html.index(earlier), html.index(later), (earlier, later))
         for marker in (
             "scopeSelect", "filterPosition", "filterStreet", "filterFamily", "filterPlayed",
             "filterRecommended", "filterSizingError", "filterJam", "filterOverbet",
-            "filterSizingMin", "filterSizingMax", "filterFrom", "filterTo",
+            "filterSizingMin", "filterSizingMax", "filterFrom", "filterTo", "scopeIdentity",
             "metricTotalLoss", "metricBb100", "leaksBody", "decisionsBody", "diagnosticsBody", "sourcePanel"
         ):
             self.assertIn(marker, html)
@@ -40,9 +43,17 @@ class LeakPageContract(unittest.TestCase):
         for marker in ("PokerHeroStrategyResolver", "resolveHeroStrategy", "Resolver.identity",
                        "reviewScopeFromResolution", "hero_provenance"):
             self.assertIn(marker, js)
+        # #task-a0n: the Review surface consumes the same contextual override
+        # helper as the Trainer/header and reports the active/inactive state tied
+        # to the resolved context instead of a global presence.
+        for marker in ("PokerHeroRangeMigration", "personalOverrideStatus", "personalOverrideStatusFor",
+                       "scope.override", "renderScopeIdentity", "scopeIdentity"):
+            self.assertIn(marker, js, marker)
         self.assertNotIn("'review-engine'", js)
         self.assertNotIn('"hero-custom"', js)
         self.assertNotIn("hero-custom", js)
+        self.assertNotIn("strategy_id:'Custom'", js)
+        self.assertNotIn('strategy_id:"Custom"', js)
 
     def test_statuses_are_explicit(self):
         html = (ROOT / "site/leaks.html").read_text(encoding="utf-8")

@@ -69,4 +69,28 @@ assert "provenance.candidate_id||null" in adapter
 assert "provenance.generation_id||null" in adapter
 assert "provenance.binding_sha256||null" in adapter
 
+# #task-a0n: the replayer derives the population-bound identity from the shared
+# Resolver.identity() accessor and the contextual override status from the same
+# personalOverrideStatus helper as the Trainer/header. The displayed override is
+# tied to the context actually resolved (active), never to a global presence.
+for marker in (
+    "identityOf",
+    "Resolver.identity",
+    "PokerHeroRangeMigration",
+    "personalOverrideStatus",
+    "personalOverrideStatusFor",
+    "decisionOverrideContext",
+    "overrideActive=!!(override&&override.active===true)",
+    "overrideText",
+    "Override personnel",
+):
+    assert marker in adapter, f"replayer must consume the contextual identity/override: {marker}"
+assert "const overrideNote=result.strategy_source==='PERSONAL_OVERRIDE'" not in adapter, (
+    "the override note must key off the contextual `active` flag, not the global resolver source"
+)
+assert "override personnel ${esc(overrideText(override))}" in adapter
+assert "identityOf,decisionOverrideContext,personalOverrideStatusFor" in adapter, (
+    "the replayer must expose its identity/override read surfaces"
+)
+
 print("Hero compliance replayer integration: PASS")

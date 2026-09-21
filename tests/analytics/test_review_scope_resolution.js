@@ -9,6 +9,8 @@ const assert=require('node:assert/strict');
 const Leak=require('../../src/analytics/leak-analyzer.js');
 const Adapter=require('../../src/analytics/review-score-adapter.js');
 const Resolver=require('../../site/hero-strategy-resolver.js');
+const HeroRanges=require('../../site/hero-ranges.js');
+const Migration=require('../../site/hero-range-migration.js');
 
 const POP='pokerstars_nlhe_100-200_zoom_play_6max_v1';
 
@@ -153,4 +155,44 @@ Total pot 900 | Rake 0
   assert.equal(hasExactCustomLabel(report.scope),false);
 }
 
-console.log(JSON.stringify({status:'PASS',schema:Adapter.RESOLUTION_SCOPE_SCHEMA,states:['ADMISSIBLE_CALCULATED','RETAIN_REFERENCE','UNAVAILABLE','POPULATION_INCOMPATIBLE']}));
+// --- end-to-end: Review consumes Resolver.identity() + the contextual state --
+// The Review scope derives its identity from Resolver.identity() and its
+// override from the same contextual helper as the Trainer/header. An override
+// on another context stays available but inactive; it is never reported as the
+// population strategy and never relabelled "Custom".
+{
+  const overrideContext={population_id:POP,table_size:6,position:'CO',effective_stack_bb:100,spot:'UNOPENED'};
+  const otherContext={population_id:POP,table_size:6,position:'SB',effective_stack_bb:100,spot:'UNOPENED'};
+  const repo=HeroRanges.emptyRepository({populationId:POP});
+  HeroRanges.setHandStrategy(repo,overrideContext,'AKs',{actions:{OPEN:1}},{layer:'personal'});
+
+  const resolution=Resolver.resolveHeroStrategy({population_id:POP,repository:repo});
+  const identity=Resolver.identity(resolution);
+  assert.equal(identity.source,Resolver.SOURCES.PERSONAL_OVERRIDE);
+  assert.equal(identity.fail_closed,true);
+  assert.notEqual(identity.source,Resolver.SOURCES.POPULATION,'an override is never the population identity');
+
+  const onContext=Migration.personalOverrideStatus(repo,{populationId:POP,activePopulationId:POP,context:overrideContext});
+  const scope=Adapter.reviewScopeFromResolution(identity,{population_id:POP,pack_id:'zoom-pack@1',override:onContext});
+  assert.equal(scope.identity.status,identity.status);
+  assert.equal(scope.identity.source,identity.source);
+  assert.equal(scope.identity.fail_closed,identity.fail_closed);
+  assert.equal(scope.strategy_id,Adapter.UNAVAILABLE_STRATEGY_ID);
+  assert.equal(scope.override.source,Adapter.OVERRIDE_SOURCE);
+  assert.equal(scope.override.available,true);
+  assert.equal(scope.override.active,true);
+  assert.equal(scope.override.active_context_key,HeroRanges.contextKey(overrideContext));
+  assert.equal(hasExactCustomLabel(scope),false);
+
+  const offContext=Migration.personalOverrideStatus(repo,{populationId:POP,activePopulationId:POP,context:otherContext});
+  const offScope=Adapter.reviewScopeFromResolution(identity,{population_id:POP,pack_id:'zoom-pack@1',override:offContext});
+  assert.equal(offScope.override.available,true,'the override stays available population-wide');
+  assert.equal(offScope.override.active,false,'the override is inactive on another context');
+  assert.equal(offScope.override.active_context_key,null);
+
+  // The same unavailable identity is still explicit and filterable.
+  assert.equal(offScope.override.source,Adapter.OVERRIDE_SOURCE);
+  assert.equal(hasExactCustomLabel(offScope),false);
+}
+
+console.log(JSON.stringify({status:'PASS',schema:Adapter.RESOLUTION_SCOPE_SCHEMA,states:['ADMISSIBLE_CALCULATED','RETAIN_REFERENCE','UNAVAILABLE','POPULATION_INCOMPATIBLE'],override:['available','active']}));

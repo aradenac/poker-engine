@@ -133,6 +133,15 @@
       generation_manifest:generation&&typeof generation==='object'?generation:null
     };
   }
+  // The single identity read surface shared with the product header/Trainer.
+  // Downstream consumers (compliance verdict, resolution text, override status)
+  // must derive the population-bound identity from Resolver.identity() rather
+  // than re-reading a manifest or inventing a label.
+  function identityOf(resolution){
+    const Resolver=root.PokerHeroStrategyResolver;
+    if(Resolver&&typeof Resolver.identity==='function')return Resolver.identity(resolution);
+    return resolution;
+  }
   function strategyResolutionFor(repo){
     const Resolver=root.PokerHeroStrategyResolver,population=activePopulationId(repo);
     if(Resolver&&typeof Resolver.resolveHeroStrategy==='function'){
@@ -144,7 +153,7 @@
       const provenance=manifest?.hero_provenance||null;
       const coverage=heroCoverageBound(manifest,provenance);
       try{
-        return Resolver.resolveHeroStrategy({
+        return identityOf(Resolver.resolveHeroStrategy({
           population_id:population,
           repository:repo,
           trainer_manifest:manifest,
@@ -153,11 +162,42 @@
           retained_reference:heroRetainedReference(manifest),
           required_context_keys:coverage.required_context_keys,
           generation_manifest:coverage.generation_manifest
-        });
+        }));
       }catch(err){console.warn('Hero strategy resolution unavailable',err);}
     }
-    try{if(typeof trainerState!=='undefined'&&trainerState?.heroStrategyResolution)return trainerState.heroStrategyResolution;}catch(_){}
+    try{if(typeof trainerState!=='undefined'&&trainerState?.heroStrategyResolution)return identityOf(trainerState.heroStrategyResolution);}catch(_){}
     return null;
+  }
+  // Context of the exact Hero decision the compliance verdict scores. The
+  // personal-override status is resolved against this context so the panel
+  // reports "actif" only when the override really applies here (fail-safe
+  // inactive on an unresolvable context), exactly like the Trainer/header.
+  function decisionOverrideContext(decision,population){
+    if(!decision||!population)return null;
+    const ctx=decision.preflop_context_v1||decision||{};
+    const C=root.PokerHeroCompliance;
+    const position=String(ctx.actor_position||decision.actor_position||'').toUpperCase();
+    const spot=C&&typeof C.spotForDecision==='function'?C.spotForDecision(decision):null;
+    const stack=C&&typeof C.effectiveStackForDecision==='function'?C.effectiveStackForDecision(decision):Number(ctx.effective_stack_bb);
+    const table_size=Number(ctx.table_size||6);
+    if(!position||!spot||!Number.isFinite(stack)||stack<=0||!Number.isInteger(table_size)||table_size<2)return null;
+    const context={population_id:String(population),table_size,position,effective_stack_bb:stack,spot};
+    const preflopId=String(ctx.preflop_context_id||'').trim();
+    if(/^PFC_[0-9a-f]{16}$/i.test(preflopId))context.preflop_context_id=preflopId;
+    return context;
+  }
+  function personalOverrideStatusFor(repo,decision,population){
+    const Migration=root.PokerHeroRangeMigration;
+    const context=decisionOverrideContext(decision,population);
+    if(repo&&Migration&&typeof Migration.personalOverrideStatus==='function'){
+      try{return Migration.personalOverrideStatus(repo,{populationId:population,activePopulationId:population,context});}catch(_){}
+    }
+    // Fail-safe: an unavailable repository/helper never activates an override
+    // and is never presented as the population strategy.
+    return {
+      schema:'poker-hero-personal-override-status/v1',source:'PERSONAL_OVERRIDE',
+      population_id:population||null,available:false,active:false,active_context_key:null,context_keys:[],count:0
+    };
   }
 
   function evaluate(hand,decision,repo,resolution){
@@ -167,13 +207,15 @@
   function heroTrace(hand){return traceForHand(hand).filter(d=>d?.player===hand?.heroName);}
 
   function currentEvaluation(hand,repo,providedResolution){
-    if(!hand)return {result:null,decision:null,resolution:null,label:'Aucune main sélectionnée'};
-    const resolution=providedResolution===undefined?strategyResolutionFor(repo):providedResolution;
+    if(!hand)return {result:null,decision:null,resolution:null,override:null,label:'Aucune main sélectionnée'};
+    const resolution=identityOf(providedResolution===undefined?strategyResolutionFor(repo):providedResolution);
+    const population=resolution?.population_id||activePopulationId(repo);
     const all=traceForHand(hand),count=replayPreflopCount(typeof state!=='undefined'?state.replayIndex:0),occurred=all.slice(0,count);
     const hero=occurred.filter(d=>d?.player===hand.heroName);
-    if(!hero.length)return {result:null,decision:null,resolution,label:'Aucune décision Hero préflop encore jouée'};
+    if(!hero.length)return {result:null,decision:null,resolution,override:personalOverrideStatusFor(repo,null,population),label:'Aucune décision Hero préflop encore jouée'};
     const decision=hero[hero.length-1];
-    return {result:evaluate(hand,decision,repo,resolution),decision,resolution,label:'Dernière décision Hero préflop'};
+    const override=personalOverrideStatusFor(repo,decision,population);
+    return {result:evaluate(hand,decision,repo,resolution),decision,resolution,override,label:'Dernière décision Hero préflop'};
   }
 
   function sessionSummary(repo,providedResolution){
@@ -210,6 +252,15 @@
     if(resolution.population_id)parts.push(String(resolution.population_id));
     if(resolution.fail_closed)parts.push('fail-closed');
     return parts.join(' · ');
+  }
+  // Contextual status shown to the user (#task-8zr): an override that exists
+  // elsewhere in the population is reported as "disponible · inactif", never as
+  // an active override, and an unresolvable context stays fail-safe inactive.
+  function overrideText(override){
+    if(!override||!override.population_id)return 'indisponible';
+    if(override.active)return 'actif';
+    if(override.available)return 'disponible · inactif sur ce contexte';
+    return 'aucun';
   }
   function statusClass(result){
     if(result?.action_status==='OUT_OF_RANGE')return 'bad';
@@ -264,12 +315,13 @@
       markup='<div class="hc-head"><b>Conformité range Hero</b><span class="hc-status neutral">Pas de range</span></div><div class="hc-empty">Aucun dépôt Hero enregistré. Le moteur de recommandation reste indépendant de ce contrôle.</div><a class="hc-link" href="./hero-ranges.html">Définir / importer les ranges Hero</a>';
     }else{
       const current=currentEvaluation(hand,repo),resolution=current.resolution,result=current.result,summary=sessionSummary(repo,resolution),token=root.PokerHeroCompliance.repositoryVersionToken(repo);
+      const override=current.override,overrideActive=!!(override&&override.active===true);
       if(!result){
-        markup=`<div class="hc-head"><b>Conformité range Hero</b><span class="hc-status neutral">Pas de verdict</span></div><div class="hc-empty">${esc(current.label)}</div>${summaryHtml(summary)}<div class="hc-foot">Range ${esc(token)} · ${esc(resolutionText(resolution))} · conformité au plan Hero distincte de la recommandation moteur · écart EV non évalué.</div><a class="hc-link" href="./hero-ranges.html">Ouvrir la grille Hero</a>`;
+        markup=`<div class="hc-head"><b>Conformité range Hero</b><span class="hc-status neutral">Pas de verdict</span></div><div class="hc-empty">${esc(current.label)}</div>${summaryHtml(summary)}<div class="hc-foot">Range ${esc(token)} · ${esc(resolutionText(resolution))} · override personnel ${esc(overrideText(override))} · conformité au plan Hero distincte de la recommandation moteur · écart EV non évalué.</div><a class="hc-link" href="./hero-ranges.html">Ouvrir la grille Hero</a>`;
       }else{
         const layer=result.layer?`${result.layer}${result.layer_version!=null?` v${result.layer_version}`:''}`:'—';
-        const overrideNote=result.strategy_source==='PERSONAL_OVERRIDE'
-          ?'<div class="hc-note">Override personnel : ce verdict porte sur votre couche personnelle et ne représente pas la stratégie calculée de la population.</div>'
+        const overrideNote=overrideActive
+          ?'<div class="hc-note">Override personnel actif sur ce contexte : ce verdict porte sur votre couche personnelle et ne représente pas la stratégie calculée de la population.</div>'
           :'';
         markup=`<div class="hc-head"><div><b>Conformité range Hero</b><small>${esc(current.label)}</small></div><span class="hc-status ${statusClass(result)}">${esc(statusLabel(result))}</span></div>
           <div class="hc-metrics">
@@ -278,13 +330,14 @@
             <div><span>Fréquence prescrite</span><b>${esc(frequencyText(result))}</b></div>
             <div><span>Couche / version</span><b>${esc(layer)}</b></div>
             <div class="hc-wide"><span>Origine de la stratégie</span><b>${esc(strategySourceText(result))} · population ${esc(result.population_id||'—')} · ${esc(resolutionText(resolution))}</b></div>
+            <div class="hc-wide"><span>Override personnel</span><b>${esc(overrideText(override))}</b></div>
             <div class="hc-wide"><span>Sizing</span><b>${esc(sizingText(result))}</b></div>
             <div><span>Écart EV</span><b>non évalué</b></div>
           </div>
           <div class="hc-note">Une action mixée à fréquence positive est autorisée sur une occurrence isolée ; la calibration des fréquences nécessite un échantillon adapté. Ce verdict n’utilise que les cartes Hero connues dès le départ et l’état antérieur à l’action.</div>
           ${overrideNote}
           ${summaryHtml(summary)}
-          <div class="hc-foot">Range ${esc(result.repository_token)} · ${esc(strategySourceText(result))} · population ${esc(result.population_id||'—')} · recommandation moteur et conformité Hero sont deux axes distincts.</div>
+          <div class="hc-foot">Range ${esc(result.repository_token)} · ${esc(strategySourceText(result))} · override personnel ${esc(overrideText(override))} · population ${esc(result.population_id||'—')} · recommandation moteur et conformité Hero sont deux axes distincts.</div>
           <a class="hc-link" href="${esc(result.editor_href||'./hero-ranges.html')}">Voir / modifier cette grille</a>`;
       }
     }
@@ -307,5 +360,5 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
     setInterval(render,500);
   }
-  root.PokerHeroComplianceReplayer={STORAGE_KEY,handClass,loadRepository,activePopulationId,strategyResolutionFor,currentEvaluation,sessionSummary,render,invalidate};
+  root.PokerHeroComplianceReplayer={STORAGE_KEY,handClass,loadRepository,activePopulationId,strategyResolutionFor,identityOf,decisionOverrideContext,personalOverrideStatusFor,currentEvaluation,sessionSummary,render,invalidate};
 })(typeof globalThis!=='undefined'?globalThis:this);

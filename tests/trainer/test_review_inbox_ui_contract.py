@@ -49,6 +49,9 @@ def main() -> None:
     assert 'productHeroStrategyResolution()' in scope_block
     assert 'reviewScopeFromResolution' in scope_block
     assert 'population_id:String(population)' in scope_block
+    # #task-a0n: the Review scope consumes the same contextual override status as
+    # the Trainer/header chip, never a global presence promoted to active.
+    assert 'override:productPersonalOverrideState()' in scope_block
 
     print("review inbox runtime mirror/UI contract checks: OK")
 
