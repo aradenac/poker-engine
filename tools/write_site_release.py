@@ -54,6 +54,8 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "hero-ranges.js",
     ROOT / "site" / "hero-ranges-app.js",
     ROOT / "site" / "hero-ranges.css",
+    ROOT / "site" / "hero-range-migration.js",
+    ROOT / "site" / "hero-strategy-resolver.js",
     ROOT / "site" / "hero-compliance.js",
     ROOT / "site" / "hero-compliance-replayer.js",
     ROOT / "site" / "trainer.js",

@@ -21,7 +21,16 @@ def main() -> None:
     # Active population and Hero strategy are first-level identity.
     identity = block('<div class="product-identity"', '<details id="runtimeIdentityDetails"')
     assert 'Population <b id="activePopulationIdentity">' in identity
-    assert 'Stratégie Hero <b id="activeStrategyIdentity">Custom</b>' in identity
+    assert 'Stratégie Hero <b id="activeStrategyIdentity">stratégie indisponible</b>' in identity
+    assert 'id="activeStrategySourceIdentity"' in identity
+    assert 'id="activeStrategyFailClose"' in identity
+    assert 'Stratégie indisponible pour cette population' in identity
+    assert 'id="personalOverrideIdentity"' in identity
+    assert '>Custom<' not in identity
+    # The resolver and the safe personal-override migration are wired into the page.
+    assert '<script src="./hero-ranges.js"></script>' in INDEX
+    assert '<script src="./hero-range-migration.js"></script>' in INDEX
+    assert '<script src="./hero-strategy-resolver.js"></script>' in INDEX
 
     # Technical versions/provenance remain available, but only in collapsed Advanced.
     runtime = block('<details id="runtimeIdentityDetails"', '<div class="local-persistence">')
@@ -40,10 +49,30 @@ def main() -> None:
     tech = block('<summary>Détails techniques du Trainer</summary>', '</details>')
     assert 'Model A v5' in tech and 'Model B v2' in tech
     assert 'id="trainerTechnicalIdentity"' in tech
-    assert 'Trainer prêt · ${trainerState.populationId} · stratégie Hero Custom.' in TRAINER
+    assert 'stratégie Hero Custom' not in TRAINER
+    assert 'Trainer prêt · ${trainerState.populationId} · stratégie Hero Custom.' not in TRAINER
+    assert 'TRAINER_HERO_FAIL_CLOSE="Stratégie indisponible pour cette population"' in TRAINER
+    assert 'PokerHeroStrategyResolver' in TRAINER
+    assert 'PokerHeroRangeMigration' in TRAINER
+    assert 'trainerRefreshHeroStrategyIdentity' in TRAINER
+    # A retained reference is provenance only: Trainer surfaces require the
+    # calculated strategy admission status, independently of fail_closed.
+    assert 'resolution.status!=="ADMISSIBLE_CALCULATED"' in TRAINER
+    assert 'référence retenue non admissible${version}' not in TRAINER
     assert 'Trainer prêt · ${trainerState.populationId} · Model A v5 + Model B v2' not in TRAINER
     assert 'Chargement de la population et de la stratégie…' in TRAINER
     assert 'Calcul de la recommandation Model A…' not in TRAINER
+
+    # The header computes the identity trio dynamically: population, Hero strategy
+    # source/version and the personal-override active state.
+    ui = block('function productHeroStrategyResolution(){', 'async function loadRuntimeReleaseIdentity()')
+    assert 'activeStrategyIdentity.textContent' in ui
+    assert 'activeStrategySourceIdentity.textContent' in ui
+    assert 'activeStrategyFailClose' in ui
+    assert 'personalOverrideIdentity.textContent' in ui
+    assert 'heroStrategyResolution' in ui
+    assert 'identity:"Stratégie indisponible pour cette population"' in ui
+    assert 'retenue non admissible' in ui
 
     # Runtime release identity is sourced from RELEASE.json, not duplicated version literals.
     release_loader = block('async function loadRuntimeReleaseIdentity()', 'const LOCAL_DB_NAME')

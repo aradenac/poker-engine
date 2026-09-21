@@ -258,6 +258,11 @@
   .product-identity{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 5px}
   .product-identity-chip{display:inline-flex;gap:5px;align-items:baseline;padding:4px 7px;border:1px solid var(--border);border-radius:999px;background:#0f1729;color:var(--muted);font-size:9px}
   .product-identity-chip b{color:var(--text);font-size:10px}
+  .product-identity-detail{color:var(--muted);font-size:9px}
+  .product-identity-chip b[data-state="active"]{color:#f1c66d}
+  .product-identity-chip b[data-state="inactive"]{color:var(--muted)}
+  .product-identity-chip.fail-close{border-color:rgba(241,198,109,.45);color:#f1d994}
+  .product-identity-chip.fail-close[hidden]{display:none}
   .central-override-notice{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0 9px;padding:7px 9px;border:1px solid rgba(241,198,109,.32);border-radius:9px;background:rgba(241,198,109,.045);color:#dbc995;font-size:9px;line-height:1.35}
   .central-override-notice[hidden]{display:none}
   .central-override-badge{display:inline-flex;padding:3px 6px;border:1px solid rgba(241,198,109,.42);border-radius:999px;background:rgba(241,198,109,.075);font-weight:950;letter-spacing:.035em;color:#f1d994;white-space:nowrap}
@@ -1146,7 +1151,9 @@
   <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
   <div class="product-identity" aria-label="Contexte actif">
     <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
-    <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">Custom</b></span>
+    <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">stratégie indisponible</b> <span id="activeStrategySourceIdentity" class="product-identity-detail">source indisponible · version —</span></span>
+    <span id="activeStrategyFailClose" class="product-identity-chip fail-close" hidden>Stratégie indisponible pour cette population</span>
+    <span class="product-identity-chip">Override personnel <b id="personalOverrideIdentity" data-state="inactive">inactif</b></span>
   </div>
   <div id="centralOverrideNotice" class="central-override-notice" hidden aria-live="polite">
     <span id="centralOverrideBadge" class="central-override-badge">MANUAL_OVERRIDE / NON_STANDARD</span>
@@ -1501,7 +1508,7 @@
         <details class="action-advanced">
           <summary>Détails techniques du Trainer</summary>
           <div class="action-advanced-body">
-            <div id="trainerTechnicalIdentity" class="trainer-note">Population — · Model A v5 · Model B v2 · stratégie Hero Custom.</div>
+            <div id="trainerTechnicalIdentity" class="trainer-note">Population — · Model A v5 · Model B v2 · stratégie Hero indisponible.</div>
             <div class="trainer-note">Model B pilote les profils, fréquences d’action et sizings adverses. Sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Model A reste la source de recommandation Hero et d’EV.</div>
           </div>
         </details>
@@ -1697,6 +1704,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       reviewDashboardPriority=$("reviewDashboardPriority"), reviewDashboardPriorityMeta=$("reviewDashboardPriorityMeta"),
       reviewDashboardImportBtn=$("reviewDashboardImportBtn"), reviewDashboardReviewBtn=$("reviewDashboardReviewBtn"), reviewDashboardLeakBtn=$("reviewDashboardLeakBtn"), reviewDashboardTrainingBtn=$("reviewDashboardTrainingBtn"), reviewDashboardTrace=$("reviewDashboardTrace"),
       activePopulationIdentity=$("activePopulationIdentity"), activeStrategyIdentity=$("activeStrategyIdentity"),
+      activeStrategySourceIdentity=$("activeStrategySourceIdentity"), activeStrategyFailClose=$("activeStrategyFailClose"), personalOverrideIdentity=$("personalOverrideIdentity"),
       centralOverrideNotice=$("centralOverrideNotice"), centralOverrideBadge=$("centralOverrideBadge"), centralOverrideText=$("centralOverrideText"),
       centralManualImportLink=$("centralManualImportLink"), centralRestorePackBtn=$("centralRestorePackBtn"), centralOverrideStatus=$("centralOverrideStatus"),
       runtimeIdentityDetails=$("runtimeIdentityDetails"), runtimeAppVersion=$("runtimeAppVersion"), runtimeEngineVersion=$("runtimeEngineVersion"),
@@ -1951,6 +1959,28 @@ function compactIdentityName(name){
   if(!raw)return "";
   return raw.replace(/\.json$/i,"").replace(/_/g," ");
 }
+function productHeroStrategyResolution(){
+  if(typeof trainerState!=="undefined"&&trainerState?.heroStrategyResolution)return trainerState.heroStrategyResolution;
+  return state.heroStrategyResolution||null;
+}
+function productPersonalOverrideState(){
+  if(typeof trainerState!=="undefined"&&trainerState?.personalOverride)return trainerState.personalOverride;
+  return state.personalOverride||null;
+}
+function productHeroStrategyIdentityText(resolution){
+  const fallback={identity:"stratégie indisponible",source:"source indisponible",version:"—"};
+  if(!resolution)return fallback;
+  const status=String(resolution.status||"");
+  const strategyId=resolution.strategy_id?String(resolution.strategy_id):"";
+  const version=resolution.strategy_version?String(resolution.strategy_version):"—";
+  if(resolution.fail_closed){
+    const failSource=resolution.source==="PERSONAL_OVERRIDE"?"override personnel uniquement":resolution.source==="POPULATION"?"population sans stratégie admissible":"aucune stratégie admissible";
+    return {identity:"Stratégie indisponible pour cette population",source:failSource,version};
+  }
+  if(status==="ADMISSIBLE_CALCULATED")return {identity:strategyId||"stratégie calculée",source:`source ${resolution.source||"POPULATION"}`,version};
+  if(status==="RETAIN_REFERENCE")return {identity:"Stratégie indisponible pour cette population",source:`provenance ${resolution.source||"POPULATION"} · référence ${strategyId||"sans identifiant"} retenue non admissible`,version};
+  return fallback;
+}
 function updateProductIdentityUi(){
   let population="";
   if(typeof trainerState!=="undefined"&&trainerState?.populationId) population=String(trainerState.populationId);
@@ -1959,7 +1989,21 @@ function updateProductIdentityUi(){
   if(!population&&packIdentity?.population_id)population=String(packIdentity.population_id);
   if(!population&&packIdentity?.id==="embedded-fallback")population="fallback embarqué";
   if(activePopulationIdentity) activePopulationIdentity.textContent=population||"non chargée";
-  if(activeStrategyIdentity) activeStrategyIdentity.textContent="Custom";
+
+  const resolution=productHeroStrategyResolution();
+  const strategy=productHeroStrategyIdentityText(resolution);
+  if(activeStrategyIdentity) activeStrategyIdentity.textContent=strategy.identity;
+  if(activeStrategySourceIdentity) activeStrategySourceIdentity.textContent=`${strategy.source} · version ${strategy.version}`;
+  const strategyAdmissible=!!(resolution&&!resolution.fail_closed&&resolution.status==="ADMISSIBLE_CALCULATED");
+  if(activeStrategyFailClose) activeStrategyFailClose.hidden=!(resolution&&!strategyAdmissible);
+
+  const override=productPersonalOverrideState();
+  const overrideActive=override?override.active===true:(resolution?resolution.source==="PERSONAL_OVERRIDE":false);
+  if(personalOverrideIdentity){
+    personalOverrideIdentity.textContent=overrideActive?"actif":"inactif";
+    personalOverrideIdentity.dataset.state=overrideActive?"active":"inactive";
+  }
+
   if(runtimeModelAIdentity){
     const pre=state.populationModelMeta?.schemaVersion,post=state.postflopModelMeta?.schemaVersion;
     runtimeModelAIdentity.textContent=pre||post?`préflop ${pre||"—"} · postflop ${post||"—"}`:"non chargé";
@@ -2024,6 +2068,7 @@ async function refreshCentralManualOverrideState(contract=null){
       if(centralRestorePackBtn)centralRestorePackBtn.disabled=true;
       if(centralOverrideStatus){centralOverrideStatus.textContent="";centralOverrideStatus.className="central-override-status";}
     }
+    if(typeof window.trainerRefreshHeroStrategyIdentity==="function")window.trainerRefreshHeroStrategyIdentity();
     updateProductIdentityUi();
     return next;
   }catch(err){
@@ -8927,6 +8972,9 @@ window.addEventListener("beforeunload",()=>{
 /* v82 low-confidence extreme local-P90 guard active */
 /* v83 effective all-in sizing candidate active */
 </script>
+<script src="./hero-ranges.js"></script>
+<script src="./hero-range-migration.js"></script>
+<script src="./hero-strategy-resolver.js"></script>
 <script src="./trainer.js"></script>
 </body>
 </html>

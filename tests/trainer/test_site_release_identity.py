@@ -42,6 +42,8 @@ def main() -> int:
         "site/hero-ranges.js",
         "site/hero-ranges-app.js",
         "site/hero-ranges.css",
+        "site/hero-range-migration.js",
+        "site/hero-strategy-resolver.js",
         "site/hero-compliance.js",
         "site/hero-compliance-replayer.js",
         "site/trainer.css",

@@ -26,10 +26,14 @@ def main() -> None:
     assert '"Range source importée"' in INDEX
     assert 'Position dans la range source' in INDEX
 
-    # Hero terminology is strategy-oriented in H-owned surfaces.
-    assert 'Stratégie Hero <b id="activeStrategyIdentity">Custom</b>' in INDEX
+    # Hero terminology is strategy-oriented in H-owned surfaces. The default
+    # identity is an explicit unavailable state, never the legacy "Custom" token.
+    assert 'Stratégie Hero <b id="activeStrategyIdentity">stratégie indisponible</b>' in INDEX
     assert 'data-product-domain="strategy">Strategy</a>' in INDEX
-    assert 'stratégie Hero Custom' in TRAINER
+    assert 'stratégie Hero Custom' not in TRAINER
+    assert 'Stratégie indisponible pour cette population' in TRAINER
+    assert 'resolution.status!=="ADMISSIBLE_CALCULATED"' in TRAINER
+    assert 'référence retenue non admissible${version}' not in TRAINER
     assert 'ranges Hero Custom' not in TRAINER
     assert ' · range Custom' not in TRAINER
 
