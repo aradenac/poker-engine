@@ -2,7 +2,7 @@
 """Numeric browser smoke for the opponent-range representation layer (#391 · task-tn5).
 
 It serves `site/index.html` through the same static HTTP shape as the trainer
-smoke and drives the real in-page functions with `page.evaluate`. Ten
+smoke and drives the real in-page functions with `page.evaluate`. Eleven
 scenarios are exercised at the numeric level:
 
 1.  non-informative/uniform prior;
@@ -19,7 +19,14 @@ scenarios are exercised at the numeric level:
     `prior_uninformative` nor `degenerate`, no 100 % cell, no numeric grid),
     while a public board that removes all of its mass fails closed as
     `degenerate` and `rangeEntriesForHistoryPlayer` never substitutes the
-    legacy imported range.
+    legacy imported range;
+11. a deliberately **uniform** imported/source range over a strict subset (a
+    flat three-class subset) with zero matched public action stays the distinct
+    `source_prior_unconditioned` state — equal weights alone are not the
+    non-informative prior when the support does not cover every legal exact
+    combo — with no numeric grid, no 100 % cell, a canonical mass projection
+    summing to 100 and an export whose `grid_169_relative_weight_pct` and
+    `exact_combos[].relative_weight_pct` are null.
 
 Representation/display only: it never changes the model/fit, and it never reads
 an unrevealed opponent card or any future information (public hero/board
@@ -372,6 +379,72 @@ async def main() -> None:
                     };
                 } finally {
                     Object.assign(state, savedSourceState);
+                }
+
+                // ---- 11. uniform imported source over a strict subset, 0 action
+                // A flat imported range whose weights are all equal is NOT the
+                // non-informative prior when its support covers only a strict
+                // subset of the legal exact combos (here a flat three-class
+                // subset). With zero matched public action the derived state must
+                // stay the distinct `source_prior_unconditioned` (never
+                // `prior_uninformative`, never `degenerate`), rendered without a
+                // numeric grid and with no 100 % cell, while the canonical 169
+                // projection is a real mass distribution summing to 100. The
+                // canonical export of the same derived estimate must expose a
+                // null relative diagnostic (per combo and 169 grid) and keep the
+                // canonical probability mass sum-normalized below 100 %.
+                const uniformSourcePosition = {
+                    position: cfg.uniform_subset_source_range.position,
+                    hands: cfg.uniform_subset_source_range.hands
+                };
+                const savedUniformState = {
+                    selectedHand: state.selectedHand, replaySteps: state.replaySteps,
+                    replayIndex: state.replayIndex, hhMode: state.hhMode,
+                    populationModel: state.populationModel, postflopModel: state.postflopModel,
+                    opponents: state.opponents, ranges: state.ranges, rangeEdition: state.rangeEdition,
+                    postflopRangeCache: state.postflopRangeCache
+                };
+                try {
+                    state.ranges = [{ name: "Uniform subset", positions: [uniformSourcePosition] }];
+                    state.opponents = sourceOpponents;
+                    state.rangeEdition = false;
+                    state.populationModel = null;
+                    state.postflopModel = null;
+                    state.postflopRangeCache = Object.create(null);
+                    state.selectedHand = buildSourceHand("uniform-subset-source-browser");
+                    state.replaySteps = [{ street: "Flop", board: [] }];
+                    state.replayIndex = 0;
+                    state.hhMode = true;
+                    const uniformSourceEstimate = populationRangeEstimateForPlayer(sourcePlayer, 0);
+                    const uniformSourceResolved = rangeEntriesForHistoryPlayer(sourcePlayer, 0);
+
+                    const uniformExportRegistry = { next: 1, byKey: Object.create(null), snapshots: Object.create(null) };
+                    const uniformExportId = aiExportRangeSnapshot(sourcePlayer, 0, uniformExportRegistry, "smoke-uniform-subset");
+                    const uniformExport = uniformExportRegistry.snapshots[uniformExportId];
+                    const uniformExportValues = Object.values(uniformExport?.grid_169_probability_pct || {});
+
+                    R.sc11 = {
+                        state: uniformSourceEstimate?.posteriorState || null,
+                        uniformPrior: uniformSourceEstimate?.uniformPrior === true,
+                        informativeActions: Number(uniformSourceEstimate?.informativeActions) || 0,
+                        comboCount: Number(uniformSourceEstimate?.comboCount) || 0,
+                        entriesSum: entriesSum(uniformSourceEstimate?.entries),
+                        gridSum: gridSum(uniformSourceEstimate?.gridEntries),
+                        gridMax: gridMax(uniformSourceEstimate?.gridEntries),
+                        grid100: countAt100(uniformSourceEstimate?.gridEntries),
+                        gridLen: (uniformSourceEstimate?.gridEntries || []).length,
+                        gridMapSize: gridFreqMapFromEstimate(uniformSourceEstimate, null).size,
+                        resolvedEntryCount: uniformSourceResolved.length,
+                        exportPosteriorState: uniformExport?.posterior_state || null,
+                        exportSource: uniformExport?.source || null,
+                        exportGridRelativeNull: uniformExport?.grid_169_relative_weight_pct === null,
+                        exportExactRelativeNullAll: (uniformExport?.exact_combos || []).every(c => c.relative_weight_pct === null),
+                        exportProbabilitySum: sum(uniformExportValues),
+                        exportProbabilityMax: Math.max(0, ...uniformExportValues),
+                        exportAt100: uniformExportValues.filter(v => Math.abs(Number(v) - 100) < 1e-6).length
+                    };
+                } finally {
+                    Object.assign(state, savedUniformState);
                 }
 
                 // ---- anti-regression: max normalization is not canonical ---
@@ -732,6 +805,32 @@ async def main() -> None:
         assert degenerate["legacyEntryCount"] == 1, sc10
         assert degenerate["resolvedEntryCount"] == 0, sc10
 
+        # ---- scenario 11: uniform imported source over a strict subset --------
+        sc11 = result["sc11"]
+        # Equal weights with no matched action, but a strict-subset support, are
+        # a distinct source prior: never the full-support non-informative prior.
+        assert sc11["state"] == "source_prior_unconditioned", sc11
+        assert sc11["state"] != "prior_uninformative", sc11
+        assert sc11["state"] != "degenerate", sc11
+        assert sc11["uniformPrior"] is True and sc11["informativeActions"] == 0, sc11
+        assert sc11["comboCount"] == 16, sc11
+        # Canonical mass projection sums to 100 with no 100 % cell, and the UI
+        # renders no numeric grid for this explicit state.
+        assert approx(sc11["entriesSum"], 100.0) and approx(sc11["gridSum"], 100.0), sc11
+        assert sc11["gridLen"] > 0 and sc11["gridMax"] < 100.0 and sc11["grid100"] == 0, sc11
+        assert sc11["gridMapSize"] == 0, sc11
+        # The source prior is still exposed to the equity consumers.
+        assert sc11["resolvedEntryCount"] == sc11["comboCount"], sc11
+        # Export: the max-normalized relative diagnostic is absent for an
+        # unconditioned source prior, while the canonical probability mass is
+        # retained, sum-normalized and never pinned at 100 %.
+        assert sc11["exportPosteriorState"] == "source_prior_unconditioned", sc11
+        assert sc11["exportSource"] == "source_prior_unconditioned", sc11
+        assert sc11["exportGridRelativeNull"] is True, sc11
+        assert sc11["exportExactRelativeNullAll"] is True, sc11
+        assert approx(sc11["exportProbabilitySum"], 100.0, 1e-3), sc11
+        assert sc11["exportProbabilityMax"] < 100.0 and sc11["exportAt100"] == 0, sc11
+
         # ---- anti-regression: max normalization is not the canonical output ---
         anti = result["antiMax"]
         assert anti["callsMass"] is True and anti["callsInPlace"] is False, anti
@@ -784,13 +883,14 @@ async def main() -> None:
         await browser.close()
 
     print(json.dumps({
-        "scenarios": 10,
+        "scenarios": 11,
         "uniformPrior": result["sc1"],
         "conditioned": result["sc2"],
         "sourcePriorUnconditioned": result["sc10"]["source"],
+        "uniformSubsetSourcePrior": result["sc11"],
         "antiMax": {k: v for k, v in result["antiMax"].items() if k != "sourceExposesInPlace"},
     }, indent=2, ensure_ascii=False))
-    print("opponent range numeric smoke: PASS (10 scenarios)")
+    print("opponent range numeric smoke: PASS (11 scenarios)")
 
 
 if __name__ == "__main__":

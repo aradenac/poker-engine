@@ -28,6 +28,15 @@
       {"hand": "AKs", "actions": [{"name": "RAISE", "frequency": 25}, {"name": "FOLD", "frequency": 75}]}
     ]
   },
+  "uniform_subset_source_range": {
+    "description": "Deliberately uniform imported/source range over a strict subset: three hand classes at equal a priori frequency (a flat subset) with zero matched public action. Equal weights alone are NOT the non-informative prior because the support is a strict subset of the legal exact combos, so the derived state must be `source_prior_unconditioned`, never `prior_uninformative` and never `degenerate`. The flat subset also guarantees the canonical 169 mass projection never pins a single class at 100 %.",
+    "position": "CO",
+    "hands": [
+      {"hand": "AA", "actions": [{"name": "RAISE", "frequency": 100}]},
+      {"hand": "KK", "actions": [{"name": "RAISE", "frequency": 100}]},
+      {"hand": "AKs", "actions": [{"name": "RAISE", "frequency": 100}]}
+    ]
+  },
   "degenerate_source_hand": {
     "hand": "AA",
     "actions": [{"name": "RAISE", "frequency": 100}]
