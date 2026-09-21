@@ -76,12 +76,24 @@ const massMax = Math.max(0, ...(sourcePrior.gridEntries || []).map((e) => Number
 const massSum = (sourcePrior.gridEntries || []).reduce((s, e) => s + (Number(e.frequency) || 0), 0);
 assert.ok(massMax < 100, `source prior mass must stay below 100 %, got ${massMax}`);
 assert.ok(Math.abs(massSum - 100) < 1e-6, `source prior mass must sum to 100, got ${massSum}`);
+// The max-normalized relative diagnostic is defined only for a conditioned
+// posterior: an unconditioned source prior exposes null per combo, so no
+// non-conditioned state can surface a 100 % diagnostic.
+assert.equal(sourcePrior.entries.every((e) => e.relativeWeightPct === null), true,
+  'source prior must expose no relative diagnostic');
 
 // 4. One matched action conditions the same distribution: the state becomes
-//    `conditioned` (only the action count decides, not the prior shape).
+//    `conditioned` (only the action count decides, not the prior shape), and
+//    only then is the relative diagnostic defined (max = 100).
 const conditioned = api.exactComboRangeResult(copyCombos(imported), { informativeActions: 1 });
 assert.equal(conditioned.posteriorState, 'conditioned');
 assert.equal(api.gridFreqMapFromEstimate(conditioned, null).size > 0, true);
+assert.equal(conditioned.entries.some((e) => e.relativeWeightPct != null), true,
+  'conditioned posterior must expose the relative diagnostic');
+assert.ok(
+  Math.abs(Math.max(...conditioned.entries.map((e) => Number(e.relativeWeightPct) || 0)) - 100) < 1e-6,
+  'conditioned relative diagnostic must be max-normalized to 100'
+);
 
 // 5. A uniform imported/source prior over a strict subset (here every combo of a
 //    single hand class) is NOT the non-informative prior: the weights are
@@ -100,6 +112,8 @@ assert.notEqual(subsetPrior.posteriorState, 'prior_uninformative');
 assert.notEqual(subsetPrior.posteriorState, 'degenerate');
 assert.equal(subsetPrior.uniformPrior, true, 'weights are still uniform; only the full-support state is withheld');
 assert.equal(api.gridFreqMapFromEstimate(subsetPrior, null).size, 0, 'uniform subset must not render a numeric grid');
+assert.equal(subsetPrior.entries.every((e) => e.relativeWeightPct === null), true,
+  'uniform strict-subset source prior must expose no relative diagnostic');
 
 // 6. The full-support test counts the PUBLIC blockers: the same uniform combos
 //    are the non-informative prior for their own blocker set, but a support
@@ -112,6 +126,8 @@ assert.equal(api.priorIsNonInformative(legalUniform, heroBlock), true, 'full sup
 assert.equal(api.priorIsNonInformative(legalUniform, []), false, 'a strict subset of the unblocked legal combos is not full support');
 const legalEstimate = api.exactComboRangeResult(copyCombos(legalUniform), { informativeActions: 0, blockedCards: heroBlock });
 assert.equal(legalEstimate.posteriorState, 'prior_uninformative', 'full-support uniform after blockers stays prior_uninformative');
+assert.equal(legalEstimate.entries.every((e) => e.relativeWeightPct === null), true,
+  'non-informative prior must expose no relative diagnostic');
 const blockedEstimate = api.exactComboRangeResult(copyCombos(legalUniform), { informativeActions: 0 });
 assert.equal(blockedEstimate.posteriorState, 'source_prior_unconditioned', 'support reduced by blockers is a source prior');
 assert.notEqual(blockedEstimate.posteriorState, 'prior_uninformative');

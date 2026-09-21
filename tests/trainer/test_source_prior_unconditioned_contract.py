@@ -94,6 +94,13 @@ def main() -> None:
     # 4. Export carries the distinct state and never labels it as conditioned.
     assert 'posterior_state:estimate?.posteriorState||null' in export
     assert 'estimate?.posteriorState==="source_prior_unconditioned"?"source_prior_unconditioned"' in export
+    # The max-normalized relative diagnostic is defined only for a conditioned
+    # posterior: this unconditioned state, like `prior_uninformative`, exposes
+    # null per-combo and for the 169 grid, while its canonical mass is retained.
+    assert 'const relativeWeightPctFor=(posteriorState==="conditioned"&&!uniformPrior)?' in combo_result
+    assert 'const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;' in export
+    assert "const relativeWeightPct=relativeWeightDefined?" in export
+    assert "const relativeDefined=relativeWeightDefined&&entries.some(e=>e.relativeWeightPct!=null);" in export
 
     # 5. Runtime proof on a deliberately non-uniform imported prior, and on a
     #    uniform prior over a strict subset, with zero matched public action.

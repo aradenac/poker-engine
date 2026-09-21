@@ -54,6 +54,11 @@ def main() -> None:
     assert "max-normalized `relative_weight` semantics of notion (b)" not in doc_flat
     assert "grid_169_relative_weight_pct" in doc_flat
     assert "`null`/empty" in doc_flat
+    # The max-normalized relative diagnostic is defined only for a conditioned
+    # posterior: both unconditioned priors and the degenerate state expose
+    # `null`/empty, and the code gates the export on the conditioned state.
+    assert "defined only for a **conditioned** posterior" in doc_flat
+    assert 'const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;' in INDEX
 
     # The canonical 169 projection is a SUM of combo probability mass, never a
     # mean or a max.

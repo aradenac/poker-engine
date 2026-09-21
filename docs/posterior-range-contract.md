@@ -200,11 +200,13 @@ consume exactly the values above:
   `exact_combos[].probability_pct = 100 * weight / total` and
   `grid_169_probability_pct` (the 169 mass sum). It additionally exports the
   diagnostic `grid_169_relative_weight_pct` and per-combo `relative_weight_pct`
-  (max-normalized notion (b)); for a uniform prior those diagnostics are `null`
-  (or an empty grid) while the canonical `probability_pct` is retained. The
-  conditioned engine's `entries[].frequency` carries the same sum-normalized mass
-  of notion (a) and its `entries[].relativeWeightPct` the same separate diagnostic
-  of notion (b).
+  (max-normalized notion (b)) **only for a `conditioned` posterior with
+  non-uniform weights**; for `prior_uninformative` and
+  `source_prior_unconditioned` those diagnostics are `null` (or an empty grid)
+  while the canonical `probability_pct` is retained. The conditioned engine's
+  `entries[].frequency` carries the same sum-normalized mass of notion (a) and
+  its `entries[].relativeWeightPct` the same separate diagnostic of notion (b),
+  defined only for the conditioned state.
 - the equity consumers (`combos`/sampler, `buildSeatEquityPlayers`,
   `postflopRaiseTreeSnapshot`) keep reading `hand`/`frequency` at the same
   scale: the display normalization above never rescales their inputs.

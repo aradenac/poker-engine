@@ -67,21 +67,23 @@ renders the canonical mass projection of §2 (grid, combo list and delta) so eve
 legend describes the same probability value. In the backend contract there is no
 equivalent field, because the backend only serializes normalized probabilities.
 
-For a uniform prior, this diagnostic is undefined rather than informative:
-`aiExportRangeSnapshot` exports each exact combo's `relative_weight_pct` as
-`null`, exports `grid_169_relative_weight_pct` as `null` (or empty), and retains
-its canonical `probability_pct` / `grid_169_probability_pct`. This prevents max
-normalization from representing every uniform-prior combo or hand class as
-100 %: the diagnostic is never derived from the canonical mass.
+The diagnostic is defined only for a **conditioned** posterior whose legal
+weights are not uniform. For every non-conditioned state — the non-informative
+prior `prior_uninformative`, an unconditioned imported/source prior
+`source_prior_unconditioned` (non-uniform, or uniform over a strict subset of the
+legal combos), and the degenerate posterior — it is undefined rather than
+informative: `aiExportRangeSnapshot` exports each exact combo's
+`relative_weight_pct` as `null`, exports `grid_169_relative_weight_pct` as `null`
+(or empty), and retains its canonical `probability_pct` /
+`grid_169_probability_pct`. This prevents max normalization from representing
+every uniform-prior combo or hand class as 100 %: the diagnostic is never derived
+from the canonical mass.
 
-An unconditioned but non-uniform imported/source prior
-(`source_prior_unconditioned`) still has a per-combo `relativeWeightPct`, because
-its legal weights are not uniform; the matrix nevertheless renders that state
-textually instead of a heat grid, so an a priori source range can never read as a
-conditioned posterior nor as a `100 %` diagnostic. A uniform source prior over a
-strict subset of the legal combos also derives `source_prior_unconditioned` while
-keeping the `null` relative-weight diagnostic, because its weights are still
-uniform even though its support is not the full legal set.
+The matrix and the replayer modal render both unconditioned priors textually (no
+numeric 169 grid and no heat grid), so an a priori source range can never read as
+a conditioned posterior nor surface a `100 %` diagnostic. Only the conditioned
+state carries the per-combo `relativeWeightPct` and the derived
+`grid_169_relative_weight_pct`.
 
 ### (c) Inclusion frequency of a range — `inclusion_frequency`
 
@@ -187,7 +189,10 @@ combo counts stay visually comparable. That diagnostic aggregation is *not* the
 posterior projection: it is exported only under the explicit relative-weight
 field `grid_169_relative_weight_pct` (and per combo `relative_weight_pct`) and
 must never be exported, cited, or labelled as a probability. Only the mass sum
-above is the probability projection.
+above is the probability projection. The relative-weight heat grid is defined
+only for a **conditioned** posterior with non-uniform weights; for
+`prior_uninformative` and `source_prior_unconditioned` it is `null`/empty and the
+canonical mass sum above remains the only exported 169 grid.
 
 ### 2.1 Replayer surfaces
 
@@ -197,7 +202,7 @@ The reference UI is the Replayer range modal and its exports in
 | Contract element | Replayer surface |
 |---|---|
 | (a) `posterior_combo_probability` | grid, combo list and delta of `openPopulationRangeModal`, fed by `massGridFreqMapFromEstimate` → `estimate.gridEntries` = `projectCombosTo169Mass`; export `grid_169_probability_pct` and `exact_combos[].probability_pct` |
-| (b) `relative_weight` | diagnostic matrix heat grid and export `grid_169_relative_weight_pct` / `relative_weight_pct`; never the modal grid, and `null` for a uniform prior |
+| (b) `relative_weight` | diagnostic matrix heat grid and export `grid_169_relative_weight_pct` / `relative_weight_pct`; never the modal grid, defined only for a `conditioned` posterior and `null` for every non-conditioned state (`prior_uninformative`, `source_prior_unconditioned`, `degenerate`) |
 | (c) `inclusion_frequency` | imported range editor and « Position dans la range source »; expanded to combos by `exactComboPriorFromEntries` |
 | (d) `non_informative_prior` | explicit « Prior non informatif · range non estimée » state; `gridFreqMapFromEstimate` returns an empty map so no numeric grid is drawn |
 | `source_prior_unconditioned` | explicit « Prior source non conditionné · range importée non conditionnée » state; imported/source prior that is not the full-support uniform prior (non-uniform weights, or uniform over a strict subset) kept with zero matched public action; empty map so no numeric grid and never a `100 %` range |
@@ -218,8 +223,8 @@ normalization, support), never from the model fit.
 | `posteriorState` | Meaning | Mass | UI behaviour |
 |---|---|---|---|
 | `prior_uninformative` | No public conditioning action has been applied **and the kept prior is the full-support uniform prior over the legal exact combos** (uniform weights and a support covering every exact combo still legal after the PUBLIC hero/board blockers), or the engine is explicitly rendering the uniform/non-informative prior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « prior non informatif · range non estimée »; no numeric 169 grid, never a 100 % range, and the diagnostic `grid_169_relative_weight_pct` is `null`/empty rather than the canonical mass |
-| `source_prior_unconditioned` | No public conditioning action matched **and the kept imported/source prior is not the full-support uniform prior** (non-uniform weights, or uniform over a strict subset such as a single class or a support reduced by public blockers), so it is a real (a priori) distribution but not a conditioned posterior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « Prior source non conditionné · range importée non conditionnée »; no numeric 169 grid (the matrix keeps the state textual rather than deriving a grid from the mass), never a 100 % range, and never assimilated to the `conditioned` posterior |
-| `conditioned` | At least one public conditioning action matched, retained positive mass exists, and the output mass normalizes to `1`. | `1` | full posterior display |
+| `source_prior_unconditioned` | No public conditioning action matched **and the kept imported/source prior is not the full-support uniform prior** (non-uniform weights, or uniform over a strict subset such as a single class or a support reduced by public blockers), so it is a real (a priori) distribution but not a conditioned posterior. | prior (unnormalized as a likelihood; normalized only when projected) | explicit state « Prior source non conditionné · range importée non conditionnée »; no numeric 169 grid (the matrix keeps the state textual rather than deriving a grid from the mass), never a 100 % range, never assimilated to the `conditioned` posterior, and its diagnostic `relativeWeightPct` / `grid_169_relative_weight_pct` is `null`/empty |
+| `conditioned` | At least one public conditioning action matched, retained positive mass exists, and the output mass normalizes to `1`. | `1` | full posterior display; the **only** state whose max-normalized relative diagnostic (`entries[].relativeWeightPct`, `grid_169_relative_weight_pct`) is defined, and only when its legal weights are non-uniform |
 | `degenerate` | No positive support survives, all positive mass was blocked, or the record is invalid. | `0` | fail-closed; no combos, no positive 169 mass, explicit reason |
 
 ### Triggers
@@ -251,14 +256,20 @@ normalization, support), never from the model fit.
   it to the conditioned posterior nor to the uniform non-informative prior;
 - it is rendered as an explicit state with its own label, no numeric 169 mass
   grid and no derived diagnostic relative grid, so it can never read as a 100 %
-  range.
+  range;
+- its diagnostic relative weight is undefined: `relativeWeightPct` and
+  `grid_169_relative_weight_pct` are `null`/empty, and the canonical mass is
+  never substituted for them.
 
 `conditioned`
 
 - at least one public action matched (`matchedActions > 0`);
 - normalization succeeds with strictly positive retained mass;
 - backend: `status = AVAILABLE`, `probability_mass = 1`, positive
-  `exact_combo_support`, `AVAILABLE` requires a recomputed matching projection.
+  `exact_combo_support`, `AVAILABLE` requires a recomputed matching projection;
+- it is the **only** state whose max-normalized relative diagnostic is defined
+  (`relativeWeightPct`, `grid_169_relative_weight_pct`), and only when its legal
+  weights are non-uniform; the two unconditioned priors expose `null`/empty.
 
 `degenerate`
 

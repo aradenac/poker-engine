@@ -14,8 +14,10 @@ are invariant under a constant rescaling of every input weight:
 * ``aiExportRangeSnapshot`` — the canonical ``grid_169_probability_pct`` stays
   sum-normalized (≈100), the per-combo ``probability_pct`` stays sum-normalized,
   and the diagnostic ``relative_weight_pct`` / ``grid_169_relative_weight_pct``
-  remain distinct (max = 100, no probability sum). The probability projection is
-  invariant under scaling too.
+  are defined only for a ``conditioned`` posterior (max = 100, no probability
+  sum); a ``prior_uninformative`` or ``source_prior_unconditioned`` export keeps
+  the canonical mass but exposes a null relative diagnostic. The probability
+  projection is invariant under scaling too.
 
 Two negative controls demonstrate that the test is not vacuous: the same
 detector flags an intentionally scale-dependent (raw-weight sum) aggregation and
@@ -334,6 +336,27 @@ async (cfg) => {
             exactProbabilitySum: sum((uni.exact_combos || []).map(c => c.probability_pct))
         };
 
+        // The max-normalized relative diagnostic is defined only for a
+        // conditioned posterior. An unconditioned source prior (non-uniform, or
+        // uniform over a strict subset) must export a null relative diagnostic
+        // while its canonical mass stays sum-normalized and below 100 %.
+        const uniformEntries = rawEntries.map(e => ({ hand: e.hand, frequency: 50 }));
+        const sourceSnapshot = exportFor(rawEntries, false, "source_prior_unconditioned");
+        const sourceUniformSnapshot = exportFor(uniformEntries, true, "source_prior_unconditioned");
+        const snapshotRelative = snap => ({
+            posteriorState: snap.posterior_state,
+            probabilitySum: mapSum(snap.grid_169_probability_pct),
+            probabilityMax: mapMax(snap.grid_169_probability_pct),
+            at100: mapValues(snap.grid_169_probability_pct).filter(v => Math.abs(v - 100) < 1e-6).length,
+            exactProbabilitySum: sum((snap.exact_combos || []).map(c => c.probability_pct)),
+            relativeNullAll: (snap.exact_combos || []).every(c => c.relative_weight_pct === null),
+            relativeGridNull: snap.grid_169_relative_weight_pct === null
+                || Object.keys(snap.grid_169_relative_weight_pct || {}).length === 0,
+            relativeGridPositive: mapValues(snap.grid_169_relative_weight_pct).filter(v => v > 0).length
+        });
+        R.exportSource = snapshotRelative(sourceSnapshot);
+        R.exportSourceUniform = snapshotRelative(sourceUniformSnapshot);
+
         // ---- negative control: the detector is sensitive to scale ----------
         const rawAggregate = es => sum((es || []).map(e => Number(e.frequency) || 0));
         const normalizedDist = es => {
@@ -472,6 +495,20 @@ async def main() -> None:
     # the diagnostic 169 grid is absent/empty with no positive entry.
     assert uni["relativeGridNull"] is True, uni
     assert uni["relativeGridPositive"] == 0, uni
+
+    # The max-normalized diagnostic is defined only for a conditioned posterior:
+    # an unconditioned non-uniform source prior and a uniform source prior over a
+    # strict subset both export a null relative diagnostic while their canonical
+    # probability projection stays sum-normalized (sum = 100, max < 100).
+    for key in ("exportSource", "exportSourceUniform"):
+        src = result[key]
+        assert src["posteriorState"] == "source_prior_unconditioned", src
+        assert abs(src["probabilitySum"] - 100.0) < 1e-3, src
+        assert abs(src["exactProbabilitySum"] - 100.0) < 1e-3, src
+        assert src["probabilityMax"] < 100.0 and src["at100"] == 0, src
+        assert src["relativeNullAll"] is True, src
+        assert src["relativeGridNull"] is True, src
+        assert src["relativeGridPositive"] == 0, src
 
     # ---- 5. the detector would fail a scale-dependent consumer ------------
     neg = result["negativeControl"]

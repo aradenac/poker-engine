@@ -88,7 +88,7 @@ def main() -> None:
     assert 'poids relatif maximal' not in INDEX
     assert 'w/total' in projection and 'maxWeight' not in projection
     assert 'gridEntries:projectCombosTo169Mass(combos)' in combo_result
-    assert 'const relativeWeightPctFor=uniformPrior?null:' in combo_result
+    assert 'const relativeWeightPctFor=(posteriorState==="conditioned"&&!uniformPrior)?' in combo_result
     # The non-informative state is gated by full support: uniform weights AND the
     # complete legal support after the public hero/board blockers.
     assert 'const nonInformativePrior=priorIsNonInformative(combos,meta.blockedCards,meta.legalComboCount);' in combo_result
@@ -100,9 +100,11 @@ def main() -> None:
     assert 'probability_pct:aiExportNumber(100*p,7)' in range_export
     assert 'grid_169_probability_pct:gridProbability' in range_export
     assert 'gridProbability[e.hand]=aiExportNumber(e.frequency,7)' in range_export
-    # A uniform prior (or any estimate without a defined relativeWeightPct)
-    # exports no relative-weight projection: the mass is never substituted.
-    assert 'const relativeDefined=estimate?.uniformPrior!==true&&entries.some(e=>e.relativeWeightPct!=null);' in range_export
+    # A non-conditioned posterior (or any estimate without a defined
+    # relativeWeightPct) exports no relative-weight projection: the mass is never
+    # substituted.
+    assert 'const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;' in range_export
+    assert 'const relativeDefined=relativeWeightDefined&&entries.some(e=>e.relativeWeightPct!=null);' in range_export
     assert 'let gridRelative=null;' in range_export
 
     # The known-hand override is a separate, explicitly flagged mechanism: it is

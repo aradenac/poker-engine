@@ -180,19 +180,23 @@ def main() -> None:
     assert "never assimilates it to the conditioned posterior" in doc_flat
 
     # ------------------------------------------------------------------
-    # Correction 3 (#391 · Point 2): relative grid null/empty for a uniform prior.
+    # Correction 3 (#391 · Point 2): relative grid null/empty unless the
+    # posterior is conditioned (and its weights are non-uniform).
     # ------------------------------------------------------------------
-    # Per combo: the diagnostic is absent for a uniform prior (max-normalizing a
-    # uniform distribution would wrap every legal combo at 100 %).
-    assert "const relativeWeightPctFor=uniformPrior?null:" in combo_result
+    # Per combo: the diagnostic is defined only for a conditioned, non-uniform
+    # posterior. It is absent for `prior_uninformative` and
+    # `source_prior_unconditioned` (max-normalizing a uniform distribution would
+    # wrap every legal combo at 100 %).
+    assert 'const relativeWeightPctFor=(posteriorState==="conditioned"&&!uniformPrior)?' in combo_result
     assert "relativeWeightPct:relativeWeightPctFor?relativeWeightPctFor(w):null" in combo_result
-    assert "const relativeWeightPct=estimate?.uniformPrior?null:" in export
+    assert 'const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;' in export
+    assert "const relativeWeightPct=relativeWeightDefined?" in export
     assert "relative_weight_pct:relativeWeightPct" in export
     assert "relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)" not in export
-    # 169 grid: absent (null) for a uniform prior / when no entry carries a
-    # relativeWeightPct. The canonical mass is never substituted.
+    # 169 grid: absent (null) unless the posterior is conditioned and an entry
+    # carries a relativeWeightPct. The canonical mass is never substituted.
     assert (
-        "const relativeDefined=estimate?.uniformPrior!==true"
+        "const relativeDefined=relativeWeightDefined"
         "&&entries.some(e=>e.relativeWeightPct!=null);" in export
     )
     assert "let gridRelative=null;" in export
@@ -200,6 +204,22 @@ def main() -> None:
     assert "frequency:Number(e.relativeWeightPct)||0" in export
     assert "grid_169_relative_weight_pct:gridRelative" in export
     assert LEGACY_RELATIVE_FALLBACK not in export
+    # Matrix: no numeric grid for the two unconditioned priors, and the numeric
+    # relative/mass paths are gated on a conditioned posterior.
+    assert 'const priorUninformative=matrixPopulationEstimate?.posteriorState==="prior_uninformative";' in matrix
+    assert 'const conditioned=matrixPopulationEstimate?.posteriorState==="conditioned";' in matrix
+    assert 'matrixNotion="prior_uninformative";entries=[];' in matrix
+    assert "else if(conditioned&&matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){" in matrix
+    assert "else if(conditioned&&matrixPopulationEstimate?.gridEntries?.length){" in matrix
+    # No unconditional massGrid branch remains reachable by a uniform prior.
+    assert "const massGrid=matrixPopulationEstimate?.uniformPrior" not in matrix
+    assert 'matrixNotion==="prior_uninformative"' in matrix
+    prior_title_branch = matrix.split('matrixNotion==="prior_uninformative"', 1)[1].split(
+        'matrixNotion==="degenerate"', 1
+    )[0]
+    assert "100" not in prior_title_branch
+    assert "%" not in prior_title_branch
+    assert "aucune valeur numérique affichée" in prior_title_branch
     # Matrix also refuses to fall back from relativeWeightPct to the mass.
     assert "matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)" in matrix
     assert "matrixEntries.filter(e=>e.relativeWeightPct!=null)" in matrix

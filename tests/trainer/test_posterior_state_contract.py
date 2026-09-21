@@ -70,8 +70,10 @@ def main() -> None:
     assert "filterComboBlockers(combos,[...heroBlocked,...currentBoard])" in estimate
     assert "knownCards" not in estimate
 
-    # A uniform distribution keeps a mass projection instead of a 100 % grid.
-    assert "const relativeWeightPctFor=uniformPrior?null:" in INDEX
+    # The max-normalized diagnostic is defined only for a conditioned,
+    # non-uniform posterior: a uniform distribution keeps a mass projection
+    # instead of a 100 % grid, and the two unconditioned priors expose `null`.
+    assert 'const relativeWeightPctFor=(posteriorState==="conditioned"&&!uniformPrior)?' in INDEX
     assert "relativeWeightPct:relativeWeightPctFor?relativeWeightPctFor(w):null" in INDEX
 
     # Display surfaces fail closed on a degenerate posterior, and render both
@@ -93,14 +95,16 @@ def main() -> None:
     assert 'posterior_state:estimate?.posteriorState||null' in export
     assert 'estimate?.posteriorState==="degenerate"?[]:' in export
     assert 'estimate?.posteriorState==="source_prior_unconditioned"?"source_prior_unconditioned"' in export
-    assert "const relativeWeightPct=estimate?.uniformPrior?null:" in export
+    assert 'const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;' in export
+    assert "const relativeWeightPct=relativeWeightDefined?" in export
     assert "relative_weight_pct:relativeWeightPct" in export
     assert "relative_weight_pct:aiExportNumber(100*(Number(c.weight)||0)/maxW,5)" not in export
 
     # The diagnostic relative-weight grid never falls back to the canonical
     # frequency/mass when the relative weight is undefined: it is absent (null)
-    # for a uniform prior or when no entry carries a relativeWeightPct.
-    assert "const relativeDefined=estimate?.uniformPrior!==true&&entries.some(e=>e.relativeWeightPct!=null);" in export
+    # unless the posterior is conditioned and an entry carries a
+    # relativeWeightPct.
+    assert "const relativeDefined=relativeWeightDefined&&entries.some(e=>e.relativeWeightPct!=null);" in export
     assert "let gridRelative=null;" in export
     assert "gridRelative=Object.create(null);" in export
     assert "frequency:Number(e.relativeWeightPct)||0" in export
@@ -108,6 +112,12 @@ def main() -> None:
     assert old_relative_fallback not in export
     assert old_relative_fallback not in matrix
     assert "matrixEntries.some(e=>e.relativeWeightPct!=null)" in matrix
+    # The matrix renders `prior_uninformative` textually and gates every numeric
+    # path on a conditioned posterior.
+    assert 'const priorUninformative=matrixPopulationEstimate?.posteriorState==="prior_uninformative";' in matrix
+    assert 'matrixNotion="prior_uninformative";entries=[];' in matrix
+    assert "else if(conditioned&&matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){" in matrix
+    assert "else if(conditioned&&matrixPopulationEstimate?.gridEntries?.length){" in matrix
 
     # Point 3 (#391): `rangeEntriesForHistoryPlayer` must never substitute the
     # legacy imported range for a degenerate population estimate. The legacy

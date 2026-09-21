@@ -5894,21 +5894,24 @@ function aiExportRangeSnapshot(player,stepIndex,registry,reason="state"){
   const combos=exactComboPriorFromEntries(entries,blocked);
   const total=combos.reduce((a,c)=>a+(Number(c.weight)||0),0)||1;
   const maxW=Math.max(0,...combos.map(c=>Number(c.weight)||0))||1;
+  // The max-normalized relative diagnostic is defined only for a conditioned
+  // posterior with non-uniform weights. A non-informative prior and an
+  // unconditioned source prior must never surface a max-normalized 100 %: for
+  // them the diagnostic is absent (null) while the canonical probability below
+  // is retained. The canonical mass is never substituted for the diagnostic.
+  const relativeWeightDefined=estimate?.posteriorState==="conditioned"&&estimate?.uniformPrior!==true;
   const exact=combos.map(c=>{
     const p=(Number(c.weight)||0)/total;
-    // A uniform posterior has no discriminating relative weight: exporting the
-    // max-normalized value would misleadingly re-wrap every combo as 100 %.
-    // Keep its canonical probability while making the diagnostic value absent.
-    const relativeWeightPct=estimate?.uniformPrior?null:aiExportNumber(100*(Number(c.weight)||0)/maxW,5);
+    const relativeWeightPct=relativeWeightDefined?aiExportNumber(100*(Number(c.weight)||0)/maxW,5):null;
     return {cards:[cardCode(c.cards[0]),cardCode(c.cards[1])],probability_pct:aiExportNumber(100*p,7),relative_weight_pct:relativeWeightPct};
   }).sort((a,b)=>(b.probability_pct||0)-(a.probability_pct||0));
   // Diagnostic relative-weight heat grid (notion (b)): max-normalized per combo,
   // aggregated per class by mean so classes with different combo counts stay
   // comparable. It is never the canonical posterior projection below. When the
-  // relative weight is undefined (uniform prior, or no entry carrying a
-  // relativeWeightPct) the diagnostic is absent (null): the canonical mass is
-  // never substituted for it.
-  const relativeDefined=estimate?.uniformPrior!==true&&entries.some(e=>e.relativeWeightPct!=null);
+  // relative weight is undefined (non-conditioned posterior, or no entry
+  // carrying a relativeWeightPct) the diagnostic is absent (null): the canonical
+  // mass is never substituted for it.
+  const relativeDefined=relativeWeightDefined&&entries.some(e=>e.relativeWeightPct!=null);
   let gridRelative=null;
   if(relativeDefined){
     const relativeEntries=entries.map(e=>({hand:e.hand,frequency:Number(e.relativeWeightPct)||0}));
@@ -6831,24 +6834,38 @@ function renderMatrix(){
     matrixPopulationEstimate=populationRangeEstimateForPlayer(player,calculatorPopulationReplayIndex());
     const matrixEntries=matrixPopulationEstimate?.entries?.length?matrixPopulationEstimate.entries:null;
     const degenerate=matrixPopulationEstimate?.posteriorState==="degenerate";
+    const priorUninformative=matrixPopulationEstimate?.posteriorState==="prior_uninformative";
     const sourcePriorUnconditioned=matrixPopulationEstimate?.posteriorState==="source_prior_unconditioned";
-    const massGrid=matrixPopulationEstimate?.uniformPrior&&matrixPopulationEstimate?.gridEntries?.length?matrixPopulationEstimate.gridEntries:null;
+    const conditioned=matrixPopulationEstimate?.posteriorState==="conditioned";
+    // A numeric 169 grid (mass projection or relative diagnostic) is only
+    // defined for a conditioned posterior. The non-informative prior and the
+    // unconditioned source prior are explicit textual states with empty entries,
+    // so a uniform prior (including a uniform prior over a strict subset) can
+    // never surface as a numeric grid nor as a misleading 100 % cell.
     let entries;
     if(degenerate){
       matrixNotion="degenerate";entries=[];
+    }else if(priorUninformative){
+      // Keep this state textual: rendering the uniform prior mass projection
+      // would look like a conditioned posterior. It stays available to equity
+      // consumers through estimate.gridEntries.
+      matrixNotion="prior_uninformative";entries=[];
     }else if(sourcePriorUnconditioned){
       // Keep this state textual: rendering its max-normalized source weights
       // would produce a misleading 100 % cell and look like a conditioned
       // posterior. The source prior remains available to equity consumers.
       matrixNotion="source_prior_unconditioned";entries=[];
-    }else if(massGrid){
-      matrixNotion="mass";entries=massGrid.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}));
-    }else if(matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){
+    }else if(conditioned&&matrixEntries&&matrixEntries.some(e=>e.relativeWeightPct!=null)){
       // Diagnostic relative weight only: an undefined relativeWeightPct is
       // never replaced by the canonical frequency/mass (that would relabel a
       // probability as a max-normalized ratio).
       matrixNotion="relative";
       entries=rangeEntriesForGrid(matrixEntries.filter(e=>e.relativeWeightPct!=null).map(e=>({hand:e.hand,frequency:Number(e.relativeWeightPct)||0})));
+    }else if(conditioned&&matrixPopulationEstimate?.gridEntries?.length){
+      // Conditioned posterior without a defined relative diagnostic (uniform
+      // weights): fall back to the canonical mass projection, still numeric only
+      // for a conditioned posterior.
+      matrixNotion="mass";entries=matrixPopulationEstimate.gridEntries.map(e=>({hand:e.hand,frequency:Number(e.frequency)||0}));
     }else{
       matrixNotion="inclusion";entries=legacyRangeEntriesForHistoryPlayer(player);
     }
@@ -6902,7 +6919,9 @@ function renderMatrix(){
         const ratioText=ratio?(ratio<0.01?ratio.toFixed(3):ratio.toFixed(2)).replace(".",","):"0";
         title=`${notation} — poids relatif ${ratioText} (max = 1) · diagnostic, pas une probabilité`;
       }else if(matrixNotion==="mass"){
-        title=`${notation} — ${Number(f).toFixed(1).replace(".",",")} % · masse probabiliste (projection 169)${matrixPopulationEstimate?.posteriorState==="prior_uninformative"?" · prior non informatif":""}`;
+        title=`${notation} — ${Number(f).toFixed(1).replace(".",",")} % · masse probabiliste (projection 169)`;
+      }else if(matrixNotion==="prior_uninformative"){
+        title=`${notation} — prior non informatif · range non estimée · aucune valeur numérique affichée`;
       }else if(matrixNotion==="degenerate"){
         title=`${notation} — posterior dégénéré · masse nulle après blockers publics`;
       }else if(matrixNotion==="source_prior_unconditioned"){
@@ -7749,12 +7768,14 @@ function exactComboRangeResult(combos,meta={}){
   const posteriorState=meta.posteriorState||(informativeActions>0?"conditioned":(nonInformativePrior?"prior_uninformative":"source_prior_unconditioned"));
   const probabilityMass=combos.reduce((s,c)=>s+(Number(c.weight)||0),0);
   const maxWeight=Math.max(0,...combos.map(c=>Number(c.weight)||0));
-  // A uniform distribution (non-informative prior or uninformative conditioning)
-  // has no meaningful relative weight: max-normalizing it would wrap every legal
-  // combo at 100 %. Its canonical output is the mass projection, so
-  // `relativeWeightPct` stays null and consumers fall back to `frequency` (a
-  // probability), never to a 100 % grid.
-  const relativeWeightPctFor=uniformPrior?null:(maxWeight>0?(w=>100*w/maxWeight):null);
+  // The max-normalized relative diagnostic is defined only for a conditioned
+  // posterior with non-uniform weights. A uniform distribution (non-informative
+  // prior, unconditioned source prior over a strict subset, or uninformative
+  // conditioning) has no meaningful relative weight: max-normalizing it would
+  // wrap every legal combo at 100 %. Its canonical output is the mass
+  // projection, so `relativeWeightPct` stays null and consumers fall back to
+  // `frequency` (a probability), never to a 100 % grid.
+  const relativeWeightPctFor=(posteriorState==="conditioned"&&!uniformPrior)?(maxWeight>0?(w=>100*w/maxWeight):null):null;
   const entries=combos.map(c=>{const w=Math.max(0,Number(c.weight)||0);return {hand:cardCode(c.cards[0])+cardCode(c.cards[1]),frequency:100*w,relativeWeightPct:relativeWeightPctFor?relativeWeightPctFor(w):null,exactCombo:true,population:true};}).filter(e=>e.frequency>0);
   if(!entries.length)return null;
   const width=maxWeight>0?probabilityMass/Math.max(1,combos.length)/maxWeight:0;
