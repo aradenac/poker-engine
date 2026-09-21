@@ -83,7 +83,31 @@ function personalRepository({populationId=POP,context=CONTEXT,hand='AA'}={}){
   return repo;
 }
 
-const ADMISSIBLE={hero_strategy:{status:'ADMISSIBLE',population_id:POP}};
+// A fully bound admission: role, content hash, candidate/generation identity
+// and binding_sha256 all describe the calculated artifact of this population
+// (#task-fnc). A bare ADMISSIBLE status token never activates a local repository.
+const ADMISSIBLE={hero_strategy:{
+  status:'ADMISSIBLE',
+  role:'hero_strategy',
+  population_id:POP,
+  candidate_id:'hero-candidate-196',
+  generation_id:'gen-196',
+  binding_sha256:SHA_BINDING,
+  artifact:{
+    declared_sha256:SHA_MANIFEST,
+    actual_sha256:SHA_MANIFEST,
+    hash_kind:'file_sha256',
+    source_path:'training/runs/196_hero_candidate/HERO_RANGE_REPOSITORY_PFPC.json',
+    verified:true
+  },
+  provenance:{
+    source_population_id:POP,
+    manifest_sha256:SHA_MANIFEST,
+    binding_sha256:SHA_BINDING,
+    candidate_id:'hero-candidate-196',
+    generation_id:'gen-196'
+  }
+}};
 function compatibleInput(extra={}){
   return {
     population_id:POP,
@@ -215,7 +239,7 @@ scenarios.push(['3. aucune stratégie',()=>{
   assert.equal(admittedEmpty.strategy_id,null);
 
   // An admitted but incomplete calculated layer is PARTIAL, never admissible.
-  const partial=R.resolveHeroStrategy({population_id:POP,repository:calculatedRepository({hands:12}),admissions:'ADMISSIBLE'});
+  const partial=R.resolveHeroStrategy({population_id:POP,repository:calculatedRepository({hands:12}),admissions:ADMISSIBLE});
   assert.equal(partial.status,R.STATUSES.PARTIAL);
   assert.equal(partial.source,R.SOURCES.POPULATION);
   assert.equal(partial.fail_closed,true);
@@ -246,7 +270,7 @@ scenarios.push(['4. override personnel',()=>{
   // A layered override coexists with the population strategy but does not replace it.
   const layered=calculatedRepository();
   H.setHandStrategy(layered,CONTEXT,'AA',{actions:{LIMP:1}},{layer:'personal'});
-  const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layered,admissions:'ADMISSIBLE'});
+  const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layered,admissions:ADMISSIBLE});
   assert.equal(layeredResolution.status,R.STATUSES.ADMISSIBLE_CALCULATED);
   assert.equal(layeredResolution.source,R.SOURCES.POPULATION,'the override must not become the population source');
 

@@ -100,13 +100,39 @@ with sync_playwright() as p:
 
           // --- 3. an admitted calculated population strategy authorizes a verdict
           const admitted = H.emptyRepository({populationId: activePopulation});
-          H.setLayerMetadata(admitted, contextFor(activePopulation), 'calculated', {version: 'gen-196', provenance: {source: 'fixture'}});
+          const admittedSha = 'a'.repeat(64);
+          const admittedBinding = 'b'.repeat(64);
+          H.setLayerMetadata(admitted, contextFor(activePopulation), 'calculated', {
+            version: 'gen-196',
+            provenance: {
+              source: 'fixture',
+              candidate_id: 'hero-candidate-196',
+              generation_id: 'gen-196',
+              manifest_sha256: admittedSha,
+              binding_sha256: admittedBinding
+            }
+          });
           for (const hc of H.HAND_CLASSES) H.setHandStrategy(admitted, contextFor(activePopulation), hc, {actions: {FOLD: 1}}, {layer: 'calculated'});
           H.setHandStrategy(admitted, contextFor(activePopulation), handClass, strategy(), {layer: 'calculated'});
           const admittedResolution = Resolver.resolveHeroStrategy({
             population_id: activePopulation,
             repository: admitted,
-            admissions: {hero_strategy: {status: 'ADMISSIBLE', population_id: activePopulation}}
+            admissions: {hero_strategy: {
+              status: 'ADMISSIBLE',
+              role: 'hero_strategy',
+              population_id: activePopulation,
+              candidate_id: 'hero-candidate-196',
+              generation_id: 'gen-196',
+              binding_sha256: admittedBinding,
+              artifact: {declared_sha256: admittedSha, actual_sha256: admittedSha, hash_kind: 'file_sha256', verified: true},
+              provenance: {
+                source_population_id: activePopulation,
+                manifest_sha256: admittedSha,
+                binding_sha256: admittedBinding,
+                candidate_id: 'hero-candidate-196',
+                generation_id: 'gen-196'
+              }
+            }}
           });
           const admittedEvaluation = R.currentEvaluation(hand, admitted, admittedResolution).result;
 

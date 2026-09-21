@@ -16,8 +16,26 @@ assert.equal(R.handClass(['Ks','Th']),'KTo','text card compatibility must be pre
 
 const POP='pokerstars_nlhe_100-200_zoom_play_6max_v1';
 const OTHER='legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1';
+const SHA_MANIFEST='a'.repeat(64);
+const SHA_BINDING='b'.repeat(64);
 const context={population_id:POP,table_size:6,position:'BTN',effective_stack_bb:100,spot:'UNOPENED'};
 function contextFor(populationId){return {...context,population_id:populationId};}
+// A fully bound admission: the content hash, candidate/generation identity and
+// binding hash all describe the calculated artifact used at runtime (#task-fnc).
+function boundAdmission(){
+  return {hero_strategy:{
+    status:'ADMISSIBLE',role:'hero_strategy',population_id:POP,
+    candidate_id:'hero-candidate-196',generation_id:'gen-196',binding_sha256:SHA_BINDING,
+    artifact:{declared_sha256:SHA_MANIFEST,actual_sha256:SHA_MANIFEST,hash_kind:'file_sha256',verified:true},
+    provenance:{
+      source_population_id:POP,
+      manifest_sha256:SHA_MANIFEST,
+      binding_sha256:SHA_BINDING,
+      candidate_id:'hero-candidate-196',
+      generation_id:'gen-196'
+    }
+  }};
+}
 const repo=H.emptyRepository({populationId:POP});
 H.setLayerMetadata(repo,context,'calculated',{version:'calc-7',provenance:{source:'fixture'}});
 H.setHandStrategy(repo,context,'AKs',{actions:{FOLD:.8,OPEN:.2},sizings:{OPEN:[{target_total_bb:2.5,probability:1}]},notes:'20% open fixture'},{layer:'calculated'});
@@ -135,10 +153,10 @@ assert.equal(incompatibleVerdict.strategy_status,'POPULATION_INCOMPATIBLE');
 
 // --- authorized population resolution ---------------------------------------
 const admittedRepo=H.emptyRepository({populationId:POP});
-H.setLayerMetadata(admittedRepo,context,'calculated',{version:'gen-196',provenance:{source:'fixture'}});
+H.setLayerMetadata(admittedRepo,context,'calculated',{version:'gen-196',provenance:{source:'fixture',candidate_id:'hero-candidate-196',generation_id:'gen-196',manifest_sha256:SHA_MANIFEST,binding_sha256:SHA_BINDING}});
 for(const hand of H.HAND_CLASSES)H.setHandStrategy(admittedRepo,context,hand,{actions:{FOLD:1}},{layer:'calculated'});
 H.setHandStrategy(admittedRepo,context,'AKs',{actions:{FOLD:.8,OPEN:.2},sizings:{OPEN:[{target_total_bb:2.5,probability:1}]},notes:'20% open fixture'},{layer:'calculated'});
-const admittedResolution=S.resolveHeroStrategy({population_id:POP,repository:admittedRepo,admissions:{hero_strategy:{status:'ADMISSIBLE',population_id:POP}}});
+const admittedResolution=S.resolveHeroStrategy({population_id:POP,repository:admittedRepo,admissions:boundAdmission()});
 assert.equal(admittedResolution.status,'ADMISSIBLE_CALCULATED');
 
 const authorized=C.evaluateDecision({repo:admittedRepo,decision:decision('RAISE'),handClass:'AKs',strategyResolution:admittedResolution});
@@ -151,9 +169,9 @@ assert.equal(authorized.sizing.status,'MATCHED');
 
 // A partial population strategy is not a resolved strategy: explicit NO_VERDICT.
 const partialRepo=H.emptyRepository({populationId:POP});
-H.setLayerMetadata(partialRepo,context,'calculated',{version:'gen-196-partial',provenance:{source:'fixture'}});
+H.setLayerMetadata(partialRepo,context,'calculated',{version:'gen-196-partial',provenance:{source:'fixture',candidate_id:'hero-candidate-196',generation_id:'gen-196',manifest_sha256:SHA_MANIFEST,binding_sha256:SHA_BINDING}});
 H.setHandStrategy(partialRepo,context,'AKs',{actions:{OPEN:1}},{layer:'calculated'});
-const partialResolution=S.resolveHeroStrategy({population_id:POP,repository:partialRepo,admissions:{hero_strategy:{status:'ADMISSIBLE',population_id:POP}}});
+const partialResolution=S.resolveHeroStrategy({population_id:POP,repository:partialRepo,admissions:boundAdmission()});
 assert.equal(partialResolution.status,'PARTIAL');
 const partialVerdict=C.evaluateDecision({repo:partialRepo,decision:decision('RAISE'),handClass:'AKs',strategyResolution:partialResolution});
 assert.equal(partialVerdict.action_status,'NO_VERDICT');

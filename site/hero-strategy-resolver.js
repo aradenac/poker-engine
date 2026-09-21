@@ -21,8 +21,12 @@
       is POPULATION_INCOMPATIBLE and no strategy identity is returned.
     - A calculated artifact only becomes ADMISSIBLE_CALCULATED when an explicit
       ADMISSIBLE admission exists AND it is complete (169 hand classes per active
-      calculated context). Un-admitted, unresolved, rejected or inactive metadata
-      never becomes the active strategy.
+      calculated context) AND the admission is explicitly bound to the exact
+      runtime calculated artifact (role, SHA-256 content identity, explicit
+      provenance, candidate_id/generation_id and binding_sha256). A bare
+      ADMISSIBLE token never authorizes an arbitrary local repository.
+      Un-admitted, unresolved, rejected, unbound or inactive metadata never
+      becomes the active strategy.
     - An inactive candidate (#358 metadata only) is reported as UNAVAILABLE; it is
       never auto-activated.
     - A user personal override is surfaced only as source PERSONAL_OVERRIDE with
@@ -205,6 +209,162 @@
     };
   }
 
+  // #task-fnc: an ADMISSIBLE admission only authorizes the calculated strategy
+  // when it is explicitly bound to the exact runtime artifact. Role, content
+  // hash, candidate/generation identity, explicit provenance and binding hash
+  // must all agree with the active calculated layer; otherwise the resolver
+  // fails closed with a precise, deterministic reason code. A bare ADMISSIBLE
+  // status token can never authorize an arbitrary local repository.
+  function declaredValues(entries){
+    const values=[];
+    for(const [owner,key] of entries){
+      if(isObject(owner)&&Object.prototype.hasOwnProperty.call(owner,key))values.push(owner[key]);
+    }
+    return values;
+  }
+
+  function admissionArtifactIdentity(admissionObject,reasons){
+    if(!isObject(admissionObject))return null;
+    const artifact=isObject(admissionObject.artifact)?admissionObject.artifact:null;
+    const lineage=isObject(admissionObject.lineage)?admissionObject.lineage:null;
+    const provenance=isObject(admissionObject.provenance)?admissionObject.provenance:null;
+    const hashValues=declaredValues([
+      [artifact,'actual_sha256'],[artifact,'declared_sha256'],
+      [admissionObject,'artifact_sha256']
+    ]);
+    const bindingValues=declaredValues([
+      [artifact,'binding_sha256'],[admissionObject,'binding_sha256']
+    ]);
+    const candidateValues=declaredValues([
+      [admissionObject,'candidate_id'],[artifact,'candidate_id'],
+      [lineage,'candidate_id']
+    ]);
+    const generationValues=declaredValues([
+      [admissionObject,'generation_id'],[artifact,'generation_id'],
+      [lineage,'generation_id']
+    ]);
+    return {
+      role:upper(admissionObject.role).replace(/-/g,'_')||null,
+      artifact,
+      provenance,
+      hash_values:hashValues,
+      hashes:hashValues.map(hex).filter(Boolean),
+      binding_values:bindingValues,
+      binding_hashes:bindingValues.map(hex).filter(Boolean),
+      candidate_values:candidateValues,
+      candidate_ids:candidateValues.map(value=>token(value,reasons)).filter(Boolean),
+      generation_values:generationValues,
+      generation_ids:generationValues.map(value=>token(value,reasons)).filter(Boolean)
+    };
+  }
+
+  function bindAdmittedArtifact(admissionObject,candidate,activeCalculated,input,activePopulation,reasons){
+    let bound=true;
+    const fail=code=>{reasons.push(code);bound=false;};
+    if(!isObject(admissionObject)){fail('ADMISSION_ARTIFACT_MISSING');return false;}
+    const admitted=admissionArtifactIdentity(admissionObject,reasons);
+    // (a) role identity, (b) content/hash identity.
+    if(!admitted.artifact&&hex(admissionObject.artifact_sha256)==null)fail('ADMISSION_ARTIFACT_MISSING');
+    if(admitted.role!=='HERO_STRATEGY')fail('ADMISSION_ROLE_MISMATCH');
+    if(admitted.hash_values.length===0||admitted.hash_values.some(value=>!hex(value)))fail('ADMISSION_HASH_MISSING');
+    const admittedHashes=new Set(admitted.hashes);
+    if(admittedHashes.size>1)fail('ADMISSION_HASH_MISMATCH');
+    const admittedHash=admittedHashes.size===1?[...admittedHashes][0]:null;
+    const admittedBindings=new Set(admitted.binding_hashes);
+    const admittedCandidates=new Set(admitted.candidate_ids);
+    const admittedGenerations=new Set(admitted.generation_ids);
+
+    // (c) Admission provenance is mandatory and must bind both the source
+    // population and the same exact artifact identities declared by the
+    // admission. Merely attaching an unrelated provenance object is not enough.
+    if(!admitted.provenance){
+      fail('ADMISSION_PROVENANCE_MISSING');
+    }else{
+      const populationValues=declaredValues([
+        [admitted.provenance,'source_population_id'],
+        [admitted.provenance,'population_id']
+      ]).map(text).filter(Boolean);
+      const populations=new Set(populationValues);
+      const provenanceManifest=hex(admitted.provenance.manifest_sha256);
+      const provenanceBinding=hex(admitted.provenance.binding_sha256);
+      const provenanceCandidate=token(admitted.provenance.candidate_id,reasons);
+      const provenanceGeneration=token(admitted.provenance.generation_id,reasons);
+      if(
+        populations.size!==1||[...populations][0]!==activePopulation||
+        !provenanceManifest||provenanceManifest!==admittedHash||
+        !provenanceBinding||admittedBindings.size!==1||provenanceBinding!==[...admittedBindings][0]||
+        !provenanceCandidate||admittedCandidates.size!==1||provenanceCandidate!==[...admittedCandidates][0]||
+        !provenanceGeneration||admittedGenerations.size!==1||provenanceGeneration!==[...admittedGenerations][0]
+      )fail('ADMISSION_PROVENANCE_MISMATCH');
+    }
+
+    // Runtime artifact identity, derived from every active calculated layer.
+    const manifestHashes=new Set();
+    const bindingHashes=new Set();
+    const layerCandidates=new Set();
+    const layerGenerations=new Set();
+    let unbound=false;
+    let layerCandidateMissing=false;
+    let layerGenerationMissing=false;
+    for(const entry of activeCalculated){
+      const provenance=isObject(entry.provenance)?entry.provenance:null;
+      const manifest=hex(provenance&&provenance.manifest_sha256);
+      if(!provenance){unbound=true;layerCandidateMissing=true;layerGenerationMissing=true;continue;}
+      if(manifest)manifestHashes.add(manifest);
+      else unbound=true;
+      const binding=hex(provenance.binding_sha256);
+      if(binding)bindingHashes.add(binding);
+      else unbound=true;
+      const layerCandidate=token(provenance.candidate_id,reasons);
+      if(layerCandidate)layerCandidates.add(layerCandidate);
+      else layerCandidateMissing=true;
+      const layerGeneration=token(provenance.generation_id,reasons);
+      if(layerGeneration)layerGenerations.add(layerGeneration);
+      else layerGenerationMissing=true;
+    }
+    if(unbound||manifestHashes.size===0)fail('REPOSITORY_NOT_BOUND_TO_ADMISSION');
+    if(manifestHashes.size>1)fail('ADMISSION_HASH_MISMATCH');
+    const layerManifest=manifestHashes.size===1?[...manifestHashes][0]:null;
+
+    // (b) The admitted content hash must equal the runtime calculated hash and
+    // any explicit candidate/input hash token. Otherwise the admission is bound
+    // to a different artifact than the one used at runtime.
+    if(admittedHash&&layerManifest&&admittedHash!==layerManifest)fail('ADMISSION_HASH_MISMATCH');
+    if(isObject(candidate)&&Object.prototype.hasOwnProperty.call(candidate,'strategy_sha256')&&!hex(candidate.strategy_sha256))fail('ADMISSION_HASH_MISMATCH');
+    for(const observed of [hex(candidate&&candidate.strategy_sha256),hex(input&&input.strategy_sha256)]){
+      if(observed&&admittedHash&&observed!==admittedHash)fail('ADMISSION_HASH_MISMATCH');
+      if(observed&&layerManifest&&observed!==layerManifest)fail('ADMISSION_HASH_MISMATCH');
+    }
+
+    // (e) The relevant binding hash must be present on both sides and agree.
+    if(bindingHashes.size>1)fail('ADMISSION_BINDING_MISMATCH');
+    const layerBinding=bindingHashes.size===1?[...bindingHashes][0]:null;
+    if(!layerBinding)fail('REPOSITORY_NOT_BOUND_TO_ADMISSION');
+    if(admitted.binding_values.length===0||admitted.binding_values.some(value=>!hex(value)))fail('ADMISSION_BINDING_MISMATCH');
+    if(admittedBindings.size!==1)fail('ADMISSION_BINDING_MISMATCH');
+    const admittedBinding=admittedBindings.size===1?[...admittedBindings][0]:null;
+    if(layerBinding&&admittedBinding&&admittedBinding!==layerBinding)fail('ADMISSION_BINDING_MISMATCH');
+
+    // (d) candidate_id / generation_id must identify the calculated layer.
+    if(layerCandidateMissing||layerCandidates.size>1)fail('ADMISSION_CANDIDATE_MISMATCH');
+    const layerCandidate=layerCandidates.size===1?[...layerCandidates][0]:null;
+    const candidateObjectId=token(candidate&&candidate.candidate_id,reasons);
+    if(admitted.candidate_values.length===0||admittedCandidates.size!==1)fail('ADMISSION_CANDIDATE_MISMATCH');
+    const admittedCandidate=admittedCandidates.size===1?[...admittedCandidates][0]:null;
+    if(!layerCandidate||admittedCandidate!==layerCandidate)fail('ADMISSION_CANDIDATE_MISMATCH');
+    if(candidate&&text(candidate.candidate_id)&&(!candidateObjectId||candidateObjectId!==layerCandidate))fail('ADMISSION_CANDIDATE_MISMATCH');
+
+    if(layerGenerationMissing||layerGenerations.size>1)fail('ADMISSION_GENERATION_MISMATCH');
+    const layerGeneration=layerGenerations.size===1?[...layerGenerations][0]:null;
+    if(admitted.generation_values.length===0||admittedGenerations.size!==1)fail('ADMISSION_GENERATION_MISMATCH');
+    const admittedGeneration=admittedGenerations.size===1?[...admittedGenerations][0]:null;
+    if(!layerGeneration||admittedGeneration!==layerGeneration)fail('ADMISSION_GENERATION_MISMATCH');
+    const candidateGeneration=token(candidate&&candidate.generation_id,reasons);
+    if(candidate&&text(candidate.generation_id)&&(!candidateGeneration||candidateGeneration!==layerGeneration))fail('ADMISSION_GENERATION_MISMATCH');
+
+    return bound;
+  }
+
   function retainedResolution(input,reference,admissionObject,activePopulation,reasons){
     const artifact=isObject(admissionObject)&&isObject(admissionObject.artifact)?admissionObject.artifact:null;
     const decision=isObject(admissionObject)&&isObject(admissionObject.scientific_decision)?admissionObject.scientific_decision:null;
@@ -329,17 +489,26 @@
     const retained=admissionStatus==='RETAIN_REFERENCE';
     const personal=personalLayers(repositoryUsable?repository:null,activePopulation);
 
+    // #task-fnc: an ADMISSIBLE status only authorizes the calculated branch when
+    // the admission is explicitly bound to the exact runtime calculated artifact.
+    // A bare status token (or a divergent hash/candidate/generation/binding) fails
+    // closed and never yields a strategy identity.
+    const admissionBound=admitted&&activeCalculated.length>0
+      ?bindAdmittedArtifact(heroStrategy.object,candidate,activeCalculated,input,activePopulation,reasons)
+      :false;
+    const admittedBound=admitted&&admissionBound;
+
     let status=STATUSES.UNAVAILABLE;
     let source=SOURCES.NONE;
     let failClosed=true;
     let identity=null;
     let provenance=null;
 
-    if(admitted&&!candidateBlocked&&activeCalculated.length>0&&allComplete){
+    if(admittedBound&&!candidateBlocked&&activeCalculated.length>0&&allComplete){
       status=STATUSES.ADMISSIBLE_CALCULATED;source=SOURCES.POPULATION;failClosed=false;
       ({identity,provenance}=calculatedResolution(input,activeCalculated,candidate,activePopulation,admissionStatus,reasons));
       reasons.push('ADMITTED_CALCULATED_STRATEGY');
-    }else if(admitted&&!candidateBlocked&&activeCalculated.length>0){
+    }else if(admittedBound&&!candidateBlocked&&activeCalculated.length>0){
       status=STATUSES.PARTIAL;source=SOURCES.POPULATION;failClosed=true;
       ({identity,provenance}=calculatedResolution(input,activeCalculated,candidate,activePopulation,admissionStatus,reasons));
       reasons.push('STRATEGY_PARTIAL_COVERAGE');

@@ -24,6 +24,40 @@ const LAYER_PROVENANCE={
   source_plan_sha256:SHA_PLAN
 };
 
+// A fully bound admission: role, content hash, explicit provenance,
+// candidate_id/generation_id and binding_sha256 all describe the calculated
+// artifact above (#task-fnc). A bare status token is never enough.
+function boundAdmission({
+  status='ADMISSIBLE',populationId=POP,role='hero_strategy',
+  sha=SHA_MANIFEST,declaredSha,actualSha,admissionSha,
+  artifact=true,binding=SHA_BINDING,
+  candidateId='hero-candidate-196',generationId='gen-196',provenance=true
+}={}){
+  const admission={status,role,population_id:populationId};
+  if(artifact){
+    admission.artifact={
+      declared_sha256:declaredSha===undefined?sha:declaredSha,
+      actual_sha256:actualSha===undefined?sha:actualSha,
+      hash_kind:'file_sha256',
+      source_path:'training/runs/196_hero_candidate/HERO_RANGE_REPOSITORY_PFPC.json',
+      verified:true
+    };
+  }
+  if(admissionSha!==undefined)admission.artifact_sha256=admissionSha;
+  if(candidateId!=null)admission.candidate_id=candidateId;
+  if(generationId!=null)admission.generation_id=generationId;
+  if(binding!=null)admission.binding_sha256=binding;
+  if(provenance===true)admission.provenance={
+    source_population_id:populationId,
+    manifest_sha256:sha,
+    binding_sha256:binding,
+    candidate_id:candidateId,
+    generation_id:generationId
+  };
+  else if(provenance)admission.provenance=provenance;
+  return admission;
+}
+
 function contextFor(populationId){return {...CONTEXT,population_id:populationId};}
 
 function repository({populationId=POP,hands=169,version=GENERATION_VERSION,provenance=LAYER_PROVENANCE}={}){
@@ -57,7 +91,7 @@ assert.deepEqual(R.ADMISSION_STATUSES,['ADMISSIBLE','RETAIN_REFERENCE','UNRESOLV
 const compatibleInput={
   population_id:POP,
   repository:repository({hands:169}),
-  admissions:{hero_strategy:{status:'ADMISSIBLE',population_id:POP}},
+  admissions:{hero_strategy:boundAdmission()},
   pack_identity:{population_id:POP},
   trainer_manifest:{schema:R.TRAINER_MANIFEST_SCHEMA,population_id:POP}
 };
@@ -82,7 +116,7 @@ const nestedAdmission=R.resolveHeroStrategy({
   population_id:POP,
   repository:repository({hands:169}),
   admissions:{population_id:POP,admissions:{
-    hero_strategy:{status:'ADMISSIBLE',population_id:POP},
+    hero_strategy:boundAdmission(),
     hero_ranges:{status:'ADMISSIBLE',population_id:POP}
   }}
 });
@@ -94,7 +128,7 @@ const deterministicA=R.resolveHeroStrategy(compatibleInput);
 const deterministicB=R.resolveHeroStrategy({
   ...compatibleInput,
   repository:repository({hands:169}),
-  admissions:{hero_strategy:{status:'ADMISSIBLE',population_id:POP}}
+  admissions:{hero_strategy:boundAdmission()}
 });
 assert.deepEqual(deterministicA,deterministicB);
 assert.equal(JSON.stringify(deterministicA),JSON.stringify(deterministicB));
@@ -105,22 +139,22 @@ assert.equal(new Set(deterministicA.reason_codes).size,deterministicA.reason_cod
 const overridden=R.resolveHeroStrategy({
   population_id:POP,
   repository:repository({hands:169}),
-  admissions:{hero_strategy:'ADMISSIBLE'},
+  admissions:{hero_strategy:boundAdmission()},
   strategy_id:'hero-strategy-token',
   strategy_version:'2026-09-21.1',
-  strategy_sha256:SHA_REFERENCE
+  strategy_sha256:SHA_MANIFEST
 });
 assert.equal(overridden.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.equal(overridden.strategy_id,'hero-strategy-token');
 assert.equal(overridden.strategy_version,'2026-09-21.1');
-assert.equal(overridden.strategy_sha256,SHA_REFERENCE);
+assert.equal(overridden.strategy_sha256,SHA_MANIFEST);
 assert.ok(schemaHasNoCustom(overridden));
 
 // An invalid explicit sha is ignored rather than echoed as a fake identity.
 const invalidSha=R.resolveHeroStrategy({
   population_id:POP,
   repository:repository({hands:169}),
-  admissions:'ADMISSIBLE',
+  admissions:{hero_strategy:boundAdmission()},
   strategy_sha256:'not-a-sha'
 });
 assert.equal(invalidSha.strategy_sha256,SHA_MANIFEST);
@@ -238,7 +272,7 @@ const unresolved=R.resolveHeroStrategy({population_id:POP,repository:repository(
 assert.equal(unresolved.status,R.STATUSES.UNAVAILABLE);
 assert.ok(unresolved.reason_codes.includes('STRATEGY_UNRESOLVED'));
 
-const admittedIncomplete=R.resolveHeroStrategy({population_id:POP,repository:repository({hands:12}),admissions:'ADMISSIBLE'});
+const admittedIncomplete=R.resolveHeroStrategy({population_id:POP,repository:repository({hands:12}),admissions:{hero_strategy:boundAdmission()}});
 assert.equal(admittedIncomplete.status,R.STATUSES.PARTIAL);
 assert.equal(admittedIncomplete.source,R.SOURCES.POPULATION);
 assert.equal(admittedIncomplete.fail_closed,true);
@@ -271,7 +305,7 @@ assert.ok(personalResolution.reason_codes.includes('PERSONAL_OVERRIDE_NOT_POPULA
 
 const layeredOverride=repository({hands:169});
 H.setHandStrategy(layeredOverride,CONTEXT,'AA',{actions:{LIMP:1}},{layer:'personal'});
-const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layeredOverride,admissions:'ADMISSIBLE'});
+const layeredResolution=R.resolveHeroStrategy({population_id:POP,repository:layeredOverride,admissions:{hero_strategy:boundAdmission()}});
 assert.equal(layeredResolution.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.equal(layeredResolution.source,R.SOURCES.POPULATION,'personal override must not become the population source');
 
@@ -314,7 +348,7 @@ assert.ok(selfPromoted.reason_codes.includes('CANDIDATE_PROMOTION_FORBIDDEN'));
 const customOverride=R.resolveHeroStrategy({
   population_id:POP,
   repository:repository({hands:169}),
-  admissions:'ADMISSIBLE',
+  admissions:{hero_strategy:boundAdmission()},
   strategy_id:'Custom'
 });
 assert.notEqual(String(customOverride.strategy_id).toLowerCase(),'custom');
@@ -325,14 +359,141 @@ assert.ok(schemaHasNoCustom(customOverride));
 const customLayer=H.emptyRepository({populationId:POP});
 H.setLayerMetadata(customLayer,CONTEXT,'calculated',{
   version:'custom-version',
-  provenance:{schema:R.IMPORT_SCHEMA,activation_state:'ACTIVE_MEASURED',candidate_id:'Custom',generation_id:'Custom'}
+  provenance:{schema:R.IMPORT_SCHEMA,activation_state:'ACTIVE_MEASURED',candidate_id:'Custom',generation_id:'Custom',manifest_sha256:SHA_MANIFEST,binding_sha256:SHA_BINDING}
 });
 for(const hand of H.HAND_CLASSES)H.setHandStrategy(customLayer,CONTEXT,hand,{actions:{FOLD:1}},{layer:'calculated'});
-const customResolution=R.resolveHeroStrategy({population_id:POP,repository:customLayer,admissions:'ADMISSIBLE'});
+const customResolution=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:customLayer,
+  admissions:{hero_strategy:boundAdmission({candidateId:'Custom',generationId:'Custom'})}
+});
 assert.ok(schemaHasNoCustom(customResolution));
-assert.equal(customResolution.provenance.candidate_id,null);
-assert.equal(customResolution.provenance.generation_id,null);
-assert.equal(customResolution.strategy_id,`hero-population:${POP}`);
+assert.notEqual(customResolution.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(customResolution.provenance,null);
+assert.equal(customResolution.strategy_id,null);
+assert.equal(customResolution.fail_closed,true);
 assert.ok(customResolution.reason_codes.includes('CUSTOM_LABEL_REJECTED'));
+assert.ok(customResolution.reason_codes.includes('ADMISSION_CANDIDATE_MISMATCH'));
+assert.ok(customResolution.reason_codes.includes('ADMISSION_GENERATION_MISMATCH'));
+
+// --- #task-fnc: ADMISSIBLE must be bound to the exact runtime artifact -------
+function assertFailClosed(resolution,code){
+  assert.notEqual(resolution.status,R.STATUSES.ADMISSIBLE_CALCULATED,'an unbound admission must never be ADMISSIBLE_CALCULATED');
+  assert.equal(resolution.strategy_id,null,'an unbound admission must never yield a strategy identity');
+  assert.equal(resolution.fail_closed,true);
+  assert.ok(resolution.reason_codes.includes(code),`expected ${code} in ${resolution.reason_codes.join(',')}`);
+  assert.deepEqual(resolution.reason_codes,[...resolution.reason_codes].sort());
+  assert.equal(new Set(resolution.reason_codes).size,resolution.reason_codes.length);
+  assert.ok(schemaHasNoCustom(resolution));
+}
+
+// 1. A bare ADMISSIBLE status token alone authorizes nothing.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),admissions:'ADMISSIBLE'
+}),'ADMISSION_ARTIFACT_MISSING');
+
+// 2. An admission object without any artifact identity authorizes nothing.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({artifact:false})}
+}),'ADMISSION_ARTIFACT_MISSING');
+
+// 3. An admission artifact without a usable SHA-256 is missing its identity.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({declaredSha:null,actualSha:null})}
+}),'ADMISSION_HASH_MISSING');
+
+// 4. A divergent content hash does not describe the runtime artifact.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({sha:'f'.repeat(64)})}
+}),'ADMISSION_HASH_MISMATCH');
+
+// 4a. No declared hash may hide behind a matching higher-priority hash.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({actualSha:SHA_MANIFEST,declaredSha:'f'.repeat(64)})}
+}),'ADMISSION_HASH_MISMATCH');
+
+// 4b. A contradictory root artifact hash also invalidates the admission.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({admissionSha:'f'.repeat(64)})}
+}),'ADMISSION_HASH_MISMATCH');
+
+// 4c. An explicit divergent SHA-256 token is a mismatch, not an override.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  strategy_sha256:'f'.repeat(64)
+}),'ADMISSION_HASH_MISMATCH');
+
+// 4d. Candidate metadata cannot declare a different calculated artifact hash.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  candidate:{candidate_id:'hero-candidate-196',strategy_sha256:'f'.repeat(64)}
+}),'ADMISSION_HASH_MISMATCH');
+
+// 5. A divergent candidate_id does not identify the calculated layer.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({candidateId:'other-candidate'})}
+}),'ADMISSION_CANDIDATE_MISMATCH');
+
+// 6. A divergent generation_id does not identify the calculated layer.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({generationId:'other-generation'})}
+}),'ADMISSION_GENERATION_MISMATCH');
+
+// 7. A divergent binding_sha256 is not the binding used at runtime.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({binding:'e'.repeat(64)})}
+}),'ADMISSION_BINDING_MISMATCH');
+
+// 8. A wrong admission role is not the hero_strategy admission.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({role:'hero_ranges'})}
+}),'ADMISSION_ROLE_MISMATCH');
+
+// 9. Admission provenance is mandatory and population-bound.
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({provenance:false})}
+}),'ADMISSION_PROVENANCE_MISSING');
+
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission({provenance:{
+    source_population_id:POP,
+    manifest_sha256:'f'.repeat(64),
+    binding_sha256:SHA_BINDING,
+    candidate_id:'hero-candidate-196',
+    generation_id:'gen-196'
+  }})}
+}),'ADMISSION_PROVENANCE_MISMATCH');
+
+// 10. A calculated layer with no provenance/hash is not bound to any admission.
+const unboundLayer=H.emptyRepository({populationId:POP});
+H.setLayerMetadata(unboundLayer,CONTEXT,'calculated',{
+  version:'unbound-v1',
+  provenance:{schema:R.IMPORT_SCHEMA,activation_state:'ACTIVE_MEASURED'}
+});
+for(const hand of H.HAND_CLASSES)H.setHandStrategy(unboundLayer,CONTEXT,hand,{actions:{FOLD:1}},{layer:'calculated'});
+assertFailClosed(R.resolveHeroStrategy({
+  population_id:POP,repository:unboundLayer,
+  admissions:{hero_strategy:boundAdmission()}
+}),'REPOSITORY_NOT_BOUND_TO_ADMISSION');
+
+// The bare-token fail-close is deterministic and never PARTIAL either.
+const bareComplete=R.resolveHeroStrategy({population_id:POP,repository:repository({hands:169}),admissions:'ADMISSIBLE'});
+const bareCompleteAgain=R.resolveHeroStrategy({population_id:POP,repository:repository({hands:169}),admissions:'ADMISSIBLE'});
+assert.deepEqual(bareComplete,bareCompleteAgain);
+assert.equal(JSON.stringify(bareComplete),JSON.stringify(bareCompleteAgain));
+assert.notEqual(bareComplete.status,R.STATUSES.PARTIAL);
 
 console.log('Hero strategy resolution contract: PASS');

@@ -21,7 +21,9 @@ The three invariants that motivate the whole design are:
 
 1. **No admissible artifact, no active strategy.** An artifact that is absent,
    un-admitted, retained-only, unresolved, rejected, incompatible, malformed or
-   inactive never becomes the active Hero strategy.
+   inactive never becomes the active Hero strategy. An `ADMISSIBLE` status must
+   additionally be explicitly bound to the exact runtime calculated artifact;
+   a bare `ADMISSIBLE` token never authorizes a local repository.
 2. **No silent relabel.** A legacy `MIXED` repository, context, override or
    candidate is never relabelled to the active (for example Zoom) population, and
    the inactive #358 candidate is never auto-activated.
@@ -83,8 +85,8 @@ input yields byte-identical JSON.
 
 | `status` | `source` | `fail_closed` | Meaning |
 | --- | --- | --- | --- |
-| `ADMISSIBLE_CALCULATED` | `POPULATION` | `false` | An explicit `ADMISSIBLE` admission covers a complete calculated population strategy (169 hand classes per active calculated context). |
-| `PARTIAL` | `POPULATION` | `true` | An `ADMISSIBLE` calculated layer exists but its coverage is incomplete. Identity/provenance are reported, but the strategy is not usable. |
+| `ADMISSIBLE_CALCULATED` | `POPULATION` | `false` | An explicit `ADMISSIBLE` admission is explicitly bound to the exact runtime calculated artifact (role, SHA-256 content identity, provenance, candidate_id/generation_id and binding_sha256) and covers a complete calculated population strategy (169 hand classes per active calculated context). A bare `ADMISSIBLE` token authorizes nothing. |
+| `PARTIAL` | `POPULATION` | `true` | An `ADMISSIBLE` admission bound to the calculated layer exists but its coverage is incomplete. Identity/provenance are reported, but the strategy is not usable. |
 | `RETAIN_REFERENCE` | `POPULATION` | `false` | The admission is `RETAIN_REFERENCE`: a population-bound reference is kept as provenance only. It is not an admissible calculated strategy. |
 | `PARTIAL` | `PERSONAL_OVERRIDE` | `true` | No population strategy is available; only a personal override exists for the active population. |
 | `UNAVAILABLE` | `NONE` | `true` | No admissible strategy: missing, retained-without-identity, unresolved, rejected, un-admitted, inactive or malformed. |
@@ -104,6 +106,10 @@ generic path):
   `<SOURCE>_POPULATION_MISMATCH` per offending binding;
 - admission: `ADMISSION_INCOMPATIBLE`, `HERO_STRATEGY_ADMISSION_INCOMPATIBLE`,
   `HERO_RANGES_ADMISSION_INCOMPATIBLE`, `ADMISSION_MISSING`;
+- admission/artifact binding (#task-fnc): `ADMISSION_ARTIFACT_MISSING`,
+  `ADMISSION_HASH_MISSING`, `ADMISSION_HASH_MISMATCH`, `ADMISSION_ROLE_MISMATCH`,
+  `ADMISSION_CANDIDATE_MISMATCH`, `ADMISSION_GENERATION_MISMATCH`,
+  `ADMISSION_BINDING_MISMATCH`, `REPOSITORY_NOT_BOUND_TO_ADMISSION`;
 - calculated strategy: `ADMITTED_CALCULATED_STRATEGY`,
   `STRATEGY_PARTIAL_COVERAGE`, `STRATEGY_NOT_ADMITTED`, `STRATEGY_REJECTED`,
   `STRATEGY_UNRESOLVED`, `NO_ADMISSIBLE_STRATEGY`, `REPOSITORY_INVALID`;
@@ -123,7 +129,7 @@ follows:
 
 | Admission status | Resolver outcome |
 | --- | --- |
-| `ADMISSIBLE` | `ADMISSIBLE_CALCULATED` when the active calculated layer is complete; otherwise `PARTIAL`. An `ADMISSIBLE` admission over an empty layer authorizes nothing. |
+| `ADMISSIBLE` | `ADMISSIBLE_CALCULATED` when the admission is explicitly bound to the exact runtime calculated artifact and the active calculated layer is complete; otherwise `PARTIAL` (bound but incomplete) or `UNAVAILABLE` (unbound). An `ADMISSIBLE` admission over an empty layer authorizes nothing. |
 | `RETAIN_REFERENCE` | `RETAIN_REFERENCE` with `source: POPULATION`; reference identity only. |
 | `UNRESOLVED` | `UNAVAILABLE` with `STRATEGY_UNRESOLVED`. |
 | `REJECTED` | `UNAVAILABLE` with `STRATEGY_REJECTED`. |
@@ -142,9 +148,11 @@ Resolution is a strict ordered decision. The first matching branch wins:
 1. **Missing active population** → `POPULATION_INCOMPATIBLE`, no identity.
 2. **Any population binding mismatch** → `POPULATION_INCOMPATIBLE`, no identity.
 3. **`INCOMPATIBLE` admission** (either Hero role) → `POPULATION_INCOMPATIBLE`.
-4. **Admitted + not blocked candidate + complete calculated** →
-   `ADMISSIBLE_CALCULATED`.
-5. **Admitted + calculated present but incomplete** → `PARTIAL` (population
+4. **Admitted + bound to the runtime artifact + not blocked candidate + complete
+   calculated** → `ADMISSIBLE_CALCULATED`. An `ADMISSIBLE` admission that is not
+   explicitly bound to the active calculated artifact fails closed with an
+   `ADMISSION_*`/`REPOSITORY_NOT_BOUND_TO_ADMISSION` code and no identity.
+5. **Admitted + bound + calculated present but incomplete** → `PARTIAL` (population
    source).
 6. **Retained reference** → `RETAIN_REFERENCE`.
 7. **Blocked candidate, or any materialized active calculated layer that is not
