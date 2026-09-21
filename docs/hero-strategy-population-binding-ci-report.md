@@ -13,51 +13,57 @@ coverage_completeness: PASS
 contextual_override: PASS
 release_anchor_check: PASS
 red_workflows: []
-report_self_delta: "réconciliation task-28g : le rapport est mis à jour par un commit documentation-only au-dessus du HEAD validé et poussé 523e614 (CI GitHub verte) ; ce delta ne modifie aucun octet fonctionnel ni site/RELEASE.json, il n'invalide donc pas la preuve CI de 523e614"
+report_self_delta: "le head_sha consigné ici est le HEAD FONCTIONNEL 523e614f9c870d2a7b61190cbb4b84a48f767871 sur lequel la CI GitHub a réellement tourné ; au-dessus de ce SHA se trouvent uniquement des commits documentation-only (task-28g puis ce correctif) qui ne modifient aucun octet fonctionnel ni site/RELEASE.json et n'invalident donc pas cette preuve ; ce rapport ne pré-affirme ni ne cite le push de son propre commit (auto-référence), qui se constate par git ls-remote origin"
 ---
 
 # Rapport CI — Stratégie Hero population-bound (#392, task-28g)
 
 Rapport de validation du rework #392 (PR #399). Aucun merge, aucun rebasage : la
 branche existante `n8n/issue-392-population-bound-hero-strategy` est conservée
-telle quelle. Le HEAD validé `523e614f9c870d2a7b61190cbb4b84a48f767871` est
-poussé sur `origin` et correspond au `headRefOid` de la PR #399.
+telle quelle. Le `head_sha` consigné ici est le **HEAD fonctionnel**
+`523e614f9c870d2a7b61190cbb4b84a48f767871` : c'est le SHA sur lequel la CI
+GitHub a effectivement tourné et il reste un ancêtre de la tête de branche sur
+`origin`.
 
 > **Delta du rapport lui-même (auto-référence).** Cette réconciliation remplace la
 > version task-kch précédente, qui portait un `head_sha` obsolète (`5f34152`) et un
-> `report_self_delta` inexact. Le HEAD validé **et poussé** est
-> `523e614f9c870d2a7b61190cbb4b84a48f767871` : `git ls-remote origin` renvoie ce
-> SHA et `gh pr view 399 --json headRefOid` renvoie ce même SHA, dont la CI
-> GitHub est verte. La présente réconciliation est un commit **documentation-only**
-> (ce seul fichier `docs/`) au-dessus de `523e614` : il ne modifie aucun octet
-> fonctionnel ni `site/RELEASE.json`, donc il n'invalide pas la preuve CI obtenue
-> sur `523e614`. Le SHA de ce commit de réconciliation ne peut pas être cité dans
-> son propre contenu — c'est le seul point d'auto-référence, documenté ici.
+> `report_self_delta` inexact. Le `head_sha` retenu ici est le **HEAD fonctionnel**
+> `523e614f9c870d2a7b61190cbb4b84a48f767871`, celui sur lequel la CI GitHub a
+> réellement tourné. Au-dessus de ce SHA se trouvent uniquement des commits
+> **documentation-only** (task-28g, puis le présent correctif) : ils ne modifient
+> aucun octet fonctionnel ni `site/RELEASE.json` et n'ajoutent donc aucune preuve
+> CI fonctionnelle nouvelle. Ce rapport ne peut pas citer le SHA du commit qui le
+> contient ni pré-affirmer son propre push (auto-référence) ; l'état de la branche
+> distante se constate à la lecture par `git ls-remote origin`.
 
 ## Statut
 
 | Champ | Valeur |
 | --- | --- |
 | Statut global | **PASS** |
-| HEAD validé (poussé, CI GitHub verte) | `523e614f9c870d2a7b61190cbb4b84a48f767871` |
+| HEAD fonctionnel validé (CI GitHub verte) | `523e614f9c870d2a7b61190cbb4b84a48f767871` |
 | SHA obsolètes remplacés | `5f341524429d031ef72ce20497b015614dccf579` (obsolète), `b2856afae1e710d1fc57bc74610498a252699e9d` (ancienne tête distante, obsolète), `a1b19991c160c27e440097fc06dc63afb0cc5f73` (ancienne ancre de rapport, obsolète) |
 | Branche | `n8n/issue-392-population-bound-hero-strategy` |
 | PR | #399 (`OPEN`, `MERGEABLE`) |
 | Merge effectué | **non** |
-| Tête distante de la PR (`headRefOid`) | `523e614f9c870d2a7b61190cbb4b84a48f767871` (= `origin/n8n/issue-392-population-bound-hero-strategy`, poussé) |
+| `headRefOid` de #399 lors de la collecte CI | `523e614f9c870d2a7b61190cbb4b84a48f767871` ; la tête distante porte en plus les commits documentation-only au-dessus de ce SHA |
 | `site/RELEASE.json` | inchangé : ancre déjà alignée sur le HEAD validé (aucun delta d'octets) |
 | `python3 tools/write_site_release.py --check` | **PASS** (EXIT=0) |
 
 ### Périmètre de commits effectif
 
-- **Tous les commits locaux sont poussés** :
-  `origin/n8n/issue-392-population-bound-hero-strategy` == HEAD == `523e614`
-  (vérifié par `git ls-remote origin` et par `gh pr view 399 --json headRefOid`).
+- **Le HEAD fonctionnel `523e614` a été poussé** et reste un ancêtre de la tête
+  distante `origin/n8n/issue-392-population-bound-hero-strategy` ; il est couvert
+  par la CI GitHub distante (voir § Statut réel des workflows GitHub). C'est le
+  seul SHA sur lequel porte la preuve CI fonctionnelle de ce rapport.
+- **Au-dessus de `523e614`** : uniquement des commits **documentation-only**
+  (`a9daf0d` task-28g, puis le présent correctif). Ils ne modifient ni code, ni
+  contrat, ni `site/RELEASE.json`, ne sont donc pas couverts par la CI
+  fonctionnelle, et ne changent pas la preuve CI de `523e614`.
 - Depuis l'ancienne tête distante `b2856af` (désormais obsolète) :
-  `b2856af..523e614` = **11 commits**, tous poussés et couverts par la CI GitHub
-  distante (voir § Statut réel des workflows GitHub).
+  `b2856af..523e614` = **11 commits** couverts par la CI GitHub distante.
 - Depuis l'ancienne ancre de rapport `a1b1999` (obsolète) :
-  `a1b1999..523e614` = **5 commits**, tous poussés :
+  `a1b1999..523e614` = **5 commits** :
   - `3b7a02d` — task-kch : régénération RELEASE.json, CI réelle, rapport PASS/FAIL ;
   - `fb309d7` — task-iuz : admission #305 canonique liée à l'artefact runtime exact ;
   - `38ecf53` — task-otm : complétude bornée par identités requises (jamais un compte) ;
@@ -198,12 +204,14 @@ localement :
 ## Statut réel des workflows GitHub sur 523e614
 
 Source autoritaire : la CLI `gh` (authentifiée, compte `aradenac`) exécutée dans
-ce dépôt, sur le HEAD validé et poussé.
+ce dépôt, sur le HEAD fonctionnel `523e614`.
 
-- `gh pr view 399 --json headRefOid` →
-  `523e614f9c870d2a7b61190cbb4b84a48f767871`.
-- `git ls-remote origin refs/heads/n8n/issue-392-population-bound-hero-strategy`
-  → `523e614f9c870d2a7b61190cbb4b84a48f767871` (le commit est bien poussé).
+- `gh pr view 399 --json headRefOid` a renvoyé
+  `523e614f9c870d2a7b61190cbb4b84a48f767871` au moment de la collecte : c'était
+  alors la tête de la PR, et c'est le SHA sur lequel la CI a tourné.
+- `523e614` reste atteignable sur `origin` comme ancêtre de la tête de branche
+  (`git merge-base --is-ancestor 523e614 <tête distante>`), y compris après le
+  push des commits documentation-only placés au-dessus.
 - `gh run list --branch n8n/issue-392-population-bound-hero-strategy` : **16 runs**
   associés au SHA `523e614` (11 `pull_request` + 5 `push`), **tous `success`**,
   aucun `failure` ni `cancelled`. Workflows concernés (libellés affichés par
@@ -250,6 +258,8 @@ ce dépôt, sur le HEAD validé et poussé.
   aucun fallback silencieux.
 - Stratégie par défaut population-bound : population activée requise et comparée.
 - Sortie déterministe : `reason_codes` uniques et triés, provenance par tokens.
-- Aucun merge ; aucun rebasage ; le commit de réconciliation est
-  **documentation-only** (ce seul fichier `docs/`) et est poussé sur la branche
-  existante `n8n/issue-392-population-bound-hero-strategy` — aucune nouvelle PR.
+- Aucun merge ; aucun rebasage. Les commits de réconciliation au-dessus de
+  `523e614` sont **documentation-only** (ce seul fichier `docs/`) et sont portés
+  par la branche existante
+  `n8n/issue-392-population-bound-hero-strategy` — aucune nouvelle PR ; leur
+  présence effective sur `origin` se constate par `git ls-remote origin`.
