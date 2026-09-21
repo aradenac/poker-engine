@@ -87,6 +87,24 @@ stays `PARTIAL` (with `REQUIRED_CONTEXT_SET_UNAUTHORITATIVE`,
 number of identities: a larger announced counter never invents phantom required
 contexts.
 
+### Normative completeness rule
+
+Completeness is bounded **only** by the required identities in
+`required_context_keys` and/or `expected_context_ids`.  In particular,
+`ready_context_count` is never a substitute for either field and must never be
+used to infer, fill, or credit a required context.  It remains observable as
+diagnostic metadata only.
+
+Consequently, a count-only declaration is non-authoritative and resolves to
+`PARTIAL` when an admitted calculated layer is present, or `UNAVAILABLE` when
+none is present, with `REQUIRED_CONTEXT_SET_UNAUTHORITATIVE`.  An entirely
+absent required set uses `REQUIRED_CONTEXT_SET_UNKNOWN`; an identity-bound set
+with uncovered or incomplete contexts uses `REQUIRED_CONTEXT_MISSING` and/or
+`COVERAGE_INCOMPLETE` (and the calculated partial path also reports
+`STRATEGY_PARTIAL_COVERAGE`).  These outcomes fail closed: neither a ready count
+nor a complete-looking local layer can produce `ADMISSIBLE_CALCULATED` without
+the authoritative identity set.
+
 Repository contexts are identified by their canonical repository key
 (`HeroRanges.contextKey`, `site/hero-ranges.js`), their explicit
 `context.preflop_context_id` and the generation source context id recorded in
@@ -208,6 +226,11 @@ claims `ADMISSIBLE`. Both `hero_strategy` and `hero_ranges` roles must be
 compatible; a role map may be flat or nested under
 `poker-scientific-component-admission/v1.admissions`.
 
+A real canonical #305 `hero_strategy` object (the exact shape produced by
+`tools/population_pack_admission.py`) is accepted exactly like the flat form: it
+is admitted only when it is explicitly bound to the runtime calculated layer
+(see the next section), never on the strength of its `status` token alone.
+
 ## Admission artifact binding (#task-fnc)
 
 An `ADMISSIBLE` admission is never a bare token: it only authorizes the
@@ -239,6 +262,32 @@ runtime layer exactly. Any of these codes prevents both the
 `ADMISSIBLE_CALCULATED` and the `PARTIAL` (population) calculated branches: the
 answer is `UNAVAILABLE` with no strategy identity, so a bare `ADMISSIBLE` token
 can never authorize an arbitrary local repository.
+
+**Identity sourcing.** `candidate_id`, `generation_id` and `binding_sha256` are
+read from the admission itself (`candidate_id` / `generation_id` /
+`binding_sha256`), its `artifact`, its `lineage` and its `source_refs`; every
+location that declares one of them must agree. When the admission declares none
+of them, the exact value carried by the runtime calculated layer's `provenance`
+is authoritative, so the canonical #305 form needs no role-level `provenance`
+and no top-level candidate/generation/binding. The runtime layer must still
+carry the complete identity (`manifest_sha256`, `binding_sha256`, `candidate_id`,
+`generation_id`); a layer missing any of them is not bound to the admission
+whatever the admission claims.
+
+**Fail-close cases.** Any divergence below yields `UNAVAILABLE` with no strategy
+identity and blocks both the `ADMISSIBLE_CALCULATED` and the population `PARTIAL`
+branch:
+
+- **identity absent** — `ADMISSION_ARTIFACT_MISSING` (no `artifact` and no
+  `artifact_sha256`) or `ADMISSION_PROVENANCE_MISSING` (no valid
+  `lineage`+`source_refs` evidence and no runtime `provenance`);
+- **hash absent or divergent** — `ADMISSION_HASH_MISSING`,
+  `ADMISSION_HASH_MISMATCH`;
+- **candidate / generation / binding mismatch** — `ADMISSION_CANDIDATE_MISMATCH`,
+  `ADMISSION_GENERATION_MISMATCH`, `ADMISSION_BINDING_MISMATCH`;
+- **role mismatch** — `ADMISSION_ROLE_MISMATCH` (`hero_strategy` only);
+- **unbound runtime layer** — `REPOSITORY_NOT_BOUND_TO_ADMISSION` (missing or
+  incomplete layer provenance).
 
 ## Precedence
 
@@ -451,9 +500,13 @@ python3 tools/write_site_release.py --check
 
 `.github/workflows/hero-population-strategy.yml` runs the resolver, migration,
 end-to-end, Review scope-identity and Review adapter contracts plus the
-release-identity check. The end-to-end suite walks nine scenarios: population
-compatible, population incompatible, no strategy, personal override, pack change,
-rollback, persistence, provenance and fail-closed activation.
+release-identity check. The resolver contract additionally exercises the
+canonical #305 `hero_strategy` admission shape (artifact + lineage +
+`source_refs`, no role-level `provenance`) and the identity-bounded completeness
+refusal of a count-only bound. The end-to-end suite walks ten scenarios:
+population compatible, population incompatible, no strategy, personal override,
+pack change, rollback, persistence, provenance, fail-closed activation and
+runtime admission wiring.
 
 ## Related documents
 
