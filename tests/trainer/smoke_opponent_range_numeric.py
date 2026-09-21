@@ -2,7 +2,7 @@
 """Numeric browser smoke for the opponent-range representation layer (#391 · task-tn5).
 
 It serves `site/index.html` through the same static HTTP shape as the trainer
-smoke and drives the real in-page functions with `page.evaluate`. Nine
+smoke and drives the real in-page functions with `page.evaluate`. Ten
 scenarios are exercised at the numeric level:
 
 1.  non-informative/uniform prior;
@@ -13,7 +13,13 @@ scenarios are exercised at the numeric level:
 6.  no exploitable action (prior preserved, never degenerate);
 7.  degenerate / zero-mass posterior, fail-closed;
 8.  mass sums and the 169 class projection are coherent;
-9.  no generalized 100 % cell without justification.
+9.  no generalized 100 % cell without justification;
+10. a deliberately non-uniform imported/source range with zero matched public
+    action derives the distinct `source_prior_unconditioned` state (neither
+    `prior_uninformative` nor `degenerate`, no 100 % cell, no numeric grid),
+    while a public board that removes all of its mass fails closed as
+    `degenerate` and `rangeEntriesForHistoryPlayer` never substitutes the
+    legacy imported range.
 
 Representation/display only: it never changes the model/fit, and it never reads
 an unrevealed opponent card or any future information (public hero/board
@@ -280,6 +286,93 @@ async def main() -> None:
                     overrideFlagged: !!(override[0] && override[0].knownHandOverride === true),
                     priorRelativeNull: (prior.entries || []).every(e => e.relativeWeightPct === null)
                 };
+
+                // ---- 10. imported non-uniform source prior + degenerate fail-close
+                // A deliberately non-uniform imported/source range with zero
+                // matched public action must derive to the distinct
+                // `source_prior_unconditioned` state: neither the uniform
+                // `prior_uninformative` nor `degenerate`, rendered as an explicit
+                // state (no numeric grid) and never any 100 % cell. Then a public
+                // board that removes all of its surviving mass must fail closed as
+                // `degenerate` and `rangeEntriesForHistoryPlayer` must return []
+                // instead of silently substituting the legacy imported range.
+                const sourcePosition = { position: cfg.source_range.position, hands: cfg.source_range.hands };
+                const sourceOpponents = [{
+                    playerName: "Villain", rangeIndex: 0, positionIndex: 0,
+                    knownCards: [], useKnownHand: false
+                }];
+                const sourcePlayer = { name: "Villain", hhPosition: cfg.source_range.position };
+                const buildSourceHand = id => ({
+                    id, heroName: "Hero", heroCards: cfg.hero_cards.map(parseCardCode),
+                    players: [
+                        { name: "Hero", knownCards: [], stackBB: 100 },
+                        { name: "Villain", knownCards: [], stackBB: 100 }
+                    ],
+                    bigBlind: 1, rake: 0, timeline: []
+                });
+                const savedSourceState = {
+                    selectedHand: state.selectedHand, replaySteps: state.replaySteps,
+                    replayIndex: state.replayIndex, hhMode: state.hhMode,
+                    populationModel: state.populationModel, postflopModel: state.postflopModel,
+                    opponents: state.opponents, ranges: state.ranges, rangeEdition: state.rangeEdition,
+                    postflopRangeCache: state.postflopRangeCache
+                };
+                try {
+                    state.ranges = [{ name: "Openings", positions: [sourcePosition] }];
+                    state.opponents = sourceOpponents;
+                    state.rangeEdition = false;
+                    state.populationModel = null;
+                    state.postflopModel = null;
+                    state.postflopRangeCache = Object.create(null);
+
+                    // (a) non-uniform imported range, zero matched action.
+                    state.selectedHand = buildSourceHand("source-prior-browser");
+                    state.replaySteps = [{ street: "Flop", board: [] }];
+                    state.replayIndex = 0;
+                    state.hhMode = true;
+                    const sourceEstimate = populationRangeEstimateForPlayer(sourcePlayer, 0);
+                    const sourceResolved = rangeEntriesForHistoryPlayer(sourcePlayer, 0);
+                    const sourceLegacyCount = legacyRangeEntriesForHistoryPlayer(sourcePlayer).length;
+
+                    // (b) a public board removes every surviving combo => fail closed.
+                    state.selectedHand = buildSourceHand("degenerate-source-browser");
+                    state.replaySteps = [{ street: "Flop", board: cfg.degenerate_board.map(parseCardCode) }];
+                    state.replayIndex = 0;
+                    state.ranges = [{
+                        name: "Openings",
+                        positions: [{ position: cfg.source_range.position, hands: [cfg.degenerate_source_hand] }]
+                    }];
+                    const degenerateEstimate = populationRangeEstimateForPlayer(sourcePlayer, 0);
+                    const degenerateResolved = rangeEntriesForHistoryPlayer(sourcePlayer, 0);
+                    const degenerateLegacyCount = legacyRangeEntriesForHistoryPlayer(sourcePlayer).length;
+
+                    R.sc10 = {
+                        source: {
+                            state: sourceEstimate?.posteriorState || null,
+                            uniformPrior: sourceEstimate?.uniformPrior === true,
+                            informativeActions: Number(sourceEstimate?.informativeActions) || 0,
+                            entriesSum: entriesSum(sourceEstimate?.entries),
+                            gridSum: gridSum(sourceEstimate?.gridEntries),
+                            gridMax: gridMax(sourceEstimate?.gridEntries),
+                            grid100: countAt100(sourceEstimate?.gridEntries),
+                            gridMapSize: gridFreqMapFromEstimate(sourceEstimate, null).size,
+                            legacyEntryCount: sourceLegacyCount,
+                            resolvedEntryCount: sourceResolved.length,
+                            resolvedIsEstimateEntries: sourceResolved === (sourceEstimate?.entries || null)
+                        },
+                        degenerate: {
+                            state: degenerateEstimate?.posteriorState || null,
+                            entriesLen: degenerateEstimate?.entries?.length || 0,
+                            gridLen: degenerateEstimate?.gridEntries?.length || 0,
+                            mass: Number(degenerateEstimate?.probabilityMass) || 0,
+                            reason: degenerateEstimate?.degenerateReason || null,
+                            legacyEntryCount: degenerateLegacyCount,
+                            resolvedEntryCount: degenerateResolved.length
+                        }
+                    };
+                } finally {
+                    Object.assign(state, savedSourceState);
+                }
 
                 // ---- anti-regression: max normalization is not canonical ---
                 const diagnostic = copyCombos(priorCombos);
@@ -610,6 +703,35 @@ async def main() -> None:
         assert sc9["overrideFrequency"] == 100 and sc9["overrideFlagged"] is True, sc9
         assert sc9["priorRelativeNull"] is True, sc9
 
+        # ---- scenario 10: non-uniform imported source prior + degenerate -------
+        sc10 = result["sc10"]
+        source_prior = sc10["source"]
+        # Distinct explicit state, never assimilated to the two neighbours.
+        assert source_prior["state"] == "source_prior_unconditioned", sc10
+        assert source_prior["state"] != "prior_uninformative", sc10
+        assert source_prior["state"] != "degenerate", sc10
+        assert source_prior["uniformPrior"] is False, sc10
+        assert source_prior["informativeActions"] == 0, sc10
+        # Canonical mass projection sums to 100 with no 100 % cell...
+        assert approx(source_prior["entriesSum"], 100.0) and approx(source_prior["gridSum"], 100.0), sc10
+        assert 0 < source_prior["gridMax"] < 100.0 and source_prior["grid100"] == 0, sc10
+        # ...and the UI renders no numeric grid for this explicit state.
+        assert source_prior["gridMapSize"] == 0, sc10
+        # The source prior is still exposed to the equity consumers (the legacy
+        # imported range the estimate was derived from is non-empty).
+        assert source_prior["legacyEntryCount"] == 3, sc10
+        assert source_prior["resolvedEntryCount"] == 16, sc10
+        assert source_prior["resolvedIsEstimateEntries"] is True, sc10
+
+        degenerate = sc10["degenerate"]
+        assert degenerate["state"] == "degenerate", sc10
+        assert degenerate["entriesLen"] == 0 and degenerate["gridLen"] == 0, sc10
+        assert degenerate["mass"] == 0, sc10
+        assert degenerate["reason"] == "public_blockers_removed_all_mass", sc10
+        # Fail-closed: the legacy imported range exists but is never substituted.
+        assert degenerate["legacyEntryCount"] == 1, sc10
+        assert degenerate["resolvedEntryCount"] == 0, sc10
+
         # ---- anti-regression: max normalization is not the canonical output ---
         anti = result["antiMax"]
         assert anti["callsMass"] is True and anti["callsInPlace"] is False, anti
@@ -662,12 +784,13 @@ async def main() -> None:
         await browser.close()
 
     print(json.dumps({
-        "scenarios": 9,
+        "scenarios": 10,
         "uniformPrior": result["sc1"],
         "conditioned": result["sc2"],
+        "sourcePriorUnconditioned": result["sc10"]["source"],
         "antiMax": {k: v for k, v in result["antiMax"].items() if k != "sourceExposesInPlace"},
     }, indent=2, ensure_ascii=False))
-    print("opponent range numeric smoke: PASS (9 scenarios)")
+    print("opponent range numeric smoke: PASS (10 scenarios)")
 
 
 if __name__ == "__main__":

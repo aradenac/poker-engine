@@ -344,8 +344,11 @@ therefore:
   range modal, its explicit `prior_uninformative`/`degenerate` states and its
   unified mass legends.
 - `python3 tests/trainer/smoke_opponent_range_numeric.py` — numeric browser
-  proof of the nine opponent-range scenarios (sum-normalized 169 mass grid and
-  the explicit `prior_uninformative`/`degenerate` states).
+  proof of the ten opponent-range scenarios (sum-normalized 169 mass grid and
+  the explicit `prior_uninformative`/`source_prior_unconditioned`/`degenerate`
+  states; a non-uniform imported source range with zero matched action stays
+  distinct with no 100 % cell, and the degenerate posterior never falls back to
+  the legacy imported range).
 - `python3 tests/trainer/smoke_equity_scale_invariance.py` — numeric browser
   proof that `buildSeatEquityPlayers`, `tableEquitySnapshotForStep`,
   `postflopRaiseTreeSnapshot` and `aiExportRangeSnapshot` stay invariant under a

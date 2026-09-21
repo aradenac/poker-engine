@@ -19,6 +19,20 @@
   },
   "flop_board": ["As", "Kd", "7c"],
   "hero_cards": ["Qh", "Jh"],
+  "source_range": {
+    "description": "Deliberately non-uniform imported/source range (a priori frequencies, no hidden card). With zero matched public action it must stay a distinct `source_prior_unconditioned` state, never the uniform non-informative prior and never a conditioned posterior.",
+    "position": "CO",
+    "hands": [
+      {"hand": "AA", "actions": [{"name": "RAISE", "frequency": 70}, {"name": "FOLD", "frequency": 30}]},
+      {"hand": "KK", "actions": [{"name": "RAISE", "frequency": 40}, {"name": "FOLD", "frequency": 60}]},
+      {"hand": "AKs", "actions": [{"name": "RAISE", "frequency": 25}, {"name": "FOLD", "frequency": 75}]}
+    ]
+  },
+  "degenerate_source_hand": {
+    "hand": "AA",
+    "actions": [{"name": "RAISE", "frequency": 100}]
+  },
+  "degenerate_board": ["As", "Ah", "Ad", "Ac"],
   "known_opponent_cards": ["Ah", "Ad"],
   "consumer_scale_factor": 7.3,
   "degenerate_single_combo": ["5s", "4d"],
