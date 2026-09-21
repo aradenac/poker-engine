@@ -1,0 +1,71 @@
+name: Validate population-bound Hero strategy
+
+# Issue #392: the default Hero strategy is population-bound and fail-closed.
+#
+# `.github/workflows/hero-range-editor.yml` already triggers on
+# `tests/hero_ranges/**`, but its business-step surface is byte-frozen by the
+# #361/#384 REPRO anti-bypass transition (`tools/audit_repro_workflow_batch1.py`
+# + `tools/audit_repro_composite_factorization.py`). Adding a business step
+# there would have to re-baseline immutable evidence, so this dedicated workflow
+# executes the population-bound E2E contract instead and keeps that guard intact.
+
+on:
+  push:
+    paths:
+      - '.github/actions/repro-runtime/action.yml'
+      - 'site/hero-ranges.js'
+      - 'site/hero-range-migration.js'
+      - 'site/hero-strategy-resolver.js'
+      - 'site/hero-compliance.js'
+      - 'site/hero-compliance-replayer.js'
+      - 'site/hero-ranges-app.js'
+      - 'site/index.html'
+      - 'site/trainer.js'
+      - 'site/RELEASE.json'
+      - 'tests/hero_ranges/**'
+      - 'tools/write_site_release.py'
+      - '.github/workflows/hero-population-strategy.yml'
+  pull_request:
+    paths:
+      - '.github/actions/repro-runtime/action.yml'
+      - 'site/hero-ranges.js'
+      - 'site/hero-range-migration.js'
+      - 'site/hero-strategy-resolver.js'
+      - 'site/hero-compliance.js'
+      - 'site/hero-compliance-replayer.js'
+      - 'site/hero-ranges-app.js'
+      - 'site/index.html'
+      - 'site/trainer.js'
+      - 'site/RELEASE.json'
+      - 'tests/hero_ranges/**'
+      - 'tools/write_site_release.py'
+      - '.github/workflows/hero-population-strategy.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hero-population-strategy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/repro-runtime
+        with:
+          require-node: 'true'
+      - name: JavaScript syntax
+        run: |
+          node --check site/hero-ranges.js
+          node --check site/hero-range-migration.js
+          node --check site/hero-strategy-resolver.js
+      - name: Population -> Hero strategy resolution contract
+        run: node tests/hero_ranges/test_hero_strategy_resolver.mjs
+      - name: Hero range storage migration contract
+        run: node tests/hero_ranges/test_hero_range_migration.mjs
+      - name: Population-bound Hero strategy E2E contract
+        run: node tests/hero_ranges/test_population_bound_hero_strategy.mjs
+      - name: Release identity includes the resolver and migration modules
+        run: python3 tools/write_site_release.py --check
