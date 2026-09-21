@@ -1,10 +1,10 @@
 ---
 schema: poker-hero-strategy-population-binding-ci-report/v1
 issue: 392
-task: task-kch
+task: task-28g
 report_date: 2026-09-21
 status: PASS
-head_sha: 5f341524429d031ef72ce20497b015614dccf579
+head_sha: 523e614f9c870d2a7b61190cbb4b84a48f767871
 branch: n8n/issue-392-population-bound-hero-strategy
 pull_request: 399
 merged: false
@@ -13,55 +13,66 @@ coverage_completeness: PASS
 contextual_override: PASS
 release_anchor_check: PASS
 red_workflows: []
-report_self_delta: "le rapport a1b1999 est remplacé par la présente version ; cet unique fichier est un delta de working-tree non commité au-dessus du HEAD réel 5f34152 (STOP_AFTER_CLAUDE_REVIEW_AND_PR : aucun commit/push)"
+report_self_delta: "réconciliation task-28g : le rapport est mis à jour par un commit documentation-only au-dessus du HEAD validé et poussé 523e614 (CI GitHub verte) ; ce delta ne modifie aucun octet fonctionnel ni site/RELEASE.json, il n'invalide donc pas la preuve CI de 523e614"
 ---
 
-# Rapport CI — Stratégie Hero population-bound (#392, task-kch)
+# Rapport CI — Stratégie Hero population-bound (#392, task-28g)
 
-Rapport de validation locale du rework #392 (PR #399). Aucun merge, aucun push,
-aucun rebasage : la branche existante `n8n/issue-392-population-bound-hero-strategy`
-est conservée telle quelle.
+Rapport de validation du rework #392 (PR #399). Aucun merge, aucun rebasage : la
+branche existante `n8n/issue-392-population-bound-hero-strategy` est conservée
+telle quelle. Le HEAD validé `523e614f9c870d2a7b61190cbb4b84a48f767871` est
+poussé sur `origin` et correspond au `headRefOid` de la PR #399.
 
-> **Delta du rapport lui-même.** Le SHA de tête réel du rework est
-> `5f341524429d031ef72ce20497b015614dccf579`. Le présent fichier est la seule
-> modification de working-tree non commitée au-dessus de ce SHA : le worker
-> s'arrête à `STOP_AFTER_CLAUDE_REVIEW_AND_PR` et n'effectue ni commit ni push.
-> Le commit qui *contiendra* définitivement ce rapport sera le prochain commit de
-> la branche ; il n'existe pas encore. Le delta est donc documenté explicitement
-> ici plutôt que référencé par un SHA inexistant.
+> **Delta du rapport lui-même (auto-référence).** Cette réconciliation remplace la
+> version task-kch précédente, qui portait un `head_sha` obsolète (`5f34152`) et un
+> `report_self_delta` inexact. Le HEAD validé **et poussé** est
+> `523e614f9c870d2a7b61190cbb4b84a48f767871` : `git ls-remote origin` renvoie ce
+> SHA et `gh pr view 399 --json headRefOid` renvoie ce même SHA, dont la CI
+> GitHub est verte. La présente réconciliation est un commit **documentation-only**
+> (ce seul fichier `docs/`) au-dessus de `523e614` : il ne modifie aucun octet
+> fonctionnel ni `site/RELEASE.json`, donc il n'invalide pas la preuve CI obtenue
+> sur `523e614`. Le SHA de ce commit de réconciliation ne peut pas être cité dans
+> son propre contenu — c'est le seul point d'auto-référence, documenté ici.
 
 ## Statut
 
 | Champ | Valeur |
 | --- | --- |
 | Statut global | **PASS** |
-| HEAD SHA réel (fin de rework) | `5f341524429d031ef72ce20497b015614dccf579` |
-| SHA obsolète remplacé | `a1b19991c160c27e440097fc06dc63afb0cc5f73` |
+| HEAD validé (poussé, CI GitHub verte) | `523e614f9c870d2a7b61190cbb4b84a48f767871` |
+| SHA obsolètes remplacés | `5f341524429d031ef72ce20497b015614dccf579` (obsolète), `b2856afae1e710d1fc57bc74610498a252699e9d` (ancienne tête distante, obsolète), `a1b19991c160c27e440097fc06dc63afb0cc5f73` (ancienne ancre de rapport, obsolète) |
 | Branche | `n8n/issue-392-population-bound-hero-strategy` |
 | PR | #399 (`OPEN`, `MERGEABLE`) |
-| Merge effectué | **non** (STOP_AFTER_CLAUDE_REVIEW_AND_PR) |
-| HEAD distant de la PR | `b2856afae1e710d1fc57bc74610498a252699e9d` (`headRefOid` de #399 ; les 10 commits locaux ne sont pas poussés) |
-| `site/RELEASE.json` régénéré | oui, octets inchangés (`wrote site/RELEASE.json`, arbre propre) |
-| `python3 tools/write_site_release.py --check` | **PASS** |
+| Merge effectué | **non** |
+| Tête distante de la PR (`headRefOid`) | `523e614f9c870d2a7b61190cbb4b84a48f767871` (= `origin/n8n/issue-392-population-bound-hero-strategy`, poussé) |
+| `site/RELEASE.json` | inchangé : ancre déjà alignée sur le HEAD validé (aucun delta d'octets) |
+| `python3 tools/write_site_release.py --check` | **PASS** (EXIT=0) |
 
 ### Périmètre de commits effectif
 
-- Depuis le HEAD distant de la PR : `b2856af..5f34152` = **10 commits locaux**
-  (aucun poussé).
-- Depuis l'ancre du rapport précédent `a1b1999` : `a1b1999..5f34152` = **4 commits**,
-  qui sont précisément le périmètre nouveau couvert par cette révision :
+- **Tous les commits locaux sont poussés** :
+  `origin/n8n/issue-392-population-bound-hero-strategy` == HEAD == `523e614`
+  (vérifié par `git ls-remote origin` et par `gh pr view 399 --json headRefOid`).
+- Depuis l'ancienne tête distante `b2856af` (désormais obsolète) :
+  `b2856af..523e614` = **11 commits**, tous poussés et couverts par la CI GitHub
+  distante (voir § Statut réel des workflows GitHub).
+- Depuis l'ancienne ancre de rapport `a1b1999` (obsolète) :
+  `a1b1999..523e614` = **5 commits**, tous poussés :
   - `3b7a02d` — task-kch : régénération RELEASE.json, CI réelle, rapport PASS/FAIL ;
   - `fb309d7` — task-iuz : admission #305 canonique liée à l'artefact runtime exact ;
   - `38ecf53` — task-otm : complétude bornée par identités requises (jamais un compte) ;
-  - `5f34152` — task-y47 : doc normative du contrat d'admission #305 et complétude par identité.
-- Fichiers fonctionnels modifiés par ces 4 commits : `site/hero-strategy-resolver.js`
-  (SHA blob git `211bf60f5dbc8b14794554cc763059fabf58948d`),
+  - `5f34152` — task-y47 : doc normative du contrat d'admission #305 et complétude par identité ;
+  - `523e614` — task-u6i : RELEASE.json, CI réelle complète et rapport PASS/FAIL au HEAD réel.
+- Fichiers modifiés par le périmètre `a1b1999..523e614` :
+  `site/hero-strategy-resolver.js` (SHA blob git
+  `211bf60f5dbc8b14794554cc763059fabf58948d`),
   `tests/hero_ranges/test_hero_strategy_resolver.mjs`,
-  `site/RELEASE.json`, `docs/hero-strategy-population-binding.md`,
+  `docs/hero-strategy-population-binding.md`, `site/RELEASE.json`,
   `docs/hero-strategy-population-binding-ci-report.md`.
-- Aucun commit « vide » : le delta `site/RELEASE.json` de ces 4 commits est
+- Aucun commit « vide » : le delta `site/RELEASE.json` de ces commits est
   l'actualisation de `assets_tree_git_sha` (`7b8dc481d21a94e8e05fe8d7abae39e0d78b56a9`)
-  et des SHA blob du resolver/migration après rework.
+  et des SHA blob du resolver/migration après rework ; ces SHA sont ceux portés par
+  `site/RELEASE.json` au HEAD validé.
 
 ### Verdicts exigés
 
@@ -76,7 +87,7 @@ est conservée telle quelle.
 
 - `python3 tools/write_site_release.py` → `wrote site/RELEASE.json` (arbre de travail
   propre : aucun changement de byte, l'ancre versionnée correspond déjà aux octets
-  fonctionnels au HEAD réel).
+  fonctionnels au HEAD validé `523e614`).
 - `python3 tools/write_site_release.py --check` →
   `release source anchor verified: site/RELEASE.json; assembled identity can be materialized` (EXIT=0).
 - `site/RELEASE.json` embarque bien les nouveaux octets du rework dans
@@ -165,9 +176,10 @@ dont `test_product_identity_ux_contract.py`, `test_range_vocabulary_contract.py`
 
 ### Workflows déclenchés par les fichiers modifiés — contrats rejoués
 
-Les 4 commits nouveaux modifient `site/hero-strategy-resolver.js`, `site/RELEASE.json`
-et `tests/hero_ranges/test_hero_strategy_resolver.mjs`. Les workflows suivants se
-déclenchent sur ces chemins et leurs contrats ont été rejoués localement :
+Les commits du périmètre `a1b1999..523e614` modifient `site/hero-strategy-resolver.js`,
+`site/RELEASE.json` et `tests/hero_ranges/test_hero_strategy_resolver.mjs`. Les
+workflows suivants se déclenchent sur ces chemins et leurs contrats ont été rejoués
+localement :
 
 | Workflow | Contrats rejoués | Verdict |
 | --- | --- | --- |
@@ -183,20 +195,32 @@ déclenchent sur ces chemins et leurs contrats ont été rejoués localement :
 | `population-pack-catalog.yml` | repro catalog, idempotence patches/catalogue, syntaxe node, release identity | **PASS** |
 | `sequential-arena.yml` | `py_compile` simulation, gates de promotion, oracle/rollout, registry/populations, scénarios, baseline report | **PASS** (étapes déterministes ; rollouts navigateur = CI distante) |
 
-## Workflows CI encore rouges
+## Statut réel des workflows GitHub sur 523e614
 
-- **Aucun workflow câblé observé rouge.** Au HEAD distant de la PR
-  (`b2856af`, correspondant aux 10 commits locaux), `gh run list --branch
-  n8n/issue-392-population-bound-hero-strategy` ne renvoie que des `success`
-  (`gh pr checks 399` : 0 échec, seuls des `pass`/`skipping`).
-- Les 10 commits locaux (`b2856af..5f34152`) ne sont pas poussés : la CI distante
-  ne les a donc pas encore exécutés. Tous leurs contrats ont été rejoués
-  localement ci-dessus et passent ; le seul delta non poussé au-dessus de `b2856af`
-  qui touche des workflows est le rework resolver + RELEASE.json, entièrement
-  couvert par `hero-population-strategy.yml` (+ déclenchements secondaires listés
-  ci-dessus), tous PASS.
-- **Failures locales non câblées à un workflow** (préexistantes, indépendantes de
-  task-kch) : `tests/ci/test_repro_current_mixed_batch.py`,
+Source autoritaire : la CLI `gh` (authentifiée, compte `aradenac`) exécutée dans
+ce dépôt, sur le HEAD validé et poussé.
+
+- `gh pr view 399 --json headRefOid` →
+  `523e614f9c870d2a7b61190cbb4b84a48f767871`.
+- `git ls-remote origin refs/heads/n8n/issue-392-population-bound-hero-strategy`
+  → `523e614f9c870d2a7b61190cbb4b84a48f767871` (le commit est bien poussé).
+- `gh run list --branch n8n/issue-392-population-bound-hero-strategy` : **16 runs**
+  associés au SHA `523e614` (11 `pull_request` + 5 `push`), **tous `success`**,
+  aucun `failure` ni `cancelled`. Workflows concernés (libellés affichés par
+  `gh`) : Project state consistency ; Validate population-bound Hero strategy ;
+  Validate Hero range repository and editor ; Validate Hero range compliance ;
+  Validate and publish population pack ; Validate population pack catalogue ;
+  Validate sequential independent arena ; Validate calculated Hero range export ;
+  Validate preflop context contract ; Validate Hero range PFC/PFPC context
+  binding ; Validate interactive trainer.
+- `gh pr checks 399` : 0 échec ; uniquement des `pass`, plus les `skipping`
+  attendus (`v83-baseline-test`, `v83-baseline-validation`, `publish`).
+- **Aucun workflow rouge** : `red_workflows: []` reste exact pour `523e614`.
+- Le commit de réconciliation documentation-only produit par task-28g se place
+  au-dessus de `523e614` et n'est donc pas décrit par ces runs ; il ne touche ni
+  code, ni contrat, ni `site/RELEASE.json`.
+- **Failures locales non câblées à un workflow** (préexistantes, indépendantes du
+  rework #392) : `tests/ci/test_repro_current_mixed_batch.py`,
   `tests/ci/test_residual_repro_dag.py`, `tests/ci/test_historical_workflow_quarantine.py`
   et `python3 tools/audit_active_workflow_dag.py --check`
   (« generated DAG evidence/docs are stale »). Ces audits échouent parce que la
@@ -204,14 +228,15 @@ déclenchent sur ces chemins et leurs contrats ont été rejoués localement :
   DAG figé respectif. Vérification : aucune occurrence de ces scripts dans
   `.github/**` (recherche `grep -rn` → aucune référence) ; aucun workflow
   `.github/workflows/*` ne les exécute. Ils ne rendent donc aucun workflow rouge.
-- **Limitations d'environnement local** (à couvrir par la CI distante) :
-  ce sandbox ne dispose que de Python 3.14.4 (Node v24.21.0) sans `playwright` ni
-  réseau PyPI. En conséquence les jobs navigateur (`browser-smoke` :
-  `smoke_hero_ranges.py`, `smoke_hero_compliance_browser.py`, `smoke_trainer.py`,
+- **Limitations d'environnement local** (couvertes par la CI distante, vérifiée
+  verte via `gh` sur `523e614`) : ce sandbox ne dispose que de Python 3.14.4
+  (Node v24.21.0) sans `playwright` ni réseau PyPI. En conséquence les jobs
+  navigateur (`browser-smoke` : `smoke_hero_ranges.py`,
+  `smoke_hero_compliance_browser.py`, `smoke_trainer.py`,
   `smoke_engine_regressions.py`, `smoke_population_packs.py`) et les portions
   browser des jobs `deterministic-core`/rollout n'ont pas pu être rejoués
-  localement. Ils sont verts sur la CI distante (`browser-smoke` PASS,
-  `repro-environment / guard` PASS) et leurs étapes statiques/sans navigateur
+  localement. Ils sont verts sur la CI distante (`browser-smoke` `pass`,
+  `repro-environment / guard` `pass`) et leurs étapes statiques/sans navigateur
   passent localement.
 
 ## Conformité aux contraintes globales
@@ -225,4 +250,6 @@ déclenchent sur ces chemins et leurs contrats ont été rejoués localement :
   aucun fallback silencieux.
 - Stratégie par défaut population-bound : population activée requise et comparée.
 - Sortie déterministe : `reason_codes` uniques et triés, provenance par tokens.
-- Aucun merge ; aucun commit/push effectué par ce worker.
+- Aucun merge ; aucun rebasage ; le commit de réconciliation est
+  **documentation-only** (ce seul fichier `docs/`) et est poussé sur la branche
+  existante `n8n/issue-392-population-bound-hero-strategy` — aucune nouvelle PR.
