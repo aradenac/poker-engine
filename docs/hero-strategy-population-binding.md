@@ -70,20 +70,30 @@ another.
 
 Completeness is an external statement, never a self-referential property of the
 calculated layers. `ADMISSIBLE_CALCULATED` requires an explicit authoritative
-required context set, declared through either (or both) of:
+required context identity set, declared through either (or both) of:
 
 - `required_context_keys` — an explicit list (or comma-separated string) of
   repository context keys;
 - `generation_manifest` — a `poker-hero-preflop-generation-manifest/v1` whose
-  `expected_context_ids` and `plan_projection.ready_context_count` define the
-  expected coverage. A manifest bound to another population fails closed with
+  `expected_context_ids` define the expected coverage. A manifest bound to
+  another population fails closed with
   `GENERATION_MANIFEST_POPULATION_MISMATCH`.
 
+`plan_projection.ready_context_count` is informational only: a count carries no
+identity, so a count-only manifest can never credit completeness. Such a bound
+stays `PARTIAL` (with `REQUIRED_CONTEXT_SET_UNAUTHORITATIVE`,
+`coverage.authoritative=false`) when admitted calculated contexts exist, and
+`UNAVAILABLE` otherwise. When identities are supplied, `required` is exactly the
+number of identities: a larger announced counter never invents phantom required
+contexts.
+
 Repository contexts are identified by their canonical repository key
-(`HeroRanges.contextKey`, `site/hero-ranges.js`) and, when present, their
-explicit `context.preflop_context_id`. A required context is covered only by a complete
-active calculated context (169 hand classes); a missing or partially defined
-context is never a substitute.
+(`HeroRanges.contextKey`, `site/hero-ranges.js`), their explicit
+`context.preflop_context_id` and the generation source context id recorded in
+`provenance.exact_context.context_id`. A required context is covered only by a
+complete active calculated context (169 hand classes) whose identity tokens
+include the required identity; a missing or partially defined context is never a
+substitute.
 
 The resolution provenance exposes the comparison explicitly:
 
@@ -106,11 +116,12 @@ The resolution provenance exposes the comparison explicitly:
 }
 ```
 
-Without an authoritative bound the resolver never returns
+Without an identity-bound required set the resolver never returns
 `ADMISSIBLE_CALCULATED`: it returns `PARTIAL` when admitted calculated contexts
-exist (`REQUIRED_CONTEXT_SET_UNKNOWN`) and `UNAVAILABLE` otherwise. A required set
-that is not fully covered yields `PARTIAL` with `REQUIRED_CONTEXT_MISSING` and/or
-`COVERAGE_INCOMPLETE`.
+exist and `UNAVAILABLE` otherwise. A completely absent bound reports
+`REQUIRED_CONTEXT_SET_UNKNOWN`; a count-only bound reports
+`REQUIRED_CONTEXT_SET_UNAUTHORITATIVE`. A required set that is not fully covered
+yields `PARTIAL` with `REQUIRED_CONTEXT_MISSING` and/or `COVERAGE_INCOMPLETE`.
 
 ## Resolver contract surface
 
@@ -164,10 +175,11 @@ generic path):
 - calculated strategy: `ADMITTED_CALCULATED_STRATEGY`,
   `STRATEGY_PARTIAL_COVERAGE`, `STRATEGY_NOT_ADMITTED`, `STRATEGY_REJECTED`,
   `STRATEGY_UNRESOLVED`, `NO_ADMISSIBLE_STRATEGY`, `REPOSITORY_INVALID`;
-- authoritative coverage (#task-ewo): `REQUIRED_CONTEXT_SET_UNKNOWN`,
-  `REQUIRED_CONTEXT_MISSING`, `COVERAGE_INCOMPLETE`,
-  `GENERATION_MANIFEST_SCHEMA_MISMATCH`, `GENERATION_MANIFEST_INVALID`,
-  `GENERATION_MANIFEST_COVERAGE_MISSING`, `GENERATION_MANIFEST_POPULATION_MISMATCH`;
+- authoritative coverage (#task-ewo/#task-otm): `REQUIRED_CONTEXT_SET_UNKNOWN`,
+  `REQUIRED_CONTEXT_SET_UNAUTHORITATIVE`, `REQUIRED_CONTEXT_MISSING`,
+  `COVERAGE_INCOMPLETE`, `GENERATION_MANIFEST_SCHEMA_MISMATCH`,
+  `GENERATION_MANIFEST_INVALID`, `GENERATION_MANIFEST_COVERAGE_MISSING`,
+  `GENERATION_MANIFEST_POPULATION_MISMATCH`;
 - retained reference: `RETAINED_REFERENCE`, `RETAINED_REFERENCE_IDENTITY_MISSING`;
 - personal override: `PERSONAL_OVERRIDE_NOT_POPULATION_STRATEGY`;
 - inactive candidate: `INACTIVE_CANDIDATE_NOT_ACTIVATED`;
@@ -304,9 +316,10 @@ is admitted, the runtime must remain explicitly partial/unavailable rather than
 invent a default strategy:
 
 - no calculated layer, or an `ADMISSIBLE` layer with incomplete coverage or
-  without an authoritative required context set, yields `UNAVAILABLE` / `PARTIAL`
+  without an identity-bound required context set, yields `UNAVAILABLE` / `PARTIAL`
   with an explicit reason (`REQUIRED_CONTEXT_SET_UNKNOWN`,
-  `REQUIRED_CONTEXT_MISSING`, `COVERAGE_INCOMPLETE`);
+  `REQUIRED_CONTEXT_SET_UNAUTHORITATIVE`, `REQUIRED_CONTEXT_MISSING`,
+  `COVERAGE_INCOMPLETE`);
 - the identity accessor returns `null` identity tokens and the real status
   (`UNAVAILABLE@…` downstream), never a placeholder;
 - the literal label `Custom` is rejected as an identity token

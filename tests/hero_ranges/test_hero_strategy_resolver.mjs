@@ -369,6 +369,9 @@ assert.equal(unboundedComplete.provenance.coverage.missing,0);
 assert.ok(unboundedComplete.reason_codes.includes('REQUIRED_CONTEXT_SET_UNKNOWN'));
 assert.ok(unboundedComplete.reason_codes.includes('COVERAGE_INCOMPLETE'));
 assert.ok(unboundedComplete.reason_codes.includes('STRATEGY_PARTIAL_COVERAGE'));
+// #task-otm: with no announced count either, the bound is UNKNOWN, not merely
+// un-authoritative.
+assert.ok(!unboundedComplete.reason_codes.includes('REQUIRED_CONTEXT_SET_UNAUTHORITATIVE'));
 
 // (2) Partial coverage (#358-like): VS_LIMPERS is present but the required
 //     VS_ISO/VS_RFI context is missing. A valid admission cannot make this
@@ -520,8 +523,11 @@ assert.equal(manifestSourceId.status,R.STATUSES.ADMISSIBLE_CALCULATED);
 assert.equal(manifestSourceId.provenance.coverage.covered,1);
 assert.equal(manifestSourceId.provenance.coverage.missing,0);
 
-// A manifest that announces more ready contexts than are covered stays PARTIAL.
-const manifestOverclaim=R.resolveHeroStrategy({
+// #task-otm (b): when identities are supplied, `required` is exactly the
+// number of identities. A larger ready_context_count never invents phantom
+// required contexts: all identities are covered, so the resolution stays
+// ADMISSIBLE_CALCULATED (no over-credit, no false negative).
+const manifestCountExceedsIdentities=R.resolveHeroStrategy({
   population_id:POP,
   repository:repository({hands:169}),
   admissions:{hero_strategy:boundAdmission()},
@@ -532,11 +538,103 @@ const manifestOverclaim=R.resolveHeroStrategy({
     plan_projection:{ready_context_count:2}
   }
 });
-assert.equal(manifestOverclaim.status,R.STATUSES.PARTIAL);
-assert.equal(manifestOverclaim.provenance.coverage.required,2);
-assert.equal(manifestOverclaim.provenance.coverage.covered,1);
-assert.equal(manifestOverclaim.provenance.coverage.missing,1);
-assert.ok(manifestOverclaim.reason_codes.includes('COVERAGE_INCOMPLETE'));
+assert.equal(manifestCountExceedsIdentities.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(manifestCountExceedsIdentities.provenance.coverage.authoritative,true);
+assert.equal(manifestCountExceedsIdentities.provenance.coverage.complete,true);
+assert.equal(manifestCountExceedsIdentities.provenance.coverage.required,1,'required is the number of identities, not the announced counter');
+assert.equal(manifestCountExceedsIdentities.provenance.coverage.covered,1);
+assert.equal(manifestCountExceedsIdentities.provenance.coverage.missing,0);
+assert.equal(manifestCountExceedsIdentities.provenance.coverage.ready_context_count,2,'the counter stays informational');
+assert.deepEqual(manifestCountExceedsIdentities.provenance.coverage.missing_context_keys,[]);
+assert.ok(!manifestCountExceedsIdentities.reason_codes.includes('REQUIRED_CONTEXT_MISSING'));
+assert.ok(!manifestCountExceedsIdentities.reason_codes.includes('COVERAGE_INCOMPLETE'));
+assert.deepEqual(manifestCountExceedsIdentities.reason_codes,[...manifestCountExceedsIdentities.reason_codes].sort());
+
+// #task-otm (a): a manifest that only announces a count (no
+// expected_context_ids) is not authoritative. Even with a complete 169-hand
+// context and a valid admission it stays PARTIAL, never ADMISSIBLE_CALCULATED,
+// and never credits coverage from the counter.
+const manifestCountOnly=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:[],
+    plan_projection:{ready_context_count:1}
+  }
+});
+assert.equal(manifestCountOnly.status,R.STATUSES.PARTIAL);
+assert.notEqual(manifestCountOnly.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(manifestCountOnly.source,R.SOURCES.POPULATION);
+assert.equal(manifestCountOnly.fail_closed,true);
+assert.equal(manifestCountOnly.provenance.coverage.authoritative,false);
+assert.equal(manifestCountOnly.provenance.coverage.complete,false);
+assert.equal(manifestCountOnly.provenance.coverage.required,1);
+assert.equal(manifestCountOnly.provenance.coverage.covered,0,'a count-only bound must not credit any coverage');
+assert.equal(manifestCountOnly.provenance.coverage.missing,1);
+assert.equal(manifestCountOnly.provenance.coverage.ready_context_count,1);
+assert.equal(manifestCountOnly.provenance.coverage.source,'GENERATION_MANIFEST');
+assert.deepEqual(manifestCountOnly.provenance.coverage.expected_context_ids,[]);
+assert.ok(manifestCountOnly.reason_codes.includes('REQUIRED_CONTEXT_SET_UNAUTHORITATIVE'));
+assert.ok(manifestCountOnly.reason_codes.includes('COVERAGE_INCOMPLETE'));
+assert.ok(manifestCountOnly.reason_codes.includes('STRATEGY_PARTIAL_COVERAGE'));
+assert.ok(!manifestCountOnly.reason_codes.includes('REQUIRED_CONTEXT_SET_UNKNOWN'));
+assert.ok(!manifestCountOnly.reason_codes.includes('REQUIRED_CONTEXT_MISSING'));
+assert.deepEqual(manifestCountOnly.reason_codes,[...manifestCountOnly.reason_codes].sort());
+assert.equal(new Set(manifestCountOnly.reason_codes).size,manifestCountOnly.reason_codes.length);
+assert.ok(schemaHasNoCustom(manifestCountOnly));
+
+// Explicit required identities remain authoritative even when the manifest only
+// announces a count: the counter stays informational, never overrides the
+// identity bound and never invents additional required contexts.
+const explicitWithCountOnlyManifest=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  required_context_keys:REQUIRED_CONTEXT_KEYS,
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:[],
+    plan_projection:{ready_context_count:5}
+  }
+});
+assert.equal(explicitWithCountOnlyManifest.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.authoritative,true);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.complete,true);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.required,1);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.covered,1);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.missing,0);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.ready_context_count,5);
+assert.equal(explicitWithCountOnlyManifest.provenance.coverage.source,'REQUIRED_CONTEXT_KEYS');
+assert.ok(!explicitWithCountOnlyManifest.reason_codes.includes('REQUIRED_CONTEXT_SET_UNAUTHORITATIVE'));
+
+// #task-otm (c): an identity-bounded required set fully covered by complete
+// contexts remains ADMISSIBLE_CALCULATED (non-regression). This is the
+// manifest-only form of the explicit-keys `boundedComplete` case above.
+const manifestIdentityBounded=R.resolveHeroStrategy({
+  population_id:POP,
+  repository:repository({hands:169}),
+  admissions:{hero_strategy:boundAdmission()},
+  generation_manifest:{
+    schema:R.GENERATION_MANIFEST_SCHEMA,
+    population_id:POP,
+    expected_context_ids:REQUIRED_CONTEXT_KEYS
+  }
+});
+assert.equal(manifestIdentityBounded.status,R.STATUSES.ADMISSIBLE_CALCULATED);
+assert.equal(manifestIdentityBounded.source,R.SOURCES.POPULATION);
+assert.equal(manifestIdentityBounded.fail_closed,false);
+assert.equal(manifestIdentityBounded.provenance.coverage.authoritative,true);
+assert.equal(manifestIdentityBounded.provenance.coverage.complete,true);
+assert.equal(manifestIdentityBounded.provenance.coverage.required,1);
+assert.equal(manifestIdentityBounded.provenance.coverage.covered,1);
+assert.equal(manifestIdentityBounded.provenance.coverage.missing,0);
+assert.equal(manifestIdentityBounded.provenance.coverage.ready_context_count,null,'no announced counter is exposed when the manifest only lists identities');
+assert.ok(!manifestIdentityBounded.reason_codes.includes('REQUIRED_CONTEXT_SET_UNAUTHORITATIVE'));
+assert.ok(!manifestIdentityBounded.reason_codes.includes('COVERAGE_INCOMPLETE'));
 
 // A generation manifest bound to another population fails closed.
 const manifestForeign=R.resolveHeroStrategy({

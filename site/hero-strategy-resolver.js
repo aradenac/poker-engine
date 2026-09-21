@@ -23,15 +23,23 @@
       ADMISSIBLE admission exists AND the admission is explicitly bound to the
       exact runtime calculated artifact (role, SHA-256 content identity, explicit
       provenance, candidate_id/generation_id and binding_sha256) AND its coverage
-      is bounded by an explicit, authoritative required context set
-      (`required_context_keys` and/or a
-      poker-hero-preflop-generation-manifest/v1 with `expected_context_ids` /
-      `plan_projection.ready_context_count`) that is fully covered by complete
-      (169 hand classes) calculated contexts. Completeness is never inferred from
-      the artifact itself: without an authoritative bound the answer is PARTIAL,
-      never ADMISSIBLE_CALCULATED. A bare ADMISSIBLE token never authorizes an
-      arbitrary local repository. Un-admitted, unresolved, rejected, unbound or
-      inactive metadata never becomes the active strategy.
+      is bounded by an explicit, authoritative required context identity set
+      (`required_context_keys` and/or a poker-hero-preflop-generation-manifest/v1
+      with `expected_context_ids`) that is fully covered by complete (169 hand
+      classes) calculated contexts. Completeness is credited only by matching
+      required identities against the canonical repository key,
+      `preflop_context_id`, `HeroRanges.contextKey` and
+      `provenance.exact_context.context_id` tokens of a complete context (#task-otm).
+      A bare `plan_projection.ready_context_count` announces a size but carries no
+      identity: it can never credit completeness, so a count-only bound stays
+      PARTIAL/UNAVAILABLE with `REQUIRED_CONTEXT_SET_UNAUTHORITATIVE` and
+      `coverage.authoritative=false`. Completeness is never inferred from the
+      artifact itself, and when identities are supplied `required` is exactly the
+      number of identities (a larger counter never invents phantom requirements).
+      Without any bound the answer is PARTIAL, never ADMISSIBLE_CALCULATED. A bare
+      ADMISSIBLE token never authorizes an arbitrary local repository. Un-admitted,
+      unresolved, rejected, unbound or inactive metadata never becomes the active
+      strategy.
     - An inactive candidate (#358 metadata only) is reported as UNAVAILABLE; it is
       never auto-activated.
     - A user personal override is surfaced only as source PERSONAL_OVERRIDE with
@@ -200,11 +208,13 @@
     return out.sort((a,b)=>String(a.key).localeCompare(String(b.key)));
   }
 
-  // A required context set is authoritative when it is declared explicitly
-  // (`required_context_keys`) and/or derived from a
-  // poker-hero-preflop-generation-manifest/v1 (`expected_context_ids` and
-  // `plan_projection.ready_context_count`). Without such a bound nothing may be
-  // inferred from the calculated artifact itself.
+  // A required context set is authoritative only when it declares identities,
+  // explicitly (`required_context_keys`) and/or through a
+  // poker-hero-preflop-generation-manifest/v1 (`expected_context_ids`). A bare
+  // `plan_projection.ready_context_count` is informational only: it announces an
+  // expected size but no identity, so it can never credit completeness. Without
+  // any identity-bound required set nothing may be inferred from the calculated
+  // artifact itself (#task-otm).
   const REQUIRED_CONTEXT_SOURCES=Object.freeze({
     UNKNOWN:'UNKNOWN',
     REQUIRED_CONTEXT_KEYS:'REQUIRED_CONTEXT_KEYS',
@@ -242,9 +252,12 @@
   }
 
   // Compare the active calculated contexts against the authoritative required
-  // set. Only complete (169 hand classes) contexts cover a required context.
-  // Without an explicit authoritative set the result is never complete; a
-  // required set that is not fully covered is incomplete.
+  // identity set. Only complete (169 hand classes) contexts cover a required
+  // context, and only by matching one of its canonical identity tokens. A bare
+  // `ready_context_count` is never authoritative: it is reported as a size
+  // hint but credits no coverage. Without an explicit authoritative set the
+  // result is never complete; a required set that is not fully covered is
+  // incomplete.
   function requiredCoverage(input,generationManifest,activeCalculated,reasons){
     const explicitKeys=normalizeRequiredContextKeys(
       input.required_context_keys!=null?input.required_context_keys:input.requiredContextKeys
@@ -255,7 +268,12 @@
     const readyContextCount=requirement.schema===GENERATION_MANIFEST_SCHEMA?requirement.ready_context_count:null;
 
     const requiredContextKeys=uniqueSorted([...explicitKeys,...manifestIds]);
-    const requiredSetKnown=requiredContextKeys.length>0||(readyContextCount!=null&&readyContextCount>0);
+    // #task-otm: only explicit required identities are authoritative. A bare
+    // `ready_context_count` is a size announcement without identity and must
+    // never be credited against the calculated contexts it happens to see.
+    const authoritative=requiredContextKeys.length>0;
+    const countOnlyBound=!authoritative&&readyContextCount!=null&&readyContextCount>0;
+    const requiredSetKnown=authoritative||countOnlyBound;
     const completeContexts=activeCalculated.filter(entry=>entry.complete);
 
     const coveredContextKeys=[];
@@ -274,32 +292,37 @@
     let required=0;
     let covered=0;
     let missing=0;
-    if(requiredSetKnown){
-      if(requiredContextKeys.length>0){
-        required=Math.max(requiredContextKeys.length,readyContextCount||0);
-        covered=coveredContextKeys.length;
-      }else{
-        required=readyContextCount||0;
-        covered=Math.min(completeContexts.length,required);
-      }
-      missing=Math.max(0,required-covered);
+    if(authoritative){
+      // required is exactly the number of required identities: a larger
+      // ready_context_count never invents phantom requirements (#task-otm).
+      required=requiredContextKeys.length;
+      covered=coveredContextKeys.length;
+      missing=missingContextKeys.length;
+    }else if(countOnlyBound){
+      // Informational only: report the announced size but credit nothing,
+      // because no required identity is available to match against.
+      required=readyContextCount;
+      covered=0;
+      missing=readyContextCount;
     }
 
-    const complete=requiredSetKnown&&missing===0&&
+    const complete=authoritative&&missing===0&&
       missingContextKeys.length===0&&incompleteContextKeys.length===0&&
       completeContexts.length>0;
 
     if(!requiredSetKnown)reasons.push('REQUIRED_CONTEXT_SET_UNKNOWN');
-    if(requiredSetKnown&&missingContextKeys.length)reasons.push('REQUIRED_CONTEXT_MISSING');
+    if(countOnlyBound)reasons.push('REQUIRED_CONTEXT_SET_UNAUTHORITATIVE');
+    if(authoritative&&missingContextKeys.length)reasons.push('REQUIRED_CONTEXT_MISSING');
     if(!complete)reasons.push('COVERAGE_INCOMPLETE');
 
     let source=REQUIRED_CONTEXT_SOURCES.UNKNOWN;
     if(explicitKeys.length&&manifestIds.length)source=REQUIRED_CONTEXT_SOURCES.REQUIRED_CONTEXT_KEYS_AND_GENERATION_MANIFEST;
-    else if(manifestIds.length||(readyContextCount!=null&&readyContextCount>0))source=REQUIRED_CONTEXT_SOURCES.GENERATION_MANIFEST;
+    else if(manifestIds.length)source=REQUIRED_CONTEXT_SOURCES.GENERATION_MANIFEST;
     else if(explicitKeys.length)source=REQUIRED_CONTEXT_SOURCES.REQUIRED_CONTEXT_KEYS;
+    else if(countOnlyBound)source=REQUIRED_CONTEXT_SOURCES.GENERATION_MANIFEST;
 
     return {
-      authoritative:requiredSetKnown,
+      authoritative,
       complete,
       required,
       covered,
