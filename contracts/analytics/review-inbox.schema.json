@@ -63,13 +63,78 @@
         "reason": {"enum": ["COSTLIEST_DECISION", "FIRST_COMPARABLE_DECISION", "FIRST_AVAILABLE_DECISION"]}
       }
     },
+    "analysis_state": {
+      "description": "Embedded view of the canonical contracts/analytics/analysis-state.schema.json (poker-analysis-state/v1) so an Inbox item carries one user-facing state plus the strictly separated technical dimensions. The enum and dimensions are kept in sync with the canonical schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "state", "reason_codes", "computational_status", "model_support_status",
+        "statistical_support", "ev_comparability", "recommendation_admissibility",
+        "posterior_availability", "error"
+      ],
+      "properties": {
+        "schema": {"const": "poker-analysis-state/v1"},
+        "state": {
+          "description": "The only user-facing analysis label.",
+          "enum": [
+            "ANALYSE_DISPONIBLE",
+            "ANALYSE_PARTIELLE",
+            "CALCUL_EN_COURS",
+            "DONNEES_INSUFFISANTES",
+            "SPOT_NON_SUPPORTE",
+            "ERREUR_CALCUL"
+          ]
+        },
+        "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "computational_status": {"enum": ["NOT_STARTED", "PENDING", "RUNNING", "COMPLETE", "FAILED"]},
+        "model_support_status": {"enum": ["SUPPORTED", "NODE_ABSENT", "CONTEXT_UNSUPPORTED", "NOT_EVALUATED"]},
+        "statistical_support": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["observations", "distinct_hands"],
+          "properties": {
+            "observations": {"type": "integer", "minimum": 0},
+            "distinct_hands": {"type": "integer", "minimum": 0}
+          }
+        },
+        "ev_comparability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["comparable", "reason"],
+          "properties": {
+            "comparable": {"type": "boolean"},
+            "reason": {"type": ["string", "null"]}
+          }
+        },
+        "recommendation_admissibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["admissible", "status", "reason_codes"],
+          "properties": {
+            "admissible": {"type": "boolean"},
+            "status": {"type": ["string", "null"]},
+            "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+          }
+        },
+        "posterior_availability": {"enum": ["conditioned", "prior_uninformative", "source_prior_unconditioned", "degenerate", "unavailable"]},
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "retryable"],
+          "properties": {
+            "type": {"type": ["string", "null"]},
+            "retryable": {"type": "boolean"}
+          }
+        }
+      }
+    },
     "item": {
       "type": "object",
       "required": [
         "schema", "hand_id", "timestamp", "scope", "total_loss_bb", "nominal_loss_bb",
         "costliest_decision", "primary_decision", "main_street", "position", "spot_family",
         "action_played", "action_recommended", "sizing_error", "jam", "overbet",
-        "coverage", "user_review", "status", "status_label", "deep_link", "facets"
+        "coverage", "analysis_state", "user_review", "status", "status_label", "deep_link", "facets"
       ],
       "properties": {
         "schema": {"const": "poker-review-inbox-item/v1"},
@@ -102,6 +167,19 @@
             "analyzable_decisions": {"type": ["integer", "null"], "minimum": 0},
             "finished_decisions": {"type": ["integer", "null"], "minimum": 0}
           }
+        },
+        "coverage_state": {
+          "description": "Backward-compatible alias of coverage.state. Never a primary user-facing label; the taxonomy analysis_state.state is the only user-facing status.",
+          "enum": ["COMPLETE", "INCOMPLETE"]
+        },
+        "analysis_state": {
+          "description": "Canonical poker-analysis-state/v1 object for this hand (#393 T3). Its `state` enum is the only user-facing analysis label; coverage/reason codes stay in the secondary technical view.",
+          "$ref": "#/$defs/analysis_state"
+        },
+        "analysis_state_label": {
+          "description": "French user-facing label for analysis_state.state. Never generic when a precise cause exists.",
+          "type": ["string", "null"],
+          "enum": ["Analyse disponible", "Analyse partielle", "Calcul en cours", "Données insuffisantes", "Spot non supporté", "Erreur de calcul", null]
         },
         "user_review": {
           "type": "object",

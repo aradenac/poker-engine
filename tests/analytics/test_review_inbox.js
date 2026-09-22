@@ -1,8 +1,11 @@
 'use strict';
 
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const Leak=require('../../src/analytics/leak-analyzer.js');
 const Adapter=require('../../src/analytics/review-score-adapter.js');
+const State=require('../../src/analytics/analysis-state.js');
 const Inbox=require('../../src/analytics/review-inbox.js');
 
 const SCOPE={
@@ -211,6 +214,11 @@ assert.equal(i1.sizing_error,true);
 assert.equal(i1.jam,true);
 assert.equal(i1.overbet,true);
 assert.equal(i1.coverage.state,Inbox.COVERAGE_COMPLETE);
+assert.equal(i1.coverage_state,Inbox.COVERAGE_COMPLETE,'coverage_state stays exposed for compatibility');
+assert.equal(i1.analysis_state.state,'ANALYSE_DISPONIBLE','a complete comparable hand is an available analysis');
+assert.deepEqual(i1.analysis_state.reason_codes,[],'an available analysis carries no blocking reason');
+assert.equal(i1.analysis_state_label,'Analyse disponible');
+assert.equal(State.isAnalysisState(i1.analysis_state),true,'item.analysis_state must conform to poker-analysis-state/v1');
 assert.equal(i1.status,Inbox.STATUS.TO_REVIEW);
 assert.equal(i1.status_label,'À revoir');
 assert.deepEqual(i1.deep_link,{
@@ -229,12 +237,17 @@ assert.equal(i3.total_loss_bb,1);
 assert.equal(i3.user_review.reviewed,true);
 assert.equal(i3.status,Inbox.STATUS.REVIEWED);
 assert.equal(i3.status_label,'Revue');
+assert.equal(i3.analysis_state.state,'ANALYSE_DISPONIBLE','a reviewed hand with complete science stays available');
 assert.equal(reviewScores['100003'].reviewed,undefined,'user review state must never enter reviewScores');
 
 assert.equal(i4.user_review.reviewed,true,'user metadata remains available even when science is incomplete');
 assert.equal(i4.status,Inbox.STATUS.INCOMPLETE_ANALYSIS,'incomplete science must remain visible even if user marked it reviewed');
 assert.equal(i4.status_label,'Analyse incomplète');
 assert.equal(i4.coverage.complete,false);
+assert.equal(i4.coverage_state,Inbox.COVERAGE_INCOMPLETE);
+assert.equal(i4.analysis_state.state,'CALCUL_EN_COURS','an unfinished computation is never reported as a scientific conclusion');
+for(const reason of ['REVIEW_SCORE_INCOMPLETE','UNFINISHED_DECISIONS','UNSUPPORTED_DECISIONS'])assert.ok(i4.analysis_state.reason_codes.includes(reason),'reason code '+reason+' must survive in the taxonomy');
+assert.equal(State.isAnalysisState(i4.analysis_state),true);
 assert.ok(i4.coverage.reasons.includes('REVIEW_SCORE_INCOMPLETE'));
 assert.ok(i4.coverage.reasons.includes('UNFINISHED_DECISIONS'));
 assert.ok(i4.coverage.reasons.includes('UNSUPPORTED_DECISIONS'));
@@ -269,6 +282,65 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
   const q=Inbox.queryInbox(inbox,{status:'CORRECT'},'HAND_ID_ASC');
   assert.deepEqual(q.items.map(x=>x.hand_id),['100002']);
 }
+{
+  const q=Inbox.queryInbox(inbox,{analysis_state:'ANALYSE_DISPONIBLE'},'HAND_ID_ASC');
+  assert.deepEqual(q.items.map(x=>x.hand_id),['100001','100002','100003'],'analysis_state filter keeps only available analyses');
+}
+{
+  const q=Inbox.queryInbox(inbox,{analysis_state:'CALCUL_EN_COURS'},'HAND_ID_ASC');
+  assert.deepEqual(q.items.map(x=>x.hand_id),['100004'],'analysis_state filter isolates an unfinished computation');
+}
+{
+  const q=Inbox.queryInbox(inbox,{analysis_state:['CALCUL_EN_COURS','ANALYSE_PARTIELLE']},'HAND_ID_ASC');
+  assert.deepEqual(q.items.map(x=>x.hand_id),['100004'],'analysis_state accepts a list filter');
+}
+{
+  const q=Inbox.queryInbox(inbox,{analysis_state:'SPOT_NON_SUPPORTE'},'HAND_ID_ASC');
+  assert.deepEqual(q.items,[],'an unsupported state filter matches nothing here and never falls back to all');
+}
+
+// #393 T3: every legacy coverage reason maps to the documented taxonomy state.
+{
+  const expectations={
+    MISSING_HH_SOURCE:'DONNEES_INSUFFISANTES',
+    MISSING_REVIEW_SCORE:'DONNEES_INSUFFISANTES',
+    REVIEW_SCORE_INCOMPLETE:'DONNEES_INSUFFISANTES',
+    NO_DECISION_EVENTS:'DONNEES_INSUFFISANTES',
+    UNFINISHED_DECISIONS:'CALCUL_EN_COURS',
+    UNSUPPORTED_DECISIONS:'SPOT_NON_SUPPORTE',
+    NON_COMPARABLE_DECISIONS:'ANALYSE_PARTIELLE'
+  };
+  for(const [reason,state] of Object.entries(expectations)){
+    const mapped=Inbox.analysisStateFor({complete:false,reasons:[reason],state:'INCOMPLETE'},[]);
+    assert.equal(mapped.state,state,'reason '+reason+' must map to '+state);
+    assert.ok(mapped.reason_codes.includes(reason),'reason '+reason+' must be preserved');
+    assert.equal(State.isAnalysisState(mapped),true);
+  }
+  const available=Inbox.analysisStateFor({complete:true,reasons:[],state:'COMPLETE'},[]);
+  assert.equal(available.state,'ANALYSE_DISPONIBLE');
+  assert.deepEqual(available.reason_codes,[]);
+}
+// A scientific error_type (ACTION_ERROR/SIZING_ERROR/...) is never a worker error.
+{
+  const comparableRow={support:{covered:true},comparability:{comparable:true},error_type:'SIZING_ERROR'};
+  const scientific=Inbox.analysisStateFor({complete:true,reasons:[]},[comparableRow]);
+  assert.equal(scientific.state,'ANALYSE_DISPONIBLE','a sizing error is a reviewable decision, not a failed computation');
+  const worker=Inbox.analysisStateFor({complete:true,reasons:[]},[{...comparableRow,error_type:'WORKER_ERROR'}]);
+  assert.equal(worker.state,'ERREUR_CALCUL');
+  assert.equal(worker.error.type,'WORKER_ERROR');
+  assert.equal(worker.error.retryable,true);
+  assert.ok(worker.reason_codes.includes('WORKER_ERROR'));
+  assert.equal(State.isAnalysisState(worker),true);
+}
+// Support / comparability dimensions flow from the normalized events.
+{
+  const unsupported=Inbox.analysisStateFor({complete:false,reasons:['UNSUPPORTED_DECISIONS'],state:'INCOMPLETE'},[{support:{covered:false},comparability:{comparable:false},error_type:'UNSUPPORTED'}]);
+  assert.equal(unsupported.state,'SPOT_NON_SUPPORTE');
+  assert.equal(unsupported.model_support_status,'CONTEXT_UNSUPPORTED');
+  const nonComparable=Inbox.analysisStateFor({complete:false,reasons:['NON_COMPARABLE_DECISIONS'],state:'INCOMPLETE'},[{support:{covered:true},comparability:{comparable:false},error_type:'NON_COMPARABLE'}]);
+  assert.equal(nonComparable.state,'ANALYSE_PARTIELLE');
+  assert.equal(nonComparable.ev_comparability.comparable,false);
+}
 
 {
   const altScores=JSON.parse(JSON.stringify(reviewScores));
@@ -290,13 +362,15 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
 
 {
   const missing=Inbox.buildReviewInbox({
-    reviewScores:{'999999':{handId:'999999',signature:'sig-A',complete:false,analyzableDecisions:1,finishedDecisions:0,details:[]}},
+    reviewScores:{'999999':{handId:'999999',signature:'sig-A',complete:false,analyzableDecisions:1,finishedDecisions:1,details:[]}},
     hhSources:[],scope:SCOPE,user_metadata:{}
   });
   assert.equal(missing.items.length,1);
   const item=missing.items[0];
   assert.equal(item.status,Inbox.STATUS.INCOMPLETE_ANALYSIS);
   assert.ok(item.coverage.reasons.includes('MISSING_HH_SOURCE'));
+  assert.equal(item.analysis_state.state,'DONNEES_INSUFFISANTES','missing data is insufficient data, never a generic unavailable label');
+  assert.equal(item.analysis_state.computational_status,'COMPLETE');
   assert.equal(item.deep_link,null);
   assert.equal(item.total_loss_bb,0);
 }
@@ -304,6 +378,24 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
 assert.throws(()=>Inbox.setReviewed({},'x',true,'invalid-date'),/valid timestamp/);
 assert.throws(()=>Inbox.queryInbox(inbox,{min_loss_bb:-1}),/non-negative/);
 assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
+
+// The review-inbox contract advertises the taxonomy field, its enum and its
+// dimensions while keeping `coverage` accepted for compatibility.
+{
+  const schema=JSON.parse(fs.readFileSync(path.join(__dirname,'../../contracts/analytics/review-inbox.schema.json'),'utf8'));
+  const item=schema.$defs.item;
+  assert.ok(item.required.includes('analysis_state'),'item.analysis_state must be required');
+  assert.ok(item.required.includes('coverage'),'coverage must stay accepted');
+  assert.ok(item.properties.coverage,'coverage property must be preserved');
+  const def=schema.$defs.analysis_state;
+  assert.deepEqual(def.properties.state.enum,[
+    'ANALYSE_DISPONIBLE','ANALYSE_PARTIELLE','CALCUL_EN_COURS','DONNEES_INSUFFISANTES','SPOT_NON_SUPPORTE','ERREUR_CALCUL'
+  ]);
+  for(const dimension of ['computational_status','model_support_status','statistical_support','ev_comparability','recommendation_admissibility','posterior_availability','error']){
+    assert.ok(def.required.includes(dimension),'analysis_state dimension '+dimension+' must be required');
+  }
+  assert.equal(State.SCHEMA,Inbox.ANALYSIS_STATE_SCHEMA);
+}
 
 // #392: an unavailable resolver state flows through as an explicit, filterable scope.
 {

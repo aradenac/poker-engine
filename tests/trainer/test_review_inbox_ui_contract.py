@@ -16,6 +16,8 @@ def main() -> None:
         assert runtime_text == source_text, (source, runtime)
 
     index = (ROOT / "site/index.html").read_text(encoding="utf-8")
+    assert '<script src="./analytics/analysis-state.js"></script>' in index
+    assert index.index('<script src="./analytics/analysis-state.js"></script>') < index.index('<script src="./analytics/review-inbox.js"></script>')
     assert '<script src="./analytics/leak-analyzer.js"></script>' in index
     assert '<script src="./analytics/review-score-adapter.js"></script>' in index
     assert '<script src="./analytics/review-inbox.js"></script>' in index
@@ -38,6 +40,27 @@ def main() -> None:
     assert 'STREET_ASC' in index
     assert 'POSITION_ASC' in index
     assert 'HAND_ID_ASC' in index
+
+    # #393 T3: the Inbox exposes the canonical analysis-state taxonomy as the
+    # primary status label and as an explicit filter, while the raw reason codes
+    # stay only in the secondary/technical view.
+    assert 'id="reviewAnalysisStateFilter"' in index
+    for state in (
+        "ANALYSE_DISPONIBLE",
+        "ANALYSE_PARTIELLE",
+        "CALCUL_EN_COURS",
+        "DONNEES_INSUFFISANTES",
+        "SPOT_NON_SUPPORTE",
+        "ERREUR_CALCUL",
+    ):
+        assert state in index, state
+    assert 'analysis_state:f.analysis_state||""' in index
+    assert '[reviewAnalysisStateFilter,"analysis_state"]' in index
+    assert 'item.analysis_state_label' in index
+    assert 'data-analysis-state' in index
+    assert 'reviewInboxReasons' in index
+    assert 'Raisons techniques' in index
+    assert 'item.analysis_state?.reason_codes' in index
 
     # The Review scope identity is population-bound: it derives from the Hero
     # strategy resolver and never from a hard-coded "Custom"/"hero-custom" token.

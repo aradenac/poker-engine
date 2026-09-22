@@ -195,6 +195,7 @@
   .review-inbox-filters>summary{cursor:pointer;padding:8px 10px;color:var(--muted);font-size:9px;font-weight:800}
   .review-inbox-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:0 10px 10px}
   .review-inbox-filter-grid .field{min-width:0}
+  .review-inbox-reasons{padding:0 10px 10px;color:var(--muted);font-size:9px;line-height:1.5;word-break:break-word}
   .review-inbox-notice{min-height:16px;margin:4px 0 7px;color:var(--muted);font-size:9px}
   .review-inbox-notice.warn{color:#f1c66d}
   .review-inbox-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;width:100%;text-align:left}
@@ -1303,18 +1304,23 @@
             </select>
           </div>
           <div class="field">
-            <label for="reviewCoverageFilter">Couverture</label>
-            <select id="reviewCoverageFilter">
-              <option value="">Toutes</option>
-              <option value="COMPLETE">Complète</option>
-              <option value="INCOMPLETE">Incomplète</option>
+            <label for="reviewAnalysisStateFilter">État d’analyse</label>
+            <select id="reviewAnalysisStateFilter">
+              <option value="">Tous</option>
+              <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
+              <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
+              <option value="CALCUL_EN_COURS">Calcul en cours</option>
+              <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
+              <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
+              <option value="ERREUR_CALCUL">Erreur de calcul</option>
             </select>
           </div>
           <div id="hhListCount" class="hh-list-count">0 main affichée</div>
         </div>
         <details class="review-inbox-filters">
-          <summary>Filtres secondaires</summary>
+          <summary>Filtres secondaires et raisons techniques</summary>
           <div class="review-inbox-filter-grid">
+            <div class="field"><label for="reviewCoverageFilter">Couverture (technique)</label><select id="reviewCoverageFilter"><option value="">Toutes</option><option value="COMPLETE">Complète</option><option value="INCOMPLETE">Incomplète</option></select></div>
             <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
             <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
             <div class="field"><label for="reviewSpotFilter">Spot family</label><select id="reviewSpotFilter"><option value="">Tous</option></select></div>
@@ -1335,6 +1341,7 @@
             </div>
             <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
           </div>
+          <div id="reviewInboxReasons" class="review-inbox-reasons">Aucune raison technique.</div>
         </details>
         <div id="reviewInboxNotice" class="review-inbox-notice" aria-live="polite"></div>
         <div id="hhHands" class="hh-list"></div>
@@ -1540,6 +1547,7 @@
 <script src="./population-packs.js"></script>
 <script src="./manual-import.js"></script>
 <script src="./action-sizing-ev.js"></script>
+<script src="./analytics/analysis-state.js"></script>
 <script src="./analytics/leak-analyzer.js"></script>
 <script src="./analytics/review-score-adapter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
@@ -1620,7 +1628,7 @@ const state = {
   modelBRobustnessByDecision:Object.create(null),
   manualOverrideContract:null,
   reviewInboxUserMetadataByScope:Object.create(null),
-  reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""},
+  reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
   reviewInboxView:null,
   reviewDashboardView:null,
   reviewDashboardLastError:"",
@@ -1695,6 +1703,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
       reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
       reviewStatusFilter=$("reviewStatusFilter"), reviewCoverageFilter=$("reviewCoverageFilter"),
+      reviewAnalysisStateFilter=$("reviewAnalysisStateFilter"), reviewInboxReasons=$("reviewInboxReasons"),
       reviewStreetFilter=$("reviewStreetFilter"), reviewPositionFilter=$("reviewPositionFilter"), reviewSpotFilter=$("reviewSpotFilter"),
       reviewPlayedFilter=$("reviewPlayedFilter"), reviewRecommendedFilter=$("reviewRecommendedFilter"),
       reviewSizingFilter=$("reviewSizingFilter"), reviewJamFilter=$("reviewJamFilter"), reviewOverbetFilter=$("reviewOverbetFilter"),
@@ -3752,7 +3761,7 @@ function openReviewDashboardLeak(){
   if(!cta?.enabled||!target)return {opened:false,reason:"NO_LEAK_TARGET"};
   if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
   if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
-  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:""};
+  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
   renderHistoryHands();
   requestAnimationFrame(()=>document.getElementById("historiesSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
   return {opened:true,reason:"EXACT_LEAK_FILTER",dimension:target.dimension,key:String(target.key)};
@@ -3770,7 +3779,8 @@ function reviewInboxFiltersInput(){
   return {
     status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
     action_played:f.action_played||"",action_recommended:f.action_recommended||"",
-    sizing_error:f.sizing_error||"",jam:f.jam||"",overbet:f.overbet||"",coverage:f.coverage||""
+    sizing_error:f.sizing_error||"",jam:f.jam||"",overbet:f.overbet||"",coverage:f.coverage||"",
+    analysis_state:f.analysis_state||""
   };
 }
 function reviewInboxSortMode(){
@@ -6286,6 +6296,7 @@ function renderHistoryHands(){
   if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
   if(reviewStatusFilter)reviewStatusFilter.value=state.reviewInboxFilters.status||"";
   if(reviewCoverageFilter)reviewCoverageFilter.value=state.reviewInboxFilters.coverage||"";
+  if(reviewAnalysisStateFilter)reviewAnalysisStateFilter.value=state.reviewInboxFilters.analysis_state||"";
   if(reviewSizingFilter)reviewSizingFilter.value=state.reviewInboxFilters.sizing_error||"";
   if(reviewJamFilter)reviewJamFilter.value=state.reviewInboxFilters.jam||"";
   if(reviewOverbetFilter)reviewOverbetFilter.value=state.reviewInboxFilters.overbet||"";
@@ -6294,6 +6305,7 @@ function renderHistoryHands(){
     hhListCount.textContent="0 main affichée";
     if(reviewInboxSummary)reviewInboxSummary.textContent="Aucune main chargée.";
     if(reviewInboxNotice){reviewInboxNotice.textContent="";reviewInboxNotice.className="review-inbox-notice";}
+    if(reviewInboxReasons)reviewInboxReasons.textContent="Aucune raison technique.";
     return;
   }
 
@@ -6308,6 +6320,13 @@ function renderHistoryHands(){
   if(reviewInboxNotice){
     reviewInboxNotice.textContent=state.reviewInboxLastError?`Inbox indisponible : ${state.reviewInboxLastError}`:"";
     reviewInboxNotice.className=`review-inbox-notice${state.reviewInboxLastError?" warn":""}`;
+  }
+  if(reviewInboxReasons){
+    // Secondary/technical view: raw reason codes never appear in the primary
+    // status label, but stay discoverable here with their per-hand counts.
+    const codes=new Map();
+    for(const item of items)for(const code of (item.analysis_state?.reason_codes||item.coverage?.reasons||[]))codes.set(code,(codes.get(code)||0)+1);
+    reviewInboxReasons.textContent=codes.size?`Raisons techniques : ${[...codes.entries()].map(([code,count])=>`${code} (${count})`).join(" · ")}`:"Aucune raison technique.";
   }
 
   if(!hands.length){
@@ -6325,23 +6344,25 @@ function renderHistoryHands(){
     const decisionLoss=Number(decision?.loss_bb)||0;
     const markers=[item.sizing_error?"sizing":null,item.jam?"jam":null,item.overbet?"overbet":null].filter(Boolean).join(" · ");
     const coverage=`Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0} · comparables ${item.coverage?.decisions_comparable??0}`;
-    const incompleteReasons=item.status==="INCOMPLETE_ANALYSIS"?(item.coverage?.reasons||[]).join(" · "):"";
+    const analysisState=item.analysis_state||null;
+    const analysisStateLabel=item.analysis_state_label||analysisState?.state||item.status_label;
+    const analysisReasons=(analysisState?.reason_codes||item.coverage?.reasons||[]).join(" · ");
     const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
     const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
     const robustnessText=modelBRobustnessStatusText(robustness);
-    const statusCls=item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
+    const statusCls=analysisState&&analysisState.state!=="ANALYSE_DISPONIBLE"?" incomplete":item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
     const open=document.createElement("button");
     open.type="button";open.className="review-inbox-open";
     open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
     const display=reviewHandDisplayMeta(h);
     open.innerHTML=`<span class="review-inbox-hand-result"><strong>Hero ${escapeHtml(display.hero_cards)}</strong><small>Résultat réel · <span class="review-real-result ${escapeHtml(display.result.state)}">${escapeHtml(display.result.text)}</span></small></span>
       <span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
-      <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}${incompleteReasons?` · ${escapeHtml(incompleteReasons)}`:""}</small></span>
+      <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}</small></span>
       <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")} · ${escapeHtml(robustnessText)}</small></span>`;
     open.onclick=()=>openReviewInboxItem(item);
     const status=document.createElement("span");
     status.className="review-inbox-status";
-    status.innerHTML=`<span class="review-inbox-status-badge${statusCls}">${escapeHtml(item.status_label)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
+    status.innerHTML=`<span class="review-inbox-status-badge${statusCls}" title="${escapeHtml([item.status_label,analysisReasons].filter(Boolean).join(" · "))}" data-analysis-state="${escapeHtml(analysisState?.state||"")}">${escapeHtml(analysisStateLabel)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
     status.querySelector("[data-review-inbox-reviewed]")?.addEventListener("change",ev=>setReviewInboxReviewed(h.id,ev.currentTarget.checked));
     row.append(open,status);
     hhHandsEl.appendChild(row);
@@ -6627,7 +6648,7 @@ hhKnownFilter?.addEventListener("change",()=>{
   renderHistoryHands();
 });
 [
-  [reviewStatusFilter,"status"],[reviewCoverageFilter,"coverage"],[reviewStreetFilter,"street"],
+  [reviewStatusFilter,"status"],[reviewCoverageFilter,"coverage"],[reviewAnalysisStateFilter,"analysis_state"],[reviewStreetFilter,"street"],
   [reviewPositionFilter,"position"],[reviewSpotFilter,"spot_family"],[reviewPlayedFilter,"action_played"],
   [reviewRecommendedFilter,"action_recommended"],[reviewSizingFilter,"sizing_error"],
   [reviewJamFilter,"jam"],[reviewOverbetFilter,"overbet"]
