@@ -390,8 +390,10 @@ async def main() -> None:
         assert "Support insuffisant" in replayer_comment_states["insufficient"]["text"], replayer_comment_states
         assert replayer_comment_states["unavailable"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", replayer_comment_states
         assert "Analyse adverse non disponible" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
-        assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "HERO_COVERED", replayer_comment_states
-        assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_COUVERT", replayer_comment_states
+        assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "ANALYSE_DISPONIBLE", replayer_comment_states
+        assert replayer_comment_states["heroCovered"]["actor_state"] == "HERO_COVERED", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_SUPPORTE", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["actor_state"] == "SPOT_NON_COUVERT", replayer_comment_states
         assert replayer_comment_states["heroUncovered"]["family"] == "VS_LIMPERS", replayer_comment_states
         assert "Aucune recommandation EV validée" in replayer_comment_states["heroUncovered"]["text"], replayer_comment_states
 
@@ -446,7 +448,8 @@ async def main() -> None:
         assert kts_replayer_comment["hand"] == {"id":"3210001","hero":"Hero","cards":"K♠ T♠"}, kts_replayer_comment
         assert kts_replayer_comment["hero"]["actor"] == "Hero" and kts_replayer_comment["hero"]["action"] == "raise", kts_replayer_comment
         assert kts_replayer_comment["hero"]["evidence"]["decision"]["family"] == "VS_LIMPERS", kts_replayer_comment
-        assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_COUVERT", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_SUPPORTE", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["state"]["actor_state"] == "SPOT_NON_COUVERT", kts_replayer_comment
         assert "Aucune recommandation EV validée" in kts_replayer_comment["hero"]["state"]["text"], kts_replayer_comment
         assert kts_replayer_comment["hero"]["canonical"]["schema"] == "poker-preflop-decision/v1", kts_replayer_comment
         assert kts_replayer_comment["hero"]["canonical"]["coverage"] == "UNSUPPORTED" and kts_replayer_comment["hero"]["canonical"]["admissible"] is False, kts_replayer_comment
