@@ -384,12 +384,15 @@ async def main() -> None:
             }"""
         )
         assert replayer_comment_states["analyzed"]["actor_role"] == "OPPONENT", replayer_comment_states
-        assert replayer_comment_states["analyzed"]["state"] == "OPPONENT_ANALYZABLE" and replayer_comment_states["analyzed"]["support"] == 37, replayer_comment_states
+        assert replayer_comment_states["analyzed"]["state"] == "ANALYSE_DISPONIBLE" and replayer_comment_states["analyzed"]["support"] == 37, replayer_comment_states
+        assert replayer_comment_states["analyzed"]["actor_state"] == "OPPONENT_ANALYZABLE", replayer_comment_states
         assert replayer_comment_states["analyzed"]["source_contract"] == "poker-preflop-context/v1", replayer_comment_states
-        assert replayer_comment_states["insufficient"]["state"] == "OPPONENT_SUPPORT_INSUFFICIENT", replayer_comment_states
+        assert replayer_comment_states["insufficient"]["state"] == "DONNEES_INSUFFISANTES", replayer_comment_states
+        assert replayer_comment_states["insufficient"]["actor_state"] == "OPPONENT_SUPPORT_INSUFFICIENT", replayer_comment_states
         assert "Support insuffisant" in replayer_comment_states["insufficient"]["text"], replayer_comment_states
-        assert replayer_comment_states["unavailable"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", replayer_comment_states
-        assert "Analyse adverse non disponible" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
+        assert replayer_comment_states["unavailable"]["state"] == "SPOT_NON_SUPPORTE", replayer_comment_states
+        assert replayer_comment_states["unavailable"]["actor_state"] == "OPPONENT_NODE_ABSENT", replayer_comment_states
+        assert "Aucun nœud de population" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
         assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "ANALYSE_DISPONIBLE", replayer_comment_states
         assert replayer_comment_states["heroCovered"]["actor_state"] == "HERO_COVERED", replayer_comment_states
         assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_SUPPORTE", replayer_comment_states
@@ -457,7 +460,8 @@ async def main() -> None:
         assert kts_replayer_comment["hero"]["canonical"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in kts_replayer_comment["hero"]["canonical"]["reasons"], kts_replayer_comment
         assert kts_replayer_comment["bb"]["actor"] == "BB" and kts_replayer_comment["bb"]["action"] == "call", kts_replayer_comment
         assert kts_replayer_comment["bb"]["evidence"]["decision"]["family"] == "VS_ISO", kts_replayer_comment
-        assert kts_replayer_comment["bb"]["state"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["state"]["state"] == "SPOT_NON_SUPPORTE", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["state"]["actor_state"] == "OPPONENT_NODE_ABSENT", kts_replayer_comment
         assert 'data-comment-actor="OPPONENT"' in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
         assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
         assert "alternative EV Hero" in kts_replayer_comment["bb"]["detail"], kts_replayer_comment

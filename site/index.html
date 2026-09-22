@@ -4679,39 +4679,107 @@ function preflopDecisionDetailHtml(decision){
   const rows=(decision.alternatives||[]).map(a=>`<tr><td><b>${escapeHtml(a.action)}</b></td><td>${escapeHtml(preflopDecisionSizingText(a.target_sizing))}</td><td style="text-align:right">${escapeHtml(formatBB(a.incremental_cost_bb))}</td><td style="text-align:right"><b>${escapeHtml(formatBB(a.ev_bb))}</b></td></tr>`).join("");
   return `<div class="section"><div class="section-title">Décision préflop canonique</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Action <b>${escapeHtml(decision.recommended_action)}</b></span><span class="action-detail-chip">Cible <b>${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))}</b></span><span class="action-detail-chip">Coût <b>${escapeHtml(formatBB(decision.incremental_cost_bb))}</b></span><span class="action-detail-chip">EV <b>${escapeHtml(formatBB(decision.recommended_ev_bb))}</b></span><span class="action-detail-chip">Support <b>${Number(decision.support?.observations||0).toLocaleString("fr-FR")}</b></span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left">Action</th><th style="text-align:left">Sizing</th><th style="text-align:right">Coût</th><th style="text-align:right">EV</th></tr></thead><tbody>${rows}</tbody></table></div><div class="action-analysis-meta" style="margin-top:8px">Source : référence active conservée après #108 · candidate non activée · objet <code>poker-preflop-decision/v1</code> partagé sans recalcul par surface.</div>${technical}</div>`;
 }
-function replayOpponentCommentStateFromEvidence(evidence,step,match){
-  const observed=String(evidence?.decision?.action||step?.actionType||"").toUpperCase();
-  if(!evidence)return {
-    actor_role:"OPPONENT",state:"OPPONENT_ANALYSIS_UNAVAILABLE",observed_action:observed,
-    text:"Analyse adverse non disponible pour ce contexte",support:0,quality:"",family:"",source_contract:null
+/* #393 T6 — Replayer opponent taxonomy (rule D5).
+   The adversary surface exposes only: the observed action, the support/
+   likelihood (`statistical_support` + `model_support_status`) and the opponent
+   range availability before/after the action, derived from the #391 posterior
+   states (`conditioned` / `prior_uninformative` / `source_prior_unconditioned`
+   / `degenerate`, or `unavailable`). The user-facing `state` is the shared
+   `poker-analysis-state/v1` taxonomy state and the historical actor state stays
+   in `actor_state`. No surface promises an "optimal EV alternative" nor a Hero
+   EV recommendation for the opponent. */
+const OPPONENT_ACTOR_ANALYSIS_INPUT=Object.freeze({
+  OPPONENT_ANALYZABLE:{coverage_state:"COVERED"},
+  OPPONENT_SUPPORT_INSUFFICIENT:{reason_codes:["INSUFFICIENT_SUPPORT"]},
+  OPPONENT_NODE_ABSENT:{reason_codes:["NODE_ABSENT"]},
+  // A genuinely unknown cause keeps its explicit code; the shared module falls
+  // back to the safe DONNEES_INSUFFISANTES state (never an optimistic one).
+  OPPONENT_ANALYSIS_UNAVAILABLE:{state:"DONNEES_INSUFFISANTES",reason_codes:["OPPONENT_ANALYSIS_UNAVAILABLE"]}
+});
+function opponentCommentAnalysisState(actorState,{range=null,support=0}={}){
+  const Module=heroAnalysisModule();
+  if(!Module)return null;
+  const base=OPPONENT_ACTOR_ANALYSIS_INPUT[actorState]||OPPONENT_ACTOR_ANALYSIS_INPUT.OPPONENT_ANALYSIS_UNAVAILABLE;
+  const input={...base};
+  input.statistical_support={observations:Math.max(0,Number(support)||0),distinct_hands:0};
+  const posterior=range?.after;
+  if(posterior)input.posterior_availability=posterior;
+  return Module.mapAnalysisState(input);
+}
+function opponentCommentView(actorState,{observed_action="",text="",support=0,quality="",family="",source_contract=null,range=null}={}){
+  const availability=range||{before:"unavailable",after:"unavailable"};
+  const analysis=opponentCommentAnalysisState(actorState,{range:availability,support});
+  const state=analysis?.state||actorState;
+  return {
+    actor_role:"OPPONENT",
+    state,
+    actor_state:actorState,
+    text:text||heroTaxonomyLabel(state),
+    taxonomy_state:state,
+    taxonomy_label:heroTaxonomyLabel(state),
+    analysis_state:analysis,
+    observed_action,
+    // Empirical support of the matched population node (the likelihood evidence)
+    // plus the shared model-support dimension; never a Hero EV recommendation.
+    support,
+    support_status:analysis?.model_support_status||null,
+    quality:String(quality||""),
+    family:family||"",
+    source_contract:source_contract||null,
+    range_before:availability.before||"unavailable",
+    range_after:availability.after||"unavailable",
+    posterior_availability:analysis?.posterior_availability||null
   };
+}
+// Range availability is the #391 posterior state before the action
+// (`stepIndex-1`, the prior) and after it (`stepIndex`, the posterior). It reads
+// the cached `populationRangeEstimateForPlayer` representation only and never
+// recomputes a Hero EV.
+function replayOpponentRangeAvailability(stepIndex,step){
+  const player=currentHandPlayer(step?.activePlayer);
+  if(!player)return {before:"unavailable",after:"unavailable",player:null};
+  const read=idx=>{const estimate=populationRangeEstimateForPlayer(player,Math.max(0,Number(idx)||0));return estimate?.posteriorState||"unavailable";};
+  const idx=Math.max(0,Number(stepIndex)||0);
+  return {before:read(idx-1),after:read(idx),player:player.name};
+}
+function replayOpponentCommentStateFromEvidence(evidence,step,match,{rangeAvailability=null}={}){
+  const observed=String(evidence?.decision?.action||step?.actionType||"").toUpperCase();
+  const range=rangeAvailability||{before:"unavailable",after:"unavailable"};
+  // Generic message only when no more precise cause exists (no evidence at all).
+  if(!evidence)return opponentCommentView("OPPONENT_ANALYSIS_UNAVAILABLE",{
+    observed_action:observed,text:"Analyse adverse non disponible pour ce contexte",
+    support:0,quality:"",family:"",source_contract:null,range
+  });
   const decision=evidence.decision||{};
   const sourceContract=evidence.phase==="PREFLOP"
     ? (decision.preflop_context_v1?.schema||window.PokerPreflopContract?.SCHEMA||null)
     : "postflop-population-context";
-  if(!match)return {
-    actor_role:"OPPONENT",state:"OPPONENT_ANALYSIS_UNAVAILABLE",observed_action:observed,
-    text:"Analyse adverse non disponible pour ce contexte",support:0,quality:"",family:"",source_contract:sourceContract
-  };
-  const support=Number(match.node?.coverage?.population_decisions)||0;
   const family=evidence.phase==="PREFLOP"
-    ? String(decision.family||match.node?.context?.family||"")
+    ? String(decision.family||match?.node?.context?.family||"")
     : [decision.pot_type,decision.preflop_role,decision.relative_position].filter(Boolean).join(" · ");
-  if(!(support>0))return {
-    actor_role:"OPPONENT",state:"OPPONENT_SUPPORT_INSUFFICIENT",observed_action:observed,
-    text:"Support insuffisant pour estimer cette action",support,quality:String(match.quality||""),family,source_contract:sourceContract
-  };
-  return {
-    actor_role:"OPPONENT",state:"OPPONENT_ANALYZABLE",observed_action:observed,
-    text:"Analyse adverse disponible",support,quality:String(match.quality||""),family,source_contract:sourceContract
-  };
+  // Absence of node is its own explicit cause (SPOT_NON_SUPPORTE), never the
+  // generic unavailable fallback.
+  if(!match)return opponentCommentView("OPPONENT_NODE_ABSENT",{
+    observed_action:observed,text:"Aucun nœud de population pour cette action observée",
+    support:0,quality:"",family,source_contract:sourceContract,range
+  });
+  const support=Number(match.node?.coverage?.population_decisions)||0;
+  if(!(support>0))return opponentCommentView("OPPONENT_SUPPORT_INSUFFICIENT",{
+    observed_action:observed,text:"Support insuffisant pour estimer cette action",
+    support,quality:String(match.quality||""),family,source_contract:sourceContract,range
+  });
+  return opponentCommentView("OPPONENT_ANALYZABLE",{
+    observed_action:observed,text:"Analyse adverse disponible",
+    support,quality:String(match.quality||""),family,source_contract:sourceContract,range
+  });
 }
 function replayOpponentCommentState(stepIndex,step){
   const evidence=replayObservedDecisionEvidence(stepIndex,step);
   const match=evidence
     ? (evidence.phase==="PREFLOP"?findClosestPopulationNode(evidence.decision):findClosestPostflopNode(evidence.decision))
     : null;
-  return replayOpponentCommentStateFromEvidence(evidence,step,match);
+  const rangeAvailability=replayOpponentRangeAvailability(stepIndex,step);
+  return replayOpponentCommentStateFromEvidence(evidence,step,match,{rangeAvailability});
 }
 function heroCommentView(actorState,{text="",family="",source_contract=null,analysis_state=null,reasonCodes=null}={}){
   const analysis=analysis_state||heroAnalysisStateFromActor(actorState,{reasonCodes});
@@ -4774,13 +4842,16 @@ function replayHeroCommentState(stepIndex,step,cached,{canonicalDecision=null,re
 }
 function replayOpponentCommentHtml(stepIndex,step,{detail=false}={}){
   const view=replayOpponentCommentState(stepIndex,step);
-  const support=view.support>0?` · support ${Number(view.support).toLocaleString("fr-FR")} obs.`:"";
+  const observed=view.observed_action?`action observée ${escapeHtml(view.observed_action)}`:"action observée —";
+  const support=`support ${Number(view.support||0).toLocaleString("fr-FR")} obs.`;
+  const supportStatus=view.support_status?` · modèle ${escapeHtml(view.support_status)}`:"";
+  const range=` · range avant ${escapeHtml(view.range_before)} / après ${escapeHtml(view.range_after)}`;
   const family=view.family?` · ${escapeHtml(view.family)}`:"";
   const quality=view.quality?` · match ${escapeHtml(view.quality)}`:"";
-  const observed=view.observed_action?` · action observée ${escapeHtml(view.observed_action)}`:"";
-  if(detail)return `<div class="action-analysis na"><div class="action-detail-summary"><div class="action-detail-point"><b>OPPONENT · ${escapeHtml(view.state)}</b>${observed}. ${escapeHtml(view.text)}${family}${support}${quality}. Aucune recommandation ou alternative EV Hero n’est appliquée à cette action adverse.</div></div></div>`;
-  const cls=view.state==="OPPONENT_ANALYZABLE"?"subtle":view.state==="OPPONENT_SUPPORT_INSUFFICIENT"?"warn":"subtle";
-  return `<div class="action-analysis na" data-comment-actor="OPPONENT" data-comment-state="${escapeHtml(view.state)}"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml(`OPPONENT · ${escapeHtml(view.state)}`,cls,"primary-summary")}${actionCompactPillHtml(`${escapeHtml(view.text)}${support}${family}`,"subtle","best-summary")}</div></div></div>`;
+  const technical=`${observed} · ${support}${supportStatus}${range}${family}${quality}`;
+  if(detail)return `<div class="action-analysis na"><div class="action-detail-summary"><div class="action-detail-point"><b>OPPONENT · ${escapeHtml(view.state)}</b>. ${escapeHtml(view.text)} · ${technical}. Aucune recommandation ni alternative EV Hero n’est appliquée à cette action adverse.</div></div></div>`;
+  const cls=view.state==="ANALYSE_DISPONIBLE"?"subtle":view.state==="DONNEES_INSUFFISANTES"?"warn":"subtle";
+  return `<div class="action-analysis na" data-comment-actor="OPPONENT" data-comment-state="${escapeHtml(view.state)}"><div class="action-analysis-compact"><div class="action-compact-row">${actionCompactPillHtml(`OPPONENT · ${escapeHtml(view.state)}`,cls,"primary-summary")}${actionCompactPillHtml(`${escapeHtml(view.text)} · ${technical}`,"subtle","best-summary")}</div></div></div>`;
 }
 function actionDetailKeyPointsHtml(args){
   const {req,decisionSummary,priorMetrics,sources,postflopTree,priorEq,priorTree}=args;

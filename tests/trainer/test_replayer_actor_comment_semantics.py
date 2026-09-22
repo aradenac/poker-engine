@@ -18,8 +18,10 @@ def main() -> int:
     assert "Aucune recommandation EV validée pour ce contexte" in INDEX
     assert "OPPONENT_ANALYZABLE" in INDEX
     assert "OPPONENT_SUPPORT_INSUFFICIENT" in INDEX
+    assert "OPPONENT_NODE_ABSENT" in INDEX
     assert "OPPONENT_ANALYSIS_UNAVAILABLE" in INDEX
     assert "Analyse adverse non disponible pour ce contexte" in INDEX
+    assert "Aucun nœud de population pour cette action observée" in INDEX
     assert "Support insuffisant pour estimer cette action" in INDEX
     assert "Aucune alternative EV validée" not in INDEX
 
@@ -38,8 +40,36 @@ def main() -> int:
     opponent=INDEX.split("function replayOpponentCommentStateFromEvidence",1)[1].split("function replayOpponentCommentState(stepIndex,step)",1)[0]
     assert "population_decisions" in opponent
     assert "preflop_context_v1" in opponent
-    for forbidden in ("populationRangeEstimateForPlayer(", "populationPreflopRangeEstimateForPlayer(", "finalDecisionEV(", "postflopDecisionAlternativeSummary("):
+    # The opponent comment never computes a Hero EV; the range availability is
+    # read from the cached #391 posterior representation (#393 T6 / rule D5).
+    for forbidden in ("populationPreflopRangeEstimateForPlayer(", "finalDecisionEV(", "postflopDecisionAlternativeSummary("):
         assert forbidden not in opponent, forbidden
+
+    # #393 T6 / rule D5: the three precise opponent causes are mapped onto the
+    # shared taxonomy, the observed action + support/likelihood + range
+    # before/after are exposed, and no EV alternative is promised.
+    opponent_t6=INDEX.split("const OPPONENT_ACTOR_ANALYSIS_INPUT=",1)[1].split("function heroCommentView(",1)[0]
+    assert 'OPPONENT_ANALYZABLE:{coverage_state:"COVERED"}' in opponent_t6
+    assert 'OPPONENT_SUPPORT_INSUFFICIENT:{reason_codes:["INSUFFICIENT_SUPPORT"]}' in opponent_t6
+    assert 'OPPONENT_NODE_ABSENT:{reason_codes:["NODE_ABSENT"]}' in opponent_t6
+    assert "Module.mapAnalysisState(input)" in opponent_t6
+    assert "const state=analysis?.state||actorState;" in opponent_t6
+    assert "actor_state:actorState" in opponent_t6
+    assert "function replayOpponentRangeAvailability(stepIndex,step){" in opponent_t6
+    assert "populationRangeEstimateForPlayer(player,Math.max(0,Number(idx)||0))" in opponent_t6
+    assert "read(idx-1)" in opponent_t6 and "read(idx)" in opponent_t6
+    assert "input.posterior_availability=posterior" in opponent_t6
+    assert "range_before:availability.before" in opponent_t6
+    assert "range_after:availability.after" in opponent_t6
+    for forbidden in ("finalDecisionEV(", "postflopDecisionAlternativeSummary(", "recommended_ev_bb", "EV optimale"):
+        assert forbidden not in opponent_t6, forbidden
+
+    opp_html=INDEX.split("function replayOpponentCommentHtml(",1)[1].split("function actionDetailKeyPointsHtml(",1)[0]
+    assert "action observée" in opp_html
+    assert "support " in opp_html
+    assert "range avant" in opp_html and "après" in opp_html
+    assert "Aucune recommandation ni alternative EV Hero n’est appliquée" in opp_html
+    assert "EV optimale" not in opp_html
 
     hero=INDEX.split("function replayHeroCommentState",1)[1].split("function replayOpponentCommentHtml",1)[0]
     assert 'canonicalDecision?.schema==="decision-summary/v1"' in hero
