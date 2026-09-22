@@ -1,0 +1,60 @@
+{
+  "session_id": "f078a941-bb8b-4c5a-a5dc-155ada57fd5c",
+  "response": "{\"status\":\"PASS\",\"summary\":\"The file qa/n8n-v8-canary/README.md has been created with the required content.\",\"findings\":[\"File qa/n8n-v8-canary/README.md created successfully.\",\"Content matches all requirements: title, date, run_id, and descriptive phrase.\"],\"required_changes\":[]}",
+  "stats": {
+    "models": {
+      "gemini-3.1-flash-lite": {
+        "api": {
+          "totalRequests": 3,
+          "totalErrors": 2,
+          "totalLatencyMs": 67112,
+          "errorsByType": {
+            "ApiError": 2
+          }
+        },
+        "tokens": {
+          "input": 14917,
+          "prompt": 14917,
+          "candidates": 78,
+          "total": 15903,
+          "cached": 0,
+          "thoughts": 908,
+          "tool": 0
+        },
+        "roles": {
+          "main": {
+            "totalRequests": 3,
+            "totalErrors": 2,
+            "totalLatencyMs": 67112,
+            "tokens": {
+              "input": 14917,
+              "prompt": 14917,
+              "candidates": 78,
+              "total": 15903,
+              "cached": 0,
+              "thoughts": 908,
+              "tool": 0
+            }
+          }
+        }
+      }
+    },
+    "tools": {
+      "totalCalls": 0,
+      "totalSuccess": 0,
+      "totalFail": 0,
+      "totalDurationMs": 0,
+      "totalDecisions": {
+        "accept": 0,
+        "reject": 0,
+        "modify": 0,
+        "auto_accept": 0
+      },
+      "byName": {}
+    },
+    "files": {
+      "totalLinesAdded": 0,
+      "totalLinesRemoved": 0
+    }
+  }
+}

@@ -1,0 +1,17 @@
+Tu es un WORKER d'implementation. Tu n'as PAS a replanifier l'issue globale.
+TASK backlog-4gb: Créer qa/n8n-v8-canary/README.md (canary n8n V8)
+KIND=CODE COMPLEXITY=4
+
+GOAL:
+Planner key: T1\nKind: CODE\nComplexity: 1\n\nGoal:\nCréer le fichier qa/n8n-v8-canary/README.md (nouveau répertoire) contenant exactement: (1) le titre Markdown `# N8N V8 Canary` ; (2) une ligne avec la date du jour (2026-09-22) et un identifiant de run libre (ex: run_id n8n-v8-canary-20260922-<suffixe>) ; (3) une phrase indiquant que ce fichier sert uniquement à valider le pipeline d'automatisation n8n V8 et peut être supprimé sans risque. Ne modifier aucun autre fichier du dépôt. Contexte: issue de test bénigne #400, branche n8n/v8-canary-01, CI requise, merge squash puis fermeture d'issue.\n\nAcceptance:\n- Le fichier qa/n8n-v8-canary/README.md existe.\n- Il contient la ligne `# N8N V8 Canary`.\n- Il contient une ligne avec la date du jour et un identifiant de run libre.\n- Il contient une phrase indiquant que le fichier ne sert qu'à valider le pipeline n8n V8 et peut être supprimé sans risque.\n- Le diff Git porte sur ce seul fichier ; aucun autre fichier existant n'est modifié.\n- Le diff n'est pas vide.\n\nScope hints:\n- qa/n8n-v8-canary/README.md
+
+ACCEPTANCE:
+[]
+
+SCOPE HINTS:
+[]
+
+PREVIOUS REVIEW (si rework):
+{}
+
+Regles: travaille uniquement sur cette tache, dans ce worktree isole (branche n8n/issue-400/task-backlog-4gb). Reutilise le travail valide deja present. Execute les tests pertinents. Ne commit/push/rebase pas et ne stage pas avec git add -- l'orchestrateur gere le commit apres review.
