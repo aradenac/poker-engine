@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/analytics/analysis-state.schema.json",
+  "title": "Canonical poker analysis state",
+  "description": "Versioned, surface-independent analysis-state object (poker-analysis-state/v1) shared by Review (Inbox/Dashboard), Replayer (Hero/opponent) and Training. The top-level `state` is the only user-facing label: exactly one of six explicit states is emitted per analysis subject. The technical dimensions are kept strictly separate so a single primary state never collapses distinct causes, and so a partial / non-comparable / pending / worker-error analysis can be represented without inventing a generic message. 'couverture' (coverage) must never be used as a primary user-facing label; it only survives as an internal generation dimension.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "state",
+    "reason_codes",
+    "computational_status",
+    "model_support_status",
+    "statistical_support",
+    "ev_comparability",
+    "recommendation_admissibility",
+    "posterior_availability",
+    "error"
+  ],
+  "properties": {
+    "schema": {
+      "const": "poker-analysis-state/v1"
+    },
+    "state": {
+      "description": "The six user-facing analysis states. Exactly one is emitted per analysis subject; detailed causes live in reason_codes and in the separated dimensions below.",
+      "enum": [
+        "ANALYSE_DISPONIBLE",
+        "ANALYSE_PARTIELLE",
+        "CALCUL_EN_COURS",
+        "DONNEES_INSUFFISANTES",
+        "SPOT_NON_SUPPORTE",
+        "ERREUR_CALCUL"
+      ]
+    },
+    "reason_codes": {
+      "description": "Machine-readable canonical codes explaining the emitted state and dimensions. Codes are stable identifiers, never display strings. Runtimes must preserve unknown/legacy codes verbatim; the canonical catalog is documented in $defs.reason_code. Detailed codes must be surfaced only in the secondary/technical view.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "uniqueItems": true
+    },
+    "computational_status": {
+      "description": "Whether the deterministic computation actually finished. Kept separate from statistical support and from model support so that 'calcul non terminé' is never confused with a scientific cause.",
+      "enum": [
+        "NOT_STARTED",
+        "PENDING",
+        "RUNNING",
+        "COMPLETE",
+        "FAILED"
+      ]
+    },
+    "model_support_status": {
+      "description": "Whether the model can represent the requested context. Distinguishes 'absence de node' (the structural node/tree entry is missing) from 'contexte non supporté' (the node exists but the surrounding context is out of the supported domain).",
+      "enum": [
+        "SUPPORTED",
+        "NODE_ABSENT",
+        "CONTEXT_UNSUPPORTED",
+        "NOT_EVALUATED"
+      ]
+    },
+    "statistical_support": {
+      "description": "Statistical support dimension, kept separate from computational and model support. observations counts raw matching observations; distinct_hands counts the distinct hands backing them so that one hand cannot masquerade as statistical support.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observations",
+        "distinct_hands"
+      ],
+      "properties": {
+        "observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "distinct_hands": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ev_comparability": {
+      "description": "EV comparability dimension. `comparable` is true only when the played line and the recommendation are evaluated under the same admissible reference; `reason` names the blocking cause otherwise. Never derived from support alone.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "comparable",
+        "reason"
+      ],
+      "properties": {
+        "comparable": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "recommendation_admissibility": {
+      "description": "Recommendation admissibility dimension, kept separate from comparability and from model support. `admissible` is the sole gate guarding whether a Hero recommendation/EV may be exposed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admissible",
+        "status",
+        "reason_codes"
+      ],
+      "properties": {
+        "admissible": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "posterior_availability": {
+      "description": "Availability state of the opponent/posterior range (#391 vocabulary), kept separate from Hero recommendation admissibility. `unavailable` covers the absence of any posterior (e.g. no node / unsupported context).",
+      "enum": [
+        "conditioned",
+        "prior_uninformative",
+        "source_prior_unconditioned",
+        "degenerate",
+        "unavailable"
+      ]
+    },
+    "error": {
+      "description": "Worker/calculation error dimension. `type` is null when no error occurred; a non-null `type` marks a worker error (ERREUR_CALCUL) and `retryable` states whether the same request may be retried safely.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "retryable"
+      ],
+      "properties": {
+        "type": {
+          "type": ["string", "null"]
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "reason_code": {
+      "description": "Canonical machine-readable reason codes covering the seven distinctions the taxonomy must keep separate. This catalog is informative and additive: runtimes may emit additional legacy codes, and must preserve unknown codes rather than dropping them or replacing them with a generic message. It is intentionally not a closed enum on `reason_codes.items` so forward/legacy codes stay valid.",
+      "enum": [
+        "CALCULATION_PENDING",
+        "ANALYSIS_PENDING",
+        "UNFINISHED_DECISIONS",
+        "NODE_ABSENT",
+        "EXACT_CONTEXT_ABSENT",
+        "SPOT_NON_COUVERT",
+        "UNCOVERED",
+        "INSUFFICIENT_SUPPORT",
+        "LOW_SUPPORT",
+        "MISSING_HH_SOURCE",
+        "MISSING_REVIEW_SCORE",
+        "CONTEXT_UNSUPPORTED",
+        "EXACT_CONTEXT_MISMATCH",
+        "ACTIVE_REFERENCE_SCOPE_UNSUPPORTED",
+        "POPULATION_MISMATCH",
+        "STRATEGY_MISMATCH",
+        "ARTIFACT_IDENTITY_MISMATCH",
+        "RECOMMENDATION_NOT_ADMISSIBLE",
+        "INVALID_GUIDANCE",
+        "NO_ADMISSIBLE_STRATEGY",
+        "PLAYED_ALTERNATIVE_NOT_EVALUATED",
+        "REVIEW_SCORE_INCOMPLETE",
+        "NO_DECISION_EVENTS",
+        "UNSUPPORTED_DECISIONS",
+        "WORKER_ERROR",
+        "ANALYSIS_ERROR",
+        "PARTIAL_ANALYSIS",
+        "NON_COMPARABLE",
+        "NON_COMPARABLE_ALTERNATIVES",
+        "NON_COMPARABLE_DECISIONS",
+        "MISSING_COMPARABLE_EV",
+        "NO_COMPARABLE_REVIEW_DETAIL",
+        "ANALYSIS_MISSING"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "schema": "poker-analysis-state/v1",
+      "state": "ANALYSE_DISPONIBLE",
+      "reason_codes": [],
+      "computational_status": "COMPLETE",
+      "model_support_status": "SUPPORTED",
+      "statistical_support": {
+        "observations": 420,
+        "distinct_hands": 120
+      },
+      "ev_comparability": {
+        "comparable": true,
+        "reason": null
+      },
+      "recommendation_admissibility": {
+        "admissible": true,
+        "status": "ADMISSIBLE",
+        "reason_codes": []
+      },
+      "posterior_availability": "conditioned",
+      "error": {
+        "type": null,
+        "retryable": false
+      }
+    }
+  ]
+}
