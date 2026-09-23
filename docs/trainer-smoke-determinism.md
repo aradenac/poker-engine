@@ -62,6 +62,15 @@ Le contrat exécutable de ce mécanisme est
 `Math.random`, `node --check`) et sa preuve runtime
 `tests/trainer/trainer_rng_determinism.js`.
 
+Le garde de non-régression de la **garde déterministe du smoke** lui-même est
+`tests/trainer/test_trainer_smoke_determinism_contract.py` : il verrouille la
+constante de seed et son override, l'injection `window.trainerSetSeed(...)`
+avant la première main, l'absence de régénération silencieuse / retry avant
+l'assertion Mode Test (invariant asserté sur une décision Hero vivante), la
+case terminale séparée, l'unicité de l'entrée de workflow
+`run: python3 tests/trainer/smoke_trainer.py`, et la surface RNG de
+`site/trainer.js`.
+
 ## Seed smoke retenue
 
 La seed du browser-smoke est `TRAINER_SMOKE_SEED`, définie dans
@@ -152,4 +161,7 @@ scientifique.
   `scenario_probe`, case terminale et invariant Mode Test.
 - `tests/trainer/test_trainer_rng_determinism.py` et
   `tests/trainer/trainer_rng_determinism.js` — contrat statique + runtime du RNG.
+- `tests/trainer/test_trainer_smoke_determinism_contract.py` — garde source de
+  la garde déterministe (seed, non-régénération, invariant Mode Test vivant,
+  case terminale séparée, entrée de workflow unique).
 - `docs/reproducible-environment.md` — contrat d'environnement d'exécution.
