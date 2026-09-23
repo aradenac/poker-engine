@@ -185,6 +185,133 @@ for (const [name, phrase] of Object.entries(EXPECTED_CAUSES)) {
 console.log(JSON.stringify({status:'PASS', rendered:Object.fromEntries(Object.entries(rendered).map(([k,v])=>[k,{show_ev:v.view.show_ev,state:v.view.taxonomy_state,className:v.className}]))}));
 """
 
+# #393 T3 (`trainerDetailFromPreflopDecision`): the detail object must expose a
+# usable bestLabel/bestEV/recommended-sizing and a non-zero ΔEV only when the
+# canonical D6 gate (`view.show_ev`) is open. Case D (admissible && comparable)
+# is preserved, Case A (admissible, not comparable) and Case B (not admissible)
+# fail closed on the shared taxonomy label.
+DETAIL_BOOTSTRAP = r"""
+const fs = require('fs');
+const src = fs.readFileSync('site/trainer.js', 'utf8');
+const start = src.indexOf('function trainerAnalysisModule(');
+const end = src.indexOf('async function trainerComputePreflopReference(');
+if (start < 0 || end < 0) throw new Error('trainer detail helpers missing');
+const helpers = src.slice(start, end);
+const State = require('./src/analytics/analysis-state.js');
+const LABELS = {
+  ANALYSE_DISPONIBLE: 'Analyse disponible',
+  ANALYSE_PARTIELLE: 'Analyse partielle',
+  CALCUL_EN_COURS: 'Calcul en cours',
+  DONNEES_INSUFFISANTES: 'Données insuffisantes',
+  SPOT_NON_SUPPORTE: 'Spot non supporté',
+  ERREUR_CALCUL: 'Erreur de calcul'
+};
+const window = {
+  PokerAnalysisState: State,
+  PokerReviewInbox: { analysisStateLabel: state => LABELS[String(state || '').toUpperCase()] || 'Analyse indisponible' }
+};
+const factory = new Function('window', helpers + '\nreturn {trainerPreflopDecisionView,trainerDetailFromPreflopDecision};');
+const api = factory(window);
+"""
+
+DETAIL_CASES = r"""
+const base = { schema:'poker-preflop-decision/v1', coverage_state:'COVERED', played_action:'CALL' };
+// Case D: admissible && comparable -> the full recommendation evidence survives.
+const caseD = api.trainerDetailFromPreflopDecision({
+  ...base, recommended_action:'CALL', recommended_ev_bb:0.42, played_ev_bb:0.30,
+  incremental_cost_bb:2.5, reason_codes:[],
+  recommendation_admissibility:{admissible:true,status:'ADMISSIBLE',reason_codes:[]}, ev_comparable:true
+});
+if (caseD.showEV !== true || caseD.bestLabel !== 'CALL') throw new Error('case D label ' + JSON.stringify(caseD));
+if (caseD.bestEV !== 0.42 || caseD.chosenEV !== 0.30) throw new Error('case D EV ' + JSON.stringify(caseD));
+if (caseD.bestCostBB !== 2.5) throw new Error('case D sizing ' + JSON.stringify(caseD));
+if (Math.abs(caseD.lossBB - 0.12) > 1e-9 || Math.abs(caseD.rawLossBB - 0.12) > 1e-9) throw new Error('case D loss ' + JSON.stringify(caseD));
+// Case A: admissible but not comparable -> no usable recommendation payload.
+const caseA = api.trainerDetailFromPreflopDecision({
+  ...base, recommended_action:'3BET', recommended_ev_bb:1.6, incremental_cost_bb:8,
+  reason_codes:['NON_COMPARABLE_ALTERNATIVES'],
+  recommendation_admissibility:{admissible:true,status:'ADMISSIBLE',reason_codes:[]}, ev_comparable:false
+});
+if (caseA.showEV !== false) throw new Error('case A showEV');
+if (caseA.bestLabel !== LABELS.ANALYSE_PARTIELLE || caseA.bestLabel.includes('3BET')) throw new Error('case A label ' + caseA.bestLabel);
+if (Number.isFinite(caseA.bestEV) || Number.isFinite(caseA.chosenEV)) throw new Error('case A EV ' + JSON.stringify(caseA));
+if (caseA.bestCostBB !== null) throw new Error('case A sizing ' + JSON.stringify(caseA));
+if (caseA.lossBB !== 0 || caseA.rawLossBB !== 0) throw new Error('case A loss ' + JSON.stringify(caseA));
+// Case B: not admissible -> no recommendation payload, taxonomy label only.
+const caseB = api.trainerDetailFromPreflopDecision({
+  ...base, coverage_state:'UNSUPPORTED', recommended_action:null, recommended_ev_bb:null,
+  reason_codes:['SPOT_NON_COUVERT'],
+  recommendation_admissibility:{admissible:false,status:'UNCOVERED',reason_codes:['UNCOVERED']}, ev_comparable:false
+});
+if (caseB.showEV !== false) throw new Error('case B showEV');
+if (caseB.bestLabel !== LABELS.SPOT_NON_SUPPORTE) throw new Error('case B label ' + caseB.bestLabel);
+if (Number.isFinite(caseB.bestEV) || Number.isFinite(caseB.chosenEV)) throw new Error('case B EV');
+if (caseB.bestCostBB !== null || caseB.lossBB !== 0) throw new Error('case B sizing/loss');
+console.log(JSON.stringify({status:'PASS',
+  D:{show:caseD.showEV,label:caseD.bestLabel,ev:caseD.bestEV,cost:caseD.bestCostBB,loss:caseD.lossBB},
+  A:{show:caseA.showEV,label:caseA.bestLabel,ev:caseA.bestEV,cost:caseA.bestCostBB,loss:caseA.lossBB},
+  B:{show:caseB.showEV,label:caseB.bestLabel,ev:caseB.bestEV,cost:caseB.bestCostBB,loss:caseB.lossBB}}));
+"""
+
+# #393 T3 (recorded row/log): the persisted Trainer row must not carry a Hero
+# recommendation payload (label, sizing, best/chosen EV) when D6 is closed, and
+# must keep the canonical flags for the open Case D.
+RECORD_BOOTSTRAP = r"""
+const fs = require('fs');
+const src = fs.readFileSync('site/trainer.js', 'utf8');
+const helpers = src.slice(src.indexOf('function trainerAnalysisModule('), src.indexOf('function trainerDetailFromPreflopDecision('));
+const record = src.slice(src.indexOf('function trainerDecisionClass('), src.indexOf('function trainerDecisionCanonical('));
+const State = require('./src/analytics/analysis-state.js');
+const LABELS = {
+  ANALYSE_DISPONIBLE: 'Analyse disponible',
+  ANALYSE_PARTIELLE: 'Analyse partielle',
+  CALCUL_EN_COURS: 'Calcul en cours',
+  DONNEES_INSUFFISANTES: 'Données insuffisantes',
+  SPOT_NON_SUPPORTE: 'Spot non supporté',
+  ERREUR_CALCUL: 'Erreur de calcul'
+};
+const window = {
+  PokerAnalysisState: State,
+  PokerReviewInbox: { analysisStateLabel: state => LABELS[String(state || '').toUpperCase()] || 'Analyse indisponible' }
+};
+const trainerState = { hand: { street: 'preflop', positions: ['BTN'], heroSeat: 0 }, handNo: 1, session: { decisions: 0, lossBB: 0, good: 0, close: 0, poor: 0, breakdown: {} }, testLog: [] };
+const TrainerActionSizingEV = { qualityFromEV: () => ({ key: 'good' }) };
+const factory = new Function('window', 'trainerState', 'TrainerActionSizingEV', helpers + record + '\nreturn {trainerRecordDecision};');
+const api = factory(window, trainerState, TrainerActionSizingEV);
+"""
+
+RECORD_CASES = r"""
+const gated = {
+  preflopDecision: {
+    coverage_state:'COVERED', recommended_action:'3BET', recommended_ev_bb:1.6, incremental_cost_bb:8,
+    ev_comparable:false, reason_codes:['NON_COMPARABLE_ALTERNATIVES'],
+    recommendation_admissibility:{admissible:true,status:'ADMISSIBLE',reason_codes:[]}
+  },
+  bestLabel:'3BET', bestCostBB:8, bestEV:1.6, chosenEV:0.2, lossBB:0, taxonomy_state:'ANALYSE_PARTIELLE',
+  analysis:{reason_codes:['NON_COMPARABLE_ALTERNATIVES']}
+};
+const rowGated = api.trainerRecordDecision(gated, 'CALL', 2.5);
+if (rowGated.bestLabel !== '—') throw new Error('gated row label ' + rowGated.bestLabel);
+if (rowGated.bestCostBB !== null) throw new Error('gated row sizing ' + rowGated.bestCostBB);
+if (Number.isFinite(rowGated.bestEV) || Number.isFinite(rowGated.chosenEV)) throw new Error('gated row EV ' + JSON.stringify(rowGated));
+if (rowGated.comparable !== false || rowGated.covered !== true) throw new Error('gated row flags');
+const open = {
+  preflopDecision: {
+    coverage_state:'COVERED', recommended_action:'CALL', recommended_ev_bb:0.42, played_ev_bb:0.3,
+    incremental_cost_bb:2.5, ev_comparable:true, reason_codes:[],
+    recommendation_admissibility:{admissible:true,status:'ADMISSIBLE',reason_codes:[]}
+  },
+  bestLabel:'CALL', bestCostBB:2.5, bestEV:0.42, chosenEV:0.3, lossBB:0, taxonomy_state:'ANALYSE_DISPONIBLE',
+  analysis:{reason_codes:[]}
+};
+const rowOpen = api.trainerRecordDecision(open, 'CALL', 2.5);
+if (rowOpen.bestLabel !== 'CALL' || rowOpen.bestCostBB !== 2.5 || rowOpen.bestEV !== 0.42 || rowOpen.chosenEV !== 0.3) throw new Error('open row ' + JSON.stringify(rowOpen));
+if (rowOpen.covered !== true || rowOpen.comparable !== true) throw new Error('open row flags');
+console.log(JSON.stringify({status:'PASS',
+  gated:{label:rowGated.bestLabel,cost:rowGated.bestCostBB,bestEV:rowGated.bestEV,chosenEV:rowGated.chosenEV,comparable:rowGated.comparable,covered:rowGated.covered},
+  open:{label:rowOpen.bestLabel,cost:rowOpen.bestCostBB,bestEV:rowOpen.bestEV,covered:rowOpen.covered}}));
+"""
+
 
 def main() -> None:
     # 1. The shared module is loaded before the Trainer.
@@ -214,7 +341,16 @@ def main() -> None:
     assert "trainerPreflopTaxonomyLabel(d.preflopDecision)" in feedback
     assert "escapeHtml(trainerPreflopTaxonomyLabel(d))" in rec
     assert "view.taxonomy_label" in TRAINER
-    assert "bestLabel:covered?String(decision.recommended_action||\"—\"):(view.taxonomy_label" in TRAINER
+    # Rule D6: `trainerDetailFromPreflopDecision` populates the
+    # recommendation-oriented fields only when the canonical gate
+    # (`view.show_ev`) is open; otherwise bestEV/played EV are NaN, the
+    # recommended sizing is null and bestLabel degrades to the taxonomy label.
+    assert "bestLabel:view.show_ev?String(decision.recommended_action||\"—\"):(view.taxonomy_label" in TRAINER
+    assert "bestCostBB:view.show_ev&&Number.isFinite(Number(decision.incremental_cost_bb))" in TRAINER
+    assert "bestEV:view.show_ev&&Number.isFinite(bestEV)?bestEV:NaN" in TRAINER
+    assert "chosenEV:view.show_ev&&Number.isFinite(playedEV)?playedEV:NaN" in TRAINER
+    # One source of truth: no legacy covered-only gate remains in the Trainer.
+    assert "isCovered" not in TRAINER, "legacy isCovered gating must not remain in site/trainer.js"
     assert "trainerAnalysisDimensionsHtml(view.analysis)" in TRAINER
     assert "analysis.reason_codes" in helpers
     assert 'data-analysis-detail="1"' in helpers
@@ -304,6 +440,44 @@ def main() -> None:
     assert payload["rendered"]["covered_not_comparable"]["state"] == "ANALYSE_PARTIELLE", payload
     for name in ("node_absent", "context_unsupported", "low_support", "pending", "error", "inadmissible", "covered_not_comparable"):
         assert payload["rendered"][name]["className"] == "trainer-recommendation", payload
+
+    # 7. Runtime proof that `trainerDetailFromPreflopDecision` carries no usable
+    #    Hero recommendation when D6 is closed (Cases A/B) and preserves Case D.
+    script = DETAIL_BOOTSTRAP + DETAIL_CASES
+    proc = subprocess.run(
+        ["node", "-e", script],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(proc.stdout.strip().splitlines()[-1])
+    assert payload["status"] == "PASS", payload
+    assert payload["D"]["show"] is True and payload["D"]["label"] == "CALL", payload
+    assert payload["D"]["cost"] == 2.5 and abs(payload["D"]["loss"] - 0.12) < 1e-9, payload
+    assert payload["A"]["show"] is False and payload["A"]["label"] == "Analyse partielle", payload
+    assert payload["A"]["ev"] is None, payload  # NaN serialized: EV unavailable
+    assert payload["A"]["cost"] is None and payload["A"]["loss"] == 0, payload
+    assert payload["B"]["show"] is False and payload["B"]["label"] == "Spot non supporté", payload
+    assert payload["B"]["ev"] is None and payload["B"]["cost"] is None, payload
+
+    # 8. Runtime proof that the recorded row/log carries no Hero recommendation
+    #    payload while D6 is closed, and keeps Case D fields.
+    script = RECORD_BOOTSTRAP + RECORD_CASES
+    proc = subprocess.run(
+        ["node", "-e", script],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(proc.stdout.strip().splitlines()[-1])
+    assert payload["status"] == "PASS", payload
+    assert payload["gated"]["label"] == "—" and payload["gated"]["cost"] is None, payload
+    assert payload["gated"]["bestEV"] is None and payload["gated"]["chosenEV"] is None, payload
+    assert payload["gated"]["comparable"] is False and payload["gated"]["covered"] is True, payload
+    assert payload["open"]["label"] == "CALL" and payload["open"]["cost"] == 2.5, payload
+    assert payload["open"]["bestEV"] == 0.42 and payload["open"]["covered"] is True, payload
 
     print("trainer analysis-state contract: PASS")
 

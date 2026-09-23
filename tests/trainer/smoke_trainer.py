@@ -1328,10 +1328,20 @@ async def main() -> None:
         )
         assert verdict["schema"] == "poker-preflop-decision/v1", verdict
         if guide["covered"]:
-            assert verdict["covered"] is True and verdict["label"] == guide["label"], (guide, verdict)
-            if guide["cost"] == guide["cost"]:
-                assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
-            assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+            assert verdict["covered"] is True, (guide, verdict)
+            if guide["show_ev"]:
+                assert verdict["label"] == guide["label"], (guide, verdict)
+                if guide["cost"] == guide["cost"]:
+                    assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
+                assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+            else:
+                # T3/D6: the pre-action recommendation carried no comparable
+                # played EV, so bestLabel/EV/sizing were unavailable. Once the
+                # played action is comparable the canonical gate opens and the
+                # recommended action label is exposed.
+                assert verdict["comparable"] is True, (guide, verdict)
+                assert verdict["label"] == guide["kind"], (guide, verdict)
+                assert verdict["ev"] == verdict["ev"], (guide, verdict)
             assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
             assert verdict["reused"] >= 1, (guide, verdict)
             assert "recommandé" in folded(feedback), feedback
