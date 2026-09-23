@@ -89,12 +89,13 @@
         "computational_status": {"enum": ["NOT_STARTED", "PENDING", "RUNNING", "COMPLETE", "FAILED"]},
         "model_support_status": {"enum": ["SUPPORTED", "NODE_ABSENT", "CONTEXT_UNSUPPORTED", "NOT_EVALUATED"]},
         "statistical_support": {
+          "description": "Statistical/model support dimension for the hand (#408 blocker 2). The Inbox derives it from the normalized decision events, never from the number of review decisions: `observations` is the conservative minimum of `event.support.observations` over the covered+comparable decisions relevant to the hand, and unrelated model nodes are never summed. `observations` is null (or the contract fail-safe floor 0) when no decision exposes support evidence, so missing metadata never becomes a fabricated positive count. `distinct_hands` is filled only from real distinct-hand evidence and is null/0 when that evidence is unavailable; it is never invented as 1.",
           "type": "object",
           "additionalProperties": false,
           "required": ["observations", "distinct_hands"],
           "properties": {
-            "observations": {"type": "integer", "minimum": 0},
-            "distinct_hands": {"type": "integer", "minimum": 0}
+            "observations": {"type": ["integer", "null"], "minimum": 0, "description": "Conservative minimum of the real per-decision support observations over the relevant (covered+comparable) decisions. null/0 means unknown/unavailable (fail-safe), never the review decision count."},
+            "distinct_hands": {"type": ["integer", "null"], "minimum": 0, "description": "Distinct backing hands only when evidenced by the events. null/0 means unavailable; it is never fabricated as 1."}
           }
         },
         "ev_comparability": {

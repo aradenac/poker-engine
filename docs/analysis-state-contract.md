@@ -70,7 +70,10 @@ le libellé principal.
   `NOT_EVALUATED` est le statut fail-safe par défaut.
 - `statistical_support` — objet `{observations, distinct_hands}`. Le nombre de
   mains distinctes est séparé du nombre d'observations pour qu'une main répétée
-  ne constitue pas un support.
+  ne constitue pas un support. Les deux compteurs peuvent valoir `null` (ou le
+  plancher fail-safe `0`) pour représenter un support inconnu / indisponible :
+  ils ne sont jamais fabriqués à partir d'un autre compte (voir la règle
+  d'agrégation Review Inbox ci-dessous).
 - `ev_comparability` — objet `{comparable, reason}`. `comparable` n'est vrai que
   lorsque la ligne jouée et la recommandation sont évaluées sous la même
   référence admissible. Sans évidence de comparabilité, `comparable` vaut
@@ -115,6 +118,35 @@ que lorsqu'un signal positif explicite existe (code positif, couverture
 `COVERED`, comparabilité ou admissibilité explicitement positives). Une entrée
 vide retombe sur l'état sûr `DONNEES_INSUFFISANTES`, et le mapper reste
 idempotent.
+
+## Règle d'agrégation du support statistique (Review Inbox)
+
+Le support statistique d'une main ne se déduit **jamais** du nombre de décisions
+de review. Une main peut contenir plusieurs décisions comparables, chacune
+adossée à un nœud de modèle distinct avec son propre `support.observations` ; ces
+nœuds ne sont pas additifs. La couche canonique (`analysis_state`) applique donc
+une règle d'agrégation hand-level conservatrice et déterministe, implémentée dans
+`src/analytics/review-inbox.js` (`analysisStateFor`) :
+
+- **décisions pertinentes** : décisions `support.covered === true` **et**
+  `comparability.comparable === true`. Les décisions non supportées ou non
+  comparables n'apportent aucun support modèle admissible et sont exclues ;
+- **`observations`** : **minimum** des `event.support.observations` réels sur les
+  décisions pertinentes. On ne somme jamais des nœuds hétérogènes et on
+  n'utilise jamais le nombre de décisions comme proxy ;
+- **support inconnu** : si aucune décision pertinente n'expose d'observations
+  valides (entier >= 0), le support est **inconnu / indisponible**. Il est
+  représenté par le plancher fail-safe `0` sous le contrat numérique actuel, et
+  `null` reste autorisé par le schéma `review-inbox` pour cette sémantique ; un
+  support positif n'est jamais fabriqué ;
+- **`distinct_hands`** : `poker-leak-decision-event/v1` ne porte aucune preuve de
+  mains distinctes. Le champ est donc explicitement indisponible (`0`/`null`) et
+  n'est **jamais inventé à `1`**. Seule une preuve réelle ajoutée aux événements
+  pourra l'alimenter.
+
+Exemple normatif : une main à 2 décisions comparables adossées à 120 et 450
+observations modèle donne `statistical_support.observations = 120` (minimum),
+jamais `2` ni `570`.
 
 ## Les sept distinctions
 

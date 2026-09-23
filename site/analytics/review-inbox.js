@@ -151,20 +151,41 @@
     for(const e of rows){const t=upper(e&&e.error_type);if(WORKER_ERROR_TYPES.has(t))return t;}
     return null;
   }
+  // Hand-level statistical-support aggregation (#408 blocker 2). The number of
+  // comparable review decisions is NOT statistical support: every comparable
+  // decision is backed by its own model node with its own
+  // `support.observations`, and unrelated nodes must never be summed. The
+  // hand-level summary is therefore the conservative MINIMUM of the real
+  // per-decision observations over the relevant decisions. Unsupported and
+  // non-comparable decisions carry no admissible model support and are excluded.
+  // When no relevant decision exposes usable observations the dimension is
+  // unknown: it is reported with the contract fail-safe floor 0, never with the
+  // decision count and never as a fabricated positive count. `distinct_hands`
+  // has no per-event evidence in `poker-leak-decision-event/v1`, so it is also
+  // reported as the fail-safe floor 0 and is never invented as 1.
+  function supportObservations(value){
+    if(value==null||value==='')return null;
+    const n=Number(value);
+    return Number.isInteger(n)&&n>=0?n:null;
+  }
+  function statisticalSupportFor(rows){
+    const decisions=(rows||[]).filter(e=>e&&e.support&&e.support.covered&&e.comparability&&e.comparability.comparable);
+    const observed=decisions.map(e=>supportObservations(e.support.observations)).filter(v=>v!=null);
+    return {observations:observed.length?Math.min(...observed):0,distinct_hands:0};
+  }
   // Translate the legacy coverage reasons + decision events (support,
   // comparability, worker error) into the shared `poker-analysis-state/v1`
   // object. The taxonomy decides the single user-facing state, while the
   // coverage object is retained untouched for backward compatibility.
   function analysisStateFor(coverage,rows){
     if(!State||typeof State.mapAnalysisState!=='function')return null;
-    const comparable=rows.filter(e=>e.support&&e.support.covered&&e.comparability&&e.comparability.comparable);
     const allComparable=rows.length>0&&rows.every(e=>e.support&&e.support.covered&&e.comparability&&e.comparability.comparable);
     const reasonCodes=coverage.reasons.slice();
     const workerError=workerErrorType(rows);
     if(workerError&&!reasonCodes.includes(workerError))reasonCodes.push(workerError);
     const input={
       reason_codes:reasonCodes,
-      statistical_support:{observations:comparable.length,distinct_hands:comparable.length?1:0}
+      statistical_support:statisticalSupportFor(rows)
     };
     if(coverage.complete)input.ev_comparability={comparable:true,reason:null};
     else if(allComparable)input.ev_comparability={comparable:true,reason:null};

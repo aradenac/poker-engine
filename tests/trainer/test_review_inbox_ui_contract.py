@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -75,6 +76,28 @@ def main() -> None:
     # #task-a0n: the Review scope consumes the same contextual override status as
     # the Trainer/header chip, never a global presence promoted to active.
     assert 'override:productPersonalOverrideState()' in scope_block
+
+    # #408 blocker 2: statistical_support is derived from the real per-decision
+    # model support with a documented conservative aggregation rule; it must be
+    # able to represent an explicit unknown/unavailable support and never let a
+    # review decision count masquerade as observations.
+    schema = json.loads(
+        (ROOT / "contracts/analytics/review-inbox.schema.json").read_text(encoding="utf-8")
+    )
+    support = schema["$defs"]["analysis_state"]["properties"]["statistical_support"]
+    for field in ("observations", "distinct_hands"):
+        assert set(support["properties"][field]["type"]) == {"integer", "null"}, field
+    assert "minimum" in support["description"].lower()
+    assert "decision" in support["description"].lower()
+    inbox_source = (ROOT / "src/analytics/review-inbox.js").read_text(encoding="utf-8")
+    assert "statisticalSupportFor" in inbox_source
+    assert "observations:comparable.length" not in inbox_source
+    assert "distinct_hands:comparable.length?1:0" not in inbox_source
+
+    doc = (ROOT / "docs/analysis-state-contract.md").read_text(encoding="utf-8")
+    assert "Règle d'agrégation du support statistique" in doc
+    assert "event.support.observations" in doc
+    assert "jamais inventé à `1`" in doc
 
     print("review inbox runtime mirror/UI contract checks: OK")
 

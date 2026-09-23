@@ -219,6 +219,9 @@ assert.equal(i1.analysis_state.state,'ANALYSE_DISPONIBLE','a complete comparable
 assert.deepEqual(i1.analysis_state.reason_codes,[],'an available analysis carries no blocking reason');
 assert.equal(i1.analysis_state_label,'Analyse disponible');
 assert.equal(State.isAnalysisState(i1.analysis_state),true,'item.analysis_state must conform to poker-analysis-state/v1');
+assert.equal(i1.analysis_state.statistical_support.observations,0,'the reviewed decision count never becomes the model observation count');
+assert.notEqual(i1.analysis_state.statistical_support.observations,i1.coverage.decisions_comparable,'2 comparable decisions must not be reported as 2 observations');
+assert.equal(i1.analysis_state.statistical_support.distinct_hands,0,'distinct_hands is never invented as 1');
 assert.equal(i1.status,Inbox.STATUS.TO_REVIEW);
 assert.equal(i1.status_label,'À revoir');
 assert.deepEqual(i1.deep_link,{
@@ -342,6 +345,74 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
   assert.equal(nonComparable.ev_comparability.comparable,false);
 }
 
+// #408 blocker 2: statistical_support must be derived from the real per-decision
+// model support, never from the number of comparable review decisions.
+{
+  const twoDecisions=[
+    {support:{covered:true,observations:120},comparability:{comparable:true},error_type:'ACTION_ERROR'},
+    {support:{covered:true,observations:450},comparability:{comparable:true},error_type:'ACTION_ERROR'}
+  ];
+  const support=Inbox.analysisStateFor({complete:true,reasons:[],state:'COMPLETE'},twoDecisions);
+  assert.equal(support.statistical_support.observations,120,'2 decisions backed by 120/450 observations aggregate to the conservative minimum 120');
+  assert.notEqual(support.statistical_support.observations,twoDecisions.length,'the decision count must never be used as the observation count');
+  assert.notEqual(support.statistical_support.observations,570,'unrelated model nodes must never be summed');
+  assert.equal(support.statistical_support.distinct_hands,0,'distinct_hands is unavailable and must never be invented as 1');
+  assert.notEqual(support.statistical_support.distinct_hands,1);
+  assert.equal(support.state,'ANALYSE_DISPONIBLE','the support field change must not alter a complete comparable hand state');
+  assert.equal(State.isAnalysisState(support),true);
+
+  // Event count differs from support count without confusion.
+  const threeDecisions=[...twoDecisions,{support:{covered:true,observations:300},comparability:{comparable:true},error_type:'ACTION_ERROR'}];
+  const three=Inbox.analysisStateFor({complete:true,reasons:[]},threeDecisions);
+  assert.equal(three.statistical_support.observations,120);
+  assert.equal(threeDecisions.length,3);
+
+  // Unsupported / non-comparable decisions carry no admissible model support and
+  // must not contribute observations; they still map to the right canonical state.
+  const withUnsupported=Inbox.analysisStateFor({complete:false,reasons:['UNSUPPORTED_DECISIONS'],state:'INCOMPLETE'},[
+    {support:{covered:true,observations:120},comparability:{comparable:true}},
+    {support:{covered:false,observations:999},comparability:{comparable:false},error_type:'UNSUPPORTED'}
+  ]);
+  assert.equal(withUnsupported.statistical_support.observations,120,'only comparable covered decisions feed the aggregation');
+  assert.equal(withUnsupported.state,'SPOT_NON_SUPPORTE','an unsupported decision still maps to SPOT_NON_SUPPORTE');
+
+  // Missing metadata must not become a fabricated positive support, and a single
+  // decision must not become an observation count either.
+  const missingMetadata=Inbox.analysisStateFor({complete:true,reasons:[],state:'COMPLETE'},[
+    {support:{covered:true},comparability:{comparable:true},error_type:'ACTION_ERROR'}
+  ]);
+  assert.equal(missingMetadata.statistical_support.observations,0,'missing support metadata is represented as the fail-safe floor, never as a positive count');
+  assert.notEqual(missingMetadata.statistical_support.observations,1);
+  assert.equal(missingMetadata.statistical_support.distinct_hands,0);
+  assert.equal(State.isAnalysisState(missingMetadata),true);
+
+  // Non-integer / negative observation metadata is not usable evidence.
+  const invalidMetadata=Inbox.analysisStateFor({complete:true,reasons:[]},[
+    {support:{covered:true,observations:-5},comparability:{comparable:true}},
+    {support:{covered:true,observations:null},comparability:{comparable:true}},
+    {support:{covered:true,observations:'n/a'},comparability:{comparable:true}},
+    {support:{covered:true,observations:200},comparability:{comparable:true}}
+  ]);
+  assert.equal(invalidMetadata.statistical_support.observations,200,'only valid integer>=0 observations are aggregated');
+
+  // Partially reported support aggregates over the known decisions only.
+  const partial=Inbox.analysisStateFor({complete:true,reasons:[]},[
+    {support:{covered:true,observations:80},comparability:{comparable:true}},
+    {support:{covered:true},comparability:{comparable:true}}
+  ]);
+  assert.equal(partial.statistical_support.observations,80);
+}
+
+// Low-support / insufficient-support reasons map to DONNEES_INSUFFISANTES.
+{
+  for(const reason of ['LOW_SUPPORT','INSUFFICIENT_SUPPORT']){
+    const mapped=Inbox.analysisStateFor({complete:false,reasons:[reason],state:'INCOMPLETE'},[]);
+    assert.equal(mapped.state,'DONNEES_INSUFFISANTES','reason '+reason+' must map to DONNEES_INSUFFISANTES');
+    assert.ok(mapped.reason_codes.includes(reason));
+    assert.equal(State.isAnalysisState(mapped),true);
+  }
+}
+
 {
   const altScores=JSON.parse(JSON.stringify(reviewScores));
   altScores['100004'].signature='sig-B';
@@ -394,7 +465,25 @@ assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
   for(const dimension of ['computational_status','model_support_status','statistical_support','ev_comparability','recommendation_admissibility','posterior_availability','error']){
     assert.ok(def.required.includes(dimension),'analysis_state dimension '+dimension+' must be required');
   }
+  // #408 blocker 2: statistical_support must be able to represent an explicit
+  // unknown/unavailable support (null) and must document the aggregation rule.
+  const support=def.properties.statistical_support;
+  assert.ok(support,'statistical_support definition must be present');
+  for(const field of ['observations','distinct_hands']){
+    assert.deepEqual(support.properties[field].type,['integer','null'],'statistical_support.'+field+' must allow an explicit null/unknown value');
+  }
+  assert.match(support.description||'',/minimum/i,'the statistical_support description must document the aggregation rule');
   assert.equal(State.SCHEMA,Inbox.ANALYSIS_STATE_SCHEMA);
+}
+
+// The canonical contract doc documents the hand-level aggregation rule so the
+// Inbox producer and its reviewers share one deterministic definition.
+{
+  const doc=fs.readFileSync(path.join(__dirname,'../../docs/analysis-state-contract.md'),'utf8');
+  assert.ok(doc.includes('Règle d\'agrégation du support statistique'),'the contract doc must document the aggregation section');
+  assert.ok(doc.includes('event.support.observations'),'the contract doc must reference the per-decision support observations');
+  assert.ok(/minimum/i.test(doc),'the contract doc must state the minimum aggregation rule');
+  assert.ok(doc.includes('jamais inventé à `1`'),'the contract doc must forbid inventing distinct_hands=1');
 }
 
 // #392: an unavailable resolver state flows through as an explicit, filterable scope.
