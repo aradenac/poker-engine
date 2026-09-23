@@ -4638,12 +4638,43 @@ function heroAnalysisModule(){
 // dimensions, so the user-facing state is never invented locally. `reasonCodes`
 // carries the concrete blocking cause (SPOT_NON_COUVERT vs LOW_SUPPORT, ...),
 // which lets the module pick SPOT_NON_SUPPORTE or DONNEES_INSUFFISANTES.
+//
+// #393 blocker 4: `SPOT_NON_COUVERT` ships a generic `coverage_state:"UNSUPPORTED"`
+// default. Because `UNSUPPORTED` outranks `DONNEES_INSUFFISANTES` in the shared
+// state precedence, an explicit support cause (LOW_SUPPORT /
+// INSUFFICIENT_SUPPORT) used to stay dominated and be reported as
+// SPOT_NON_SUPPORTE. The actor default must not override an explicit cause: when
+// the supplied codes carry a more precise blocking state, the generic coverage
+// default is dropped so the code itself decides. The default is kept whenever no
+// code is supplied, or when the codes only restate the generic node/context
+// cause (SPOT_NON_COUVERT, NODE_ABSENT, CONTEXT_UNSUPPORTED, ...), so those still
+// resolve to SPOT_NON_SUPPORTE.
+function heroActorReasonCodes(reasonCodes){
+  return (Array.isArray(reasonCodes)?reasonCodes:[])
+    .map(code=>String(code==null?'':code).trim().toUpperCase())
+    .filter(Boolean);
+}
 function heroAnalysisStateFromActor(actorState,{reasonCodes=null}={}){
   const Module=heroAnalysisModule();
   if(!Module)return null;
   const base=HERO_ACTOR_ANALYSIS_INPUT[actorState]||HERO_ACTOR_ANALYSIS_INPUT.HERO_RECOMMENDATION_UNAVAILABLE;
   const input={...base};
-  if(Array.isArray(reasonCodes)&&reasonCodes.length)input.reason_codes=reasonCodes.slice();
+  const codes=heroActorReasonCodes(reasonCodes);
+  if(codes.length){
+    input.reason_codes=codes;
+    // A generic `UNSUPPORTED` coverage is only the actor's default cause. Drop it
+    // when an explicit code names a blocking state more precise than the generic
+    // SPOT_NON_SUPPORTE, so that cause is never replaced by the generic label. A
+    // code that would claim ANALYSE_DISPONIBLE can never upgrade an uncovered
+    // actor, and node/context codes keep resolving to SPOT_NON_SUPPORTE on their
+    // own. When the module exposes no reason map, the default is also kept.
+    const reasonMap=Module.REASON_CODE_MAP||{};
+    const precise=codes.some(code=>{
+      const mapped=reasonMap[code];
+      return mapped&&mapped!=="ANALYSE_DISPONIBLE"&&mapped!=="SPOT_NON_SUPPORTE";
+    });
+    if(precise&&String(input.coverage_state||'').toUpperCase()==="UNSUPPORTED")delete input.coverage_state;
+  }
   return Module.mapAnalysisState(input);
 }
 // The canonical preflop decision already carries the shared dimensions

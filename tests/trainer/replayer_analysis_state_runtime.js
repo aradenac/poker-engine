@@ -219,6 +219,50 @@ function assertTransition(view, expectedState) {
 }
 
 // ---------------------------------------------------------------------------
+// 4b. #393 blocker 4: an explicit support cause requalifies the uncovered actor.
+//     `SPOT_NON_COUVERT` carries a generic `UNSUPPORTED` coverage default, but
+//     LOW_SUPPORT / INSUFFICIENT_SUPPORT identify a more precise cause that must
+//     win over that default -> DONNEES_INSUFFISANTES, never SPOT_NON_SUPPORTE.
+// ---------------------------------------------------------------------------
+{
+  for (const code of ['LOW_SUPPORT', 'INSUFFICIENT_SUPPORT']) {
+    const requalified = api.heroAnalysisStateFromActor('SPOT_NON_COUVERT', { reasonCodes: [code] });
+    assert.equal(requalified.state, 'DONNEES_INSUFFISANTES', `${code} must requalify the uncovered actor`);
+    assert.ok(requalified.reason_codes.includes(code));
+    assert.ok(!requalified.reason_codes.includes('UNSUPPORTED'), 'the generic coverage default must not be forced in');
+    // No model support is fabricated for a pure support cause: the dimension
+    // stays fail-safe and never claims SUPPORTED.
+    assert.equal(requalified.model_support_status, 'NOT_EVALUATED');
+    assert.equal(requalified.recommendation_admissibility.admissible, false);
+    assert.equal(requalified.ev_comparability.comparable, false);
+  }
+
+  // Without a more precise code (or with a generic node/context cause) the actor
+  // still resolves to SPOT_NON_SUPPORTE and keeps its NODE_ABSENT /
+  // CONTEXT_UNSUPPORTED model dimension.
+  const noCode = api.heroAnalysisStateFromActor('SPOT_NON_COUVERT');
+  assert.equal(noCode.state, 'SPOT_NON_SUPPORTE');
+  assert.equal(noCode.model_support_status, 'NODE_ABSENT');
+  const nodeAbsent = api.heroAnalysisStateFromActor('SPOT_NON_COUVERT', { reasonCodes: ['NODE_ABSENT'] });
+  assert.equal(nodeAbsent.state, 'SPOT_NON_SUPPORTE');
+  assert.equal(nodeAbsent.model_support_status, 'NODE_ABSENT');
+  const contextUnsupported = api.heroAnalysisStateFromActor('SPOT_NON_COUVERT', { reasonCodes: ['CONTEXT_UNSUPPORTED'] });
+  assert.equal(contextUnsupported.state, 'SPOT_NON_SUPPORTE');
+  assert.equal(contextUnsupported.model_support_status, 'CONTEXT_UNSUPPORTED');
+
+  // The precise cause flows through `replayHeroCommentState` (no generic
+  // message/state replaces it) and keeps rule D6 closed.
+  const lowSupportEvidence = { phase: 'PREFLOP', decision: { action: 'CALL', family: 'VS_RFI', reason: 'LOW_SUPPORT', preflop_context_v1: { schema: 'poker-preflop-context/v1', family: 'VS_RFI' } } };
+  const view = api.replayHeroCommentState(0, { street: 'Préflop' }, null, { req: { kind: 'aggression' }, priorMetrics: {}, observedEvidence: lowSupportEvidence });
+  assert.equal(view.actor_state, 'SPOT_NON_COUVERT');
+  assertTransition(view, 'DONNEES_INSUFFISANTES');
+  assert.ok(view.analysis_state.reason_codes.includes('LOW_SUPPORT'));
+  assert.equal(view.analysis_state.model_support_status, 'NOT_EVALUATED');
+  assert.equal(view.taxonomy_label, 'Données insuffisantes');
+  assert.equal(view.show_ev, false);
+}
+
+// ---------------------------------------------------------------------------
 // 5. HERO_RECOMMENDATION_UNAVAILABLE -> DONNEES_INSUFFISANTES or SPOT_NON_SUPPORTE
 //    according to the concrete cause carried by the reason code.
 // ---------------------------------------------------------------------------

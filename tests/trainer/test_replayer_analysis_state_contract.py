@@ -77,6 +77,15 @@ def main() -> None:
     assert "admissible,ev_comparable," in hero
     assert "show_ev:admissible&&ev_comparable" in hero
 
+    # #393 blocker 4: the `SPOT_NON_COUVERT` actor ships a generic UNSUPPORTED
+    # coverage default; explicit reason codes carrying a more precise blocking
+    # cause must requalify the state instead of being dominated by that default.
+    assert "function heroActorReasonCodes(reasonCodes){" in helpers
+    assert "input.reason_codes=codes" in helpers
+    assert "delete input.coverage_state" in helpers
+    assert 'mapped!=="ANALYSE_DISPONIBLE"' in helpers
+    assert 'mapped!=="SPOT_NON_SUPPORTE"' in helpers
+
     # 3. The feed renders the taxonomy label; reason codes stay in the detail.
     assert "heroPrimaryPillHtml(heroState" in feed
     assert "heroState.taxonomy_label" in feed
@@ -96,7 +105,12 @@ def main() -> None:
     assert "if(!view.show_ev){" in detail
     assert "heroState.show_ev" in feed
 
-    # 5. The runtime half proves each transition against the shared enum.
+    # 5. The runtime half proves each transition against the shared enum,
+    #    including the explicit support-cause requalification (blocker 4).
+    runtime = (ROOT / "tests/trainer/replayer_analysis_state_runtime.js").read_text(encoding="utf-8")
+    assert "LOW_SUPPORT" in runtime and "INSUFFICIENT_SUPPORT" in runtime
+    assert "heroAnalysisStateFromActor('SPOT_NON_COUVERT'" in runtime
+    assert "requalify the uncovered actor" in runtime
     proc = subprocess.run(
         ["node", "tests/trainer/replayer_analysis_state_runtime.js"],
         cwd=ROOT,
