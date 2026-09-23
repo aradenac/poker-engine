@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +11,19 @@ from playwright.async_api import async_playwright
 
 URL = "http://127.0.0.1:8765/index.html"
 ROOT = Path(__file__).resolve().parents[2]
+# #409: the Trainer browser smoke must be deterministic. The Trainer RNG
+# (`trainerRandom()` in site/trainer.js) is seeded explicitly in the page before
+# the first hand so that a red run is reproducible from the printed seed alone.
+# `TRAINER_SMOKE_SEED` is the calibrated seed; override it for a local bisect
+# with `TRAINER_SMOKE_SEED=123 python3 tests/trainer/smoke_trainer.py`.
+# Full determinism/reproduction contract and the distinction between the
+# terminal `Recommandation` placeholder and the Mode Test invariant:
+# docs/trainer-smoke-determinism.md (#409).
+# Calibration: the seeded first hand must expose a live, non-terminal Hero
+# decision (`trainerState.hand.awaitingHero === true`); the value below yields a
+# canonical VS-RFI CALLER spot (Hero HJ facing a LJ open), i.e. the spot covered
+# by the retained #108 CALL/FOLD reference.
+TRAINER_SMOKE_SEED = int(os.environ.get("TRAINER_SMOKE_SEED", "39"))
 KTS_ISO_FIXTURE = ROOT / "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt"
 RANGE_NUMERIC_FIXTURE = ROOT / "tests/fixtures/opponent-range/numeric_scenarios.json"
 # Numeric browser smokes driven from this script so that the frozen browser-smoke
@@ -1214,6 +1228,15 @@ async def main() -> None:
         )
         assert desktop_font >= 10, desktop_font
 
+        # #409: inject the explicit Trainer RNG seed BEFORE the trainer is opened
+        # (and therefore before the first hand is dealt). `trainerSetSeed` resets
+        # the single seeded source, so the whole scripted session below is a pure
+        # function of TRAINER_SMOKE_SEED. The seed is journalised and printed in
+        # the snapshot so any failure can be reproduced: TRAINER_SMOKE_SEED=<seed>.
+        seeded = await page.evaluate("(seed) => window.trainerSetSeed(seed)", TRAINER_SMOKE_SEED)
+        assert seeded == TRAINER_SMOKE_SEED, (seeded, TRAINER_SMOKE_SEED)
+        print(f"trainer smoke seed: {TRAINER_SMOKE_SEED}", flush=True)
+
         await page.wait_for_selector('#quickNav [data-product-domain="training"]', timeout=10_000)
         await page.click('#quickNav [data-product-domain="training"]')
 
@@ -1227,13 +1250,32 @@ async def main() -> None:
         assert seats == 6, f"expected 6 trainer seats, got {seats}"
         assert await page.locator("#trainerTable .seat.hero").count() == 1
 
-        # Real preflop can legitimately end before Hero receives an action. Start a
-        # fresh hand until the browser exposes a live Hero decision.
-        for _ in range(8):
-            if await page.evaluate("!!trainerState.hand?.awaitingHero"):
-                break
-            await page.evaluate("trainerNewHand()")
-        assert await page.evaluate("!!trainerState.hand?.awaitingHero"), "no live Hero decision after 8 real-preflop hands"
+        # #409: no silent hand regeneration and no retry that could mask a
+        # regression. Wait for the seeded hand to settle (Hero decision reached or
+        # hand ended) then fail LOUD if the calibrated seed no longer exposes a
+        # live, non-terminal Hero decision. The seed is printed so the failure is
+        # reproducible.
+        await page.wait_for_function(
+            "() => { const h=trainerState.hand; return !!h && (h.awaitingHero || h.ended); }",
+            timeout=90_000,
+        )
+        seeded_hand = await page.evaluate(
+            """() => {
+                const h=trainerState.hand;
+                return {
+                    awaitingHero:!!h?.awaitingHero, ended:!!h?.ended, street:h?.street||null,
+                    handNo:trainerState.handNo, handId:h?.id??null,
+                    dealerSeat:h?.dealerSeat??null, heroSeat:h?.heroSeat??null,
+                    heroRole:h?.heroRole||null, heroPosition:h?.positions?.[h?.heroSeat]||null,
+                    preflopHistory:(h?.preflopHistory||[]).map(x=>({...x})),
+                    preflopRaiseLevel:h?.preflopRaiseLevel??null
+                };
+            }"""
+        )
+        assert seeded_hand["awaitingHero"] is True and seeded_hand["ended"] is False, (
+            f"seeded smoke hand (TRAINER_SMOKE_SEED={TRAINER_SMOKE_SEED}) does not expose a live, "
+            f"non-terminal Hero decision; recalibrate the seed: {seeded_hand}"
+        )
 
         # Hero must be dealt from the persisted Custom range for this exact role/position.
         hero_range = await page.evaluate(
@@ -1252,8 +1294,31 @@ async def main() -> None:
         rec_text = await page.locator("#trainerRecommendation").inner_text()
         assert "réponse masquée" in folded(rec_text), rec_text
 
-        # Guided consumes the canonical preflop object. Depending on the real history,
-        # the decision is either covered by retained CALL/FOLD or explicitly fail-closed.
+        # #409: the "Training/Test modes remain reachable" invariant MUST be
+        # asserted on the LIVE, non-terminal Hero decision (awaitingHero &&
+        # !ended), BEFORE any Hero action. Switching modes never acts on the hand,
+        # so the decision stays live while both hidden-answer surfaces are proven.
+        assert await page.evaluate(
+            "() => !!(trainerState.hand && !trainerState.hand.ended && trainerState.hand.awaitingHero)"
+        ) is True, "Mode Test invariant must run on a live Hero decision"
+        await page.click('[data-trainer-mode="guided"]')
+        await page.wait_for_function(
+            "trainerState.recommendation && !trainerState.recommendation.error && trainerState.recommendation.preflopDecision",
+            timeout=90_000,
+        )
+        assert await page.evaluate(
+            "() => !!(trainerState.hand && !trainerState.hand.ended && trainerState.hand.awaitingHero)"
+        ) is True, "Hero decision became terminal before the Mode Test invariant"
+        await page.click('[data-trainer-mode="test"]')
+        test_mode = await page.locator("#trainerRecommendation").inner_text()
+        assert "mode test" in folded(test_mode) and "réponse masquée" in folded(test_mode), test_mode
+        await page.click('[data-trainer-mode="training"]')
+        training_mode = await page.locator("#trainerRecommendation").inner_text()
+        assert "décidez" in folded(training_mode) and "réponse masquée" in folded(training_mode), training_mode
+
+        # Back to guided to consume the canonical preflop object. Depending on the
+        # real history, the decision is either covered by retained CALL/FOLD or
+        # explicitly fail-closed.
         await page.click('[data-trainer-mode="guided"]')
         await page.wait_for_function(
             "trainerState.recommendation && !trainerState.recommendation.error && trainerState.recommendation.preflopDecision",
@@ -1361,14 +1426,57 @@ async def main() -> None:
         decision_value = await page.locator("#trainerStats .trainer-stat").nth(1).locator(".v").inner_text()
         assert int(decision_value.strip()) >= 1
 
-        # Training/Test modes remain reachable and keep recommendations hidden.
-        await page.evaluate("trainerState.pauseAfterDecision=false; trainerState.feedback=null")
-        await page.click('[data-trainer-mode="test"]')
-        test_mode = await page.locator("#trainerRecommendation").inner_text()
-        assert "mode test" in folded(test_mode) and "réponse masquée" in folded(test_mode), test_mode
-        await page.click('[data-trainer-mode="training"]')
-        training_mode = await page.locator("#trainerRecommendation").inner_text()
-        assert "décidez" in folded(training_mode) and "réponse masquée" in folded(training_mode), training_mode
+        # #409 terminal case, kept strictly SEPARATE from the Mode Test invariant:
+        # on an ENDED hand the recommendation panel renders the neutral terminal
+        # placeholder (`Recommandation` / `—`) instead of the hidden-answer text.
+        # Asserted on a synthetic ended state so it can never be confused with
+        # "Mode Test" + "Réponse masquée".
+        # Rationale + seed API/repro procedure: docs/trainer-smoke-determinism.md.
+        terminal_recommendation = await page.evaluate(
+            """() => {
+                const h=trainerState.hand;
+                const prevEnded=!!h.ended, prevMode=trainerState.mode, prevRecommendation=trainerState.recommendation;
+                h.ended=true; trainerState.mode="guided"; trainerState.recommendation=null; trainerState.busy=false;
+                trainerRender();
+                const el=document.querySelector('#trainerRecommendation');
+                const out={
+                    label:(el.querySelector('.trainer-rec-label')?.textContent||'').trim(),
+                    main:(el.querySelector('.trainer-rec-main')?.textContent||'').trim(),
+                    cls:el.className, text:(el.textContent||'').trim()
+                };
+                h.ended=prevEnded; trainerState.mode=prevMode; trainerState.recommendation=prevRecommendation; trainerRender();
+                return out;
+            }"""
+        )
+        assert terminal_recommendation["label"] == "Recommandation", terminal_recommendation
+        assert terminal_recommendation["main"] == "—", terminal_recommendation
+        assert "hidden-answer" in terminal_recommendation["cls"], terminal_recommendation
+        assert "mode test" not in folded(terminal_recommendation["text"]), terminal_recommendation
+        assert "réponse masquée" not in folded(terminal_recommendation["text"]), terminal_recommendation
+
+        # #409 same-seed / same-scenario probe. Re-seeding and rebuilding the hand
+        # twice MUST yield an identical scenario (dealer/hero seats, positions,
+        # hole cards, Hero role, preflop history); a different seed is reported
+        # (never asserted) so the calibration stays observable in the snapshot.
+        scenario_probe = await page.evaluate(
+            """(seed) => {
+                const fingerPrint=()=>{
+                    const h=trainerBuildHand();
+                    return JSON.stringify({
+                        dealerSeat:h.dealerSeat, heroSeat:h.heroSeat, positions:h.positions.slice(),
+                        hole:h.hole.map(c=>c.slice()), heroRole:h.heroRole,
+                        preflopHistory:h.preflopHistory.map(x=>({...x}))
+                    });
+                };
+                const otherSeed=(Number(seed)+1)>>>0;
+                trainerSetSeed(seed); const first=fingerPrint();
+                trainerSetSeed(seed); const second=fingerPrint();
+                trainerSetSeed(otherSeed); const other=fingerPrint();
+                return {seed, otherSeed, sameSeedIdentical:first===second, first, second, other, otherSeedDiffers:first!==other};
+            }""",
+            TRAINER_SMOKE_SEED,
+        )
+        assert scenario_probe["sameSeedIdentical"] is True, scenario_probe
 
         # Trainer must not destroy the analyser navigation when returning.
         await page.click("#trainerBackBtn")
@@ -1376,6 +1484,11 @@ async def main() -> None:
         assert await page.locator("#trainerPage").is_hidden()
 
         snapshot = {
+            "trainer_seed": TRAINER_SMOKE_SEED,
+            "trainer_seed_env_override": os.environ.get("TRAINER_SMOKE_SEED"),
+            "seeded_hand": seeded_hand,
+            "scenario_probe": scenario_probe,
+            "terminal_recommendation": terminal_recommendation,
             "product_architecture": product_architecture,
             "replayer_hand_classes": hand_classes,
             "delta_ev_quality_contract": quality_contract,

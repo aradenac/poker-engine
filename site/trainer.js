@@ -74,12 +74,61 @@ function trainerSleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function trainerClamp(x,a,b){return Math.max(a,Math.min(b,x));}
 function trainerNum(x,d=2){return Number(x||0).toFixed(d).replace(/\.?0+$/,"");}
 function trainerFmtBB(x){return `${new Intl.NumberFormat("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(x)||0)} BB`;}
-function trainerRandomInt(n){return Math.floor(Math.random()*n);}
+/* #409-RNG-BLOCK-START */
+/* #409: unique seedable randomness source for the Trainer.
+   `trainerRandom()` is the only entry point Trainer logic uses to draw
+   randomness. Production keeps the default Math.random source; tests inject a
+   deterministic generator via trainerSetSeed / trainerSetRandomSource without
+   ever monkey-patching the global Math.random.
+   API (#409): trainerSetRandomSource(fn), trainerSetSeed(seed),
+   trainerResetRandomSource(), trainerRandomSeed().
+   Documentation (#409): docs/trainer-smoke-determinism.md — mécanisme RNG,
+   seed smoke retenue (39) et procédure de reproduction d'une seed en échec.
+   The block is delimited by #409-RNG-BLOCK-START / #409-RNG-BLOCK-END so the
+   regression tests can extract it verbatim: `Math.random` must appear only
+   here, never in the surrounding Trainer logic. */
+function trainerMulberry32(seed){
+  let a=seed>>>0;
+  return function(){
+    a=(a+0x6d2b79f5)|0;
+    let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+function trainerNormalizeSeed(seed){
+  if(typeof seed==="number"&&Number.isFinite(seed))return seed>>>0;
+  const text=String(seed);let h=2166136261>>>0;
+  for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+const trainerDefaultRandom=()=>Math.random();
+let trainerRandomSource=trainerDefaultRandom;
+let trainerCurrentSeed=null;
+function trainerRandom(){return trainerRandomSource();}
+function trainerSetRandomSource(fn){
+  if(typeof fn!=="function")throw new TypeError("trainerSetRandomSource attend une fonction.");
+  trainerRandomSource=fn;trainerCurrentSeed=null;
+  return trainerRandomSource;
+}
+function trainerSetSeed(seed){
+  trainerCurrentSeed=trainerNormalizeSeed(seed);
+  trainerRandomSource=trainerMulberry32(trainerCurrentSeed);
+  return trainerCurrentSeed;
+}
+function trainerResetRandomSource(){trainerRandomSource=trainerDefaultRandom;trainerCurrentSeed=null;}
+function trainerRandomSeed(){return trainerCurrentSeed;}
+window.trainerSetRandomSource=trainerSetRandomSource;
+window.trainerSetSeed=trainerSetSeed;
+window.trainerResetRandomSource=trainerResetRandomSource;
+window.trainerRandomSeed=trainerRandomSeed;
+/* #409-RNG-BLOCK-END */
+function trainerRandomInt(n){return Math.floor(trainerRandom()*n);}
 function trainerShuffle(a){for(let i=a.length-1;i>0;i--){const j=trainerRandomInt(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 function trainerWeightedChoice(items,weights){
   let total=0;const clean=weights.map(w=>{w=Math.max(0,Number(w)||0);total+=w;return w;});
   if(!(total>0))return items[trainerRandomInt(items.length)];
-  let x=Math.random()*total;
+  let x=trainerRandom()*total;
   for(let i=0;i<items.length;i++){x-=clean[i];if(x<=0)return items[i];}
   return items[items.length-1];
 }
@@ -682,7 +731,7 @@ function trainerBuildHand(hints={},depth=0){
   const dealer=trainerRandomInt(6),positions=Array.from({length:6},(_,s)=>trainerPositionForSeat(s,dealer));
   const hintedSeat=desiredPosition?positions.indexOf(desiredPosition):-1,heroSeat=hintedSeat>=0?hintedSeat:trainerRandomInt(6);
   const heroPos=positions[heroSeat],heroRank=TRAINER_PREFLOP_ORDER.indexOf(heroPos);
-  let heroRole=(heroRank<5&&heroRank>0)?(Math.random()<.5?"PFA":"CALLER"):(heroRank===0?"PFA":"CALLER");
+  let heroRole=(heroRank<5&&heroRank>0)?(trainerRandom()<.5?"PFA":"CALLER"):(heroRank===0?"PFA":"CALLER");
   if(["PFA","CALLER"].includes(desiredRole))heroRole=desiredRole;
   let candidates=positions.map((p,s)=>({p,s,r:TRAINER_PREFLOP_ORDER.indexOf(p)})).filter(x=>x.s!==heroSeat);
   if(["IP","OOP"].includes(desiredRelative))candidates=candidates.filter(x=>{
