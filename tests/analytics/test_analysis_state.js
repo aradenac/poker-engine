@@ -569,6 +569,45 @@ const completeDecision=(()=>{
   }
 }
 
+// ---------------------------------------------------------------------------
+// 13. Empty containers are inert even next to unknown evidence, and the edit
+//     source stays byte-identical to the served mirror (review #408 residual
+//     acceptance items 3/5/6/7).
+// ---------------------------------------------------------------------------
+{
+  // 13a. An empty container alone synthesizes no top-level reason code and never
+  //      promotes the computation: it stays the safe DONNEES_INSUFFISANTES.
+  for(const input of [{ev_comparability:{}},{recommendation_admissibility:{}}]){
+    const mapped=State.mapAnalysisState(input);
+    assert.deepEqual(mapped.reason_codes,[],'an empty container must not synthesize a top-level reason code');
+    assert.equal(mapped.state,'DONNEES_INSUFFISANTES');
+    assert.equal(mapped.computational_status,'NOT_EVALUATED');
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped);
+  }
+
+  // 13b. Combined with an unknown code, the empty container stays inert and the
+  //      unknown code is preserved verbatim (never dropped, never optimistic),
+  //      with a schema-valid and idempotent result.
+  for(const input of [{ev_comparability:{},reason_codes:['FUTURE_TAXONOMY_CODE']},
+    {recommendation_admissibility:{},reason_codes:['FUTURE_TAXONOMY_CODE']}]){
+    const mapped=State.mapAnalysisState(input);
+    assert.deepEqual(mapped.reason_codes,['FUTURE_TAXONOMY_CODE'],'unknown code must be preserved');
+    assert.equal(mapped.state,State.DEFAULT_UNKNOWN_STATE);
+    assert.deepEqual(mapped.ev_comparability,{comparable:false,reason:'NOT_EVALUATED'});
+    assert.equal(mapped.recommendation_admissibility.admissible,false);
+    assert.equal(mapped.recommendation_admissibility.status,'NOT_EVALUATED');
+    assert.deepEqual(mapped.recommendation_admissibility.reason_codes,[],'no blocking reason code may be synthesized');
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,'unknown code + empty container must be idempotent');
+  }
+
+  // 13c. The edit source and the served site mirror must never drift.
+  const source=fs.readFileSync(path.join(ROOT,'src/analytics/analysis-state.js'));
+  const mirror=fs.readFileSync(path.join(ROOT,'site/analytics/analysis-state.js'));
+  assert.equal(Buffer.compare(source,mirror),0,'src/analytics/analysis-state.js and site/analytics/analysis-state.js must be byte-identical');
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:State.SCHEMA,
