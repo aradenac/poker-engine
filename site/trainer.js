@@ -82,6 +82,8 @@ function trainerFmtBB(x){return `${new Intl.NumberFormat("fr-FR",{minimumFractio
    ever monkey-patching the global Math.random.
    API (#409): trainerSetRandomSource(fn), trainerSetSeed(seed),
    trainerResetRandomSource(), trainerRandomSeed().
+   Documentation (#409): docs/trainer-smoke-determinism.md — mécanisme RNG,
+   seed smoke retenue (39) et procédure de reproduction d'une seed en échec.
    The block is delimited by #409-RNG-BLOCK-START / #409-RNG-BLOCK-END so the
    regression tests can extract it verbatim: `Math.random` must appear only
    here, never in the surrounding Trainer logic. */

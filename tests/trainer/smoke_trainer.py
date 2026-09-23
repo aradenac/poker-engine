@@ -16,6 +16,9 @@ ROOT = Path(__file__).resolve().parents[2]
 # the first hand so that a red run is reproducible from the printed seed alone.
 # `TRAINER_SMOKE_SEED` is the calibrated seed; override it for a local bisect
 # with `TRAINER_SMOKE_SEED=123 python3 tests/trainer/smoke_trainer.py`.
+# Full determinism/reproduction contract and the distinction between the
+# terminal `Recommandation` placeholder and the Mode Test invariant:
+# docs/trainer-smoke-determinism.md (#409).
 # Calibration: the seeded first hand must expose a live, non-terminal Hero
 # decision (`trainerState.hand.awaitingHero === true`); the value below yields a
 # canonical VS-RFI CALLER spot (Hero HJ facing a LJ open), i.e. the spot covered
@@ -1428,6 +1431,7 @@ async def main() -> None:
         # placeholder (`Recommandation` / `—`) instead of the hidden-answer text.
         # Asserted on a synthetic ended state so it can never be confused with
         # "Mode Test" + "Réponse masquée".
+        # Rationale + seed API/repro procedure: docs/trainer-smoke-determinism.md.
         terminal_recommendation = await page.evaluate(
             """() => {
                 const h=trainerState.hand;
