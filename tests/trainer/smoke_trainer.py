@@ -1281,7 +1281,10 @@ async def main() -> None:
             action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
             assert await action.count(), f"guided action button missing: {guide}"
         else:
-            assert "spot_non_couvert" in folded(guided), guided
+            # #393 T5: the primary label is the shared taxonomy state; the raw
+            # reason code stays out of the primary recommendation panel.
+            assert "spot non support" in folded(guided), guided
+            assert "spot_non_couvert" not in folded(guided), guided
             assert guide["kind"] == "", guide
             action = page.locator('#trainerControls [data-trainer-action="CHECK"], #trainerControls [data-trainer-action="FOLD"], #trainerControls [data-trainer-action="CALL"]').first
             assert await action.count(), f"no legal fail-closed action: {guide}"
@@ -1319,8 +1322,13 @@ async def main() -> None:
             assert "recommandé" in folded(feedback), feedback
         else:
             assert verdict["covered"] is False and verdict["comparable"] is False, verdict
-            assert "spot" in folded(feedback) and "non couvert" in folded(feedback), feedback
+            # #393 T5: taxonomy label in the feedback headline; the concrete
+            # reason code and the separated dimensions are only exposed in the
+            # secondary technical detail, rendered after the primary label.
+            assert "spot non support" in folded(feedback), feedback
             assert "aucune recommandation ev" in folded(feedback), feedback
+            assert "détails techniques" in folded(feedback), feedback
+            assert folded(feedback).index("spot non support") < folded(feedback).index("détails techniques"), feedback
 
         stats = await page.locator("#trainerStats").inner_text()
         assert "décisions" in folded(stats)

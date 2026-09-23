@@ -912,13 +912,68 @@ function trainerPreflopPlayedAction(actual,view){
   if(action==="BET")return {action:"RAISE",target_total_bb:Number(actual.target)};
   return {action};
 }
+/* #393 T5 — Training preflop labels (#393 T2 module).
+   The shared `poker-analysis-state/v1` module is the single source of truth for
+   the user-facing preflop state. The historical `SPOT_NON_COUVERT` /
+   `ACTIVE_REFERENCE_SCOPE_UNSUPPORTED` codes stay as machine-readable reason
+   codes, while the displayed primary label is always the taxonomy state. The
+   detailed reason codes and the separated technical dimensions are only emitted
+   by `trainerAnalysisDimensionsHtml` inside the secondary feedback panel.
+   The deliberate v1 flop-only Hero-decision boundary (#206) is unchanged: this
+   only relabels the preflop reference surface. */
+function trainerAnalysisModule(){
+  const Module=window.PokerAnalysisState;
+  return Module&&typeof Module.mapAnalysisState==="function"?Module:null;
+}
+function trainerTaxonomyLabel(state){
+  const Inbox=window.PokerReviewInbox;
+  if(Inbox&&typeof Inbox.analysisStateLabel==="function")return Inbox.analysisStateLabel(state);
+  return String(state||"");
+}
+// The canonical preflop decision already carries the shared dimensions
+// (`coverage_state`, `reason_codes`, `recommendation_admissibility`,
+// `ev_comparable`): feed them to the module untouched.
+function trainerPreflopAnalysis(decision){
+  const Module=trainerAnalysisModule();
+  if(!Module||!decision)return null;
+  return Module.mapAnalysisState(decision);
+}
+// Primary taxonomy view. Rule D6: the EV/recommendation fields are only exposed
+// when the module reports both `recommendation_admissibility.admissible` and
+// `ev_comparability.comparable`. Any other combination stays taxonomy-labelled.
+function trainerPreflopDecisionView(decision){
+  const analysis=trainerPreflopAnalysis(decision);
+  const admissible=analysis?.recommendation_admissibility?.admissible===true;
+  const comparable=analysis?.ev_comparability?.comparable===true;
+  return {
+    analysis,
+    taxonomy_state:analysis?.state||null,
+    taxonomy_label:trainerTaxonomyLabel(analysis?.state||""),
+    admissible,ev_comparable:comparable,show_ev:admissible&&comparable
+  };
+}
+// Secondary/technical view: reason codes and the separated dimensions are only
+// rendered here, never as a primary label.
+function trainerAnalysisDimensionsHtml(analysis){
+  if(!analysis)return "";
+  const admissibility=analysis.recommendation_admissibility||{},comparability=analysis.ev_comparability||{},support=analysis.statistical_support||{},error=analysis.error||{};
+  const codes=(analysis.reason_codes||[]).join(", ")||"—";
+  const errorText=error.type?` · erreur ${escapeHtml(error.type)} (retryable ${escapeHtml(String(error.retryable))})`:"";
+  return `<div class="trainer-feedback-body" data-analysis-detail="1">Détails techniques · état ${escapeHtml(analysis.state)} · raisons ${escapeHtml(codes)} · support ${Number(support.observations)||0} obs / ${Number(support.distinct_hands)||0} mains · modèle ${escapeHtml(analysis.model_support_status||"—")} · calcul ${escapeHtml(analysis.computational_status||"—")} · EV comparable ${escapeHtml(String(comparability.comparable))}${comparability.reason?` (${escapeHtml(comparability.reason)})`:""} · recommandation ${escapeHtml(String(admissibility.admissible))}${admissibility.status?` (${escapeHtml(admissibility.status)})`:""} · posterior ${escapeHtml(analysis.posterior_availability||"—")}${errorText}.</div>`;
+}
+function trainerPreflopTaxonomyLabel(decision){
+  const label=trainerPreflopDecisionView(decision).taxonomy_label;
+  return label||"Spot non supporté";
+}
 function trainerDetailFromPreflopDecision(decision,referenceCallEV=null){
   const runtime=window.PokerPreflopRuntime,covered=runtime?.isCovered(decision);
   const bestEV=Number(decision?.recommended_ev_bb),playedEV=Number(decision?.played_ev_bb),comparable=!!decision?.ev_comparable;
   const loss=covered&&comparable&&Number.isFinite(bestEV)&&Number.isFinite(playedEV)?Math.max(0,bestEV-playedEV):0;
+  const view=trainerPreflopDecisionView(decision);
   return {
     preflopDecision:decision,referenceCallEV:Number.isFinite(Number(referenceCallEV))?Number(referenceCallEV):null,
-    bestLabel:covered?String(decision.recommended_action||"—"):"SPOT_NON_COUVERT",
+    taxonomy_state:view.taxonomy_state,taxonomy_label:view.taxonomy_label,analysis:view.analysis,
+    bestLabel:covered?String(decision.recommended_action||"—"):(view.taxonomy_label||"Spot non supporté"),
     bestCostBB:covered&&Number.isFinite(Number(decision.incremental_cost_bb))?Number(decision.incremental_cost_bb):null,
     bestEV:covered&&Number.isFinite(bestEV)?bestEV:NaN,chosenEV:comparable&&Number.isFinite(playedEV)?playedEV:NaN,
     lossBB:loss,rawLossBB:loss,withinNoise:false,comparable,unsupported:!covered
@@ -963,7 +1018,7 @@ async function trainerComputeRecommendation(){
       ?await trainerComputePreflopReference(hand)
       :await (async()=>{const ph=trainerPlaceholderLine(hand);return trainerTimedReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,ph.cost));})();
     trainerState.recommendation=detail;
-    const stateText=detail?.preflopDecision&&!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision)?" · SPOT_NON_COUVERT":"";
+    const stateText=detail?.preflopDecision&&!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision)?` · ${trainerPreflopTaxonomyLabel(detail.preflopDecision)}`:"";
     trainerRenderStatus(`À vous de jouer${stateText} · calcul ${trainerState.perf.lastMs.toFixed(0)} ms.`);
   }
   catch(err){trainerRenderStatus(`Recommandation indisponible : ${err.message}`,"error");trainerState.recommendation={error:err.message};}
@@ -1136,15 +1191,19 @@ function trainerPreflopTargetText(target){
 }
 function trainerPreflopDecisionSummaryHtml(decision){
   const covered=window.PokerPreflopRuntime?.isCovered(decision);
+  const view=trainerPreflopDecisionView(decision);
+  // The reason codes and the separated dimensions only live in this secondary
+  // panel; the primary label above them is the shared taxonomy state.
+  const technical=trainerAnalysisDimensionsHtml(view.analysis);
   if(!covered){
-    return `<div class="trainer-feedback-body"><b>SPOT_NON_COUVERT</b> · aucune recommandation EV validée pour <b>${escapeHtml(decision?.facing_context||"UNKNOWN")}</b>. La candidate #108 reste inactive.</div>`;
+    return `<div class="trainer-feedback-body"><b>${escapeHtml(view.taxonomy_label||"Spot non supporté")}</b> · aucune recommandation EV validée pour <b>${escapeHtml(decision?.facing_context||"UNKNOWN")}</b>. La candidate #108 reste inactive.</div>${technical}`;
   }
   const support=Number(decision.support?.observations)||0;
   const rows=(decision.alternatives||[]).map(a=>`<div class="trainer-feedback-body"><b>${escapeHtml(a.action)}</b> · ${escapeHtml(trainerPreflopTargetText(a.target_sizing))} · coût ${escapeHtml(trainerFmtBB(a.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(a.ev_bb))}</b></div>`).join("");
   const played=decision.ev_comparable
     ?`EV jouée <b>${escapeHtml(trainerFmtBB(decision.played_ev_bb))}</b> · perte EV <b>${escapeHtml(trainerFmtBB(Math.max(0,Number(decision.recommended_ev_bb)-Number(decision.played_ev_bb))))}</b>.`
     :decision.played_action?`Action jouée <b>${escapeHtml(decision.played_action)}</b> non évaluée par cette référence : aucun ΔEV inventé.`:"";
-  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>`;
+  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>${technical}`;
 }
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";
@@ -1161,9 +1220,11 @@ function trainerRenderRecommendation(){
   if(rec?.preflopDecision){
     const d=rec.preflopDecision,covered=window.PokerPreflopRuntime?.isCovered(d);
     trainerRecommendation.className=`trainer-recommendation${covered?"":" hidden-answer"}`;
+    // Primary label = shared taxonomy state; the reason codes stay in the
+    // detailed feedback panel below.
     trainerRecommendation.innerHTML=covered
       ?`<div class="trainer-rec-label">Action recommandée · référence active #108 conservée</div><div class="trainer-rec-main">${escapeHtml(d.recommended_action)} · ${escapeHtml(trainerPreflopTargetText(d.recommended_target_sizing))}</div><div class="trainer-rec-ev">Coût ${escapeHtml(trainerFmtBB(d.incremental_cost_bb))} · EV ${escapeHtml(trainerFmtBB(d.recommended_ev_bb))} · support ${Number(d.support?.observations||0).toLocaleString("fr-FR")}</div>`
-      :`<div class="trainer-rec-label">Préflop</div><div class="trainer-rec-main">SPOT_NON_COUVERT</div><div class="trainer-rec-ev">Aucune recommandation EV validée · candidate #108 inactive.</div>`;
+      :`<div class="trainer-rec-label">Préflop</div><div class="trainer-rec-main">${escapeHtml(trainerPreflopTaxonomyLabel(d))}</div><div class="trainer-rec-ev">Aucune recommandation EV validée · candidate #108 inactive.</div>`;
     return;
   }
   trainerRecommendation.className="trainer-recommendation";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · EV finale</div><div class="trainer-rec-main">${escapeHtml(trainerBestText(rec))}</div><div class="trainer-rec-ev">EV ${Number.isFinite(Number(rec?.bestEV))?escapeHtml(trainerFmtBB(rec.bestEV)):"—"}</div>`;
@@ -1183,7 +1244,8 @@ function trainerRenderFeedback(){
   if(d?.preflopDecision){
     const covered=window.PokerPreflopRuntime?.isCovered(d.preflopDecision),comparable=!!d.preflopDecision.ev_comparable;
     trainerFeedback.className=`trainer-feedback ${covered?(comparable?(r.cls==="poor"?"poor":r.cls==="good"?"good":"close"):"close"):"close"}`;
-    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${covered?(comparable?"Décision préflop évaluée":"Référence partielle · action non comparable"):"Spot préflop non couvert"}</div>${trainerPreflopDecisionSummaryHtml(d.preflopDecision)}`;
+    const title=trainerPreflopTaxonomyLabel(d.preflopDecision);
+    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${trainerPreflopDecisionSummaryHtml(d.preflopDecision)}`;
     return;
   }
   const summary=trainerDecisionCanonical(d,r);

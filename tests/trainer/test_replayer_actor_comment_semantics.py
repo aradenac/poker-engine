@@ -94,6 +94,16 @@ def main() -> int:
     assert "heroAnalysisDimensionsHtml(view.analysis)" in INDEX
     assert 'data-analysis-detail="1"' in INDEX
 
+    # #393 T5: the Trainer preflop surface consumes the same shared taxonomy as
+    # the replayer (module loaded ahead of trainer.js), and keeps the documented
+    # v1 flop-only Hero-decision boundary (#206).
+    trainer=(ROOT/"site/trainer.js").read_text(encoding="utf-8")
+    assert "window.PokerAnalysisState" in trainer
+    assert "Module.mapAnalysisState(decision)" in trainer
+    assert "function trainerPreflopTaxonomyLabel(decision){" in trainer
+    assert "function trainerAnalysisDimensionsHtml(analysis){" in trainer
+    assert "#206" in trainer
+
     print("replayer actor/comment semantics contract: PASS")
     return 0
 
