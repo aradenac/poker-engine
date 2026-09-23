@@ -15,11 +15,12 @@ RANGE_NUMERIC_FIXTURE = ROOT / "tests/fixtures/opponent-range/numeric_scenarios.
 # Numeric browser smokes driven from this script so that the frozen browser-smoke
 # workflow can exercise #391 without adding a workflow step. Each stays a
 # standalone module (own static guards, own browser session); the opponent-range
-# script connects to the already-served 127.0.0.1:8765, while the scale-invariance
-# script starts its own ephemeral local server.
+# and D6 render-matrix scripts connect to the already-served 127.0.0.1:8765,
+# while the scale-invariance script starts its own ephemeral local server.
 DRIVER_SMOKES = (
     Path(__file__).resolve().parent / "smoke_opponent_range_numeric.py",
     Path(__file__).resolve().parent / "smoke_equity_scale_invariance.py",
+    Path(__file__).resolve().parent / "smoke_trainer_d6_render_matrix.py",
 )
 
 
