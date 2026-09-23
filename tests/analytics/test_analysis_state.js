@@ -722,6 +722,124 @@ const completeDecision=(()=>{
   assert.equal(Buffer.compare(source,mirror),0,'src/analytics/analysis-state.js and site/analytics/analysis-state.js must be byte-identical');
 }
 
+// ---------------------------------------------------------------------------
+// 15. Strict absent-dimension equivalence (review #408 residual, strengthened).
+//     The strongest possible statement of requirement (3): an empty / placeholder
+//     / non-boolean container must be *indistinguishable* from an absent
+//     dimension. The mapped object is deep-equal to `mapAnalysisState({})`, no
+//     blocker is synthesized, `computational_status` never becomes COMPLETE from
+//     the container alone, and adding the container next to unrelated evidence is
+//     inert. Only an explicit boolean verdict (without a NOT_EVALUATED sentinel)
+//     discriminates: negatives -> ANALYSE_PARTIELLE, positives ->
+//     ANALYSE_DISPONIBLE.
+// ---------------------------------------------------------------------------
+{
+  const absent=State.mapAnalysisState({});
+
+  // 15a. Every empty/non-boolean container maps to exactly the same object as a
+  //      completely absent dimension.
+  const inertContainers=[
+    {ev_comparability:{}},
+    {recommendation_admissibility:{}},
+    {ev_comparability:{},recommendation_admissibility:{}},
+    {ev_comparability:{comparable:1}},
+    {ev_comparability:{comparable:0}},
+    {ev_comparability:{comparable:null}},
+    {ev_comparability:{comparable:'true'}},
+    {ev_comparability:{reason:'NOT_EVALUATED'}},
+    {recommendation_admissibility:{admissible:1}},
+    {recommendation_admissibility:{admissible:0}},
+    {recommendation_admissibility:{admissible:null}},
+    {recommendation_admissibility:{admissible:'true'}},
+    {recommendation_admissibility:{status:'NOT_EVALUATED'}},
+    {recommendation_admissibility:{reason_codes:[]}}
+  ];
+  for(const input of inertContainers){
+    const mapped=State.mapAnalysisState(input);
+    assert.deepEqual(mapped,absent,'an inert container must map exactly like an absent dimension: '+JSON.stringify(input));
+    assert.equal(mapped.state,'DONNEES_INSUFFISANTES',JSON.stringify(input));
+    assert.notEqual(mapped.state,'ANALYSE_PARTIELLE',JSON.stringify(input));
+    assert.equal(mapped.computational_status,'NOT_EVALUATED',JSON.stringify(input));
+    assert.deepEqual(mapped.reason_codes,[],JSON.stringify(input));
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify(input));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,JSON.stringify(input));
+  }
+
+  // 15b. The NOT_EVALUATED sentinel is recognised case-insensitively and after
+  //      trimming, and neutralises an explicit boolean verdict so the dimension
+  //      still behaves like an absent one.
+  for(const input of [
+    {ev_comparability:{comparable:true,reason:'not_evaluated'}},
+    {ev_comparability:{comparable:true,reason:'  NOT_EVALUATED  '}},
+    {ev_comparability:{comparable:false,reason:'not_evaluated'}},
+    {recommendation_admissibility:{admissible:true,status:'not_evaluated'}},
+    {recommendation_admissibility:{admissible:true,status:'  NOT_EVALUATED  '}},
+    {recommendation_admissibility:{admissible:false,status:'not_evaluated'}}
+  ]){
+    const mapped=State.mapAnalysisState(input);
+    assert.deepEqual(mapped,absent,'a sentinel verdict must behave like an absent dimension: '+JSON.stringify(input));
+    assert.notEqual(mapped.state,'ANALYSE_PARTIELLE',JSON.stringify(input));
+    assert.notEqual(mapped.state,'ANALYSE_DISPONIBLE',JSON.stringify(input));
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify(input));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,JSON.stringify(input));
+  }
+
+  // 15c. An empty container is inert next to unrelated evidence: adding it never
+  //      changes the mapping of an unknown code (preserved verbatim, safe state)
+  //      nor the mapping of an explicit standalone signal.
+  const unknownOnly={reason_codes:['FUTURE_TAXONOMY_CODE']};
+  for(const extra of [{ev_comparability:{}},{recommendation_admissibility:{}},
+    {ev_comparability:{},recommendation_admissibility:{}}]){
+    const mapped=State.mapAnalysisState(Object.assign({},unknownOnly,extra));
+    assert.deepEqual(mapped,State.mapAnalysisState(unknownOnly),'an empty container must be inert next to an unknown code: '+JSON.stringify(extra));
+    assert.ok(mapped.reason_codes.includes('FUTURE_TAXONOMY_CODE'),JSON.stringify(extra));
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify(extra));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,JSON.stringify(extra));
+  }
+  for(const input of [
+    {posterior_availability:'conditioned',ev_comparability:{}},
+    {model_support_status:'SUPPORTED',recommendation_admissibility:{}},
+    {computational_status:'COMPLETE',ev_comparability:{},recommendation_admissibility:{}}
+  ]){
+    const without=Object.assign({},input);
+    delete without.ev_comparability;
+    delete without.recommendation_admissibility;
+    assert.deepEqual(State.mapAnalysisState(input),State.mapAnalysisState(without),'an empty container must not perturb an explicit standalone signal: '+JSON.stringify(input));
+  }
+
+  // 15d. Explicit boolean verdicts remain the only discrimination point:
+  //      negatives are evaluated evidence (ANALYSE_PARTIELLE), positives keep
+  //      ANALYSE_DISPONIBLE, and none is degraded to the absent dimension.
+  const negativeComparability=State.mapAnalysisState({ev_comparability:{comparable:false}});
+  assert.equal(negativeComparability.state,'ANALYSE_PARTIELLE');
+  assert.equal(negativeComparability.computational_status,'COMPLETE');
+  assert.equal(State.validateAnalysisState(negativeComparability).valid,true);
+  assert.deepEqual(State.mapAnalysisState(negativeComparability),negativeComparability);
+
+  const negativeAdmissibility=State.mapAnalysisState({recommendation_admissibility:{admissible:false}});
+  assert.equal(negativeAdmissibility.state,'ANALYSE_PARTIELLE');
+  assert.equal(negativeAdmissibility.recommendation_admissibility.admissible,false);
+  assert.equal(State.validateAnalysisState(negativeAdmissibility).valid,true);
+  assert.deepEqual(State.mapAnalysisState(negativeAdmissibility),negativeAdmissibility);
+
+  const positiveComparability=State.mapAnalysisState({ev_comparability:{comparable:true}});
+  assert.equal(positiveComparability.state,'ANALYSE_DISPONIBLE');
+  assert.equal(positiveComparability.ev_comparability.comparable,true);
+  assert.equal(State.validateAnalysisState(positiveComparability).valid,true);
+  assert.deepEqual(State.mapAnalysisState(positiveComparability),positiveComparability);
+
+  const positiveAdmissibility=State.mapAnalysisState({recommendation_admissibility:{admissible:true,status:'ADMISSIBLE'}});
+  assert.equal(positiveAdmissibility.state,'ANALYSE_DISPONIBLE');
+  assert.equal(positiveAdmissibility.recommendation_admissibility.admissible,true);
+  assert.equal(State.validateAnalysisState(positiveAdmissibility).valid,true);
+  assert.deepEqual(State.mapAnalysisState(positiveAdmissibility),positiveAdmissibility);
+
+  // 15e. The edit source and the served mirror stay byte-identical.
+  const source=fs.readFileSync(path.join(ROOT,'src/analytics/analysis-state.js'));
+  const mirror=fs.readFileSync(path.join(ROOT,'site/analytics/analysis-state.js'));
+  assert.equal(Buffer.compare(source,mirror),0,'src/analytics/analysis-state.js and site/analytics/analysis-state.js must be byte-identical');
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:State.SCHEMA,
