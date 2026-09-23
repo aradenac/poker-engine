@@ -4,10 +4,14 @@
 // taxonomy (issue #393, task backlog-kll).
 //
 // Six independent invariants are pinned here:
-//   1. Byte-for-byte parity: the edit source `src/analytics/analysis-state.js`
-//      and the served mirror `site/analytics/analysis-state.js` must never
-//      drift, so the browser bundle cannot silently diverge from its source of
-//      truth.
+//   1. Byte-for-byte parity: every analytics module the #393 PR mirrors into the
+//      served site must stay strictly identical to its edit source under
+//      `src/analytics/` -> `site/analytics/`. The set is not limited to
+//      `analysis-state.js`: the PR also migrated `review-inbox.js`,
+//      `review-dashboard.js` and `review-score-adapter.js`, so each of those is
+//      pinned too. A divergence is reported with the offending file and the
+//      first differing line, so the browser bundle can never silently drift
+//      from its source of truth.
 //   2. Fail-safe un-evaluated dimensions: replaying the empty-container
 //      fixtures (`{ev_comparability:{}}`, `{recommendation_admissibility:{}}`)
 //      must keep the explicit non-evaluated sentinels instead of fabricating a
@@ -34,22 +38,62 @@ const path=require('node:path');
 
 const ROOT=path.resolve(__dirname,'../..');
 const SOURCE=path.join(ROOT,'src/analytics/analysis-state.js');
-const MIRROR=path.join(ROOT,'site/analytics/analysis-state.js');
 
 const State=require(SOURCE);
 
 // ---------------------------------------------------------------------------
-// 1. Byte-for-byte edit source <-> served mirror parity.
+// 1. Byte-for-byte edit source <-> served mirror parity, for every analytics
+//    module the #393 PR migrated. `analysis-state.js` is the shared taxonomy,
+//    but the PR also touched Review Inbox, Review Dashboard and the Review
+//    Score adapter, so all four mirrors are pinned to prevent a partial sync
+//    from shipping a served surface that disagrees with its edit source.
 // ---------------------------------------------------------------------------
+const MIRRORED_ANALYTICS_MODULES=[
+  'analysis-state.js',
+  'review-inbox.js',
+  'review-dashboard.js',
+  'review-score-adapter.js'
+];
+
+// Locate the first differing byte and translate it into a 1-based line and
+// column, so a failure names the exact divergence instead of only its length.
+function locateFirstDifference(source,mirror){
+  const shared=Math.min(source.length,mirror.length);
+  for(let i=0;i<shared;i++){
+    if(source[i]!==mirror[i]) return {offset:i,reason:'byte'};
+  }
+  if(source.length!==mirror.length) return {offset:shared,reason:'length'};
+  return null;
+}
+
+function describeMirrorDivergence(relSource,relMirror,source,mirror){
+  const diff=locateFirstDifference(source,mirror);
+  const sourceLines=source.toString('utf8').split('\n');
+  const mirrorLines=mirror.toString('utf8').split('\n');
+  const lastNewline=source.subarray(0,diff.offset).toString('utf8').lastIndexOf('\n');
+  const line=source.subarray(0,diff.offset).toString('utf8').split('\n').length;
+  const column=diff.offset-(lastNewline+1)+1;
+  const show=lines=>line-1<lines.length?JSON.stringify(lines[line-1]):'<no such line>';
+  return relSource+' and '+relMirror+' diverge: first difference at line '+line+
+    (diff.reason==='length'?', '+relSource+' is '+(source.length<mirror.length?'shorter':'longer')+' (source '+source.length+' bytes, mirror '+mirror.length+' bytes)':', byte '+diff.offset+', column '+column)+
+    '\n    src  ('+relSource+'): '+show(sourceLines)+
+    '\n    site ('+relMirror+'): '+show(mirrorLines);
+}
+
 function assertMirrorParity(){
-  assert.ok(fs.existsSync(SOURCE),'missing edit source: '+SOURCE);
-  assert.ok(fs.existsSync(MIRROR),'missing served mirror: '+MIRROR);
-  const source=fs.readFileSync(SOURCE);
-  const mirror=fs.readFileSync(MIRROR);
-  assert.equal(source.length,mirror.length,
-    'analysis-state source and mirror must have the same byte length ('+SOURCE+' vs '+MIRROR+')');
-  assert.equal(Buffer.compare(source,mirror),0,
-    'src/analytics/analysis-state.js and site/analytics/analysis-state.js must be byte-identical');
+  assert.ok(MIRRORED_ANALYTICS_MODULES.length>0,'the mirrored analytics module list must not be empty');
+  for(const moduleName of MIRRORED_ANALYTICS_MODULES){
+    const relSource=path.posix.join('src/analytics',moduleName);
+    const relMirror=path.posix.join('site/analytics',moduleName);
+    const srcPath=path.join(ROOT,relSource);
+    const mirrorPath=path.join(ROOT,relMirror);
+    assert.ok(fs.existsSync(srcPath),'missing edit source: '+relSource);
+    assert.ok(fs.existsSync(mirrorPath),'missing served mirror: '+relMirror);
+    const source=fs.readFileSync(srcPath);
+    const mirror=fs.readFileSync(mirrorPath);
+    if(Buffer.compare(source,mirror)!==0)
+      assert.fail(describeMirrorDivergence(relSource,relMirror,source,mirror));
+  }
 }
 assertMirrorParity();
 
@@ -181,11 +225,21 @@ assert.ok(fs.existsSync(CI_WORKFLOW),'missing CI configuration: '+CI_WORKFLOW);
 const ciConfig=fs.readFileSync(CI_WORKFLOW,'utf8');
 assert.ok(ciConfig.includes('node '+SELF),
   'CI configuration must execute `node '+SELF+'` (got '+CI_WORKFLOW+')');
+// Every mirrored module must also be a CI trigger path: otherwise a drift in a
+// module the workflow does not watch could merge without ever running this
+// guard.
+for(const moduleName of MIRRORED_ANALYTICS_MODULES){
+  for(const dir of ['src/analytics','site/analytics']){
+    const relPath=dir+'/'+moduleName;
+    assert.ok(ciConfig.includes(relPath),
+      'CI configuration must trigger on `'+relPath+'` so mirror parity is checked when it changes');
+  }
+}
 
 console.log(JSON.stringify({
   status:'PASS',
   schema:State.SCHEMA,
-  mirror_parity:true,
+  mirror_parity:MIRRORED_ANALYTICS_MODULES,
   un_evaluated_fixtures:EMPTY_CONTAINER_FIXTURES.map(fixture=>fixture.label),
   schema_conformance_fixtures:SCHEMA_CONFORMANCE_FIXTURES.map(fixture=>fixture.label),
   computational_status_admits_not_evaluated:PROPS.computational_status.enum.includes('NOT_EVALUATED'),
