@@ -1,5 +1,18 @@
 @import url("./deployment-meta.css");
 
+/* App view shell — one mounted view at a time, Home as the first screen. */
+.app-view-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.app-view-head h1{margin:0}
+.app-view-head .sub{margin:2px 0 0}
+.app-view-back{width:auto;min-width:112px}
+.home-banner{display:flex;flex-direction:column;gap:6px;padding:10px 12px;margin:0 0 14px;border:1px solid var(--border);border-radius:14px;background:rgba(19,26,45,.9)}
+.home-banner .product-identity{margin:0}
+.mode-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:8px 0 6px}
+.mode-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:14px;border:1px solid var(--border);border-radius:14px;background:#0f1729;color:var(--text);cursor:pointer;transition:.15s ease;text-decoration:none}
+.mode-card:hover{border-color:#54658f;background:#141f36}
+.mode-card .mode-card-title{font-size:15px;font-weight:900}
+.mode-card .mode-card-sub{font-size:10px;color:var(--muted);line-height:1.4}
+
 /* Player training view — reuses the replayer table/seat/card primitives from index.html. */
 .trainer-page{width:100%;min-height:100vh;padding:14px 18px 30px}
 .trainer-shell{width:min(1580px,calc(100vw - 36px));margin:0 auto}

@@ -1438,10 +1438,10 @@ function trainerRender(){
 }
 async function trainerOpen(options={}){
   const deferHand=options&&options.deferHand===true;
-  window.pokerComputeScheduler.hold('training',true);trainerState.open=true;state.appView="main";updateAppView();mainPage?.classList.add("mode-hidden");replayerPage?.classList.add("mode-hidden");trainerPage?.classList.remove("mode-hidden");trainerPage?.setAttribute("aria-hidden","false");document.body.classList.add("trainer-view-open");if(quickNav)quickNav.style.display="none";window.scrollTo({top:0,behavior:"auto"});trainerRender();
+  window.pokerComputeScheduler.hold('training',true);trainerState.open=true;state.appView="training";updateAppView();window.scrollTo({top:0,behavior:"auto"});trainerRender();
   if(await trainerEnsureModels()){if(!deferHand&&!trainerState.hand)await trainerNewHand();}
 }
-function trainerClose(){window.pokerComputeScheduler.hold('training',false);trainerState.open=false;trainerPage?.classList.add("mode-hidden");trainerPage?.setAttribute("aria-hidden","true");document.body.classList.remove("trainer-view-open");if(quickNav)quickNav.style.display="";state.appView="main";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
+function trainerClose(){window.pokerComputeScheduler.hold('training',false);trainerState.open=false;state.appView="home";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
 function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));const needGuide=mode==="guided"&&trainerState.hand?.awaitingHero&&!trainerState.recommendation&&!trainerState.busy;trainerRender();if(needGuide)void trainerComputeRecommendation();}
 
 trainerOpenBtn?.addEventListener("click",trainerOpen);

@@ -1147,9 +1147,10 @@
   <a href="#equityLabSection" data-product-domain="equity-lab">Equity Lab</a>
   <a href="#settingsSection" data-product-domain="settings">Settings</a>
 </nav>
-<div id="mainPage" class="wrap">
-  <h1>Review</h1>
-  <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
+<div id="homePage" class="wrap home-page" data-view-shell="home">
+  <h1>Poker Trainer</h1>
+  <div class="sub">Choisissez un mode de travail. Toutes vos données restent dans ce navigateur.</div>
+  <div class="home-banner" aria-label="Contexte actif">
   <div class="product-identity" aria-label="Contexte actif">
     <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
     <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">stratégie indisponible</b> <span id="activeStrategySourceIdentity" class="product-identity-detail">source indisponible · version —</span></span>
@@ -1163,32 +1164,8 @@
     <button id="centralRestorePackBtn" type="button" class="secondary">Revenir au pack actif</button>
     <span id="centralOverrideStatus" class="central-override-status"></span>
   </div>
-  <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
-    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">Données insuffisantes</span></div>
-    <div class="review-dashboard-metrics">
-      <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
-      <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
-      <div class="review-dashboard-metric"><span>Perte EV totale</span><b id="reviewDashboardLoss">0,00 BB</b></div>
-      <div class="review-dashboard-metric"><span>Décisions analysées</span><b id="reviewDashboardAnalyzed">0</b></div>
-    </div>
-    <div class="review-dashboard-focus">
-      <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
-      <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
-    </div>
-    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
-    <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
-  </section>
-  <div class="actions product-home-actions" aria-label="Accès directs">
-    <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
-    <button id="trainerOpenBtn" type="button" class="primary">Training</button>
-    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
-    <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
-  </div>
-  <section id="settingsSection" class="product-settings" aria-label="Settings">
-  <div class="product-settings-title">Settings</div>
-  <div class="product-settings-links"><a href="./packs.html">Packs de population</a><a id="advancedManualImportLink" href="./manual-import.html">Outils avancés / Import manuel</a></div>
   <details id="runtimeIdentityDetails" class="runtime-identity">
-    <summary>Identité du produit</summary>
+    <summary>État runtime</summary>
     <div class="runtime-identity-grid">
       <div>Application<b id="runtimeAppVersion">v83</b></div>
       <div>Engine<b id="runtimeEngineVersion">v83</b></div>
@@ -1198,6 +1175,38 @@
       <div>Provenance / hash<code id="runtimeHashIdentity">—</code></div>
     </div>
   </details>
+  </div>
+  <div class="mode-cards" role="navigation" aria-label="Modes de travail">
+    <button type="button" class="mode-card" data-app-view="review">
+      <span class="mode-card-title">Review</span>
+      <span class="mode-card-sub">Analyser mes mains importées et mes leaks</span>
+    </button>
+    <button type="button" class="mode-card" data-app-view="training">
+      <span class="mode-card-title">Training</span>
+      <span class="mode-card-sub">Session 6-max avec coaching ACTION / SIZING / EV</span>
+    </button>
+    <button type="button" class="mode-card" data-app-view="strategy">
+      <span class="mode-card-title">Stratégie Hero</span>
+      <span class="mode-card-sub">Éditer les ranges Hero de la population active</span>
+    </button>
+    <button type="button" class="mode-card" data-app-view="spotlab">
+      <span class="mode-card-title">Spot Lab</span>
+      <span class="mode-card-sub">Equity Lab · ranges adverses · équité</span>
+    </button>
+    <a class="mode-card" href="./packs.html">
+      <span class="mode-card-title">Packs/paramètres</span>
+      <span class="mode-card-sub">Packs de population et outils avancés</span>
+    </a>
+  </div>
+  <div class="actions product-home-actions" aria-label="Accès directs">
+    <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
+    <button id="trainerOpenBtn" type="button" class="primary">Training</button>
+    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
+    <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
+  </div>
+  <section id="settingsSection" class="product-settings" aria-label="Settings">
+  <div class="product-settings-title">Settings</div>
+  <div class="product-settings-links"><a href="./packs.html">Packs de population</a><a id="advancedManualImportLink" href="./manual-import.html">Outils avancés / Import manuel</a></div>
   <div class="local-persistence">
     <span id="localPersistenceStatus" class="local-persistence-chip busy" role="status" aria-live="polite">Restauration locale…</span>
     <details id="localPersistenceDetails" class="local-persistence-details">
@@ -1214,6 +1223,16 @@
   </div>
   </section>
 
+</div>
+
+<div id="spotlabPage" class="wrap mode-hidden" data-view-shell="spotlab" aria-hidden="true">
+  <div class="app-view-head">
+    <button type="button" class="secondary app-view-back" data-home-back>← Accueil</button>
+    <div>
+      <div class="domain-title">Spot Lab</div>
+      <div class="domain-sub">Calculer une équité indépendante des mains importées : situation, range adverse, résultat.</div>
+    </div>
+  </div>
   <div class="grid">
     <div id="equityLabSection" class="domain-heading wide" aria-labelledby="equityLabTitle">
       <div id="equityLabTitle" class="domain-title">Equity Lab</div>
@@ -1255,98 +1274,6 @@
         <div id="postflopModelStatus" class="status">Sans modèle postflop, les ranges adverses estimées restent conditionnées uniquement par le préflop.</div>
         <div class="population-source-note">Le modèle population maintient une distribution persistante sur les 1326 combos exacts dès le préflop, puis la conditionne après chaque action jusqu’à la river. Les cartes publiques retirent immédiatement les combos bloqués. Board, SPR et prix de la mise adverse sont traités par le modèle postflop. Le bouton « Range adverse » affiche l’état estimé à l’étape courante.</div>
       </div>
-    </section>
-
-    <section id="historiesSection" class="panel wide">
-      <h2>Review</h2>
-      <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
-      <div class="hh-import-primary">
-        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
-        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
-        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
-      </div>
-      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
-      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
-      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
-      <details class="hh-import-advanced">
-        <summary>Options d’import et outils avancés</summary>
-        <div class="hh-import-advanced-body">
-          <div class="hh-import-row">
-            <div class="field">
-              <label for="hhImportMode">Comportement du prochain import</label>
-              <select id="hhImportMode">
-                <option value="replace">Remplacer les mains chargées</option>
-                <option value="add">Ajouter aux mains chargées</option>
-              </select>
-            </div>
-            <div class="actions">
-              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
-              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-              <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
-              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
-            </div>
-          </div>
-          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
-        </div>
-      </details>
-
-      <div id="handSelectionSection" class="hh-selection-section">
-        <div class="hh-selection-title">Inbox de review</div>
-        <div class="review-inbox-primary-tools">
-          <div class="field">
-            <label for="reviewStatusFilter">Statut</label>
-            <select id="reviewStatusFilter">
-              <option value="">Tous</option>
-              <option value="TO_REVIEW">À revoir</option>
-              <option value="REVIEWED">Revue</option>
-              <option value="CORRECT">Correcte</option>
-              <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="reviewAnalysisStateFilter">État d’analyse</label>
-            <select id="reviewAnalysisStateFilter">
-              <option value="">Tous</option>
-              <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
-              <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
-              <option value="CALCUL_EN_COURS">Calcul en cours</option>
-              <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
-              <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
-              <option value="ERREUR_CALCUL">Erreur de calcul</option>
-            </select>
-          </div>
-          <div id="hhListCount" class="hh-list-count">0 main affichée</div>
-        </div>
-        <details class="review-inbox-filters">
-          <summary>Filtres secondaires et raisons techniques</summary>
-          <div class="review-inbox-filter-grid">
-            <div class="field"><label for="reviewCoverageFilter">Couverture (technique)</label><select id="reviewCoverageFilter"><option value="">Toutes</option><option value="COMPLETE">Complète</option><option value="INCOMPLETE">Incomplète</option></select></div>
-            <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
-            <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
-            <div class="field"><label for="reviewSpotFilter">Spot family</label><select id="reviewSpotFilter"><option value="">Tous</option></select></div>
-            <div class="field"><label for="reviewPlayedFilter">Action jouée</label><select id="reviewPlayedFilter"><option value="">Toutes</option></select></div>
-            <div class="field"><label for="reviewRecommendedFilter">Action recommandée</label><select id="reviewRecommendedFilter"><option value="">Toutes</option></select></div>
-            <div class="field"><label for="reviewSizingFilter">Sizing error</label><select id="reviewSizingFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
-            <div class="field"><label for="reviewJamFilter">Jam</label><select id="reviewJamFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
-            <div class="field"><label for="reviewOverbetFilter">Overbet</label><select id="reviewOverbetFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
-            <div class="field">
-              <label for="hhSortSelect">Ordre</label>
-              <select id="hhSortSelect">
-                <option value="review_desc">Perte EV — décroissante</option>
-                <option value="status_asc">Statut</option>
-                <option value="street_asc">Street</option>
-                <option value="position_asc">Position</option>
-                <option value="hand_asc">ID de main</option>
-              </select>
-            </div>
-            <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
-          </div>
-          <div id="reviewInboxReasons" class="review-inbox-reasons">Aucune raison technique.</div>
-        </details>
-        <div id="reviewInboxNotice" class="review-inbox-notice" aria-live="polite"></div>
-        <div id="hhHands" class="hh-list"></div>
-      </div>
-
     </section>
 
     <section id="opponentsSection" class="panel wide">
@@ -1445,7 +1372,145 @@
   </div>
 </div>
 
-<div id="trainerPage" class="trainer-page mode-hidden" aria-hidden="true">
+<div id="mainPage" class="wrap mode-hidden" data-view-shell="review" aria-hidden="true">
+  <div class="app-view-head">
+    <button type="button" class="secondary app-view-back" data-home-back>← Accueil</button>
+    <div>
+      <h1>Review</h1>
+      <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
+    </div>
+  </div>
+  <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
+    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">Données insuffisantes</span></div>
+    <div class="review-dashboard-metrics">
+      <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
+      <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
+      <div class="review-dashboard-metric"><span>Perte EV totale</span><b id="reviewDashboardLoss">0,00 BB</b></div>
+      <div class="review-dashboard-metric"><span>Décisions analysées</span><b id="reviewDashboardAnalyzed">0</b></div>
+    </div>
+    <div class="review-dashboard-focus">
+      <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
+      <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
+    </div>
+    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
+    <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
+  </section>
+  <div class="grid">
+    <section id="historiesSection" class="panel wide">
+      <h2>Review</h2>
+      <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
+      <div class="hh-import-primary">
+        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
+        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
+        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
+      </div>
+      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
+      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
+      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
+      <details class="hh-import-advanced">
+        <summary>Options d’import et outils avancés</summary>
+        <div class="hh-import-advanced-body">
+          <div class="hh-import-row">
+            <div class="field">
+              <label for="hhImportMode">Comportement du prochain import</label>
+              <select id="hhImportMode">
+                <option value="replace">Remplacer les mains chargées</option>
+                <option value="add">Ajouter aux mains chargées</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
+              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+              <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
+              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
+            </div>
+          </div>
+          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
+        </div>
+      </details>
+
+      <div id="handSelectionSection" class="hh-selection-section">
+        <div class="hh-selection-title">Inbox de review</div>
+        <div class="review-inbox-primary-tools">
+          <div class="field">
+            <label for="reviewStatusFilter">Statut</label>
+            <select id="reviewStatusFilter">
+              <option value="">Tous</option>
+              <option value="TO_REVIEW">À revoir</option>
+              <option value="REVIEWED">Revue</option>
+              <option value="CORRECT">Correcte</option>
+              <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reviewAnalysisStateFilter">État d’analyse</label>
+            <select id="reviewAnalysisStateFilter">
+              <option value="">Tous</option>
+              <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
+              <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
+              <option value="CALCUL_EN_COURS">Calcul en cours</option>
+              <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
+              <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
+              <option value="ERREUR_CALCUL">Erreur de calcul</option>
+            </select>
+          </div>
+          <div id="hhListCount" class="hh-list-count">0 main affichée</div>
+        </div>
+        <details class="review-inbox-filters">
+          <summary>Filtres secondaires et raisons techniques</summary>
+          <div class="review-inbox-filter-grid">
+            <div class="field"><label for="reviewCoverageFilter">Couverture (technique)</label><select id="reviewCoverageFilter"><option value="">Toutes</option><option value="COMPLETE">Complète</option><option value="INCOMPLETE">Incomplète</option></select></div>
+            <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewSpotFilter">Spot family</label><select id="reviewSpotFilter"><option value="">Tous</option></select></div>
+            <div class="field"><label for="reviewPlayedFilter">Action jouée</label><select id="reviewPlayedFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewRecommendedFilter">Action recommandée</label><select id="reviewRecommendedFilter"><option value="">Toutes</option></select></div>
+            <div class="field"><label for="reviewSizingFilter">Sizing error</label><select id="reviewSizingFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field"><label for="reviewJamFilter">Jam</label><select id="reviewJamFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field"><label for="reviewOverbetFilter">Overbet</label><select id="reviewOverbetFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+            <div class="field">
+              <label for="hhSortSelect">Ordre</label>
+              <select id="hhSortSelect">
+                <option value="review_desc">Perte EV — décroissante</option>
+                <option value="status_asc">Statut</option>
+                <option value="street_asc">Street</option>
+                <option value="position_asc">Position</option>
+                <option value="hand_asc">ID de main</option>
+              </select>
+            </div>
+            <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
+          </div>
+          <div id="reviewInboxReasons" class="review-inbox-reasons">Aucune raison technique.</div>
+        </details>
+        <div id="reviewInboxNotice" class="review-inbox-notice" aria-live="polite"></div>
+        <div id="hhHands" class="hh-list"></div>
+      </div>
+
+    </section>
+  </div>
+</div>
+
+<div id="strategyPage" class="wrap mode-hidden" data-view-shell="strategy" aria-hidden="true">
+  <div class="app-view-head">
+    <button type="button" class="secondary app-view-back" data-home-back>← Accueil</button>
+    <div>
+      <h1>Stratégie Hero</h1>
+      <div class="sub">Sélection et édition des ranges Hero de la population active.</div>
+    </div>
+  </div>
+  <section class="panel wide">
+    <h2>Stratégie Hero de la population active</h2>
+    <div class="runtime-identity-grid">
+      <div>Population<b id="strategyPagePopulation">—</b></div>
+      <div>Stratégie Hero<b id="strategyPageStrategy">—</b></div>
+      <div>Source / version<b id="strategyPageSource">—</b></div>
+    </div>
+    <div class="actions" style="margin-top:10px"><a id="strategyPageEditorLink" class="filelabel" href="./hero-ranges.html" style="width:auto;text-decoration:none">Ouvrir l’éditeur de ranges Hero</a></div>
+    <div class="tiny" style="margin-top:8px">La Stratégie Hero décrit la politique de référence utilisée par la Review, le Training et le Spot Lab. L’éditeur s’ouvre dans un espace dédié (hero-ranges.html) ; l’Accueil reste accessible à tout moment.</div>
+  </section>
+</div>
+
+<div id="trainerPage" class="trainer-page mode-hidden" data-view-shell="training" aria-hidden="true">
   <div class="trainer-shell">
     <div class="trainer-head">
       <button id="trainerBackBtn" type="button" class="secondary">← Accueil</button>
@@ -1524,9 +1589,10 @@
   </div>
 </div>
 
-<div id="replayerPage" class="replayer-page mode-hidden" aria-hidden="true">
+<div id="replayerPage" class="replayer-page mode-hidden" data-view-shell="replayer" aria-hidden="true">
   <div class="replayer-page-shell">
     <div class="replayer-page-head">
+      <button id="replayerHomeBtn" type="button" class="secondary" style="width:auto;min-width:110px;padding:8px 12px" data-home-back>← Accueil</button>
       <button id="replayerBackBtn" type="button" class="secondary replayer-back-btn">← Retour aux mains</button>
       <button id="replayerExportBtn" type="button" class="secondary replayer-export-btn" title="Copier un export JSON complet de cette main pour analyse par une IA">Exporter pour IA</button>
       <span id="replayerExportStatus" class="replayer-export-status" aria-live="polite"></span>
@@ -1646,7 +1712,8 @@ const state = {
   reviewBatchRun:null,
   hhImportMode:"replace",
   hhMode:false,
-  appView:"main",
+  appView:"home",
+  restoredAppView:null,
   knownHandsMode:false,
   selectedHand:null,
   hhFullBoard:[],
@@ -1698,7 +1765,9 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"), hhImportEffect=$("hhImportEffect"),
       hhWatchBtn=$("hhWatchBtn"), hhWatchStopBtn=$("hhWatchStopBtn"), hhWatchStatus=$("hhWatchStatus"),
       hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
-      mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
+      homePage=$("homePage"), mainPage=$("mainPage"), spotlabPage=$("spotlabPage"), strategyPage=$("strategyPage"),
+      strategyPagePopulation=$("strategyPagePopulation"), strategyPageStrategy=$("strategyPageStrategy"), strategyPageSource=$("strategyPageSource"),
+      replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
       reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
@@ -1990,14 +2059,18 @@ function productHeroStrategyIdentityText(resolution){
   if(status==="RETAIN_REFERENCE")return {identity:"Stratégie indisponible pour cette population",source:`provenance ${resolution.source||"POPULATION"} · référence ${strategyId||"sans identifiant"} retenue non admissible`,version};
   return fallback;
 }
-function updateProductIdentityUi(){
+function productPopulationIdentityText(){
   let population="";
   if(typeof trainerState!=="undefined"&&trainerState?.populationId) population=String(trainerState.populationId);
   else if(state.populationModelMeta?.name) population=compactIdentityName(state.populationModelMeta.name);
   const packIdentity=state.manualOverrideContract?.base_active_pack||null;
   if(!population&&packIdentity?.population_id)population=String(packIdentity.population_id);
   if(!population&&packIdentity?.id==="embedded-fallback")population="fallback embarqué";
-  if(activePopulationIdentity) activePopulationIdentity.textContent=population||"non chargée";
+  return population||"non chargée";
+}
+function updateProductIdentityUi(){
+  const population=productPopulationIdentityText();
+  if(activePopulationIdentity) activePopulationIdentity.textContent=population;
 
   const resolution=productHeroStrategyResolution();
   const strategy=productHeroStrategyIdentityText(resolution);
@@ -2023,6 +2096,7 @@ function updateProductIdentityUi(){
   if(runtimeModelBIdentity){
     runtimeModelBIdentity.textContent=(typeof trainerState!=="undefined"&&trainerState?.modelB)?"v2 · chargé":"v2 · chargé à l’ouverture du Training";
   }
+  appViewUpdateIdentityMirror();
 }
 async function loadRuntimeReleaseIdentity(){
   try{
@@ -6386,23 +6460,89 @@ async function exportCurrentHandForAi(){
   }
 }
 
-function updateAppView({scrollTop=false}={}){
-  window.pokerComputeScheduler.hold('replayer',state.appView==='replayer');
-  const showReplay=state.appView==='replayer'&&state.hhMode&&!!state.selectedHand;
-  mainPage?.classList.toggle('mode-hidden',showReplay);
-  replayerPage?.classList.toggle('mode-hidden',!showReplay);
-  replayerPage?.setAttribute('aria-hidden',showReplay?'false':'true');
-  quickNav?.classList.toggle('mode-hidden',showReplay);
-  document.body.classList.toggle('replayer-view-open',showReplay);
-  if(replayerPageSub){
-    const h=state.selectedHand;
-    replayerPageSub.textContent=h?(()=>{const r=reviewSummaryForHand(h);return `Main #${h.id} · ${h.dateText} · ${h.heroName} · ${handStreetLabel(h)}${r?` · Revue ΣΔEV ${formatBB(r.totalLossBB)}${r.complete?'':' (partiel)'}`:''}`;})():'Aucune main sélectionnée.';
+const APP_VIEWS=["home","review","replayer","spotlab","training","strategy"];
+function currentAppView(){
+  return APP_VIEWS.includes(state.appView)?state.appView:"home";
+}
+function setAppView(view,{scrollTop=false,persist=true}={}){
+  if(!APP_VIEWS.includes(view)) return currentAppView();
+  state.appView=view;
+  if(persist) schedulePersistPrefs(30);
+  updateAppView({scrollTop});
+  return view;
+}
+function goHome(){
+  if(state.hhMode) leaveHistoryMode();
+  return setAppView("home",{scrollTop:true});
+}
+function appViewUpdateIdentityMirror(){
+  if(!strategyPageStrategy) return;
+  const resolution=productHeroStrategyResolution();
+  const strategy=productHeroStrategyIdentityText(resolution);
+  if(strategyPagePopulation) strategyPagePopulation.textContent=productPopulationIdentityText();
+  strategyPageStrategy.textContent=strategy.identity;
+  if(strategyPageSource) strategyPageSource.textContent=`${strategy.source} · version ${strategy.version}`;
+}
+function appViewForHashTarget(id){
+  const map={
+    review:"review", reviewDashboard:"review", historiesSection:"review", handSelectionSection:"review", reviewInboxSummary:"review",
+    training:"training", trainerPage:"training",
+    spotlab:"spotlab", equityLabSection:"spotlab", rangesSection:"spotlab", opponentsSection:"spotlab", cardsSection:"spotlab", rangeDisplaySection:"spotlab", equitySection:"spotlab",
+    home:"home", homePage:"home", settingsSection:"home", runtimeIdentityDetails:"home", localPersistenceDetails:"home",
+    strategy:"strategy", strategyPage:"strategy",
+    replayer:"replayer", replayerPage:"replayer", replayerSection:"replayer"
+  };
+  return map[String(id||"")]||null;
+}
+function openAppView(view,{scrollTop=false}={}){
+  if(view==="training"){
+    // The Trainer owns its own runtime bootstrap; opening it settles appView.
+    if(typeof trainerOpenBtn!=="undefined"&&trainerOpenBtn){trainerOpenBtn.click();return "training";}
+    return setAppView("training",{scrollTop});
   }
-  if(showReplay){
+  if(view==="replayer"&&!state.selectedHand) return null;
+  return setAppView(view,{scrollTop});
+}
+function focusAppSection(id){
+  const view=appViewForHashTarget(id);
+  if(view) openAppView(view);
+  requestAnimationFrame(()=>{
+    const target=document.getElementById(id);
+    target?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+}
+function routeFromHash(){
+  const id=String(window.location.hash||"").replace(/^#/,"");
+  const view=appViewForHashTarget(id);
+  if(!view) return null;
+  focusAppSection(id);
+  return view;
+}
+function updateAppView({scrollTop=false}={}){
+  const view=currentAppView();
+  const showReplay=view==='replayer'&&state.hhMode&&!!state.selectedHand;
+  const mount=showReplay?'replayer':view;
+  window.pokerComputeScheduler.hold('replayer',mount==='replayer');
+  window.pokerComputeScheduler.hold('training',mount==='training');
+  document.querySelectorAll('[data-view-shell]').forEach(el=>{
+    const on=el.dataset.viewShell===mount;
+    el.classList.toggle('mode-hidden',!on);
+    el.setAttribute('aria-hidden',on?'false':'true');
+  });
+  quickNav?.classList.toggle('mode-hidden',mount==='replayer'||mount==='training');
+  document.body.classList.toggle('replayer-view-open',mount==='replayer');
+  document.body.classList.toggle('trainer-view-open',mount==='training');
+  document.body.dataset.appView=mount;
+  if(mount==='replayer'){
+    if(replayerPageSub){
+      const h=state.selectedHand;
+      replayerPageSub.textContent=h?(()=>{const r=reviewSummaryForHand(h);return `Main #${h.id} · ${h.dateText} · ${h.heroName} · ${handStreetLabel(h)}${r?` · Revue ΣΔEV ${formatBB(r.totalLossBB)}${r.complete?'':' (partiel)'}`:''}`;})():'Aucune main sélectionnée.';
+    }
     renderVisualReplay();
     renderHistoryReplay();
-    if(scrollTop) requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
   }
+  if(mount==='strategy') appViewUpdateIdentityMirror();
+  if(scrollTop) requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
 }
 function openReplayerPage({scrollTop=true}={}){
   if(!state.hhMode||!state.selectedHand)return;
@@ -6415,7 +6555,7 @@ function returnToHandsPage(){
   // selectedHand and imported HH data are intentionally preserved for a later reopen.
   if(state.hhMode) leaveHistoryMode();
   else{
-    state.appView='main';
+    state.appView='review';
     schedulePersistPrefs(30);
     updateAppView();
   }
@@ -6428,7 +6568,9 @@ function returnToHandsPage(){
 function leaveHistoryMode(){
   // Internal scientific/reconstruction context only; there is no user-facing HH mode.
   state.hhMode=false;
-  state.appView="main";
+  // Leaving Review returns to the owning view: the Replayer hands back to the
+  // Review inbox, while clearing cards from Spot Lab stays in Spot Lab.
+  if(state.appView==="replayer") state.appView="review";
   state.knownHandsMode=false;
   schedulePersistPrefs();
   state.hhFullBoard=[];
@@ -6628,7 +6770,7 @@ async function clearLoadedHands({persist=true,reason="Mains vidées."}={}){
   state.hhHands=[];
   state.hhSourceSnapshots=[];
   state.selectedHand=null;
-  state.appView="main";
+  state.appView="review";
   state.hhFullBoard=[];
   state.replaySteps=[];
   state.replayIndex=0;
@@ -9141,7 +9283,7 @@ async function restoreLocalState(){
       if(["review_desc","status_asc","street_asc","position_asc","hand_asc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
       state.hhKnownOnly=!!prefs.hhKnownOnly;
       if(["replace","add"].includes(prefs.hhImportMode)) state.hhImportMode=prefs.hhImportMode;
-      if(["main","replayer"].includes(prefs.appView)) state.appView=prefs.appView;
+      if(APP_VIEWS.includes(prefs.appView)) state.restoredAppView=prefs.appView;
       state.quickNavCollapsed=!!prefs.quickNavCollapsed;
       updateQuickNavUi();
     }
@@ -9176,9 +9318,11 @@ async function restoreLocalState(){
       loadSelectedHistoryHand(false);
       openReplayerPage({scrollTop:false});
     }else{
-      // A remembered hand may stay selected, but main view is always the independent Equity Lab context.
+      // A remembered hand may stay selected; the rest of the time the last mode
+      // is restored, with Home as the safe default (Training needs its runtime).
       state.hhMode=false;
-      state.appView='main';
+      const restored=state.restoredAppView;
+      state.appView=["home","review","spotlab","strategy"].includes(restored)?restored:"home";
       updateAppView();
       updateHistoryUi();
     }
@@ -9198,6 +9342,7 @@ async function restoreLocalState(){
     updateHistoryUi();
     updateRangeEditionUi();
     updateCalcReady();
+    routeFromHash();
     if(state.hhMode&&state.selectedHand) scheduleAutoCalculate(120);
     if(state.appView!=="replayer")scheduleBackgroundReviewScoring(250);
     await refreshCentralManualOverrideState(state.manualOverrideContract);
@@ -9234,6 +9379,12 @@ updateAppView();
 document.querySelectorAll(".quick-nav a").forEach(a=>{
   a.addEventListener("click",e=>{
     const href=a.getAttribute("href")||"";
+    const domain=a.dataset.productDomain||"";
+    if(domain==="strategy"){
+      e.preventDefault();
+      openAppView("strategy",{scrollTop:true});
+      return;
+    }
     if(!href.startsWith("#")) return;
     e.preventDefault();
     const id=href.slice(1);
@@ -9241,12 +9392,30 @@ document.querySelectorAll(".quick-nav a").forEach(a=>{
       trainerOpenBtn?.click();
       return;
     }
-    if(state.appView==="replayer"){state.appView="main";state.hhMode=false;updateAppView();}
-    const target=id?document.getElementById(id):null;
-    if(!target)return;
-    requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
+    focusAppSection(id);
   });
 });
+document.querySelectorAll(".mode-card[data-app-view]").forEach(card=>{
+  card.addEventListener("click",e=>{
+    const view=card.dataset.appView;
+    if(!APP_VIEWS.includes(view)) return;
+    e.preventDefault();
+    openAppView(view,{scrollTop:true});
+  });
+});
+document.querySelectorAll("[data-home-back]").forEach(btn=>{
+  btn.addEventListener("click",()=>goHome());
+});
+document.addEventListener("click",e=>{
+  const link=e.target?.closest?.('a[href^="#"]');
+  if(!link||link.closest("#quickNav")) return;
+  const id=(link.getAttribute("href")||"").slice(1);
+  if(!id||!appViewForHashTarget(id)) return;
+  e.preventDefault();
+  focusAppSection(id);
+  try{history.replaceState(null,"",`#${id}`);}catch(_){}
+});
+window.addEventListener("hashchange",()=>{routeFromHash();});
 updateCalcReady();
 populationModelUi();
 restoreLocalState();

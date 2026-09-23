@@ -28,6 +28,31 @@ def main() -> None:
     for legacy in ('Replayer', 'Adversaires', 'Cartes', 'Range adverse', '>Calcul</a>'):
         assert legacy not in nav, legacy
 
+    # The App shell owns the view state: state.appView is the single source of
+    # truth and covers every mode, Home included.
+    assert 'appView:"home"' in INDEX
+    assert 'const APP_VIEWS=["home","review","replayer","spotlab","training","strategy"];' in INDEX
+    assert 'function updateAppView(' in INDEX
+    assert "document.querySelectorAll('[data-view-shell]').forEach" in INDEX
+    for view in ('home', 'review', 'spotlab', 'training', 'replayer', 'strategy'):
+        assert f'data-view-shell="{view}"' in INDEX, view
+    assert 'id="homePage"' in INDEX
+    assert 'id="spotlabPage"' in INDEX
+    assert 'id="strategyPage"' in INDEX
+
+    # Home is the landed mode screen with the five mode cards.
+    home = block('<div id="homePage"', '<div id="mainPage"')
+    for label in ('Review', 'Training', 'Stratégie Hero', 'Spot Lab', 'Packs/paramètres'):
+        assert f'<span class="mode-card-title">{label}</span>' in home, (label, home)
+    assert home.count('class="mode-card"') == 5, home
+    for view in ('review', 'training', 'strategy', 'spotlab'):
+        assert f'data-app-view="{view}"' in home, view
+
+    # The compact Home banner reuses the shared identity/runtime surfaces.
+    banner = block('<div class="home-banner"', '<div class="mode-cards"')
+    for identity_id in ('activePopulationIdentity', 'activeStrategyIdentity', 'activeStrategySourceIdentity', 'runtimeIdentityDetails'):
+        assert f'id="{identity_id}"' in banner, identity_id
+
     # Functionality remains present under Review / Equity Lab instead of being deleted.
     for element_id in ('replayerSection', 'opponentsSection', 'cardsSection', 'rangeDisplaySection', 'equitySection'):
         assert f'id="{element_id}"' in INDEX, element_id
@@ -35,6 +60,16 @@ def main() -> None:
     assert 'id="settingsSection"' in INDEX
     assert 'id="runtimeIdentityDetails"' in INDEX
     assert 'id="localPersistenceDetails"' in INDEX
+    assert 'id="reviewDashboard"' in INDEX
+    assert 'id="historiesSection"' in INDEX
+
+    # Review and Spot Lab are distinct mounts: the inbox lives under Review, the
+    # equity workspace under Spot Lab, independent from the scroll position.
+    review = block('<div id="mainPage"', '<div id="strategyPage"')
+    assert 'id="reviewDashboard"' in review and 'id="historiesSection"' in review, review
+    spotlab = block('<div id="spotlabPage"', '<div id="mainPage"')
+    assert 'id="equityLabSection"' in spotlab and 'id="opponentsSection"' in spotlab, spotlab
+    assert 'id="historiesSection"' not in spotlab, spotlab
 
     # Packs are secondary Settings content, never a sixth primary destination.
     settings = block('<section id="settingsSection"', '</section>')
@@ -42,16 +77,30 @@ def main() -> None:
     assert 'Packs de population' not in nav
 
     # Main entry points mirror the four core user intentions.
-    home = block('<div class="actions product-home-actions"', '</div>')
+    home_actions = block('<div class="actions product-home-actions"', '</div>')
     for label in ('Review', 'Training', 'Strategy', 'Equity Lab'):
-        assert label in home, (label, home)
+        assert label in home_actions, (label, home_actions)
 
-    # Hash navigation is handled in-app; Strategy remains a normal page URL.
+    # quickNav and the mode cards route through appView instead of scrolling; the
+    # strategy domain is an in-app mode and #hash deep links are mapped too.
     handler = block('document.querySelectorAll(".quick-nav a").forEach', 'updateCalcReady();')
     assert 'if(!href.startsWith("#")) return;' in handler
     assert 'if(id==="trainerPage")' in handler
     assert 'trainerOpenBtn?.click()' in handler
-    assert "id==='replayerSection'" not in handler
+    assert 'openAppView(' in handler
+    assert 'focusAppSection(' in handler
+    assert 'appViewForHashTarget' in INDEX
+    assert 'window.addEventListener("hashchange"' in INDEX
+    assert 'routeFromHash();' in INDEX
+    assert 'data-home-back' in INDEX
+    assert 'function goHome()' in INDEX
+
+    # appView is persisted through the prefs whitelist and restored on load.
+    prefs = block('function currentLocalPrefs()', 'function schedulePersistPrefs')
+    assert 'appView:state.appView' in prefs
+    restore = block('async function restoreLocalState', 'renderSlots();')
+    assert 'APP_VIEWS.includes(prefs.appView)' in restore
+    assert 'prefs?.appView==="replayer"&&state.selectedHand' in restore
 
     print('product architecture contract checks: OK')
 
