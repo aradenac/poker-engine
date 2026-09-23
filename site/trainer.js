@@ -536,7 +536,7 @@ function trainerTargetEvent(detail,row,actual){
   if(!t.active||!t.plan||!scenario||!hand)return null;
   const {Leak,Selector}=trainerTargetApis(),chosen=Number(detail?.chosenEV),best=Number(detail?.bestEV),comparable=detail?.comparable!==false&&Number.isFinite(chosen)&&Number.isFinite(best);
   const played=String(actual?.kind||row?.played||"UNKNOWN").toUpperCase(),recommended=String(scenario.policy?.recommended_action||"UNKNOWN").toUpperCase();
-  const cost=Number(actual?.cost)||0,potBefore=Math.max(.01,Number(hand.pot)||0),bestCost=Number(detail?.bestCostBB),rawLoss=Math.max(0,Number(detail?.rawLossBB)||0),effectiveLoss=Math.max(0,Number(row?.lossBB)||0);
+  const cost=Number(actual?.cost)||0,potBefore=Math.max(.01,Number(hand.pot)||0),bestCost=detail?.bestCostBB!=null?Number(detail.bestCostBB):NaN,rawLoss=Math.max(0,Number(detail?.rawLossBB)||0),effectiveLoss=Math.max(0,Number(row?.lossBB)||0);
   const aggressive=["BET","RAISE"].includes(played),playedRatio=aggressive?cost/potBefore:null,allIn=cost>=Number(hand.stacks[hand.heroSeat]||0)-1e-8&&cost>0;
   const event=Leak.buildDecisionEvent({
     hand_id:`trainer-target-${hand.id}-${t.currentIndex+1}`,decision_id:`trainer-target:${hand.id}:${hand.decisionNo}`,timestamp:new Date(Date.now()+t.events.length).toISOString(),
@@ -912,16 +912,86 @@ function trainerPreflopPlayedAction(actual,view){
   if(action==="BET")return {action:"RAISE",target_total_bb:Number(actual.target)};
   return {action};
 }
+/* #393 T5 — Training preflop labels (#393 T2 module).
+   The shared `poker-analysis-state/v1` module is the single source of truth for
+   the user-facing preflop state. The historical `SPOT_NON_COUVERT` /
+   `ACTIVE_REFERENCE_SCOPE_UNSUPPORTED` codes stay as machine-readable reason
+   codes, while the displayed primary label is always the taxonomy state. The
+   detailed reason codes and the separated technical dimensions are only emitted
+   by `trainerAnalysisDimensionsHtml` inside the secondary feedback panel.
+   The deliberate v1 flop-only Hero-decision boundary (#206) is unchanged: this
+   only relabels the preflop reference surface. */
+function trainerAnalysisModule(){
+  const Module=window.PokerAnalysisState;
+  return Module&&typeof Module.mapAnalysisState==="function"?Module:null;
+}
+function trainerTaxonomyLabel(state){
+  const key=String(state||"").trim().toUpperCase();
+  if(!key)return "";
+  const Inbox=window.PokerReviewInbox;
+  if(Inbox){
+    if(typeof Inbox.analysisStateLabel==="function"){
+      const label=Inbox.analysisStateLabel(key);
+      // Only a real user-facing label is accepted: the primary label is the
+      // taxonomy state, never the raw technical enum code echoed back.
+      if(label&&String(label).trim().toUpperCase()!==key)return String(label).trim();
+    }
+    const labels=Inbox.ANALYSIS_STATE_LABELS;
+    if(labels&&labels[key])return labels[key];
+  }
+  return "";
+}
+// The canonical preflop decision already carries the shared dimensions
+// (`coverage_state`, `reason_codes`, `recommendation_admissibility`,
+// `ev_comparable`): feed them to the module untouched.
+function trainerPreflopAnalysis(decision){
+  const Module=trainerAnalysisModule();
+  if(!Module||!decision)return null;
+  return Module.mapAnalysisState(decision);
+}
+// Primary taxonomy view. Rule D6: the EV/recommendation fields are only exposed
+// when the module reports both `recommendation_admissibility.admissible` and
+// `ev_comparability.comparable`. Any other combination stays taxonomy-labelled.
+function trainerPreflopDecisionView(decision){
+  const analysis=trainerPreflopAnalysis(decision);
+  const admissible=analysis?.recommendation_admissibility?.admissible===true;
+  const comparable=analysis?.ev_comparability?.comparable===true;
+  return {
+    analysis,
+    taxonomy_state:analysis?.state||null,
+    taxonomy_label:trainerTaxonomyLabel(analysis?.state||""),
+    admissible,ev_comparable:comparable,show_ev:admissible&&comparable
+  };
+}
+// Secondary/technical view: reason codes and the separated dimensions are only
+// rendered here, never as a primary label.
+function trainerAnalysisDimensionsHtml(analysis){
+  if(!analysis)return "";
+  const admissibility=analysis.recommendation_admissibility||{},comparability=analysis.ev_comparability||{},support=analysis.statistical_support||{},error=analysis.error||{};
+  const codes=(analysis.reason_codes||[]).join(", ")||"—";
+  const errorText=error.type?` · erreur ${escapeHtml(error.type)} (retryable ${escapeHtml(String(error.retryable))})`:"";
+  return `<div class="trainer-feedback-body" data-analysis-detail="1">Détails techniques · état ${escapeHtml(analysis.state)} · raisons ${escapeHtml(codes)} · support ${Number(support.observations)||0} obs / ${Number(support.distinct_hands)||0} mains · modèle ${escapeHtml(analysis.model_support_status||"—")} · calcul ${escapeHtml(analysis.computational_status||"—")} · EV comparable ${escapeHtml(String(comparability.comparable))}${comparability.reason?` (${escapeHtml(comparability.reason)})`:""} · recommandation ${escapeHtml(String(admissibility.admissible))}${admissibility.status?` (${escapeHtml(admissibility.status)})`:""} · posterior ${escapeHtml(analysis.posterior_availability||"—")}${errorText}.</div>`;
+}
+function trainerPreflopTaxonomyLabel(decision){
+  const label=trainerPreflopDecisionView(decision).taxonomy_label;
+  return label||"Spot non supporté";
+}
 function trainerDetailFromPreflopDecision(decision,referenceCallEV=null){
-  const runtime=window.PokerPreflopRuntime,covered=runtime?.isCovered(decision);
-  const bestEV=Number(decision?.recommended_ev_bb),playedEV=Number(decision?.played_ev_bb),comparable=!!decision?.ev_comparable;
-  const loss=covered&&comparable&&Number.isFinite(bestEV)&&Number.isFinite(playedEV)?Math.max(0,bestEV-playedEV):0;
+  // Rule D6: `view.show_ev` (admissible && comparable) is the single canonical
+  // gate. When it is closed the detail carries no usable Hero recommendation:
+  // bestEV/played EV are NaN, bestLabel degrades to the shared taxonomy label,
+  // the recommended sizing is null and every ΔEV needing the recommended
+  // reference stays 0. No local covered/comparable recombination is used here.
+  const view=trainerPreflopDecisionView(decision);
+  const bestEV=Number(decision?.recommended_ev_bb),playedEV=Number(decision?.played_ev_bb);
+  const loss=view.show_ev&&Number.isFinite(bestEV)&&Number.isFinite(playedEV)?Math.max(0,bestEV-playedEV):0;
   return {
     preflopDecision:decision,referenceCallEV:Number.isFinite(Number(referenceCallEV))?Number(referenceCallEV):null,
-    bestLabel:covered?String(decision.recommended_action||"—"):"SPOT_NON_COUVERT",
-    bestCostBB:covered&&Number.isFinite(Number(decision.incremental_cost_bb))?Number(decision.incremental_cost_bb):null,
-    bestEV:covered&&Number.isFinite(bestEV)?bestEV:NaN,chosenEV:comparable&&Number.isFinite(playedEV)?playedEV:NaN,
-    lossBB:loss,rawLossBB:loss,withinNoise:false,comparable,unsupported:!covered
+    taxonomy_state:view.taxonomy_state,taxonomy_label:view.taxonomy_label,analysis:view.analysis,
+    bestLabel:view.show_ev?String(decision.recommended_action||"—"):(view.taxonomy_label||"Spot non supporté"),
+    bestCostBB:view.show_ev&&Number.isFinite(Number(decision.incremental_cost_bb))?Number(decision.incremental_cost_bb):null,
+    bestEV:view.show_ev&&Number.isFinite(bestEV)?bestEV:NaN,chosenEV:view.show_ev&&Number.isFinite(playedEV)?playedEV:NaN,
+    lossBB:loss,rawLossBB:loss,withinNoise:false,comparable:view.ev_comparable,showEV:view.show_ev,unsupported:!view.admissible
   };
 }
 async function trainerComputePreflopReference(hand,actual=null,guide=null){
@@ -963,7 +1033,7 @@ async function trainerComputeRecommendation(){
       ?await trainerComputePreflopReference(hand)
       :await (async()=>{const ph=trainerPlaceholderLine(hand);return trainerTimedReviewText(trainerBuildReviewHH(hand,ph.line,ph.kind,ph.cost));})();
     trainerState.recommendation=detail;
-    const stateText=detail?.preflopDecision&&!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision)?" · SPOT_NON_COUVERT":"";
+    const stateText=detail?.preflopDecision&&!trainerPreflopDecisionView(detail.preflopDecision).show_ev?` · ${trainerPreflopTaxonomyLabel(detail.preflopDecision)}`:"";
     trainerRenderStatus(`À vous de jouer${stateText} · calcul ${trainerState.perf.lastMs.toFixed(0)} ms.`);
   }
   catch(err){trainerRenderStatus(`Recommandation indisponible : ${err.message}`,"error");trainerState.recommendation={error:err.message};}
@@ -978,20 +1048,25 @@ function trainerActualLine(hand,kind,cost){
   const minTarget=hand.currentBet+Math.max(hand.lastRaise,1),target=Math.min(paid+remaining,Math.max(minTarget,paid+(Number(cost)||toCall+hand.lastRaise))),c=target-paid,inc=target-hand.currentBet;return {line:trainerActionLine(hand,s,"RAISE",c,target,inc),kind:"RAISE",cost:c,target};
 }
 function trainerDecisionClass(detail){
-  if(detail?.preflopDecision&&(!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision)||!detail.preflopDecision.ev_comparable))return "unknown";
+  if(detail?.preflopDecision&&!trainerPreflopDecisionView(detail.preflopDecision).show_ev)return "unknown";
   const rawLoss=Math.max(0,Number(detail?.rawLossBB??detail?.lossBB)||0),effectiveLoss=Math.max(0,Number(detail?.lossBB)||0);
   const quality=TrainerActionSizingEV.qualityFromEV({lossEVBB:rawLoss,effectiveLossEVBB:effectiveLoss,withinNoise:!!detail?.withinNoise});
   return quality.key==="unknown"?"close":quality.key;
 }
 function trainerRecordDecision(detail,playedKind,playedCost){
-  const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail),row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:detail?.bestLabel||"—",bestCostBB:Number.isFinite(Number(detail?.bestCostBB))?Number(detail.bestCostBB):null,bestEV:Number(detail?.bestEV),chosenEV:Number(detail?.chosenEV),lossBB:loss,withinNoise:!!detail?.withinNoise,cls,comparable:detail?.preflopDecision?!!detail.preflopDecision.ev_comparable:true,covered:detail?.preflopDecision?!!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision):true};
+  const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail);
+  // One canonical derivation for the whole row. A preflop detail is gated by
+  // D6 (`view.show_ev`); when the gate is closed the row carries no Hero
+  // recommendation payload (no best label, sizing or best/chosen EV).
+  const view=detail?.preflopDecision?trainerPreflopDecisionView(detail.preflopDecision):null,showEV=view?view.show_ev:true;
+  const row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:showEV?(detail?.bestLabel||"—"):"—",bestCostBB:showEV&&Number.isFinite(Number(detail?.bestCostBB))&&detail?.bestCostBB!=null?Number(detail.bestCostBB):null,bestEV:showEV?Number(detail?.bestEV):NaN,chosenEV:showEV?Number(detail?.chosenEV):NaN,lossBB:loss,withinNoise:!!detail?.withinNoise,cls,comparable:view?!!view.ev_comparable:true,covered:view?view.admissible:true,analysis_state:detail?.taxonomy_state||null,analysis_reason_codes:Array.isArray(detail?.analysis?.reason_codes)?detail.analysis.reason_codes.slice():[]};
   const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else if(cls==="poor")s.poor++;
   const key=`${row.position} · ${row.street}`;const b=s.breakdown[key]||(s.breakdown[key]={n:0,loss:0});b.n++;b.loss+=loss;trainerState.testLog.unshift(row);return row;
 }
 function trainerDecisionCanonical(detail,row){
   if(!detail||!row)return null;
   const source=detail?.decisionSummary?.schema==="decision-summary/v1"?JSON.parse(JSON.stringify(detail.decisionSummary)):null;
-  const chosenEV=Number(detail.chosenEV),bestEV=Number(detail.bestEV),bestCost=Number(detail.bestCostBB),playedCost=Number(row.cost);
+  const chosenEV=Number(detail.chosenEV),bestEV=Number(detail.bestEV),bestCost=detail.bestCostBB!=null?Number(detail.bestCostBB):NaN,playedCost=Number(row.cost);
   const family=x=>{const s=String(x||"").toUpperCase();if(s.includes("FOLD"))return "FOLD";if(s.includes("CHECK"))return "CHECK";if(s.includes("CALL"))return "CALL";if(s.includes("RAISE")||s.includes("JAM"))return "RAISE";if(s.includes("BET"))return "BET";return s;};
   const playedLabel=String(row.played||"—").toUpperCase(),recommendedLabel=String(detail.bestLabel||source?.recommended?.label||"—");
   const sizing=(label,cost)=>{const k=family(label);if(k==="FOLD"||k==="CHECK")return "0 BB";return Number.isFinite(cost)?trainerFmtBB(cost):"—";};
@@ -1008,7 +1083,11 @@ function trainerDecisionCanonical(detail,row){
 function trainerRecommendationKind(hand,rec){
   if(!hand||!rec||rec.error)return "";
   if(rec.preflopDecision){
-    if(!window.PokerPreflopRuntime?.isCovered(rec.preflopDecision))return "";
+    // The guided action target is gated by the canonical admissibility
+    // dimension (`view.admissible`, the admissibility half of D6). The EV and
+    // recommended-sizing exposure stays gated by `view.show_ev` in the render
+    // paths; no local covered/ev_comparable rule is recombined here.
+    if(!trainerPreflopDecisionView(rec.preflopDecision).admissible)return "";
     const action=String(rec.preflopDecision.recommended_action||"").toUpperCase();
     return action==="LIMP"?"CALL":action;
   }
@@ -1040,11 +1119,18 @@ function trainerGuidedClickCost(kind){
   const raw=trainerSizingValue(),rec=trainerState.recommendation,hand=trainerState.hand,k=String(kind||"").toUpperCase();
   if(trainerState.mode!=="guided"||trainerState.sizingTouched||!rec||rec.error||!["BET","RAISE"].includes(k))return raw;
   if(trainerRecommendationKind(hand,rec)!==k)return raw;
-  const best=Number(rec.bestCostBB);return Number.isFinite(best)?best:raw;
+  // The recommended sizing is a D6 Hero field: never reuse it when the gate is
+  // closed (e.g. admissible but not comparable). Fall back to the raw input.
+  if(rec.preflopDecision&&!trainerPreflopDecisionView(rec.preflopDecision).show_ev)return raw;
+  const best=rec.bestCostBB!=null?Number(rec.bestCostBB):NaN;return Number.isFinite(best)?best:raw;
 }
 function trainerReuseBestAsPlayed(rec){
   const d=JSON.parse(JSON.stringify(rec));
-  d.chosenEV=Number(d.bestEV);d.lossBB=0;d.withinNoise=true;
+  // Keep the canonical D6 state: a preflop recommendation whose gate is closed
+  // must not fabricate a chosen EV from an unavailable recommended EV.
+  const showEV=rec?.preflopDecision?trainerPreflopDecisionView(rec.preflopDecision).show_ev:true;
+  if(showEV)d.chosenEV=Number(d.bestEV);else{d.chosenEV=NaN;d.bestEV=NaN;d.bestCostBB=null;}
+  d.lossBB=0;d.withinNoise=true;
   trainerState.perf.reused++;return d;
 }
 async function trainerHeroAction(kind,cost=0){
@@ -1134,22 +1220,68 @@ function trainerRenderTable(){
 function trainerPreflopTargetText(target){
   const v=Number(target?.target_total_bb);return Number.isFinite(v)?`total ${trainerFmtBB(v)}`:"0 BB";
 }
+// Precise non-recommendation cause, derived from the shared taxonomy
+// dimensions. Rule D6 (`view.show_ev`) alone decides whether a Hero
+// recommendation/EV may be exposed; this helper only names the actual blocking
+// cause reported by `poker-analysis-state/v1` so distinct causes are never
+// collapsed into one generic "aucune recommandation" sentence. It reads the
+// separated dimensions, never the raw reason codes (those stay in the secondary
+// technical panel).
+function trainerPreflopRecommendationCause(view){
+  const analysis=view?.analysis;
+  if(!analysis)return "Aucune recommandation EV validée pour ce spot.";
+  const state=String(analysis.state||"").toUpperCase();
+  const model=String(analysis.model_support_status||"").toUpperCase();
+  const admissible=analysis.recommendation_admissibility?.admissible===true;
+  if(state==="ERREUR_CALCUL"||analysis.error?.type){
+    const type=analysis.error?.type?` (${analysis.error.type})`:"";
+    return `Erreur worker${type} · la recommandation n'a pas pu être calculée${analysis.error?.retryable?" ; une nouvelle tentative est possible":""}.`;
+  }
+  if(state==="CALCUL_EN_COURS")return "Calcul en cours · la recommandation n'est pas encore disponible.";
+  if(state==="SPOT_NON_SUPPORTE"){
+    if(model==="CONTEXT_UNSUPPORTED")return "Contexte non supporté · ce spot sort du périmètre de la référence active.";
+    return "Absence de node · aucun nœud de modèle ne couvre ce spot.";
+  }
+  if(state==="DONNEES_INSUFFISANTES")return "Support insuffisant · trop peu d'observations pour valider une recommandation.";
+  if(state==="ANALYSE_PARTIELLE"){
+    if(!admissible)return "Recommandation non admise · aucune action admissible n'est exposable sur ce spot.";
+    return "Analyse partielle · les EV de la décision jouée et de la recommandation ne sont pas comparables.";
+  }
+  return "Aucune recommandation EV validée pour ce spot.";
+}
+// Secondary feedback summary. Rule D6 (`view.show_ev`) is the single gate for
+// every exposed EV/recommendation field below: the recommended action, its
+// target sizing, its EV, the alternative rows' EV and the ΔEV/perte EV derived
+// from the recommended reference. When the gate is closed those fields are all
+// absent; the panel still renders the legitimate technical layer (taxonomy
+// state, reason codes, computational/model support, statistical support,
+// comparability/admissibility reasons and the observed action) plus the precise
+// blocking cause. No local D6 rule is duplicated here.
 function trainerPreflopDecisionSummaryHtml(decision){
-  const covered=window.PokerPreflopRuntime?.isCovered(decision);
-  if(!covered){
-    return `<div class="trainer-feedback-body"><b>SPOT_NON_COUVERT</b> · aucune recommandation EV validée pour <b>${escapeHtml(decision?.facing_context||"UNKNOWN")}</b>. La candidate #108 reste inactive.</div>`;
+  const view=trainerPreflopDecisionView(decision);
+  // The reason codes and the separated dimensions only live in this secondary
+  // panel; the primary label above them is the shared taxonomy state.
+  const technical=trainerAnalysisDimensionsHtml(view.analysis);
+  if(!view.show_ev){
+    const label=escapeHtml(trainerPreflopTaxonomyLabel(decision));
+    const cause=escapeHtml(trainerPreflopRecommendationCause(view));
+    const observed=decision?.played_action?`<div class="trainer-feedback-body">Action observée : <b>${escapeHtml(decision.played_action)}</b> · non évaluée par cette référence (aucun ΔEV exposé).</div>`:"";
+    return `<div class="trainer-feedback-body"><b>${label}</b> · aucune recommandation EV exposable · ${cause}</div>${observed}${technical}`;
   }
   const support=Number(decision.support?.observations)||0;
   const rows=(decision.alternatives||[]).map(a=>`<div class="trainer-feedback-body"><b>${escapeHtml(a.action)}</b> · ${escapeHtml(trainerPreflopTargetText(a.target_sizing))} · coût ${escapeHtml(trainerFmtBB(a.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(a.ev_bb))}</b></div>`).join("");
   const played=decision.ev_comparable
     ?`EV jouée <b>${escapeHtml(trainerFmtBB(decision.played_ev_bb))}</b> · perte EV <b>${escapeHtml(trainerFmtBB(Math.max(0,Number(decision.recommended_ev_bb)-Number(decision.played_ev_bb))))}</b>.`
     :decision.played_action?`Action jouée <b>${escapeHtml(decision.played_action)}</b> non évaluée par cette référence : aucun ΔEV inventé.`:"";
-  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>`;
+  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>${technical}`;
 }
 function trainerBestText(rec){
   if(!rec||rec.error)return "—";
+  // Preflop best label/sizing are D6 Hero fields: when the canonical gate is
+  // closed there is nothing usable to render (no action, no sizing).
+  if(rec.preflopDecision&&!trainerPreflopDecisionView(rec.preflopDecision).show_ev)return "—";
   const label=String(rec.bestLabel||"—"),kind=trainerRecommendationKind(trainerState.hand,rec),upper=label.toUpperCase();
-  const action=kind&&!upper.startsWith(kind)?`${kind} · `:"",cost=Number(rec.bestCostBB),size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";
+  const action=kind&&!upper.startsWith(kind)?`${kind} · `:"",cost=rec.bestCostBB!=null?Number(rec.bestCostBB):NaN,size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";
   return `${action}${label}${size}`;
 }
 function trainerRenderRecommendation(){
@@ -1159,11 +1291,22 @@ function trainerRenderRecommendation(){
   if(trainerState.busy&&!rec){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Analyse</div><div class="trainer-rec-main">Calcul…</div>';return;}
   if(!canShow){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">${trainerState.mode==="test"?"Mode Test":"Décidez d'abord"}</div><div class="trainer-rec-main">Réponse masquée</div><div class="trainer-rec-ev">${trainerState.mode==="test"?"Le bilan apparaît en fin de main.":"Le feedback apparaît après votre action."}</div>`;return;}
   if(rec?.preflopDecision){
-    const d=rec.preflopDecision,covered=window.PokerPreflopRuntime?.isCovered(d);
-    trainerRecommendation.className=`trainer-recommendation${covered?"":" hidden-answer"}`;
-    trainerRecommendation.innerHTML=covered
-      ?`<div class="trainer-rec-label">Action recommandée · référence active #108 conservée</div><div class="trainer-rec-main">${escapeHtml(d.recommended_action)} · ${escapeHtml(trainerPreflopTargetText(d.recommended_target_sizing))}</div><div class="trainer-rec-ev">Coût ${escapeHtml(trainerFmtBB(d.incremental_cost_bb))} · EV ${escapeHtml(trainerFmtBB(d.recommended_ev_bb))} · support ${Number(d.support?.observations||0).toLocaleString("fr-FR")}</div>`
-      :`<div class="trainer-rec-label">Préflop</div><div class="trainer-rec-main">SPOT_NON_COUVERT</div><div class="trainer-rec-ev">Aucune recommandation EV validée · candidate #108 inactive.</div>`;
+    const d=rec.preflopDecision;
+    // Single canonical derivation for this render. D6 (`view.show_ev`) decides
+    // whether the recommendation/sizing/EV fields may be exposed; `covered`
+    // alone is never sufficient. The panel stays visible either way, so a
+    // fail-closed spot renders its taxonomy label and precise cause instead of
+    // the hidden-answer placeholder.
+    const view=trainerPreflopDecisionView(d);
+    trainerRecommendation.className="trainer-recommendation";
+    if(view.show_ev){
+      trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · référence active #108 conservée</div><div class="trainer-rec-main">${escapeHtml(d.recommended_action)} · ${escapeHtml(trainerPreflopTargetText(d.recommended_target_sizing))}</div><div class="trainer-rec-ev">Coût ${escapeHtml(trainerFmtBB(d.incremental_cost_bb))} · EV ${escapeHtml(trainerFmtBB(d.recommended_ev_bb))} · support ${Number(d.support?.observations||0).toLocaleString("fr-FR")}</div>`;
+      return;
+    }
+    // D6 closed: expose the canonical taxonomy label only, plus the specific
+    // blocking cause. No recommended action/sizing/EV and no alternative EV.
+    const taxonomyLabel=escapeHtml(trainerPreflopTaxonomyLabel(d));
+    trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Préflop · ${taxonomyLabel}</div><div class="trainer-rec-main">${taxonomyLabel}</div><div class="trainer-rec-ev">${escapeHtml(trainerPreflopRecommendationCause(view))}</div>`;
     return;
   }
   trainerRecommendation.className="trainer-recommendation";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · EV finale</div><div class="trainer-rec-main">${escapeHtml(trainerBestText(rec))}</div><div class="trainer-rec-ev">EV ${Number.isFinite(Number(rec?.bestEV))?escapeHtml(trainerFmtBB(rec.bestEV)):"—"}</div>`;
@@ -1181,9 +1324,13 @@ function trainerRenderFeedback(){
   }
   const d=f.detail,r=f.row;
   if(d?.preflopDecision){
-    const covered=window.PokerPreflopRuntime?.isCovered(d.preflopDecision),comparable=!!d.preflopDecision.ev_comparable;
-    trainerFeedback.className=`trainer-feedback ${covered?(comparable?(r.cls==="poor"?"poor":r.cls==="good"?"good":"close"):"close"):"close"}`;
-    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${covered?(comparable?"Décision préflop évaluée":"Référence partielle · action non comparable"):"Spot préflop non couvert"}</div>${trainerPreflopDecisionSummaryHtml(d.preflopDecision)}`;
+    // Canonical D6 state (`view.show_ev`) drives both the feedback headline
+    // class and the summary gate; the local covered/ev_comparable combination
+    // is no longer recombined here.
+    const view=trainerPreflopDecisionView(d.preflopDecision);
+    trainerFeedback.className=`trainer-feedback ${view.show_ev?(r.cls==="poor"?"poor":r.cls==="good"?"good":"close"):"close"}`;
+    const title=trainerPreflopTaxonomyLabel(d.preflopDecision);
+    trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${trainerPreflopDecisionSummaryHtml(d.preflopDecision)}`;
     return;
   }
   const summary=trainerDecisionCanonical(d,r);
@@ -1211,8 +1358,8 @@ function trainerRenderControls(){
   const legal=(view.legal_actions||[]).map(a=>a==="RAISE"&&toCall<=1e-8?"BET":a);
   const minTarget=Number(view.min_raise_to_bb),paid=Number(view.actor_street_contribution_bb)||0;
   const minAgg=Number.isFinite(minTarget)?Math.max(0,minTarget-paid):(toCall>1e-8?toCall+h.lastRaise:Math.max(1,.33*h.pot));
-  const recCost=Number(trainerState.recommendation?.bestCostBB);
-  trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div><div class="trainer-decision-title">À vous · ${escapeHtml(h.positions[h.heroSeat])} · ${escapeHtml(h.street.toUpperCase())}</div><div class="trainer-context">Pot ${escapeHtml(trainerFmtBB(h.pot))} · ${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"} · stack ${escapeHtml(trainerFmtBB(h.stacks[h.heroSeat]))}</div></div></div><div class="trainer-actions">${legal.map(a=>`<button type="button" class="${a==="FOLD"?"danger secondary":a==="CHECK"||a==="CALL"?"secondary":"primary"}" data-trainer-action="${a}">${a}</button>`).join("")}<div class="trainer-sizing"><div class="field"><label for="trainerSizingInput">Coût ajouté / mise (BB)</label><input id="trainerSizingInput" type="number" min="0" step="0.1" value="${trainerNum(Number.isFinite(recCost)?recCost:minAgg)}"></div><div class="trainer-size-presets"><button type="button" class="secondary" data-size=".5">½ pot</button><button type="button" class="secondary" data-size=".75">¾ pot</button><button type="button" class="secondary" data-size="1">Pot</button><button type="button" class="secondary" data-size="allin">All-in</button></div></div></div></div>`;
+  const recCost=trainerState.recommendation?.bestCostBB,recCostBB=recCost!=null?Number(recCost):NaN;
+  trainerControls.innerHTML=`<div class="trainer-decision-box"><div class="trainer-decision-head"><div><div class="trainer-decision-title">À vous · ${escapeHtml(h.positions[h.heroSeat])} · ${escapeHtml(h.street.toUpperCase())}</div><div class="trainer-context">Pot ${escapeHtml(trainerFmtBB(h.pot))} · ${toCall>0?`à payer ${escapeHtml(trainerFmtBB(toCall))}`:"check possible"} · stack ${escapeHtml(trainerFmtBB(h.stacks[h.heroSeat]))}</div></div></div><div class="trainer-actions">${legal.map(a=>`<button type="button" class="${a==="FOLD"?"danger secondary":a==="CHECK"||a==="CALL"?"secondary":"primary"}" data-trainer-action="${a}">${a}</button>`).join("")}<div class="trainer-sizing"><div class="field"><label for="trainerSizingInput">Coût ajouté / mise (BB)</label><input id="trainerSizingInput" type="number" min="0" step="0.1" value="${trainerNum(Number.isFinite(recCostBB)?recCostBB:minAgg)}"></div><div class="trainer-size-presets"><button type="button" class="secondary" data-size=".5">½ pot</button><button type="button" class="secondary" data-size=".75">¾ pot</button><button type="button" class="secondary" data-size="1">Pot</button><button type="button" class="secondary" data-size="allin">All-in</button></div></div></div></div>`;
   const sizingInput=document.getElementById("trainerSizingInput");sizingInput?.addEventListener("input",()=>{trainerState.sizingTouched=true;});
   trainerControls.querySelectorAll("[data-trainer-action]").forEach(b=>b.addEventListener("click",()=>trainerHeroAction(b.dataset.trainerAction,trainerGuidedClickCost(b.dataset.trainerAction))));
   trainerControls.querySelectorAll("[data-size]").forEach(b=>b.addEventListener("click",()=>{trainerState.sizingTouched=true;const v=b.dataset.size==="allin"?h.stacks[h.heroSeat]:Math.max(toCall>0?toCall+h.lastRaise:1,Number(b.dataset.size)*h.pot);trainerSetSizing(v);}));

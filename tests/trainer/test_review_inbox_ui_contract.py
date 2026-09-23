@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -16,6 +17,8 @@ def main() -> None:
         assert runtime_text == source_text, (source, runtime)
 
     index = (ROOT / "site/index.html").read_text(encoding="utf-8")
+    assert '<script src="./analytics/analysis-state.js"></script>' in index
+    assert index.index('<script src="./analytics/analysis-state.js"></script>') < index.index('<script src="./analytics/review-inbox.js"></script>')
     assert '<script src="./analytics/leak-analyzer.js"></script>' in index
     assert '<script src="./analytics/review-score-adapter.js"></script>' in index
     assert '<script src="./analytics/review-inbox.js"></script>' in index
@@ -39,6 +42,27 @@ def main() -> None:
     assert 'POSITION_ASC' in index
     assert 'HAND_ID_ASC' in index
 
+    # #393 T3: the Inbox exposes the canonical analysis-state taxonomy as the
+    # primary status label and as an explicit filter, while the raw reason codes
+    # stay only in the secondary/technical view.
+    assert 'id="reviewAnalysisStateFilter"' in index
+    for state in (
+        "ANALYSE_DISPONIBLE",
+        "ANALYSE_PARTIELLE",
+        "CALCUL_EN_COURS",
+        "DONNEES_INSUFFISANTES",
+        "SPOT_NON_SUPPORTE",
+        "ERREUR_CALCUL",
+    ):
+        assert state in index, state
+    assert 'analysis_state:f.analysis_state||""' in index
+    assert '[reviewAnalysisStateFilter,"analysis_state"]' in index
+    assert 'item.analysis_state_label' in index
+    assert 'data-analysis-state' in index
+    assert 'reviewInboxReasons' in index
+    assert 'Raisons techniques' in index
+    assert 'item.analysis_state?.reason_codes' in index
+
     # The Review scope identity is population-bound: it derives from the Hero
     # strategy resolver and never from a hard-coded "Custom"/"hero-custom" token.
     assert 'hero-custom' not in index
@@ -52,6 +76,36 @@ def main() -> None:
     # #task-a0n: the Review scope consumes the same contextual override status as
     # the Trainer/header chip, never a global presence promoted to active.
     assert 'override:productPersonalOverrideState()' in scope_block
+
+    # #408 blocker 2 / #393 blocker 2: statistical_support is derived from the real
+    # per-decision model support with a documented conservative aggregation rule;
+    # the counters are non-null integers >= 0 and the explicit availability signal
+    # carries unknown/unavailable, so a review decision count can never masquerade
+    # as observations and the embedded shape stays in sync with the canonical
+    # analysis-state schema + the JS validator.
+    schema = json.loads(
+        (ROOT / "contracts/analytics/review-inbox.schema.json").read_text(encoding="utf-8")
+    )
+    support = schema["$defs"]["analysis_state"]["properties"]["statistical_support"]
+    for field in ("observations", "distinct_hands"):
+        assert support["properties"][field]["type"] == "integer", field
+        assert support["properties"][field]["minimum"] == 0, field
+    assert set(support["properties"]["availability"]["enum"]) == {
+        "AVAILABLE",
+        "UNKNOWN",
+        "UNAVAILABLE",
+    }
+    assert "minimum" in support["description"].lower()
+    assert "decision" in support["description"].lower()
+    inbox_source = (ROOT / "src/analytics/review-inbox.js").read_text(encoding="utf-8")
+    assert "statisticalSupportFor" in inbox_source
+    assert "observations:comparable.length" not in inbox_source
+    assert "distinct_hands:comparable.length?1:0" not in inbox_source
+
+    doc = (ROOT / "docs/analysis-state-contract.md").read_text(encoding="utf-8")
+    assert "Règle d'agrégation du support statistique" in doc
+    assert "event.support.observations" in doc
+    assert "jamais inventé à `1`" in doc
 
     print("review inbox runtime mirror/UI contract checks: OK")
 

@@ -36,6 +36,7 @@ NAV_SOURCE = '<a href="./hero-ranges.html">Stratégie Hero</a>'
 NAV_TARGET = NAV_SOURCE + '\n      <a href="./packs.html">Packs de population</a>'
 FUNCTIONAL_FILES = (
     INDEX_PATH,
+    ROOT / "site" / "analytics" / "analysis-state.js",
     ROOT / "site" / "analytics" / "leak-analyzer.js",
     ROOT / "site" / "analytics" / "leak-training-target.js",
     ROOT / "site" / "analytics" / "model-b-robustness.js",

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,6 +31,81 @@ def main() -> None:
     assert 'ANALYSIS_INCOMPLETE' in index
     assert 'NO_SIGNIFICANT_LOSS' in index
     assert 'READY' in index
+
+    # #393 T4: the Dashboard derives its dominant scope state from the shared
+    # poker-analysis-state taxonomy and exposes the explicit French label as the
+    # primary surface, while the technical reason codes stay in the secondary
+    # details view (tooltip), never as the primary message.
+    assert 'model?.analysis_state_label' in index
+    assert 'reviewDashboardState.dataset.analysisState=' in index
+    assert 'taxonomy?.reason_codes' in index
+    assert 'Raisons techniques' in index
+    for state in (
+        "ANALYSE_DISPONIBLE",
+        "ANALYSE_PARTIELLE",
+        "CALCUL_EN_COURS",
+        "DONNEES_INSUFFISANTES",
+        "SPOT_NON_SUPPORTE",
+        "ERREUR_CALCUL",
+    ):
+        assert state in index, state
+
+    schema = json.loads(
+        (ROOT / "contracts/analytics/review-dashboard.schema.json").read_text(encoding="utf-8")
+    )
+    taxonomy = schema["$defs"]["analysis_state"]
+    assert set(taxonomy["properties"]["state"]["enum"]) == {
+        "ANALYSE_DISPONIBLE",
+        "ANALYSE_PARTIELLE",
+        "CALCUL_EN_COURS",
+        "DONNEES_INSUFFISANTES",
+        "SPOT_NON_SUPPORTE",
+        "ERREUR_CALCUL",
+    }
+    # The embedded taxonomy must not drift from the canonical shared schema.
+    canonical = json.loads(
+        (ROOT / "contracts/analytics/analysis-state.schema.json").read_text(encoding="utf-8")
+    )
+    assert taxonomy["properties"]["state"]["enum"] == canonical["properties"]["state"]["enum"]
+    assert (
+        taxonomy["properties"]["computational_status"]["enum"]
+        == canonical["properties"]["computational_status"]["enum"]
+    )
+    assert (
+        taxonomy["properties"]["statistical_support"]["properties"]["availability"]["enum"]
+        == canonical["properties"]["statistical_support"]["properties"]["availability"]["enum"]
+    )
+    assert schema["properties"]["analysis_state_label"]["enum"] == [
+        "Analyse disponible",
+        "Analyse partielle",
+        "Calcul en cours",
+        "Données insuffisantes",
+        "Spot non supporté",
+        "Erreur de calcul",
+        None,
+    ]
+    mapping = schema["properties"]["state"]["description"]
+    for pair in ("NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"):
+        assert pair in mapping, pair
+
+    # #393 T5: the explicit empty-state -> taxonomy mapping is exported by the
+    # shared dashboard module, and every precise French message is present in the
+    # UI, so no screen can collapse two derivable causes into a single generic
+    # message. The technical codes stay documented as a secondary field.
+    dashboard_js = (ROOT / "src/analytics/review-dashboard.js").read_text(encoding="utf-8")
+    assert "EMPTY_STATE_REASON_CODES" in dashboard_js
+    assert "INCOMPLETE_SUPPORT_SHORTAGE" in dashboard_js
+    for code in ("NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"):
+        assert code + ":['" in dashboard_js, code
+    assert "EMPTY_STATE_REASON_CODES" in schema["$defs"]["analysis_state"]["properties"]["reason_codes"]["description"]
+    for message in (
+        "Analyse partielle ·",
+        "Données insuffisantes ·",
+        "Calcul en cours ·",
+        "Spot non supporté ·",
+        "Erreur de calcul ·",
+    ):
+        assert message in index, message
 
     assert 'return openReviewInboxDeepLink(cta.target);' in index
     assert 'target.dimension!=="spot_family"' in index

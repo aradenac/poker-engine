@@ -46,6 +46,15 @@ def main() -> None:
     require(js, 'trainerComputePreflopReference', "canonical Trainer preflop bridge")
     require(js, 'SPOT_NON_COUVERT', "fail-closed preflop state")
 
+    # #393 T5: the Trainer derives its preflop primary labels from the shared
+    # poker-analysis-state/v1 module, which must be loaded before trainer.js.
+    require(index, 'src="./analytics/analysis-state.js"', "shared analysis-state module")
+    assert index.index('src="./analytics/analysis-state.js"') < index.index('src="./trainer.js"'), \
+        "analysis-state must load before trainer.js"
+    require(js, 'window.PokerAnalysisState', "shared analysis-state runtime")
+    require(js, 'mapAnalysisState', "shared taxonomy mapping")
+    require(js, 'trainerAnalysisDimensionsHtml', "secondary technical detail panel")
+
     # Forced blinds and action order now come from the real public NLHE game state.
     require(index, 'src="./training/nlhe-game-state.js"', "browser NLHE game-state module")
     require(js, 'new Game.NoLimitHoldemState', "real blind/game-state construction")

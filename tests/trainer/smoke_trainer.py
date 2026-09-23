@@ -15,11 +15,12 @@ RANGE_NUMERIC_FIXTURE = ROOT / "tests/fixtures/opponent-range/numeric_scenarios.
 # Numeric browser smokes driven from this script so that the frozen browser-smoke
 # workflow can exercise #391 without adding a workflow step. Each stays a
 # standalone module (own static guards, own browser session); the opponent-range
-# script connects to the already-served 127.0.0.1:8765, while the scale-invariance
-# script starts its own ephemeral local server.
+# and D6 render-matrix scripts connect to the already-served 127.0.0.1:8765,
+# while the scale-invariance script starts its own ephemeral local server.
 DRIVER_SMOKES = (
     Path(__file__).resolve().parent / "smoke_opponent_range_numeric.py",
     Path(__file__).resolve().parent / "smoke_equity_scale_invariance.py",
+    Path(__file__).resolve().parent / "smoke_trainer_d6_render_matrix.py",
 )
 
 
@@ -375,7 +376,7 @@ async def main() -> None:
                 });
                 const unavailable=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},null);
                 const heroCovered=replayHeroCommentState(0,{street:"Flop"},null,{
-                    canonicalDecision:{schema:"decision-summary/v1"}
+                    canonicalDecision:{schema:"decision-summary/v1",coverage_state:"COVERED",recommendation_admissibility:{admissible:true},ev_comparability:{comparable:true}}
                 });
                 const heroUncovered=replayHeroCommentState(0,{street:"Préflop"},null,{
                     req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,observedEvidence:evidence
@@ -384,14 +385,19 @@ async def main() -> None:
             }"""
         )
         assert replayer_comment_states["analyzed"]["actor_role"] == "OPPONENT", replayer_comment_states
-        assert replayer_comment_states["analyzed"]["state"] == "OPPONENT_ANALYZABLE" and replayer_comment_states["analyzed"]["support"] == 37, replayer_comment_states
+        assert replayer_comment_states["analyzed"]["state"] == "ANALYSE_DISPONIBLE" and replayer_comment_states["analyzed"]["support"] == 37, replayer_comment_states
+        assert replayer_comment_states["analyzed"]["actor_state"] == "OPPONENT_ANALYZABLE", replayer_comment_states
         assert replayer_comment_states["analyzed"]["source_contract"] == "poker-preflop-context/v1", replayer_comment_states
-        assert replayer_comment_states["insufficient"]["state"] == "OPPONENT_SUPPORT_INSUFFICIENT", replayer_comment_states
+        assert replayer_comment_states["insufficient"]["state"] == "DONNEES_INSUFFISANTES", replayer_comment_states
+        assert replayer_comment_states["insufficient"]["actor_state"] == "OPPONENT_SUPPORT_INSUFFICIENT", replayer_comment_states
         assert "Support insuffisant" in replayer_comment_states["insufficient"]["text"], replayer_comment_states
-        assert replayer_comment_states["unavailable"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", replayer_comment_states
-        assert "Analyse adverse non disponible" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
-        assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "HERO_COVERED", replayer_comment_states
-        assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_COUVERT", replayer_comment_states
+        assert replayer_comment_states["unavailable"]["state"] == "SPOT_NON_SUPPORTE", replayer_comment_states
+        assert replayer_comment_states["unavailable"]["actor_state"] == "OPPONENT_NODE_ABSENT", replayer_comment_states
+        assert "Aucun nœud de population" in replayer_comment_states["unavailable"]["text"], replayer_comment_states
+        assert replayer_comment_states["heroCovered"]["actor_role"] == "HERO" and replayer_comment_states["heroCovered"]["state"] == "ANALYSE_DISPONIBLE", replayer_comment_states
+        assert replayer_comment_states["heroCovered"]["actor_state"] == "HERO_COVERED", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["actor_role"] == "HERO" and replayer_comment_states["heroUncovered"]["state"] == "SPOT_NON_SUPPORTE", replayer_comment_states
+        assert replayer_comment_states["heroUncovered"]["actor_state"] == "SPOT_NON_COUVERT", replayer_comment_states
         assert replayer_comment_states["heroUncovered"]["family"] == "VS_LIMPERS", replayer_comment_states
         assert "Aucune recommandation EV validée" in replayer_comment_states["heroUncovered"]["text"], replayer_comment_states
 
@@ -446,7 +452,8 @@ async def main() -> None:
         assert kts_replayer_comment["hand"] == {"id":"3210001","hero":"Hero","cards":"K♠ T♠"}, kts_replayer_comment
         assert kts_replayer_comment["hero"]["actor"] == "Hero" and kts_replayer_comment["hero"]["action"] == "raise", kts_replayer_comment
         assert kts_replayer_comment["hero"]["evidence"]["decision"]["family"] == "VS_LIMPERS", kts_replayer_comment
-        assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_COUVERT", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["state"]["state"] == "SPOT_NON_SUPPORTE", kts_replayer_comment
+        assert kts_replayer_comment["hero"]["state"]["actor_state"] == "SPOT_NON_COUVERT", kts_replayer_comment
         assert "Aucune recommandation EV validée" in kts_replayer_comment["hero"]["state"]["text"], kts_replayer_comment
         assert kts_replayer_comment["hero"]["canonical"]["schema"] == "poker-preflop-decision/v1", kts_replayer_comment
         assert kts_replayer_comment["hero"]["canonical"]["coverage"] == "UNSUPPORTED" and kts_replayer_comment["hero"]["canonical"]["admissible"] is False, kts_replayer_comment
@@ -454,7 +461,8 @@ async def main() -> None:
         assert kts_replayer_comment["hero"]["canonical"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in kts_replayer_comment["hero"]["canonical"]["reasons"], kts_replayer_comment
         assert kts_replayer_comment["bb"]["actor"] == "BB" and kts_replayer_comment["bb"]["action"] == "call", kts_replayer_comment
         assert kts_replayer_comment["bb"]["evidence"]["decision"]["family"] == "VS_ISO", kts_replayer_comment
-        assert kts_replayer_comment["bb"]["state"]["state"] == "OPPONENT_ANALYSIS_UNAVAILABLE", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["state"]["state"] == "SPOT_NON_SUPPORTE", kts_replayer_comment
+        assert kts_replayer_comment["bb"]["state"]["actor_state"] == "OPPONENT_NODE_ABSENT", kts_replayer_comment
         assert 'data-comment-actor="OPPONENT"' in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
         assert "Aucune alternative EV validée" not in kts_replayer_comment["bb"]["feed"], kts_replayer_comment
         assert "alternative EV Hero" in kts_replayer_comment["bb"]["detail"], kts_replayer_comment
@@ -1255,8 +1263,10 @@ async def main() -> None:
         guide = await page.evaluate(
             """() => {
                 const r=trainerState.recommendation,d=r?.preflopDecision;
+                const view=d?trainerPreflopDecisionView(d):null;
                 return {
                     schema:d?.schema,covered:!!PokerPreflopRuntime.isCovered(d),
+                    show_ev:!!view?.show_ev,taxonomy_state:view?.taxonomy_state||null,
                     family:d?.facing_context||"",label:r?.bestLabel,
                     cost:Number(r?.bestCostBB),ev:Number(r?.bestEV),
                     kind:trainerRecommendationKind(trainerState.hand,r),
@@ -1268,13 +1278,29 @@ async def main() -> None:
         assert guide["schema"] == "poker-preflop-decision/v1" and guide["candidateActive"] is False, guide
         assert guide["latencyMs"] >= 0, guide
 
-        if guide["covered"]:
+        if guide["show_ev"]:
+            # Rule D6 (admissible AND comparable): the recommendation/sizing/EV
+            # may be exposed.
             assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
             assert guide["kind"] in {"FOLD", "CALL"}, guide
             action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
             assert await action.count(), f"guided action button missing: {guide}"
+        elif guide["covered"]:
+            # The reference is admissible/covered but the pre-action decision has
+            # no comparable played EV yet, so D6 keeps the recommendation hidden.
+            # The panel stays visible with the canonical taxonomy label and a
+            # precise cause instead of a generic message or hidden-answer.
+            assert "action recommandée" not in folded(guided), guided
+            assert "réponse masquée" not in folded(guided), guided
+            assert "analyse partielle" in folded(guided), guided
+            assert guide["kind"] in {"FOLD", "CALL"}, guide
+            action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
+            assert await action.count(), f"guided action button missing: {guide}"
         else:
-            assert "spot_non_couvert" in folded(guided), guided
+            # #393 T5: the primary label is the shared taxonomy state; the raw
+            # reason code stays out of the primary recommendation panel.
+            assert "spot non support" in folded(guided), guided
+            assert "spot_non_couvert" not in folded(guided), guided
             assert guide["kind"] == "", guide
             action = page.locator('#trainerControls [data-trainer-action="CHECK"], #trainerControls [data-trainer-action="FOLD"], #trainerControls [data-trainer-action="CALL"]').first
             assert await action.count(), f"no legal fail-closed action: {guide}"
@@ -1303,17 +1329,32 @@ async def main() -> None:
         )
         assert verdict["schema"] == "poker-preflop-decision/v1", verdict
         if guide["covered"]:
-            assert verdict["covered"] is True and verdict["label"] == guide["label"], (guide, verdict)
-            if guide["cost"] == guide["cost"]:
-                assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
-            assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+            assert verdict["covered"] is True, (guide, verdict)
+            if guide["show_ev"]:
+                assert verdict["label"] == guide["label"], (guide, verdict)
+                if guide["cost"] == guide["cost"]:
+                    assert abs(verdict["cost"] - guide["cost"]) <= 1e-9, (guide, verdict)
+                assert abs(verdict["ev"] - guide["ev"]) <= 1e-9, (guide, verdict)
+            else:
+                # T3/D6: the pre-action recommendation carried no comparable
+                # played EV, so bestLabel/EV/sizing were unavailable. Once the
+                # played action is comparable the canonical gate opens and the
+                # recommended action label is exposed.
+                assert verdict["comparable"] is True, (guide, verdict)
+                assert verdict["label"] == guide["kind"], (guide, verdict)
+                assert verdict["ev"] == verdict["ev"], (guide, verdict)
             assert verdict["loss"] <= 0.15, (guide, verdict, feedback)
             assert verdict["reused"] >= 1, (guide, verdict)
             assert "recommandé" in folded(feedback), feedback
         else:
             assert verdict["covered"] is False and verdict["comparable"] is False, verdict
-            assert "spot" in folded(feedback) and "non couvert" in folded(feedback), feedback
+            # #393 T5: taxonomy label in the feedback headline; the concrete
+            # reason code and the separated dimensions are only exposed in the
+            # secondary technical detail, rendered after the primary label.
+            assert "spot non support" in folded(feedback), feedback
             assert "aucune recommandation ev" in folded(feedback), feedback
+            assert "détails techniques" in folded(feedback), feedback
+            assert folded(feedback).index("spot non support") < folded(feedback).index("détails techniques"), feedback
 
         stats = await page.locator("#trainerStats").inner_text()
         assert "décisions" in folded(stats)

@@ -1,0 +1,147 @@
+{
+  "schema": "trainer-d6-render-matrix/v1",
+  "description": "Rule D6 render matrix (Cases A-E) for the Training preflop surface. Each case carries the raw poker-preflop-decision/v1 input and its expected canonical analysis-state view. The cases are injected into the real assembled application by smoke_trainer_d6_render_matrix.py and validated in node by test_d6_render_matrix_contract.py.",
+  "cases": [
+    {
+      "name": "A_admissible_not_comparable",
+      "expect": {
+        "taxonomy_state": "ANALYSE_PARTIELLE",
+        "taxonomy_label": "Analyse partielle",
+        "show_ev": false,
+        "cause_phrase": "ne sont pas comparables",
+        "technical_phrase": "NON_COMPARABLE_ALTERNATIVES",
+        "preserve_recommendation": false
+      },
+      "decision": {
+        "schema": "poker-preflop-decision/v1",
+        "coverage_state": "COVERED",
+        "recommended_action": "3BET",
+        "recommended_ev_bb": 1.6,
+        "played_ev_bb": 0.2,
+        "incremental_cost_bb": 8,
+        "recommended_target_sizing": { "target_total_bb": 8 },
+        "played_action": "CALL",
+        "ev_comparable": false,
+        "reason_codes": ["NON_COMPARABLE_ALTERNATIVES"],
+        "recommendation_admissibility": { "admissible": true, "status": "ADMISSIBLE", "reason_codes": [] },
+        "alternatives": [
+          { "action": "CALL", "ev_bb": 0.2, "incremental_cost_bb": 2.5, "target_sizing": { "target_total_bb": 2.5 } },
+          { "action": "3BET", "ev_bb": 1.6, "incremental_cost_bb": 8, "target_sizing": { "target_total_bb": 8 } }
+        ],
+        "support": { "observations": 150 }
+      }
+    },
+    {
+      "name": "B_not_admissible_comparable",
+      "expect": {
+        "taxonomy_state": "ANALYSE_PARTIELLE",
+        "taxonomy_label": "Analyse partielle",
+        "show_ev": false,
+        "cause_phrase": "Recommandation non admise",
+        "technical_phrase": "NO_ADMISSIBLE_STRATEGY",
+        "preserve_recommendation": false
+      },
+      "decision": {
+        "schema": "poker-preflop-decision/v1",
+        "coverage_state": "COVERED",
+        "recommended_action": "3BET",
+        "recommended_ev_bb": 1.6,
+        "played_ev_bb": 0.2,
+        "incremental_cost_bb": 8,
+        "recommended_target_sizing": { "target_total_bb": 8 },
+        "played_action": "CALL",
+        "ev_comparable": true,
+        "reason_codes": ["NO_ADMISSIBLE_STRATEGY"],
+        "recommendation_admissibility": { "admissible": false, "status": "NO_ADMISSIBLE_STRATEGY", "reason_codes": ["NO_ADMISSIBLE_STRATEGY"] },
+        "alternatives": [
+          { "action": "CALL", "ev_bb": 0.2, "incremental_cost_bb": 2.5, "target_sizing": { "target_total_bb": 2.5 } },
+          { "action": "3BET", "ev_bb": 1.6, "incremental_cost_bb": 8, "target_sizing": { "target_total_bb": 8 } }
+        ],
+        "support": { "observations": 150 }
+      }
+    },
+    {
+      "name": "C_not_admissible_not_comparable",
+      "expect": {
+        "taxonomy_state": "ANALYSE_PARTIELLE",
+        "taxonomy_label": "Analyse partielle",
+        "show_ev": false,
+        "cause_phrase": "Recommandation non admise",
+        "technical_phrase": "NON_COMPARABLE_ALTERNATIVES",
+        "preserve_recommendation": false
+      },
+      "decision": {
+        "schema": "poker-preflop-decision/v1",
+        "coverage_state": "COVERED",
+        "recommended_action": "3BET",
+        "recommended_ev_bb": 1.6,
+        "played_ev_bb": 0.2,
+        "incremental_cost_bb": 8,
+        "recommended_target_sizing": { "target_total_bb": 8 },
+        "played_action": "CALL",
+        "ev_comparable": false,
+        "reason_codes": ["NO_ADMISSIBLE_STRATEGY", "NON_COMPARABLE_ALTERNATIVES"],
+        "recommendation_admissibility": { "admissible": false, "status": "NO_ADMISSIBLE_STRATEGY", "reason_codes": ["NO_ADMISSIBLE_STRATEGY"] },
+        "alternatives": [
+          { "action": "CALL", "ev_bb": 0.2, "incremental_cost_bb": 2.5, "target_sizing": { "target_total_bb": 2.5 } },
+          { "action": "3BET", "ev_bb": 1.6, "incremental_cost_bb": 8, "target_sizing": { "target_total_bb": 8 } }
+        ],
+        "support": { "observations": 150 }
+      }
+    },
+    {
+      "name": "D_admissible_comparable",
+      "expect": {
+        "taxonomy_state": "ANALYSE_DISPONIBLE",
+        "taxonomy_label": "Analyse disponible",
+        "show_ev": true,
+        "cause_phrase": null,
+        "technical_phrase": null,
+        "preserve_recommendation": true
+      },
+      "decision": {
+        "schema": "poker-preflop-decision/v1",
+        "coverage_state": "COVERED",
+        "recommended_action": "CALL",
+        "recommended_ev_bb": 0.42,
+        "played_ev_bb": 0.3,
+        "incremental_cost_bb": 2.5,
+        "recommended_target_sizing": { "target_total_bb": 2.5 },
+        "played_action": "CALL",
+        "ev_comparable": true,
+        "reason_codes": [],
+        "recommendation_admissibility": { "admissible": true, "status": "ADMISSIBLE", "reason_codes": [] },
+        "alternatives": [
+          { "action": "FOLD", "ev_bb": -0.5, "incremental_cost_bb": 0, "target_sizing": { "target_total_bb": 0 } },
+          { "action": "CALL", "ev_bb": 0.42, "incremental_cost_bb": 2.5, "target_sizing": { "target_total_bb": 2.5 } }
+        ],
+        "support": { "observations": 2000 }
+      }
+    },
+    {
+      "name": "E_unsupported_not_covered",
+      "expect": {
+        "taxonomy_state": "SPOT_NON_SUPPORTE",
+        "taxonomy_label": "Spot non supporté",
+        "show_ev": false,
+        "cause_phrase": "Absence de node",
+        "technical_phrase": "SPOT_NON_COUVERT",
+        "preserve_recommendation": false
+      },
+      "decision": {
+        "schema": "poker-preflop-decision/v1",
+        "coverage_state": "UNSUPPORTED",
+        "recommended_action": null,
+        "recommended_ev_bb": null,
+        "incremental_cost_bb": null,
+        "recommended_target_sizing": null,
+        "played_action": null,
+        "ev_comparable": false,
+        "reason_codes": ["SPOT_NON_COUVERT"],
+        "recommendation_admissibility": { "admissible": false, "status": "UNCOVERED", "reason_codes": ["UNCOVERED"] },
+        "alternatives": [],
+        "support": { "observations": 0 }
+      }
+    }
+  ]
+}

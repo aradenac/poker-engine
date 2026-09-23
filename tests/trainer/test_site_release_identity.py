@@ -25,6 +25,7 @@ def main() -> int:
     assert set(assembled["functional_files"]) == {
         "site/index.html",
         "site/compute-scheduler.js",
+        "site/analytics/analysis-state.js",
         "site/analytics/leak-analyzer.js",
         "site/analytics/review-score-adapter.js",
         "site/analytics/review-inbox.js",

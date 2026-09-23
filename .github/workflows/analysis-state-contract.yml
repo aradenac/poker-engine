@@ -1,0 +1,90 @@
+name: Validate analysis-state taxonomy contract
+
+# Issue #393: the shared `poker-analysis-state/v1` taxonomy is consumed by the
+# trainer/review/inbox surfaces and must stay identical between the edit source
+# `src/analytics/analysis-state.js` and the served mirror
+# `site/analytics/analysis-state.js`. This dedicated workflow runs the
+# byte-parity guard, the fail-safe (un-evaluated dimension) contracts, the
+# cross-surface consistency contract (same enum + same label table for Review
+# Inbox/Dashboard, Replayer Hero/adverse and Training, plus the D5/D6 and generic
+# message guards) and the Training D6 exposure/source-of-truth contract (no Hero
+# recommendation/EV path gated only by covered/isCovered, no local D6 rule
+# duplication) in CI so a drift or an optimistic regression fails before it can
+# be merged.
+
+on:
+  push:
+    paths:
+      - 'src/analytics/analysis-state.js'
+      - 'site/analytics/analysis-state.js'
+      - 'src/analytics/review-inbox.js'
+      - 'site/analytics/review-inbox.js'
+      - 'src/analytics/review-dashboard.js'
+      - 'site/analytics/review-dashboard.js'
+      - 'src/analytics/review-score-adapter.js'
+      - 'site/analytics/review-score-adapter.js'
+      - 'site/index.html'
+      - 'site/trainer.js'
+      - 'contracts/analytics/analysis-state.schema.json'
+      - 'contracts/analytics/review-inbox.schema.json'
+      - 'docs/analysis-state-contract.md'
+      - 'tests/analytics/test_analysis_state.js'
+      - 'tests/analytics/test_analysis_state_contract.py'
+      - 'tests/analytics/test_analysis_state_mirror_parity.js'
+      - 'tests/trainer/test_analysis_state_mirror_contract.py'
+      - 'tests/trainer/test_analysis_state_consistency_contract.py'
+      - 'tests/trainer/test_trainer_d6_exposure_contract.py'
+      - '.github/workflows/analysis-state-contract.yml'
+  pull_request:
+    paths:
+      - 'src/analytics/analysis-state.js'
+      - 'site/analytics/analysis-state.js'
+      - 'src/analytics/review-inbox.js'
+      - 'site/analytics/review-inbox.js'
+      - 'src/analytics/review-dashboard.js'
+      - 'site/analytics/review-dashboard.js'
+      - 'src/analytics/review-score-adapter.js'
+      - 'site/analytics/review-score-adapter.js'
+      - 'site/index.html'
+      - 'site/trainer.js'
+      - 'contracts/analytics/analysis-state.schema.json'
+      - 'contracts/analytics/review-inbox.schema.json'
+      - 'docs/analysis-state-contract.md'
+      - 'tests/analytics/test_analysis_state.js'
+      - 'tests/analytics/test_analysis_state_contract.py'
+      - 'tests/analytics/test_analysis_state_mirror_parity.js'
+      - 'tests/trainer/test_analysis_state_mirror_contract.py'
+      - 'tests/trainer/test_analysis_state_consistency_contract.py'
+      - 'tests/trainer/test_trainer_d6_exposure_contract.py'
+      - '.github/workflows/analysis-state-contract.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analysis-state-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - name: Byte-parity and un-evaluated dimension guard
+        run: node tests/analytics/test_analysis_state_mirror_parity.js
+      - name: Analysis-state mapper contract
+        run: node tests/analytics/test_analysis_state.js
+      - name: Analysis-state schema structure contract
+        run: python3 tests/analytics/test_analysis_state_contract.py
+      - name: Analysis-state mirror contract
+        run: python3 tests/trainer/test_analysis_state_mirror_contract.py
+      - name: Cross-surface analysis-state consistency contract
+        run: python3 tests/trainer/test_analysis_state_consistency_contract.py
+      - name: Training D6 exposure / source-of-truth contract
+        run: python3 tests/trainer/test_trainer_d6_exposure_contract.py

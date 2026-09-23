@@ -1,16 +1,18 @@
 (function(root,factory){
   const Leak=(typeof module==='object'&&module.exports)?require('./leak-analyzer.js'):(root&&root.PokerLeakAnalyzer);
   const Adapter=(typeof module==='object'&&module.exports)?require('./review-score-adapter.js'):(root&&root.PokerReviewLeakAdapter);
-  const api=factory(Leak,Adapter);
+  const State=(typeof module==='object'&&module.exports)?require('./analysis-state.js'):(root&&root.PokerAnalysisState);
+  const api=factory(Leak,Adapter,State);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.PokerReviewInbox=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(Leak,Adapter){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Leak,Adapter,State){
   'use strict';
 
   const INBOX_SCHEMA='poker-review-inbox/v1';
   const ITEM_SCHEMA='poker-review-inbox-item/v1';
   const USER_METADATA_SCHEMA='poker-review-inbox-user-metadata/v1';
   const DEEP_LINK_SCHEMA='poker-review-deep-link/v1';
+  const ANALYSIS_STATE_SCHEMA=(State&&State.SCHEMA)||'poker-analysis-state/v1';
   const COVERAGE_COMPLETE='COMPLETE';
   const COVERAGE_INCOMPLETE='INCOMPLETE';
   const STATUS={
@@ -25,6 +27,23 @@
     CORRECT:'Correcte',
     INCOMPLETE_ANALYSIS:'Analyse incomplète'
   };
+  // User-facing labels for the six canonical `poker-analysis-state/v1` states
+  // (#393). The labels never collapse two causes into one generic message: the
+  // detailed reason codes stay available in the secondary/technical view.
+  const ANALYSIS_STATE_LABELS={
+    ANALYSE_DISPONIBLE:'Analyse disponible',
+    ANALYSE_PARTIELLE:'Analyse partielle',
+    CALCUL_EN_COURS:'Calcul en cours',
+    DONNEES_INSUFFISANTES:'Données insuffisantes',
+    SPOT_NON_SUPPORTE:'Spot non supporté',
+    ERREUR_CALCUL:'Erreur de calcul'
+  };
+  const ANALYSIS_DISPONIBLE='ANALYSE_DISPONIBLE';
+  // Event `error_type` values emitted by the frozen leak classifier that mark a
+  // real computation failure. Their siblings (ACTION_ERROR, SIZING_ERROR,
+  // WITHIN_NOISE, NO_ERROR, UNSUPPORTED, NON_COMPARABLE) are scientific
+  // classifications, never worker errors.
+  const WORKER_ERROR_TYPES=new Set(['WORKER_ERROR','ANALYSIS_ERROR','WORKER_TIMEOUT','CALCULATION_FAILED','TIMEOUT','ERROR']);
   const STREET_ORDER={PREFLOP:0,FLOP:1,TURN:2,RIVER:3,UNKNOWN:9};
   const STATUS_ORDER={[STATUS.INCOMPLETE_ANALYSIS]:0,[STATUS.TO_REVIEW]:1,[STATUS.REVIEWED]:2,[STATUS.CORRECT]:3};
   const EPS=1e-9;
@@ -128,8 +147,70 @@
       finished_decisions:Number.isFinite(finished)?finished:null
     };
   }
-  function deriveStatus(coverage,userReview,totalLoss,comparableCount){
-    if(!coverage.complete)return STATUS.INCOMPLETE_ANALYSIS;
+  function workerErrorType(rows){
+    for(const e of rows){const t=upper(e&&e.error_type);if(WORKER_ERROR_TYPES.has(t))return t;}
+    return null;
+  }
+  // Hand-level statistical-support aggregation (#408 blocker 2). The number of
+  // comparable review decisions is NOT statistical support: every comparable
+  // decision is backed by its own model node with its own
+  // `support.observations`, and unrelated nodes must never be summed. The
+  // hand-level summary is therefore the conservative MINIMUM of the real
+  // per-decision observations over the relevant decisions. Unsupported and
+  // non-comparable decisions carry no admissible model support and are excluded.
+  // When no relevant decision exposes usable observations the dimension is
+  // unknown: it is reported with the contract fail-safe floor 0, never with the
+  // decision count and never as a fabricated positive count. `distinct_hands`
+  // has no per-event evidence in `poker-leak-decision-event/v1`, so it is also
+  // reported as the fail-safe floor 0 and is never invented as 1.
+  function supportObservations(value){
+    if(value==null)return null;
+    // Only genuine numeric metadata is admissible model-support evidence.
+    // `Number()` would coerce a boolean `true` into 1, an array `[120]` into
+    // 120 and a blank string into 0, letting malformed or missing metadata
+    // masquerade as real (even positive) support. Containers, booleans and
+    // blank strings are therefore rejected outright; well-formed integer
+    // numbers (and their serialized string form) remain admissible.
+    if(typeof value==='boolean'||typeof value==='object'||typeof value==='function'||typeof value==='symbol')return null;
+    if(typeof value==='string'&&!value.trim())return null;
+    const n=Number(value);
+    return Number.isInteger(n)&&n>=0?n:null;
+  }
+  function statisticalSupportFor(rows){
+    const decisions=(rows||[]).filter(e=>e&&e.support&&e.support.covered&&e.comparability&&e.comparability.comparable);
+    const observed=decisions.map(e=>supportObservations(e.support.observations)).filter(v=>v!=null);
+    return {observations:observed.length?Math.min(...observed):0,distinct_hands:0};
+  }
+  // Translate the legacy coverage reasons + decision events (support,
+  // comparability, worker error) into the shared `poker-analysis-state/v1`
+  // object. The taxonomy decides the single user-facing state, while the
+  // coverage object is retained untouched for backward compatibility.
+  function analysisStateFor(coverage,rows){
+    if(!State||typeof State.mapAnalysisState!=='function')return null;
+    const allComparable=rows.length>0&&rows.every(e=>e.support&&e.support.covered&&e.comparability&&e.comparability.comparable);
+    const reasonCodes=coverage.reasons.slice();
+    const workerError=workerErrorType(rows);
+    if(workerError&&!reasonCodes.includes(workerError))reasonCodes.push(workerError);
+    const input={
+      reason_codes:reasonCodes,
+      statistical_support:statisticalSupportFor(rows)
+    };
+    if(coverage.complete)input.ev_comparability={comparable:true,reason:null};
+    else if(allComparable)input.ev_comparability={comparable:true,reason:null};
+    else input.ev_comparability={
+      comparable:false,
+      reason:reasonCodes.find(c=>c==='NON_COMPARABLE_DECISIONS'||c==='NO_DECISION_EVENTS'||c==='UNSUPPORTED_DECISIONS')||reasonCodes[0]||'NON_COMPARABLE'
+    };
+    if(workerError)input.error={type:workerError,retryable:true};
+    return State.mapAnalysisState(input);
+  }
+  function analysisStateLabel(state){
+    return ANALYSIS_STATE_LABELS[upper(state)]||'Analyse indisponible';
+  }
+  function deriveStatus(analysisState,userReview,totalLoss,comparableCount){
+    // The taxonomy is the single gate: anything other than an available
+    // analysis stays visibly incomplete instead of being promoted to a verdict.
+    if(!analysisState||analysisState.state!==ANALYSIS_DISPONIBLE)return STATUS.INCOMPLETE_ANALYSIS;
     if(userReview.reviewed)return STATUS.REVIEWED;
     if(comparableCount>0&&totalLoss<=EPS)return STATUS.CORRECT;
     return STATUS.TO_REVIEW;
@@ -145,8 +226,9 @@
     const link=costly?deepLink(costly,'COSTLIEST_DECISION'):firstComparable?deepLink(firstComparable,'FIRST_COMPARABLE_DECISION'):firstAvailable?deepLink(firstAvailable,'FIRST_AVAILABLE_DECISION'):null;
     const hand=adapted&&adapted.hands&&adapted.hands.get?adapted.hands.get(String(handId)):null;
     const coverage=coverageFor(summary,rows,Boolean(hand));
+    const analysisState=analysisStateFor(coverage,rows);
     const userReview=(userMetadata.hands&&userMetadata.hands[String(handId)])||{reviewed:false,reviewed_at:null};
-    const status=deriveStatus(coverage,userReview,totalLoss,eligible.length);
+    const status=deriveStatus(analysisState,userReview,totalLoss,eligible.length);
     const position=(primary&&primary.context.position)||(hand&&hand.heroPosition)||'UNKNOWN';
     const timestamp=(hand&&hand.timestamp)||(rows[0]&&rows[0].timestamp)||null;
     const facets={
@@ -168,7 +250,9 @@
       spot_family:primary?primary.context.spot_family:'UNKNOWN',
       action_played:primary?primary.played.action:'UNKNOWN',action_recommended:primary?primary.recommended.action:'UNKNOWN',
       sizing_error:Boolean(primary&&primary.sizing_error),jam:Boolean(primary&&primary.tags&&primary.tags.jam),overbet:Boolean(primary&&primary.tags&&primary.tags.overbet),
-      coverage,user_review:{reviewed:Boolean(userReview.reviewed),reviewed_at:userReview.reviewed_at||null},
+      coverage,coverage_state:coverage.state,
+      analysis_state:analysisState,analysis_state_label:analysisState?analysisStateLabel(analysisState.state):null,
+      user_review:{reviewed:Boolean(userReview.reviewed),reviewed_at:userReview.reviewed_at||null},
       status,status_label:STATUS_LABELS[status],deep_link:link,facets
     };
   }
@@ -219,7 +303,7 @@
   function filterInboxItems(items,filters={}){
     const streets=asSet(filters.street,upper),positions=asSet(filters.position,upper),spots=asSet(filters.spot_family,upper),
       played=asSet(filters.action_played,upper),recommended=asSet(filters.action_recommended,upper),statuses=asSet(filters.status,upper),
-      coverage=asSet(filters.coverage,upper);
+      coverage=asSet(filters.coverage,upper),analysisStates=asSet(filters.analysis_state,upper);
     const sizing=boolFilter(filters.sizing_error),jam=boolFilter(filters.jam),overbet=boolFilter(filters.overbet);
     const minLoss=filters.min_loss_bb==null||filters.min_loss_bb===''?null:Number(filters.min_loss_bb);
     if(minLoss!=null&&(!Number.isFinite(minLoss)||minLoss<0))throw new Error('min_loss_bb must be a non-negative number');
@@ -229,6 +313,7 @@
       if(!matchesSet(played,item.facets.played_actions)||!matchesSet(recommended,item.facets.recommended_actions))return false;
       if(statuses&&!statuses.has(item.status))return false;
       if(coverage&&!coverage.has(item.coverage.state))return false;
+      if(analysisStates&&!(item.analysis_state&&analysisStates.has(item.analysis_state.state)))return false;
       if(sizing!=null&&item.facets.sizing_error!==sizing)return false;
       if(jam!=null&&item.facets.jam!==jam)return false;
       if(overbet!=null&&item.facets.overbet!==overbet)return false;
@@ -258,7 +343,9 @@
   }
 
   return {
-    INBOX_SCHEMA,ITEM_SCHEMA,USER_METADATA_SCHEMA,DEEP_LINK_SCHEMA,STATUS,STATUS_LABELS,COVERAGE_COMPLETE,COVERAGE_INCOMPLETE,
-    normalizeUserMetadata,setReviewed,buildReviewInboxes,buildReviewInbox,filterInboxItems,sortInboxItems,queryInbox,stepIndex
+    INBOX_SCHEMA,ITEM_SCHEMA,USER_METADATA_SCHEMA,DEEP_LINK_SCHEMA,ANALYSIS_STATE_SCHEMA,STATUS,STATUS_LABELS,
+    ANALYSIS_STATE_LABELS,ANALYSIS_DISPONIBLE,COVERAGE_COMPLETE,COVERAGE_INCOMPLETE,
+    normalizeUserMetadata,setReviewed,buildReviewInboxes,buildReviewInbox,filterInboxItems,sortInboxItems,queryInbox,
+    analysisStateFor,analysisStateLabel,stepIndex
   };
 });
