@@ -247,11 +247,16 @@
       const row=data.ev_comparability;
       const reason=text(row.reason)||null;
       const evaluated=hasExplicitVerdict(row.comparable,reason);
+      // No explicit boolean verdict (empty object, placeholder, non-boolean or
+      // NOT_EVALUATED sentinel) is not a producer statement at all: take the
+      // "missing dimension" path and return null instead of a negative-shaped
+      // container. It never becomes `negative` nor terminal evidence (#408).
+      if(!evaluated)return null;
       return {
         provided:true,
         evaluated,
-        comparable:evaluated&&row.comparable===true,
-        negative:evaluated&&row.comparable===false,
+        comparable:row.comparable===true,
+        negative:row.comparable===false,
         reason
       };
     }
@@ -272,13 +277,19 @@
       const status=text(row.status)||null;
       // Same fail-safe evidence rule as comparability (#408).
       const evaluated=hasExplicitVerdict(row.admissible,status);
+      const reason_codes=Array.isArray(row.reason_codes)?row.reason_codes.map(upper).filter(Boolean):[];
+      // No explicit boolean verdict is not a producer statement at all. When the
+      // placeholder carries no producer-supplied codes it takes the "missing
+      // dimension" path (null); codes, when present, are still preserved
+      // verbatim without ever synthesizing a blocking status/reason (#408).
+      if(!evaluated&&!reason_codes.length)return null;
       return {
         provided:true,
         evaluated,
         admissible:evaluated&&row.admissible===true,
         negative:evaluated&&row.admissible===false,
         status,
-        reason_codes:Array.isArray(row.reason_codes)?row.reason_codes.map(upper).filter(Boolean):[]
+        reason_codes
       };
     }
     if(typeof data.admissible==='boolean'){
