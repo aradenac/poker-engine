@@ -4,11 +4,13 @@ name: Validate analysis-state taxonomy contract
 # trainer/review/inbox surfaces and must stay identical between the edit source
 # `src/analytics/analysis-state.js` and the served mirror
 # `site/analytics/analysis-state.js`. This dedicated workflow runs the
-# byte-parity guard, the fail-safe (un-evaluated dimension) contracts and the
+# byte-parity guard, the fail-safe (un-evaluated dimension) contracts, the
 # cross-surface consistency contract (same enum + same label table for Review
 # Inbox/Dashboard, Replayer Hero/adverse and Training, plus the D5/D6 and generic
-# message guards) in CI so a drift or an optimistic regression fails before it
-# can be merged.
+# message guards) and the Training D6 exposure/source-of-truth contract (no Hero
+# recommendation/EV path gated only by covered/isCovered, no local D6 rule
+# duplication) in CI so a drift or an optimistic regression fails before it can
+# be merged.
 
 on:
   push:
@@ -31,6 +33,7 @@ on:
       - 'tests/analytics/test_analysis_state_mirror_parity.js'
       - 'tests/trainer/test_analysis_state_mirror_contract.py'
       - 'tests/trainer/test_analysis_state_consistency_contract.py'
+      - 'tests/trainer/test_trainer_d6_exposure_contract.py'
       - '.github/workflows/analysis-state-contract.yml'
   pull_request:
     paths:
@@ -52,6 +55,7 @@ on:
       - 'tests/analytics/test_analysis_state_mirror_parity.js'
       - 'tests/trainer/test_analysis_state_mirror_contract.py'
       - 'tests/trainer/test_analysis_state_consistency_contract.py'
+      - 'tests/trainer/test_trainer_d6_exposure_contract.py'
       - '.github/workflows/analysis-state-contract.yml'
 
 permissions:
@@ -82,3 +86,5 @@ jobs:
         run: python3 tests/trainer/test_analysis_state_mirror_contract.py
       - name: Cross-surface analysis-state consistency contract
         run: python3 tests/trainer/test_analysis_state_consistency_contract.py
+      - name: Training D6 exposure / source-of-truth contract
+        run: python3 tests/trainer/test_trainer_d6_exposure_contract.py
