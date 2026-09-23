@@ -35,6 +35,12 @@
   const COMPUTATIONAL_STATUSES=['NOT_STARTED','PENDING','RUNNING','COMPLETE','FAILED',NOT_EVALUATED];
   const MODEL_SUPPORT_STATUSES=['SUPPORTED','NODE_ABSENT','CONTEXT_UNSUPPORTED',NOT_EVALUATED];
   const POSTERIOR_AVAILABILITY=['conditioned','prior_uninformative','source_prior_unconditioned','degenerate','unavailable'];
+  // Explicit availability signal for the statistical-support dimension. It lets
+  // the mapper distinguish a positive model support (`AVAILABLE`) from a
+  // dimension the producer did not evaluate (`UNKNOWN`) and from a dimension the
+  // model cannot represent at all (`UNAVAILABLE`), instead of reading the
+  // fail-safe floor `0` as if it were a decided scientific value.
+  const SUPPORT_AVAILABILITY=['AVAILABLE','UNKNOWN','UNAVAILABLE'];
 
   const S_DISPONIBLE=ANALYSIS_STATES.ANALYSE_DISPONIBLE;
   const S_PARTIELLE=ANALYSIS_STATES.ANALYSE_PARTIELLE;
@@ -303,6 +309,15 @@
     if(POSTERIOR_AVAILABILITY.includes(raw))return {provided:true,status:raw,positive:raw==='conditioned'};
     return {provided:false,status:null,positive:false};
   }
+  // The statistical-support availability sentinel. A producer may state it
+  // explicitly; the mapper otherwise derives a fail-safe value (never a
+  // fabricated positive one) from the evidence it actually has.
+  function extractSupportAvailability(data){
+    const supportStat=isPlainObject(data.statistical_support)?data.statistical_support:{};
+    const raw=upper(supportStat.availability);
+    if(SUPPORT_AVAILABILITY.includes(raw))return raw;
+    return null;
+  }
   function firstHint(codes,key){
     for(const code of codes){const hints=REASON_CODE_DIMENSIONS[code];if(hints&&text(hints[key]))return text(hints[key]);}
     return null;
@@ -324,6 +339,7 @@
     const computational=extractComputational(data);
     const model=extractModel(data);
     const posterior=extractPosterior(data);
+    const supportAvailabilityInput=extractSupportAvailability(data);
     const comparabilityInput=normalizeComparability(data);
     const admissibilityInput=normalizeAdmissibility(data);
     const coveredCoverage=hasCoveredCoverage(data);
@@ -392,9 +408,18 @@
       ?posterior.status
       :(firstHint(known,'posterior_availability')||'unavailable');
 
+    const supportObservations=asInt(supportStat.observations!=null?supportStat.observations:(data.observations!=null?data.observations:supportRow.observations),0);
+    const supportDistinctHands=asInt(supportStat.distinct_hands!=null?supportStat.distinct_hands:data.distinct_hands,0);
+    // Fail-safe availability: a positive count proves support; an unsupported
+    // model context (or a SPOT_NON_SUPPORTE conclusion) proves the dimension is
+    // unavailable; anything else stays explicitly UNKNOWN. The availability
+    // signal never fabricates a positive count and is preserved on re-mapping.
+    const supportAvailability=supportAvailabilityInput
+      ||(supportObservations>0?'AVAILABLE':((model.blocker||state===S_NON_SUPPORTE)?'UNAVAILABLE':'UNKNOWN'));
     const statistical_support={
-      observations:asInt(supportStat.observations!=null?supportStat.observations:(data.observations!=null?data.observations:supportRow.observations),0),
-      distinct_hands:asInt(supportStat.distinct_hands!=null?supportStat.distinct_hands:data.distinct_hands,0)
+      observations:supportObservations,
+      distinct_hands:supportDistinctHands,
+      availability:supportAvailability
     };
 
     const comparability_hint=firstHint(known,'comparability_reason');
@@ -473,6 +498,9 @@
     else{
       if(!Number.isInteger(value.statistical_support.observations)||value.statistical_support.observations<0)fail('invalid observations');
       if(!Number.isInteger(value.statistical_support.distinct_hands)||value.statistical_support.distinct_hands<0)fail('invalid distinct_hands');
+      // Optional for backward compatibility: producers that predate the signal
+      // stay valid, but a supplied signal must use the explicit vocabulary.
+      if(value.statistical_support.availability!=null&&!SUPPORT_AVAILABILITY.includes(value.statistical_support.availability))fail('invalid statistical_support.availability');
     }
     if(!isPlainObject(value.ev_comparability)||typeof value.ev_comparability.comparable!=='boolean')fail('invalid ev_comparability');
     else if(value.ev_comparability.reason!=null&&typeof value.ev_comparability.reason!=='string')fail('invalid ev_comparability.reason');
@@ -493,6 +521,7 @@
     REASON_CODE_MAP:REASON_CODE_MAP_FROZEN,
     REASON_CODE_DIMENSIONS,
     DEFAULT_UNKNOWN_STATE,
+    SUPPORT_AVAILABILITY,
     COVERAGE_STATES:EMBEDDED_COVERAGE_STATES,
     FAIL_CLOSED_STATES:EMBEDDED_FAIL_CLOSED_STATES,
     mapAnalysisState,

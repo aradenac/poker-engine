@@ -183,7 +183,7 @@ assert.equal(STATES.length,6);
   assert.equal(partial.posterior_availability,'source_prior_unconditioned');
   assert.equal(partial.ev_comparability.comparable,false);
   assert.equal(partial.ev_comparability.reason,'MISSING_COMPARABLE_EV');
-  assert.deepEqual(partial.statistical_support,{observations:12,distinct_hands:7});
+  assert.deepEqual(partial.statistical_support,{observations:12,distinct_hands:7,availability:'AVAILABLE'});
   assert.equal(State.isAnalysisState(partial),true);
 }
 
@@ -435,6 +435,50 @@ const completeDecision=(()=>{
     const mapped=State.mapAnalysisState(input);
     assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
     assert.deepEqual(State.mapAnalysisState(mapped),mapped,'mapAnalysisState must be idempotent for '+JSON.stringify(input));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 11. Explicit statistical-support availability (#393 blocker 1). The support
+//     dimension must state whether it was evaluated instead of leaving the
+//     fail-safe floor 0 ambiguous.
+// ---------------------------------------------------------------------------
+{
+  // An empty input has no support evidence: UNKNOWN, and never a positive count.
+  const empty=State.mapAnalysisState({});
+  assert.deepEqual(empty.statistical_support,{observations:0,distinct_hands:0,availability:'UNKNOWN'});
+  assert.equal(State.SUPPORT_AVAILABILITY.includes(empty.statistical_support.availability),true);
+
+  // A real positive count proves AVAILABLE.
+  const positive=State.mapAnalysisState({statistical_support:{observations:12,distinct_hands:7}});
+  assert.equal(positive.statistical_support.availability,'AVAILABLE');
+  assert.equal(positive.statistical_support.observations,12);
+
+  // An unsupported model context proves the dimension is UNAVAILABLE.
+  const noNode=State.mapAnalysisState({reason_codes:['NODE_ABSENT']});
+  assert.equal(noNode.statistical_support.availability,'UNAVAILABLE');
+  const unsupported=State.mapAnalysisState({model_support_status:'CONTEXT_UNSUPPORTED'});
+  assert.equal(unsupported.statistical_support.availability,'UNAVAILABLE');
+
+  // An explicit producer signal is preserved verbatim and never fabricates a
+  // positive count.
+  const explicit=State.mapAnalysisState({statistical_support:{observations:0,distinct_hands:0,availability:'UNKNOWN'}});
+  assert.equal(explicit.statistical_support.availability,'UNKNOWN');
+  assert.equal(State.validateAnalysisState(explicit).valid,true);
+  const statedAvailable=State.mapAnalysisState({statistical_support:{observations:0,distinct_hands:0,availability:'AVAILABLE'}});
+  assert.equal(statedAvailable.statistical_support.availability,'AVAILABLE');
+  assert.equal(statedAvailable.statistical_support.observations,0,'an explicit availability never invents observations');
+
+  // Invalid availability is rejected by the canonical validator.
+  const invalid=Object.assign({},empty,{statistical_support:{observations:0,distinct_hands:0,availability:'MAYBE'}});
+  assert.equal(State.validateAnalysisState(invalid).valid,false);
+
+  // Idempotence for every availability verdict.
+  for(const input of [{},{statistical_support:{observations:5,distinct_hands:2}},
+    {reason_codes:['NODE_ABSENT']},{statistical_support:{observations:0,distinct_hands:0,availability:'UNAVAILABLE'}}]){
+    const mapped=State.mapAnalysisState(input);
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,'availability mapping must be idempotent for '+JSON.stringify(input));
   }
 }
 

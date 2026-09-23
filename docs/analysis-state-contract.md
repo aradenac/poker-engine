@@ -68,12 +68,17 @@ le libellé principal.
 - `model_support_status` — `SUPPORTED`, `NODE_ABSENT`, `CONTEXT_UNSUPPORTED`,
   `NOT_EVALUATED`. Distingue l'absence de nœud d'un contexte non supporté ;
   `NOT_EVALUATED` est le statut fail-safe par défaut.
-- `statistical_support` — objet `{observations, distinct_hands}`. Le nombre de
+- `statistical_support` — objet `{observations, distinct_hands, availability}`.
+  `availability ∈ {AVAILABLE, UNKNOWN, UNAVAILABLE}` est le signal explicite
+  d'évaluation de la dimension : `AVAILABLE` sur un support positif,
+  `UNKNOWN` quand le producteur ne fournit aucune évidence de support (jamais un
+  compte positif fabriqué) et `UNAVAILABLE` quand le modèle ne peut pas
+  représenter le support (nœud absent / contexte non supporté). Le nombre de
   mains distinctes est séparé du nombre d'observations pour qu'une main répétée
-  ne constitue pas un support. Les deux compteurs peuvent valoir `null` (ou le
-  plancher fail-safe `0`) pour représenter un support inconnu / indisponible :
-  ils ne sont jamais fabriqués à partir d'un autre compte (voir la règle
-  d'agrégation Review Inbox ci-dessous).
+  ne constitue pas un support. Les deux compteurs utilisent le plancher
+  fail-safe `0` pour représenter un support inconnu / indisponible : ils ne sont
+  jamais fabriqués à partir d'un autre compte (voir la règle d'agrégation Review
+  Inbox ci-dessous).
 - `ev_comparability` — objet `{comparable, reason}`. `comparable` n'est vrai que
   lorsque la ligne jouée et la recommandation sont évaluées sous la même
   référence admissible. Sans évidence de comparabilité, `comparable` vaut
@@ -109,11 +114,16 @@ true`, `posterior_availability = conditioned`) que si le producteur fournit une
 - `recommendation_admissibility.admissible = true` seulement sur une
   admissibilité explicitement évaluée et vraie ;
 - `posterior_availability = conditioned` seulement sur une posterior
-  explicitement conditionnée.
+  explicitement conditionnée ;
+- `statistical_support.availability = AVAILABLE` seulement sur un support
+  positif (`observations > 0`) ou un signal explicite `AVAILABLE`. Une dimension
+  sans évidence reste `UNKNOWN`, et un contexte non supporté est marqué
+  `UNAVAILABLE`.
 
 L'**absence de blocker n'est jamais une évidence** : une dimension manquante est
-représentée explicitement par `NOT_EVALUATED` (statut/raison) ou `unavailable`
-(posterior), jamais par une valeur optimiste. `ANALYSE_DISPONIBLE` n'est émis
+représentée explicitement par `NOT_EVALUATED` (statut/raison), `unavailable`
+(posterior) ou `UNKNOWN` / `UNAVAILABLE` (`statistical_support.availability`),
+jamais par une valeur optimiste. `ANALYSE_DISPONIBLE` n'est émis
 que lorsqu'un signal positif explicite existe (code positif, couverture
 `COVERED`, comparabilité ou admissibilité explicitement positives). Une entrée
 vide retombe sur l'état sûr `DONNEES_INSUFFISANTES`, et le mapper reste

@@ -62,7 +62,7 @@
       ]
     },
     "statistical_support": {
-      "description": "Statistical support dimension, kept separate from computational and model support. observations counts raw matching observations; distinct_hands counts the distinct hands backing them so that one hand cannot masquerade as statistical support.",
+      "description": "Statistical support dimension, kept separate from computational and model support. observations counts raw matching observations; distinct_hands counts the distinct hands backing them so that one hand cannot masquerade as statistical support. `availability` is the explicit signal of whether this dimension was actually evaluated: AVAILABLE on a positive support, UNKNOWN when the producer supplied no support evidence (never a fabricated positive count) and UNAVAILABLE when the model cannot represent the support (absent node / unsupported context). The absence of a blocker must never be read as AVAILABLE.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -77,6 +77,14 @@
         "distinct_hands": {
           "type": "integer",
           "minimum": 0
+        },
+        "availability": {
+          "description": "Explicit availability of the statistical-support dimension. Optional for backward compatibility with producers that predate the signal; a supplied value must use the explicit vocabulary.",
+          "enum": [
+            "AVAILABLE",
+            "UNKNOWN",
+            "UNAVAILABLE"
+          ]
         }
       }
     },
@@ -199,7 +207,8 @@
       "model_support_status": "SUPPORTED",
       "statistical_support": {
         "observations": 420,
-        "distinct_hands": 120
+        "distinct_hands": 120,
+        "availability": "AVAILABLE"
       },
       "ev_comparability": {
         "comparable": true,
@@ -224,7 +233,8 @@
       "model_support_status": "NOT_EVALUATED",
       "statistical_support": {
         "observations": 0,
-        "distinct_hands": 0
+        "distinct_hands": 0,
+        "availability": "UNKNOWN"
       },
       "ev_comparability": {
         "comparable": false,

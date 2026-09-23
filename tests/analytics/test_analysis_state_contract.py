@@ -125,6 +125,13 @@ class AnalysisStateContract(unittest.TestCase):
         for field in ("observations", "distinct_hands"):
             self.assertEqual(support["properties"][field]["type"], "integer")
             self.assertEqual(support["properties"][field]["minimum"], 0)
+        # The explicit availability signal is additive/backward-compatible: it is
+        # not required, but a supplied value must use the explicit vocabulary.
+        self.assertIn("availability", support["properties"])
+        self.assertEqual(
+            set(support["properties"]["availability"]["enum"]),
+            {"AVAILABLE", "UNKNOWN", "UNAVAILABLE"},
+        )
 
     def test_ev_comparability_and_recommendation_admissibility_are_separate(self):
         ev = SCHEMA["properties"]["ev_comparability"]
@@ -181,8 +188,9 @@ class AnalysisStateContract(unittest.TestCase):
         self.assertIn(example["state"], EXPECTED_STATES)
         self.assertEqual(
             set(example["statistical_support"]),
-            {"observations", "distinct_hands"},
+            {"observations", "distinct_hands", "availability"},
         )
+        self.assertEqual(example["statistical_support"]["availability"], "AVAILABLE")
 
     # ------------------------------------------------------------------- doc
     def test_doc_references_versioned_schema(self):
@@ -300,6 +308,20 @@ class AnalysisStateFailSafe(unittest.TestCase):
         self.assertNotEqual(mapped["state"], "ANALYSE_DISPONIBLE")
         self.assertEqual(mapped["state"], "DONNEES_INSUFFISANTES")
         self.assertIn("FUTURE_TAXONOMY_CODE", mapped["reason_codes"])
+
+    def test_statistical_support_availability_is_explicit(self):
+        # No support evidence => UNKNOWN, never a fabricated positive count.
+        empty = map_state("{}")
+        self.assertEqual(empty["statistical_support"]["availability"], "UNKNOWN")
+        self.assertEqual(empty["statistical_support"]["observations"], 0)
+        # A positive count proves AVAILABLE.
+        positive = map_state(
+            "{statistical_support:{observations:12,distinct_hands:7}}"
+        )
+        self.assertEqual(positive["statistical_support"]["availability"], "AVAILABLE")
+        # An unsupported model context proves UNAVAILABLE.
+        unsupported = map_state("{model_support_status:'CONTEXT_UNSUPPORTED'}")
+        self.assertEqual(unsupported["statistical_support"]["availability"], "UNAVAILABLE")
 
 
 if __name__ == "__main__":
