@@ -926,9 +926,20 @@ function trainerAnalysisModule(){
   return Module&&typeof Module.mapAnalysisState==="function"?Module:null;
 }
 function trainerTaxonomyLabel(state){
+  const key=String(state||"").trim().toUpperCase();
+  if(!key)return "";
   const Inbox=window.PokerReviewInbox;
-  if(Inbox&&typeof Inbox.analysisStateLabel==="function")return Inbox.analysisStateLabel(state);
-  return String(state||"");
+  if(Inbox){
+    if(typeof Inbox.analysisStateLabel==="function"){
+      const label=Inbox.analysisStateLabel(key);
+      // Only a real user-facing label is accepted: the primary label is the
+      // taxonomy state, never the raw technical enum code echoed back.
+      if(label&&String(label).trim().toUpperCase()!==key)return String(label).trim();
+    }
+    const labels=Inbox.ANALYSIS_STATE_LABELS;
+    if(labels&&labels[key])return labels[key];
+  }
+  return "";
 }
 // The canonical preflop decision already carries the shared dimensions
 // (`coverage_state`, `reason_codes`, `recommendation_admissibility`,
@@ -1039,7 +1050,7 @@ function trainerDecisionClass(detail){
   return quality.key==="unknown"?"close":quality.key;
 }
 function trainerRecordDecision(detail,playedKind,playedCost){
-  const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail),row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:detail?.bestLabel||"—",bestCostBB:Number.isFinite(Number(detail?.bestCostBB))?Number(detail.bestCostBB):null,bestEV:Number(detail?.bestEV),chosenEV:Number(detail?.chosenEV),lossBB:loss,withinNoise:!!detail?.withinNoise,cls,comparable:detail?.preflopDecision?!!detail.preflopDecision.ev_comparable:true,covered:detail?.preflopDecision?!!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision):true};
+  const hand=trainerState.hand,loss=Math.max(0,Number(detail?.lossBB)||0),cls=trainerDecisionClass(detail),row={handNo:trainerState.handNo,street:hand.street,position:hand.positions[hand.heroSeat],played:playedKind,cost:playedCost,bestLabel:detail?.bestLabel||"—",bestCostBB:Number.isFinite(Number(detail?.bestCostBB))?Number(detail.bestCostBB):null,bestEV:Number(detail?.bestEV),chosenEV:Number(detail?.chosenEV),lossBB:loss,withinNoise:!!detail?.withinNoise,cls,comparable:detail?.preflopDecision?!!detail.preflopDecision.ev_comparable:true,covered:detail?.preflopDecision?!!window.PokerPreflopRuntime?.isCovered(detail.preflopDecision):true,analysis_state:detail?.taxonomy_state||null,analysis_reason_codes:Array.isArray(detail?.analysis?.reason_codes)?detail.analysis.reason_codes.slice():[]};
   const s=trainerState.session;s.decisions++;s.lossBB+=loss;if(cls==="good")s.good++;else if(cls==="close")s.close++;else if(cls==="poor")s.poor++;
   const key=`${row.position} · ${row.street}`;const b=s.breakdown[key]||(s.breakdown[key]={n:0,loss:0});b.n++;b.loss+=loss;trainerState.testLog.unshift(row);return row;
 }

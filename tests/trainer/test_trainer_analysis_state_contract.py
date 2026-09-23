@@ -84,6 +84,8 @@ if (!detail.includes('SPOT_NON_COUVERT')) throw new Error('secondary detail must
 if (!detail.includes('data-analysis-detail="1"')) throw new Error('secondary detail marker missing');
 if (api.trainerPreflopTaxonomyLabel(cases[3][1]) !== 'Spot non supporté') throw new Error('primary label must be taxonomy');
 if (api.trainerPreflopTaxonomyLabel(cases[0][1]) !== 'Analyse disponible') throw new Error('covered label must be taxonomy');
+// T6: the primary label is always the taxonomy label, never the raw enum code.
+if (unsupported.taxonomy_label.toUpperCase() === String(unsupported.taxonomy_state)) throw new Error('primary label must not echo the raw enum code');
 console.log(JSON.stringify({status:'PASS', schema: State.SCHEMA, labels: result, detail}));
 """
 
@@ -128,6 +130,15 @@ def main() -> None:
     summary = section("function trainerPreflopDecisionSummaryHtml(", "function trainerBestText(")
     assert "trainerAnalysisDimensionsHtml(view.analysis)" in summary
     assert "const technical=trainerAnalysisDimensionsHtml(view.analysis);" in summary
+
+    # T6: the persisted Trainer decision record keeps the canonical taxonomy
+    # state as its primary label and only carries the machine-readable reason
+    # codes in a dedicated secondary field. The user-facing label never echoes
+    # the raw enum code when the shared label table is available.
+    assert "analysis_state:detail?.taxonomy_state||null" in TRAINER
+    assert "analysis_reason_codes:Array.isArray(detail?.analysis?.reason_codes)" in TRAINER
+    assert "ANALYSIS_STATE_LABELS" in helpers
+    assert 'return String(state||"")' not in helpers
 
     # 4. The deliberate v1 flop-only Hero-decision boundary (#206) is preserved.
     assert "Hero training decisions begin on the flop" in TRAINER
