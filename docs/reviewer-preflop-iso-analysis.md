@@ -69,9 +69,28 @@ Après avoir été payé par trois joueurs, je veux que le Reviewer puisse m'aid
 
 ### 5. Avoir des commentaires adaptés à l'acteur
 
-Sous une action **Hero**, si le spot n'est pas encore couvert, je veux que le Reviewer me le dise clairement : par exemple **« Aucune recommandation EV validée pour ce contexte »**. Je ne veux pas qu'un message ambigu me laisse penser que toutes les alternatives ont été calculées si ce n'est pas le cas.
+L'état utilisateur affiché sous chaque action est dérivé de la même taxonomie
+partagée `poker-analysis-state/v1`, avec des règles distinctes pour Hero et pour
+l'adversaire.
 
-Sous une action **adverse**, je ne veux pas voir un commentaire du type **« Aucune alternative EV validée »**, car je ne cherche pas à optimiser la décision de l'adversaire comme celle de Hero. Je veux plutôt voir ce que son action apprend sur sa range, ou un message clair indiquant que cette analyse n'est pas disponible.
+Sous une action **Hero**, le libellé principal est l'état de taxonomie
+(`ANALYSE_DISPONIBLE`, `ANALYSE_PARTIELLE`, `CALCUL_EN_COURS`,
+`DONNEES_INSUFFISANTES`, `SPOT_NON_SUPPORTE` ou `ERREUR_CALCUL`). Un message
+générique du type **« Aucune recommandation EV validée pour ce contexte »** n'est
+affiché que lorsqu'aucune cause plus précise n'est représentable ; sinon le
+Reviewer m'indique la cause réelle (spot non supporté, données insuffisantes,
+calcul en cours, erreur de calcul). Les champs EV / recommandation ne
+m'apparaissent que si l'admissibilité **et** la comparabilité sont explicitement
+vraies (règle D6), et les reason codes techniques restent dans les détails
+secondaires.
+
+Sous une action **adverse**, la surface applique la règle D5 : je ne dois jamais
+voir d'« alternative EV optimale » ni de recommandation EV Hero, car je ne
+cherche pas à optimiser la décision de l'adversaire comme celle de Hero. Je veux
+voir l'action observée, son support/likelihood et la disponibilité de sa range
+avant/après, avec un libellé d'état issu de la même enum (par exemple
+`ANALYSE_DISPONIBLE`, `DONNEES_INSUFFISANTES` ou `SPOT_NON_SUPPORTE`) lorsque
+l'analyse adverse est représentable.
 
 ## Présentation souhaitée
 

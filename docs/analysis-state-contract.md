@@ -218,13 +218,49 @@ générique.
 
 ## Surfaces consommatrices
 
-- **Review — Inbox** : filtre `analysis_state` explicite, reason codes en vue
-  secondaire.
-- **Review — Dashboard** : état dominant du périmètre dérivé de la même enum.
-- **Replayer — Hero** : libellé de taxonomie en vue feed, D6 appliquée.
-- **Replayer — adversaire** : D5 appliquée, jamais d'EV optimale promise.
-- **Training** : libellés d'état issus de l'enum partagée, hors frontière
-  flop-only documentée (#206).
+Cette section ne liste que les surfaces qui dérivent **effectivement** leur état
+utilisateur du module partagé. Une surface qui n'est pas encore branchée sur le
+module est tracée comme telle dans « Périmètre non migré » et ne doit pas être
+présentée comme consommatrice.
 
-Toutes ces surfaces doivent dériver leur état du même module et de la même enum
-`poker-analysis-state/v1` ; le contrat inter-surfaces est vérifié par les tests.
+Surfaces migrées, toutes adossées à `poker-analysis-state/v1` :
+
+- **Review — Inbox** : `src/analytics/review-inbox.js` (+ miroir `site/`)
+  construit l'`analysis_state` de chaque main, expose son libellé issu de la
+  table partagée et filtre sur les six états ; les reason codes et l'objet
+  `coverage` restent dans la vue détails secondaire.
+- **Review — Dashboard** : `src/analytics/review-dashboard.js` (+ miroir
+  `site/`) dérive l'état dominant du périmètre via `mapAnalysisState` et expose
+  son libellé ; les reason codes techniques restent dans le champ secondaire
+  `analysis_state.reason_codes`.
+- **Replayer — Hero** : `site/index.html`
+  (`heroAnalysisStateFromActor` / `heroAnalysisStateFromDecision` /
+  `heroDecisionView`) affiche le libellé de taxonomie en vue feed et applique
+  D6.
+- **Replayer — adversaire** : `site/index.html`
+  (`opponentCommentAnalysisState` / `opponentCommentView`) applique D5 : action
+  observée, support/likelihood et range avant/après, sans jamais promettre d'EV
+  optimale.
+- **Training** : `site/trainer.js` (`trainerPreflopAnalysis` /
+  `trainerPreflopDecisionView`) tire le libellé principal de l'enum partagée et
+  ne laisse les reason codes que dans le panneau de feedback secondaire.
+
+Périmètre non migré (tracé explicitement) :
+
+- **Review — page Leaks** (`site/leaks.html` / `site/leaks.js`) : agrège et
+  affiche ses propres diagnostics (`UNSUPPORTED`, `NON COMPARABLE`,
+  `WITHIN NOISE`) à partir des événements de décision, sans émettre
+  d'`analysis_state` issu du module partagé. Cette surface ne doit pas être
+  présentée comme consommatrice tant qu'elle n'est pas branchée sur l'enum.
+- **Training — décisions Hero postflop** : la frontière v1 « les décisions Hero
+  du Trainer commencent au flop » (#206) reste hors de la taxonomie partagée ;
+  cette portion ne doit pas être présentée comme consommatrice tant qu'elle
+  n'émet pas d'`analysis_state`.
+- **Objet `coverage` historique** (`poker-analysis-coverage/v1`) : dimension
+  technique/interne conservée pour compatibilité. Ce n'est pas un état
+  utilisateur et il ne doit jamais servir de libellé principal.
+
+Toutes les surfaces migrées dérivent leur état du même module et de la même enum
+`poker-analysis-state/v1` ; les contrats de surface (`review-inbox`,
+`review-dashboard`, `replayer`, `opponent`, `trainer`) sont vérifiés par les
+tests.
