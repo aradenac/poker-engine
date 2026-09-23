@@ -1222,6 +1222,35 @@ function trainerBestText(rec){
   const action=kind&&!upper.startsWith(kind)?`${kind} · `:"",cost=Number(rec.bestCostBB),size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";
   return `${action}${label}${size}`;
 }
+// Precise non-recommendation cause, derived from the shared taxonomy
+// dimensions. Rule D6 (`view.show_ev`) alone decides whether a Hero
+// recommendation/EV may be exposed; this helper only names the actual blocking
+// cause reported by `poker-analysis-state/v1` so distinct causes are never
+// collapsed into one generic "aucune recommandation" sentence. It reads the
+// separated dimensions, never the raw reason codes (those stay in the secondary
+// technical panel).
+function trainerPreflopRecommendationCause(view){
+  const analysis=view?.analysis;
+  if(!analysis)return "Aucune recommandation EV validée pour ce spot.";
+  const state=String(analysis.state||"").toUpperCase();
+  const model=String(analysis.model_support_status||"").toUpperCase();
+  const admissible=analysis.recommendation_admissibility?.admissible===true;
+  if(state==="ERREUR_CALCUL"||analysis.error?.type){
+    const type=analysis.error?.type?` (${analysis.error.type})`:"";
+    return `Erreur worker${type} · la recommandation n'a pas pu être calculée${analysis.error?.retryable?" ; une nouvelle tentative est possible":""}.`;
+  }
+  if(state==="CALCUL_EN_COURS")return "Calcul en cours · la recommandation n'est pas encore disponible.";
+  if(state==="SPOT_NON_SUPPORTE"){
+    if(model==="CONTEXT_UNSUPPORTED")return "Contexte non supporté · ce spot sort du périmètre de la référence active.";
+    return "Absence de node · aucun nœud de modèle ne couvre ce spot.";
+  }
+  if(state==="DONNEES_INSUFFISANTES")return "Support insuffisant · trop peu d'observations pour valider une recommandation.";
+  if(state==="ANALYSE_PARTIELLE"){
+    if(!admissible)return "Recommandation non admise · aucune action admissible n'est exposable sur ce spot.";
+    return "Analyse partielle · les EV de la décision jouée et de la recommandation ne sont pas comparables.";
+  }
+  return "Aucune recommandation EV validée pour ce spot.";
+}
 function trainerRenderRecommendation(){
   if(!trainerRecommendation)return;const h=trainerState.hand,rec=trainerState.recommendation;
   if(!h||h.ended){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Recommandation</div><div class="trainer-rec-main">—</div>';return;}
@@ -1229,13 +1258,22 @@ function trainerRenderRecommendation(){
   if(trainerState.busy&&!rec){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML='<div class="trainer-rec-label">Analyse</div><div class="trainer-rec-main">Calcul…</div>';return;}
   if(!canShow){trainerRecommendation.className="trainer-recommendation hidden-answer";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">${trainerState.mode==="test"?"Mode Test":"Décidez d'abord"}</div><div class="trainer-rec-main">Réponse masquée</div><div class="trainer-rec-ev">${trainerState.mode==="test"?"Le bilan apparaît en fin de main.":"Le feedback apparaît après votre action."}</div>`;return;}
   if(rec?.preflopDecision){
-    const d=rec.preflopDecision,covered=window.PokerPreflopRuntime?.isCovered(d);
-    trainerRecommendation.className=`trainer-recommendation${covered?"":" hidden-answer"}`;
-    // Primary label = shared taxonomy state; the reason codes stay in the
-    // detailed feedback panel below.
-    trainerRecommendation.innerHTML=covered
-      ?`<div class="trainer-rec-label">Action recommandée · référence active #108 conservée</div><div class="trainer-rec-main">${escapeHtml(d.recommended_action)} · ${escapeHtml(trainerPreflopTargetText(d.recommended_target_sizing))}</div><div class="trainer-rec-ev">Coût ${escapeHtml(trainerFmtBB(d.incremental_cost_bb))} · EV ${escapeHtml(trainerFmtBB(d.recommended_ev_bb))} · support ${Number(d.support?.observations||0).toLocaleString("fr-FR")}</div>`
-      :`<div class="trainer-rec-label">Préflop</div><div class="trainer-rec-main">${escapeHtml(trainerPreflopTaxonomyLabel(d))}</div><div class="trainer-rec-ev">Aucune recommandation EV validée · candidate #108 inactive.</div>`;
+    const d=rec.preflopDecision;
+    // Single canonical derivation for this render. D6 (`view.show_ev`) decides
+    // whether the recommendation/sizing/EV fields may be exposed; `covered`
+    // alone is never sufficient. The panel stays visible either way, so a
+    // fail-closed spot renders its taxonomy label and precise cause instead of
+    // the hidden-answer placeholder.
+    const view=trainerPreflopDecisionView(d);
+    trainerRecommendation.className="trainer-recommendation";
+    if(view.show_ev){
+      trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · référence active #108 conservée</div><div class="trainer-rec-main">${escapeHtml(d.recommended_action)} · ${escapeHtml(trainerPreflopTargetText(d.recommended_target_sizing))}</div><div class="trainer-rec-ev">Coût ${escapeHtml(trainerFmtBB(d.incremental_cost_bb))} · EV ${escapeHtml(trainerFmtBB(d.recommended_ev_bb))} · support ${Number(d.support?.observations||0).toLocaleString("fr-FR")}</div>`;
+      return;
+    }
+    // D6 closed: expose the canonical taxonomy label only, plus the specific
+    // blocking cause. No recommended action/sizing/EV and no alternative EV.
+    const taxonomyLabel=escapeHtml(trainerPreflopTaxonomyLabel(d));
+    trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Préflop · ${taxonomyLabel}</div><div class="trainer-rec-main">${taxonomyLabel}</div><div class="trainer-rec-ev">${escapeHtml(trainerPreflopRecommendationCause(view))}</div>`;
     return;
   }
   trainerRecommendation.className="trainer-recommendation";trainerRecommendation.innerHTML=`<div class="trainer-rec-label">Action recommandée · EV finale</div><div class="trainer-rec-main">${escapeHtml(trainerBestText(rec))}</div><div class="trainer-rec-ev">EV ${Number.isFinite(Number(rec?.bestEV))?escapeHtml(trainerFmtBB(rec.bestEV)):"—"}</div>`;

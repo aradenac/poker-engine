@@ -1262,8 +1262,10 @@ async def main() -> None:
         guide = await page.evaluate(
             """() => {
                 const r=trainerState.recommendation,d=r?.preflopDecision;
+                const view=d?trainerPreflopDecisionView(d):null;
                 return {
                     schema:d?.schema,covered:!!PokerPreflopRuntime.isCovered(d),
+                    show_ev:!!view?.show_ev,taxonomy_state:view?.taxonomy_state||null,
                     family:d?.facing_context||"",label:r?.bestLabel,
                     cost:Number(r?.bestCostBB),ev:Number(r?.bestEV),
                     kind:trainerRecommendationKind(trainerState.hand,r),
@@ -1275,8 +1277,21 @@ async def main() -> None:
         assert guide["schema"] == "poker-preflop-decision/v1" and guide["candidateActive"] is False, guide
         assert guide["latencyMs"] >= 0, guide
 
-        if guide["covered"]:
+        if guide["show_ev"]:
+            # Rule D6 (admissible AND comparable): the recommendation/sizing/EV
+            # may be exposed.
             assert "action recommandée" in folded(guided) and "ev —" not in folded(guided), guided
+            assert guide["kind"] in {"FOLD", "CALL"}, guide
+            action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
+            assert await action.count(), f"guided action button missing: {guide}"
+        elif guide["covered"]:
+            # The reference is admissible/covered but the pre-action decision has
+            # no comparable played EV yet, so D6 keeps the recommendation hidden.
+            # The panel stays visible with the canonical taxonomy label and a
+            # precise cause instead of a generic message or hidden-answer.
+            assert "action recommandée" not in folded(guided), guided
+            assert "réponse masquée" not in folded(guided), guided
+            assert "analyse partielle" in folded(guided), guided
             assert guide["kind"] in {"FOLD", "CALL"}, guide
             action = page.locator(f'#trainerControls [data-trainer-action="{guide["kind"]}"]')
             assert await action.count(), f"guided action button missing: {guide}"

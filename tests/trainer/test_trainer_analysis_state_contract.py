@@ -89,6 +89,102 @@ if (unsupported.taxonomy_label.toUpperCase() === String(unsupported.taxonomy_sta
 console.log(JSON.stringify({status:'PASS', schema: State.SCHEMA, labels: result, detail}));
 """
 
+# #393 T1 (gate `trainerRenderRecommendation` on the canonical `view.show_ev`):
+# the rendered primary recommendation panel must expose the recommended action /
+# sizing / EV only when D6 is open (`show_ev === true`), and must otherwise stay
+# visible with the shared taxonomy label and a precise blocking cause.
+RECOMMENDATION_BOOTSTRAP = r"""
+const fs = require('fs');
+const src = fs.readFileSync('site/trainer.js', 'utf8');
+const start = src.indexOf('function trainerAnalysisModule(');
+const end = src.indexOf('function trainerRenderFeedback(');
+if (start < 0 || end < 0) throw new Error('trainer recommendation helpers missing');
+const helpers = src.slice(start, end);
+const State = require('./src/analytics/analysis-state.js');
+const LABELS = {
+  ANALYSE_DISPONIBLE: 'Analyse disponible',
+  ANALYSE_PARTIELLE: 'Analyse partielle',
+  CALCUL_EN_COURS: 'Calcul en cours',
+  DONNEES_INSUFFISANTES: 'Données insuffisantes',
+  SPOT_NON_SUPPORTE: 'Spot non supporté',
+  ERREUR_CALCUL: 'Erreur de calcul'
+};
+const element = { className: '', innerHTML: '' };
+const trainerState = { hand: {}, mode: 'guided', busy: false, recommendation: null };
+const window = {
+  PokerAnalysisState: State,
+  PokerReviewInbox: { analysisStateLabel: state => LABELS[String(state || '').toUpperCase()] || 'Analyse indisponible' },
+  PokerPreflopRuntime: {
+    isCovered: d => Boolean(d && d.coverage_state === 'COVERED' && d.recommendation_admissibility && d.recommendation_admissibility.admissible === true)
+  }
+};
+const factory = new Function('window', 'escapeHtml', 'trainerFmtBB', 'trainerRecommendation', 'trainerState',
+  helpers + '\nreturn {trainerPreflopDecisionView,trainerPreflopRecommendationCause,trainerRenderRecommendation};');
+const api = factory(window, text => String(text), x => String(Number(x).toFixed(2)) + ' BB', element, trainerState);
+function render(decision) {
+  trainerState.recommendation = { preflopDecision: decision };
+  api.trainerRenderRecommendation();
+  return { className: element.className, html: element.innerHTML, view: api.trainerPreflopDecisionView(decision) };
+}
+"""
+
+RECOMMENDATION_CASES = r"""
+const cases = {
+  admissible_comparable: {
+    coverage_state:'COVERED', recommended_action:'CALL', recommended_ev_bb:0.42,
+    recommended_target_sizing:{target_total_bb:2.5}, incremental_cost_bb:2.5,
+    support:{observations:2000}, played_action:'CALL', ev_comparable:true,
+    recommendation_admissibility:{admissible:true,status:'ADMISSIBLE',reason_codes:[]}, reason_codes:[]
+  },
+  // Covered + admissible but no comparable played EV: `covered` alone must never
+  // be enough to expose the recommendation (D6 fail-closed).
+  covered_not_comparable: {
+    coverage_state:'COVERED', recommended_action:'3BET', recommended_ev_bb:1.6,
+    recommended_target_sizing:{target_total_bb:8}, incremental_cost_bb:8,
+    support:{observations:150}, ev_comparable:false,
+    recommendation_admissibility:{admissible:true,status:'ADMISSIBLE',reason_codes:[]},
+    reason_codes:['NON_COMPARABLE_ALTERNATIVES']
+  },
+  node_absent: { coverage_state:'UNSUPPORTED', reason_codes:['SPOT_NON_COUVERT'], recommendation_admissibility:{admissible:false,status:'UNCOVERED',reason_codes:['UNCOVERED']}, ev_comparable:false },
+  context_unsupported: { coverage_state:'UNSUPPORTED', reason_codes:['ACTIVE_REFERENCE_SCOPE_UNSUPPORTED'], recommendation_admissibility:{admissible:false,status:'UNCOVERED',reason_codes:['UNCOVERED']}, ev_comparable:false },
+  low_support: { coverage_state:'LOW_SUPPORT', reason_codes:['LOW_SUPPORT'], recommendation_admissibility:{admissible:false,status:'LOW_SUPPORT',reason_codes:['LOW_SUPPORT']}, ev_comparable:false },
+  pending: { coverage_state:'ANALYSIS_MISSING', reason_codes:['CALCULATION_PENDING'], recommendation_admissibility:{admissible:false,status:'NOT_EVALUATED',reason_codes:[]}, ev_comparable:false },
+  error: { coverage_state:'ANALYSIS_MISSING', reason_codes:['WORKER_ERROR'], error:{type:'WORKER_ERROR',retryable:true}, recommendation_admissibility:{admissible:false,status:'NOT_EVALUATED',reason_codes:[]}, ev_comparable:false },
+  inadmissible: { coverage_state:'COVERED', reason_codes:['NO_ADMISSIBLE_STRATEGY'], recommendation_admissibility:{admissible:false,status:'NO_ADMISSIBLE_STRATEGY',reason_codes:['NO_ADMISSIBLE_STRATEGY']}, ev_comparable:false }
+};
+const rendered = {};
+for (const [name, decision] of Object.entries(cases)) rendered[name] = render(decision);
+const RECOMMENDED_FIELDS = ['recommended_action','recommended_ev_bb','incremental_cost_bb'];
+for (const [name, decision] of Object.entries(cases)) {
+  const row = rendered[name];
+  if (row.view.show_ev) {
+    if (!row.html.includes('Action recommandée') || !row.html.includes(String(decision.recommended_action))) throw new Error(name + ' must expose the recommendation');
+  } else {
+    if (row.className.includes('hidden-answer')) throw new Error(name + ' panel must stay visible');
+    for (const field of RECOMMENDED_FIELDS) if (row.html.includes(field)) throw new Error(name + ' leaked field ' + field);
+    if (row.html.includes(String(decision.recommended_action))) throw new Error(name + ' leaked recommended action');
+    if (decision.recommended_ev_bb != null && row.html.includes(Number(decision.recommended_ev_bb).toFixed(2))) throw new Error(name + ' leaked recommended EV');
+    if (decision.incremental_cost_bb != null && row.html.includes(Number(decision.incremental_cost_bb).toFixed(2))) throw new Error(name + ' leaked incremental cost');
+    if (!row.html.includes(LABELS[row.view.taxonomy_state])) throw new Error(name + ' must render the taxonomy label');
+  }
+}
+// Each fail-closed cause is precise and rendered: distinct causes are never
+// collapsed into one generic "aucune recommandation" sentence.
+const EXPECTED_CAUSES = {
+  node_absent:'Absence de node', context_unsupported:'Contexte non supporté',
+  low_support:'Support insuffisant', pending:'Calcul en cours',
+  error:'Erreur worker', inadmissible:'Recommandation non admise',
+  covered_not_comparable:'Analyse partielle'
+};
+for (const [name, phrase] of Object.entries(EXPECTED_CAUSES)) {
+  if (rendered[name].view.show_ev) throw new Error(name + ' must be a fail-closed case');
+  const cause = api.trainerPreflopRecommendationCause(rendered[name].view);
+  if (!cause.toLowerCase().includes(phrase.toLowerCase())) throw new Error(name + ' cause ' + cause);
+  if (!rendered[name].html.includes(cause)) throw new Error(name + ' rendered panel must contain the precise cause');
+}
+console.log(JSON.stringify({status:'PASS', rendered:Object.fromEntries(Object.entries(rendered).map(([k,v])=>[k,{show_ev:v.view.show_ev,state:v.view.taxonomy_state,className:v.className}]))}));
+"""
+
 
 def main() -> None:
     # 1. The shared module is loaded before the Trainer.
@@ -140,7 +236,28 @@ def main() -> None:
     assert "ANALYSIS_STATE_LABELS" in helpers
     assert 'return String(state||"")' not in helpers
 
-    # 4. The deliberate v1 flop-only Hero-decision boundary (#206) is preserved.
+    # 4a. `trainerRenderRecommendation` is gated on the canonical `view.show_ev`
+    #     (D6). `covered` alone is never sufficient to expose the recommended
+    #     action / sizing / EV, and the fail-closed panel stays visible.
+    assert "function trainerPreflopRecommendationCause(view){" in TRAINER
+    cause = section("function trainerPreflopRecommendationCause(", "function trainerRenderRecommendation(")
+    assert "const view=trainerPreflopDecisionView(d);" in rec
+    assert "if(view.show_ev){" in rec
+    assert "isCovered" not in rec, "covered alone must not gate the recommendation panel"
+    # The precise causes are distinct and never a raw reason code.
+    for phrase in (
+        "Erreur worker",
+        "Calcul en cours",
+        "Contexte non supporté",
+        "Absence de node",
+        "Support insuffisant",
+        "Recommandation non admise",
+        "Analyse partielle",
+    ):
+        assert phrase in cause, phrase
+    assert "reason_codes" not in cause, "the primary cause must not read raw reason codes"
+
+    # 4b. The deliberate v1 flop-only Hero-decision boundary (#206) is preserved.
     assert "Hero training decisions begin on the flop" in TRAINER
     assert "#206" in TRAINER
 
@@ -168,6 +285,25 @@ def main() -> None:
     for name, state in expected.items():
         assert payload["labels"][name]["state"] == state, payload
     assert payload["labels"]["unsupported"]["label"] == "Spot non supporté", payload
+
+    # 6. Runtime proof of the D6 gate on the rendered `#trainerRecommendation`
+    #    panel: exact recommendation fields only when `show_ev`, precise cause
+    #    otherwise, never a raw reason code in the primary panel.
+    script = RECOMMENDATION_BOOTSTRAP + RECOMMENDATION_CASES
+    proc = subprocess.run(
+        ["node", "-e", script],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(proc.stdout.strip().splitlines()[-1])
+    assert payload["status"] == "PASS", payload
+    assert payload["rendered"]["admissible_comparable"]["show_ev"] is True, payload
+    assert payload["rendered"]["covered_not_comparable"]["show_ev"] is False, payload
+    assert payload["rendered"]["covered_not_comparable"]["state"] == "ANALYSE_PARTIELLE", payload
+    for name in ("node_absent", "context_unsupported", "low_support", "pending", "error", "inadmissible", "covered_not_comparable"):
+        assert payload["rendered"][name]["className"] == "trainer-recommendation", payload
 
     print("trainer analysis-state contract: PASS")
 
