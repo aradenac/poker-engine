@@ -129,6 +129,34 @@ que lorsqu'un signal positif explicite existe (code positif, couverture
 vide retombe sur l'état sûr `DONNEES_INSUFFISANTES`, et le mapper reste
 idempotent.
 
+### Preuve explicite : un booléen, pas la présence d'un objet
+
+La simple présence d'une dimension (`ev_comparability` ou
+`recommendation_admissibility`), même sous la forme d'un objet vide ou d'un
+placeholder (`{}`, `{reason:'NOT_EVALUATED'}`, `{status:'NOT_EVALUATED'}`),
+n'est **jamais** une preuve d'évaluation. Un objet vide/placeholder est traité
+**exactement comme une dimension absente** : la sortie est
+`ev_comparability = {comparable:false, reason:'NOT_EVALUATED'}` et
+`recommendation_admissibility = {admissible:false, status:'NOT_EVALUATED'}`. Un
+tel objet n'ajoute aucun `ANALYSE_PARTIELLE`, ne synthétise aucun
+reason/status bloquant et ne promeut pas `computational_status` à `COMPLETE` :
+l'état retombe sur le repli sûr `DONNEES_INSUFFISANTES`.
+
+Une dimension n'est évaluée que si le producteur fournit une **preuve booléenne
+explicite** (`typeof ev_comparability.comparable === 'boolean'`,
+`typeof recommendation_admissibility.admissible === 'boolean'`) accompagnée
+d'un statut non sentinelle :
+
+- un `comparable:false` / `admissible:false` explicite est une preuve négative
+  **évaluée** et produit `ANALYSE_PARTIELLE` ;
+- un `comparable:true` / `admissible:true` explicite conserve
+  `ANALYSE_DISPONIBLE` ;
+- un `reason`/`status` valant `NOT_EVALUATED` reste explicitement non évalué et
+  ne resurface jamais comme reason code bloquant.
+
+Cette règle est rétro-compatible : les producteurs qui fournissent un verdict
+booléen explicite (adapter préflop, Review Inbox) conservent leur mapping.
+
 ## Règle d'agrégation du support statistique (Review Inbox)
 
 Le support statistique d'une main ne se déduit **jamais** du nombre de décisions

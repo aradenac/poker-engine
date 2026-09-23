@@ -482,6 +482,93 @@ const completeDecision=(()=>{
   }
 }
 
+// ---------------------------------------------------------------------------
+// 12. Fail-safe evidence rule for the comparability / admissibility dimensions
+//     (review #408 residual blocker). Shipping an empty/placeholder object is
+//     NOT proof the dimension was evaluated: it must behave exactly like an
+//     absent dimension and must never promote the computation or the state.
+// ---------------------------------------------------------------------------
+{
+  // 12a. Empty comparability object: not evaluated, never partial on its own.
+  const emptyComparability=State.mapAnalysisState({ev_comparability:{}});
+  assert.notEqual(emptyComparability.state,'ANALYSE_PARTIELLE','an empty ev_comparability object must not create a partial analysis');
+  assert.equal(emptyComparability.state,State.DEFAULT_UNKNOWN_STATE);
+  assert.equal(emptyComparability.state,'DONNEES_INSUFFISANTES');
+  assert.deepEqual(emptyComparability.ev_comparability,{comparable:false,reason:'NOT_EVALUATED'});
+  assert.equal(emptyComparability.computational_status,'NOT_EVALUATED','an empty dimension must not prove the computation ran');
+  assert.equal(State.validateAnalysisState(emptyComparability).valid,true);
+  assert.deepEqual(State.mapAnalysisState(emptyComparability),emptyComparability,'empty comparability mapping must be idempotent');
+
+  // 12b. Empty admissibility object: same fail-safe behavior, no invented cause.
+  const emptyAdmissibility=State.mapAnalysisState({recommendation_admissibility:{}});
+  assert.notEqual(emptyAdmissibility.state,'ANALYSE_PARTIELLE','an empty admissibility object must not create a partial analysis');
+  assert.equal(emptyAdmissibility.state,'DONNEES_INSUFFISANTES');
+  assert.equal(emptyAdmissibility.recommendation_admissibility.admissible,false);
+  assert.equal(emptyAdmissibility.recommendation_admissibility.status,'NOT_EVALUATED');
+  assert.deepEqual(emptyAdmissibility.recommendation_admissibility.reason_codes,[],'no blocking reason code may be synthesized');
+  assert.equal(emptyAdmissibility.computational_status,'NOT_EVALUATED');
+  assert.equal(State.validateAnalysisState(emptyAdmissibility).valid,true);
+  assert.deepEqual(State.mapAnalysisState(emptyAdmissibility),emptyAdmissibility,'empty admissibility mapping must be idempotent');
+
+  // A placeholder that only carries a sentinel reason/status or a non-boolean
+  // field is still not evaluated.
+  for(const placeholder of [{ev_comparability:{reason:'NOT_EVALUATED'}},
+    {ev_comparability:{reason:'MISSING_COMPARABLE_EV'}},{ev_comparability:{comparable:'true'}}]){
+    const mapped=State.mapAnalysisState(placeholder);
+    assert.notEqual(mapped.state,'ANALYSE_PARTIELLE',JSON.stringify(placeholder));
+    assert.deepEqual(mapped.ev_comparability,{comparable:false,reason:'NOT_EVALUATED'},JSON.stringify(placeholder));
+    assert.equal(mapped.computational_status,'NOT_EVALUATED',JSON.stringify(placeholder));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,JSON.stringify(placeholder));
+  }
+  for(const placeholder of [{recommendation_admissibility:{status:'NOT_EVALUATED'}},
+    {recommendation_admissibility:{admissible:'false',status:'ADMISSIBLE'}}]){
+    const mapped=State.mapAnalysisState(placeholder);
+    assert.notEqual(mapped.state,'ANALYSE_PARTIELLE',JSON.stringify(placeholder));
+    assert.equal(mapped.recommendation_admissibility.admissible,false,JSON.stringify(placeholder));
+    assert.equal(mapped.recommendation_admissibility.status,'NOT_EVALUATED',JSON.stringify(placeholder));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,JSON.stringify(placeholder));
+  }
+
+  // 12c. Explicit `comparable:false` / `admissible:false` ARE evaluated negative
+  //      evidence -> ANALYSE_PARTIELLE (never confused with a placeholder).
+  const negativeComparability=State.mapAnalysisState({ev_comparability:{comparable:false}});
+  assert.equal(negativeComparability.state,'ANALYSE_PARTIELLE');
+  assert.equal(negativeComparability.ev_comparability.comparable,false);
+  assert.deepEqual(State.mapAnalysisState(negativeComparability),negativeComparability);
+
+  const negativeAdmissibility=State.mapAnalysisState({recommendation_admissibility:{admissible:false}});
+  assert.equal(negativeAdmissibility.state,'ANALYSE_PARTIELLE');
+  assert.equal(negativeAdmissibility.recommendation_admissibility.admissible,false);
+  assert.deepEqual(State.mapAnalysisState(negativeAdmissibility),negativeAdmissibility);
+
+  // 12d. Explicit positive verdicts keep ANALYSE_DISPONIBLE.
+  const positiveComparability=State.mapAnalysisState({ev_comparability:{comparable:true}});
+  assert.equal(positiveComparability.state,'ANALYSE_DISPONIBLE');
+  assert.equal(positiveComparability.ev_comparability.comparable,true);
+  assert.deepEqual(State.mapAnalysisState(positiveComparability),positiveComparability);
+
+  const positiveAdmissibility=State.mapAnalysisState({recommendation_admissibility:{admissible:true,status:'ADMISSIBLE'}});
+  assert.equal(positiveAdmissibility.state,'ANALYSE_DISPONIBLE');
+  assert.equal(positiveAdmissibility.recommendation_admissibility.admissible,true);
+  assert.deepEqual(State.mapAnalysisState(positiveAdmissibility),positiveAdmissibility);
+
+  // 12e. A placeholder never masks a legitimate top-level code: it behaves like
+  //      an absent dimension (the code still drives the state/reason).
+  const placeholderWithCode=State.mapAnalysisState({reason_codes:['NON_COMPARABLE'],ev_comparability:{}});
+  assert.equal(placeholderWithCode.state,'ANALYSE_PARTIELLE');
+  assert.deepEqual(placeholderWithCode.ev_comparability,{comparable:false,reason:'NON_COMPARABLE'});
+  assert.deepEqual(State.mapAnalysisState(placeholderWithCode),placeholderWithCode);
+
+  // 12f. Idempotence + schema conformance across the new fixtures.
+  for(const input of [{ev_comparability:{}},{recommendation_admissibility:{}},
+    {ev_comparability:{comparable:false}},{recommendation_admissibility:{admissible:false}},
+    {ev_comparability:{comparable:true}},{recommendation_admissibility:{admissible:true,status:'ADMISSIBLE'}}]){
+    const mapped=State.mapAnalysisState(input);
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,'placeholder evidence mapping must be idempotent for '+JSON.stringify(input));
+  }
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:State.SCHEMA,

@@ -237,7 +237,11 @@
     if(isPlainObject(data.ev_comparability)){
       const row=data.ev_comparability;
       const reason=text(row.reason)||null;
-      const evaluated=upper(reason)!==NOT_EVALUATED;
+      // Fail-safe evidence rule (#408): shipping the object is not proof that the
+      // dimension was evaluated. It only counts as evaluated when the producer
+      // states an explicit boolean verdict; an empty/placeholder object (or
+      // `reason:'NOT_EVALUATED'`) is treated exactly like an absent dimension.
+      const evaluated=typeof row.comparable==='boolean'&&upper(reason)!==NOT_EVALUATED;
       return {
         provided:true,
         evaluated,
@@ -261,7 +265,11 @@
     if(isPlainObject(data.recommendation_admissibility)){
       const row=data.recommendation_admissibility;
       const status=text(row.status)||null;
-      const evaluated=upper(status)!==NOT_EVALUATED;
+      // Same fail-safe evidence rule as comparability (#408): only an explicit
+      // boolean `admissible` verdict (with a non-sentinel status) proves the
+      // dimension was evaluated. An empty/placeholder object is treated exactly
+      // like an absent dimension and never synthesizes a blocking cause.
+      const evaluated=typeof row.admissible==='boolean'&&upper(status)!==NOT_EVALUATED;
       return {
         provided:true,
         evaluated,
@@ -427,10 +435,9 @@
     if(comparabilityInput&&comparabilityInput.evaluated){
       const comparable=comparabilityInput.comparable===true;
       ev_comparability={comparable,reason:comparable?null:(comparabilityInput.reason||comparability_hint||firstHint(known,'admissibility_status')||known[0]||state)};
-    }else if(comparabilityInput&&!comparabilityInput.evaluated){
-      // Explicit "not evaluated": never a blocker, never comparable.
-      ev_comparability={comparable:false,reason:NOT_EVALUATED};
     }else if(comparability_hint){
+      // Not evaluated (missing dimension or empty/placeholder object, #408):
+      // behaves exactly like an absent dimension. Never a blocker on its own.
       ev_comparability={comparable:false,reason:comparability_hint};
     }else{
       ev_comparability={comparable:false,reason:NOT_EVALUATED};
@@ -442,16 +449,15 @@
       admissible=admissibilityInput.admissible===true;
       admissibility_status=admissibilityInput.status||(admissible?'ADMISSIBLE':(admissibility_hint||known[0]||state));
       admissibility_codes=admissibilityInput.reason_codes.slice();
-    }else if(admissibilityInput&&!admissibilityInput.evaluated){
-      // Explicit "not evaluated": keep admissibility closed (never admissible)
-      // but do not invent a blocking cause.
-      admissible=false;
-      admissibility_status=NOT_EVALUATED;
-      admissibility_codes=admissibilityInput.reason_codes.slice();
     }else{
+      // Not evaluated (missing dimension or empty/placeholder object, #408):
+      // behaves exactly like an absent dimension. Keep admissibility closed
+      // (never admissible) but do not invent a blocking cause.
       admissible=false;
       admissibility_status=admissibility_hint||NOT_EVALUATED;
-      admissibility_codes=[];
+      // A placeholder may still carry producer-supplied codes; preserve them
+      // verbatim (never synthesized) instead of dropping evidence.
+      admissibility_codes=admissibilityInput?admissibilityInput.reason_codes.slice():[];
     }
     if(!admissible&&admissibility_status!==NOT_EVALUATED&&!admissibility_codes.length){
       admissibility_codes=known.filter(code=>ADMISSIBILITY_CODE_SET.has(code));
