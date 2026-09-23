@@ -57,14 +57,37 @@ body.trainer-view-open{overflow-x:hidden}body.trainer-view-open #floatingEquity{
 @media(max-width:1050px){.trainer-grid{grid-template-columns:1fr}.trainer-side{position:static}.trainer-table-wrap{padding-right:120px}}
 @media(max-width:760px){.trainer-page{padding:8px 5px 20px}.trainer-shell{width:calc(100vw - 10px)}.trainer-grid{display:block}.trainer-side{margin-top:10px}.trainer-table-wrap{min-height:790px;padding:20px 105px 28px 6px}.trainer-table-wrap .poker-table{height:740px;border-radius:28px}.trainer-sizing{margin-left:0;width:100%}.trainer-head-spacer{display:none}.trainer-mode-group{width:100%;overflow:auto}.trainer-mode-btn{flex:1}.trainer-stat-grid{grid-template-columns:repeat(2,1fr)}}
 
-/* #394 — coque desktop (≥901px) : the side rail becomes a set of bounded
-   sub-view panels instead of one long scrollable column. The scroll of the
-   training canvas lives in the allow-listed `.app-canvas-pane` zone
-   (#trainerTable), so a short viewport never loses a reachable control. */
+/* #394 T5 — vue Training dédiée à hauteur fixe (≥901px).
+   Le Training est la coque de la vue `training` (`#trainerPage`), pas un bloc du
+   flux documentaire : `height:100dvh`, en-tête figé, corps contraint
+   (table + rail), aucun scroll global. La coque desktop de `index.html` fige
+   déjà `html`/`body` à `100dvh` et laisse la place de la bannière de
+   déploiement (`body::before`) : `.trainer-page` doit donc absorber la hauteur
+   restante (`flex:1 1 auto` + `min-height:0`) et jamais réimposer
+   `min-height:100vh`, sinon le bas de la vue (contrôles de décision) sort de
+   l'écran sans scroll possible.
+   L'excédent ne passe jamais par un défilement de vue : la table vit dans le
+   canvas borné `#trainerTable` (`.app-canvas-pane`) et le rail dans ses
+   sous-vues bornées (`.app-subview-panel.app-scroll-zone`), toutes deux
+   déclarées dans `APP_ALLOWED_SCROLL_ZONES`.
+   Rendu <901px : hors périmètre de cette règle, la page garde son flux normal. */
 @media(min-width:901px){
-  .trainer-side{display:flex;flex-direction:column;gap:10px}
+  /* coque plein écran */
+  .trainer-page{display:flex;flex-direction:column;height:100dvh;max-height:100dvh;min-height:0;overflow:hidden;padding:12px 18px 14px}
+  .trainer-shell{display:flex;flex-direction:column;flex:1 1 auto;width:100%;max-width:none;min-height:0;margin:0;overflow:hidden}
+  .trainer-head{flex:0 0 auto;margin-bottom:10px}
+  /* corps contraint : la rangée table + rail tient la hauteur restante */
+  .trainer-grid{flex:1 1 auto;min-height:0;align-items:stretch;grid-template-columns:minmax(0,1fr) 330px}
+  .trainer-main{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .trainer-main>.trainer-toolbar,.trainer-main>#trainerControls,.trainer-main>#trainerTargetPanel{flex:0 0 auto}
+  #trainerTable{flex:1 1 auto;min-height:0}
+  /* la table s'ajuste à la hauteur disponible (écran de référence 1500x1000)
+     sans descendre sous une géométrie lisible */
+  .trainer-table-wrap{min-height:0;padding-top:14px;padding-bottom:14px}
+  .trainer-table-wrap .poker-table{height:clamp(360px,58dvh,560px)}
+  /* panneaux latéraux : rail de sous-vues bornées, jamais une colonne défilante */
+  .trainer-side{display:flex;flex-direction:column;gap:10px;position:static;top:auto;min-height:0;overflow:hidden}
   .trainer-rail-panel{display:grid;gap:10px;flex:1 1 auto;min-height:0;align-content:start}
   .trainer-side>.app-subviews{margin:0 0 2px}
   .trainer-side>.app-subviews .app-subview-tab{padding:7px 10px;font-size:11px}
-  .trainer-table-wrap{min-height:0;padding-top:18px;padding-bottom:18px}
 }

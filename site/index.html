@@ -1169,13 +1169,11 @@
     #opponentsSection>.opponents{flex:1 1 auto;min-height:0}
     .matrixwrap{overflow:hidden}
     .hh-list{flex:1 1 auto;min-height:0;max-height:none;overflow:hidden}
-    .trainer-page,.replayer-page{height:100dvh;min-height:0;padding:12px 18px 14px}
-    .trainer-shell,.replayer-page-shell{width:100%;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
-    .trainer-grid{flex:1 1 auto;min-height:0;align-items:stretch}
-    .trainer-main{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-    .trainer-main>.trainer-toolbar,.trainer-main>#trainerControls,.trainer-main>#trainerTargetPanel{flex:0 0 auto}
-    #trainerTable{flex:1 1 auto;min-height:0}
-    .trainer-side{position:static;top:auto;min-height:0;overflow:hidden}
+    .replayer-page{height:100dvh;min-height:0;padding:12px 18px 14px}
+    .replayer-page-shell{width:100%;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    /* #394 T5 : le Training est une coque dédiée à hauteur fixe. Ses règles de
+       coque (100dvh, corps contraint, table + rail ajustés) vivent avec les
+       primitives de sa table, dans `site/trainer.css` : une seule autorité. */
     #replayerSection{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
     #replayerSection>#hhVisualReplay,#replayerSection>#hhReplayDetail{flex:1 1 auto;min-height:0}
   }
@@ -1619,7 +1617,7 @@
 <div id="trainerPage" class="trainer-page mode-hidden" data-view-shell="training" aria-hidden="true">
   <div class="trainer-shell">
     <div class="trainer-head">
-      <button id="trainerBackBtn" type="button" class="secondary">← Accueil</button>
+      <button id="trainerBackBtn" type="button" class="secondary app-view-back">← Accueil</button>
       <div>
         <div class="trainer-title">Training 6-max</div>
         <div class="trainer-sub">100 BB · <span id="trainerPopulationIdentity">population en chargement</span> · coaching ACTION / SIZING / EV</div>

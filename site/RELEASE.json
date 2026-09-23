@@ -61,7 +61,7 @@
           "git_blob_sha": "211bf60f5dbc8b14794554cc763059fabf58948d"
         },
         "site/index.html": {
-          "git_blob_sha": "d8ca99d96de957ad728bf1d3bc0df72e1d237aad"
+          "git_blob_sha": "c379c474abfc85ff20f88dbab09c8d4aede1c423"
         },
         "site/pack-identity.js": {
           "git_blob_sha": "fa3fb310e75cff31bf7abe34ec8c83fc3de410ea"
@@ -94,10 +94,10 @@
           "git_blob_sha": "8541cf75b27afbeba2580864ef744da3a9b40457"
         },
         "site/trainer.css": {
-          "git_blob_sha": "6f44a7fefd9780f34414afcddaa7214a777a08a1"
+          "git_blob_sha": "8974c3ba62bf2aefeb077bc3d5be9d26e7c3e431"
         },
         "site/trainer.js": {
-          "git_blob_sha": "2fdbf75a907f9dae7665a55ed5edab10c6e5e8f4"
+          "git_blob_sha": "70490af692872b663a74ad1d2b180cefe9446568"
         },
         "site/training/leak-scenario-selector.js": {
           "git_blob_sha": "f3569c90b771917a33ef1a12c214f0879c3fdf3e"

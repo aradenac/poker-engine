@@ -1436,12 +1436,28 @@ function trainerRender(){
   }
   trainerContinueBtn&&(trainerContinueBtn.style.display=trainerState.pauseAfterDecision?"inline-block":"none");
 }
+/* #394 T5 — the Training view is the full-height shell `#trainerPage`
+   (`data-view-shell="training"`). The Trainer owns the compute hold of its own
+   lane: it is taken for as long as the view is mounted and released on the way
+   back to the Accueil. `updateAppView()` mirrors that hold from the mounted
+   view, so a reload, a deep link or a mode change can never leave it held. */
 async function trainerOpen(options={}){
   const deferHand=options&&options.deferHand===true;
-  window.pokerComputeScheduler.hold('training',true);trainerState.open=true;state.appView="training";updateAppView();window.scrollTo({top:0,behavior:"auto"});trainerRender();
+  window.pokerComputeScheduler.hold('training',true);
+  trainerState.open=true;
+  state.appView="training";
+  updateAppView();
+  window.scrollTo({top:0,behavior:"auto"});
+  trainerRender();
   if(await trainerEnsureModels()){if(!deferHand&&!trainerState.hand)await trainerNewHand();}
 }
-function trainerClose(){window.pokerComputeScheduler.hold('training',false);trainerState.open=false;state.appView="home";updateAppView();window.scrollTo({top:0,behavior:"auto"});}
+function trainerClose(){
+  window.pokerComputeScheduler.hold('training',false);
+  trainerState.open=false;
+  state.appView="home";
+  updateAppView();
+  window.scrollTo({top:0,behavior:"auto"});
+}
 function trainerSetMode(mode){if(!["guided","training","test"].includes(mode))return;trainerState.mode=mode;trainerState.feedback=null;document.querySelectorAll("[data-trainer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.trainerMode===mode));const needGuide=mode==="guided"&&trainerState.hand?.awaitingHero&&!trainerState.recommendation&&!trainerState.busy;trainerRender();if(needGuide)void trainerComputeRecommendation();}
 
 trainerOpenBtn?.addEventListener("click",trainerOpen);
