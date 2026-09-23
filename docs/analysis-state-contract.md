@@ -131,6 +131,14 @@ idempotent.
 
 ### Preuve explicite : un booléen, pas la présence d'un objet
 
+**L'absence d'évidence n'est pas une conclusion négative.** Un conteneur de
+dimension vide (`{}`) ou un placeholder (ne portant qu'un sentinel
+`NOT_EVALUATED`) ne doit **jamais** être interprété comme un verdict négatif
+évalué : ni `comparable:false` évalué, ni `admissible:false` évalué. Il reste
+explicitement `NOT_EVALUATED`, c'est-à-dire **non évalué**. Un verdict négatif
+n'existe que lorsqu'il est fourni comme un booléen explicite accompagné d'un
+statut non sentinelle (voir ci-dessous).
+
 La simple présence d'une dimension (`ev_comparability` ou
 `recommendation_admissibility`), même sous la forme d'un objet vide ou d'un
 placeholder (`{}`, `{reason:'NOT_EVALUATED'}`, `{status:'NOT_EVALUATED'}`),

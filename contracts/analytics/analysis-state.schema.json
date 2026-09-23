@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://poker-engine.local/contracts/analytics/analysis-state.schema.json",
   "title": "Canonical poker analysis state",
-  "description": "Versioned, surface-independent analysis-state object (poker-analysis-state/v1) shared by Review (Inbox/Dashboard), Replayer (Hero/opponent) and Training. The top-level `state` is the only user-facing label: exactly one of six explicit states is emitted per analysis subject. The technical dimensions are kept strictly separate so a single primary state never collapses distinct causes, and so a partial / non-comparable / pending / worker-error analysis can be represented without inventing a generic message. 'couverture' (coverage) must never be used as a primary user-facing label; it only survives as an internal generation dimension.",
+  "description": "Versioned, surface-independent analysis-state object (poker-analysis-state/v1) shared by Review (Inbox/Dashboard), Replayer (Hero/opponent) and Training. The top-level `state` is the only user-facing label: exactly one of six explicit states is emitted per analysis subject. The technical dimensions are kept strictly separate so a single primary state never collapses distinct causes, and so a partial / non-comparable / pending / worker-error analysis can be represented without inventing a generic message. 'couverture' (coverage) must never be used as a primary user-facing label; it only survives as an internal generation dimension. An empty or placeholder dimension container (e.g. `ev_comparability:{}` or `recommendation_admissibility:{}`) is treated exactly like an absent dimension: the absence of evidence is never an evaluated negative conclusion, and `NOT_EVALUATED` remains an explicitly un-evaluated sentinel (never an optimistic value and never a synthesized blocking cause).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -42,7 +42,7 @@
       "uniqueItems": true
     },
     "computational_status": {
-      "description": "Whether the deterministic computation actually finished. Kept separate from statistical support and from model support so that 'calcul non terminé' is never confused with a scientific cause. `NOT_EVALUATED` is the explicit fail-safe status used when the producer does not supply this dimension; it must never be replaced by `COMPLETE` without explicit positive evidence.",
+      "description": "Whether the deterministic computation actually finished. Kept separate from statistical support and from model support so that 'calcul non terminé' is never confused with a scientific cause. `NOT_EVALUATED` is the explicit fail-safe status used when the producer does not supply this dimension; it must never be replaced by `COMPLETE` without explicit positive evidence. An empty or placeholder container is not positive evidence, so this dimension stays `NOT_EVALUATED` until the producer supplies explicit evidence.",
       "enum": [
         "NOT_STARTED",
         "PENDING",
@@ -89,7 +89,7 @@
       }
     },
     "ev_comparability": {
-      "description": "EV comparability dimension. `comparable` is true only when the played line and the recommendation are evaluated under the same admissible reference; `reason` names the blocking cause otherwise. When the producer supplies no comparability evidence, `comparable` is false and `reason` is `NOT_EVALUATED`; the mere absence of a blocker is never treated as comparability. Never derived from support alone.",
+      "description": "EV comparability dimension. `comparable` is true only when the played line and the recommendation are evaluated under the same admissible reference; `reason` names the blocking cause otherwise. When the producer supplies no comparability evidence, `comparable` is false and `reason` is `NOT_EVALUATED`; the mere absence of a blocker is never treated as comparability. An empty or placeholder container is not an evaluated negative: `comparable` stays false with `reason` `NOT_EVALUATED`, never a synthesized blocker, so `NOT_EVALUATED` remains explicitly un-evaluated. Never derived from support alone.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -106,7 +106,7 @@
       }
     },
     "recommendation_admissibility": {
-      "description": "Recommendation admissibility dimension, kept separate from comparability and from model support. `admissible` is the sole gate guarding whether a Hero recommendation/EV may be exposed. When the producer supplies no admissibility evidence, `admissible` is false and `status` is `NOT_EVALUATED`; the absence of a blocker is never treated as admissibility.",
+      "description": "Recommendation admissibility dimension, kept separate from comparability and from model support. `admissible` is the sole gate guarding whether a Hero recommendation/EV may be exposed. When the producer supplies no admissibility evidence, `admissible` is false and `status` is `NOT_EVALUATED`; the absence of a blocker is never treated as admissibility. An empty or placeholder container is not an evaluated negative: `admissible` stays false with `status` `NOT_EVALUATED` and no synthesized blocking reason code, so `NOT_EVALUATED` remains explicitly un-evaluated.",
       "type": "object",
       "additionalProperties": false,
       "required": [

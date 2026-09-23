@@ -209,6 +209,30 @@ class AnalysisStateContract(unittest.TestCase):
         self.assertFalse(fail_safe[0]["recommendation_admissibility"]["admissible"])
         self.assertFalse(fail_safe[0]["ev_comparability"]["comparable"])
 
+    def test_empty_container_semantics_are_documented_and_backward_compatible(self):
+        # #393 z2p: an empty / placeholder dimension container is NOT an
+        # evaluated negative conclusion; NOT_EVALUATED stays explicitly
+        # un-evaluated. The rule must be normative documentation (schema + doc)
+        # while remaining backward-compatible (no required/enum change).
+        for dimension in ("ev_comparability", "recommendation_admissibility", "computational_status"):
+            description = SCHEMA["properties"][dimension]["description"].lower()
+            self.assertTrue(
+                "placeholder" in description or "empty" in description,
+                f"{dimension} must document the empty/placeholder rule",
+            )
+        # The doc states the exact semantics, not only the fail-safe fallback.
+        self.assertIn("placeholder", DOC_FLAT)
+        self.assertIn("conclusion négative", DOC_FLAT)
+        self.assertIn("absence d'évidence", DOC_FLAT)
+        # Backward compatibility: the six states and the computational enum are
+        # unchanged and still admit the explicit un-evaluated sentinel.
+        self.assertEqual(len(SCHEMA["properties"]["state"]["enum"]), 6)
+        self.assertIn("NOT_EVALUATED", SCHEMA["properties"]["computational_status"]["enum"])
+        self.assertEqual(
+            set(SCHEMA["required"]),
+            {"schema", "state", "reason_codes", *EXPECTED_DIMENSIONS},
+        )
+
     def test_canonical_example_is_consistent(self):
         examples = SCHEMA["examples"]
         self.assertTrue(examples)
