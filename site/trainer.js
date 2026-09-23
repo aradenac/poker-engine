@@ -1200,28 +1200,6 @@ function trainerRenderTable(){
 function trainerPreflopTargetText(target){
   const v=Number(target?.target_total_bb);return Number.isFinite(v)?`total ${trainerFmtBB(v)}`:"0 BB";
 }
-function trainerPreflopDecisionSummaryHtml(decision){
-  const covered=window.PokerPreflopRuntime?.isCovered(decision);
-  const view=trainerPreflopDecisionView(decision);
-  // The reason codes and the separated dimensions only live in this secondary
-  // panel; the primary label above them is the shared taxonomy state.
-  const technical=trainerAnalysisDimensionsHtml(view.analysis);
-  if(!covered){
-    return `<div class="trainer-feedback-body"><b>${escapeHtml(view.taxonomy_label||"Spot non supporté")}</b> · aucune recommandation EV validée pour <b>${escapeHtml(decision?.facing_context||"UNKNOWN")}</b>. La candidate #108 reste inactive.</div>${technical}`;
-  }
-  const support=Number(decision.support?.observations)||0;
-  const rows=(decision.alternatives||[]).map(a=>`<div class="trainer-feedback-body"><b>${escapeHtml(a.action)}</b> · ${escapeHtml(trainerPreflopTargetText(a.target_sizing))} · coût ${escapeHtml(trainerFmtBB(a.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(a.ev_bb))}</b></div>`).join("");
-  const played=decision.ev_comparable
-    ?`EV jouée <b>${escapeHtml(trainerFmtBB(decision.played_ev_bb))}</b> · perte EV <b>${escapeHtml(trainerFmtBB(Math.max(0,Number(decision.recommended_ev_bb)-Number(decision.played_ev_bb))))}</b>.`
-    :decision.played_action?`Action jouée <b>${escapeHtml(decision.played_action)}</b> non évaluée par cette référence : aucun ΔEV inventé.`:"";
-  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>${technical}`;
-}
-function trainerBestText(rec){
-  if(!rec||rec.error)return "—";
-  const label=String(rec.bestLabel||"—"),kind=trainerRecommendationKind(trainerState.hand,rec),upper=label.toUpperCase();
-  const action=kind&&!upper.startsWith(kind)?`${kind} · `:"",cost=Number(rec.bestCostBB),size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";
-  return `${action}${label}${size}`;
-}
 // Precise non-recommendation cause, derived from the shared taxonomy
 // dimensions. Rule D6 (`view.show_ev`) alone decides whether a Hero
 // recommendation/EV may be exposed; this helper only names the actual blocking
@@ -1250,6 +1228,38 @@ function trainerPreflopRecommendationCause(view){
     return "Analyse partielle · les EV de la décision jouée et de la recommandation ne sont pas comparables.";
   }
   return "Aucune recommandation EV validée pour ce spot.";
+}
+// Secondary feedback summary. Rule D6 (`view.show_ev`) is the single gate for
+// every exposed EV/recommendation field below: the recommended action, its
+// target sizing, its EV, the alternative rows' EV and the ΔEV/perte EV derived
+// from the recommended reference. When the gate is closed those fields are all
+// absent; the panel still renders the legitimate technical layer (taxonomy
+// state, reason codes, computational/model support, statistical support,
+// comparability/admissibility reasons and the observed action) plus the precise
+// blocking cause. No local D6 rule is duplicated here.
+function trainerPreflopDecisionSummaryHtml(decision){
+  const view=trainerPreflopDecisionView(decision);
+  // The reason codes and the separated dimensions only live in this secondary
+  // panel; the primary label above them is the shared taxonomy state.
+  const technical=trainerAnalysisDimensionsHtml(view.analysis);
+  if(!view.show_ev){
+    const label=escapeHtml(trainerPreflopTaxonomyLabel(decision));
+    const cause=escapeHtml(trainerPreflopRecommendationCause(view));
+    const observed=decision?.played_action?`<div class="trainer-feedback-body">Action observée : <b>${escapeHtml(decision.played_action)}</b> · non évaluée par cette référence (aucun ΔEV exposé).</div>`:"";
+    return `<div class="trainer-feedback-body"><b>${label}</b> · aucune recommandation EV exposable · ${cause}</div>${observed}${technical}`;
+  }
+  const support=Number(decision.support?.observations)||0;
+  const rows=(decision.alternatives||[]).map(a=>`<div class="trainer-feedback-body"><b>${escapeHtml(a.action)}</b> · ${escapeHtml(trainerPreflopTargetText(a.target_sizing))} · coût ${escapeHtml(trainerFmtBB(a.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(a.ev_bb))}</b></div>`).join("");
+  const played=decision.ev_comparable
+    ?`EV jouée <b>${escapeHtml(trainerFmtBB(decision.played_ev_bb))}</b> · perte EV <b>${escapeHtml(trainerFmtBB(Math.max(0,Number(decision.recommended_ev_bb)-Number(decision.played_ev_bb))))}</b>.`
+    :decision.played_action?`Action jouée <b>${escapeHtml(decision.played_action)}</b> non évaluée par cette référence : aucun ΔEV inventé.`:"";
+  return `<div class="trainer-feedback-body">Recommandé : <b>${escapeHtml(decision.recommended_action)}</b> · ${escapeHtml(trainerPreflopTargetText(decision.recommended_target_sizing))} · coût ${escapeHtml(trainerFmtBB(decision.incremental_cost_bb))} · EV <b>${escapeHtml(trainerFmtBB(decision.recommended_ev_bb))}</b> · support ${support.toLocaleString("fr-FR")}.</div>${rows}<div class="trainer-feedback-body">${played}</div>${technical}`;
+}
+function trainerBestText(rec){
+  if(!rec||rec.error)return "—";
+  const label=String(rec.bestLabel||"—"),kind=trainerRecommendationKind(trainerState.hand,rec),upper=label.toUpperCase();
+  const action=kind&&!upper.startsWith(kind)?`${kind} · `:"",cost=Number(rec.bestCostBB),size=Number.isFinite(cost)?` · ${trainerFmtBB(cost)}`:"";
+  return `${action}${label}${size}`;
 }
 function trainerRenderRecommendation(){
   if(!trainerRecommendation)return;const h=trainerState.hand,rec=trainerState.recommendation;
@@ -1291,8 +1301,11 @@ function trainerRenderFeedback(){
   }
   const d=f.detail,r=f.row;
   if(d?.preflopDecision){
-    const covered=window.PokerPreflopRuntime?.isCovered(d.preflopDecision),comparable=!!d.preflopDecision.ev_comparable;
-    trainerFeedback.className=`trainer-feedback ${covered?(comparable?(r.cls==="poor"?"poor":r.cls==="good"?"good":"close"):"close"):"close"}`;
+    // Canonical D6 state (`view.show_ev`) drives both the feedback headline
+    // class and the summary gate; the local covered/ev_comparable combination
+    // is no longer recombined here.
+    const view=trainerPreflopDecisionView(d.preflopDecision);
+    trainerFeedback.className=`trainer-feedback ${view.show_ev?(r.cls==="poor"?"poor":r.cls==="good"?"good":"close"):"close"}`;
     const title=trainerPreflopTaxonomyLabel(d.preflopDecision);
     trainerFeedback.innerHTML=`<div class="trainer-feedback-title">${escapeHtml(title)}</div>${trainerPreflopDecisionSummaryHtml(d.preflopDecision)}`;
     return;
