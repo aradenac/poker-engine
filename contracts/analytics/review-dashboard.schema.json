@@ -121,7 +121,12 @@
             "ERREUR_CALCUL"
           ]
         },
-        "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "reason_codes": {
+          "description": "Secondary/technical reason codes only (#393 T5). They carry the legacy EMPTY_STATES-derived input (NO_HANDS, ANALYSIS_PENDING, ANALYSIS_INCOMPLETE, NO_SIGNIFICANT_LOSS, READY) plus any cause code (e.g. INSUFFICIENT_SUPPORT), and are consumed by the details view/tooltip. They must never be used as the primary user-facing message: the only user-facing surface is `state` plus `analysis_state_label`. The explicit empty-state -> reason-code mapping is exported by src/analytics/review-dashboard.js as EMPTY_STATE_REASON_CODES.",
+          "type": "array",
+          "items": {"type": "string"},
+          "uniqueItems": true
+        },
         "computational_status": {
           "description": "Whether the deterministic computation actually finished, kept separate from the scientific dimensions and identical to the canonical schema. NOT_EVALUATED is the explicit fail-safe status used when the producer does not supply this dimension; it must never be replaced by COMPLETE without explicit positive evidence.",
           "enum": ["NOT_STARTED", "PENDING", "RUNNING", "COMPLETE", "FAILED", "NOT_EVALUATED"]

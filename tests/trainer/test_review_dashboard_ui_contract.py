@@ -88,6 +88,25 @@ def main() -> None:
     for pair in ("NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"):
         assert pair in mapping, pair
 
+    # #393 T5: the explicit empty-state -> taxonomy mapping is exported by the
+    # shared dashboard module, and every precise French message is present in the
+    # UI, so no screen can collapse two derivable causes into a single generic
+    # message. The technical codes stay documented as a secondary field.
+    dashboard_js = (ROOT / "src/analytics/review-dashboard.js").read_text(encoding="utf-8")
+    assert "EMPTY_STATE_REASON_CODES" in dashboard_js
+    assert "INCOMPLETE_SUPPORT_SHORTAGE" in dashboard_js
+    for code in ("NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"):
+        assert code + ":['" in dashboard_js, code
+    assert "EMPTY_STATE_REASON_CODES" in schema["$defs"]["analysis_state"]["properties"]["reason_codes"]["description"]
+    for message in (
+        "Analyse partielle ·",
+        "Données insuffisantes ·",
+        "Calcul en cours ·",
+        "Spot non supporté ·",
+        "Erreur de calcul ·",
+    ):
+        assert message in index, message
+
     assert 'return openReviewInboxDeepLink(cta.target);' in index
     assert 'target.dimension!=="spot_family"' in index
     assert 'UNSUPPORTED_LEAK_DIMENSION' in index

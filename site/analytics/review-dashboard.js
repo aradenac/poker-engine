@@ -108,22 +108,39 @@
     if(metrics.total_ev_loss_bb<=EPS)return EMPTY_STATES.NO_SIGNIFICANT_LOSS;
     return EMPTY_STATES.READY;
   }
-  // #393 T4: derive the dominant scope state from the shared
+  // #393 T4/T5: derive the dominant scope state from the shared
   // `poker-analysis-state/v1` taxonomy instead of exposing the legacy empty
   // state as the only user-facing label. The legacy EMPTY_STATES code stays the
   // technical input; the taxonomy `analysis_state.state` plus its French label
   // are the primary surface, while the technical reason codes only live in the
   // secondary `analysis_state.reason_codes` field consumed by the details view.
   // The shared mapper applies its own precedence, so a scope carrying several
-  // causes still resolves to exactly one dominant state. ANALYSIS_INCOMPLETE is
-  // disambiguated by cause: a scope without any analyzable decision is a support
-  // shortage (DONNEES_INSUFFISANTES), otherwise it is a partial analysis
-  // (ANALYSE_PARTIELLE).
+  // causes still resolves to exactly one dominant state.
+  //
+  // The mapping below is the explicit, exhaustive and exported source of truth
+  // for the acceptance mapping (NO_HANDS -> DONNEES_INSUFFISANTES,
+  // ANALYSIS_PENDING -> CALCUL_EN_COURS, NO_SIGNIFICANT_LOSS / READY ->
+  // ANALYSE_DISPONIBLE). It is exported so tests can prove that every legacy
+  // empty state has a derived taxonomy state and that no screen can fall back to
+  // a single generic message.
+  const EMPTY_STATE_REASON_CODES={
+    NO_HANDS:['NO_HANDS'],
+    ANALYSIS_PENDING:['ANALYSIS_PENDING'],
+    ANALYSIS_INCOMPLETE:['ANALYSIS_INCOMPLETE'],
+    NO_SIGNIFICANT_LOSS:['NO_SIGNIFICANT_LOSS'],
+    READY:['READY']
+  };
+  // ANALYSIS_INCOMPLETE is disambiguated by cause: a scope without any analyzable
+  // decision is a support shortage (DONNEES_INSUFFISANTES), otherwise it is a
+  // partial analysis (ANALYSE_PARTIELLE). The extra support code is the only
+  // cause-dependent member of the mapping.
+  const INCOMPLETE_SUPPORT_SHORTAGE='INSUFFICIENT_SUPPORT';
   function analysisStateReasonCodes(state,metrics){
-    if(state!==EMPTY_STATES.ANALYSIS_INCOMPLETE)return [state];
-    return Number(metrics.decisions_analyzed)>0
-      ?[EMPTY_STATES.ANALYSIS_INCOMPLETE]
-      :[EMPTY_STATES.ANALYSIS_INCOMPLETE,'INSUFFICIENT_SUPPORT'];
+    const base=EMPTY_STATE_REASON_CODES[state]||[state];
+    if(state!==EMPTY_STATES.ANALYSIS_INCOMPLETE)return base.slice();
+    return Number(metrics&&metrics.decisions_analyzed)>0
+      ?base.slice()
+      :base.concat([INCOMPLETE_SUPPORT_SHORTAGE]);
   }
   function analysisStateFor(state,metrics){
     if(!State||typeof State.mapAnalysisState!=='function')return null;
@@ -212,5 +229,10 @@
     return dashboardFrom(inbox,adapted,input.reviewScores||{},input);
   }
 
-  return {DASHBOARD_SCHEMA,CTA_SCHEMA,EMPTY_STATES,buildReviewDashboard,buildReviewDashboards};
+  return {
+    DASHBOARD_SCHEMA,CTA_SCHEMA,EMPTY_STATES,
+    EMPTY_STATE_REASON_CODES,INCOMPLETE_SUPPORT_SHORTAGE,
+    analysisStateReasonCodes,analysisStateFor,analysisStateLabel,
+    buildReviewDashboard,buildReviewDashboards
+  };
 });

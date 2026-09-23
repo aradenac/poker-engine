@@ -285,6 +285,59 @@ assert.equal(Math.round(reconstructed*1e9)/1e9,dashboard.metrics.total_ev_loss_b
   assert.equal(State.isAnalysisState(s.analysis_state),true);
 }
 
+// #393 T5: the legacy empty-state -> taxonomy mapping is an explicit,
+// exhaustive, exported table. Every dashboard empty state must have exactly one
+// derived user-facing taxonomy state, so no screen can collapse two causes into
+// a single generic message.
+{
+  assert.deepEqual(
+    Object.keys(Dashboard.EMPTY_STATE_REASON_CODES).sort(),
+    Object.values(Dashboard.EMPTY_STATES).sort(),
+    'every legacy empty state must have an explicit taxonomy mapping'
+  );
+  assert.deepEqual(Dashboard.EMPTY_STATE_REASON_CODES,{
+    NO_HANDS:['NO_HANDS'],
+    ANALYSIS_PENDING:['ANALYSIS_PENDING'],
+    ANALYSIS_INCOMPLETE:['ANALYSIS_INCOMPLETE'],
+    NO_SIGNIFICANT_LOSS:['NO_SIGNIFICANT_LOSS'],
+    READY:['READY']
+  });
+  // Cause disambiguation is the only dynamic part of the mapping.
+  assert.deepEqual(Dashboard.analysisStateReasonCodes('READY',{}),['READY']);
+  assert.deepEqual(Dashboard.analysisStateReasonCodes('NO_HANDS',{}),['NO_HANDS']);
+  assert.deepEqual(
+    Dashboard.analysisStateReasonCodes('ANALYSIS_INCOMPLETE',{decisions_analyzed:2}),
+    ['ANALYSIS_INCOMPLETE'],
+    'incomplete with analyzable decisions stays a partial analysis'
+  );
+  assert.deepEqual(
+    Dashboard.analysisStateReasonCodes('ANALYSIS_INCOMPLETE',{decisions_analyzed:0}),
+    ['ANALYSIS_INCOMPLETE',Dashboard.INCOMPLETE_SUPPORT_SHORTAGE],
+    'incomplete without any analyzable decision is a support shortage'
+  );
+  // Every non-incomplete mapping resolves to its documented taxonomy state
+  // through the shared mapper.
+  const expectedStates={
+    NO_HANDS:State.ANALYSIS_STATES.DONNEES_INSUFFISANTES,
+    ANALYSIS_PENDING:State.ANALYSIS_STATES.CALCUL_EN_COURS,
+    NO_SIGNIFICANT_LOSS:State.ANALYSIS_STATES.ANALYSE_DISPONIBLE,
+    READY:State.ANALYSIS_STATES.ANALYSE_DISPONIBLE
+  };
+  for(const [legacyState,expectedState] of Object.entries(expectedStates)){
+    const mapped=Dashboard.analysisStateFor(legacyState,{});
+    assert.equal(mapped.state,expectedState,legacyState+' derives '+expectedState);
+    assert.equal(State.isAnalysisState(mapped),true,legacyState+' must expose a schema-valid analysis_state');
+  }
+  assert.equal(
+    Dashboard.analysisStateFor('ANALYSIS_INCOMPLETE',{decisions_analyzed:0}).state,
+    State.ANALYSIS_STATES.DONNEES_INSUFFISANTES
+  );
+  assert.equal(
+    Dashboard.analysisStateFor('ANALYSIS_INCOMPLETE',{decisions_analyzed:1}).state,
+    State.ANALYSIS_STATES.ANALYSE_PARTIELLE
+  );
+}
+
 {
   const splitScores=JSON.parse(JSON.stringify(reviewScores));
   splitScores['100003'].signature='sig-B';
