@@ -655,6 +655,73 @@ const completeDecision=(()=>{
   assert.equal(Buffer.compare(source,mirror),0,'src/analytics/analysis-state.js and site/analytics/analysis-state.js must be byte-identical');
 }
 
+// ---------------------------------------------------------------------------
+// 14. Review #408 explicit-evidence regression matrix. Consolidated lock for the
+//     exact fixtures required by the review: an empty container is un-evaluated
+//     (never a partial analysis, never COMPLETE), an explicit negative verdict
+//     carrying a real blocking code stays ANALYSE_PARTIELLE, and an explicit
+//     positive verdict keeps ANALYSE_DISPONIBLE. Every fixture also asserts
+//     idempotence and schema validity, and the edit source is re-checked against
+//     the served mirror so this block is self-contained.
+// ---------------------------------------------------------------------------
+{
+  // 14a. Empty container: absence of evidence, never an evaluated negative.
+  const UN_EVALUATED={comparable:false,reason:'NOT_EVALUATED'};
+  for(const {label,input} of [
+    {label:'ev_comparability:{}',input:{ev_comparability:{}}},
+    {label:'recommendation_admissibility:{}',input:{recommendation_admissibility:{}}}
+  ]){
+    const mapped=State.mapAnalysisState(input);
+    assert.notEqual(mapped.state,'ANALYSE_PARTIELLE',label+': an empty container must not create a partial analysis');
+    assert.equal(mapped.state,'DONNEES_INSUFFISANTES',label+': an empty container falls back to the safe state');
+    assert.deepEqual(mapped.ev_comparability,UN_EVALUATED,label+': comparability stays explicitly un-evaluated');
+    assert.equal(mapped.recommendation_admissibility.admissible,false,label+': admissibility stays closed');
+    assert.equal(mapped.recommendation_admissibility.status,'NOT_EVALUATED',label+': admissibility stays explicitly un-evaluated');
+    assert.deepEqual(mapped.recommendation_admissibility.reason_codes,[],label+': no blocking reason code may be synthesized');
+    assert.notEqual(mapped.computational_status,'COMPLETE',label+': an empty container must not prove the computation ran');
+    assert.equal(mapped.computational_status,'NOT_EVALUATED',label+': computation stays un-evaluated');
+    assert.equal(State.validateAnalysisState(mapped).valid,true,label+': mapped object must be schema-valid');
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,label+': mapping must be idempotent');
+  }
+
+  // 14b. Explicit evaluated negative verdicts paired with a real blocking code
+  //      are verified evidence -> ANALYSE_PARTIELLE, not placeholders.
+  const negativeComparability=State.mapAnalysisState({ev_comparability:{comparable:false,reason:'MISSING_COMPARABLE_EV'}});
+  assert.equal(negativeComparability.state,'ANALYSE_PARTIELLE');
+  assert.equal(negativeComparability.ev_comparability.comparable,false);
+  assert.equal(negativeComparability.ev_comparability.reason,'MISSING_COMPARABLE_EV','the real blocking code must be preserved verbatim');
+  assert.equal(State.validateAnalysisState(negativeComparability).valid,true);
+  assert.deepEqual(State.mapAnalysisState(negativeComparability),negativeComparability,'negative comparability must be idempotent');
+
+  const negativeAdmissibility=State.mapAnalysisState({recommendation_admissibility:{admissible:false,status:'RECOMMENDATION_NOT_ADMISSIBLE'}});
+  assert.equal(negativeAdmissibility.state,'ANALYSE_PARTIELLE');
+  assert.equal(negativeAdmissibility.recommendation_admissibility.admissible,false);
+  assert.equal(negativeAdmissibility.recommendation_admissibility.status,'RECOMMENDATION_NOT_ADMISSIBLE','the real blocking status must be preserved verbatim');
+  assert.ok(negativeAdmissibility.recommendation_admissibility.reason_codes.includes('RECOMMENDATION_NOT_ADMISSIBLE'));
+  assert.equal(State.validateAnalysisState(negativeAdmissibility).valid,true);
+  assert.deepEqual(State.mapAnalysisState(negativeAdmissibility),negativeAdmissibility,'negative admissibility must be idempotent');
+
+  // 14c. Explicit evaluated positive verdicts keep ANALYSE_DISPONIBLE.
+  const positiveComparability=State.mapAnalysisState({ev_comparability:{comparable:true,reason:null}});
+  assert.equal(positiveComparability.state,'ANALYSE_DISPONIBLE');
+  assert.equal(positiveComparability.ev_comparability.comparable,true);
+  assert.equal(positiveComparability.ev_comparability.reason,null);
+  assert.equal(State.validateAnalysisState(positiveComparability).valid,true);
+  assert.deepEqual(State.mapAnalysisState(positiveComparability),positiveComparability,'positive comparability must be idempotent');
+
+  const positiveAdmissibility=State.mapAnalysisState({recommendation_admissibility:{admissible:true,status:'ADMISSIBLE'}});
+  assert.equal(positiveAdmissibility.state,'ANALYSE_DISPONIBLE');
+  assert.equal(positiveAdmissibility.recommendation_admissibility.admissible,true);
+  assert.equal(positiveAdmissibility.recommendation_admissibility.status,'ADMISSIBLE');
+  assert.equal(State.validateAnalysisState(positiveAdmissibility).valid,true);
+  assert.deepEqual(State.mapAnalysisState(positiveAdmissibility),positiveAdmissibility,'positive admissibility must be idempotent');
+
+  // 14d. The edit source and the served mirror stay byte-identical.
+  const source=fs.readFileSync(path.join(ROOT,'src/analytics/analysis-state.js'));
+  const mirror=fs.readFileSync(path.join(ROOT,'site/analytics/analysis-state.js'));
+  assert.equal(Buffer.compare(source,mirror),0,'src/analytics/analysis-state.js and site/analytics/analysis-state.js must be byte-identical');
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:State.SCHEMA,
