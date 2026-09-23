@@ -4403,6 +4403,27 @@ function actionSizingAmountLabel(a,summary){
   const er=Number.isFinite(eff)&&Math.abs(eff-cost)>.01?` · risque eff. ${formatBB(eff)}`:'';
   return `mise ${formatBB(cost)}${er}`;
 }
+/* #393 D6 — The postflop `decision-summary/v1` object must carry the shared
+   `poker-analysis-state/v1` taxonomy dimensions, otherwise
+   `heroAnalysisStateFromDecision` falls back to DONNEES_INSUFFISANTES and the
+   D6 EV gate (`show_ev`) hides a legitimately computed postflop summary.
+   A complete synthesis (raw present, finite played/best EV, recommendation
+   available) explicitly declares COVERED + admissible + comparable so the
+   mapper emits ANALYSE_DISPONIBLE. An incomplete synthesis stays explicit and
+   fail-safe: the mapper labels it ANALYSE_PARTIELLE and the D6 gate never
+   exposes a recommendation nor an EV. */
+function decisionSummaryTaxonomyDimensions(complete){
+  if(complete)return {
+    coverage_state:"COVERED",
+    recommendation_admissibility:{admissible:true,status:"ADMISSIBLE",reason_codes:[]},
+    ev_comparability:{comparable:true,reason:null}
+  };
+  return {
+    reason_codes:["NON_COMPARABLE_ALTERNATIVES"],
+    recommendation_admissibility:{admissible:false,status:"NON_COMPARABLE_ALTERNATIVES",reason_codes:["NON_COMPARABLE_ALTERNATIVES"]},
+    ev_comparability:{comparable:false,reason:"NON_COMPARABLE_ALTERNATIVES"}
+  };
+}
 function decisionCanonicalSummary(stepIndex,step,cached=null){
   if(!step)return null;
   const key=actionEquityKey(stepIndex),c=cached||(key?state.actionEquityCache?.[key]:null),req=requiredEquityInfo(stepIndex);
@@ -4413,6 +4434,9 @@ function decisionCanonicalSummary(stepIndex,step,cached=null){
   const playedAlt=ordered.find(a=>a.chosen)||null,best=raw.best||ordered[0]||null;
   const playedEV=playedAlt?finalDecisionEV(playedAlt):Number(raw.chosenPolicyEV),bestEV=best?finalDecisionEV(best):Number(raw.bestPolicyEV);
   const delta=Number.isFinite(playedEV)&&Number.isFinite(bestEV)?playedEV-bestEV:NaN;
+  // A complete synthesis needs a real best/recommended action and finite,
+  // comparable played/best EVs. Anything else is a genuinely partial result.
+  const complete=!!best&&ordered.length>=2&&Number.isFinite(bestEV)&&Number.isFinite(playedEV);
   const normalize=(a,isBest=false)=>a?{
     label:String(a.label||"—"),sizing:actionSizingAmountLabel(a,raw),
     costBB:Number.isFinite(Number(a.costBB))?Number(a.costBB):null,
@@ -4423,12 +4447,13 @@ function decisionCanonicalSummary(stepIndex,step,cached=null){
   return {
     schema:"decision-summary/v1",
     played:normalize(playedAlt,false)||{label:String(step.actionType||"—").toUpperCase(),sizing:Number(req.cost)>0?formatBB(req.cost):"0 BB",costBB:Number(req.cost)||0,targetStreetBB:null,evBB:Number.isFinite(playedEV)?playedEV:null,chosen:true,recommended:false},
-    recommended:normalize(best,true),
+    recommended:complete?normalize(best,true):null,
     deltaEVBB:Number.isFinite(delta)?delta:null,
     lossEVBB:Number.isFinite(delta)?Math.max(0,-delta):null,
     effectiveLossEVBB:Number.isFinite(Number(raw.effectiveGap))?Math.max(0,Number(raw.effectiveGap)):null,
     withinNoise:!!raw.withinNoise,score:Number(raw.score),
-    alternatives:ordered.map(a=>normalize(a,a===best)).filter(Boolean)
+    alternatives:ordered.map(a=>normalize(a,a===best)).filter(Boolean),
+    ...decisionSummaryTaxonomyDimensions(complete)
   };
 }
 const DecisionActionSizingEV=window.PokerActionSizingEV;

@@ -13,12 +13,18 @@ This contract pins:
   (the modal detail);
 - rule D6: the Hero EV/recommendation fields are only rendered when the module
   reports `recommendation_admissibility.admissible` AND
-  `ev_comparability.comparable`.
+  `ev_comparability.comparable`;
+- a complete postflop `decision-summary/v1` synthesis feeds the shared taxonomy
+  dimensions (coverage COVERED + admissible + comparable) so the D6 EV gate
+  opens, while an incomplete synthesis stays fail-safe.
 
-The runtime half (`tests/trainer/replayer_analysis_state_runtime.js`) extracts
-the real functions from `site/index.html` and proves every Hero transition
-(admissible, partiel, non supporté, en cours, erreur), the pending and worker
-error cases, the VS_LIMPERS unsupported spot and a complete canonical decision.
+The runtime halves (`tests/trainer/replayer_analysis_state_runtime.js` and
+`tests/trainer/postflop_decision_summary_runtime.js`) extract the real functions
+from `site/index.html` and prove every Hero transition (admissible, partiel, non
+supporté, en cours, erreur), the pending and worker error cases, the VS_LIMPERS
+unsupported spot and a complete canonical decision, plus the postflop
+present-when-admissible-and-comparable / absent-otherwise D6 behaviour rendered
+through `actionAnalysisHtml` and `actionDetailModalInnerHtml`.
 """
 from __future__ import annotations
 
@@ -100,6 +106,35 @@ def main() -> None:
     )
     assert '"status":"PASS"' in proc.stdout, proc.stdout + proc.stderr
     assert '"schema":"poker-analysis-state/v1"' in proc.stdout, proc.stdout
+
+    # 6. The postflop canonical summary feeds the shared taxonomy dimensions so
+    #    the D6 gate opens on a complete synthesis, and stays fail-safe otherwise.
+    assert "function decisionSummaryTaxonomyDimensions(complete){" in INDEX
+    assert "function decisionCanonicalSummary(stepIndex,step,cached=null)" in INDEX
+    taxonomy = section("function decisionSummaryTaxonomyDimensions(", "function decisionCanonicalSummary(")
+    assert 'coverage_state:"COVERED"' in taxonomy
+    assert "recommendation_admissibility:{admissible:true,status:\"ADMISSIBLE\",reason_codes:[]}" in taxonomy
+    assert "ev_comparability:{comparable:true,reason:null}" in taxonomy
+    assert 'NON_COMPARABLE_ALTERNATIVES' in taxonomy
+    canonical = section("function decisionCanonicalSummary(", "const DecisionActionSizingEV=window.PokerActionSizingEV;")
+    assert "const complete=!!best&&ordered.length>=2&&Number.isFinite(bestEV)&&Number.isFinite(playedEV);" in canonical
+    assert "recommended:complete?normalize(best,true):null" in canonical
+    assert "...decisionSummaryTaxonomyDimensions(complete)" in canonical
+
+    # The client-facing runtime proof renders the postflop decision-summary/v1
+    # through the real feed and modal, present iff admissible+comparable.
+    postflop = subprocess.run(
+        ["node", "tests/trainer/postflop_decision_summary_runtime.js"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert '"status":"PASS"' in postflop.stdout, postflop.stdout + postflop.stderr
+    assert '"ANALYSE_DISPONIBLE"' in postflop.stdout, postflop.stdout
+    assert '"ANALYSE_PARTIELLE"' in postflop.stdout, postflop.stdout
+    assert '"actionAnalysisHtml"' in postflop.stdout, postflop.stdout
+    assert '"actionDetailModalInnerHtml"' in postflop.stdout, postflop.stdout
 
     print("replayer Hero analysis-state contract: PASS")
 
