@@ -465,13 +465,16 @@ assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
   for(const dimension of ['computational_status','model_support_status','statistical_support','ev_comparability','recommendation_admissibility','posterior_availability','error']){
     assert.ok(def.required.includes(dimension),'analysis_state dimension '+dimension+' must be required');
   }
-  // #408 blocker 2: statistical_support must be able to represent an explicit
-  // unknown/unavailable support (null) and must document the aggregation rule.
+  // #408 blocker 2 / #393 blocker 2: statistical_support counters are non-null
+  // integers >= 0 carrying the fail-safe floor; the explicit availability signal
+  // carries unknown/unavailable, matching the canonical schema + JS validator.
   const support=def.properties.statistical_support;
   assert.ok(support,'statistical_support definition must be present');
   for(const field of ['observations','distinct_hands']){
-    assert.deepEqual(support.properties[field].type,['integer','null'],'statistical_support.'+field+' must allow an explicit null/unknown value');
+    assert.equal(support.properties[field].type,'integer','statistical_support.'+field+' must be a non-null integer');
+    assert.equal(support.properties[field].minimum,0,'statistical_support.'+field+' must carry the fail-safe floor');
   }
+  assert.deepEqual(support.properties.availability.enum,['AVAILABLE','UNKNOWN','UNAVAILABLE'],'statistical_support.availability must carry the explicit vocabulary');
   assert.match(support.description||'',/minimum/i,'the statistical_support description must document the aggregation rule');
   assert.equal(State.SCHEMA,Inbox.ANALYSIS_STATE_SCHEMA);
 }

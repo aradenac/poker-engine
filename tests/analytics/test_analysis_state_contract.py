@@ -24,6 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "contracts" / "analytics" / "analysis-state.schema.json"
+EMBEDDED_SCHEMA_PATH = ROOT / "contracts" / "analytics" / "review-inbox.schema.json"
 DOC_PATH = ROOT / "docs" / "analysis-state-contract.md"
 
 EXPECTED_STATES = [
@@ -77,6 +78,8 @@ def normalize(text: str) -> str:
 
 
 SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+EMBEDDED_SCHEMA = json.loads(EMBEDDED_SCHEMA_PATH.read_text(encoding="utf-8"))
+EMBEDDED_ANALYSIS_STATE = EMBEDDED_SCHEMA["$defs"]["analysis_state"]
 DOC = DOC_PATH.read_text(encoding="utf-8")
 DOC_FLAT = normalize(DOC)
 
@@ -131,6 +134,33 @@ class AnalysisStateContract(unittest.TestCase):
         self.assertEqual(
             set(support["properties"]["availability"]["enum"]),
             {"AVAILABLE", "UNKNOWN", "UNAVAILABLE"},
+        )
+
+    def test_embedded_review_inbox_analysis_state_matches_canonical(self):
+        # #393 blocker 2: the embedded $defs.analysis_state of review-inbox must
+        # not drift from the canonical schema. The state enum, the
+        # computational_status enum and the statistical_support shape (non-null
+        # integer counters + explicit availability) are compared directly, so any
+        # divergence fails this contract.
+        embedded = EMBEDDED_ANALYSIS_STATE
+        canonical_state = SCHEMA["properties"]["state"]["enum"]
+        self.assertEqual(embedded["properties"]["state"]["enum"], canonical_state)
+        self.assertEqual(len(embedded["properties"]["state"]["enum"]), 6)
+
+        canonical_computational = SCHEMA["properties"]["computational_status"]["enum"]
+        embedded_computational = embedded["properties"]["computational_status"]["enum"]
+        self.assertEqual(embedded_computational, canonical_computational)
+        self.assertIn("NOT_EVALUATED", embedded_computational, embedded_computational)
+
+        canonical_support = SCHEMA["properties"]["statistical_support"]["properties"]
+        embedded_support = embedded["properties"]["statistical_support"]["properties"]
+        for field in ("observations", "distinct_hands"):
+            self.assertEqual(embedded_support[field]["type"], "integer", field)
+            self.assertEqual(embedded_support[field]["type"], canonical_support[field]["type"], field)
+            self.assertEqual(embedded_support[field]["minimum"], canonical_support[field]["minimum"], field)
+        self.assertEqual(
+            embedded_support["availability"]["enum"],
+            canonical_support["availability"]["enum"],
         )
 
     def test_ev_comparability_and_recommendation_admissibility_are_separate(self):
@@ -308,6 +338,39 @@ class AnalysisStateFailSafe(unittest.TestCase):
         self.assertNotEqual(mapped["state"], "ANALYSE_DISPONIBLE")
         self.assertEqual(mapped["state"], "DONNEES_INSUFFISANTES")
         self.assertIn("FUTURE_TAXONOMY_CODE", mapped["reason_codes"])
+
+    def test_validator_rejects_null_or_negative_support_counters(self):
+        # #393 blocker 2: the JS validator must enforce the same nullability as the
+        # canonical and embedded schemas — observations/distinct_hands are non-null
+        # integers >= 0; unknown support is carried by `availability`, never null.
+        script = (
+            "const S=require('./src/analytics/analysis-state.js');"
+            "const base=S.mapAnalysisState({});"
+            "const nullObs=JSON.parse(JSON.stringify(base));"
+            "nullObs.statistical_support.observations=null;"
+            "const nullHands=JSON.parse(JSON.stringify(base));"
+            "nullHands.statistical_support.distinct_hands=null;"
+            "const negative=JSON.parse(JSON.stringify(base));"
+            "negative.statistical_support.distinct_hands=-1;"
+            "process.stdout.write(JSON.stringify({"
+            "base:S.validateAnalysisState(base).valid,"
+            "nullObs:S.validateAnalysisState(nullObs).valid,"
+            "nullHands:S.validateAnalysisState(nullHands).valid,"
+            "negative:S.validateAnalysisState(negative).valid"
+            "}));"
+        )
+        completed = subprocess.run(
+            [NODE, "-e", script],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        flags = json.loads(completed.stdout)
+        self.assertTrue(flags["base"], flags)
+        self.assertFalse(flags["nullObs"], flags)
+        self.assertFalse(flags["nullHands"], flags)
+        self.assertFalse(flags["negative"], flags)
 
     def test_statistical_support_availability_is_explicit(self):
         # No support evidence => UNKNOWN, never a fabricated positive count.

@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src" / "analytics" / "analysis-state.js"
 MIRROR = ROOT / "site" / "analytics" / "analysis-state.js"
 SCHEMA_PATH = ROOT / "contracts" / "analytics" / "analysis-state.schema.json"
+REVIEW_INBOX_SCHEMA_PATH = ROOT / "contracts" / "analytics" / "review-inbox.schema.json"
 
 NODE = shutil.which("node")
 
@@ -117,6 +118,7 @@ def _runtime_enumeration() -> dict:
 RUNTIME = _runtime_enumeration()
 SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 SCHEMA_CODES = set(SCHEMA["$defs"]["reason_code"]["enum"])
+REVIEW_INBOX_SCHEMA = json.loads(REVIEW_INBOX_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 class AnalysisStateMirrorContract(unittest.TestCase):
@@ -131,6 +133,31 @@ class AnalysisStateMirrorContract(unittest.TestCase):
         self.assertEqual(RUNTIME["schema"], "poker-analysis-state/v1")
         self.assertEqual(RUNTIME["states"], EXPECTED_STATES)
         self.assertEqual(len(set(RUNTIME["states"])), 6)
+
+    # ------------------------------------------- embedded schema sync (#393-2)
+    def test_embedded_review_inbox_schema_matches_canonical(self):
+        # The embedded $defs.analysis_state shipped by review-inbox must not drift
+        # from the canonical analysis-state schema: identical state enum,
+        # identical computational_status enum (including NOT_EVALUATED) and
+        # identical statistical_support counter/availability types.
+        embedded = REVIEW_INBOX_SCHEMA["$defs"]["analysis_state"]["properties"]
+        canonical = SCHEMA["properties"]
+        self.assertEqual(embedded["state"]["enum"], canonical["state"]["enum"])
+        self.assertEqual(
+            embedded["computational_status"]["enum"],
+            canonical["computational_status"]["enum"],
+        )
+        self.assertIn("NOT_EVALUATED", embedded["computational_status"]["enum"])
+        for field in ("observations", "distinct_hands"):
+            self.assertEqual(
+                embedded["statistical_support"]["properties"][field]["type"],
+                canonical["statistical_support"]["properties"][field]["type"],
+                field,
+            )
+        self.assertEqual(
+            embedded["statistical_support"]["properties"]["availability"]["enum"],
+            canonical["statistical_support"]["properties"]["availability"]["enum"],
+        )
 
     def test_every_code_resolves_to_exactly_one_canonical_state(self):
         code_map = RUNTIME["code_map"]

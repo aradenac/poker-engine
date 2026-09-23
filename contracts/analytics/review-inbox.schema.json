@@ -64,7 +64,7 @@
       }
     },
     "analysis_state": {
-      "description": "Embedded view of the canonical contracts/analytics/analysis-state.schema.json (poker-analysis-state/v1) so an Inbox item carries one user-facing state plus the strictly separated technical dimensions. The enum and dimensions are kept in sync with the canonical schema.",
+      "description": "Embedded view of the canonical contracts/analytics/analysis-state.schema.json (poker-analysis-state/v1) so an Inbox item carries one user-facing state plus the strictly separated technical dimensions. The state enum, the technical-dimension enums and the statistical_support shape (non-null integer counters plus the explicit availability signal) are kept in sync with the canonical schema.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -86,16 +86,23 @@
           ]
         },
         "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-        "computational_status": {"enum": ["NOT_STARTED", "PENDING", "RUNNING", "COMPLETE", "FAILED"]},
+        "computational_status": {
+          "description": "Whether the deterministic computation actually finished, kept separate from the scientific dimensions and identical to the canonical schema. NOT_EVALUATED is the explicit fail-safe status used when the producer does not supply this dimension; it must never be replaced by COMPLETE without explicit positive evidence.",
+          "enum": ["NOT_STARTED", "PENDING", "RUNNING", "COMPLETE", "FAILED", "NOT_EVALUATED"]
+        },
         "model_support_status": {"enum": ["SUPPORTED", "NODE_ABSENT", "CONTEXT_UNSUPPORTED", "NOT_EVALUATED"]},
         "statistical_support": {
-          "description": "Statistical/model support dimension for the hand (#408 blocker 2). The Inbox derives it from the normalized decision events, never from the number of review decisions: `observations` is the conservative minimum of `event.support.observations` over the covered+comparable decisions relevant to the hand, and unrelated model nodes are never summed. `observations` is null (or the contract fail-safe floor 0) when no decision exposes support evidence, so missing metadata never becomes a fabricated positive count. `distinct_hands` is filled only from real distinct-hand evidence and is null/0 when that evidence is unavailable; it is never invented as 1.",
+          "description": "Statistical/model support dimension for the hand (#408 blocker 2). The Inbox derives it from the normalized decision events, never from the number of review decisions: `observations` is the conservative minimum of `event.support.observations` over the covered+comparable decisions relevant to the hand, and unrelated model nodes are never summed. The two counters are non-null integers greater than or equal to 0, identical to the canonical schema and to the JS validator: when no decision exposes support evidence the dimension is reported with the fail-safe floor 0 together with `availability: UNKNOWN` (or `UNAVAILABLE` for an unsupported context), so missing metadata is carried by the explicit availability signal and never becomes a fabricated positive count or a null counter. `distinct_hands` is filled only from real distinct-hand evidence and stays 0 while that evidence is unavailable; it is never invented as 1.",
           "type": "object",
           "additionalProperties": false,
           "required": ["observations", "distinct_hands"],
           "properties": {
-            "observations": {"type": ["integer", "null"], "minimum": 0, "description": "Conservative minimum of the real per-decision support observations over the relevant (covered+comparable) decisions. null/0 means unknown/unavailable (fail-safe), never the review decision count."},
-            "distinct_hands": {"type": ["integer", "null"], "minimum": 0, "description": "Distinct backing hands only when evidenced by the events. null/0 means unavailable; it is never fabricated as 1."}
+            "observations": {"type": "integer", "minimum": 0, "description": "Conservative minimum of the real per-decision support observations over the relevant (covered+comparable) decisions. 0 together with availability UNKNOWN/UNAVAILABLE means unknown/unavailable (fail-safe), never the review decision count."},
+            "distinct_hands": {"type": "integer", "minimum": 0, "description": "Distinct backing hands only when evidenced by the events. 0 together with availability UNKNOWN/UNAVAILABLE means unavailable; it is never fabricated as 1."},
+            "availability": {
+              "description": "Explicit availability signal for the dimension, identical to the canonical schema: AVAILABLE on a positive support, UNKNOWN when the producer supplied no support evidence (never a fabricated positive count) and UNAVAILABLE when the model cannot represent the support (absent node / unsupported context). Optional for backward compatibility with producers that predate the signal; a supplied value must use the explicit vocabulary.",
+              "enum": ["AVAILABLE", "UNKNOWN", "UNAVAILABLE"]
+            }
           }
         },
         "ev_comparability": {

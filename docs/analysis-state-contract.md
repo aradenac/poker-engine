@@ -146,13 +146,15 @@ une règle d'agrégation hand-level conservatrice et déterministe, implémenté
   n'utilise jamais le nombre de décisions comme proxy ;
 - **support inconnu** : si aucune décision pertinente n'expose d'observations
   valides (entier >= 0), le support est **inconnu / indisponible**. Il est
-  représenté par le plancher fail-safe `0` sous le contrat numérique actuel, et
-  `null` reste autorisé par le schéma `review-inbox` pour cette sémantique ; un
-  support positif n'est jamais fabriqué ;
+  représenté par le plancher fail-safe `0` complété par le signal explicite
+  `statistical_support.availability = UNKNOWN` (ou `UNAVAILABLE` pour un contexte
+  non supporté) : les compteurs sont des entiers `>= 0` **sans `null`** dans le
+  schéma canonique, dans le schéma embarqué `review-inbox` et dans le validateur
+  JS, et un support positif n'est jamais fabriqué ;
 - **`distinct_hands`** : `poker-leak-decision-event/v1` ne porte aucune preuve de
-  mains distinctes. Le champ est donc explicitement indisponible (`0`/`null`) et
-  n'est **jamais inventé à `1`**. Seule une preuve réelle ajoutée aux événements
-  pourra l'alimenter.
+  mains distinctes. Le champ est donc explicitement indisponible (`0`, signalé par
+  `availability`) et n'est **jamais inventé à `1`**. Seule une preuve réelle
+  ajoutée aux événements pourra l'alimenter.
 
 Exemple normatif : une main à 2 décisions comparables adossées à 120 et 450
 observations modèle donne `statistical_support.observations = 120` (minimum),

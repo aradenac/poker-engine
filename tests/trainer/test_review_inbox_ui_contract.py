@@ -77,16 +77,24 @@ def main() -> None:
     # the Trainer/header chip, never a global presence promoted to active.
     assert 'override:productPersonalOverrideState()' in scope_block
 
-    # #408 blocker 2: statistical_support is derived from the real per-decision
-    # model support with a documented conservative aggregation rule; it must be
-    # able to represent an explicit unknown/unavailable support and never let a
-    # review decision count masquerade as observations.
+    # #408 blocker 2 / #393 blocker 2: statistical_support is derived from the real
+    # per-decision model support with a documented conservative aggregation rule;
+    # the counters are non-null integers >= 0 and the explicit availability signal
+    # carries unknown/unavailable, so a review decision count can never masquerade
+    # as observations and the embedded shape stays in sync with the canonical
+    # analysis-state schema + the JS validator.
     schema = json.loads(
         (ROOT / "contracts/analytics/review-inbox.schema.json").read_text(encoding="utf-8")
     )
     support = schema["$defs"]["analysis_state"]["properties"]["statistical_support"]
     for field in ("observations", "distinct_hands"):
-        assert set(support["properties"][field]["type"]) == {"integer", "null"}, field
+        assert support["properties"][field]["type"] == "integer", field
+        assert support["properties"][field]["minimum"] == 0, field
+    assert set(support["properties"]["availability"]["enum"]) == {
+        "AVAILABLE",
+        "UNKNOWN",
+        "UNAVAILABLE",
+    }
     assert "minimum" in support["description"].lower()
     assert "decision" in support["description"].lower()
     inbox_source = (ROOT / "src/analytics/review-inbox.js").read_text(encoding="utf-8")
