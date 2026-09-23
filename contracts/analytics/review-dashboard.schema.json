@@ -4,11 +4,23 @@
   "title": "Poker Review Dashboard",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "scope", "scope_key", "state", "metrics", "top_leaks", "priority", "ctas", "traceability"],
+  "required": ["schema", "scope", "scope_key", "state", "analysis_state", "analysis_state_label", "metrics", "top_leaks", "priority", "ctas", "traceability"],
   "properties": {
     "schema": {"const": "poker-review-dashboard/v1"},
     "scope_key": {"type": "string", "minLength": 1},
-    "state": {"enum": ["NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"]},
+    "state": {
+      "description": "Legacy dashboard empty-state code kept as a secondary/technical input. It is never the primary user-facing label: the taxonomy analysis_state.state and analysis_state_label are. Taxonomie (#393 T4): NO_HANDS -> DONNEES_INSUFFISANTES, ANALYSIS_PENDING -> CALCUL_EN_COURS, ANALYSIS_INCOMPLETE -> ANALYSE_PARTIELLE (analyzable decisions exist) ou DONNEES_INSUFFISANTES (aucune décision analysable), READY / NO_SIGNIFICANT_LOSS -> ANALYSE_DISPONIBLE.",
+      "enum": ["NO_HANDS", "ANALYSIS_PENDING", "ANALYSIS_INCOMPLETE", "NO_SIGNIFICANT_LOSS", "READY"]
+    },
+    "analysis_state": {
+      "description": "Dominant canonical poker-analysis-state/v1 object for the whole scope (#393 T4). Its `state` enum is the only user-facing analysis label; the legacy `state` code and the reason_codes stay in this secondary/technical object consumed by the details view.",
+      "$ref": "#/$defs/analysis_state"
+    },
+    "analysis_state_label": {
+      "description": "French user-facing label for analysis_state.state. Never a generic message when a precise cause exists.",
+      "type": ["string", "null"],
+      "enum": ["Analyse disponible", "Analyse partielle", "Calcul en cours", "Données insuffisantes", "Spot non supporté", "Erreur de calcul", null]
+    },
     "scope": {
       "type": "object",
       "required": ["population_id", "pack_id", "strategy_id", "strategy_version", "ev_reference"],
@@ -87,6 +99,79 @@
     }
   },
   "$defs": {
+    "analysis_state": {
+      "description": "Embedded view of the canonical contracts/analytics/analysis-state.schema.json (poker-analysis-state/v1) so the Dashboard scope carries one user-facing state plus the strictly separated technical dimensions. The state enum, the technical-dimension enums and the statistical_support shape (non-null integer counters plus the explicit availability signal) are kept in sync with the canonical schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "state", "reason_codes", "computational_status", "model_support_status",
+        "statistical_support", "ev_comparability", "recommendation_admissibility",
+        "posterior_availability", "error"
+      ],
+      "properties": {
+        "schema": {"const": "poker-analysis-state/v1"},
+        "state": {
+          "description": "The only user-facing analysis label.",
+          "enum": [
+            "ANALYSE_DISPONIBLE",
+            "ANALYSE_PARTIELLE",
+            "CALCUL_EN_COURS",
+            "DONNEES_INSUFFISANTES",
+            "SPOT_NON_SUPPORTE",
+            "ERREUR_CALCUL"
+          ]
+        },
+        "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "computational_status": {
+          "description": "Whether the deterministic computation actually finished, kept separate from the scientific dimensions and identical to the canonical schema. NOT_EVALUATED is the explicit fail-safe status used when the producer does not supply this dimension; it must never be replaced by COMPLETE without explicit positive evidence.",
+          "enum": ["NOT_STARTED", "PENDING", "RUNNING", "COMPLETE", "FAILED", "NOT_EVALUATED"]
+        },
+        "model_support_status": {"enum": ["SUPPORTED", "NODE_ABSENT", "CONTEXT_UNSUPPORTED", "NOT_EVALUATED"]},
+        "statistical_support": {
+          "description": "Statistical/model support dimension, kept separate from computational and model support, identical to the canonical schema. The counters are non-null integers greater than or equal to 0 and `availability` carries the explicit evaluated/unknown/unavailable signal; a missing dimension is never interpreted as a fabricated positive count.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["observations", "distinct_hands"],
+          "properties": {
+            "observations": {"type": "integer", "minimum": 0},
+            "distinct_hands": {"type": "integer", "minimum": 0},
+            "availability": {
+              "description": "Explicit availability signal for the dimension, identical to the canonical schema. Optional for backward compatibility with producers that predate the signal; a supplied value must use the explicit vocabulary.",
+              "enum": ["AVAILABLE", "UNKNOWN", "UNAVAILABLE"]
+            }
+          }
+        },
+        "ev_comparability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["comparable", "reason"],
+          "properties": {
+            "comparable": {"type": "boolean"},
+            "reason": {"type": ["string", "null"]}
+          }
+        },
+        "recommendation_admissibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["admissible", "status", "reason_codes"],
+          "properties": {
+            "admissible": {"type": "boolean"},
+            "status": {"type": ["string", "null"]},
+            "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+          }
+        },
+        "posterior_availability": {"enum": ["conditioned", "prior_uninformative", "source_prior_unconditioned", "degenerate", "unavailable"]},
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "retryable"],
+          "properties": {
+            "type": {"type": ["string", "null"]},
+            "retryable": {"type": "boolean"}
+          }
+        }
+      }
+    },
     "source_ref": {
       "type": "object",
       "additionalProperties": false,

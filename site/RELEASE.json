@@ -25,7 +25,7 @@
           "git_blob_sha": "740a02d9bb9c0f6a2b37fc9c0904bd7aa374a8eb"
         },
         "site/analytics/review-dashboard.js": {
-          "git_blob_sha": "8fe8958df456c22168226b305a574451b0a4529d"
+          "git_blob_sha": "a4cad8318471af22568c8da6e5d8e82d24e617d2"
         },
         "site/analytics/review-inbox.js": {
           "git_blob_sha": "631897cc419411a5cb669da58fb2ca09ea2e2779"
@@ -61,7 +61,7 @@
           "git_blob_sha": "211bf60f5dbc8b14794554cc763059fabf58948d"
         },
         "site/index.html": {
-          "git_blob_sha": "a9596c46ef995caa2f21fbf822612f242c76cdaa"
+          "git_blob_sha": "6c949dd584ecfd89a04095a2366d19ffc0ce0ab0"
         },
         "site/pack-identity.js": {
           "git_blob_sha": "fa3fb310e75cff31bf7abe34ec8c83fc3de410ea"

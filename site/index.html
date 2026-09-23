@@ -1164,7 +1164,7 @@
     <span id="centralOverrideStatus" class="central-override-status"></span>
   </div>
   <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
-    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">NO_HANDS</span></div>
+    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">Données insuffisantes</span></div>
     <div class="review-dashboard-metrics">
       <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
       <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
@@ -3707,11 +3707,17 @@ function reviewDashboardBuild(){
 }
 function reviewDashboardStateMessage(model){
   const stateName=model?.state||"";
+  const taxonomy=model?.analysis_state?.state||"";
   if(stateName==="NO_HANDS")return "Importez vos Hand Histories pour construire votre Review.";
-  if(stateName==="ANALYSIS_PENDING")return "Mains chargées · l’analyse des décisions est en cours.";
-  if(stateName==="ANALYSIS_INCOMPLETE")return "Analyse incomplète · les données disponibles ne permettent pas encore un verdict complet.";
-  if(stateName==="NO_SIGNIFICANT_LOSS")return "Aucune perte EV significative détectée dans les décisions comparables.";
-  if(stateName==="READY")return "Priorités calculées à partir des décisions comparables de ce contexte.";
+  if(taxonomy==="CALCUL_EN_COURS"||stateName==="ANALYSIS_PENDING")return "Calcul en cours · l’analyse des décisions n’est pas terminée.";
+  if(taxonomy==="ANALYSE_PARTIELLE")return "Analyse partielle · une partie seulement des décisions comparables est exploitable.";
+  if(taxonomy==="DONNEES_INSUFFISANTES"||stateName==="ANALYSIS_INCOMPLETE")return "Données insuffisantes · les décisions disponibles ne permettent pas encore un verdict complet.";
+  if(taxonomy==="SPOT_NON_SUPPORTE")return "Spot non supporté · ce contexte n’est pas couvert par le modèle.";
+  if(taxonomy==="ERREUR_CALCUL")return "Erreur de calcul · l’analyse de ce périmètre a échoué.";
+  if(taxonomy==="ANALYSE_DISPONIBLE"||stateName==="NO_SIGNIFICANT_LOSS"||stateName==="READY"){
+    if(stateName==="NO_SIGNIFICANT_LOSS")return "Aucune perte EV significative détectée dans les décisions comparables.";
+    return "Priorités calculées à partir des décisions comparables de ce contexte.";
+  }
   return state.reviewDashboardLastError?`Dashboard indisponible : ${state.reviewDashboardLastError}`:"Dashboard Review indisponible.";
 }
 function renderReviewDashboardModel(model){
@@ -3719,7 +3725,13 @@ function renderReviewDashboardModel(model){
   const metrics=model?.metrics||{};
   const leak=model?.top_leaks?.[0]||null,hand=model?.priority?.hand||null,decision=model?.priority?.decision||null;
   if(reviewDashboard)reviewDashboard.setAttribute("aria-busy",model?"false":"true");
-  if(reviewDashboardState)reviewDashboardState.textContent=model?.state||"UNAVAILABLE";
+  if(reviewDashboardState){
+    const taxonomy=model?.analysis_state||null;
+    reviewDashboardState.textContent=model?.analysis_state_label||taxonomy?.state||model?.state||"UNAVAILABLE";
+    reviewDashboardState.dataset.analysisState=taxonomy?.state||"";
+    const analysisReasons=(taxonomy?.reason_codes||[]).join(" · ");
+    reviewDashboardState.title=analysisReasons?`Raisons techniques : ${analysisReasons}`:"";
+  }
   if(reviewDashboardMessage)reviewDashboardMessage.textContent=reviewDashboardStateMessage(model);
   if(reviewDashboardHands)reviewDashboardHands.textContent=String(metrics.hands_loaded??0);
   if(reviewDashboardDecisions)reviewDashboardDecisions.textContent=String(metrics.decisions_to_review??0);

@@ -3,10 +3,11 @@
   const Adapter=(typeof module==='object'&&module.exports)?require('./review-score-adapter.js'):(root&&root.PokerReviewLeakAdapter);
   const Inbox=(typeof module==='object'&&module.exports)?require('./review-inbox.js'):(root&&root.PokerReviewInbox);
   const Target=(typeof module==='object'&&module.exports)?require('./leak-training-target.js'):(root&&root.PokerLeakTrainingTarget);
-  const api=factory(Leak,Adapter,Inbox,Target);
+  const State=(typeof module==='object'&&module.exports)?require('./analysis-state.js'):(root&&root.PokerAnalysisState);
+  const api=factory(Leak,Adapter,Inbox,Target,State);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.PokerReviewDashboard=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(Leak,Adapter,Inbox,Target){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Leak,Adapter,Inbox,Target,State){
   'use strict';
 
   const DASHBOARD_SCHEMA='poker-review-dashboard/v1';
@@ -107,6 +108,31 @@
     if(metrics.total_ev_loss_bb<=EPS)return EMPTY_STATES.NO_SIGNIFICANT_LOSS;
     return EMPTY_STATES.READY;
   }
+  // #393 T4: derive the dominant scope state from the shared
+  // `poker-analysis-state/v1` taxonomy instead of exposing the legacy empty
+  // state as the only user-facing label. The legacy EMPTY_STATES code stays the
+  // technical input; the taxonomy `analysis_state.state` plus its French label
+  // are the primary surface, while the technical reason codes only live in the
+  // secondary `analysis_state.reason_codes` field consumed by the details view.
+  // The shared mapper applies its own precedence, so a scope carrying several
+  // causes still resolves to exactly one dominant state. ANALYSIS_INCOMPLETE is
+  // disambiguated by cause: a scope without any analyzable decision is a support
+  // shortage (DONNEES_INSUFFISANTES), otherwise it is a partial analysis
+  // (ANALYSE_PARTIELLE).
+  function analysisStateReasonCodes(state,metrics){
+    if(state!==EMPTY_STATES.ANALYSIS_INCOMPLETE)return [state];
+    return Number(metrics.decisions_analyzed)>0
+      ?[EMPTY_STATES.ANALYSIS_INCOMPLETE]
+      :[EMPTY_STATES.ANALYSIS_INCOMPLETE,'INSUFFICIENT_SUPPORT'];
+  }
+  function analysisStateFor(state,metrics){
+    if(!State||typeof State.mapAnalysisState!=='function')return null;
+    return State.mapAnalysisState({reason_codes:analysisStateReasonCodes(state,metrics)});
+  }
+  function analysisStateLabel(state){
+    if(Inbox&&typeof Inbox.analysisStateLabel==='function')return Inbox.analysisStateLabel(state);
+    return text(state)||null;
+  }
   function dashboardFrom(inbox,adapted,reviewScores,options={}){
     const scopedEvents=(adapted.events||[]).filter(e=>exactScope(e,inbox.scope));
     const report=scopedEvents.length?Leak.analyzeLeaks(scopedEvents):emptyReport(inbox.scope);
@@ -131,10 +157,14 @@
       leak:leakCta(inbox,leaks),
       training:trainingCta(report,leaks,options)
     };
+    const emptyStateName=emptyState(metrics,inbox);
+    const analysisState=analysisStateFor(emptyStateName,metrics);
     return {
       schema:DASHBOARD_SCHEMA,
       scope:{...inbox.scope},scope_key:inbox.scope_key,
-      state:emptyState(metrics,inbox),
+      state:emptyStateName,
+      analysis_state:analysisState,
+      analysis_state_label:analysisState?analysisStateLabel(analysisState.state):null,
       metrics,
       top_leaks:leaks,
       priority:{
