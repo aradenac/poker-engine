@@ -74,13 +74,17 @@ function trainerSleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function trainerClamp(x,a,b){return Math.max(a,Math.min(b,x));}
 function trainerNum(x,d=2){return Number(x||0).toFixed(d).replace(/\.?0+$/,"");}
 function trainerFmtBB(x){return `${new Intl.NumberFormat("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(x)||0)} BB`;}
+/* #409-RNG-BLOCK-START */
 /* #409: unique seedable randomness source for the Trainer.
    `trainerRandom()` is the only entry point Trainer logic uses to draw
    randomness. Production keeps the default Math.random source; tests inject a
    deterministic generator via trainerSetSeed / trainerSetRandomSource without
    ever monkey-patching the global Math.random.
    API (#409): trainerSetRandomSource(fn), trainerSetSeed(seed),
-   trainerResetRandomSource(), trainerRandomSeed(). */
+   trainerResetRandomSource(), trainerRandomSeed().
+   The block is delimited by #409-RNG-BLOCK-START / #409-RNG-BLOCK-END so the
+   regression tests can extract it verbatim: `Math.random` must appear only
+   here, never in the surrounding Trainer logic. */
 function trainerMulberry32(seed){
   let a=seed>>>0;
   return function(){
@@ -116,6 +120,7 @@ window.trainerSetRandomSource=trainerSetRandomSource;
 window.trainerSetSeed=trainerSetSeed;
 window.trainerResetRandomSource=trainerResetRandomSource;
 window.trainerRandomSeed=trainerRandomSeed;
+/* #409-RNG-BLOCK-END */
 function trainerRandomInt(n){return Math.floor(trainerRandom()*n);}
 function trainerShuffle(a){for(let i=a.length-1;i>0;i--){const j=trainerRandomInt(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 function trainerWeightedChoice(items,weights){
