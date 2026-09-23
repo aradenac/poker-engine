@@ -1271,10 +1271,10 @@
       <span class="mode-card-title">Training</span>
       <span class="mode-card-sub">Session 6-max avec coaching ACTION / SIZING / EV</span>
     </button>
-    <button type="button" class="mode-card" data-app-view="strategy">
+    <a class="mode-card" data-app-view="strategy" data-hero-ranges-entry href="./hero-ranges.html">
       <span class="mode-card-title">Stratégie Hero</span>
       <span class="mode-card-sub">Éditer les ranges Hero de la population active</span>
-    </button>
+    </a>
     <button type="button" class="mode-card" data-app-view="spotlab">
       <span class="mode-card-title">Spot Lab</span>
       <span class="mode-card-sub">Equity Lab · ranges adverses · équité</span>
@@ -1609,8 +1609,8 @@
       <div>Stratégie Hero<b id="strategyPageStrategy">—</b></div>
       <div>Source / version<b id="strategyPageSource">—</b></div>
     </div>
-    <div class="actions" style="margin-top:10px"><a id="strategyPageEditorLink" class="filelabel" href="./hero-ranges.html" style="width:auto;text-decoration:none">Ouvrir l’éditeur de ranges Hero</a></div>
-    <div class="tiny" style="margin-top:8px">La Stratégie Hero décrit la politique de référence utilisée par la Review, le Training et le Spot Lab. L’éditeur s’ouvre dans un espace dédié (hero-ranges.html) ; l’Accueil reste accessible à tout moment.</div>
+    <div class="actions" style="margin-top:10px"><a id="strategyPageEditorLink" class="filelabel" href="./hero-ranges.html" style="width:auto;text-decoration:none">Ouvrir l’éditeur de Stratégie Hero</a></div>
+    <div class="tiny" style="margin-top:8px">La Stratégie Hero décrit la politique de référence utilisée par la Review, le Training et le Spot Lab. L’éditeur s’ouvre dans un espace dédié (hero-ranges.html) dont le deep link conserve la population active ; l’Accueil reste accessible à tout moment.</div>
   </section>
 </div>
 
@@ -1893,6 +1893,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
       homePage=$("homePage"), mainPage=$("mainPage"), spotlabPage=$("spotlabPage"), strategyPage=$("strategyPage"),
       strategyPagePopulation=$("strategyPagePopulation"), strategyPageStrategy=$("strategyPageStrategy"), strategyPageSource=$("strategyPageSource"),
+      strategyPageEditorLink=$("strategyPageEditorLink"), heroRangesOpenBtn=$("heroRangesOpenBtn"),
       replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
@@ -2195,6 +2196,39 @@ function productPopulationIdentityText(){
   if(!population&&packIdentity?.id==="embedded-fallback")population="fallback embarqué";
   return population||"non chargée";
 }
+// #394 T6 — Stratégie Hero est un mode de l'Accueil dont la surface est l'éditeur
+// autonome `hero-ranges.html`. Les points d'entrée portent un deep link stable,
+// construit depuis la population active (et, quand une main d'entraînement est
+// ouverte, son contexte), afin que l'éditeur s'ouvre sur la population annoncée
+// par l'Accueil au lieu de retomber sur sa population par défaut.
+function heroRangesDeepLinkHref(){
+  const params=new URLSearchParams();
+  const population=productPopulationIdentityText();
+  if(population&&population!=="non chargée")params.set("population",population);
+  if(typeof trainerState!=="undefined"&&trainerState?.hand&&!trainerState.hand.ended){
+    const hand=trainerState.hand, hero=Number(hand.heroSeat);
+    const position=String(hand.positions?.[hero]||"").toUpperCase();
+    if(position)params.set("position",position);
+    const stack=Number(hand.stacks?.[hero]);
+    if(Number.isFinite(stack)&&stack>0)params.set("stack",String(stack));
+    // The Training hand also carries its canonical preflop family; reuse the
+    // trainer mapping so the editor opens on the same spot when it is one of
+    // the editor's supported spots (an unknown family is simply omitted).
+    try{
+      const context=typeof trainerHeroOverrideContext==="function"?trainerHeroOverrideContext(typeof trainerWarmAssets!=="undefined"?trainerWarmAssets.population:null):null;
+      const spot=String(context?.spot||"").toUpperCase();
+      const editorSpots=window.PokerHeroRanges?.SPOTS;
+      if(spot&&Array.isArray(editorSpots)&&editorSpots.includes(spot))params.set("spot",spot);
+    }catch(_){/* no canonical context: the population-only deep link stays valid */}
+  }
+  const query=params.toString();
+  return query?`./hero-ranges.html?${query}`:"./hero-ranges.html";
+}
+function syncHeroRangesDeepLinks(){
+  const href=heroRangesDeepLinkHref();
+  const targets=[heroRangesOpenBtn,strategyPageEditorLink,...document.querySelectorAll("[data-hero-ranges-entry]")].filter(Boolean);
+  for(const link of targets)link.setAttribute("href",href);
+}
 function updateProductIdentityUi(){
   const population=productPopulationIdentityText();
   if(activePopulationIdentity) activePopulationIdentity.textContent=population;
@@ -2224,6 +2258,7 @@ function updateProductIdentityUi(){
     runtimeModelBIdentity.textContent=(typeof trainerState!=="undefined"&&trainerState?.modelB)?"v2 · chargé":"v2 · chargé à l’ouverture du Training";
   }
   appViewUpdateIdentityMirror();
+  syncHeroRangesDeepLinks();
 }
 async function loadRuntimeReleaseIdentity(){
   try{
@@ -9681,6 +9716,10 @@ document.querySelectorAll(".mode-card[data-app-view]").forEach(card=>{
   card.addEventListener("click",e=>{
     const view=card.dataset.appView;
     if(!APP_VIEWS.includes(view)) return;
+    // The Strategy mode is the standalone editor page: its link must navigate
+    // (deep link preserved, openable in a new tab) instead of being swallowed
+    // by the in-app view switch.
+    if(card.tagName==="A"&&card.getAttribute("href")) return;
     e.preventDefault();
     openAppView(view,{scrollTop:true});
   });

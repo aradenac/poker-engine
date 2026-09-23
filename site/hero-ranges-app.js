@@ -109,6 +109,28 @@ function applyDeepLink(){
   const hand=canonicalHandClass(params.get("hand"));if(hand){selectedHand=hand;selectionAnchor=hand;selectedHands=new Set([hand]);}
 }
 
+// #394 T6 — the editor is the surface of the Stratégie Hero mode and its URL is
+// the stable deep link. Every render rewrites the current context (population,
+// position, spot, stack, active hand) into the address bar in place, without a
+// history entry, so a refresh, a bookmark or a shared link restores exactly the
+// displayed context instead of silently falling back to the editor defaults.
+function deepLinkHref(){
+  const params=new URLSearchParams();
+  params.set("population",String(els.population.value||"").trim());
+  params.set("position",String(els.position.value||"").trim().toUpperCase());
+  params.set("spot",String(els.spot.value||"").trim().toUpperCase());
+  params.set("stack",String(els.stack.value||"").trim());
+  params.set("hand",String(selectedHand||"").trim());
+  return `${location.pathname}?${params.toString()}`;
+}
+function syncDeepLink(){
+  try{
+    const href=deepLinkHref();
+    if(`${location.pathname}${location.search}`===href)return;
+    history.replaceState(null,"",href);
+  }catch(_){/* file:// and sandboxed frames keep the editor functional without URL sync */}
+}
+
 function legacyEntries(){return HeroRanges.legacyRanges(repo.source?.range_folder);}
 function sourceSelection(){
   const entries=legacyEntries(),r=entries[Number(els.sourceRange.value)||0]?.range||null;
@@ -349,7 +371,7 @@ function renderResolutionStatus(){
   }
   if(els.migrationStatus)setStatus(els.migrationStatus,migrationSummary(),false);
 }
-function renderAll(){renderSourceBrowser();renderContextStatus();try{renderGrid();renderComparison();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderResolutionStatus();renderRepository();}
+function renderAll(){syncDeepLink();renderSourceBrowser();renderContextStatus();try{renderGrid();renderComparison();renderActionEditor();}catch(err){setStatus(els.contextStatus,err.message,true);}renderResolutionStatus();renderRepository();}
 
 function saveSelected(){
   try{
