@@ -4,14 +4,23 @@ name: Validate analysis-state taxonomy contract
 # trainer/review/inbox surfaces and must stay identical between the edit source
 # `src/analytics/analysis-state.js` and the served mirror
 # `site/analytics/analysis-state.js`. This dedicated workflow runs the
-# byte-parity guard plus the fail-safe (un-evaluated dimension) contracts in CI
-# so a drift or an optimistic regression fails before it can be merged.
+# byte-parity guard, the fail-safe (un-evaluated dimension) contracts and the
+# cross-surface consistency contract (same enum + same label table for Review
+# Inbox/Dashboard, Replayer Hero/adverse and Training, plus the D5/D6 and generic
+# message guards) in CI so a drift or an optimistic regression fails before it
+# can be merged.
 
 on:
   push:
     paths:
       - 'src/analytics/analysis-state.js'
       - 'site/analytics/analysis-state.js'
+      - 'src/analytics/review-inbox.js'
+      - 'site/analytics/review-inbox.js'
+      - 'src/analytics/review-dashboard.js'
+      - 'site/analytics/review-dashboard.js'
+      - 'site/index.html'
+      - 'site/trainer.js'
       - 'contracts/analytics/analysis-state.schema.json'
       - 'contracts/analytics/review-inbox.schema.json'
       - 'docs/analysis-state-contract.md'
@@ -19,11 +28,18 @@ on:
       - 'tests/analytics/test_analysis_state_contract.py'
       - 'tests/analytics/test_analysis_state_mirror_parity.js'
       - 'tests/trainer/test_analysis_state_mirror_contract.py'
+      - 'tests/trainer/test_analysis_state_consistency_contract.py'
       - '.github/workflows/analysis-state-contract.yml'
   pull_request:
     paths:
       - 'src/analytics/analysis-state.js'
       - 'site/analytics/analysis-state.js'
+      - 'src/analytics/review-inbox.js'
+      - 'site/analytics/review-inbox.js'
+      - 'src/analytics/review-dashboard.js'
+      - 'site/analytics/review-dashboard.js'
+      - 'site/index.html'
+      - 'site/trainer.js'
       - 'contracts/analytics/analysis-state.schema.json'
       - 'contracts/analytics/review-inbox.schema.json'
       - 'docs/analysis-state-contract.md'
@@ -31,6 +47,7 @@ on:
       - 'tests/analytics/test_analysis_state_contract.py'
       - 'tests/analytics/test_analysis_state_mirror_parity.js'
       - 'tests/trainer/test_analysis_state_mirror_contract.py'
+      - 'tests/trainer/test_analysis_state_consistency_contract.py'
       - '.github/workflows/analysis-state-contract.yml'
 
 permissions:
@@ -59,3 +76,5 @@ jobs:
         run: python3 tests/analytics/test_analysis_state_contract.py
       - name: Analysis-state mirror contract
         run: python3 tests/trainer/test_analysis_state_mirror_contract.py
+      - name: Cross-surface analysis-state consistency contract
+        run: python3 tests/trainer/test_analysis_state_consistency_contract.py
