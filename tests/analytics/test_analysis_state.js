@@ -164,7 +164,9 @@ assert.equal(STATES.length,6);
   assert.equal(noNode.model_support_status,'NODE_ABSENT');
   assert.equal(noNode.posterior_availability,'unavailable');
   assert.equal(noNode.recommendation_admissibility.admissible,false);
-  assert.equal(noNode.recommendation_admissibility.status,'NODE_ABSENT');
+  // The producer supplied no admissibility evidence, so the dimension stays
+  // explicitly not evaluated instead of borrowing the node-absence cause.
+  assert.equal(noNode.recommendation_admissibility.status,'NOT_EVALUATED');
 }
 
 // ---------------------------------------------------------------------------
@@ -252,7 +254,11 @@ const completeDecision=(()=>{
   assert.deepEqual(mapped.reason_codes,[]);
   assert.equal(mapped.recommendation_admissibility.admissible,true);
   assert.equal(mapped.ev_comparability.comparable,true);
-  assert.equal(mapped.posterior_availability,'conditioned');
+  // The canonical adapter supplies no posterior evidence, so the dimension is
+  // reported as unavailable (fail-safe) and never inferred from admissibility.
+  assert.equal(mapped.posterior_availability,'unavailable');
+  assert.equal(mapped.computational_status,'COMPLETE');
+  assert.equal(mapped.model_support_status,'SUPPORTED');
   assert.equal(mapped.statistical_support.observations,150);
   assert.equal(State.isAnalysisState(mapped),true);
 
@@ -304,6 +310,131 @@ const completeDecision=(()=>{
     assert.equal(validation.valid,true,JSON.stringify({input,mapped,validation}));
     const twice=State.mapAnalysisState(mapped);
     assert.deepEqual(twice,mapped,'mapAnalysisState must be idempotent');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 10. Fail-safe + explicit-evidence regression (review #408 blocker 1).
+//     A missing/weak input must never fabricate an optimistic dimension, and
+//     ANALYSE_DISPONIBLE must require an explicit positive signal.
+// ---------------------------------------------------------------------------
+{
+  // 10a. Empty input is not an available analysis and fabricates nothing.
+  const empty=State.mapAnalysisState({});
+  assert.notEqual(empty.state,'ANALYSE_DISPONIBLE','empty input must never default to available');
+  assert.equal(empty.state,State.DEFAULT_UNKNOWN_STATE);
+  assert.equal(empty.computational_status,'NOT_EVALUATED');
+  assert.equal(empty.model_support_status,'NOT_EVALUATED');
+  assert.equal(empty.ev_comparability.comparable,false);
+  assert.equal(empty.ev_comparability.reason,'NOT_EVALUATED');
+  assert.equal(empty.recommendation_admissibility.admissible,false);
+  assert.equal(empty.recommendation_admissibility.status,'NOT_EVALUATED');
+  assert.notEqual(empty.posterior_availability,'conditioned');
+  assert.equal(empty.posterior_availability,'unavailable');
+  assert.equal(State.validateAnalysisState(empty).valid,true);
+  assert.deepEqual(State.mapAnalysisState(empty),empty,'empty mapping must be idempotent');
+
+  // A missing dimension is never inferred from the absence of a blocker: a
+  // single evaluated dimension cannot promote the others.
+  const onlyComparable=State.mapAnalysisState({ev_comparability:{comparable:true,reason:null}});
+  assert.equal(onlyComparable.state,'ANALYSE_DISPONIBLE');
+  assert.equal(onlyComparable.ev_comparability.comparable,true);
+  assert.equal(onlyComparable.recommendation_admissibility.admissible,false);
+  assert.equal(onlyComparable.recommendation_admissibility.status,'NOT_EVALUATED');
+  assert.notEqual(onlyComparable.posterior_availability,'conditioned');
+  assert.equal(onlyComparable.computational_status,'COMPLETE','an evaluated dimension proves the computation ran');
+  assert.equal(State.validateAnalysisState(onlyComparable).valid,true);
+  assert.deepEqual(State.mapAnalysisState(onlyComparable),onlyComparable);
+
+  const onlyModel=State.mapAnalysisState({model_support_status:'SUPPORTED'});
+  assert.notEqual(onlyModel.state,'ANALYSE_DISPONIBLE','model support alone does not prove a usable answer');
+  assert.equal(onlyModel.model_support_status,'SUPPORTED');
+  assert.equal(onlyModel.computational_status,'NOT_EVALUATED');
+  assert.equal(onlyModel.ev_comparability.comparable,false);
+  assert.equal(onlyModel.recommendation_admissibility.admissible,false);
+  assert.notEqual(onlyModel.posterior_availability,'conditioned');
+  assert.deepEqual(State.mapAnalysisState(onlyModel),onlyModel);
+
+  const onlyPosterior=State.mapAnalysisState({posterior_availability:'conditioned'});
+  assert.notEqual(onlyPosterior.state,'ANALYSE_DISPONIBLE');
+  assert.equal(onlyPosterior.posterior_availability,'conditioned');
+  assert.equal(onlyPosterior.recommendation_admissibility.admissible,false);
+  assert.equal(onlyPosterior.ev_comparability.comparable,false);
+
+  const onlyComputational=State.mapAnalysisState({computational_status:'COMPLETE'});
+  assert.notEqual(onlyComputational.state,'ANALYSE_DISPONIBLE');
+  assert.equal(onlyComputational.computational_status,'COMPLETE');
+  assert.equal(onlyComputational.ev_comparability.comparable,false);
+  assert.equal(onlyComputational.recommendation_admissibility.admissible,false);
+  assert.notEqual(onlyComputational.posterior_availability,'conditioned');
+
+  // 10b. A bare positive explicit state only promotes the state itself.
+  const bareState=State.mapAnalysisState({state:'ANALYSE_DISPONIBLE'});
+  assert.equal(bareState.state,'ANALYSE_DISPONIBLE');
+  assert.equal(bareState.computational_status,'NOT_EVALUATED');
+  assert.equal(bareState.model_support_status,'NOT_EVALUATED');
+  assert.equal(bareState.ev_comparability.comparable,false);
+  assert.equal(bareState.recommendation_admissibility.admissible,false);
+  assert.notEqual(bareState.posterior_availability,'conditioned');
+  assert.deepEqual(State.mapAnalysisState(bareState),bareState);
+
+  // 10c. Explicit positive evidence maps to ANALYSE_DISPONIBLE and only then.
+  const coveragePositive=State.mapAnalysisState({coverage_state:'COVERED'});
+  assert.equal(coveragePositive.state,'ANALYSE_DISPONIBLE');
+  assert.equal(coveragePositive.model_support_status,'SUPPORTED');
+  assert.deepEqual(State.mapAnalysisState(coveragePositive),coveragePositive);
+
+  const admissibilityPositive=State.mapAnalysisState({
+    recommendation_admissibility:{admissible:true,status:'ADMISSIBLE'},
+    ev_comparability:{comparable:true,reason:null}
+  });
+  assert.equal(admissibilityPositive.state,'ANALYSE_DISPONIBLE');
+  assert.equal(admissibilityPositive.recommendation_admissibility.admissible,true);
+  assert.equal(admissibilityPositive.ev_comparability.comparable,true);
+  assert.notEqual(admissibilityPositive.posterior_availability,'conditioned','still no posterior evidence');
+  assert.deepEqual(State.mapAnalysisState(admissibilityPositive),admissibilityPositive);
+
+  const reasonPositive=State.mapAnalysisState({reason_codes:['READY']});
+  assert.equal(reasonPositive.state,'ANALYSE_DISPONIBLE');
+  assert.deepEqual(reasonPositive.reason_codes,['READY']);
+
+  // 10d. An explicitly supplied posterior is preserved without contaminating
+  //      the other dimensions.
+  const explicitPosterior=State.mapAnalysisState({
+    posterior_availability:'conditioned',
+    ev_comparability:{comparable:true,reason:null}
+  });
+  assert.equal(explicitPosterior.posterior_availability,'conditioned');
+  assert.equal(explicitPosterior.ev_comparability.comparable,true);
+  assert.equal(explicitPosterior.recommendation_admissibility.admissible,false);
+  assert.deepEqual(State.mapAnalysisState(explicitPosterior),explicitPosterior);
+
+  // 10e. Partially specified input only promotes the proven dimension(s).
+  const pending=State.mapAnalysisState({computational_status:'RUNNING'});
+  assert.equal(pending.state,'CALCUL_EN_COURS');
+  assert.equal(pending.computational_status,'RUNNING');
+  assert.equal(pending.model_support_status,'NOT_EVALUATED');
+  assert.equal(pending.ev_comparability.comparable,false);
+  assert.equal(pending.recommendation_admissibility.admissible,false);
+  assert.notEqual(pending.posterior_availability,'conditioned');
+  assert.deepEqual(State.mapAnalysisState(pending),pending);
+
+  // 10f. Unknown codes are preserved and force a safe, non-optimistic state.
+  const unknownWeak=State.mapAnalysisState({reason_codes:['FUTURE_TAXONOMY_CODE']});
+  assert.notEqual(unknownWeak.state,'ANALYSE_DISPONIBLE');
+  assert.equal(unknownWeak.state,State.DEFAULT_UNKNOWN_STATE);
+  assert.ok(unknownWeak.reason_codes.includes('FUTURE_TAXONOMY_CODE'));
+  assert.equal(unknownWeak.recommendation_admissibility.admissible,false);
+  assert.deepEqual(State.mapAnalysisState(unknownWeak),unknownWeak);
+
+  // 10g. Idempotence and schema conformance for the fail-safe fixtures.
+  for(const input of [{},{state:'ANALYSE_DISPONIBLE'},{model_support_status:'SUPPORTED'},
+    {posterior_availability:'conditioned'},{computational_status:'COMPLETE'},
+    {ev_comparability:{comparable:true,reason:null}},{coverage_state:'COVERED'},
+    {reason_codes:['FUTURE_TAXONOMY_CODE']}]){
+    const mapped=State.mapAnalysisState(input);
+    assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
+    assert.deepEqual(State.mapAnalysisState(mapped),mapped,'mapAnalysisState must be idempotent for '+JSON.stringify(input));
   }
 }
 

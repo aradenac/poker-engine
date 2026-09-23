@@ -28,8 +28,12 @@
     ERREUR_CALCUL:'ERREUR_CALCUL'
   };
 
-  const COMPUTATIONAL_STATUSES=['NOT_STARTED','PENDING','RUNNING','COMPLETE','FAILED'];
-  const MODEL_SUPPORT_STATUSES=['SUPPORTED','NODE_ABSENT','CONTEXT_UNSUPPORTED','NOT_EVALUATED'];
+  // Explicit "dimension not supplied by the producer" sentinel shared by the
+  // technical dimensions. It is deliberately distinct from every real status so
+  // the mapper can tell "not evaluated yet" from "evaluated and negative".
+  const NOT_EVALUATED='NOT_EVALUATED';
+  const COMPUTATIONAL_STATUSES=['NOT_STARTED','PENDING','RUNNING','COMPLETE','FAILED',NOT_EVALUATED];
+  const MODEL_SUPPORT_STATUSES=['SUPPORTED','NODE_ABSENT','CONTEXT_UNSUPPORTED',NOT_EVALUATED];
   const POSTERIOR_AVAILABILITY=['conditioned','prior_uninformative','source_prior_unconditioned','degenerate','unavailable'];
 
   const S_DISPONIBLE=ANALYSIS_STATES.ANALYSE_DISPONIBLE;
@@ -216,27 +220,88 @@
     const admissibility=input.recommendation_admissibility;
     if(isPlainObject(admissibility)){
       if(Array.isArray(admissibility.reason_codes))admissibility.reason_codes.forEach(c=>pushReasonCode(out,c));
-      if(admissibility.admissible===false)pushReasonCode(out,admissibility.status);
+      // A `NOT_EVALUATED` status is the explicit "dimension missing" sentinel: it
+      // is never a reason code, so it must not resurface in `reason_codes`.
+      if(admissibility.admissible===false&&upper(admissibility.status)!==NOT_EVALUATED)pushReasonCode(out,admissibility.status);
     }
     return unique(out);
   }
 
   function normalizeComparability(data){
     if(isPlainObject(data.ev_comparability)){
-      return {comparable:Boolean(data.ev_comparability.comparable),reason:text(data.ev_comparability.reason)||null};
+      const row=data.ev_comparability;
+      const reason=text(row.reason)||null;
+      const evaluated=upper(reason)!==NOT_EVALUATED;
+      return {
+        provided:true,
+        evaluated,
+        comparable:evaluated&&row.comparable===true,
+        negative:evaluated&&row.comparable===false,
+        reason
+      };
     }
     if(typeof data.ev_comparable==='boolean'){
-      return {comparable:data.ev_comparable,reason:data.ev_comparable?null:(text(data.ev_comparability_reason)||null)};
+      return {
+        provided:true,
+        evaluated:true,
+        comparable:data.ev_comparable===true,
+        negative:data.ev_comparable===false,
+        reason:data.ev_comparable?null:(text(data.ev_comparability_reason)||null)
+      };
     }
     return null;
   }
   function normalizeAdmissibility(data){
     if(isPlainObject(data.recommendation_admissibility)){
       const row=data.recommendation_admissibility;
-      return {admissible:Boolean(row.admissible),status:text(row.status)||null,...row};
+      const status=text(row.status)||null;
+      const evaluated=upper(status)!==NOT_EVALUATED;
+      return {
+        provided:true,
+        evaluated,
+        admissible:evaluated&&row.admissible===true,
+        negative:evaluated&&row.admissible===false,
+        status,
+        reason_codes:Array.isArray(row.reason_codes)?row.reason_codes.map(upper).filter(Boolean):[]
+      };
     }
-    if(typeof data.admissible==='boolean')return {admissible:data.admissible,status:text(data.admissibility_status)||null};
+    if(typeof data.admissible==='boolean'){
+      return {
+        provided:true,
+        evaluated:true,
+        admissible:data.admissible===true,
+        negative:data.admissible===false,
+        status:text(data.admissibility_status)||null,
+        reason_codes:[]
+      };
+    }
     return null;
+  }
+  // A positive coverage signal is an explicit producer statement that the spot
+  // is covered, so it counts as positive evidence for model support/availability.
+  function hasCoveredCoverage(data){
+    if(upper(data.coverage_state)==='COVERED')return true;
+    if(isPlainObject(data.coverage)&&upper(data.coverage.state)==='COVERED')return true;
+    return false;
+  }
+  // Per-dimension extractors. A dimension counts as "supplied" only when it
+  // carries a real value; the explicit NOT_EVALUATED sentinel (and any unknown
+  // value) means "the producer did not evaluate this dimension".
+  function extractComputational(data){
+    const raw=upper(data.computational_status);
+    if(COMPUTATIONAL_STATUSES.includes(raw)&&raw!==NOT_EVALUATED)return {provided:true,status:raw,pending:PENDING_COMPUTATIONAL.has(raw)};
+    return {provided:false,status:null,pending:false};
+  }
+  function extractModel(data){
+    const raw=upper(data.model_support_status);
+    if(raw==='SUPPORTED')return {provided:true,status:raw,positive:true,blocker:false};
+    if(raw==='NODE_ABSENT'||raw==='CONTEXT_UNSUPPORTED')return {provided:true,status:raw,positive:false,blocker:true};
+    return {provided:false,status:null,positive:false,blocker:false};
+  }
+  function extractPosterior(data){
+    const raw=text(data.posterior_availability).toLowerCase();
+    if(POSTERIOR_AVAILABILITY.includes(raw))return {provided:true,status:raw,positive:raw==='conditioned'};
+    return {provided:false,status:null,positive:false};
   }
   function firstHint(codes,key){
     for(const code of codes){const hints=REASON_CODE_DIMENSIONS[code];if(hints&&text(hints[key]))return text(hints[key]);}
@@ -252,88 +317,120 @@
     const known=[],unknown=[];
     for(const code of codes)(findCodeState(code)?known:unknown).push(code);
     const knownEntries=known.map(code=>({code,entry:findCodeState(code)}));
+    const hasPositiveCode=knownEntries.some(row=>row.entry===S_DISPONIBLE);
 
     const errorInput=isPlainObject(data.error)?data.error:null;
     const errorType=text(errorInput&&errorInput.type)||null;
-    const computationalInput=COMPUTATIONAL_STATUSES.includes(upper(data.computational_status))?upper(data.computational_status):null;
-    const modelInput=MODEL_SUPPORT_STATUSES.includes(upper(data.model_support_status))?upper(data.model_support_status):null;
-    const posteriorRaw=text(data.posterior_availability).toLowerCase();
-    const posteriorInput=POSTERIOR_AVAILABILITY.includes(posteriorRaw)?posteriorRaw:null;
+    const computational=extractComputational(data);
+    const model=extractModel(data);
+    const posterior=extractPosterior(data);
     const comparabilityInput=normalizeComparability(data);
     const admissibilityInput=normalizeAdmissibility(data);
+    const coveredCoverage=hasCoveredCoverage(data);
     const supportStat=isPlainObject(data.statistical_support)?data.statistical_support:{};
     const supportRow=isPlainObject(data.support)?data.support:{};
+
+    const comparabilityPositive=Boolean(comparabilityInput&&comparabilityInput.evaluated&&comparabilityInput.comparable);
+    const admissibilityPositive=Boolean(admissibilityInput&&admissibilityInput.evaluated&&admissibilityInput.admissible);
+
+    // A dimension counts as "supplied" only when the producer actually evaluated
+    // it. This drives the fail-safe computational status: a terminal reason code
+    // or an evaluated dimension proves the computation already ran, whereas an
+    // empty/weak input must stay NOT_EVALUATED (never COMPLETE by default).
+    const terminalEvidence=known.length>0||unknown.length>0||coveredCoverage
+      ||Boolean(comparabilityInput&&comparabilityInput.evaluated)
+      ||Boolean(admissibilityInput&&admissibilityInput.evaluated);
 
     const candidates=[];
     const add=state=>{if(state&&!candidates.includes(state))candidates.push(state);};
     if(explicitState)add(explicitState);
     knownEntries.forEach(row=>add(row.entry));
     if(errorType)add(S_ERREUR);
-    if(computationalInput&&PENDING_COMPUTATIONAL.has(computationalInput))add(S_EN_COURS);
-    if(modelInput==='NODE_ABSENT'||modelInput==='CONTEXT_UNSUPPORTED')add(S_NON_SUPPORTE);
-    if(comparabilityInput&&comparabilityInput.comparable===false)add(S_PARTIELLE);
-    if(admissibilityInput&&admissibilityInput.admissible===false)add(S_PARTIELLE);
+    if(computational.pending)add(S_EN_COURS);
+    if(model.blocker)add(S_NON_SUPPORTE);
+    if(comparabilityInput&&comparabilityInput.negative)add(S_PARTIELLE);
+    if(admissibilityInput&&admissibilityInput.negative)add(S_PARTIELLE);
+    // ANALYSE_DISPONIBLE is only ever a candidate when the producer supplied an
+    // explicit positive signal: a positive reason code, coverage COVERED, or an
+    // explicitly evaluated positive comparability/admissibility. Missing
+    // dimensions are never treated as positive evidence.
+    if(hasPositiveCode||coveredCoverage||comparabilityPositive||admissibilityPositive)add(S_DISPONIBLE);
 
     let state=null,bestRank=Infinity;
     for(const candidate of candidates){const rank=STATE_RANK[candidate];if(rank!=null&&rank<bestRank){bestRank=rank;state=candidate;}}
-    if(!state)state=S_DISPONIBLE;
+    // Fail-safe default: no decisive evidence is never ANALYSE_DISPONIBLE.
+    if(!state)state=DEFAULT_UNKNOWN_STATE;
     // An unknown code must never be dropped, and must never leave the object in
     // an optimistic state: fall back to the safe state while keeping the code.
     if(unknown.length&&(state===S_DISPONIBLE||!candidates.length))state=DEFAULT_UNKNOWN_STATE;
 
     let model_support_status;
     if(state===S_NON_SUPPORTE){
-      model_support_status=(modelInput&&modelInput!=='SUPPORTED')?modelInput:(firstHint(known,'model_support_status')||'NODE_ABSENT');
-    }else if(modelInput){
-      model_support_status=modelInput;
-    }else if(state===S_ERREUR||state===S_EN_COURS){
-      model_support_status='NOT_EVALUATED';
-    }else{
+      model_support_status=(model.provided&&model.status!=='SUPPORTED')?model.status:(firstHint(known,'model_support_status')||'NODE_ABSENT');
+    }else if(model.provided){
+      model_support_status=model.status;
+    }else if(coveredCoverage&&(state===S_DISPONIBLE||state===S_PARTIELLE)){
       model_support_status='SUPPORTED';
+    }else{
+      model_support_status=NOT_EVALUATED;
     }
 
     let computational_status;
     if(state===S_ERREUR){
       computational_status='FAILED';
     }else if(state===S_EN_COURS){
-      computational_status=(computationalInput&&PENDING_COMPUTATIONAL.has(computationalInput))?computationalInput:'PENDING';
-    }else if(computationalInput){
-      computational_status=computationalInput;
-    }else{
+      computational_status=computational.provided?computational.status:'PENDING';
+    }else if(computational.provided){
+      computational_status=computational.status;
+    }else if(terminalEvidence){
       computational_status='COMPLETE';
+    }else{
+      computational_status=NOT_EVALUATED;
     }
 
-    const posterior_availability=posteriorInput
-      ||firstHint(known,'posterior_availability')
-      ||((state===S_NON_SUPPORTE||state===S_ERREUR||state===S_EN_COURS)?'unavailable':(state===S_DISPONIBLE?'conditioned':'unavailable'));
+    const posterior_availability=posterior.provided
+      ?posterior.status
+      :(firstHint(known,'posterior_availability')||'unavailable');
 
     const statistical_support={
       observations:asInt(supportStat.observations!=null?supportStat.observations:(data.observations!=null?data.observations:supportRow.observations),0),
       distinct_hands:asInt(supportStat.distinct_hands!=null?supportStat.distinct_hands:data.distinct_hands,0)
     };
 
+    const comparability_hint=firstHint(known,'comparability_reason');
     let ev_comparability;
-    if(comparabilityInput){
-      ev_comparability={comparable:comparabilityInput.comparable,reason:comparabilityInput.comparable?null:(comparabilityInput.reason||firstHint(known,'comparability_reason')||known[0]||state)};
-    }else if(state===S_DISPONIBLE){
-      ev_comparability={comparable:true,reason:null};
+    if(comparabilityInput&&comparabilityInput.evaluated){
+      const comparable=comparabilityInput.comparable===true;
+      ev_comparability={comparable,reason:comparable?null:(comparabilityInput.reason||comparability_hint||firstHint(known,'admissibility_status')||known[0]||state)};
+    }else if(comparabilityInput&&!comparabilityInput.evaluated){
+      // Explicit "not evaluated": never a blocker, never comparable.
+      ev_comparability={comparable:false,reason:NOT_EVALUATED};
+    }else if(comparability_hint){
+      ev_comparability={comparable:false,reason:comparability_hint};
     }else{
-      ev_comparability={comparable:false,reason:firstHint(known,'comparability_reason')||firstHint(known,'admissibility_status')||(known[0])||state};
+      ev_comparability={comparable:false,reason:NOT_EVALUATED};
     }
 
+    const admissibility_hint=firstHint(known,'admissibility_status');
     let admissible,admissibility_status,admissibility_codes;
-    if(admissibilityInput){
-      admissible=admissibilityInput.admissible;
-      admissibility_status=admissibilityInput.status||(admissible?'ADMISSIBLE':(firstHint(known,'admissibility_status')||known[0]||state));
-      admissibility_codes=Array.isArray(admissibilityInput.reason_codes)?unique(admissibilityInput.reason_codes.map(upper).filter(Boolean)):[];
+    if(admissibilityInput&&admissibilityInput.evaluated){
+      admissible=admissibilityInput.admissible===true;
+      admissibility_status=admissibilityInput.status||(admissible?'ADMISSIBLE':(admissibility_hint||known[0]||state));
+      admissibility_codes=admissibilityInput.reason_codes.slice();
+    }else if(admissibilityInput&&!admissibilityInput.evaluated){
+      // Explicit "not evaluated": keep admissibility closed (never admissible)
+      // but do not invent a blocking cause.
+      admissible=false;
+      admissibility_status=NOT_EVALUATED;
+      admissibility_codes=admissibilityInput.reason_codes.slice();
     }else{
-      admissible=state===S_DISPONIBLE;
-      admissibility_status=admissible?'ADMISSIBLE':(firstHint(known,'admissibility_status')||(known[0])||state);
+      admissible=false;
+      admissibility_status=admissibility_hint||NOT_EVALUATED;
       admissibility_codes=[];
     }
-    if(!admissible&&!admissibility_codes.length){
+    if(!admissible&&admissibility_status!==NOT_EVALUATED&&!admissibility_codes.length){
       admissibility_codes=known.filter(code=>ADMISSIBILITY_CODE_SET.has(code));
-      if(!admissibility_codes.length)admissibility_codes=known.length?[known[0]]:[state];
+      if(!admissibility_codes.length)admissibility_codes=known.length?[known[0]]:[admissibility_status];
     }
 
     let error;

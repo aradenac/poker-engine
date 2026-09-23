@@ -62,23 +62,59 @@ le libellé principal.
   Les codes détaillés ne sont affichés que dans la vue détails secondaire ; un
   code inconnu est préservé tel quel, jamais remplacé par un message générique.
 - `computational_status` — `NOT_STARTED`, `PENDING`, `RUNNING`, `COMPLETE`,
-  `FAILED`. Distingue un calcul non terminé d'une conclusion scientifique.
+  `FAILED`, `NOT_EVALUATED`. Distingue un calcul non terminé d'une conclusion
+  scientifique ; `NOT_EVALUATED` est le statut fail-safe lorsque le producteur
+  ne fournit pas la dimension.
 - `model_support_status` — `SUPPORTED`, `NODE_ABSENT`, `CONTEXT_UNSUPPORTED`,
-  `NOT_EVALUATED`. Distingue l'absence de nœud d'un contexte non supporté.
+  `NOT_EVALUATED`. Distingue l'absence de nœud d'un contexte non supporté ;
+  `NOT_EVALUATED` est le statut fail-safe par défaut.
 - `statistical_support` — objet `{observations, distinct_hands}`. Le nombre de
   mains distinctes est séparé du nombre d'observations pour qu'une main répétée
   ne constitue pas un support.
 - `ev_comparability` — objet `{comparable, reason}`. `comparable` n'est vrai que
   lorsque la ligne jouée et la recommandation sont évaluées sous la même
-  référence admissible.
+  référence admissible. Sans évidence de comparabilité, `comparable` vaut
+  `false` et `reason` vaut `NOT_EVALUATED`.
 - `recommendation_admissibility` — objet `{admissible, status, reason_codes}`.
   Seul `admissible` autorise l'exposition d'une recommandation ou d'une EV Hero.
+  Sans évidence d'admissibilité, `admissible` vaut `false` et `status` vaut
+  `NOT_EVALUATED`.
 - `posterior_availability` — `conditioned`, `prior_uninformative`,
   `source_prior_unconditioned`, `degenerate`, `unavailable` (vocabulaire
-  posterior de #391).
+  posterior de #391). Sans évidence de posterior, la valeur fail-safe est
+  `unavailable` ; `conditioned` n'est jamais déduit de l'absence de blocker.
 - `error` — objet `{type, retryable}`. `type` vaut `null` sans erreur ; une
   valeur non nulle marque une erreur de worker et `retryable` dit si la requête
   peut être rejouée.
+
+## Fail-safe : dimensions non évaluées
+
+Le mapper (`src/analytics/analysis-state.js`) est **fail-safe** : il ne défaut
+jamais à `ANALYSE_DISPONIBLE` sur une entrée vide ou faible, et il ne fabrique
+jamais une dimension positive faute d'évidence. Une dimension n'est promue
+(`computational_status = COMPLETE`, `model_support_status = SUPPORTED`,
+`ev_comparability.comparable = true`, `recommendation_admissibility.admissible =
+true`, `posterior_availability = conditioned`) que si le producteur fournit une
+**évidence positive explicite** pour cette dimension :
+
+- `computational_status = COMPLETE` seulement sur un statut explicite ou une
+  preuve terminale (code de raison, dimension évaluée, couverture `COVERED`) ;
+- `model_support_status = SUPPORTED` seulement sur `model_support_status:
+  SUPPORTED` ou une couverture `COVERED` explicite ;
+- `ev_comparability.comparable = true` seulement sur une comparabilité
+  explicitement évaluée et vraie ;
+- `recommendation_admissibility.admissible = true` seulement sur une
+  admissibilité explicitement évaluée et vraie ;
+- `posterior_availability = conditioned` seulement sur une posterior
+  explicitement conditionnée.
+
+L'**absence de blocker n'est jamais une évidence** : une dimension manquante est
+représentée explicitement par `NOT_EVALUATED` (statut/raison) ou `unavailable`
+(posterior), jamais par une valeur optimiste. `ANALYSE_DISPONIBLE` n'est émis
+que lorsqu'un signal positif explicite existe (code positif, couverture
+`COVERED`, comparabilité ou admissibilité explicitement positives). Une entrée
+vide retombe sur l'état sûr `DONNEES_INSUFFISANTES`, et le mapper reste
+idempotent.
 
 ## Les sept distinctions
 

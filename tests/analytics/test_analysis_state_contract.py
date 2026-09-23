@@ -17,6 +17,8 @@ does not depend on a JSON-Schema runtime.
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -143,6 +145,33 @@ class AnalysisStateContract(unittest.TestCase):
         self.assertIn("null", error["properties"]["type"]["type"])
         self.assertEqual(error["properties"]["retryable"]["type"], "boolean")
 
+    def test_missing_dimensions_are_explicitly_fail_safe(self):
+        # The contract must be able to represent a dimension the producer did
+        # not supply, instead of fabricating an optimistic positive value.
+        computational = SCHEMA["properties"]["computational_status"]["enum"]
+        self.assertIn("NOT_EVALUATED", computational, computational)
+        self.assertIn("COMPLETE", computational, computational)
+        self.assertIn(
+            "NOT_EVALUATED",
+            SCHEMA["properties"]["model_support_status"]["enum"],
+        )
+        # The fail-safe semantics are normative documentation, not just code.
+        self.assertIn("fail-safe", DOC_FLAT)
+        self.assertIn("not_evaluated", DOC_FLAT)
+        self.assertIn("évidence positive explicite", DOC_FLAT)
+        self.assertIn("absence de blocker", DOC_FLAT)
+        # A concrete fail-safe example documents the missing-dimension shape.
+        fail_safe = [
+            example
+            for example in SCHEMA["examples"]
+            if example["computational_status"] == "NOT_EVALUATED"
+        ]
+        self.assertTrue(fail_safe, "schema must document a fail-safe example")
+        self.assertNotEqual(fail_safe[0]["state"], "ANALYSE_DISPONIBLE")
+        self.assertNotEqual(fail_safe[0]["posterior_availability"], "conditioned")
+        self.assertFalse(fail_safe[0]["recommendation_admissibility"]["admissible"])
+        self.assertFalse(fail_safe[0]["ev_comparability"]["comparable"])
+
     def test_canonical_example_is_consistent(self):
         examples = SCHEMA["examples"]
         self.assertTrue(examples)
@@ -187,6 +216,90 @@ class AnalysisStateContract(unittest.TestCase):
         self.assertIn("d6", DOC_FLAT)
         self.assertIn("recommendation_admissibility.admissible", DOC_FLAT)
         self.assertIn("ev_comparability.comparable", DOC_FLAT)
+
+
+NODE = shutil.which("node")
+
+
+def map_state(expression: str) -> dict:
+    """Run the real mapper through Node and return the mapped object."""
+    script = (
+        "const S=require('./src/analytics/analysis-state.js');"
+        "process.stdout.write(JSON.stringify(S.mapAnalysisState(" + expression + ")));"
+    )
+    completed = subprocess.run(
+        [NODE, "-e", script],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(completed.stdout)
+
+
+class AnalysisStateFailSafe(unittest.TestCase):
+    """Behavioral regression for review #408 blocker 1 (fail-safe mapper).
+
+    These run the real Node mapper so the required cases below are exercised by
+    the trainer CI, not only by the JS unit file.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        if NODE is None:
+            raise unittest.SkipTest("node runtime is required for the fail-safe regression")
+
+    def test_empty_input_is_not_available_and_fabricates_nothing(self):
+        empty = map_state("{}")
+        self.assertNotEqual(empty["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(empty["state"], "DONNEES_INSUFFISANTES")
+        self.assertFalse(empty["recommendation_admissibility"]["admissible"])
+        self.assertFalse(empty["ev_comparability"]["comparable"])
+        self.assertNotEqual(empty["posterior_availability"], "conditioned")
+        self.assertEqual(empty["computational_status"], "NOT_EVALUATED")
+        self.assertEqual(empty["model_support_status"], "NOT_EVALUATED")
+        self.assertEqual(empty["ev_comparability"]["reason"], "NOT_EVALUATED")
+        self.assertEqual(empty["recommendation_admissibility"]["status"], "NOT_EVALUATED")
+        # Valid + idempotent against the canonical contract.
+        validation = subprocess.run(
+            [
+                NODE,
+                "-e",
+                "const S=require('./src/analytics/analysis-state.js');"
+                "const a=S.mapAnalysisState({});"
+                "process.stdout.write(JSON.stringify({valid:S.validateAnalysisState(a).valid,"
+                "idempotent:JSON.stringify(S.mapAnalysisState(a))===JSON.stringify(a)}));",
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        flags = json.loads(validation.stdout)
+        self.assertTrue(flags["valid"], flags)
+        self.assertTrue(flags["idempotent"], flags)
+
+    def test_partial_input_only_promotes_the_proven_dimension(self):
+        mapped = map_state("{ev_comparability:{comparable:true,reason:null}}")
+        self.assertTrue(mapped["ev_comparability"]["comparable"])
+        self.assertFalse(mapped["recommendation_admissibility"]["admissible"])
+        self.assertEqual(mapped["recommendation_admissibility"]["status"], "NOT_EVALUATED")
+        self.assertNotEqual(mapped["posterior_availability"], "conditioned")
+        self.assertEqual(mapped["model_support_status"], "NOT_EVALUATED")
+
+    def test_explicit_positive_evidence_maps_to_available(self):
+        covered = map_state("{coverage_state:'COVERED'}")
+        self.assertEqual(covered["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(covered["model_support_status"], "SUPPORTED")
+
+        weak = map_state("{model_support_status:'SUPPORTED'}")
+        self.assertNotEqual(weak["state"], "ANALYSE_DISPONIBLE")
+
+    def test_unknown_codes_are_preserved_and_stay_safe(self):
+        mapped = map_state("{reason_codes:['FUTURE_TAXONOMY_CODE']}")
+        self.assertNotEqual(mapped["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(mapped["state"], "DONNEES_INSUFFISANTES")
+        self.assertIn("FUTURE_TAXONOMY_CODE", mapped["reason_codes"])
 
 
 if __name__ == "__main__":

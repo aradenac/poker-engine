@@ -88,12 +88,20 @@ def _runtime_enumeration() -> dict:
     script = (
         "const State=require('./src/analytics/analysis-state.js');"
         "const Adapter=require('./src/training/preflop-decision-adapter.js');"
+        "const empty=State.mapAnalysisState({});"
+        "const partial=State.mapAnalysisState({ev_comparability:{comparable:true,reason:null}});"
+        "const available=State.mapAnalysisState({coverage_state:'COVERED'});"
+        "const weak=State.mapAnalysisState({model_support_status:'SUPPORTED'});"
+        "const unknown=State.mapAnalysisState({reason_codes:['FUTURE_TAXONOMY_CODE']});"
         "process.stdout.write(JSON.stringify({"
         "schema:State.SCHEMA,"
         "states:Object.keys(State.ANALYSIS_STATES),"
         "code_map:State.REASON_CODE_MAP,"
         "coverage:Adapter.COVERAGE_STATES,"
-        "fail_closed:Adapter.FAIL_CLOSED_STATES"
+        "fail_closed:Adapter.FAIL_CLOSED_STATES,"
+        "empty,partial,available,weak,unknown,"
+        "empty_valid:State.validateAnalysisState(empty).valid,"
+        "empty_idempotent:JSON.stringify(State.mapAnalysisState(empty))===JSON.stringify(empty)"
         "}));"
     )
     completed = subprocess.run(
@@ -169,6 +177,42 @@ class AnalysisStateMirrorContract(unittest.TestCase):
         self.assertEqual(missing_schema, set(), f"schema codes not mapped: {sorted(missing_schema)}")
         missing_required = REQUIRED_CODES - code_map
         self.assertEqual(missing_required, set(), f"required codes not mapped: {sorted(missing_required)}")
+
+    # ------------------------------------------------- fail-safe mapper (#408)
+    def test_empty_input_is_fail_safe_and_idempotent(self):
+        empty = RUNTIME["empty"]
+        self.assertNotEqual(empty["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(empty["state"], "DONNEES_INSUFFISANTES")
+        self.assertFalse(empty["recommendation_admissibility"]["admissible"])
+        self.assertFalse(empty["ev_comparability"]["comparable"])
+        self.assertNotEqual(empty["posterior_availability"], "conditioned")
+        self.assertEqual(empty["computational_status"], "NOT_EVALUATED")
+        self.assertEqual(empty["model_support_status"], "NOT_EVALUATED")
+        self.assertEqual(empty["ev_comparability"]["reason"], "NOT_EVALUATED")
+        self.assertTrue(RUNTIME["empty_valid"], "empty mapping must validate")
+        self.assertTrue(RUNTIME["empty_idempotent"], "empty mapping must be idempotent")
+
+    def test_partial_input_only_promotes_proven_dimensions(self):
+        partial = RUNTIME["partial"]
+        self.assertTrue(partial["ev_comparability"]["comparable"])
+        self.assertFalse(partial["recommendation_admissibility"]["admissible"])
+        self.assertEqual(partial["recommendation_admissibility"]["status"], "NOT_EVALUATED")
+        self.assertNotEqual(partial["posterior_availability"], "conditioned")
+        self.assertEqual(partial["model_support_status"], "NOT_EVALUATED")
+        # A single non-decisive signal (model support alone) is not a usable answer.
+        self.assertNotEqual(RUNTIME["weak"]["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(RUNTIME["weak"]["state"], "DONNEES_INSUFFISANTES")
+
+    def test_explicit_positive_evidence_maps_to_available(self):
+        self.assertEqual(RUNTIME["available"]["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(RUNTIME["available"]["model_support_status"], "SUPPORTED")
+
+    def test_unknown_codes_stay_preserved_and_non_optimistic(self):
+        unknown = RUNTIME["unknown"]
+        self.assertNotEqual(unknown["state"], "ANALYSE_DISPONIBLE")
+        self.assertEqual(unknown["state"], "DONNEES_INSUFFISANTES")
+        self.assertIn("FUTURE_TAXONOMY_CODE", unknown["reason_codes"])
+        self.assertFalse(unknown["recommendation_admissibility"]["admissible"])
 
 
 if __name__ == "__main__":

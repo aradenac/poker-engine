@@ -375,7 +375,7 @@ async def main() -> None:
                 });
                 const unavailable=replayOpponentCommentStateFromEvidence(evidence,{actionType:"raise"},null);
                 const heroCovered=replayHeroCommentState(0,{street:"Flop"},null,{
-                    canonicalDecision:{schema:"decision-summary/v1"}
+                    canonicalDecision:{schema:"decision-summary/v1",coverage_state:"COVERED",recommendation_admissibility:{admissible:true},ev_comparability:{comparable:true}}
                 });
                 const heroUncovered=replayHeroCommentState(0,{street:"Préflop"},null,{
                     req:{kind:"aggression"},priorMetrics:{},decisionSummary:null,observedEvidence:evidence

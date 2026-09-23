@@ -42,17 +42,18 @@
       "uniqueItems": true
     },
     "computational_status": {
-      "description": "Whether the deterministic computation actually finished. Kept separate from statistical support and from model support so that 'calcul non terminé' is never confused with a scientific cause.",
+      "description": "Whether the deterministic computation actually finished. Kept separate from statistical support and from model support so that 'calcul non terminé' is never confused with a scientific cause. `NOT_EVALUATED` is the explicit fail-safe status used when the producer does not supply this dimension; it must never be replaced by `COMPLETE` without explicit positive evidence.",
       "enum": [
         "NOT_STARTED",
         "PENDING",
         "RUNNING",
         "COMPLETE",
-        "FAILED"
+        "FAILED",
+        "NOT_EVALUATED"
       ]
     },
     "model_support_status": {
-      "description": "Whether the model can represent the requested context. Distinguishes 'absence de node' (the structural node/tree entry is missing) from 'contexte non supporté' (the node exists but the surrounding context is out of the supported domain).",
+      "description": "Whether the model can represent the requested context. Distinguishes 'absence de node' (the structural node/tree entry is missing) from 'contexte non supporté' (the node exists but the surrounding context is out of the supported domain). `NOT_EVALUATED` is the explicit fail-safe status when the producer does not supply this dimension.",
       "enum": [
         "SUPPORTED",
         "NODE_ABSENT",
@@ -80,7 +81,7 @@
       }
     },
     "ev_comparability": {
-      "description": "EV comparability dimension. `comparable` is true only when the played line and the recommendation are evaluated under the same admissible reference; `reason` names the blocking cause otherwise. Never derived from support alone.",
+      "description": "EV comparability dimension. `comparable` is true only when the played line and the recommendation are evaluated under the same admissible reference; `reason` names the blocking cause otherwise. When the producer supplies no comparability evidence, `comparable` is false and `reason` is `NOT_EVALUATED`; the mere absence of a blocker is never treated as comparability. Never derived from support alone.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -97,7 +98,7 @@
       }
     },
     "recommendation_admissibility": {
-      "description": "Recommendation admissibility dimension, kept separate from comparability and from model support. `admissible` is the sole gate guarding whether a Hero recommendation/EV may be exposed.",
+      "description": "Recommendation admissibility dimension, kept separate from comparability and from model support. `admissible` is the sole gate guarding whether a Hero recommendation/EV may be exposed. When the producer supplies no admissibility evidence, `admissible` is false and `status` is `NOT_EVALUATED`; the absence of a blocker is never treated as admissibility.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -122,7 +123,7 @@
       }
     },
     "posterior_availability": {
-      "description": "Availability state of the opponent/posterior range (#391 vocabulary), kept separate from Hero recommendation admissibility. `unavailable` covers the absence of any posterior (e.g. no node / unsupported context).",
+      "description": "Availability state of the opponent/posterior range (#391 vocabulary), kept separate from Hero recommendation admissibility. `unavailable` covers the absence of any posterior (e.g. no node / unsupported context) and is also the fail-safe status when the producer supplies no posterior evidence; `conditioned` must never be inferred from the absence of a blocker.",
       "enum": [
         "conditioned",
         "prior_uninformative",
@@ -210,6 +211,31 @@
         "reason_codes": []
       },
       "posterior_availability": "conditioned",
+      "error": {
+        "type": null,
+        "retryable": false
+      }
+    },
+    {
+      "schema": "poker-analysis-state/v1",
+      "state": "DONNEES_INSUFFISANTES",
+      "reason_codes": [],
+      "computational_status": "NOT_EVALUATED",
+      "model_support_status": "NOT_EVALUATED",
+      "statistical_support": {
+        "observations": 0,
+        "distinct_hands": 0
+      },
+      "ev_comparability": {
+        "comparable": false,
+        "reason": "NOT_EVALUATED"
+      },
+      "recommendation_admissibility": {
+        "admissible": false,
+        "status": "NOT_EVALUATED",
+        "reason_codes": []
+      },
+      "posterior_availability": "unavailable",
       "error": {
         "type": null,
         "retryable": false
