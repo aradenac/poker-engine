@@ -46,6 +46,19 @@ def main() -> None:
     select = INDEX.split('function selectHistoryHandById', 1)[1].split('function updateHistoryUi', 1)[0]
     assert 'if(!state.hhMode){saveManualSnapshot();state.hhMode=true;}' in select
 
+    # #394 T3: the import and the hand selection belong to the Review view, which
+    # opens the Replayer on selection. The Replayer "Retour" returns to that same
+    # view with the selection preserved — a pure view change: no document scroll,
+    # no re-scheduled background review scoring.
+    review_view = INDEX.split('<div id="mainPage"', 1)[1].split('<div id="strategyPage"', 1)[0]
+    assert 'id="historiesSection"' in review_view and 'id="handSelectionSection"' in review_view
+    assert 'id="hhFileInput"' in review_view and 'id="hhWatchBtn"' in review_view
+    assert 'state.selectedHand?.id===h.id?" selected":""' in INDEX
+    back = INDEX[INDEX.index('function returnToHandsPage'):INDEX.index('function leaveHistoryMode')]
+    assert 'activateAppSubview("inbox")' in back
+    assert 'scrollIntoView' not in back
+    assert 'scheduleBackgroundReviewScoring' not in back
+
     print('HH import UX contract checks: OK')
 
 

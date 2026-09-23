@@ -125,6 +125,19 @@ def main() -> None:
     # Review scope (same value as the Trainer/header chip).
     assert 'override:productPersonalOverrideState()' in index
 
+    # #394 T3: the dashboard is the "Pilotage & import" pane of the Review view and
+    # shares that view with the review inbox only. The Replayer is a distinct view
+    # reached from Review and it hands back to Review ("← Retour à la Review") with
+    # the selected hand preserved, without any manual tool leaking into Review.
+    review_view = index.split('<div id="mainPage"', 1)[1].split('<div id="strategyPage"', 1)[0]
+    assert 'id="reviewDashboard"' in review_view
+    assert 'id="historiesSection"' in review_view and 'id="handSelectionSection"' in review_view
+    for manual_id in ("opponentsSection", "cardsSection", "rangeDisplaySection", "equitySection"):
+        assert f'id="{manual_id}"' not in review_view, manual_id
+    assert 'data-view-shell="review"' in index and 'data-view-shell="replayer"' in index
+    assert '← Retour à la Review' in index
+    assert 'replayerBackBtn?.addEventListener("click",returnToHandsPage);' in index
+
     # The generic one-click destinations remain independent from gated dashboard CTAs.
     home = index.split('<div class="actions product-home-actions"', 1)[1].split('</div>', 1)[0]
     for label in ("Review", "Training", "Strategy", "Equity Lab"):

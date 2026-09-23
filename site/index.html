@@ -1704,7 +1704,7 @@
   <div class="replayer-page-shell">
     <div class="replayer-page-head">
       <button id="replayerHomeBtn" type="button" class="secondary" style="width:auto;min-width:110px;padding:8px 12px" data-home-back>← Accueil</button>
-      <button id="replayerBackBtn" type="button" class="secondary replayer-back-btn">← Retour aux mains</button>
+      <button id="replayerBackBtn" type="button" class="secondary replayer-back-btn">← Retour à la Review</button>
       <button id="replayerExportBtn" type="button" class="secondary replayer-export-btn" title="Copier un export JSON complet de cette main pour analyse par une IA">Exporter pour IA</button>
       <span id="replayerExportStatus" class="replayer-export-status" aria-live="polite"></span>
       <div>
@@ -3968,9 +3968,10 @@ function openReviewDashboardLeak(){
   if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
   if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
   state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
+  // #394 T3: the Review shell selects the Inbox pane; it never scrolls the
+  // document, so the filtered list is reached without moving the viewport.
   activateAppSubview("inbox");
   renderHistoryHands();
-  requestAnimationFrame(()=>document.getElementById("handSelectionSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
   return {opened:true,reason:"EXACT_LEAK_FILTER",dimension:target.dimension,key:String(target.key)};
 }
 function openReviewDashboardTraining(){
@@ -6740,20 +6741,22 @@ function openReplayerPage({scrollTop=true}={}){
   updateAppView({scrollTop});
 }
 function returnToHandsPage(){
-  // Review is an implicit context: leaving it restores the independent manual Equity Lab.
-  // selectedHand and imported HH data are intentionally preserved for a later reopen.
+  // #394 T3 — the Replayer "Retour" hands the user back to the Review view.
+  // Review is an implicit context: leaving it restores the independent manual
+  // Equity Lab, while selectedHand and imported HH data are intentionally
+  // preserved for a later reopen.
   if(state.hhMode) leaveHistoryMode();
   else{
     state.appView='review';
     schedulePersistPrefs(30);
     updateAppView();
   }
-  scheduleBackgroundReviewScoring(80);
+  // #394 T3 / T8: returning to Review is a pure view change — it must reuse the
+  // scores already produced instead of re-scheduling the background review
+  // scoring (and it must not scroll the document, the shell selects the pane).
   requestAnimationFrame(()=>{
     // #394: the inbox lives in the "Inbox de review" sub-view of the Review shell.
     activateAppSubview("inbox");
-    const target=document.getElementById('handSelectionSection')||document.getElementById('historiesSection');
-    target?.scrollIntoView({behavior:'auto',block:'start'});
   });
 }
 function leaveHistoryMode(){
