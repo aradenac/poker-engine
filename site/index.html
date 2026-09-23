@@ -118,6 +118,7 @@
   .method-note{font-size:11px;color:var(--muted);margin-top:7px}
 
   #floatingEquity{
+    display:none;
     position:fixed;top:14px;right:0;z-index:9999;width:324px;min-width:0;padding:0;
     border:1px solid rgba(92,225,185,.32);border-right:0;border-radius:14px 0 0 14px;
     background:rgba(15,23,41,.90);box-shadow:0 5px 18px rgba(0,0,0,.18);
@@ -144,6 +145,14 @@
   .floating-eq-row.range .floating-eq-value{color:#f1c66d}
   .floating-eq-row.hero-range .floating-eq-value{color:#f1c66d}
   .floating-eq-row.hero-hand .floating-eq-value{color:var(--accent2)}
+  /* #394 T4 — floating equity visibility rule (see docs/spotlab-view.md).
+     The widget belongs only to the surfaces that actually produce a Hero equity:
+     the Spot Lab manual calculator (state.mainEquity) and the Replayer seat
+     equities (state.seatEquities). Everywhere else (home, review, strategy,
+     training) it stays hidden so it never overlays unrelated content, and when
+     shown it starts collapsed (36px) until the user expands it. */
+  body[data-app-view="spotlab"] #floatingEquity,
+  body[data-app-view="replayer"] #floatingEquity{display:block}
   .seat-equities.hero4{
     display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0
   }
@@ -6697,19 +6706,32 @@ function appSubviewForHashTarget(id){
 function appSubviewTabs(){
   return Array.from(document.querySelectorAll("[data-app-subview]"));
 }
-function appSubviewPanels(){
-  return Array.from(document.querySelectorAll("[data-app-subview-panel]"));
+function appSubviewPanels(scope){
+  const root=scope||document;
+  return Array.from(root.querySelectorAll("[data-app-subview-panel]"));
 }
+function appSubviewScopeFor(node){
+  return (node&&node.closest("[data-view-shell]"))||document;
+}
+/* #394 T4 — a sub-view is scoped to its owning view shell. Activating a Spot Lab
+   tab (the manual tools move) must never toggle the panes of Review/Training/
+   Replayer, otherwise leaving Spot Lab would blank the next view. The shell
+   guarantees a single mounted view; pane visibility stays local to that shell. */
 function activateAppSubview(name){
   if(!name) return false;
-  const tabs=appSubviewTabs();
-  if(!tabs.some(tab=>tab.dataset.appSubview===name)) return false;
-  tabs.forEach(tab=>{
-    const active=tab.dataset.appSubview===name;
-    tab.setAttribute("aria-selected",active?"true":"false");
-    tab.tabIndex=active?0:-1;
-  });
-  appSubviewPanels().forEach(panel=>{panel.hidden=panel.dataset.appSubviewPanel!==name;});
+  const tab=appSubviewTabs().find(candidate=>candidate.dataset.appSubview===name);
+  if(!tab) return false;
+  const scope=appSubviewScopeFor(tab);
+  const list=tab.parentElement;
+  if(list){
+    Array.from(list.children).forEach(sibling=>{
+      if(!(sibling instanceof Element)||!sibling.dataset||sibling.dataset.appSubview===undefined) return;
+      const active=sibling.dataset.appSubview===name;
+      sibling.setAttribute("aria-selected",active?"true":"false");
+      sibling.tabIndex=active?0:-1;
+    });
+  }
+  appSubviewPanels(scope).forEach(panel=>{panel.hidden=panel.dataset.appSubviewPanel!==name;});
   // A bounded list can only compute its page size once its pane is really laid out.
   if(name==="inbox") renderHistoryHands();
   return true;

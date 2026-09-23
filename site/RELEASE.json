@@ -61,7 +61,7 @@
           "git_blob_sha": "211bf60f5dbc8b14794554cc763059fabf58948d"
         },
         "site/index.html": {
-          "git_blob_sha": "b37ebf24d240e2ed57d881af6340e78b7d3f0e73"
+          "git_blob_sha": "d8ca99d96de957ad728bf1d3bc0df72e1d237aad"
         },
         "site/pack-identity.js": {
           "git_blob_sha": "fa3fb310e75cff31bf7abe34ec8c83fc3de410ea"
@@ -94,7 +94,7 @@
           "git_blob_sha": "8541cf75b27afbeba2580864ef744da3a9b40457"
         },
         "site/trainer.css": {
-          "git_blob_sha": "7077a830b75a530168287c4362bda45bfee624f0"
+          "git_blob_sha": "6f44a7fefd9780f34414afcddaa7214a777a08a1"
         },
         "site/trainer.js": {
           "git_blob_sha": "2fdbf75a907f9dae7665a55ed5edab10c6e5e8f4"

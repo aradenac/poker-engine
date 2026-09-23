@@ -50,6 +50,9 @@
    once by the allow-listed `.app-scroll-zone` class (APP_ALLOWED_SCROLL_ZONES). */
 .trainer-test-log{display:grid;gap:4px;max-height:180px}.trainer-test-row{font-size:9px;padding:5px 6px;border-radius:7px;background:#0d1728}.trainer-test-row b{color:#f1c66d}
 .trainer-hand-ended{padding:9px;border:1px solid rgba(241,198,109,.35);border-radius:9px;background:rgba(241,198,109,.07);font-size:10px;color:#e6d6aa}
+/* #394 T4 — the floating equity widget is a context control of Spot Lab / the
+   Replayer only (rule documented in docs/spotlab-view.md); it is hidden in the
+   Training view like in every other non-equity surface. */
 body.trainer-view-open{overflow-x:hidden}body.trainer-view-open #floatingEquity{display:none}
 @media(max-width:1050px){.trainer-grid{grid-template-columns:1fr}.trainer-side{position:static}.trainer-table-wrap{padding-right:120px}}
 @media(max-width:760px){.trainer-page{padding:8px 5px 20px}.trainer-shell{width:calc(100vw - 10px)}.trainer-grid{display:block}.trainer-side{margin-top:10px}.trainer-table-wrap{min-height:790px;padding:20px 105px 28px 6px}.trainer-table-wrap .poker-table{height:740px;border-radius:28px}.trainer-sizing{margin-left:0;width:100%}.trainer-head-spacer{display:none}.trainer-mode-group{width:100%;overflow:auto}.trainer-mode-btn{flex:1}.trainer-stat-grid{grid-template-columns:repeat(2,1fr)}}
