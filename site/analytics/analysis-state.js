@@ -233,15 +233,20 @@
     return unique(out);
   }
 
+  // Fail-safe evidence rule (review #408): shipping a dimension container is
+  // never proof by itself that the producer evaluated it. A dimension counts as
+  // evaluated only when it carries an explicit boolean verdict that is not
+  // contradicted by the shared NOT_EVALUATED sentinel; an empty object, a
+  // placeholder, or a non-boolean value is treated exactly like an absent
+  // dimension (no invented blocker, no induced COMPLETE computation).
+  function hasExplicitVerdict(verdict,sentinel){
+    return typeof verdict==='boolean'&&upper(sentinel)!==NOT_EVALUATED;
+  }
   function normalizeComparability(data){
     if(isPlainObject(data.ev_comparability)){
       const row=data.ev_comparability;
       const reason=text(row.reason)||null;
-      // Fail-safe evidence rule (#408): shipping the object is not proof that the
-      // dimension was evaluated. It only counts as evaluated when the producer
-      // states an explicit boolean verdict; an empty/placeholder object (or
-      // `reason:'NOT_EVALUATED'`) is treated exactly like an absent dimension.
-      const evaluated=typeof row.comparable==='boolean'&&upper(reason)!==NOT_EVALUATED;
+      const evaluated=hasExplicitVerdict(row.comparable,reason);
       return {
         provided:true,
         evaluated,
@@ -265,11 +270,8 @@
     if(isPlainObject(data.recommendation_admissibility)){
       const row=data.recommendation_admissibility;
       const status=text(row.status)||null;
-      // Same fail-safe evidence rule as comparability (#408): only an explicit
-      // boolean `admissible` verdict (with a non-sentinel status) proves the
-      // dimension was evaluated. An empty/placeholder object is treated exactly
-      // like an absent dimension and never synthesizes a blocking cause.
-      const evaluated=typeof row.admissible==='boolean'&&upper(status)!==NOT_EVALUATED;
+      // Same fail-safe evidence rule as comparability (#408).
+      const evaluated=hasExplicitVerdict(row.admissible,status);
       return {
         provided:true,
         evaluated,

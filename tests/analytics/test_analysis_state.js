@@ -567,6 +567,53 @@ const completeDecision=(()=>{
     assert.equal(State.validateAnalysisState(mapped).valid,true,JSON.stringify({input,mapped}));
     assert.deepEqual(State.mapAnalysisState(mapped),mapped,'placeholder evidence mapping must be idempotent for '+JSON.stringify(input));
   }
+
+  // 12g. The NOT_EVALUATED sentinel always wins, even over an explicit boolean:
+  //      a verdict cannot be treated as evaluated when the producer also states
+  //      the dimension was not evaluated. It behaves like an absent dimension.
+  const sentinelComparable=State.mapAnalysisState({ev_comparability:{comparable:true,reason:'NOT_EVALUATED'}});
+  assert.notEqual(sentinelComparable.state,'ANALYSE_DISPONIBLE');
+  assert.equal(sentinelComparable.state,State.DEFAULT_UNKNOWN_STATE);
+  assert.deepEqual(sentinelComparable.ev_comparability,{comparable:false,reason:'NOT_EVALUATED'});
+  assert.equal(sentinelComparable.computational_status,'NOT_EVALUATED');
+  assert.equal(State.validateAnalysisState(sentinelComparable).valid,true);
+  assert.deepEqual(State.mapAnalysisState(sentinelComparable),sentinelComparable);
+
+  const sentinelAdmissible=State.mapAnalysisState({recommendation_admissibility:{admissible:true,status:'NOT_EVALUATED'}});
+  assert.notEqual(sentinelAdmissible.state,'ANALYSE_DISPONIBLE');
+  assert.equal(sentinelAdmissible.state,State.DEFAULT_UNKNOWN_STATE);
+  assert.equal(sentinelAdmissible.recommendation_admissibility.admissible,false);
+  assert.equal(sentinelAdmissible.recommendation_admissibility.status,'NOT_EVALUATED');
+  assert.deepEqual(sentinelAdmissible.recommendation_admissibility.reason_codes,[]);
+  assert.equal(sentinelAdmissible.computational_status,'NOT_EVALUATED');
+  assert.equal(State.validateAnalysisState(sentinelAdmissible).valid,true);
+  assert.deepEqual(State.mapAnalysisState(sentinelAdmissible),sentinelAdmissible);
+
+  // 12h. The sentinel also neutralises an explicit negative verdict: a
+  //      `comparable:false` / `admissible:false` paired with NOT_EVALUATED is
+  //      not an evaluated negative, so it must not create ANALYSE_PARTIELLE.
+  const sentinelNegativeComparable=State.mapAnalysisState({ev_comparability:{comparable:false,reason:'NOT_EVALUATED'}});
+  assert.notEqual(sentinelNegativeComparable.state,'ANALYSE_PARTIELLE');
+  assert.deepEqual(sentinelNegativeComparable.ev_comparability,{comparable:false,reason:'NOT_EVALUATED'});
+  assert.equal(State.validateAnalysisState(sentinelNegativeComparable).valid,true);
+  assert.deepEqual(State.mapAnalysisState(sentinelNegativeComparable),sentinelNegativeComparable);
+
+  const sentinelNegativeAdmissible=State.mapAnalysisState({recommendation_admissibility:{admissible:false,status:'NOT_EVALUATED'}});
+  assert.notEqual(sentinelNegativeAdmissible.state,'ANALYSE_PARTIELLE');
+  assert.equal(sentinelNegativeAdmissible.recommendation_admissibility.admissible,false);
+  assert.equal(sentinelNegativeAdmissible.recommendation_admissibility.status,'NOT_EVALUATED');
+  assert.deepEqual(sentinelNegativeAdmissible.recommendation_admissibility.reason_codes,[]);
+  assert.equal(State.validateAnalysisState(sentinelNegativeAdmissible).valid,true);
+  assert.deepEqual(State.mapAnalysisState(sentinelNegativeAdmissible),sentinelNegativeAdmissible);
+
+  // 12i. A placeholder that carries producer-supplied codes preserves them
+  //      verbatim (never synthesized) and still invents no blocking status.
+  const placeholderCodes=State.mapAnalysisState({recommendation_admissibility:{reason_codes:['FUTURE_TAXONOMY_CODE']}});
+  assert.equal(placeholderCodes.recommendation_admissibility.status,'NOT_EVALUATED');
+  assert.deepEqual(placeholderCodes.recommendation_admissibility.reason_codes,['FUTURE_TAXONOMY_CODE']);
+  assert.ok(placeholderCodes.reason_codes.includes('FUTURE_TAXONOMY_CODE'));
+  assert.equal(State.validateAnalysisState(placeholderCodes).valid,true);
+  assert.deepEqual(State.mapAnalysisState(placeholderCodes),placeholderCodes);
 }
 
 // ---------------------------------------------------------------------------
