@@ -164,7 +164,15 @@
   // has no per-event evidence in `poker-leak-decision-event/v1`, so it is also
   // reported as the fail-safe floor 0 and is never invented as 1.
   function supportObservations(value){
-    if(value==null||value==='')return null;
+    if(value==null)return null;
+    // Only genuine numeric metadata is admissible model-support evidence.
+    // `Number()` would coerce a boolean `true` into 1, an array `[120]` into
+    // 120 and a blank string into 0, letting malformed or missing metadata
+    // masquerade as real (even positive) support. Containers, booleans and
+    // blank strings are therefore rejected outright; well-formed integer
+    // numbers (and their serialized string form) remain admissible.
+    if(typeof value==='boolean'||typeof value==='object'||typeof value==='function'||typeof value==='symbol')return null;
+    if(typeof value==='string'&&!value.trim())return null;
     const n=Number(value);
     return Number.isInteger(n)&&n>=0?n:null;
   }

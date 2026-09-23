@@ -340,6 +340,8 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
   const unsupported=Inbox.analysisStateFor({complete:false,reasons:['UNSUPPORTED_DECISIONS'],state:'INCOMPLETE'},[{support:{covered:false},comparability:{comparable:false},error_type:'UNSUPPORTED'}]);
   assert.equal(unsupported.state,'SPOT_NON_SUPPORTE');
   assert.equal(unsupported.model_support_status,'CONTEXT_UNSUPPORTED');
+  assert.equal(unsupported.statistical_support.observations,0,'an unsupported decision carries no model observations');
+  assert.equal(unsupported.statistical_support.availability,'UNAVAILABLE','an unsupported context makes the support explicitly unavailable');
   const nonComparable=Inbox.analysisStateFor({complete:false,reasons:['NON_COMPARABLE_DECISIONS'],state:'INCOMPLETE'},[{support:{covered:true},comparability:{comparable:false},error_type:'NON_COMPARABLE'}]);
   assert.equal(nonComparable.state,'ANALYSE_PARTIELLE');
   assert.equal(nonComparable.ev_comparability.comparable,false);
@@ -359,6 +361,7 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
   assert.equal(support.statistical_support.distinct_hands,0,'distinct_hands is unavailable and must never be invented as 1');
   assert.notEqual(support.statistical_support.distinct_hands,1);
   assert.equal(support.state,'ANALYSE_DISPONIBLE','the support field change must not alter a complete comparable hand state');
+  assert.equal(support.statistical_support.availability,'AVAILABLE','a real positive observation count proves AVAILABLE support');
   assert.equal(State.isAnalysisState(support),true);
 
   // Event count differs from support count without confusion.
@@ -374,6 +377,7 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
     {support:{covered:false,observations:999},comparability:{comparable:false},error_type:'UNSUPPORTED'}
   ]);
   assert.equal(withUnsupported.statistical_support.observations,120,'only comparable covered decisions feed the aggregation');
+  assert.equal(withUnsupported.statistical_support.availability,'AVAILABLE','the real 120 observations still prove available support even when a sibling decision is unsupported');
   assert.equal(withUnsupported.state,'SPOT_NON_SUPPORTE','an unsupported decision still maps to SPOT_NON_SUPPORTE');
 
   // Missing metadata must not become a fabricated positive support, and a single
@@ -384,6 +388,7 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
   assert.equal(missingMetadata.statistical_support.observations,0,'missing support metadata is represented as the fail-safe floor, never as a positive count');
   assert.notEqual(missingMetadata.statistical_support.observations,1);
   assert.equal(missingMetadata.statistical_support.distinct_hands,0);
+  assert.equal(missingMetadata.statistical_support.availability,'UNKNOWN','missing metadata never reports AVAILABLE support');
   assert.equal(State.isAnalysisState(missingMetadata),true);
 
   // Non-integer / negative observation metadata is not usable evidence.
@@ -394,6 +399,23 @@ assert.deepEqual(stable.map(x=>x.hand_id),['c','a','b'],'EV sort ties must be de
     {support:{covered:true,observations:200},comparability:{comparable:true}}
   ]);
   assert.equal(invalidMetadata.statistical_support.observations,200,'only valid integer>=0 observations are aggregated');
+
+  // #408 blocker 2: malformed counts must never be coerced by `Number()` into a
+  // fabricated positive support. `true` -> 1, `[120]` -> 120 and `'   '` -> 0
+  // are all rejected, so missing/garbage metadata cannot masquerade as evidence.
+  const coercedMetadata=Inbox.analysisStateFor({complete:true,reasons:[]},[
+    {support:{covered:true,observations:true},comparability:{comparable:true}},
+    {support:{covered:true,observations:[120]},comparability:{comparable:true}},
+    {support:{covered:true,observations:'   '},comparability:{comparable:true}}
+  ]);
+  assert.equal(coercedMetadata.statistical_support.observations,0,'boolean/container/blank metadata is not observation evidence');
+  assert.equal(coercedMetadata.statistical_support.availability,'UNKNOWN','malformed metadata stays explicitly UNKNOWN');
+  assert.equal(State.isAnalysisState(coercedMetadata),true);
+  // A well-formed serialized integer string stays admissible evidence.
+  const stringMetadata=Inbox.analysisStateFor({complete:true,reasons:[]},[
+    {support:{covered:true,observations:'150'},comparability:{comparable:true}}
+  ]);
+  assert.equal(stringMetadata.statistical_support.observations,150,'a well-formed integer string is a valid serialized count');
 
   // Partially reported support aggregates over the known decisions only.
   const partial=Inbox.analysisStateFor({complete:true,reasons:[]},[
