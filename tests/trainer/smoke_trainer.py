@@ -35,6 +35,11 @@ DRIVER_SMOKES = (
     Path(__file__).resolve().parent / "smoke_opponent_range_numeric.py",
     Path(__file__).resolve().parent / "smoke_equity_scale_invariance.py",
     Path(__file__).resolve().parent / "smoke_trainer_d6_render_matrix.py",
+    # #394 T4: desktop modes smoke + per-mode overflow audit (Accueil → Review →
+    # Replayer → Review, Spot Lab without any imported hand, Training, Stratégie
+    # Hero and the Replayer right-panel keyboard/focus control). It serves its own
+    # ephemeral copy of `site/` at the two reference viewports.
+    Path(__file__).resolve().parent / "smoke_modes_desktop.py",
 )
 
 

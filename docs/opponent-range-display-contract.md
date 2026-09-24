@@ -387,7 +387,18 @@ therefore:
   `postflopRaiseTreeSnapshot` and `aiExportRangeSnapshot` stay invariant under a
   constant rescaling of the input weights, with a sum-normalized
   `grid_169_probability_pct` and a distinct `relative_weight_pct`.
-- Both numeric browser smokes above are orchestrated by
-  `python3 tests/trainer/smoke_trainer.py` (via `run_driver_smokes`), not by
+- `python3 tests/trainer/smoke_modes_desktop.py` — desktop modes browser smoke
+  and overflow audit: it imports the `kts_sb_two_limp_iso4_three_calls` repro
+  fixture through the real Review import, walks Accueil → Review → Replayer →
+  Review, Accueil → Spot Lab (without any imported hand), Accueil → Training and
+  Accueil → Stratégie Hero, checks a minimal keyboard/focus activation of the
+  Replayer right-panel tabs, and fails explicitly when
+  `document.scrollingElement.scrollHeight` exceeds `clientHeight` for `home`,
+  `review`, `replayer`, `spotlab`, `training` and the `#strategyPage` shell at
+  1500x1000 and 1366x768 (the standalone `hero-ranges.html` editor is navigated
+  to, never asserted no-scroll).
+- The browser smokes above (`smoke_opponent_range_numeric.py`,
+  `smoke_equity_scale_invariance.py`, `smoke_modes_desktop.py`) are orchestrated
+  by `python3 tests/trainer/smoke_trainer.py` (via `run_driver_smokes`), not by
   dedicated steps in `.github/workflows/trainer-smoke.yml`; the workflow stays
   frozen and exercises them through its single Training-view step.
