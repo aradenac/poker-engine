@@ -26,6 +26,10 @@ WORKFLOW = (ROOT / ".github/workflows/trainer-smoke.yml").read_text(encoding="ut
 SMOKE_TRAINER = (ROOT / "tests/trainer/smoke_trainer.py").read_text(encoding="utf-8")
 MODES_SMOKE = (ROOT / "tests/trainer/smoke_modes_desktop.py").read_text(encoding="utf-8")
 DOC = (ROOT / "docs/opponent-range-display-contract.md").read_text(encoding="utf-8")
+# #394 T7: the desktop modes fit evidence. The frozen browser job can only run
+# in CI, so this versioned artefact is what a reviewer reads; it must stay
+# present and keep carrying the measured contract.
+FIT_EVIDENCE = ROOT / "docs/desktop-modes-fit-evidence.md"
 
 # The browser smokes that smoke_trainer.py must orchestrate: the two numeric
 # smokes of #391 and the desktop modes smoke / overflow audit of #394.
@@ -96,6 +100,25 @@ def main() -> None:
         'page.keyboard.press("Enter")',
     ):
         assert marker in MODES_SMOKE, marker
+
+    # The #394 T7 fit evidence is versioned and contractual: since the frozen
+    # browser job only runs in CI, this artefact is what a reviewer reads. It
+    # must document the exact commands, the real HEAD, both reference viewports,
+    # the per-mode scrollHeight/clientHeight audit, a verdict, and the explicit
+    # note that ./hero-ranges.html is navigated but out of the shell contract
+    # (no no-scroll assertion there).
+    assert FIT_EVIDENCE.is_file(), FIT_EVIDENCE
+    evidence_flat = flat(FIT_EVIDENCE.read_text(encoding="utf-8"))
+    assert "python3 tests/trainer/smoke_modes_desktop.py" in evidence_flat
+    assert "python3 tests/trainer/smoke_trainer.py" in evidence_flat
+    assert "git rev-parse HEAD" in evidence_flat
+    assert "1500x1000" in evidence_flat and "1366x768" in evidence_flat
+    assert "scrollHeight" in evidence_flat and "clientHeight" in evidence_flat
+    for mode in ("home", "spotlab", "review", "replayer", "training", "strategy"):
+        assert mode in evidence_flat, mode
+    assert "verdict" in evidence_flat.casefold()
+    assert "hero-ranges.html" in evidence_flat
+    assert "hors contrat" in evidence_flat.casefold()
 
     print("smoke orchestration contract checks: OK")
 
