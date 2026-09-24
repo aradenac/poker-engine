@@ -33,7 +33,7 @@ L'identité du déploiement live courant est exposée par `/deployment-meta.css`
 - `training/` : données, registres, résultats et modèles liés à l'apprentissage/calibration continue ;
 - `tests/` : non-régressions, contrats et benchmarks ;
 - `tools/` : scripts et utilitaires techniques ;
-- `docs/` : documents normatifs, contrats et rapports d'analyse du moteur ;
+- `docs/` : documentation normative et d'analyse du moteur (contrats, spécifications, rapports), audits CI et état de projet (`project-state`) ;
 - `.project/` : état de travail persistant destiné aux outils/assistants (`STATUS`, `PLAN`, `HANDOFF`, conventions).
 
 ## Principe de reprise
