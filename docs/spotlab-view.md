@@ -8,6 +8,12 @@ grouped into sub-views and states the floating-equity visibility rule pinned by
 It is an **application/UX shell contract only**: it does not fit Model A, tune
 Model B, select a candidate, or change any equity computation.
 
+The general desktop shell rules this view builds on (`100dvh` / no global
+scroll, the reusable sub-view / pagination pattern, the allowed overflow zones,
+the navigation / deep-link contract and the no-recalculation-on-a-view-change
+rule) are owned by `docs/ux-desktop-view-shell.md`; this document only adds the
+Spot Lab mapping and the floating-equity rule.
+
 ## 1. The view
 
 Spot Lab is one of the mode cards on the Home screen and one of the

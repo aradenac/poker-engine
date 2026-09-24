@@ -6,6 +6,12 @@ fit Model A, tune Model B, select a candidate, or change any equity computation.
 It is the display-side companion to the runtime backend contract owned by
 `src/ranges/posterior_range.py` and `contracts/posterior-range.schema.json`.
 
+The desktop shell the replayer/matrix surfaces are mounted in (`100dvh` / no
+global scroll, the mode → view → sub-view mapping, the allowed overflow zones
+and the navigation / deep-link contract) is owned by
+`docs/ux-desktop-view-shell.md`; it never changes the range semantics defined
+below.
+
 The versioned identifier is
 
     poker-opponent-range-display/v1
