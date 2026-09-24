@@ -1174,8 +1174,45 @@
     /* #394 T5 : le Training est une coque dédiée à hauteur fixe. Ses règles de
        coque (100dvh, corps contraint, table + rail ajustés) vivent avec les
        primitives de sa table, dans `site/trainer.css` : une seule autorité. */
-    #replayerSection{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-    #replayerSection>#hhVisualReplay,#replayerSection>#hhReplayDetail{flex:1 1 auto;min-height:0}
+    /* #394 T1 — coque Replayer : trois colonnes fixes dans une seule coque,
+       sans empilement vertical du contenu de replay :
+         [ timeline/actions + contrôles ] [ table ] [ panneau contextuel ].
+       `#hhVisualReplay` reste le panneau rendu par `renderVisualReplay()` et
+       `display:contents` laisse ses deux colonnes prendre place dans la grille ;
+       aucun de ces blocs n'est un substitut de coque (pas de scroll de vue).
+       Les zones réellement bornées réutilisent les classes déjà déclarées dans
+       `APP_ALLOWED_SCROLL_ZONES` : `.app-scroll-zone` (colonne contrôles/flux et
+       détail) et `.app-canvas-pane` (scène de table). */
+    #replayerSection{
+      flex:1 1 auto;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);
+      grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px);
+      gap:12px;align-items:stretch;overflow:hidden
+    }
+    #replayerSection>#hhVisualReplay{display:contents}
+    #replayerSection .replayer-col{
+      min-height:0;display:flex;flex-direction:column;gap:8px;
+      border:1px solid var(--border);border-radius:12px;background:#0d1527;padding:10px
+    }
+    #replayerSection .replayer-col-center{padding:8px 10px}
+    /* Colonne gauche : contrôles puis timeline/actions, jamais en travers de la
+       scène. Les contrôles passent en grille pour rester lisibles à 240-320px. */
+    #replayerSection .replayer-col-left .hh-visual-top{flex-direction:column;align-items:stretch;gap:8px;margin:0}
+    #replayerSection .replayer-col-left .hh-replayer-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    #replayerSection .replayer-col-left .hh-replayer-controls button{min-width:0;padding:7px 8px}
+    #replayerSection .replayer-col-left .hh-replayer-range{flex:0 0 auto;min-width:0;margin:0}
+    #replayerSection .replayer-col-left .hh-visual-step{margin:0}
+    #replayerSection .replayer-col-left .replay-action-banner{margin:0;min-height:0;padding:6px 8px}
+    #replayerSection .replayer-col-left .street-timeline{margin:0}
+    /* La scène partage la largeur avec deux colonnes : on resserre la marge
+       réservée aux équités de siège pour qu'aucun bloc ne déborde de la colonne. */
+    #replayerSection .replayer-col-center .poker-table-wrap{padding-right:170px}
+    /* Colonne droite : conteneur du panneau contextuel (rempli par T2) ; le
+       détail de main reste borné par `.app-scroll-zone`, jamais par la coque. */
+    #replayerSection>#replayerContextPanel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+    #replayerSection>#replayerContextPanel>#hhReplayDetail{flex:1 1 auto;min-height:0;margin:0}
+    /* Une seule colonne de streets dans le panneau contextuel : deux colonnes
+       écraseraient les lignes d'action dans une colonne de 240-340px. */
+    #replayerSection>#replayerContextPanel .hh-streets{grid-template-columns:1fr}
   }
 
   /* Short desktop viewports (e.g. 1366x768): the Review landing pane lays the
@@ -1720,12 +1757,16 @@
       </div>
     </div>
     <div id="replayerSection">
-      <div class="app-subviews" role="tablist" aria-label="Sous-vues du replayer">
-        <button type="button" class="app-subview-tab" id="replayTableTab" role="tab" aria-selected="true" aria-controls="hhVisualReplay" data-app-subview="replay-table">Table &amp; timeline</button>
-        <button type="button" class="app-subview-tab" id="replayDetailTab" role="tab" aria-selected="false" aria-controls="hhReplayDetail" data-app-subview="replay-detail">Analyse &amp; détail</button>
-      </div>
-      <div id="hhVisualReplay" class="hh-visual app-canvas-pane app-subview-panel mode-hidden" data-app-subview-panel="replay-table"></div>
-      <div id="hhReplayDetail" class="hh-replay app-canvas-pane app-subview-panel mode-hidden" data-app-subview-panel="replay-detail" hidden></div>
+      <!-- #394 T1 : coque Replayer à 3 colonnes fixes (timeline/actions | table |
+           panneau contextuel). Les deux panneaux sont visibles simultanément :
+           plus de rangée d'onglets `replay-table` / `replay-detail` à basculer.
+           `#hhVisualReplay` reste le panneau rendu par `renderVisualReplay()` ;
+           ses deux colonnes participent à la grille de la coque (voir le
+           `@media(min-width:901px)` de la section « dedicated replayer view »). -->
+      <div id="hhVisualReplay" class="hh-visual app-subview-panel mode-hidden" data-app-subview-panel="replay-table"></div>
+      <aside id="replayerContextPanel" class="replayer-context-panel" aria-label="Panneau contextuel du replayer">
+        <div id="hhReplayDetail" class="hh-replay app-scroll-zone app-subview-panel mode-hidden" data-app-subview-panel="replay-detail"></div>
+      </aside>
     </div>
   </div>
 </div>
@@ -6169,35 +6210,43 @@ function renderVisualReplay(){
     : state.seatEquities.status==="running"
       ? `Recalcul des équités pour cette étape (${escapeHtml(step?.label||"")})…`
       : `Équités calculées pour l'étape affichée (${escapeHtml(step?.label||"")}) et son board exact · « adversaires réels » utilise les cartes HH connues et conserve la range pour les mains inconnues.`;
-  hhVisualReplay.innerHTML=`<div class="hh-visual-top">
-    <div class="hh-visual-title">Replayer visuel de la main <span class="tiny" title="Raccourcis clavier">· ←/→ étape · ↑ début · ↓ fin · Espace lecture/pause</span></div>
-    <div class="hh-replayer-controls">
-      <button type="button" id="replayStartBtn" class="secondary">⏮ Début</button>
-      <button type="button" id="replayPrevBtn" class="secondary">◀ Préc.</button>
-      <button type="button" id="replayPlayBtn" class="secondary">${playLabel}</button>
-      <button type="button" id="replayNextBtn" class="secondary">Suiv. ▶</button>
-      <button type="button" id="replayEndBtn" class="secondary">Fin ⏭</button>
+  /* #394 T1 — le contenu de replay est peint en deux colonnes seulement
+     (contrôles + timeline/actions, puis scène de table) ; la troisième colonne
+     de la coque est le panneau contextuel `#replayerContextPanel`. Aucun
+     calcul nouveau : même rendu, même `state`, seule la coque change. */
+  hhVisualReplay.innerHTML=`<div class="replayer-col replayer-col-left app-scroll-zone">
+    <div class="hh-visual-top">
+      <div class="hh-visual-title">Replayer visuel de la main <span class="tiny" title="Raccourcis clavier">· ←/→ étape · ↑ début · ↓ fin · Espace lecture/pause</span></div>
+      <div class="hh-replayer-controls">
+        <button type="button" id="replayStartBtn" class="secondary">⏮ Début</button>
+        <button type="button" id="replayPrevBtn" class="secondary">◀ Préc.</button>
+        <button type="button" id="replayPlayBtn" class="secondary">${playLabel}</button>
+        <button type="button" id="replayNextBtn" class="secondary">Suiv. ▶</button>
+        <button type="button" id="replayEndBtn" class="secondary">Fin ⏭</button>
+      </div>
     </div>
+    <div class="hh-replayer-range">
+      <span class="tiny">Étape</span>
+      <input id="replayRange" type="range" min="0" max="${Math.max(0,stepCount-1)}" value="${state.replayIndex}">
+      <span class="tiny">${stepNo}/${stepCount}</span>
+    </div>
+    <div class="hh-visual-step">${escapeHtml(step?.label||"")} · Pot ${escapeHtml(potText)}</div>
+    ${replayActionBannerHtml(step)}
+    ${replayStreetTimelineHtml(step,state.replayIndex)}
   </div>
-  <div class="hh-replayer-range">
-    <span class="tiny">Étape</span>
-    <input id="replayRange" type="range" min="0" max="${Math.max(0,stepCount-1)}" value="${state.replayIndex}">
-    <span class="tiny">${stepNo}/${stepCount}</span>
-  </div>
-  <div class="hh-visual-step">${escapeHtml(step?.label||"")} · Pot ${escapeHtml(potText)}</div>
-  ${replayActionBannerHtml(step)}
-  <div class="tiny" style="margin:0 0 10px">${eqCaption}</div>
-  ${replayStreetTimelineHtml(step,state.replayIndex)}
-  <div class="replay-stage">
-    <div class="poker-table-wrap">
-      <div class="poker-table">
-        <div class="table-center">
-          <div class="table-pot">Pot<br><b>${escapeHtml(potText)}</b></div>
-          <div class="table-board">${boardHtml}</div>
+  <div class="replayer-col replayer-col-center app-canvas-pane">
+    <div class="tiny" style="margin:0 0 10px">${eqCaption}</div>
+    <div class="replay-stage">
+      <div class="poker-table-wrap">
+        <div class="poker-table">
+          <div class="table-center">
+            <div class="table-pot">Pot<br><b>${escapeHtml(potText)}</b></div>
+            <div class="table-board">${boardHtml}</div>
+          </div>
+          ${replayDealerButtonHtml(h)}
+          ${replayBetSpotsHtml(sortedPlayers,step)}
+          ${seatHtml}
         </div>
-        ${replayDealerButtonHtml(h)}
-        ${replayBetSpotsHtml(sortedPlayers,step)}
-        ${seatHtml}
       </div>
     </div>
   </div>`;
@@ -6717,8 +6766,8 @@ function updateAppView({scrollTop=false}={}){
    un substitut de coque de vue (pas de scroll global, pas de vue défilante).
    tests/trainer/test_desktop_accessibility_contract.py vérifie cette liste. */
 const APP_ALLOWED_SCROLL_ZONES=[
-  {selector:".app-scroll-zone",scope:"desktop",kind:"liste / panneau borné",reason:"Listes et panneaux d'onglet bornés en lecture : journal de test du Trainer (max-height:180px), liste d'adversaires du Spot Lab, panneaux du rail Trainer. Bornés par la coque (flex + min-height:0), jamais un substitut de vue."},
-  {selector:".app-canvas-pane",scope:"desktop",kind:"canvas borné",reason:"Canvas interactif borné (table Trainer / scène replayer) : géométrie de sièges fixe, borné par la coque et resté atteignable sur écran court."},
+  {selector:".app-scroll-zone",scope:"desktop",kind:"liste / panneau borné",reason:"Listes et panneaux d'onglet bornés en lecture : journal de test du Trainer (max-height:180px), liste d'adversaires du Spot Lab, panneaux du rail Trainer, colonne contrôles/timeline et détail de main du Replayer. Bornés par la coque (flex + min-height:0), jamais un substitut de vue."},
+  {selector:".app-canvas-pane",scope:"desktop",kind:"canvas borné",reason:"Canvas interactif borné (table Trainer / colonne table du Replayer) : géométrie de sièges fixe, borné par la coque et resté atteignable sur écran court."},
   {selector:".app-scroll-x",scope:"desktop",kind:"table bornée",reason:"Table de décision bornée (alternatives préflop, 4 colonnes) : débordement horizontal seulement."},
   {selector:".street-timeline-list",scope:"desktop",kind:"liste bornée",reason:"Feed horizontal des événements de la street courante : liste bornée à une street."},
   {selector:".population-modal",scope:"dialogue",kind:"dialogue",reason:"Dialogue modal de range adverse, hors coque de vue (role=dialog, aria-modal)."},

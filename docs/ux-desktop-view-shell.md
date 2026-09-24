@@ -69,6 +69,22 @@ returns `node.closest("[data-view-shell]")`, and `activateAppSubview(name)`
 toggles only the panels of that scope, so a tab in one view can never blank a
 neighbouring view.
 
+The Replayer is the one shell whose panes are **not** swapped by a tab row: its
+two panes (`replay-table` — contrôles de replay + timeline/actions + scène de
+table, `replay-detail` — panneau contextuel) stay mounted at the same time in a
+fixed three-column grid (`#replayerSection`,
+`grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px)`)
+inside the single `replayer` shell: no replay block is stacked under another at
+the shell level, and the only scrolling left is the declared, bounded kind
+inside those columns (§3). `#hhVisualReplay` remains the pane painted by
+`renderVisualReplay()` and only contributes its two columns to that grid
+(`display:contents` at `>= 901px`); the third column is the contextual
+container `#replayerContextPanel`. Deep links (`appViewForHashTarget`, then
+`activateAppSubviewForTarget`) still open the Replayer shell, and
+`activateAppSubview` simply has no thumb to select there since both panes are
+already visible; the removed tab row is the only sub-view affordance the
+Replayer loses.
+
 A list that cannot fit the constrained shell is **paginated, not scrolled**: the
 Review inbox is painted one bounded page at a time by `renderReviewInboxPage`,
 which shrinks its page size until
@@ -85,8 +101,8 @@ element selector and never a view shell:
 
 | Selector (`APP_ALLOWED_SCROLL_ZONES`) | Scope | Kind |
 | --- | --- | --- |
-| `.app-scroll-zone` | desktop | bounded list / panel (Trainer rail tabs, Trainer test log, Spot Lab opponents) |
-| `.app-canvas-pane` | desktop | bounded canvas (Trainer table, Replayer scenes) |
+| `.app-scroll-zone` | desktop | bounded list / panel (Trainer rail tabs, Trainer test log, Spot Lab opponents, Replayer controls/timeline column and contextual panel) |
+| `.app-canvas-pane` | desktop | bounded canvas (Trainer table, Replayer table column) |
 | `.app-scroll-x` | desktop | bounded table, horizontal overflow only |
 | `.street-timeline-list` | desktop | bounded list (one street of events) |
 | `.population-modal` | dialogue | dialog (opponent-range modal) |

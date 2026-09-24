@@ -259,9 +259,30 @@ def check_desktop_shell_contract() -> None:
     trainer = INDEX.split('<div id="trainerPage"', 1)[1].split('<div id="replayerPage"', 1)[0]
     for thumb in ('trainer-coaching', 'trainer-session', 'trainer-profiles', 'trainer-test'):
         assert f'data-app-subview="{thumb}"' in trainer, thumb
+    # #394 T1 — the Replayer is a fixed 3-column shell (timeline/actions | table
+    # | contextual panel). Its two panes stay mounted in the same shell instead
+    # of being swapped by a tab row, so the panes are asserted, not the thumbs.
     replayer = INDEX.split('<div id="replayerPage"', 1)[1].split('<script src="./compute-scheduler.js">', 1)[0]
-    for thumb in ('replay-table', 'replay-detail'):
-        assert f'data-app-subview="{thumb}"' in replayer, thumb
+    for pane in ('replay-table', 'replay-detail'):
+        assert f'data-app-subview-panel="{pane}"' in replayer, pane
+    assert 'data-app-subview="' not in replayer, 'the Replayer must not stack a tab row'
+    assert 'id="replayerContextPanel"' in replayer, 'the third column hosts the contextual panel'
+    for element_id in ('replayerPage', 'replayerSection', 'hhVisualReplay', 'hhReplayDetail'):
+        assert f'id="{element_id}"' in INDEX, element_id
+
+    # The 3 columns are a desktop grid owned by the shell: no column re-stacks the
+    # replay content, and no new scroll zone is declared (see the allow-list).
+    section = declarations_for('#replayerSection', '(min-width:901px)')
+    assert section is not None, 'the Replayer shell must be declared in the desktop block'
+    assert 'display:grid' in section, section
+    assert 'grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px)' in section, section
+    assert 'overflow:hidden' in section, section
+    assert not SCROLL_DECLARATION.search(section), section
+    assert declarations_for('#replayerSection>#hhVisualReplay', '(min-width:901px)') == 'display:contents'
+    # `renderVisualReplay()` paints only the two left/centre columns; the third
+    # column of the shell stays the contextual container (#replayerContextPanel).
+    assert 'hhVisualReplay.innerHTML=`<div class="replayer-col replayer-col-left app-scroll-zone">' in INDEX
+    assert '<div class="replayer-col replayer-col-center app-canvas-pane">' in INDEX
 
     # The matrix grid is bounded by its pane: it never scrolls on desktop.
     assert '.matrixwrap{overflow:hidden;margin-top:12px}' in INDEX
