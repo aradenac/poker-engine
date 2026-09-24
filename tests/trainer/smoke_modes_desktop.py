@@ -16,7 +16,12 @@ opened by a real click on `#reviewImportTab`, and every import target
 hidden `#hhFileInput`, the advanced details summary, `#hhWatchBtn` and, once the
 details is open, `#hhBenchmarkExportBtn`) is resolved with
 `document.elementFromPoint` at the centre of its box and must be visible, inside
-the viewport and inside the shell. The clicks that follow are real mouse clicks.
+the viewport and inside the shell. Its real reachability is then confirmed by a
+Playwright `locator.click(trial=True)` hit-test, i.e. the same verdict a real
+click would produce, without dispatching the click. The clicks that follow are
+real mouse clicks. This measurement happens at **empty hands**, before any
+import, at both reference viewports, and never retries or skips: a clipped
+target fails with its measured rectangle, viewport and `elementFromPoint`.
 
 Covered journeys (each on a fresh context, both viewports):
 
@@ -122,11 +127,15 @@ REPLAYER_TABS_JS = """() => {
   };
 }"""
 
-# #394 T1 — the Review import surface is measured, never deduced: each target is
-# resolved with the very hit-test a real mouse click performs
-# (`document.elementFromPoint` at the centre of its box) and must be visible,
-# inside the viewport and inside the bounded `review` shell. A clipped target
-# (the frozen smoke failure this fixes) reports `hit: false` / `inShell: false`.
+# #394 T1/T2 — the Review import surface reachability is measured, never
+# deduced: each target is resolved with the very hit-test a real mouse click
+# performs (`document.elementFromPoint` at the centre of its box) and must be
+# visible, inside the viewport and inside the bounded `review` shell.
+# `elementFromPoint` must return the target **or one of its descendants**
+# (`at === el || el.contains(at)`); an ancestor that merely owns the box is not a
+# hit target. A clipped target (the frozen smoke failure this fixes) reports
+# `hit: false` / `inShell: false` with the measured rectangle, viewport and
+# elementFromPoint verdict.
 IMPORT_HIT_TEST_JS = """(selectors) => {
   const shell = document.querySelector('[data-view-shell="review"]');
   const shellBox = shell ? shell.getBoundingClientRect() : null;
@@ -140,14 +149,32 @@ IMPORT_HIT_TEST_JS = """(selectors) => {
     const box = el.getBoundingClientRect();
     const x = box.left + box.width / 2, y = box.top + box.height / 2;
     const at = document.elementFromPoint(x, y);
+    const hit = !!at && (at === el || el.contains(at));
+    const inViewport = box.top >= 0 && box.left >= 0
+      && box.bottom <= innerHeight && box.right <= innerWidth;
+    const inShell = !!shellBox && box.top >= shellBox.top - 0.5
+      && box.bottom <= shellBox.bottom + 0.5;
     out[selector] = {
       present: true,
       visible: box.width > 0 && box.height > 0,
-      inViewport: box.top >= 0 && box.left >= 0 && box.bottom <= innerHeight && box.right <= innerWidth,
-      inShell: !!shellBox && box.top >= shellBox.top - 0.5 && box.bottom <= shellBox.bottom + 0.5,
-      hit: !!at && (at === el || el.contains(at) || at.contains(el)),
+      inViewport,
+      inShell,
+      hit,
+      // Composite verdict printed as `reachable`; the individual fields stay
+      // exposed so a red run names the exact failing condition.
+      reachable: box.width > 0 && box.height > 0 && inViewport && inShell && hit,
+      point: { x: Math.round(x), y: Math.round(y) },
+      viewport: { width: innerWidth, height: innerHeight },
+      shellBox: shellBox
+        ? { top: Math.round(shellBox.top), bottom: Math.round(shellBox.bottom) }
+        : null,
       at: at ? (at.id || (typeof at.className === 'string' ? at.className : '') || at.tagName) : null,
-      box: { top: Math.round(box.top), bottom: Math.round(box.bottom), left: Math.round(box.left), right: Math.round(box.right) }
+      atTag: at ? at.tagName : null,
+      box: {
+        top: Math.round(box.top), bottom: Math.round(box.bottom),
+        left: Math.round(box.left), right: Math.round(box.right),
+        width: Math.round(box.width), height: Math.round(box.height)
+      }
     };
   }
   return out;
@@ -156,7 +183,10 @@ IMPORT_HIT_TEST_JS = """(selectors) => {
 # The import surface itself: the Import tab, the primary label that proxies the
 # visually hidden `#hhFileInput` (`input[type=file]{display:none}`) and the
 # watcher button. `#hhBenchmarkExportBtn` is added once the advanced details is
-# open, since a closed `<details>` hides its own content.
+# open, since a closed `<details>` hides its own content. These selectors are the
+# additive reachability contract (#394 T2): the static guard in
+# `test_smoke_orchestration_contract.py` fails if they, the
+# `elementFromPoint` hit-test or the Playwright click trial disappear.
 IMPORT_SURFACE_SELECTORS = (
     "#reviewImportTab",
     'label[for="hhFileInput"]',
@@ -164,6 +194,45 @@ IMPORT_SURFACE_SELECTORS = (
     "#hhWatchBtn",
 )
 IMPORT_ADVANCED_SELECTOR = "#hhBenchmarkExportBtn"
+
+
+def _surface_verdict(selector: str, entry: dict, step: str, width: int, height: int) -> str:
+    """Explicit measured verdict for one import target (no retry, no skip)."""
+    return (
+        f"surface d'import non atteignable: {selector} ({step}, viewport {width}x{height}) — "
+        f"present={entry.get('present')} visible={entry.get('visible')} "
+        f"inViewport={entry.get('inViewport')} inShell={entry.get('inShell')} "
+        f"hit={entry.get('hit')} reachable={entry.get('reachable')} "
+        f"rect={entry.get('box')} innerViewport={entry.get('viewport')} "
+        f"elementFromPoint={entry.get('at')} (tag={entry.get('atTag')}) "
+        f"point={entry.get('point')} shellBox={entry.get('shellBox')}"
+    )
+
+
+async def _assert_import_surface_click_trial(
+    page, selectors: tuple[str, ...], step: str, width: int, height: int, report: dict
+) -> None:
+    """Confirm reachability with Playwright's own hit-test (`click(trial=True)`).
+
+    `trial=True` runs the exact actionability/hit-target check a real click runs
+    (element or descendant receiving pointer events at the click point) without
+    dispatching anything. A failure is re-raised as an explicit assertion that
+    carries the measured `elementFromPoint` verdict; there is no retry and no
+    skip path. The timeout is only a bound on the *green* path (an already
+    visible, hit-testable target resolves in a couple of frames); a red target is
+    already named by the `elementFromPoint` assertion that runs before it, so no
+    timeout tuning can turn a clipped surface into a pass.
+    """
+    for selector in selectors:
+        try:
+            await page.locator(selector).click(trial=True, timeout=10_000)
+        except Exception as exc:  # pragma: no cover - red path, re-raised explicitly
+            entry = report.get(selector, {"present": False})
+            raise AssertionError(
+                f"surface d'import non cliquable (click trial Playwright): {selector} "
+                f"({step}, viewport {width}x{height}) — {_surface_verdict(selector, entry, step, width, height)} "
+                f"— playwright={type(exc).__name__}: {exc}"
+            ) from exc
 
 
 async def _assert_import_surface_hit_testable(
@@ -185,11 +254,17 @@ async def _assert_import_surface_hit_testable(
         )
         for field in ("visible", "inViewport", "inShell", "hit"):
             assert entry[field], (
-                f"surface d'import non atteignable: {selector}.{field}=false "
-                f"({step}, {width}x{height}) — at={entry['at']} box={entry['box']} "
-                "(verdict mesuré par elementFromPoint + boîte, jamais déduit)"
+                f"{_surface_verdict(selector, entry, step, width, height)} "
+                f"[champ en échec: {field}=false] "
+                "(verdict mesuré par elementFromPoint + boîte, jamais déduit, jamais de retry)"
             )
+        assert entry["reachable"], (
+            f"{_surface_verdict(selector, entry, step, width, height)} "
+            "[verdict composite reachable=false]"
+        )
+    await _assert_import_surface_click_trial(page, selectors, step, width, height, report)
     return report
+
 
 HIDDEN_DECISION = {"replayer-decision": False, "replayer-ranges": True, "replayer-details": True}
 HIDDEN_RANGES = {"replayer-decision": True, "replayer-ranges": False, "replayer-details": True}
@@ -357,6 +432,37 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         )
         assert await page.locator("#reviewDashboard").is_hidden(), (
             f"un seul panneau de Review est monté à la fois ({width}x{height})"
+        )
+        # #394 T2 — the Import surface is a real sub-view: the tab must exist and
+        # the real click above must flip the `aria-selected` state before any
+        # import target is measured. A pane that only exists in the DOM (or a tab
+        # that stays `aria-selected="false"`) fails here instead of being
+        # silently measured through a JS shortcut.
+        assert await page.locator("#reviewImportTab").count() == 1, (
+            f"l'onglet Import #reviewImportTab doit exister ({width}x{height})"
+        )
+        assert await page.get_attribute("#reviewImportTab", "aria-selected") == "true", (
+            "le clic réel sur #reviewImportTab doit le passer à aria-selected=true "
+            f"({width}x{height}), obtenu "
+            f"{await page.get_attribute('#reviewImportTab', 'aria-selected')!r}"
+        )
+        assert await page.get_attribute("#reviewPilotageTab", "aria-selected") == "false", (
+            "l'onglet Pilotage doit repasser à aria-selected=false quand Import est actif "
+            f"({width}x{height})"
+        )
+        assert await page.get_attribute(
+            "#historiesSection", "data-app-subview-panel"
+        ) == "import", (
+            f"le panneau mesuré doit être le panneau Import ({width}x{height})"
+        )
+        # The reachability contract is measured at **empty hands**, before the
+        # import of step 3: nothing here may be satisfied by an already-imported
+        # hand rendering a different layout.
+        assert await page.evaluate(
+            "() => Array.isArray(state.hhHands) && state.hhHands.length === 0"
+        ), (
+            "la surface d'import Review doit être mesurée à main vide, avant tout import "
+            f"({width}x{height})"
         )
         # A sub-view switch is a pure visibility toggle: the shell still never
         # scrolls, and the whole import surface is hit-testable at this viewport.
@@ -577,13 +683,15 @@ async def run() -> None:
         if "hit_test" in record:
             # The import surface verdict is measured too (see
             # `_assert_import_surface_hit_testable`): `elementFromPoint` at the
-            # centre of each box, printed per target.
+            # centre of each box plus the Playwright click trial, printed per
+            # target as the composite `reachable` verdict.
             reached = ", ".join(
-                f"{selector}={'ok' if entry.get('hit') else 'MISS'}"
+                f"{selector}={'ok' if entry.get('reachable') else 'MISS'}"
                 for selector, entry in record["hit_test"].items()
             )
             print(
-                "  mode=review    viewport={viewport:<10} import surface[{surface}] hit-test: {reached}".format(
+                "  mode=review    viewport={viewport:<10} import surface[{surface}] "
+                "reachability: {reached}".format(
                     reached=reached, **record
                 )
             )
@@ -596,7 +704,7 @@ async def run() -> None:
     print(
         "modes desktop smoke: PASS "
         f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard "
-        "+ measured Review import surface)"
+        "+ measured Review import surface reachability: elementFromPoint hit-test + click trial)"
     )
 
 

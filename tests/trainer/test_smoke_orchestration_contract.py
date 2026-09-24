@@ -101,6 +101,57 @@ def main() -> None:
     ):
         assert marker in MODES_SMOKE, marker
 
+    # #394 T2 — the Review import surface reachability is contractual, not an
+    # implementation detail: the smoke measures each import target with
+    # `document.elementFromPoint` at the centre of its box (target or descendant
+    # must receive the point) and confirms it with a Playwright
+    # `locator.click(trial=True)` hit-test, at empty hands and at both reference
+    # viewports, before the fixture import. This guard is additive: it only adds
+    # required tokens, so none of the checks above (nor the T7 fit evidence
+    # below) is removed or weakened.
+    for token in ("reachability", "hit-test"):
+        assert token in MODES_SMOKE, token
+    # The vocabulary alone is not enough (a comment could keep it alive): the
+    # measured hit-test and the Playwright click trial must be the real calls.
+    assert "document.elementFromPoint(x, y)" in MODES_SMOKE
+    assert ".click(trial=True" in MODES_SMOKE
+    assert "def _assert_import_surface_hit_testable(" in MODES_SMOKE
+    assert "def _assert_import_surface_click_trial(" in MODES_SMOKE
+    assert "await _assert_import_surface_click_trial(" in MODES_SMOKE
+    import_surface_block = MODES_SMOKE.split("IMPORT_SURFACE_SELECTORS = (", 1)[1].split(")", 1)[0]
+    for selector in (
+        "#reviewImportTab",
+        'label[for="hhFileInput"]',
+        ".hh-import-advanced > summary",
+        "#hhWatchBtn",
+    ):
+        assert selector in import_surface_block, selector
+    # The verdict is measured in the Review step of the two-viewport journey,
+    # twice (closed details, then advanced details open), and the Import tab is
+    # activated by a real click whose `aria-selected` flip is asserted.
+    import_measurements = MODES_SMOKE.count("await _assert_import_surface_hit_testable(")
+    assert import_measurements >= 2, import_measurements
+    assert 'await page.click("#reviewImportTab")' in MODES_SMOKE
+    assert 'await page.get_attribute("#reviewImportTab", "aria-selected")' in MODES_SMOKE
+    assert "state.hhHands.length === 0" in MODES_SMOKE
+    # Both measurements live in the per-viewport journey, and that journey is
+    # still driven for each reference viewport.
+    run_viewport_block = MODES_SMOKE.split("async def run_viewport(", 1)[1]
+    assert run_viewport_block.count("await _assert_import_surface_hit_testable(") >= 2
+    run_block = MODES_SMOKE.split("async def run() -> None:", 1)[1]
+    assert "for width, height in VIEWPORTS:" in run_block
+    assert "run_viewport(browser, url, width, height, audit)" in run_block
+
+    # The verdict must stay *measured*: the JS hit-test has to expose the
+    # individual conditions (viewport, shell, hit, who received the point) and the
+    # raised assertion has to print them, so a failure is always actionable and
+    # "explicit with the measured values" cannot decay into a bare boolean.
+    measured_blocks = flat(MODES_SMOKE)
+    for js_field in ("const inViewport", "const inShell", "hit:", "reachable:", "atTag:"):
+        assert js_field in measured_blocks, js_field
+    for reported in ("rect=", "innerViewport=", "elementFromPoint=", "point=", "shellBox="):
+        assert reported in measured_blocks, reported
+
     # The #394 T7 fit evidence is versioned and contractual: since the frozen
     # browser job only runs in CI, this artefact is what a reviewer reads. It
     # must document the exact commands, the real HEAD, both reference viewports,
