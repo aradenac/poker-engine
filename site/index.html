@@ -1936,6 +1936,7 @@ const state = {
   mainEquity:null,
   restoringLocalState:false,
   persistenceReady:false,
+  userNavigated:false,
   persistPrefsTimer:null,
   hhSourceSnapshots:[],
   calculating:false
@@ -6767,6 +6768,10 @@ function currentAppView(){
 }
 function setAppView(view,{scrollTop=false,persist=true}={}){
   if(!APP_VIEWS.includes(view)) return currentAppView();
+  // Every caller of setAppView is an explicit user navigation (mode cards,
+  // quickNav, goHome, focusAppSection). The async local restore must therefore
+  // never overwrite the view the user already picked.
+  state.userNavigated=true;
   state.appView=view;
   if(persist) schedulePersistPrefs(30);
   updateAppView({scrollTop});
@@ -6798,10 +6803,18 @@ function appViewForHashTarget(id){
 function openAppView(view,{scrollTop=false}={}){
   if(view==="training"){
     // The Trainer owns its own runtime bootstrap; opening it settles appView.
-    if(typeof trainerOpenBtn!=="undefined"&&trainerOpenBtn){trainerOpenBtn.click();return "training";}
+    if(typeof trainerOpenBtn!=="undefined"&&trainerOpenBtn){state.userNavigated=true;trainerOpenBtn.click();return "training";}
     return setAppView("training",{scrollTop});
   }
   if(view==="replayer"&&!state.selectedHand) return null;
+  if(view==="review"){
+    // Review always lands on its Pilotage pane, whatever sub-tab or inherited
+    // hash a previous visit left behind. Callers that target a specific pane
+    // (focusAppSection → activateAppSubviewForTarget) select it afterwards.
+    const applied=setAppView("review",{scrollTop});
+    activateAppSubview("pilotage");
+    return applied;
+  }
   return setAppView(view,{scrollTop});
 }
 function focusAppSection(id){
@@ -9781,11 +9794,14 @@ async function restoreLocalState(){
       state.selectedHand=state.hhHands.find(h=>h.id===String(prefs.selectedHandId))||null;
     }
 
-    if(prefs?.appView==="replayer"&&state.selectedHand){
+    // #394 T1 — a view the user already picked while IndexedDB was still opening
+    // is final: neither the replayer restore nor the restored/default view may
+    // (re)apply state.appView over it. Both applications stay guarded explicitly.
+    if(!state.userNavigated&&prefs?.appView==="replayer"&&state.selectedHand){
       state.hhMode=true;
       loadSelectedHistoryHand(false);
       openReplayerPage({scrollTop:false});
-    }else{
+    }else if(!state.userNavigated){
       // A remembered hand may stay selected; the rest of the time the last mode
       // is restored, with Home as the safe default (Training needs its runtime).
       state.hhMode=false;
