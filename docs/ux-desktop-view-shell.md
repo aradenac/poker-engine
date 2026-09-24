@@ -185,6 +185,15 @@ computed and never reschedule an engine computation:
   per view: `window.pokerComputeScheduler.hold('replayer',mount==='replayer')` and
   `hold('training',mount==='training')` pause the background lane while an
   immersive view is mounted and release it when the view is left.
+- The former on-scroll trigger stays removed (#394 T3): no `scroll` /
+  `scrollend` listener, no `onscroll` handler and no `IntersectionObserver` or
+  `visibilitychange` callback in `site/**` may re-plan
+  `scheduleBackgroundReviewScoring` (nor `scheduleAutoCalculate`). The Review
+  list is therefore bounded by its pagination alone — `renderReviewInboxPage`
+  plus `#hhListPager` — so scrolling the inbox never restarts a computation;
+  the corpus sweep remains the explicit action `#hhAnalyzeAllBtn` →
+  `state.reviewAnalyzeAll`, at every width, including the `<901px` rendering
+  which stays outside this document's desktop scope.
 - Selecting a sub-view tab is likewise a pure visibility toggle:
   `activateAppSubview(name)` only sets `hidden` / `aria-selected` / `tabindex`
   inside the owning shell, so it contains no `scheduleAutoCalculate`, no
@@ -242,5 +251,11 @@ entry point**:
   `tests/trainer/test_trainer_static.py` — the Spot Lab and Training shells.
 - `tests/trainer/test_hh_import_ux_contract.py` — the Review/Replayer return is a
   pure view change.
+- `tests/trainer/test_appview_no_recompute_contract.py` — the no-recalculation
+  guard itself: statically, that no `scroll` / `scrollend` / `onscroll` /
+  `IntersectionObserver` / `visibilitychange` path re-schedules a computation
+  and that the list stays bounded by `renderReviewInboxPage` + `#hhListPager`;
+  at runtime (`node`), that cycling every view and every sub-view tab against
+  the real `ComputeScheduler` schedules nothing and creates no worker.
 - `tests/trainer/test_smoke_orchestration_contract.py` — the single-entrypoint
   browser-smoke shape.
