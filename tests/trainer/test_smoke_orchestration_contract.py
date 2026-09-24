@@ -152,6 +152,48 @@ def main() -> None:
     for reported in ("rect=", "innerViewport=", "elementFromPoint=", "point=", "shellBox="):
         assert reported in measured_blocks, reported
 
+    # #394 T1 — the asynchronous local restore is crossed through its real
+    # readiness signal before the journey's first mode-card click: a card clicked
+    # while IndexedDB is still opening must not be silently overwritten when the
+    # restore settles `state.appView`. The barrier is a `wait_for_function` on
+    # `state.persistenceReady===true`, never a retry, a skip or a fixed delay,
+    # and the state it gates is re-read afterwards (`state.userNavigated` /
+    # `state.persistenceReady`) by the Review race probe. This block is additive:
+    # it only adds required tokens.
+    assert "state.persistenceReady===true" in MODES_SMOKE
+    assert 'await page.wait_for_function("() => state.persistenceReady===true"' in MODES_SMOKE
+    assert "READINESS_TIMEOUT_MS" in MODES_SMOKE
+    assert "async def _wait_persistence_ready(" in MODES_SMOKE
+    assert "await _wait_persistence_ready(page)" in MODES_SMOKE
+    for probe_field in ("userNavigated: !!state.userNavigated", "persistenceReady: state.persistenceReady === true"):
+        assert probe_field in MODES_SMOKE, probe_field
+    run_viewport_block = MODES_SMOKE.split("async def run_viewport(", 1)[1].split(
+        "async def run_review_race_viewport(", 1
+    )[0]
+    assert "await _wait_persistence_ready(page)" in run_viewport_block, (
+        "the readiness barrier must be crossed inside the per-viewport journey"
+    )
+    assert run_viewport_block.index("await _wait_persistence_ready(page)") < run_viewport_block.index(
+        'button.mode-card[data-app-view="spotlab"]'
+    ), "the restore must settle before the journey's first mode-card click"
+
+    # #394 T2 — the Review landing is deterministic, asserted and scoped: the
+    # selected sub-views are queried inside the Review shell only, exactly
+    # `["pilotage"]` is required, and the pane visibility is measured with
+    # Playwright's own checks rather than observed. The reachability verdict
+    # carries its own vocabulary (`hit_test` in the JS report and in the Python
+    # assertion), so `elementFromPoint` / `hit_test` cannot decay into a comment.
+    assert "REVIEW_SELECTED_SUBTABS_JS" in MODES_SMOKE
+    assert '[data-view-shell="review"] [data-app-subview][aria-selected="true"]' in MODES_SMOKE
+    assert "selected_subtabs = await page.evaluate(REVIEW_SELECTED_SUBTABS_JS)" in MODES_SMOKE
+    assert 'assert selected_subtabs == ["pilotage"]' in MODES_SMOKE
+    assert 'await page.locator("#reviewDashboard").is_visible()' in MODES_SMOKE
+    assert 'await page.locator("#historiesSection").is_hidden()' in MODES_SMOKE
+    assert "elementFromPoint" in MODES_SMOKE
+    assert '"hit_test"' in MODES_SMOKE
+    assert 'record["hit_test"]' in MODES_SMOKE
+    assert "def _assert_import_surface_hit_testable(" in MODES_SMOKE
+
     # The #394 T7 fit evidence is versioned and contractual: since the frozen
     # browser job only runs in CI, this artefact is what a reviewer reads. It
     # must document the exact commands, the real HEAD, both reference viewports,

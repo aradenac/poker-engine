@@ -194,6 +194,35 @@ every mode, Home included:
   `training` and `replayer` are not restored blindly (the Trainer needs its
   runtime bootstrap, the Replayer needs `state.selectedHand`).
 
+### 4.1 Invariant: an explicit navigation always wins
+
+The restore is **subordinate to an explicit navigation**, and that order is an
+invariant of the shell, not an implementation detail:
+
+- `setAppView(view,{scrollTop})` poses `state.userNavigated=true` *before* it
+  writes `state.appView`; every caller (mode cards, `#quickNav`, `goHome()`,
+  `focusAppSection()`) goes through it or through `openAppView()`, and the
+  Trainer bootstrap (`trainerOpenBtn.click()`) poses the same flag.
+- `restoreLocalState()` is asynchronous: it opens IndexedDB before it settles
+  `state.appView`. Its two applications of a persisted view — the Replayer
+  restore and the restored/default view — are both gated on
+  `!state.userNavigated`, and the persisted view is only staged as
+  `state.restoredAppView` while the flag is unset. A view the user picked while
+  the restore was still in flight is therefore **final**: when the restore
+  settles it never overwrites `state.appView`.
+- That restore advertises its own readiness through `state.persistenceReady`,
+  which stays `false` until the restore has settled. A driver (the browser
+  smokes of §6 included) crosses that barrier instead of racing it, and a view
+  picked after the barrier is still protected by the same `userNavigated` guard.
+- **Review is a deterministic landing**: `openAppView("review")` mounts the
+  Review shell and then selects the `pilotage` pane, so Review always lands on
+  Pilotage whatever sub-tab or inherited hash a previous visit left behind. A
+  caller that targets a specific pane selects it afterwards
+  (`focusAppSection` → `activateAppSubviewForTarget`).
+- **A deep link selects its own pane**: `APP_HASH_SUBVIEWS` +
+  `activateAppSubviewForTarget(id)` select the owning tab (the mappings of §2
+  above) because the shell never scrolls to reveal a hidden pane.
+
 ## 5. No recalculation on a view change
 
 A view change is a **pure DOM mount swap**. It must reuse everything already

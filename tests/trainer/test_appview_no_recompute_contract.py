@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """#394 T3 — a view change must stay a pure DOM toggle.
 
-Two layers are checked.
+Four layers are checked.
 
 1. Static contract (always run, no browser, no server):
 
@@ -21,6 +21,12 @@ Two layers are checked.
      Décision / Ranges / Détails included) is a pure visibility toggle scoped to
      the owning shell: one pane visible, `aria-selected` / roving `tabindex`
      updated, no pane re-rendered and no computation scheduled.
+   * an explicit user navigation is final: `setAppView()` poses
+     `state.userNavigated`, and the asynchronous `restoreLocalState()` only
+     applies the restored (or Replayer) view while that flag is still unset, so
+     a view picked while IndexedDB was opening is never overwritten.
+   * `openAppView("review")` deterministically lands on the Pilotage pane,
+     whatever sub-tab or inherited hash a previous visit left behind.
 
 2. Runtime invariance (`node`, required — the trainer CI job already runs Node):
    the real `updateAppView()` source is executed against the real
@@ -34,6 +40,12 @@ Two layers are checked.
    the pane renderers instrumented: switching tabs must toggle exactly one pane
    per owning shell, never leak into a neighbouring view, and never schedule a
    computation or re-render a pane.
+
+4. Runtime restore-vs-navigation invariance (`node`): the real
+   `restoreLocalState()` source is executed against stubbed persistence. With
+   `state.userNavigated=true` neither the Replayer restore nor the restored
+   view may touch `state.appView`; without the flag the very same prefs do
+   apply, so the guard — not the fixture — is what decides.
 """
 from __future__ import annotations
 
@@ -129,6 +141,37 @@ def check_view_switch_entry_points_are_pure() -> None:
     back = js_function_source(INDEX, "returnToHandsPage")
     assert "activateAppSubview(\"inbox\")" in back
     assert "scrollIntoView" not in back, "the shell selects the pane; it never scrolls the document"
+
+
+def check_user_navigation_precedes_restored_view() -> None:
+    """#394 T1 — an explicit user navigation is final, never overwritten."""
+    restore = js_function_source(INDEX, "restoreLocalState")
+    # Both applications of a view derived from the persisted prefs stay guarded:
+    # the Replayer restore and the restored/default view.
+    assert restore.count("!state.userNavigated") == 2, restore
+    replayer_guard = 'if(!state.userNavigated&&prefs?.appView==="replayer"&&state.selectedHand){'
+    assert replayer_guard in restore, "the Replayer restore must stay guarded"
+    assert "}else if(!state.userNavigated){" in restore, "the restored view must stay guarded"
+    # The flag is read before the restored view is written to state.appView.
+    assert restore.index("!state.userNavigated") < restore.index("state.appView=[")
+    assert "state.restoredAppView" in restore, "the persisted view is only staged as restoredAppView"
+
+    # An explicit navigation is what poses the flag: both the generic path and
+    # the Trainer bootstrap that bypasses setAppView().
+    set_view = js_function_source(INDEX, "setAppView")
+    assert "state.userNavigated=true;" in set_view, "setAppView must pose the flag"
+    assert set_view.index("state.userNavigated=true;") < set_view.index("state.appView=view;")
+    open_view = js_function_source(INDEX, "openAppView")
+    assert "state.userNavigated=true;" in open_view, "the Trainer bootstrap must pose the flag too"
+    assert open_view.index("state.userNavigated=true;") < open_view.index("trainerOpenBtn.click()")
+
+    # Review deterministically lands on its Pilotage pane, whatever sub-tab or
+    # inherited hash a previous visit left behind.
+    assert 'const applied=setAppView("review",{scrollTop});' in open_view
+    assert 'activateAppSubview("pilotage");' in open_view
+    assert open_view.index('setAppView("review"') < open_view.index('activateAppSubview("pilotage")'), (
+        "Review mounts before the landing pane is selected"
+    )
 
 
 def check_cache_reuse() -> None:
@@ -338,6 +381,168 @@ def check_runtime_invariance() -> None:
     assert "runtime view-switch invariance: OK" in completed.stdout, completed.stdout
 
 
+RESTORE_RUNTIME_SCRIPT = r"""
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+
+const html=fs.readFileSync('site/index.html','utf8');
+const APP_VIEWS=["home","review","replayer","spotlab","training","strategy"];
+
+// Extract `async function <name>(…) { … }` — the `async` keyword is part of the
+// source the harness has to evaluate, since the body awaits the local restore.
+function extractFn(source,name){
+  let start=source.indexOf('function '+name+'(');
+  if(start<0)throw new Error('missing '+name);
+  if(source.slice(start-6,start)==='async ')start-=6;
+  let cursor=source.indexOf('(',start),depth=0;
+  for(;cursor<source.length;cursor++){
+    const ch=source[cursor];
+    if(ch==='(')depth++;
+    else if(ch===')'){depth--;if(depth===0)break;}
+  }
+  cursor=source.indexOf('{',cursor);depth=0;
+  for(;cursor<source.length;cursor++){
+    const ch=source[cursor];
+    if(ch==='{')depth++;
+    else if(ch==='}'){depth--;if(depth===0)return source.slice(start,cursor+1);}
+  }
+  throw new Error('unbalanced '+name);
+}
+
+// Minimal harness: restoreLocalState() stays the real production source; only
+// the persistence it reads is stubbed, so the view application is observable.
+function harness({prefs,appView,userNavigated,selectedHand,hhHands}){
+  const calls={openReplayerPage:0,updateAppView:0,loadSelectedHistoryHand:0,autoCalculate:[],backgroundScore:[]};
+  const state={
+    appView,
+    userNavigated,
+    hhMode:false,
+    selectedHand:selectedHand||null,
+    hhHands:hhHands||[],
+    hhSort:'',
+    hhKnownOnly:false,
+    hhImportMode:'',
+    quickNavCollapsed:false,
+    restoredAppView:null,
+    reviewScores:{},
+    reviewInboxUserMetadataByScope:{},
+    persistenceReady:false,
+    restoringLocalState:false,
+    manualOverrideContract:null
+  };
+  const sandbox={
+    APP_VIEWS,state,console,
+    REVIEW_INBOX_METADATA_DB_KEY:'reviewInboxUserMetadata',
+    persistenceStatus(){},
+    openLocalDb:async()=>{},
+    centralManualOverrideApi:()=>null,
+    centralManualOverrideLoadAllowed:()=>false,
+    localDbGet:async key=>(key==='prefs'?prefs:null),
+    updateQuickNavUi(){},
+    populationModelUi(){},
+    postflopModelUi(){},
+    applyHHSnapshots:async()=>{},
+    loadSelectedHistoryHand(){calls.loadSelectedHistoryHand++;},
+    openReplayerPage(){calls.openReplayerPage++;},
+    updateAppView(){calls.updateAppView++;},
+    updateHistoryUi(){},
+    updateRangeEditionUi(){},
+    updateCalcReady(){},
+    routeFromHash(){},
+    tryRestoreWatchHandles:async()=>false,
+    refreshCentralManualOverrideState:async()=>{},
+    scheduleAutoCalculate(ms){calls.autoCalculate.push(ms);},
+    scheduleBackgroundReviewScoring(ms){calls.backgroundScore.push(ms);}
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(extractFn(html,'restoreLocalState'),sandbox);
+  return {sandbox,state,calls};
+}
+
+// The executed code is the real production source: it still carries both guards.
+const probe=harness({prefs:null,appView:'home',userNavigated:false});
+assert.ok(probe.sandbox.restoreLocalState.toString().includes('!state.userNavigated'),
+  'the real restoreLocalState was evaluated');
+assert.ok(probe.sandbox.restoreLocalState.toString().includes('prefs?.appView==="replayer"'),
+  'the real Replayer restore branch was evaluated');
+
+async function run(label,options){
+  const {sandbox,state,calls}=harness(options);
+  await sandbox.restoreLocalState();
+  assert.equal(state.persistenceReady,true,label+': the restore ran to completion');
+  assert.equal(state.restoringLocalState,false,label+': the restore settled');
+  return {state,calls};
+}
+
+(async()=>{
+  // 1. An explicit user navigation is final: neither the restored view nor the
+  //    Replayer restore may overwrite the view the user already picked.
+  const picked=await run('user-picked view',{
+    prefs:{appView:'review',selectedHandId:'3'},
+    appView:'spotlab',userNavigated:true,
+    selectedHand:{id:'3'},hhHands:[{id:'3'}]
+  });
+  assert.equal(picked.state.appView,'spotlab',
+    'the restored Review view must not overwrite the user-picked Spot Lab');
+  assert.equal(picked.calls.updateAppView,0,
+    'the guarded branch must not apply the restored view');
+  assert.equal(picked.state.hhMode,false,
+    'the guarded branch must not force history mode');
+
+  const pickedOverReplayer=await run('user-picked view over the Replayer restore',{
+    prefs:{appView:'replayer',selectedHandId:'3'},
+    appView:'review',userNavigated:true,
+    selectedHand:{id:'3'},hhHands:[{id:'3'}]
+  });
+  assert.equal(pickedOverReplayer.state.appView,'review',
+    'the Replayer restore must not overwrite the user-picked Review view');
+  assert.equal(pickedOverReplayer.calls.openReplayerPage,0,
+    'the Replayer restore is guarded too');
+  assert.equal(pickedOverReplayer.state.hhMode,false,
+    'the guarded Replayer restore never enters history mode');
+
+  // 2. Without the flag the very same prefs do apply, so scenario 1 does not
+  //    pass vacuously: the flag is the only discriminator.
+  const restored=await run('no navigation yet',{
+    prefs:{appView:'review',selectedHandId:'3'},
+    appView:'home',userNavigated:false,
+    selectedHand:null,hhHands:[{id:'3'}]
+  });
+  assert.equal(restored.state.appView,'review',
+    'without a user navigation the restored view is applied');
+  assert.equal(restored.calls.updateAppView,1,
+    'the restored view mounts exactly once');
+
+  const restoredReplayer=await run('no navigation yet over the Replayer restore',{
+    prefs:{appView:'replayer',selectedHandId:'3'},
+    appView:'home',userNavigated:false,
+    selectedHand:{id:'3'},hhHands:[{id:'3'}]
+  });
+  assert.equal(restoredReplayer.state.hhMode,true,
+    'without a user navigation the Replayer restore enters history mode');
+  assert.equal(restoredReplayer.calls.openReplayerPage,1,
+    'without a user navigation the Replayer restore opens the Replayer');
+
+  process.stdout.write('runtime restore-vs-navigation invariance: OK\n');
+})().catch(err=>{process.stderr.write(String((err&&err.stack)||err)+'\n');process.exit(1);});
+"""
+
+
+def check_restored_view_respects_user_navigation() -> None:
+    node = shutil.which("node")
+    if node is None:
+        raise AssertionError("node runtime is required for the restore-vs-navigation contract")
+    completed = subprocess.run(
+        [node, "-e", RESTORE_RUNTIME_SCRIPT],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "runtime restore-vs-navigation invariance: OK" in completed.stdout, completed.stdout
+
+
 SUBVIEW_RUNTIME_SCRIPT = r"""
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
@@ -536,9 +741,11 @@ def main() -> None:
     check_no_scroll_rescheduler()
     check_update_app_view_is_pure()
     check_view_switch_entry_points_are_pure()
+    check_user_navigation_precedes_restored_view()
     check_cache_reuse()
     check_subview_activation_is_pure()
     check_runtime_invariance()
+    check_restored_view_respects_user_navigation()
     print("app-view no-recompute contract checks: OK")
 
 
