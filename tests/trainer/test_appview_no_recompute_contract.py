@@ -17,12 +17,23 @@ Two layers are checked.
      (`state.reviewScores`, `state.actionEquityCache`, `state.seatEquityCache`)
      instead of scoring again, while the inbox pagination
      (`renderReviewInboxPage` + `#hhListPager`) stays the sole bound of the list.
+   * selecting a sub-view tab (the Replayer contextual panel
+     Décision / Ranges / Détails included) is a pure visibility toggle scoped to
+     the owning shell: one pane visible, `aria-selected` / roving `tabindex`
+     updated, no pane re-rendered and no computation scheduled.
 
 2. Runtime invariance (`node`, required — the trainer CI job already runs Node):
    the real `updateAppView()` source is executed against the real
    `ComputeScheduler` from `site/compute-scheduler.js` while cycling every view.
    It must create no worker, enqueue no task and call no scheduling entry point,
    keep the holds balanced, and the holds must actually gate background admission.
+
+3. Runtime sub-view invariance (`node`): the real `activateAppSubview()` /
+   `activateAppSubviewForTarget()` sources are executed against a minimal DOM
+   modelling the Replayer and Review shells, with the compute entry points and
+   the pane renderers instrumented: switching tabs must toggle exactly one pane
+   per owning shell, never leak into a neighbouring view, and never schedule a
+   computation or re-render a pane.
 """
 from __future__ import annotations
 
@@ -327,11 +338,193 @@ def check_runtime_invariance() -> None:
     assert "runtime view-switch invariance: OK" in completed.stdout, completed.stdout
 
 
+SUBVIEW_RUNTIME_SCRIPT = r"""
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+const {ComputeScheduler}=require('./site/compute-scheduler.js');
+
+const html=fs.readFileSync('site/index.html','utf8');
+
+function extractFn(source,name){
+  const start=source.indexOf('function '+name+'(');
+  if(start<0)throw new Error('missing '+name);
+  let cursor=source.indexOf('(',start+'function '.length),depth=0;
+  for(;cursor<source.length;cursor++){
+    const ch=source[cursor];
+    if(ch==='(')depth++;
+    else if(ch===')'){depth--;if(depth===0)break;}
+  }
+  cursor=source.indexOf('{',cursor);depth=0;
+  for(;cursor<source.length;cursor++){
+    const ch=source[cursor];
+    if(ch==='{')depth++;
+    else if(ch==='}'){depth--;if(depth===0)return source.slice(start,cursor+1);}
+  }
+  throw new Error('unbalanced '+name);
+}
+
+function appHashSubviewsSource(source){
+  const start=source.indexOf('const APP_HASH_SUBVIEWS={');
+  const end=source.indexOf('};',start);
+  if(start<0||end<0)throw new Error('missing APP_HASH_SUBVIEWS');
+  return source.slice(start,end+2);
+}
+
+// Minimal DOM: only what the scoped sub-view helpers touch.
+class FakeElement{
+  constructor(tag){
+    this.tagName=tag;this.dataset={};this.attributes={};this.children=[];
+    this.parentElement=null;this.hidden=false;this.tabIndex=0;this.shell=null;
+  }
+  setAttribute(name,value){this.attributes[name]=String(value);}
+  getAttribute(name){return Object.hasOwn(this.attributes,name)?this.attributes[name]:null;}
+  closest(selector){return selector==='[data-view-shell]'?this.shell:null;}
+  querySelectorAll(selector){
+    const out=[];
+    const walk=node=>{
+      for(const child of node.children){
+        if(selector==='[data-app-subview-panel]'&&child.dataset.appSubviewPanel!==undefined)out.push(child);
+        if(selector==='[data-app-subview]'&&child.dataset.appSubview!==undefined)out.push(child);
+        walk(child);
+      }
+    };
+    walk(this);
+    return out;
+  }
+}
+
+function makeShell(view,subviews){
+  const shell=new FakeElement('div');
+  shell.shell=shell;
+  shell.dataset.viewShell=view;
+  const list=new FakeElement('div');
+  list.parentElement=shell;shell.children.push(list);
+  const tabs=new Map(),panels=new Map();
+  for(const name of subviews){
+    const tab=new FakeElement('button');
+    tab.dataset.appSubview=name;tab.parentElement=list;tab.shell=shell;list.children.push(tab);
+    const panel=new FakeElement('div');
+    panel.dataset.appSubviewPanel=name;panel.parentElement=shell;panel.shell=shell;shell.children.push(panel);
+    tabs.set(name,tab);panels.set(name,panel);
+  }
+  return {view,shell,tabs,panels};
+}
+
+const REPLAYER_SUBVIEWS=['replayer-decision','replayer-ranges','replayer-details'];
+const shells=[
+  makeShell('replayer',REPLAYER_SUBVIEWS),
+  makeShell('review',['pilotage','inbox']),
+  makeShell('spotlab',['spotlab-situation','spotlab-board','spotlab-range','spotlab-equity']),
+];
+const document={
+  querySelectorAll(selector){
+    if(selector==='[data-app-subview]')return shells.flatMap(s=>[...s.tabs.values()]);
+    if(selector==='[data-app-subview-panel]')return shells.flatMap(s=>[...s.panels.values()]);
+    return [];
+  }
+};
+
+let scheduleCalls=[],workerConstructs=0,paneRenders=0,inboxRenders=0;
+class CountingWorker{constructor(url){workerConstructs++;}postMessage(){}terminate(){}}
+const scheduler=new ComputeScheduler({maxWorkers:2,WorkerClass:CountingWorker});
+
+const sandbox={
+  document,
+  Element:FakeElement,
+  console,
+  state:{},
+  window:{pokerComputeScheduler:scheduler},
+  scheduleAutoCalculate:()=>scheduleCalls.push('auto'),
+  scheduleBackgroundReviewScoring:()=>scheduleCalls.push('review'),
+  startSeatEquityCalculation:()=>scheduleCalls.push('seat'),
+  renderVisualReplay:()=>paneRenders++,
+  renderHistoryReplay:()=>paneRenders++,
+  renderHistoryHands:()=>inboxRenders++,
+};
+vm.createContext(sandbox);
+vm.runInContext([
+  appHashSubviewsSource(html),
+  extractFn(html,'appSubviewForHashTarget'),
+  extractFn(html,'appSubviewTabs'),
+  extractFn(html,'appSubviewPanels'),
+  extractFn(html,'appSubviewScopeFor'),
+  extractFn(html,'activateAppSubview'),
+  extractFn(html,'activateAppSubviewForTarget'),
+].join('\n'),sandbox);
+
+// The executed code is the real production source.
+assert.ok(sandbox.activateAppSubview.toString().includes('appSubviewScopeFor(tab)'),'the real activateAppSubview was evaluated');
+assert.ok(sandbox.appSubviewForHashTarget.toString().includes('APP_HASH_SUBVIEWS'),'the real APP_HASH_SUBVIEWS was evaluated');
+assert.ok(sandbox.appSubviewPanels.toString().includes('[data-app-subview-panel]'),'the real appSubviewPanels was evaluated');
+
+const replayer=shells[0],review=shells[1],spotlab=shells[2];
+function visiblePanes(shell){return [...shell.panels.values()].filter(panel=>!panel.hidden).map(panel=>panel.dataset.appSubviewPanel);}
+function selectedTabs(shell){return [...shell.tabs.values()].filter(tab=>tab.getAttribute('aria-selected')==='true').map(tab=>tab.dataset.appSubview);}
+function assertNoCompute(label){
+  assert.deepEqual(scheduleCalls,[],label+': no scheduling entry point');
+  assert.equal(workerConstructs,0,label+': no worker created');
+  assert.equal(scheduler.active.size,0,label+': no active task');
+  assert.equal(scheduler.queue.length,0,label+': no queued task');
+  assert.equal(paneRenders,0,label+': no pane re-rendered');
+}
+
+// The Replayer contextual panel is a three-pane tab widget: selecting a tab
+// shows exactly that pane, updates aria-selected and keeps a roving tabindex.
+for(const name of REPLAYER_SUBVIEWS){
+  assert.equal(sandbox.activateAppSubview(name),true,name);
+  assert.deepEqual(visiblePanes(replayer),[name],name+': exactly one visible pane');
+  assert.deepEqual(selectedTabs(replayer),[name],name+': one selected tab');
+  assert.deepEqual(
+    [...replayer.tabs.values()].map(tab=>tab.tabIndex),
+    REPLAYER_SUBVIEWS.map(candidate=>candidate===name?0:-1),
+    name+': roving tabindex'
+  );
+  // A neighbouring shell is never toggled.
+  assert.equal(review.panels.get('pilotage').hidden,false,'pilotage stays mounted');
+  assert.equal(review.panels.get('inbox').hidden,false,'inbox stays mounted');
+  assert.equal(spotlab.panels.get('spotlab-board').hidden,false,'spotlab stays mounted');
+  assertNoCompute(name);
+}
+
+// A Review tab does not blank the Replayer panes, and vice versa.
+sandbox.activateAppSubview('inbox');
+assert.deepEqual(visiblePanes(review),['inbox'],'review shows its own pane');
+assert.deepEqual(visiblePanes(replayer),['replayer-details'],'the Replayer keeps its own selected pane');
+assert.equal(inboxRenders,1,'only the bounded inbox pane renders on activation');
+assertNoCompute('cross-view activation');
+
+// Deep links select the owning tab instead of scrolling to the shell.
+assert.equal(sandbox.appSubviewForHashTarget('replayerSection'),'replayer-decision');
+assert.equal(sandbox.appSubviewForHashTarget('replayerPage'),'replayer-decision');
+assert.equal(sandbox.activateAppSubviewForTarget('replayerSection'),true);
+assert.deepEqual(selectedTabs(replayer),['replayer-decision'],'the deep link selects the owning tab');
+assertNoCompute('deep link');
+
+process.stdout.write('runtime sub-view activation invariance: OK\n');
+"""
+
+
+def check_subview_activation_is_pure() -> None:
+    node = shutil.which("node")
+    if node is None:
+        raise AssertionError("node runtime is required for the sub-view activation contract")
+    completed = subprocess.run(
+        [node, "-e", SUBVIEW_RUNTIME_SCRIPT],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "runtime sub-view activation invariance: OK" in completed.stdout, completed.stdout
+
+
 def main() -> None:
     check_no_scroll_rescheduler()
     check_update_app_view_is_pure()
     check_view_switch_entry_points_are_pure()
     check_cache_reuse()
+    check_subview_activation_is_pure()
     check_runtime_invariance()
     print("app-view no-recompute contract checks: OK")
 

@@ -89,13 +89,9 @@ def check_ux_desktop_view_shell_doc() -> None:
             continue
         assert subviews, view
         for subview in subviews:
-            if view == 'replayer':
-                # #394 T1 — the Replayer keeps both panes but stops swapping them
-                # through a tab row: `replay-table` (contrôles + timeline + table)
-                # and `replay-detail` (panneau contextuel) are laid out at the same
-                # time in the fixed 3-column shell.
-                assert f'data-app-subview-panel="{subview}"' in INDEX, subview
-                continue
+            # #394 T2 — the Replayer contextual column is a tabbed panel
+            # (Décision / Ranges / Détails), so its documented sub-views are real
+            # tab/pane pairs like every other dense view.
             assert f'data-app-subview="{subview}"' in INDEX, subview
             assert f'data-app-subview-panel="{subview}"' in INDEX, subview
 

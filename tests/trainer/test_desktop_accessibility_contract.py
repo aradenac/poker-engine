@@ -259,16 +259,73 @@ def check_desktop_shell_contract() -> None:
     trainer = INDEX.split('<div id="trainerPage"', 1)[1].split('<div id="replayerPage"', 1)[0]
     for thumb in ('trainer-coaching', 'trainer-session', 'trainer-profiles', 'trainer-test'):
         assert f'data-app-subview="{thumb}"' in trainer, thumb
-    # #394 T1 — the Replayer is a fixed 3-column shell (timeline/actions | table
-    # | contextual panel). Its two panes stay mounted in the same shell instead
-    # of being swapped by a tab row, so the panes are asserted, not the thumbs.
+    # #394 T1/T2 — the Replayer is a fixed 3-column shell (timeline/actions |
+    # table | contextual panel). The replay columns stay mounted in that shell
+    # and are never a tab pane; the third column is a contextual tabbed panel
+    # whose three panes (Décision / Ranges / Détails) are real tab/pane pairs,
+    # exactly one of them visible.
     replayer = INDEX.split('<div id="replayerPage"', 1)[1].split('<script src="./compute-scheduler.js">', 1)[0]
-    for pane in ('replay-table', 'replay-detail'):
-        assert f'data-app-subview-panel="{pane}"' in replayer, pane
-    assert 'data-app-subview="' not in replayer, 'the Replayer must not stack a tab row'
+    for pane, subview in (
+        ('replayerDecisionPanel', 'replayer-decision'),
+        ('replayerRangesPanel', 'replayer-ranges'),
+        ('hhReplayDetail', 'replayer-details'),
+    ):
+        assert f'id="{pane}"' in replayer, pane
+        assert f'data-app-subview="{subview}"' in replayer, subview
+        assert f'data-app-subview-panel="{subview}"' in replayer, subview
+        assert f'aria-controls="{pane}"' in replayer, pane
+        # A pane id lives exactly once in the whole document.
+        assert len(re.findall(rf'id="{pane}"', INDEX)) == 1, pane
+    assert replayer.count('role="tablist"') == 1, replayer.count('role="tablist"')
+    assert replayer.count('data-app-subview="') == 3, replayer.count('data-app-subview="')
+    assert replayer.count('data-app-subview-panel="') == 3, replayer.count('data-app-subview-panel="')
+    assert 'id="replayerDecisionPanel" class="replayer-context-pane app-scroll-zone app-subview-panel"' in replayer
+    assert 'id="replayerRangesPanel" class="replayer-context-pane app-scroll-zone app-subview-panel"' in replayer
+    assert 'data-app-subview-panel="replayer-ranges" hidden' in replayer
+    assert 'data-app-subview-panel="replayer-details" hidden' in replayer
     assert 'id="replayerContextPanel"' in replayer, 'the third column hosts the contextual panel'
+    # The replay columns are not a sub-view pane: selecting a contextual tab must
+    # never blank the timeline/actions column or the table.
+    visual_replay = replayer.split('<div id="hhVisualReplay"', 1)[1].split('>', 1)[0]
+    assert 'data-app-subview-panel' not in visual_replay, visual_replay
+    assert 'app-subview-panel' not in visual_replay, visual_replay
     for element_id in ('replayerPage', 'replayerSection', 'hhVisualReplay', 'hhReplayDetail'):
         assert f'id="{element_id}"' in INDEX, element_id
+
+    # Keyboard contract: roving tabindex, Enter/Space activation, and a deep link
+    # that selects the owning tab before focusing instead of scrolling the shell.
+    assert replayer.count('tabindex="-1"') == 2, 'the inactive tabs leave the tab order'
+    assert replayer.count('aria-selected="true"') == 1, 'exactly one tab starts selected'
+    assert replayer.count('aria-selected="false"') == 2, replayer.count('aria-selected="false"')
+    assert 'role="tabpanel"' in replayer and replayer.count('role="tabpanel"') == 3
+    assert 'if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){' in INDEX
+    assert 'replayerSection:"replayer-decision",replayerPage:"replayer-decision"' in INDEX
+    focus = INDEX.split('function focusAppSection(id){', 1)[1].split('function routeFromHash', 1)[0]
+    assert 'activateAppSubviewForTarget(id);' in focus
+    assert focus.index('activateAppSubviewForTarget(id);') < focus.index('scrollIntoView')
+    # A tab activation is a pure visibility toggle: it never schedules compute and
+    # never re-renders a pane.
+    activate = INDEX.split('function activateAppSubview(name){', 1)[1].split('function activateAppSubviewForTarget', 1)[0]
+    for forbidden in ('scheduleAutoCalculate', 'scheduleBackgroundReviewScoring', 'startSeatEquityCalculation', 'renderVisualReplay', 'renderHistoryReplay'):
+        assert forbidden not in activate, forbidden
+
+    # The panes reuse the existing renders instead of duplicating them: the
+    # opponent-range trigger has a single rendering authority, and the decision
+    # banner is painted once — in the Décision pane, never in the left column.
+    assert 'if(replayerDecisionPanel) replayerDecisionPanel.innerHTML=replayerDecisionPanelHtml(step);' in INDEX
+    assert 'if(replayerRangesPanel) replayerRangesPanel.innerHTML=replayerRangesPanelHtml(h);' in INDEX
+    assert 'replayerContextPanel.querySelectorAll("[data-population-player]")' in INDEX
+    decision_pane = INDEX.split('function replayerDecisionPanelHtml(step){', 1)[1].split('function replayerRangesPanelHtml(hand){', 1)[0]
+    assert 'replayActionBannerHtml(step)' in decision_pane
+    assert 'safeActionAnalysisHtml(state.replayIndex,step)' in decision_pane
+    ranges_pane = INDEX.split('function replayerRangesPanelHtml(hand){', 1)[1].split('function renderVisualReplay(){', 1)[0]
+    assert 'populationRangeButtonHtml(player)' in ranges_pane
+    assert 'data-population-player' not in ranges_pane, 'the trigger markup stays in its single authority'
+    seat = INDEX.split('function replaySeatHtml(player,step,hand){', 1)[1].split('function populationRangeWidthFromEntries(', 1)[0]
+    assert 'populationRangeButtonHtml(player)' in seat
+    assert 'data-population-player' not in seat, 'the trigger markup stays in its single authority'
+    visual_template = INDEX.split('hhVisualReplay.innerHTML=`<div class="replayer-col replayer-col-left', 1)[1].split('<div class="replayer-col replayer-col-center', 1)[0]
+    assert 'replayActionBannerHtml' not in visual_template, 'the decision banner is painted once, in the Décision pane'
 
     # The 3 columns are a desktop grid owned by the shell: no column re-stacks the
     # replay content, and no new scroll zone is declared (see the allow-list).
@@ -279,6 +336,11 @@ def check_desktop_shell_contract() -> None:
     assert 'overflow:hidden' in section, section
     assert not SCROLL_DECLARATION.search(section), section
     assert declarations_for('#replayerSection>#hhVisualReplay', '(min-width:901px)') == 'display:contents'
+    # Each contextual pane owns the remaining height of the third column and is
+    # bounded by `.app-scroll-zone`, never by the shell.
+    assert declarations_for(
+        '#replayerSection>#replayerContextPanel>.app-subview-panel', '(min-width:901px)'
+    ) == 'flex:1 1 auto;min-height:0;margin:0'
     # `renderVisualReplay()` paints only the two left/centre columns; the third
     # column of the shell stays the contextual container (#replayerContextPanel).
     assert 'hhVisualReplay.innerHTML=`<div class="replayer-col replayer-col-left app-scroll-zone">' in INDEX

@@ -59,7 +59,7 @@ declared inside `max-width` blocks.
 | Review | `review` | `review` | `pilotage`, `inbox` |
 | Spot Lab | `spotlab` | `spotlab` | `spotlab-situation`, `spotlab-board`, `spotlab-range`, `spotlab-equity` |
 | Training | `training` | `training` | `trainer-coaching`, `trainer-session`, `trainer-profiles`, `trainer-test` |
-| Replayer | `replayer` | `replayer` | `replay-table`, `replay-detail` |
+| Replayer | `replayer` | `replayer` | `replayer-decision`, `replayer-ranges`, `replayer-details` |
 | Strategy Hero | `strategy` | `strategy` | — (aucune : éditeur dédié site/hero-ranges.html) |
 
 Each sub-view is a `[role="tab"]` thumb carrying `data-app-subview="<name>"`
@@ -69,21 +69,37 @@ returns `node.closest("[data-view-shell]")`, and `activateAppSubview(name)`
 toggles only the panels of that scope, so a tab in one view can never blank a
 neighbouring view.
 
-The Replayer is the one shell whose panes are **not** swapped by a tab row: its
-two panes (`replay-table` — contrôles de replay + timeline/actions + scène de
-table, `replay-detail` — panneau contextuel) stay mounted at the same time in a
-fixed three-column grid (`#replayerSection`,
+The Replayer is a fixed three-column grid (`#replayerSection`,
 `grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px)`)
-inside the single `replayer` shell: no replay block is stacked under another at
-the shell level, and the only scrolling left is the declared, bounded kind
-inside those columns (§3). `#hhVisualReplay` remains the pane painted by
-`renderVisualReplay()` and only contributes its two columns to that grid
-(`display:contents` at `>= 901px`); the third column is the contextual
-container `#replayerContextPanel`. Deep links (`appViewForHashTarget`, then
-`activateAppSubviewForTarget`) still open the Replayer shell, and
-`activateAppSubview` simply has no thumb to select there since both panes are
-already visible; the removed tab row is the only sub-view affordance the
-Replayer loses.
+inside the single `replayer` shell. The replay itself (`#hhVisualReplay` — colonne
+contrôles/timeline/actions + colonne scène de table, peinte par
+`renderVisualReplay()`, `display:contents` at `>= 901px`) stays mounted in the
+grid and is deliberately **not** a tab pane: selecting a contextual tab must
+never blank the timeline or the table.
+
+The third column (`#replayerContextPanel`) is the contextual **tabbed panel**
+and exposes exactly three sub-views, rendered once by the runtime:
+
+- `replayer-decision` (panneau `#replayerDecisionPanel`) — décision/verdict de
+  l'étape affichée : `replayActionBannerHtml` + `safeActionAnalysisHtml`, les
+  helpers déjà utilisés par le feed de street ;
+- `replayer-ranges` (panneau `#replayerRangesPanel`) — accès aux ranges
+  population/adverse de chaque adversaire : les déclencheurs
+  `data-population-player` produits par `populationRangeButtonHtml`, l'autorité
+  de rendu unique partagée avec les sièges de la table, ouvrent le dialogue de
+  range adverse existant ;
+- `replayer-details` (panneau `#hhReplayDetail`) — déroulé de la main street par
+  street via `renderHistoryReplay()`.
+
+The three panes are painted in the same repaint as the replay columns and only
+one is visible; `activateAppSubview` merely toggles `hidden`, so switching a tab
+ne re-renders a pane, duplicates no rendering and no DOM id, and schedules no
+computation (§5). The tab row is a real `role="tablist"`/`role="tab"` widget:
+roving `tabindex`, `aria-selected`, `aria-controls`, visible focus, `←`/`→` to
+move and `Entrée`/`Espace` to activate. Deep links (`appViewForHashTarget`, then
+`activateAppSubviewForTarget`) open the Replayer shell and select the owning
+pane (`APP_HASH_SUBVIEWS` maps `#replayerSection` / `#replayerPage` to
+`replayer-decision`) before focusing, since the shell never scrolls.
 
 A list that cannot fit the constrained shell is **paginated, not scrolled**: the
 Review inbox is painted one bounded page at a time by `renderReviewInboxPage`,
@@ -101,7 +117,7 @@ element selector and never a view shell:
 
 | Selector (`APP_ALLOWED_SCROLL_ZONES`) | Scope | Kind |
 | --- | --- | --- |
-| `.app-scroll-zone` | desktop | bounded list / panel (Trainer rail tabs, Trainer test log, Spot Lab opponents, Replayer controls/timeline column and contextual panel) |
+| `.app-scroll-zone` | desktop | bounded list / panel (Trainer rail tabs, Trainer test log, Spot Lab opponents, Replayer controls/timeline column and contextual panes Décision / Ranges / Détails) |
 | `.app-canvas-pane` | desktop | bounded canvas (Trainer table, Replayer table column) |
 | `.app-scroll-x` | desktop | bounded table, horizontal overflow only |
 | `.street-timeline-list` | desktop | bounded list (one street of events) |
@@ -142,6 +158,10 @@ every mode, Home included:
 - A deep link that targets a pane living inside a sub-view must select the owning
   tab first: `APP_HASH_SUBVIEWS` + `activateAppSubviewForTarget(id)`, because the
   shell never scrolls to reveal the pane.
+- The Replayer anchors are mapped to their owning contextual pane:
+  `APP_HASH_SUBVIEWS` maps `#replayerSection` and `#replayerPage` to
+  `replayer-decision`, so `focusAppSection(id)` selects that tab *before*
+  focusing the target — the deep link never scrolls the shell.
 - `[data-home-back]` controls (`.app-view-back`) return to Home through
   `goHome()`.
 - `state.appView` is persisted through the prefs whitelist and restored on load;
@@ -165,6 +185,13 @@ computed and never reschedule an engine computation:
   per view: `window.pokerComputeScheduler.hold('replayer',mount==='replayer')` and
   `hold('training',mount==='training')` pause the background lane while an
   immersive view is mounted and release it when the view is left.
+- Selecting a sub-view tab is likewise a pure visibility toggle:
+  `activateAppSubview(name)` only sets `hidden` / `aria-selected` / `tabindex`
+  inside the owning shell, so it contains no `scheduleAutoCalculate`, no
+  `scheduleBackgroundReviewScoring`, no `startSeatEquityCalculation` and no
+  re-render of a pane. The Replayer panes are painted by the same
+  `renderVisualReplay()` / `renderHistoryReplay()` passes that already run for
+  the displayed step and hand.
 - Only an actual input change (hand, board, opponents, trainer mode, trials, …)
   calls `scheduleAutoCalculate()`.
 

@@ -343,6 +343,22 @@
     scroll-margin-top:18px
   }
   #replayerSection .hh-visual,#replayerSection .hh-replay{width:100%}
+  /* #394 T2 — panneau contextuel du Replayer : sous-vues Décision / Ranges /
+     Détails. Les onglets réutilisent le pattern `.app-subviews` /
+     `.app-subview-tab` / `.app-subview-panel` ; ces règles ne stylent que le
+     contenu propre aux panneaux. Activer un onglet ne fait que basculer
+     `hidden` : aucun panneau n'est (re)rendu, aucun calcul n'est déclenché. */
+  #replayerContextPanel .app-subviews{margin:0 0 8px;gap:4px}
+  #replayerContextPanel .app-subview-tab{padding:7px 10px}
+  .app-subview-tab:focus-visible{outline:2px solid rgba(92,225,185,.78);outline-offset:2px}
+  .replayer-context-pane{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#0d1527}
+  .replayer-context-empty{font-size:11px;color:var(--muted)}
+  .replayer-context-note{font-size:10px;color:var(--muted)}
+  .replayer-range-row{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#0f1729}
+  .replayer-range-main{display:flex;align-items:center;gap:7px;min-width:0;flex:1 1 150px}
+  .replayer-range-name{font-size:12px;font-weight:850;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .replayer-range-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap}
+  .replayer-range-row .population-range-btn{flex:0 0 auto;width:auto}
   .hh-visual{margin-top:10px;border:1px solid var(--border);border-radius:12px;background:#0d1527;padding:10px}
   .hh-visual-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
   .hh-visual-title{font-size:12px;font-weight:850;color:var(--text)}
@@ -1174,15 +1190,18 @@
     /* #394 T5 : le Training est une coque dédiée à hauteur fixe. Ses règles de
        coque (100dvh, corps contraint, table + rail ajustés) vivent avec les
        primitives de sa table, dans `site/trainer.css` : une seule autorité. */
-    /* #394 T1 — coque Replayer : trois colonnes fixes dans une seule coque,
+    /* #394 T1/T2 — coque Replayer : trois colonnes fixes dans une seule coque,
        sans empilement vertical du contenu de replay :
          [ timeline/actions + contrôles ] [ table ] [ panneau contextuel ].
+       La troisième colonne est un panneau contextuel à onglets
+       Décision / Ranges / Détails (`#replayerContextPanel`) : les trois
+       panneaux sont rendus une seule fois, un seul est visible à la fois.
        `#hhVisualReplay` reste le panneau rendu par `renderVisualReplay()` et
        `display:contents` laisse ses deux colonnes prendre place dans la grille ;
        aucun de ces blocs n'est un substitut de coque (pas de scroll de vue).
        Les zones réellement bornées réutilisent les classes déjà déclarées dans
        `APP_ALLOWED_SCROLL_ZONES` : `.app-scroll-zone` (colonne contrôles/flux et
-       détail) et `.app-canvas-pane` (scène de table). */
+       panneaux contextuels) et `.app-canvas-pane` (scène de table). */
     #replayerSection{
       flex:1 1 auto;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);
       grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px);
@@ -1201,15 +1220,16 @@
     #replayerSection .replayer-col-left .hh-replayer-controls button{min-width:0;padding:7px 8px}
     #replayerSection .replayer-col-left .hh-replayer-range{flex:0 0 auto;min-width:0;margin:0}
     #replayerSection .replayer-col-left .hh-visual-step{margin:0}
-    #replayerSection .replayer-col-left .replay-action-banner{margin:0;min-height:0;padding:6px 8px}
     #replayerSection .replayer-col-left .street-timeline{margin:0}
     /* La scène partage la largeur avec deux colonnes : on resserre la marge
        réservée aux équités de siège pour qu'aucun bloc ne déborde de la colonne. */
     #replayerSection .replayer-col-center .poker-table-wrap{padding-right:170px}
-    /* Colonne droite : conteneur du panneau contextuel (rempli par T2) ; le
-       détail de main reste borné par `.app-scroll-zone`, jamais par la coque. */
+    /* Colonne droite : panneau contextuel à onglets (Décision / Ranges /
+       Détails). Chaque panneau reste borné par `.app-scroll-zone`, jamais par
+       la coque ; un seul est visible (`hidden`) et activer un onglet ne fait
+       que basculer cette visibilité (aucun panneau n'est recalculé). */
     #replayerSection>#replayerContextPanel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-    #replayerSection>#replayerContextPanel>#hhReplayDetail{flex:1 1 auto;min-height:0;margin:0}
+    #replayerSection>#replayerContextPanel>.app-subview-panel{flex:1 1 auto;min-height:0;margin:0}
     /* Une seule colonne de streets dans le panneau contextuel : deux colonnes
        écraseraient les lignes d'action dans une colonne de 240-340px. */
     #replayerSection>#replayerContextPanel .hh-streets{grid-template-columns:1fr}
@@ -1757,15 +1777,26 @@
       </div>
     </div>
     <div id="replayerSection">
-      <!-- #394 T1 : coque Replayer à 3 colonnes fixes (timeline/actions | table |
-           panneau contextuel). Les deux panneaux sont visibles simultanément :
-           plus de rangée d'onglets `replay-table` / `replay-detail` à basculer.
-           `#hhVisualReplay` reste le panneau rendu par `renderVisualReplay()` ;
-           ses deux colonnes participent à la grille de la coque (voir le
-           `@media(min-width:901px)` de la section « dedicated replayer view »). -->
-      <div id="hhVisualReplay" class="hh-visual app-subview-panel mode-hidden" data-app-subview-panel="replay-table"></div>
+      <!-- #394 T1/T2 : coque Replayer à 3 colonnes fixes (timeline/actions |
+           table | panneau contextuel). `#hhVisualReplay` reste le panneau rendu
+           par `renderVisualReplay()` ; ses deux colonnes participent à la
+           grille de la coque (voir le `@media(min-width:901px)` de la section
+           « dedicated replayer view ») et ne sont jamais pilotées par un onglet,
+           sinon sélectionner un onglet viderait la timeline et la table.
+           La troisième colonne est un panneau contextuel à onglets
+           Décision / Ranges / Détails : les trois panneaux sont rendus une seule
+           fois par le runtime, un seul est visible, et activer un onglet ne fait
+           que basculer `hidden` (aucun recalcul, aucun id dupliqué). -->
+      <div id="hhVisualReplay" class="hh-visual mode-hidden"></div>
       <aside id="replayerContextPanel" class="replayer-context-panel" aria-label="Panneau contextuel du replayer">
-        <div id="hhReplayDetail" class="hh-replay app-scroll-zone app-subview-panel mode-hidden" data-app-subview-panel="replay-detail"></div>
+        <div class="app-subviews" role="tablist" aria-label="Sous-vues du Replayer">
+          <button type="button" class="app-subview-tab" id="replayerDecisionTab" role="tab" aria-selected="true" aria-controls="replayerDecisionPanel" data-app-subview="replayer-decision">Décision</button>
+          <button type="button" class="app-subview-tab" id="replayerRangesTab" role="tab" aria-selected="false" aria-controls="replayerRangesPanel" data-app-subview="replayer-ranges" tabindex="-1">Ranges</button>
+          <button type="button" class="app-subview-tab" id="replayerDetailsTab" role="tab" aria-selected="false" aria-controls="hhReplayDetail" data-app-subview="replayer-details" tabindex="-1">Détails</button>
+        </div>
+        <div id="replayerDecisionPanel" class="replayer-context-pane app-scroll-zone app-subview-panel" role="tabpanel" aria-labelledby="replayerDecisionTab" data-app-subview-panel="replayer-decision"></div>
+        <div id="replayerRangesPanel" class="replayer-context-pane app-scroll-zone app-subview-panel" role="tabpanel" aria-labelledby="replayerRangesTab" data-app-subview-panel="replayer-ranges" hidden></div>
+        <div id="hhReplayDetail" class="hh-replay app-scroll-zone app-subview-panel mode-hidden" role="tabpanel" aria-labelledby="replayerDetailsTab" data-app-subview-panel="replayer-details" hidden></div>
       </aside>
     </div>
   </div>
@@ -1936,6 +1967,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       strategyPagePopulation=$("strategyPagePopulation"), strategyPageStrategy=$("strategyPageStrategy"), strategyPageSource=$("strategyPageSource"),
       strategyPageEditorLink=$("strategyPageEditorLink"), heroRangesOpenBtn=$("heroRangesOpenBtn"),
       replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
+      replayerContextPanel=$("replayerContextPanel"), replayerDecisionPanel=$("replayerDecisionPanel"), replayerRangesPanel=$("replayerRangesPanel"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
       hhListPager=$("hhListPager"), hhPageInfo=$("hhPageInfo"), hhPagePrev=$("hhPagePrev"), hhPageNext=$("hhPageNext"),
@@ -5842,8 +5874,9 @@ function replaySeatHtml(player,step,hand){
 
   const actionType=st.lastActionType||"";
   const amountText=replayActionAmountText(step,player.name);
-  const populationRangeButton=player.name===hand.heroName ? "" :
-    `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range adverse estimée à cette étape">Range adverse</button>`;
+  // Single rendering authority for the opponent-range trigger: the Ranges pane
+  // of the contextual panel reuses the exact same helper (see T2).
+  const populationRangeButton=player.name===hand.heroName ? "" : populationRangeButtonHtml(player);
 
   const actionHtml=actionType ? `<div class="seat-action">
     ${amountText?`<div class="seat-action-main"><span class="seat-action-amount">${escapeHtml(amountText)}</span></div>`:""}
@@ -6176,6 +6209,60 @@ function handleReplayShortcut(e){
   }
 }
 
+/* #394 T2 — Replayer contextual panel (right column).
+   The three panes are painted once per replay repaint inside
+   `renderVisualReplay()`; selecting a tab only toggles `hidden` through
+   `activateAppSubview`, so a tab never schedules a computation. Every pane
+   reuses an existing render instead of duplicating one:
+     - Décision : `replayActionBannerHtml` + `safeActionAnalysisHtml` for the
+       displayed step (the same helpers as the street feed);
+     - Ranges   : the `data-population-player` trigger
+       (`populationRangeButtonHtml`, the single rendering authority also used by
+       the table seats) that opens the existing opponent-range modal;
+     - Détails  : `renderHistoryReplay()` / `#hhReplayDetail`, the hand's
+       street-by-street detail.
+   No pane introduces a new DOM id, and no pane re-renders another one. */
+function populationRangeButtonHtml(player){
+  if(!player) return "";
+  return `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range adverse estimée à cette étape">Range adverse</button>`;
+}
+function replayerDecisionPanelHtml(step){
+  if(!step) return `<div class="replayer-context-empty">Aucune étape de replay disponible.</div>`;
+  const banner=replayActionBannerHtml(step);
+  const analysis=safeActionAnalysisHtml(state.replayIndex,step);
+  if(!banner&&!analysis) return `<div class="replayer-context-empty">Aucune décision à cette étape : distribution des cartes.</div>`;
+  return `<div class="replayer-context-note">Décision affichée · étape ${state.replayIndex+1}/${state.replaySteps.length}</div>${banner}${analysis}`;
+}
+function replayerRangesPanelHtml(hand){
+  if(!state.hhMode||!hand) return "";
+  const opponents=[...(hand.players||[])].filter(p=>p.name!==hand.heroName).sort((a,b)=>a.seat-b.seat);
+  if(!opponents.length) return `<div class="replayer-context-empty">Aucun adversaire dans cette main.</div>`;
+  // Read-only reuse of the seat equities already produced for the displayed
+  // step: the pane never estimates a range by itself (the modal does that on
+  // demand), so switching to "Ranges" cannot trigger a computation.
+  const eq=state.seatEquities||{};
+  const pending=eq.status==="running";
+  const rows=opponents.map(player=>{
+    const known=replayKnownHandHtml(player,hand,{small:true});
+    const hasRange=!!eq.hasRange?.[player.name];
+    const value=eq.range?.[player.name];
+    const equityText=pending?"…":(hasRange&&Number.isFinite(value)?fmtPct(value):"—");
+    return `<div class="replayer-range-row">
+      <div class="replayer-range-main">
+        <span class="replayer-range-name" title="${escapeHtml(player.name)}">${escapeHtml(player.name)}</span>
+        <span class="tiny">${escapeHtml(player.hhPosition||("Seat "+player.seat))}</span>
+        ${known?`<span class="known-hand-compact">${known}</span>`:""}
+      </div>
+      <div class="replayer-range-meta">
+        <span>Équité range</span>
+        <span><b>${escapeHtml(equityText)}</b></span>
+      </div>
+      ${populationRangeButtonHtml(player)}
+    </div>`;
+  }).join("");
+  return `<div class="replayer-context-note">Ranges adverses estimées à l’étape affichée. « Range adverse » ouvre la grille 169, les combos exacts et l’historique de conditionnement du posterior.</div>${rows}`;
+}
+
 function renderVisualReplay(){
   renderFloatingEquity();
   if(!hhVisualReplay) return;
@@ -6184,6 +6271,8 @@ function renderVisualReplay(){
     stopReplayTimer();
     hhVisualReplay.classList.add("mode-hidden");
     hhVisualReplay.innerHTML="";
+    if(replayerDecisionPanel) replayerDecisionPanel.innerHTML="";
+    if(replayerRangesPanel) replayerRangesPanel.innerHTML="";
     return;
   }
 
@@ -6210,10 +6299,11 @@ function renderVisualReplay(){
     : state.seatEquities.status==="running"
       ? `Recalcul des équités pour cette étape (${escapeHtml(step?.label||"")})…`
       : `Équités calculées pour l'étape affichée (${escapeHtml(step?.label||"")}) et son board exact · « adversaires réels » utilise les cartes HH connues et conserve la range pour les mains inconnues.`;
-  /* #394 T1 — le contenu de replay est peint en deux colonnes seulement
+  /* #394 T1/T2 — le contenu de replay est peint en deux colonnes seulement
      (contrôles + timeline/actions, puis scène de table) ; la troisième colonne
-     de la coque est le panneau contextuel `#replayerContextPanel`. Aucun
-     calcul nouveau : même rendu, même `state`, seule la coque change. */
+     de la coque est le panneau contextuel `#replayerContextPanel`, dont les
+     trois sous-vues sont remplies juste après. Aucun calcul nouveau : même
+     rendu, même `state`, seuls la coque et le panneau contextuel changent. */
   hhVisualReplay.innerHTML=`<div class="replayer-col replayer-col-left app-scroll-zone">
     <div class="hh-visual-top">
       <div class="hh-visual-title">Replayer visuel de la main <span class="tiny" title="Raccourcis clavier">· ←/→ étape · ↑ début · ↓ fin · Espace lecture/pause</span></div>
@@ -6231,7 +6321,6 @@ function renderVisualReplay(){
       <span class="tiny">${stepNo}/${stepCount}</span>
     </div>
     <div class="hh-visual-step">${escapeHtml(step?.label||"")} · Pot ${escapeHtml(potText)}</div>
-    ${replayActionBannerHtml(step)}
     ${replayStreetTimelineHtml(step,state.replayIndex)}
   </div>
   <div class="replayer-col replayer-col-center app-canvas-pane">
@@ -6250,6 +6339,9 @@ function renderVisualReplay(){
       </div>
     </div>
   </div>`;
+
+  if(replayerDecisionPanel) replayerDecisionPanel.innerHTML=replayerDecisionPanelHtml(step);
+  if(replayerRangesPanel) replayerRangesPanel.innerHTML=replayerRangesPanelHtml(h);
 
   const startBtn=hhVisualReplay.querySelector("#replayStartBtn");
   const prevBtn=hhVisualReplay.querySelector("#replayPrevBtn");
@@ -6284,7 +6376,14 @@ function renderVisualReplay(){
     el.addEventListener('click',e=>{ if(e.target.closest('button,a,input,select,textarea,summary,details')) return; open(); });
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
   });
-  hhVisualReplay.querySelectorAll("[data-population-player]").forEach(btn=>{
+  /* #394 T2 — the `data-population-player` triggers exist on the table seats and
+     in the Ranges pane; both open the same opponent-range modal through this
+     single handler (no duplicated rendering, no duplicated id). */
+  const populationTriggers=[
+    ...hhVisualReplay.querySelectorAll("[data-population-player]"),
+    ...(replayerContextPanel?replayerContextPanel.querySelectorAll("[data-population-player]"):[])
+  ];
+  populationTriggers.forEach(btn=>{
     btn.onclick=e=>{
       e.stopPropagation();
       openPopulationRangeModal(btn.dataset.populationPlayer);
@@ -6766,7 +6865,7 @@ function updateAppView({scrollTop=false}={}){
    un substitut de coque de vue (pas de scroll global, pas de vue défilante).
    tests/trainer/test_desktop_accessibility_contract.py vérifie cette liste. */
 const APP_ALLOWED_SCROLL_ZONES=[
-  {selector:".app-scroll-zone",scope:"desktop",kind:"liste / panneau borné",reason:"Listes et panneaux d'onglet bornés en lecture : journal de test du Trainer (max-height:180px), liste d'adversaires du Spot Lab, panneaux du rail Trainer, colonne contrôles/timeline et détail de main du Replayer. Bornés par la coque (flex + min-height:0), jamais un substitut de vue."},
+  {selector:".app-scroll-zone",scope:"desktop",kind:"liste / panneau borné",reason:"Listes et panneaux d'onglet bornés en lecture : journal de test du Trainer (max-height:180px), liste d'adversaires du Spot Lab, panneaux du rail Trainer, colonne contrôles/timeline et panneaux contextuels (Décision / Ranges / Détails) du Replayer. Bornés par la coque (flex + min-height:0), jamais un substitut de vue."},
   {selector:".app-canvas-pane",scope:"desktop",kind:"canvas borné",reason:"Canvas interactif borné (table Trainer / colonne table du Replayer) : géométrie de sièges fixe, borné par la coque et resté atteignable sur écran court."},
   {selector:".app-scroll-x",scope:"desktop",kind:"table bornée",reason:"Table de décision bornée (alternatives préflop, 4 colonnes) : débordement horizontal seulement."},
   {selector:".street-timeline-list",scope:"desktop",kind:"liste bornée",reason:"Feed horizontal des événements de la street courante : liste bornée à une street."},
@@ -6780,7 +6879,10 @@ const APP_HASH_SUBVIEWS={
   equityLabSection:"spotlab-situation",opponentsSection:"spotlab-situation",rangesSection:"spotlab-situation",
   cardsSection:"spotlab-board",rangeDisplaySection:"spotlab-range",equitySection:"spotlab-equity",
   trainerPage:"trainer-coaching",trainerTable:"trainer-coaching",trainerRecommendation:"trainer-coaching",
-  replayerSection:"replay-table",replayerPage:"replay-table"
+  // #394 T2 — the Replayer shell itself and its two documented anchors belong to
+  // the owning contextual pane (Décision). A deep link selects that tab before
+  // focusing instead of scrolling the shell into view.
+  replayerSection:"replayer-decision",replayerPage:"replayer-decision"
 };
 function appSubviewForHashTarget(id){
   return APP_HASH_SUBVIEWS[String(id||"")]||null;
@@ -6827,9 +6929,16 @@ document.addEventListener("click",e=>{
   activateAppSubview(tab.dataset.appSubview);
 });
 document.addEventListener("keydown",e=>{
-  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return;
   const tab=e.target instanceof Element?e.target.closest("[data-app-subview]"):null;
   if(!tab) return;
+  // Enter / Space activate the focused tab, mirroring the native button
+  // activation for users who reach the tab row with the keyboard.
+  if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){
+    e.preventDefault();
+    activateAppSubview(tab.dataset.appSubview);
+    return;
+  }
+  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return;
   const siblings=appSubviewTabs().filter(candidate=>candidate.parentElement===tab.parentElement);
   const index=siblings.indexOf(tab);
   if(index<0) return;
