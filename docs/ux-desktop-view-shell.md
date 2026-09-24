@@ -217,6 +217,13 @@ entry point**:
   `run_driver_smokes()` from the `__main__` entry point
   (`subprocess.run([sys.executable, str(script)], check=True)`).
   `tests/trainer/test_smoke_orchestration_contract.py` guards that shape;
+- the #394 desktop modes smoke (`tests/trainer/smoke_modes_desktop.py`) is one of
+  those registered driver smokes, so it runs **by default** through the frozen
+  entry point: every `python3 tests/trainer/smoke_trainer.py` invocation, CI
+  included, drives the six modes at 1500x1000 and 1366x768 and fails (never
+  skips) when Playwright is unavailable. It adds no workflow step — the modes
+  smoke is exercised through the same frozen entry point as the numeric smokes,
+  not as an opt-in measurement;
 - the shell's own browser measurement is **opt-in** inside
   `tests/trainer/test_desktop_accessibility_contract.py` (`--browser` or
   `DESKTOP_SHELL_BROWSER_CHECK=1`): it serves `site/index.html` locally and
