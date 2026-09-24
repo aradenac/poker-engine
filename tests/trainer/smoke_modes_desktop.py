@@ -8,6 +8,16 @@ reference viewport**, that the document never scrolls globally:
 `1366x768`. A mode that overflows fails explicitly with the measured values, so
 the audit is never silently satisfied by a clipped shell.
 
+The Review import surface is measured at the same time, and for the same reason:
+the shell never scrolls, so a pane that is only *rendered* can still be clipped
+and unreachable. Review therefore lands on its Pilotage pane, the Import pane is
+opened by a real click on `#reviewImportTab`, and every import target
+(`#reviewImportTab`, the `Importer mes mains` label that proxies the visually
+hidden `#hhFileInput`, the advanced details summary, `#hhWatchBtn` and, once the
+details is open, `#hhBenchmarkExportBtn`) is resolved with
+`document.elementFromPoint` at the centre of its box and must be visible, inside
+the viewport and inside the shell. The clicks that follow are real mouse clicks.
+
 Covered journeys (each on a fresh context, both viewports):
 
 * Accueil → Review → Replayer → Review: the `kts_sb_two_limp_iso4_three_calls`
@@ -111,6 +121,75 @@ REPLAYER_TABS_JS = """() => {
     hidden
   };
 }"""
+
+# #394 T1 — the Review import surface is measured, never deduced: each target is
+# resolved with the very hit-test a real mouse click performs
+# (`document.elementFromPoint` at the centre of its box) and must be visible,
+# inside the viewport and inside the bounded `review` shell. A clipped target
+# (the frozen smoke failure this fixes) reports `hit: false` / `inShell: false`.
+IMPORT_HIT_TEST_JS = """(selectors) => {
+  const shell = document.querySelector('[data-view-shell="review"]');
+  const shellBox = shell ? shell.getBoundingClientRect() : null;
+  const out = {};
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (!el) {
+      out[selector] = { present: false };
+      continue;
+    }
+    const box = el.getBoundingClientRect();
+    const x = box.left + box.width / 2, y = box.top + box.height / 2;
+    const at = document.elementFromPoint(x, y);
+    out[selector] = {
+      present: true,
+      visible: box.width > 0 && box.height > 0,
+      inViewport: box.top >= 0 && box.left >= 0 && box.bottom <= innerHeight && box.right <= innerWidth,
+      inShell: !!shellBox && box.top >= shellBox.top - 0.5 && box.bottom <= shellBox.bottom + 0.5,
+      hit: !!at && (at === el || el.contains(at) || at.contains(el)),
+      at: at ? (at.id || (typeof at.className === 'string' ? at.className : '') || at.tagName) : null,
+      box: { top: Math.round(box.top), bottom: Math.round(box.bottom), left: Math.round(box.left), right: Math.round(box.right) }
+    };
+  }
+  return out;
+}"""
+
+# The import surface itself: the Import tab, the primary label that proxies the
+# visually hidden `#hhFileInput` (`input[type=file]{display:none}`) and the
+# watcher button. `#hhBenchmarkExportBtn` is added once the advanced details is
+# open, since a closed `<details>` hides its own content.
+IMPORT_SURFACE_SELECTORS = (
+    "#reviewImportTab",
+    'label[for="hhFileInput"]',
+    ".hh-import-advanced > summary",
+    "#hhWatchBtn",
+)
+IMPORT_ADVANCED_SELECTOR = "#hhBenchmarkExportBtn"
+
+
+async def _assert_import_surface_hit_testable(
+    page, selectors: tuple[str, ...], step: str, width: int, height: int, audit: list[dict]
+) -> dict:
+    report = await page.evaluate(IMPORT_HIT_TEST_JS, list(selectors))
+    audit.append(
+        {
+            "mode": "review",
+            "viewport": f"{width}x{height}",
+            "surface": step,
+            "hit_test": report,
+        }
+    )
+    for selector in selectors:
+        entry = report[selector]
+        assert entry["present"], (
+            f"surface d'import introuvable: {selector} ({step}, {width}x{height})"
+        )
+        for field in ("visible", "inViewport", "inShell", "hit"):
+            assert entry[field], (
+                f"surface d'import non atteignable: {selector}.{field}=false "
+                f"({step}, {width}x{height}) — at={entry['at']} box={entry['box']} "
+                "(verdict mesuré par elementFromPoint + boîte, jamais déduit)"
+            )
+    return report
 
 HIDDEN_DECISION = {"replayer-decision": False, "replayer-ranges": True, "replayer-details": True}
 HIDDEN_RANGES = {"replayer-decision": True, "replayer-ranges": False, "replayer-details": True}
@@ -261,9 +340,137 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         await _measure(page, "spotlab", width, height, audit)
         await _back_to_home(page, "spotlab")
 
-        # 2. Accueil → Review.
+        # 2. Accueil → Review. Review lands on its Pilotage pane; the import
+        #    surface is its own pane, reached by a real click on the Import tab.
         await page.click('button.mode-card[data-app-view="review"]')
         await _wait_view(page, "review")
+        assert await page.locator("#reviewDashboard").is_visible(), (
+            f"Review doit atterrir sur le panneau Pilotage ({width}x{height})"
+        )
+        assert await page.locator("#historiesSection").is_hidden(), (
+            f"le panneau Import doit être masqué à l'atterrissage ({width}x{height})"
+        )
+        await _measure(page, "review", width, height, audit)
+        await page.click("#reviewImportTab")
+        assert await page.locator("#historiesSection").is_visible(), (
+            f"l'onglet Import doit monter son panneau ({width}x{height})"
+        )
+        assert await page.locator("#reviewDashboard").is_hidden(), (
+            f"un seul panneau de Review est monté à la fois ({width}x{height})"
+        )
+        # A sub-view switch is a pure visibility toggle: the shell still never
+        # scrolls, and the whole import surface is hit-testable at this viewport.
+        await _measure(page, "review", width, height, audit)
+        await _assert_import_surface_hit_testable(
+            page, IMPORT_SURFACE_SELECTORS, "closed", width, height, audit
+        )
+        # The label proxies the visually hidden `#hhFileInput`: a real mouse click
+        # on it must open the picker (no `element.click()` shortcut).
+        assert not await page.locator("#hhFileInput").is_visible(), (
+            f"`#hhFileInput` reste masqué (`input[type=file]{display:none}`); "
+            f"c'est le label qui porte le clic ({width}x{height})"
+        )
+        # `expect_file_chooser` raises if the click does not reach the associated
+        # input, so it is the assertion; no file is selected (the real import goes
+        # through `#hhFileInput` in step 3).
+        async with page.expect_file_chooser():
+            await page.click('label[for="hhFileInput"]')
+        # `#hhWatchBtn` is the third import control and gets a real mouse click too
+        # (never `element.click()`). Headless Chromium cannot show the OS directory
+        # picker, so the handler's picker call is replaced by its own cancellation
+        # path (`AbortError`, exactly what a user closing the dialog produces): the
+        # click then has to land on the button for the status to report it.
+        watch_target = await page.evaluate(
+            """() => {
+              const btn=document.getElementById('hhWatchBtn');
+              const box=btn.getBoundingClientRect();
+              const x=box.left+box.width/2, y=box.top+box.height/2;
+              const at=document.elementFromPoint(x,y);
+              const cap=hhWatchCapability();
+              const driver=cap.hasPicker&&cap.secure&&!cap.embedded;
+              window.__hhWatchPicker=window.showOpenFilePicker;
+              if(driver){
+                window.showOpenFilePicker=()=>Promise.reject(Object.assign(new Error('smoke: picker fermé'),{name:'AbortError'}));
+              }
+              return {x,y,driver,hit:at===btn||btn.contains(at),at:at?(at.id||at.tagName):null};
+            }"""
+        )
+        await page.mouse.click(watch_target["x"], watch_target["y"])
+        watch_result = await page.evaluate(
+            """() => {
+              const watching=!!state.hhWatchTimer||(state.hhWatchHandles||[]).length>0;
+              window.showOpenFilePicker=window.__hhWatchPicker;
+              delete window.__hhWatchPicker;
+              return {watching};
+            }"""
+        )
+        assert watch_target["hit"], (
+            f"`#hhWatchBtn` doit être sous le curseur au point cliqué "
+            f"({width}x{height}) — at={watch_target['at']}"
+        )
+        assert watch_result["watching"] is False, (
+            f"le clic de mesure ne doit démarrer aucune surveillance ({width}x{height})"
+        )
+        if watch_target["driver"]:
+            # The cancellation is written by the async handler, so wait for it
+            # instead of racing the microtask that resolves the rejected picker
+            # promise — then read it back as a measured verdict.
+            await page.wait_for_function(
+                "() => /annul/.test(document.getElementById('hhWatchStatus').textContent)",
+                timeout=5_000,
+            )
+            watch_status = await page.evaluate(
+                "() => document.getElementById('hhWatchStatus').textContent"
+            )
+            assert "annul" in watch_status, (
+                "le vrai clic souris doit atteindre le gestionnaire de « Surveiller mes HH » "
+                f"({width}x{height}) — statut={watch_status}"
+            )
+        # The advanced options must not only exist: once the details is opened by a
+        # real click, its whole row — export button included — is hit-testable.
+        assert not await page.locator(IMPORT_ADVANCED_SELECTOR).is_visible()
+        await page.click(".hh-import-advanced > summary")
+        assert await page.locator(IMPORT_ADVANCED_SELECTOR).is_visible()
+        await _assert_import_surface_hit_testable(
+            page,
+            IMPORT_SURFACE_SELECTORS + (IMPORT_ADVANCED_SELECTOR,),
+            "advanced-open",
+            width,
+            height,
+            audit,
+        )
+        # Real click on the advanced export: with zero hand loaded it only reports
+        # its status (no benchmark is written), so it stays side-effect free here.
+        await page.click(IMPORT_ADVANCED_SELECTOR)
+        await page.click(".hh-import-advanced > summary")
+        assert not await page.locator(IMPORT_ADVANCED_SELECTOR).is_visible()
+
+        # The historical `#historiesSection` deep link (the Accueil « Review »
+        # direct link, also the `#quickNav` entry) selects the Import pane instead
+        # of scrolling the view: back to Pilotage, then through the real anchor.
+        await page.click("#reviewPilotageTab")
+        assert await page.locator("#reviewDashboard").is_visible()
+        await _back_to_home(page, "review")
+        await page.click('#homePage a[href="#historiesSection"]')
+        await _wait_view(page, "review")
+        assert await page.locator("#historiesSection").is_visible(), (
+            f"le deep link #historiesSection doit sélectionner le panneau Import ({width}x{height})"
+        )
+        assert await page.locator("#reviewDashboard").is_hidden(), (
+            f"le deep link ne laisse pas deux panneaux montés ({width}x{height})"
+        )
+        # A hidden scroll is what the shell contract forbids: the bounded boxes must
+        # still report `scrollTop === 0` after the deep link focused the pane (the
+        # 1px tolerance absorbs sub-pixel rounding of a fractional client height; a
+        # real hidden scroll of a clipped pane is orders of magnitude larger).
+        assert await page.evaluate(
+            """() => {
+              const boxes=[document.querySelector('[data-view-shell="review"]'),
+                           document.querySelector('#mainPage .app-view-body'),
+                           document.getElementById('historiesSection')];
+              return boxes.every(box=>!box||box.scrollTop<=1);
+            }"""
+        ), f"aucun défilement caché de coque après le deep link ({width}x{height})"
         await _measure(page, "review", width, height, audit)
 
         # 3. Review → Replayer: a hand is imported through the real file input and
@@ -367,6 +574,20 @@ async def run() -> None:
 
     print("desktop modes overflow audit (document.scrollingElement):")
     for record in audit:
+        if "hit_test" in record:
+            # The import surface verdict is measured too (see
+            # `_assert_import_surface_hit_testable`): `elementFromPoint` at the
+            # centre of each box, printed per target.
+            reached = ", ".join(
+                f"{selector}={'ok' if entry.get('hit') else 'MISS'}"
+                for selector, entry in record["hit_test"].items()
+            )
+            print(
+                "  mode=review    viewport={viewport:<10} import surface[{surface}] hit-test: {reached}".format(
+                    reached=reached, **record
+                )
+            )
+            continue
         print(
             "  mode={mode:<9} viewport={viewport:<10} scrollHeight={scrollHeight} <= clientHeight={clientHeight}".format(
                 **record
@@ -374,7 +595,8 @@ async def run() -> None:
         )
     print(
         "modes desktop smoke: PASS "
-        f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard)"
+        f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard "
+        "+ measured Review import surface)"
     )
 
 

@@ -1173,11 +1173,13 @@
     #homePage{padding:18px 24px 16px}
     .app-view-head{flex:0 0 auto;margin:0 0 10px}
     .app-view-body{flex:1 1 auto;overflow:hidden}
-    #mainPage .app-view-body>.grid,#spotlabPage .app-view-body>.grid{display:flex;flex-direction:column;gap:0;flex:1 1 auto;min-height:0;overflow:hidden}
+    #spotlabPage .app-view-body>.grid{display:flex;flex-direction:column;gap:0;flex:1 1 auto;min-height:0;overflow:hidden}
     #mainPage .app-view-body>.app-subview-panel,#spotlabPage .app-view-body>.grid>.app-subview-panel{flex:1 1 auto;min-height:0;overflow:hidden}
-    /* The Review landing pane pins its compact dashboard and lets the import
-       panel own the remaining height (header + body shell, no page scroll). */
-    #mainPage .app-view-body>.review-dashboard{flex:0 0 auto;margin:8px 0 8px;padding:12px}
+    /* The Review shell is three sibling panes — Pilotage (`#reviewDashboard`),
+       Import (`#historiesSection`) and Inbox (`#handSelectionSection`) — so no
+       pane ever shares the height of the shell with another one. The dashboard
+       pane keeps its compact padding but is bounded like every other pane. */
+    #mainPage .app-view-body>.review-dashboard{margin:0;padding:12px}
     #mainPage .app-view-body>.app-subviews{margin:0 0 8px}
     #historiesSection,#handSelectionSection,#opponentsSection{display:flex;flex-direction:column;overflow:hidden}
     #handSelectionSection>*{flex:0 0 auto}
@@ -1233,18 +1235,6 @@
     /* Une seule colonne de streets dans le panneau contextuel : deux colonnes
        écraseraient les lignes d'action dans une colonne de 240-340px. */
     #replayerSection>#replayerContextPanel .hh-streets{grid-template-columns:1fr}
-  }
-
-  /* Short desktop viewports (e.g. 1366x768): the Review landing pane lays the
-     compact dashboard and the import surface side by side instead of stacking
-     them, so the fixed-height shell never has to clip one of them. */
-  @media(min-width:901px) and (max-height:860px){
-    #mainPage .app-view-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr);gap:12px 14px;overflow:hidden}
-    #mainPage .app-view-body>.app-subviews{grid-column:1/-1;grid-row:1;margin:0}
-    #mainPage .app-view-body>*:not(.app-subviews){grid-row:2;min-height:0}
-    #mainPage .app-view-body>#reviewDashboard{grid-column:1}
-    #mainPage .app-view-body>.grid{grid-column:2}
-    #mainPage .app-view-body>#handSelectionSection{grid-column:1/-1}
   }
 
 </style>
@@ -1533,10 +1523,11 @@
   </div>
   <div class="app-view-body">
   <div class="app-subviews" role="tablist" aria-label="Sous-vues de la Review">
-    <button type="button" class="app-subview-tab" id="reviewPilotageTab" role="tab" aria-selected="true" aria-controls="reviewDashboard" data-app-subview="pilotage">Pilotage &amp; import</button>
+    <button type="button" class="app-subview-tab" id="reviewPilotageTab" role="tab" aria-selected="true" aria-controls="reviewDashboard" data-app-subview="pilotage">Pilotage</button>
+    <button type="button" class="app-subview-tab" id="reviewImportTab" role="tab" aria-selected="false" aria-controls="historiesSection" data-app-subview="import">Import</button>
     <button type="button" class="app-subview-tab" id="reviewInboxTab" role="tab" aria-selected="false" aria-controls="handSelectionSection" data-app-subview="inbox">Inbox de review</button>
   </div>
-  <section id="reviewDashboard" class="review-dashboard app-subview-panel" aria-labelledby="reviewDashboardTitle" aria-live="polite" data-app-subview-panel="pilotage">
+  <section id="reviewDashboard" class="review-dashboard app-subview-panel" role="tabpanel" aria-labelledby="reviewDashboardTitle" aria-live="polite" data-app-subview-panel="pilotage">
     <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">Données insuffisantes</span></div>
     <div class="review-dashboard-metrics">
       <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
@@ -1551,41 +1542,39 @@
     <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
     <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
   </section>
-  <div class="grid">
-    <section id="historiesSection" class="panel wide app-subview-panel" data-app-subview-panel="pilotage" aria-labelledby="reviewPilotageTab">
-      <h2>Review</h2>
-      <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
-      <div class="hh-import-primary">
-        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
-        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
-        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
-      </div>
-      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
-      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
-      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
-      <details class="hh-import-advanced">
-        <summary>Options d’import et outils avancés</summary>
-        <div class="hh-import-advanced-body">
-          <div class="hh-import-row">
-            <div class="field">
-              <label for="hhImportMode">Comportement du prochain import</label>
-              <select id="hhImportMode">
-                <option value="replace">Remplacer les mains chargées</option>
-                <option value="add">Ajouter aux mains chargées</option>
-              </select>
-            </div>
-            <div class="actions">
-              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
-              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-              <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
-              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
-            </div>
+  <section id="historiesSection" class="panel wide app-subview-panel" role="tabpanel" aria-labelledby="reviewImportTab" data-app-subview-panel="import" hidden>
+    <h2>Review</h2>
+    <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
+    <div class="hh-import-primary">
+      <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
+      <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
+      <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
+    </div>
+    <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
+    <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
+    <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
+    <details class="hh-import-advanced">
+      <summary>Options d’import et outils avancés</summary>
+      <div class="hh-import-advanced-body">
+        <div class="hh-import-row">
+          <div class="field">
+            <label for="hhImportMode">Comportement du prochain import</label>
+            <select id="hhImportMode">
+              <option value="replace">Remplacer les mains chargées</option>
+              <option value="add">Ajouter aux mains chargées</option>
+            </select>
           </div>
-          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
+          <div class="actions">
+            <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
+            <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+            <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
+            <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
+          </div>
         </div>
-      </details>
-    </section>
-  </div>
+        <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
+      </div>
+    </details>
+  </section>
 
   <div id="handSelectionSection" class="hh-selection-section panel app-subview-panel" role="tabpanel" aria-labelledby="reviewInboxTab" data-app-subview-panel="inbox" hidden>
         <div class="hh-selection-title">Inbox de review</div>
@@ -6875,7 +6864,11 @@ const APP_ALLOWED_SCROLL_ZONES=[
   {selector:".action-verdict-detail-modal",scope:"dialogue",kind:"dialogue",reason:"Dialogue modal de verdict d'action, hors coque de vue."},
 ];
 const APP_HASH_SUBVIEWS={
-  reviewDashboard:"pilotage",historiesSection:"pilotage",reviewInboxSummary:"pilotage",handSelectionSection:"inbox",reviewInboxNotice:"inbox",
+  // #394 T1 — the Review import surface is its own bounded pane (`import`), so a
+  // deep link to `#historiesSection`/`#reviewInboxSummary` selects that pane
+  // instead of counting on a landing pane that stacked the dashboard and the
+  // import surface in the same shell height. `#reviewDashboard` stays `pilotage`.
+  reviewDashboard:"pilotage",historiesSection:"import",reviewInboxSummary:"import",handSelectionSection:"inbox",reviewInboxNotice:"inbox",
   equityLabSection:"spotlab-situation",opponentsSection:"spotlab-situation",rangesSection:"spotlab-situation",
   cardsSection:"spotlab-board",rangeDisplaySection:"spotlab-range",equitySection:"spotlab-equity",
   trainerPage:"trainer-coaching",trainerTable:"trainer-coaching",trainerRecommendation:"trainer-coaching",
@@ -9845,7 +9838,10 @@ replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
    the list never restarts a computation. */
 $('hhAnalyzeAllBtn').addEventListener('click',()=>{state.reviewAnalyzeAll=true;scheduleBackgroundReviewScoring(0);});
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
-reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
+/* #394 T1 — the CTA lives in the Pilotage pane while the file input lives in the
+   Import pane: the click selects that pane first, so the picker is never opened
+   from an input that is still inside a `hidden` pane. */
+reviewDashboardImportBtn?.addEventListener("click",()=>{activateAppSubview("import");hhFileInput?.click();});
 reviewDashboardReviewBtn?.addEventListener("click",openReviewDashboardReview);
 reviewDashboardLeakBtn?.addEventListener("click",openReviewDashboardLeak);
 reviewDashboardTrainingBtn?.addEventListener("click",openReviewDashboardTraining);

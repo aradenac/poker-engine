@@ -414,7 +414,7 @@ function makeShell(view,subviews){
 const REPLAYER_SUBVIEWS=['replayer-decision','replayer-ranges','replayer-details'];
 const shells=[
   makeShell('replayer',REPLAYER_SUBVIEWS),
-  makeShell('review',['pilotage','inbox']),
+  makeShell('review',['pilotage','import','inbox']),
   makeShell('spotlab',['spotlab-situation','spotlab-board','spotlab-range','spotlab-equity']),
 ];
 const document={
@@ -482,6 +482,7 @@ for(const name of REPLAYER_SUBVIEWS){
   );
   // A neighbouring shell is never toggled.
   assert.equal(review.panels.get('pilotage').hidden,false,'pilotage stays mounted');
+  assert.equal(review.panels.get('import').hidden,false,'import stays mounted');
   assert.equal(review.panels.get('inbox').hidden,false,'inbox stays mounted');
   assert.equal(spotlab.panels.get('spotlab-board').hidden,false,'spotlab stays mounted');
   assertNoCompute(name);
@@ -493,6 +494,18 @@ assert.deepEqual(visiblePanes(review),['inbox'],'review shows its own pane');
 assert.deepEqual(visiblePanes(replayer),['replayer-details'],'the Replayer keeps its own selected pane');
 assert.equal(inboxRenders,1,'only the bounded inbox pane renders on activation');
 assertNoCompute('cross-view activation');
+
+// The Review import surface is a third pane: selecting it is a pure visibility
+// toggle too, and the three Review anchors each own one pane.
+assert.equal(sandbox.appSubviewForHashTarget('reviewDashboard'),'pilotage');
+assert.equal(sandbox.appSubviewForHashTarget('historiesSection'),'import');
+assert.equal(sandbox.appSubviewForHashTarget('reviewInboxSummary'),'import');
+assert.equal(sandbox.appSubviewForHashTarget('handSelectionSection'),'inbox');
+assert.equal(sandbox.activateAppSubviewForTarget('historiesSection'),true);
+assert.deepEqual(visiblePanes(review),['import'],'the import deep link shows the import pane');
+assert.deepEqual(selectedTabs(review),['import'],'the import deep link selects the import tab');
+assert.equal(inboxRenders,1,'activating the import pane does not re-render the inbox');
+assertNoCompute('review import pane');
 
 // Deep links select the owning tab instead of scrolling to the shell.
 assert.equal(sandbox.appSubviewForHashTarget('replayerSection'),'replayer-decision');

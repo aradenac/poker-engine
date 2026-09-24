@@ -227,19 +227,49 @@ def check_desktop_shell_contract() -> None:
     assert 'data-app-subview="' in INDEX and 'data-app-subview-panel="' in INDEX
     assert 'role="tablist"' in INDEX and 'role="tab"' in INDEX
 
-    # #mainPage.wrap (Review) is split into constrained sub-views, and its inbox
-    # is a bounded paginated list instead of a long internal scroll box.
+    # #mainPage.wrap (Review) is split into three constrained sub-views — the
+    # pilotage dashboard, the import surface and the review inbox. Each pane owns
+    # the whole body height on its own, so no pane is stacked with another one in
+    # the bounded shell; the inbox stays a bounded paginated list instead of a
+    # long internal scroll box.
     review = INDEX.split('<div id="mainPage"', 1)[1].split('<div id="strategyPage"', 1)[0]
     assert '<div class="app-view-body">' in review, 'Review must expose a shell body'
-    for subview in ('pilotage', 'inbox'):
+    for subview in ('pilotage', 'import', 'inbox'):
         assert f'data-app-subview="{subview}"' in review, subview
     for panel in ('reviewDashboard', 'historiesSection', 'handSelectionSection'):
         assert f'id="{panel}"' in review, panel
-    # The landing pane keeps the dashboard and the import surface together: a
-    # deep link or the historical `#historiesSection` anchor must not hide it.
-    assert 'id="historiesSection" class="panel wide app-subview-panel" data-app-subview-panel="pilotage"' in review
-    assert 'id="reviewPilotageTab"' in review and 'aria-selected="true"' in review
-    assert 'data-app-subview-panel="inbox" hidden' in review
+    # Tab ⇄ pane pairing is exact: the dashboard is the landing (`pilotage`) pane,
+    # the import surface is its own pane and the inbox keeps the third one. The
+    # import pane is the only landing-invisible one besides the inbox, so a deep
+    # link always selects the owning tab instead of relying on a stacked pane.
+    assert (
+        '<section id="reviewDashboard" class="review-dashboard app-subview-panel"'
+        ' role="tabpanel" aria-labelledby="reviewDashboardTitle" aria-live="polite"'
+        ' data-app-subview-panel="pilotage">'
+    ) in review
+    assert (
+        '<section id="historiesSection" class="panel wide app-subview-panel"'
+        ' role="tabpanel" aria-labelledby="reviewImportTab"'
+        ' data-app-subview-panel="import" hidden>'
+    ) in review
+    assert (
+        '<div id="handSelectionSection" class="hh-selection-section panel app-subview-panel"'
+        ' role="tabpanel" aria-labelledby="reviewInboxTab"'
+        ' data-app-subview-panel="inbox" hidden>'
+    ) in review
+    assert (
+        '<button type="button" class="app-subview-tab" id="reviewPilotageTab"'
+        ' role="tab" aria-selected="true" aria-controls="reviewDashboard"'
+        ' data-app-subview="pilotage">Pilotage</button>'
+    ) in review
+    assert (
+        '<button type="button" class="app-subview-tab" id="reviewImportTab"'
+        ' role="tab" aria-selected="false" aria-controls="historiesSection"'
+        ' data-app-subview="import">Import</button>'
+    ) in review
+    # The import surface is not wrapped in a shared `.grid` container: its pane is
+    # a direct child of the shell body, exactly like the dashboard and the inbox.
+    assert '<div class="grid">' not in review, 'the import pane must not share a container'
     assert 'id="hhListPager"' in review and 'id="hhPagePrev"' in review and 'id="hhPageNext"' in review
     assert 'class="hh-selection-section panel app-subview-panel"' in review
     assert 'max-height:310px;overflow:auto' not in INDEX

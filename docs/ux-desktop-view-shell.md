@@ -56,7 +56,7 @@ declared inside `max-width` blocks.
 | Mode (Accueil) | `state.appView` | Shell (`data-view-shell`) | Sub-views (`data-app-subview`) |
 | --- | --- | --- | --- |
 | Accueil | `home` | `home` | — (aucune : écran des modes de travail) |
-| Review | `review` | `review` | `pilotage`, `inbox` |
+| Review | `review` | `review` | `pilotage`, `import`, `inbox` |
 | Spot Lab | `spotlab` | `spotlab` | `spotlab-situation`, `spotlab-board`, `spotlab-range`, `spotlab-equity` |
 | Training | `training` | `training` | `trainer-coaching`, `trainer-session`, `trainer-profiles`, `trainer-test` |
 | Replayer | `replayer` | `replayer` | `replayer-decision`, `replayer-ranges`, `replayer-details` |
@@ -68,6 +68,26 @@ plus a `[data-app-subview-panel="<name>"]` pane; the inactive panes are
 returns `node.closest("[data-view-shell]")`, and `activateAppSubview(name)`
 toggles only the panels of that scope, so a tab in one view can never blank a
 neighbouring view.
+
+The Review shell exposes its excess as three sibling panes of equal standing —
+Pilotage (`#reviewDashboard`), Import (`#historiesSection`) and Inbox
+(`#handSelectionSection`) — each a direct child of `.app-view-body` that owns the
+whole bounded body height on its own. A pane therefore never has to share the
+`100dvh` shell with another pane: the import surface (label
+`label[for="hhFileInput"]`, `#hhFileInput`, `#hhWatchBtn`, and the
+`Options d'import et outils avancés` details with `#hhImportMode`,
+`#hhClearBtn`, `#hhWatchStopBtn`, `#hhAnalyzeAllBtn`, `#hhBenchmarkExportBtn`)
+stays **visible and hit-testable** at 1500x1000 and 1366x768, including while the
+advanced details is open. The dashboard is the landing pane
+(`aria-selected="true"`); the import and inbox
+panes are `hidden` until their tab is selected — a real click on
+`#reviewImportTab`, or a deep link routed through `APP_HASH_SUBVIEWS`
+(`#historiesSection` / `#reviewInboxSummary` → `import`, `#reviewDashboard` →
+`pilotage`, `#handSelectionSection` → `inbox`). The dashboard CTA
+`#reviewDashboardImportBtn` selects the Import pane *before* calling
+`hhFileInput.click()`, so the picker is never opened from an input sitting inside
+a `hidden` pane. Switching panes only toggles `hidden`: no pane re-renders and no
+computation is scheduled (§5).
 
 The Replayer is a fixed three-column grid (`#replayerSection`,
 `grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px)`)
@@ -162,6 +182,12 @@ every mode, Home included:
   `APP_HASH_SUBVIEWS` maps `#replayerSection` and `#replayerPage` to
   `replayer-decision`, so `focusAppSection(id)` selects that tab *before*
   focusing the target — the deep link never scrolls the shell.
+- The Review anchors are mapped to their owning pane the same way:
+  `APP_HASH_SUBVIEWS` maps `#reviewDashboard` to `pilotage`,
+  `#historiesSection` / `#reviewInboxSummary` to `import` and
+  `#handSelectionSection` / `#reviewInboxNotice` to `inbox`, so the historical
+  `#historiesSection` anchor (the `#quickNav` Review entry and the Home banner
+  link) reveals the import pane instead of scrolling a view that never scrolls.
 - `[data-home-back]` controls (`.app-view-back`) return to Home through
   `goHome()`.
 - `state.appView` is persisted through the prefs whitelist and restored on load;
@@ -224,6 +250,34 @@ entry point**:
   skips) when Playwright is unavailable. It adds no workflow step — the modes
   smoke is exercised through the same frozen entry point as the numeric smokes,
   not as an opt-in measurement;
+- the import surface of Review is reached through the real UI by both smokes, and
+  measured at both reference viewports, never deduced. `smoke_trainer.py` enters
+  Review, asserts that the Pilotage pane is the landing pane, opens the Import
+  pane with a real click on `#reviewImportTab`, and only then clicks the
+  advanced details summary. `smoke_modes_desktop.py` additionally resolves every
+  import target (`#reviewImportTab`, the `Importer mes mains` label, the details
+  summary, `#hhWatchBtn`, and `#hhBenchmarkExportBtn` once the details is open)
+  with `document.elementFromPoint` at the centre of its box, asserts
+  `visible` / `inViewport` / `inShell` / `hit`, and then performs the real mouse
+  clicks (the label really opens the file chooser). A clipped target fails with
+  its measured box instead of passing on a JS shortcut;
+- in a sandbox without the Playwright runtime the frozen smokes fail explicitly,
+  with the exact command and output below, and never write a `PASS`. The frozen
+  CI job `browser-smoke` of `.github/workflows/trainer-smoke.yml` stays the
+  authority for the smoke itself.
+
+```text
+$ python3 tests/trainer/smoke_modes_desktop.py
+smoke_modes_desktop: Playwright is unavailable (ModuleNotFoundError("No module named 'playwright'")). Install the locked dependencies (requirements.lock.txt) and the pinned browser runtime (python3 tools/repro_ci_browser.py install) before running this smoke.
+EXIT=1
+$ python3 tests/trainer/smoke_trainer.py
+Traceback (most recent call last):
+  File "tests/trainer/smoke_trainer.py", line 10, in <module>
+    from playwright.async_api import async_playwright
+ModuleNotFoundError: No module named 'playwright'
+EXIT=1
+```
+
 - the shell's own browser measurement is **opt-in** inside
   `tests/trainer/test_desktop_accessibility_contract.py` (`--browser` or
   `DESKTOP_SHELL_BROWSER_CHECK=1`): it serves `site/index.html` locally and
@@ -258,6 +312,11 @@ entry point**:
   `tests/trainer/test_trainer_static.py` — the Spot Lab and Training shells.
 - `tests/trainer/test_hh_import_ux_contract.py` — the Review/Replayer return is a
   pure view change.
+- `tests/trainer/smoke_trainer.py` / `tests/trainer/smoke_modes_desktop.py` — the
+  frozen entry point and the per-viewport measurement; both reach the Review
+  import pane through a real click on `#reviewImportTab`, and the modes smoke
+  measures that the whole import surface (advanced options included) is
+  hit-testable at 1500x1000 and 1366x768.
 - `tests/trainer/test_appview_no_recompute_contract.py` — the no-recalculation
   guard itself: statically, that no `scroll` / `scrollend` / `onscroll` /
   `IntersectionObserver` / `visibilitychange` path re-schedules a computation

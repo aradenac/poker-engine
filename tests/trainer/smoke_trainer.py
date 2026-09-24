@@ -1064,6 +1064,16 @@ async def main() -> None:
         await page.click('.mode-card[data-app-view="review"]')
         await page.wait_for_selector("#mainPage:not(.mode-hidden)", timeout=10_000)
 
+        # #394 T1 — Review lands on its Pilotage pane and the import surface lives in
+        # its own pane, so the import block is reached by a real click on the Import
+        # tab before any interaction with `.hh-import-advanced`: the file input and
+        # the advanced options are never clicked while their pane is `hidden`.
+        assert await page.locator("#reviewDashboard").is_visible()
+        assert await page.locator("#historiesSection").is_hidden()
+        await page.click("#reviewImportTab")
+        assert await page.locator("#historiesSection").is_visible()
+        assert await page.locator("#reviewDashboard").is_hidden()
+
         # HH import keeps the primary path compact while preserving advanced controls.
         hh_import_ux = await page.evaluate(
             """() => ({

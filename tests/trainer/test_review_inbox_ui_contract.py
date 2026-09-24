@@ -43,17 +43,33 @@ def main() -> None:
     assert 'POSITION_ASC' in index
     assert 'HAND_ID_ASC' in index
 
-    # #394 T3: Review is a dedicated view made of exactly two panes — the pilotage
-    # dashboard and the review inbox. The manual tools (cards/board, opponents,
-    # method, equity, range edition) live in the Spot Lab view, never here.
+    # #394 T3/T1: Review is a dedicated view made of exactly three panes — the
+    # pilotage dashboard, the import surface and the review inbox. The import
+    # surface is its own pane so the whole import block (advanced options
+    # included) fits in the bounded shell instead of sharing the shell height
+    # with the dashboard. The manual tools (cards/board, opponents, method,
+    # equity, range edition) live in the Spot Lab view, never here.
     review_view = index.split('<div id="mainPage"', 1)[1].split('<div id="strategyPage"', 1)[0]
     assert 'id="reviewDashboard"' in review_view
     assert 'id="historiesSection"' in review_view
     assert 'id="handSelectionSection"' in review_view
     for manual_id in ("opponentsSection", "cardsSection", "rangeDisplaySection", "equitySection"):
         assert f'id="{manual_id}"' not in review_view, manual_id
-    assert set(re.findall(r'data-app-subview-panel="([^"]+)"', review_view)) == {"pilotage", "inbox"}
-    assert set(re.findall(r'data-app-subview="([^"]+)"', review_view)) == {"pilotage", "inbox"}
+    assert set(re.findall(r'data-app-subview-panel="([^"]+)"', review_view)) == {"pilotage", "import", "inbox"}
+    assert set(re.findall(r'data-app-subview="([^"]+)"', review_view)) == {"pilotage", "import", "inbox"}
+    assert (
+        '<section id="historiesSection" class="panel wide app-subview-panel"'
+        ' role="tabpanel" aria-labelledby="reviewImportTab"'
+        ' data-app-subview-panel="import" hidden>'
+    ) in review_view
+    assert (
+        '<button type="button" class="app-subview-tab" id="reviewImportTab"'
+        ' role="tab" aria-selected="false" aria-controls="historiesSection"'
+        ' data-app-subview="import">Import</button>'
+    ) in review_view
+    # The dashboard CTA opens the Import pane before clicking the file input, so
+    # the picker never depends on an input inside a `hidden` pane.
+    assert 'reviewDashboardImportBtn?.addEventListener("click",()=>{activateAppSubview("import");hhFileInput?.click();});' in index
 
     # #394 T3 — Replayer entry/return contract: the Replayer is opened from the
     # Review inbox by openReplayerPage(), and its "Retour" brings the user back to
