@@ -9730,7 +9730,10 @@ localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
 localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 centralRestorePackBtn?.addEventListener("click",()=>{void centralRestoreActivePack().catch(()=>{});});
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
-hhHandsEl.addEventListener('scroll',()=>scheduleBackgroundReviewScoring(180),{passive:true});
+/* #394 T3 — no scroll listener may re-schedule the background review scoring.
+   The inbox list is bounded by its pagination (renderReviewInboxPage + #hhListPager),
+   not by scroll visibility, so a view switch stays a pure DOM toggle and scrolling
+   the list never restarts a computation. */
 $('hhAnalyzeAllBtn').addEventListener('click',()=>{state.reviewAnalyzeAll=true;scheduleBackgroundReviewScoring(0);});
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
 reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
