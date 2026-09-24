@@ -1,82 +1,167 @@
 ---
 schema: poker-issue-394-release-identity-report/v1
 issue: 394
-task: task-backlog-4s0
-report_date: 2026-09-24
+task: task-backlog-9i2
+report_date: 2026-09-25
 status: PASS
-head_sha: 942952bd966f7cd6535bd2de021b868267234868
-branch: n8n/issue-394/task-backlog-4s0
+head_sha: c83c72fef98778c023db257cb39f0540e5319cac
+branch: n8n/issue-394/task-backlog-9i2
 merged: false
+pushed: false
+ci_green: NOT_OBSERVED
 release_anchor_check: PASS
-release_anchor_delta: NONE
+release_anchor_delta: NONE_BYTE_NEUTRAL
 index_blob_matches_head: PASS
 patch_idempotence: PASS
 static_contracts: PASS
 javascript_syntax: PASS
-browser_smoke_local: NOT_RUN_LOCALLY
-browser_smoke_local_reason: "playwright absent du sandbox, pip absent, création de sockets refusée et Chromium non chargeable ; le volet navigateur reste couvert par le job gelé browser-smoke de .github/workflows/trainer-smoke.yml en CI distante"
+browser_smoke_local: FAILED_EXIT_1_NOT_RUNNABLE_IN_SANDBOX
+browser_smoke_evidence: "docs/desktop-modes-fit-evidence.md"
+browser_smoke_authority: "le job gelé browser-smoke de .github/workflows/trainer-smoke.yml dans la PR reste l'autorité pour le smoke lui-même"
 red_workflows: []
-report_self_delta: "le head_sha consigné est le HEAD RÉEL du worktree 942952bd966f7cd6535bd2de021b868267234868, avant ajout de ce rapport ; ce rapport est le seul delta qu'il ajoute, il ne peut donc citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge ; l'orchestrateur gère le commit et la PR"
+report_self_delta: "le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, c83c72fef98778c023db257cb39f0540e5319cac, relevé juste avant l'écriture de ce fichier ; le delta versionné de cette tâche est ce rapport (docs/issue-394-release-identity-ci-report.md), réconcilié au HEAD final après le dernier écrivain de site/** ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
 ---
 
-# Rapport PASS/FAIL — Identité release, idempotence du patch et contrats statiques (#394, task-backlog-4s0)
+# Rapport PASS/FAIL — Identité release, idempotence du patch et contrats statiques (#394, task-backlog-9i2)
 
-Ce rapport matérialise la preuve demandée par `task-backlog-4s0` : régénération de
-l'ancre release après le dernier écrivain de `site/**`, idempotence de
-`tools/patches/apply_trainer_mvp.py`, intégrité des marqueurs du patch, exécution
-intégrale des contrats statiques (boucle `tests/trainer/test_*.py` comme le job
-`static-contract`) plus `node --check site/trainer.js`, le tout au HEAD réel du
-worktree. **Aucun merge**, **aucun rebasage**, **aucun commit** : le worker ne
-commit ni ne pousse, l'orchestrateur prend le relais après review.
+Ce rapport matérialise la preuve demandée par `task-backlog-9i2` : **réconciliation
+du rapport d'identité release au HEAD final** (après le dernier écrivain de
+`site/**`, T1) puis **régénération de l'ancre** `site/RELEASE.json`, avec
+idempotence de `tools/patches/apply_trainer_mvp.py`, intégrité des marqueurs du
+patch, exécution intégrale des contrats statiques (boucle
+`for t in tests/trainer/test_*.py` comme le job `static-contract`) et
+`node --check site/trainer.js`. **Aucun merge**, **aucun push**, **aucun rebase**,
+**aucun commit**, **aucun `git add`** : le worker ne commit ni ne pousse,
+l'orchestrateur prend le relais après review. **Aucun état vert de CI n'est
+affirmé** : la CI n'a pas été observée depuis ce sandbox (réseau coupé, § Smoke
+navigateur).
 
 ## Statut
 
 | Champ | Valeur |
 | --- | --- |
 | Statut global | **PASS** |
-| HEAD réel validé | `942952bd966f7cd6535bd2de021b868267234868` |
-| Branche de travail | `n8n/issue-394/task-backlog-4s0` |
+| HEAD réel du worktree | `c83c72fef98778c023db257cb39f0540e5319cac` |
+| Branche de travail | `n8n/issue-394/task-backlog-9i2` |
 | Merge effectué | **non** |
-| `python3 tools/write_site_release.py --check` | **PASS** (`EXIT=0`) |
+| Push effectué | **non** |
+| CI distante observée | **non** (`ci_green: NOT_OBSERVED`) |
 | `python3 tools/write_site_release.py` (régénération) | **PASS** (`EXIT=0`, **delta d'octets nul**) |
+| `python3 tools/write_site_release.py --check` | **PASS** (`EXIT=0`) |
 | `git rev-parse HEAD:site/index.html` vs `site/RELEASE.json` | **PASS** (égalité stricte) |
 | `tools/patches/apply_trainer_mvp.py` | **PASS** (idempotent, sha256 inchangés) |
 | Marqueurs `id=trainerOpenBtn` / `id=trainerNavLink` | **PASS** (chacun présent exactement une fois) |
-| Boucle `for test in tests/trainer/test_*.py` | **PASS** (48/48, `0` échec) |
+| Boucle `for t in tests/trainer/test_*.py` | **PASS** (48/48, `0` échec) |
 | `node --check site/trainer.js` | **PASS** (`EXIT=0`) |
-| Smoke navigateur des modes | **NON REJOUABLE LOCALEMENT** (Playwright absent, sandbox réseau bloqué) — voir § Smoke navigateur ; le contrat statique d'orchestration du smoke passe |
-| Delta Git de la tâche | **non vide** : ce rapport uniquement (`docs/issue-394-release-identity-ci-report.md`) |
-| `.github/workflows/**` | **inchangé** |
+| Smoke navigateur des modes | **NON REJOUABLE LOCALEMENT** — les deux commandes exigées ont été lancées et ont échoué (`EXIT=1`, causes environnementales) ; le fit a été **re-mesuré au HEAD final** via le harnais dégradé hors contrat documenté dans `docs/desktop-modes-fit-evidence.md` ; **le job gelé `browser-smoke` de la PR reste l'autorité** |
+| Delta Git de la tâche | **non vide** : ce rapport (`docs/issue-394-release-identity-ci-report.md`) |
+| `site/RELEASE.json` / `site/packs/catalog.json` | régénérés **byte-neutres** (aucun octet changé) |
+| `.github/workflows/**` / `.github/actions/**` | **inchangé** |
 | Modèle / science / équité | **inchangé** (aucun fichier de ces familles dans le diff) |
 
-### Périmètre de commits effectif
+### Self-delta (explicite)
 
-- Le HEAD réel du worktree est `942952b` (`chore(n8n): task backlog-r3z for issue #394`),
-  tête de la branche `n8n/issue-394/task-backlog-4s0`.
-- Le worktree était **propre** (`git status --porcelain` vide) avant l'ajout de ce
-  rapport : toutes les tâches amont de l'issue #394 (`backlog-2em`, `backlog-n16`,
-  `backlog-o9g`, `backlog-0qz`, `backlog-r3z`) ont déjà déposé leurs changements
-  `site/**`, docs et tests, et leur ancre release est déjà à jour.
-- Le présent rapport est donc **le seul delta** de cette tâche ; il documente les
-  commandes exécutées **avant** son propre ajout, sur `942952b`.
+- Le HEAD réel du worktree **au moment de l'écriture de ce rapport** est
+  **`c83c72fef98778c023db257cb39f0540e5319cac`** (`chore(n8n): task backlog-3nx
+  for issue #394`), tête de la branche `n8n/issue-394/task-backlog-9i2`.
+- Le worktree était **propre** (`git status --porcelain` vide) au début de cette
+  tâche : T1 (écriture `site/**`), T2 et T3 (assertion de reachability + preuve de
+  fit) ont déjà déposé leurs changements, et l'ancre release est déjà alignée.
+- **Le delta de cette tâche est ce document**, et lui seul : la réconciliation du
+  rapport au HEAD final. Il est donc **impossible de citer le SHA de son propre
+  commit** (auto-référence) ; le worker ne commit pas, l'orchestrateur gère le
+  commit et la PR.
+- Les deux régénérations demandées (`site/RELEASE.json`, et
+  `site/packs/catalog.json` matérialisé par `--check`) sont **byte-neutres** :
+  `git status --porcelain` reste vide après chacune, donc elles ne contribuent
+  pas au diff.
+- Ce rapport **n'affirme ni merge, ni push, ni état vert de CI** ; il n'affirme
+  rien sur le run CI distant, qui n'a pas été observé.
 
-### Verdicts exigés
+### Reconciliation par rapport à la version précédente de ce rapport
+
+Cette réécriture remplace la version déposée par la tâche amont de rédaction du
+rapport (laquelle portait un `head_sha` périmé, antérieur à T1/T2/T3) :
+
+1. `head_sha` porte désormais le **HEAD réel du worktree** au moment de
+   l'écriture (`c83c72f…`), et non plus un SHA antérieur aux commits de T1 ;
+2. la **ligne smoke navigateur** ne porte plus l'étiquette générique « non
+   exécuté localement » (valeur `browser_smoke_local` de la version précédente) :
+   elle consigne désormais le **résultat réellement
+   observé** (deux commandes lancées, `EXIT=1`, sorties exactes) et **renvoie à
+   `docs/desktop-modes-fit-evidence.md`** pour la preuve de fit, en réaffirmant
+   que le **job gelé `browser-smoke` de la PR reste l'autorité** ;
+3. les valeurs d'ancre, de blob et de hachages sont celles du **HEAD final**
+   (`site/index.html` `c22f0f2d…`, `site/trainer.js` `cfd91bbf…`) ;
+4. le **self-delta est explicite** (§ ci-dessus) et aucune phrase du document
+   n'affirme un merge, un push ou une CI verte non observée.
+
+## Verdicts exigés
 
 | Vérification | Verdict | Preuve principale |
 | --- | --- | --- |
-| Ancre release régénérée au HEAD final | **PASS** | `python3 tools/write_site_release.py` → `wrote site/RELEASE.json`, puis `git status --porcelain` vide : les octets régénérés sont identiques à l'ancre versionnée |
-| `--check` passe au HEAD final | **PASS** | `release source anchor verified: site/RELEASE.json; assembled identity can be materialized` (`EXIT=0`) |
-| Ancre alignée sur le blob git réel de l'index | **PASS** | `git rev-parse HEAD:site/index.html` = `c9835c2aa6bcb91e0e6282eee5e5f21989e831d4` = `identity.assembled_site.functional_files["site/index.html"].git_blob_sha` |
-| Aucun fichier fonctionnel manquant | **PASS** | `FUNCTIONAL_FILES` (34 entrées) toutes présentes ; `site/packs/catalog.json` matérialisé par `tools/write_pack_catalog.py` sans delta |
-| Idempotence du patch MVP | **PASS** | `sha256sum` avant/après identiques pour `site/index.html` (`e1134aea…`) et `site/trainer.js` (`cfd91bbf…`), `diff -u /tmp/before.sha /tmp/after.sha` → `EXIT=0` |
-| Marqueurs du patch présents | **PASS** | `id="trainerOpenBtn"` et `id="trainerNavLink"` présents ; la branche non idempotente du patch (`replace_once` sur la ligne historique `<a href="#replayerSection">Replayer</a>`, désormais absente) n'est jamais atteinte et n'a donc pas été « réparée » au détriment de l'idempotence |
-| Contrats statiques complets | **PASS** | 48/48 modules `tests/trainer/test_*.py`, aucun skip, aucune assertion retirée ou affaiblie (aucun fichier de test modifié par cette tâche) |
-| Syntaxe JavaScript | **PASS** | `node --check site/trainer.js` (`node v24.21.0`, `EXIT=0`) |
-| Rapport PASS/FAIL versionné au HEAD réel | **PASS** | ce document |
+| (1) Idempotence du patch MVP | **PASS** | `sha256sum` avant/après identiques pour `site/index.html` (`fe914474…`) et `site/trainer.js` (`cfd91bbf…`) ; `diff -u /tmp/9i2_before.sha /tmp/9i2_after.sha` → `EXIT=0` |
+| (1) Marqueurs du patch, exactement une fois | **PASS** | `id="trainerOpenBtn"` → `1` occurrence ; `id="trainerNavLink"` → `1` occurrence |
+| (2) Ancre régénérée au HEAD final | **PASS** | `python3 tools/write_site_release.py` → `wrote site/RELEASE.json`, puis `git status --porcelain` **vide** : les octets régénérés sont identiques à l'ancre versionnée |
+| (2) Blob de l'index aligné sur le HEAD | **PASS** | `git rev-parse HEAD:site/index.html` = `c22f0f2dcec3758a39f8404c99ff8c11fba661d6` = `identity.assembled_site.functional_files["site/index.html"].git_blob_sha` |
+| (3) `write_site_release.py --check` | **PASS** | `release source anchor verified: site/RELEASE.json; assembled identity can be materialized`, `EXIT=0` |
+| (4) Boucle complète `tests/trainer/test_*.py` | **PASS** | **48 modules, 48 PASS, 0 échec, 0 skip** |
+| (5) `node --check site/trainer.js` | **PASS** | `EXIT=0` (`node v24.21.0`) |
+| Aucun fichier fonctionnel manquant | **PASS** | `FUNCTIONAL_FILES` (34 entrées) toutes présentes ; `site/packs/catalog.json` matérialisé sans delta |
+| Rapport réconcilié au HEAD réel | **PASS** | ce document |
+| Aucune affirmation merge / push / CI verte non observée | **PASS** | § Self-delta et § Smoke navigateur (le run CI distant n'est ni cité comme observation ni présenté comme vert) |
 
-## Régénération de l'identité release
+## (1) Idempotence du patch `tools/patches/apply_trainer_mvp.py`
 
-Commande de régénération (mode écriture, après le dernier écrivain de `site/**`) :
+Forme exacte du job `static-contract` (patch → compare) :
+
+```
+$ sha256sum site/index.html site/trainer.js > /tmp/9i2_before.sha
+$ python3 tools/patches/apply_trainer_mvp.py
+trainer MVP integration patch applied
+EXIT=0
+$ sha256sum site/index.html site/trainer.js > /tmp/9i2_after.sha
+$ diff -u /tmp/9i2_before.sha /tmp/9i2_after.sha
+EXIT=0
+$ cat /tmp/9i2_after.sha
+fe91447431bdb3a50ecf368b031161a51b59ffbb75c67447f9123fa0cfac8840  site/index.html
+cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
+```
+
+Les quatre lignes de hachage sont **identiques avant et après** le patch : aucun
+octet de `site/index.html` ni de `site/trainer.js` n'a changé. Le patch est donc
+**idempotent au HEAD final** (`c83c72f…`).
+
+Intégrité des marqueurs (`site/index.html` au HEAD final) :
+
+```
+$ grep -c 'id="trainerOpenBtn"' site/index.html
+1
+$ grep -c 'id="trainerNavLink"' site/index.html
+1
+$ grep -o 'id="trainerOpenBtn"[^>]*' site/index.html
+id="trainerOpenBtn" type="button" class="primary"
+$ grep -o 'id="trainerNavLink"[^>]*' site/index.html
+id="trainerNavLink" href="#trainerPage" data-product-domain="training"
+$ grep -c 'replayerSection">Replayer' site/index.html
+0
+```
+
+Chaque marqueur est présent **exactement une fois**, comme exigé. Le marqueur
+**historique** `<a href="#replayerSection">Replayer</a>` n'existe plus : la
+navigation est portée par `<nav id="quickNav">` avec `data-product-domain`.
+C'est exactement le cas prévu par la tâche (« le marqueur historique n'est plus
+requis si le chemin est déjà satisfait ») : `apply_trainer_mvp.py` garde ses
+insertions sous condition `if 'id="trainerNavLink"' not in text` /
+`if 'id="trainerOpenBtn"' not in text`, donc la branche non idempotente
+(`replace_once` sur une ligne absente → `expected exactly one marker, found 0`)
+n'est **jamais** évaluée. Aucune adaptation non idempotente n'a été introduite,
+et aucun test n'a été modifié pour faire passer cette étape.
+
+## (2) Régénération de l'identité release au HEAD final
+
+T1 a bien touché `site/**` (`site/index.html`, `site/RELEASE.json`), la
+régénération demandée a donc été exécutée après le dernier écrivain de `site/**` :
 
 ```
 $ python3 tools/write_site_release.py
@@ -86,20 +171,11 @@ $ git status --porcelain
 (aucune sortie)
 ```
 
-La régénération est **strictement neutre** : `git status` reste vide, donc
-l'ancre versionnée est déjà l'identité assemblée exacte du HEAD réel (aucun delta
-d'octets, aucun fichier fonctionnel ajouté à `FUNCTIONAL_FILES` n'était
-nécessaire).
+La régénération est **strictement neutre** (`delta d'octets nul`) : `git status`
+reste vide, donc l'ancre versionnée **est déjà** l'identité assemblée exacte du
+HEAD final. Aucun fichier fonctionnel n'était manquant dans `FUNCTIONAL_FILES`.
 
-Vérification de l'ancre :
-
-```
-$ python3 tools/write_site_release.py --check
-release source anchor verified: site/RELEASE.json; assembled identity can be materialized
-EXIT=0
-```
-
-Identités portées par l'ancre au HEAD réel (`942952bd966f7cd6535bd2de021b868267234868`) :
+Vérification de l'ancre, au HEAD final (`c83c72fef98778c023db257cb39f0540e5319cac`) :
 
 | Élément | Valeur |
 | --- | --- |
@@ -107,145 +183,109 @@ Identités portées par l'ancre au HEAD réel (`942952bd966f7cd6535bd2de021b8682
 | `sha256` (moteur) | `2690a82ffe363017b495a1aef60657b12db1b52eb402c36a1ff87f723c5d1bd4` |
 | `release_artifact` | `user/releases/poker_range_equity_offline_multiway_v83.html` |
 | `identity.assembled_site.assets_tree_git_sha` | `7b8dc481d21a94e8e05fe8d7abae39e0d78b56a9` |
+| `git rev-parse HEAD:site/assets` | `7b8dc481d21a94e8e05fe8d7abae39e0d78b56a9` (**égal**) |
 | `functional_files` | 34 entrées (dont `site/index.html`, `site/trainer.js`, `site/packs/catalog.json`) |
-| `site/index.html` `git_blob_sha` | `c9835c2aa6bcb91e0e6282eee5e5f21989e831d4` |
-| `git rev-parse HEAD:site/index.html` | `c9835c2aa6bcb91e0e6282eee5e5f21989e831d4` (**égal**) |
-| `sha256(site/index.html)` (octets worktree) | `e1134aeaf9c29abd72402b190c205503570931087a40dfc8795b7b3f4b69f890` |
+| `site/index.html` `git_blob_sha` | `c22f0f2dcec3758a39f8404c99ff8c11fba661d6` |
+| `git rev-parse HEAD:site/index.html` | `c22f0f2dcec3758a39f8404c99ff8c11fba661d6` (**égal**) |
+| `sha256(site/index.html)` (octets worktree, **après** patch idempotent) | `fe91447431bdb3a50ecf368b031161a51b59ffbb75c67447f9123fa0cfac8840` |
 | `sha256(site/trainer.js)` (octets worktree) | `cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7` |
-| `sha256(site/RELEASE.json)` | `31c51c4e0ef247463a38387bc9e9bb3565e4fcb4e3c4cf09275f6e70dbd5771a` |
-| `git hash-object site/RELEASE.json` | `c94aa663804d84b5c7f12ec3e3b61014f86b4dda` |
+| `sha256(site/RELEASE.json)` | `06125073acb6e14c5d37dd705a673bcf0f1f8d13310dbbf8f714bce7b25c9638` |
+| `git hash-object site/RELEASE.json` | `b423f508815be1f65d4274644d25462e67a788be` |
 
 L'index est vérifié **après le patch de navigation idempotent** du build
-(`patched_index_bytes()`), conformément au contrat de `tools/write_site_release.py` ;
+(`patched_index_bytes()`), conformément au contrat de `tools/write_site_release.py` :
 ici le remplacement est neutre parce que le marqueur
 `<a href="./packs.html">Packs de population</a>` est déjà présent dans
-`site/index.html`, donc le blob patché est identique au blob source versionné.
+`site/index.html`, donc le blob patché est **identique** au blob source versionné.
 
-## Idempotence du patch `tools/patches/apply_trainer_mvp.py`
+## (3) `python3 tools/write_site_release.py --check`
 
-Forme exacte du job `static-contract` (patch → compare, tolérant au préfixe
-chemin de `sha256sum`) :
+`--check` matérialise `site/packs/catalog.json` via `tools/write_pack_catalog.py`
+avant de valider : il écrit donc dans `site/**`, ce qui est précisément pourquoi
+la tâche signale qu'il **ne peut pas tourner dans un sandbox read-only**. Il a été
+exécuté ici, puis le catalogue a été vérifié byte-neutre :
 
 ```
-$ sha256sum site/index.html site/trainer.js > /tmp/before.sha
-$ python3 tools/patches/apply_trainer_mvp.py
-trainer MVP integration patch applied
-$ sha256sum site/index.html site/trainer.js > /tmp/after.sha
-$ diff -u /tmp/before.sha /tmp/after.sha
+$ python3 tools/write_site_release.py --check
+release source anchor verified: site/RELEASE.json; assembled identity can be materialized
 EXIT=0
-$ cat /tmp/after.sha
-e1134aeaf9c29abd72402b190c205503570931087a40dfc8795b7b3f4b69f890  site/index.html
-cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
+$ git status --porcelain site/packs/catalog.json
+(aucune sortie)
 ```
 
-Un premier passage a en outre été exécuté avec sauvegarde préalable des deux
-fichiers dans un répertoire temporaire (`cp site/index.html site/trainer.js` vers
-`$(mktemp -d)`), comparaison `BEFORE`/`AFTER` puis `diff -u` : les quatre lignes
-de hachage sont identiques et aucun octet n'a changé. Le patch est donc
-**idempotent** sur le HEAD réel.
-
-Intégrité des marqueurs (fichier `site/index.html` au HEAD réel) :
+Le contrat d'identité de release exécuté par la boucle statique passe également :
 
 ```
-$ grep -o 'id="trainerOpenBtn"' site/index.html
-id="trainerOpenBtn"                     # 1 occurrence
-$ grep -o 'id="trainerNavLink"[^>]*' site/index.html
-id="trainerNavLink" href="#trainerPage" data-product-domain="training"   # 1 occurrence
-$ grep -o 'id="trainerPage"' site/index.html
-id="trainerPage"                        # 1 occurrence
-$ grep -c 'replayerSection">Replayer' site/index.html
-0
+$ python3 tests/trainer/test_site_release_identity.py
+release source anchor verified: site/RELEASE.json; assembled identity can be materialized
+site release identity contract: PASS
+EXIT=0
 ```
 
-Le marqueur **historique** `<a href="#replayerSection">Replayer</a>` n'existe plus :
-la navigation est portée par `<nav id="quickNav">` avec `data-product-domain`.
-C'est exactement le cas prévu par la tâche (« le marqueur historique n'est plus
-requis si le chemin est déjà satisfait ») : `apply_trainer_mvp.py` garde ses
-insertions sous condition `if 'id="trainerNavLink"' not in text` /
-`if 'id="trainerOpenBtn"' not in text`, donc la branche `replace_once` qui
-échouerait (`expected exactly one marker, found 0`) n'est **jamais** évaluée. Le
-patch reste idempotent et aucune adaptation non idempotente n'a été introduite.
-
-## Contrats statiques — boucle complète
+## (4) Contrats statiques — boucle complète (48 modules)
 
 Commande (identique au job `static-contract` de `.github/workflows/trainer-smoke.yml`) :
 
 ```
-$ for test in tests/trainer/test_*.py; do python3 "$test"; done
+$ for t in tests/trainer/test_*.py; do python3 "$t"; done
 ```
 
 Résultat : **48 modules, 48 PASS, 0 échec, 0 skip**. Aucun fichier de test n'a été
-modifié, aucune assertion n'a été retirée ou affaiblie dans cette tâche (le diff
-de `942952b` est documentaire + `site/**` en amont ; celui de cette tâche est le
-présent rapport).
+modifié par cette tâche, aucune assertion n'a été retirée ni affaiblie.
 
-| Module `tests/trainer/…` | Verdict | Sortie de tête |
+| Module `tests/trainer/…` | `rc` | Sortie de tête |
 | --- | --- | --- |
-| `test_action_sizing_ev_presentation.py` | PASS | action+sizing+EV CENTRAL-UI extraction contract: PASS |
-| `test_advanced_import_central_ui_contract.py` | PASS | advanced manual import CENTRAL-UI contract checks: OK |
-| `test_analysis_state_consistency_contract.py` | PASS | analysis-state cross-surface consistency contract: PASS |
-| `test_analysis_state_mirror_contract.py` | PASS | OK |
-| `test_appview_no_recompute_contract.py` | PASS | app-view no-recompute contract checks: OK |
-| `test_auxiliary_scale_surfaces_contract.py` | PASS | auxiliary scale-dependent surfaces contract checks: OK |
-| `test_d6_render_matrix_contract.py` | PASS | D6 render matrix contract: PASS |
-| `test_decision_summary_contract.py` | PASS | decision summary contract checks: OK |
-| `test_delta_ev_primary_contract.py` | PASS | delta EV primary UX contract checks: OK |
-| `test_deployment_metadata.py` | PASS | deployment metadata contract: PASS |
-| `test_desktop_accessibility_contract.py` | PASS | desktop accessibility contract checks: OK |
-| `test_hh_import_ux_contract.py` | PASS | HH import UX contract checks: OK |
-| `test_implicit_review_context.py` | PASS | implicit Review context checks: OK |
-| `test_known_hand_override_contract.py` | PASS | known-hand override contract checks: OK |
-| `test_leak_training_ui_contract.py` | PASS | leak-to-training UI/runtime contract checks: OK |
-| `test_local_persistence_ux_contract.py` | PASS | local persistence UX contract checks: OK |
-| `test_model_b_robustness_ui_contract.py` | PASS | Model B robustness CENTRAL-UI contract checks: OK |
-| `test_opponent_analysis_state_contract.py` | PASS | opponent analysis-state contract: PASS |
-| `test_opponent_range_display_contract.py` | PASS | opponent range display contract checks: OK |
-| `test_opponent_range_semantics_rework_contract.py` | PASS | poker-opponent-range-semantics-rework-contract/v1 checks: OK |
-| `test_posterior_state_contract.py` | PASS | posterior state contract checks: OK |
-| `test_preflop_runtime_contract.py` | PASS | `{"status":"PASS","game_state":"nlhe-game-state/v1",…}` |
-| `test_prior_posterior_ui_contract.py` | PASS | prior/posterior UI boundary checks: OK |
-| `test_product_architecture_contract.py` | PASS | ux desktop view shell doc contract checks: OK |
-| `test_product_identity_ux_contract.py` | PASS | product identity UX contract checks: OK |
-| `test_range_display_docs_contract.py` | PASS | range display docs contract checks: OK |
-| `test_range_vocabulary_contract.py` | PASS | range vocabulary contract checks: OK |
-| `test_replayer_actor_comment_semantics.py` | PASS | replayer actor/comment semantics contract: PASS |
-| `test_replayer_analysis_state_contract.py` | PASS | replayer Hero analysis-state contract: PASS |
-| `test_replayer_hand_class.py` | PASS | replayer hand-class contract OK |
-| `test_replayer_modal_prior_states.py` | PASS | replayer modal prior-state contract checks: OK |
-| `test_review_dashboard_ui_contract.py` | PASS | review dashboard UI contract checks: OK |
-| `test_review_hero_actual_result.py` | PASS | Review Hero hand + actual result contract: PASS |
-| `test_review_inbox_ui_contract.py` | PASS | review inbox runtime mirror/UI contract checks: OK |
-| `test_site_release_identity.py` | PASS | site release identity contract: PASS |
-| `test_smoke_orchestration_contract.py` | PASS | smoke orchestration contract checks: OK |
-| `test_source_prior_unconditioned_contract.py` | PASS | source prior unconditioned contract checks: OK |
-| `test_spotlab_subviews_contract.py` | PASS | spot lab sub-views contract checks: OK |
-| `test_trainer_analysis_state_contract.py` | PASS | trainer analysis-state contract: PASS |
-| `test_trainer_d6_exposure_contract.py` | PASS | OK |
-| `test_trainer_hero_ranges.py` | PASS | trainer Hero mode / deep link contract: OK |
-| `test_trainer_latency_contract.py` | PASS | trainer latency contract: OK |
-| `test_trainer_parallel_review_contract.py` | PASS | trainer parallel review contract: OK |
-| `test_trainer_preload_contract.py` | PASS | trainer preload contract: OK |
-| `test_trainer_result_cache_contract.py` | PASS | trainer result-cache contract: OK |
-| `test_trainer_rng_determinism.py` | PASS | poker-trainer-rng-determinism-contract/v1 checks: OK |
-| `test_trainer_smoke_determinism_contract.py` | PASS | poker-trainer-smoke-determinism-contract/v1 checks: OK |
-| `test_trainer_static.py` | PASS | trainer static architecture checks: OK |
+| `test_action_sizing_ev_presentation.py` | 0 | action+sizing+EV presentation parity: PASS |
+| `test_advanced_import_central_ui_contract.py` | 0 | advanced manual import CENTRAL-UI contract checks: OK |
+| `test_analysis_state_consistency_contract.py` | 0 | analysis-state cross-surface consistency contract: PASS |
+| `test_analysis_state_mirror_contract.py` | 0 | (assertions par cas, aucun échec) |
+| `test_appview_no_recompute_contract.py` | 0 | app-view no-recompute contract checks: OK |
+| `test_auxiliary_scale_surfaces_contract.py` | 0 | range width scale invariance: PASS |
+| `test_d6_render_matrix_contract.py` | 0 | D6 render matrix contract: PASS |
+| `test_decision_summary_contract.py` | 0 | decision summary contract checks: OK |
+| `test_delta_ev_primary_contract.py` | 0 | delta EV primary UX contract checks: OK |
+| `test_deployment_metadata.py` | 0 | `wrote …/deployment-meta.css` (fixture temporaire) |
+| `test_desktop_accessibility_contract.py` | 0 | desktop accessibility contract checks: OK |
+| `test_hh_import_ux_contract.py` | 0 | HH import UX contract checks: OK |
+| `test_implicit_review_context.py` | 0 | implicit Review context checks: OK |
+| `test_known_hand_override_contract.py` | 0 | known-hand override contract checks: OK |
+| `test_leak_training_ui_contract.py` | 0 | leak-to-training UI/runtime contract checks: OK |
+| `test_local_persistence_ux_contract.py` | 0 | local persistence UX contract checks: OK |
+| `test_model_b_robustness_ui_contract.py` | 0 | Model B robustness CENTRAL-UI contract checks: OK |
+| `test_opponent_analysis_state_contract.py` | 0 | opponent analysis-state contract: PASS |
+| `test_opponent_range_display_contract.py` | 0 | opponent range display contract checks: OK |
+| `test_opponent_range_semantics_rework_contract.py` | 0 | source prior unconditioned runtime: PASS |
+| `test_posterior_state_contract.py` | 0 | degenerate legacy fail-close runtime: PASS |
+| `test_preflop_runtime_contract.py` | 0 | `{"status":"PASS","game_state":"nlhe-game-state/v1",…}` |
+| `test_prior_posterior_ui_contract.py` | 0 | prior/posterior UI boundary checks: OK |
+| `test_product_architecture_contract.py` | 0 | product architecture contract checks: OK |
+| `test_product_identity_ux_contract.py` | 0 | product identity UX contract checks: OK |
+| `test_range_display_docs_contract.py` | 0 | range display docs contract checks: OK |
+| `test_range_vocabulary_contract.py` | 0 | range vocabulary contract checks: OK |
+| `test_replayer_actor_comment_semantics.py` | 0 | replayer actor/comment semantics contract: PASS |
+| `test_replayer_analysis_state_contract.py` | 0 | replayer Hero analysis-state contract: PASS |
+| `test_replayer_hand_class.py` | 0 | replayer hand-class contract OK |
+| `test_replayer_modal_prior_states.py` | 0 | replayer modal prior-state contract checks: OK |
+| `test_review_dashboard_ui_contract.py` | 0 | review dashboard UI contract checks: OK |
+| `test_review_hero_actual_result.py` | 0 | Review Hero hand + actual result contract: PASS |
+| `test_review_inbox_ui_contract.py` | 0 | review inbox runtime mirror/UI contract checks: OK |
+| `test_site_release_identity.py` | 0 | site release identity contract: PASS |
+| `test_smoke_orchestration_contract.py` | 0 | smoke orchestration contract checks: OK |
+| `test_source_prior_unconditioned_contract.py` | 0 | source prior unconditioned runtime: PASS |
+| `test_spotlab_subviews_contract.py` | 0 | spot lab sub-views contract checks: OK |
+| `test_trainer_analysis_state_contract.py` | 0 | trainer analysis-state contract: PASS |
+| `test_trainer_d6_exposure_contract.py` | 0 | (assertions par cas, aucun échec) |
+| `test_trainer_hero_ranges.py` | 0 | trainer Hero custom-range contract: OK |
+| `test_trainer_latency_contract.py` | 0 | trainer latency contract: OK |
+| `test_trainer_parallel_review_contract.py` | 0 | trainer parallel review contract: OK |
+| `test_trainer_preload_contract.py` | 0 | trainer preload contract: OK |
+| `test_trainer_result_cache_contract.py` | 0 | trainer result-cache contract: OK |
+| `test_trainer_rng_determinism.py` | 0 | poker-trainer-rng-determinism-contract/v1 checks: OK |
+| `test_trainer_smoke_determinism_contract.py` | 0 | poker-trainer-smoke-determinism-contract/v1 checks: OK |
+| `test_trainer_static.py` | 0 | trainer static architecture checks: OK |
 
-Les quatre contrats explicitement cités par l'acceptation sont couverts dans cette
-boucle et passent séparément :
-
-```
-$ python3 tests/trainer/test_product_architecture_contract.py
-ux desktop view shell doc contract checks: OK
-$ python3 tests/trainer/test_desktop_accessibility_contract.py
-desktop accessibility contract checks: OK
-$ python3 tests/trainer/test_appview_no_recompute_contract.py
-app-view no-recompute contract checks: OK
-$ python3 tests/trainer/test_smoke_orchestration_contract.py
-smoke orchestration contract checks: OK
-```
-
-Le job `static-contract` exécute aussi la garde anti-bypass REPRO avant la boucle ;
-elle est rejouée ici :
+Le job `static-contract` exécute aussi la garde anti-bypass REPRO avant la
+boucle ; elle est rejouée ici :
 
 ```
 $ PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
@@ -253,7 +293,7 @@ REPRO workflow batch-1 tests: 9 passed
 EXIT=0
 ```
 
-## Syntaxe JavaScript
+## (5) Syntaxe JavaScript
 
 ```
 $ node --check site/trainer.js
@@ -262,86 +302,168 @@ $ node --version
 v24.21.0
 ```
 
-## Smoke navigateur des modes
+## Smoke navigateur des modes — résultat réellement observé
 
-Le smoke navigateur des modes de l'issue #394 est
-`tests/trainer/smoke_modes_desktop.py` (audit de débordement par mode et par
-viewport de référence, `1500x1000` et `1366x768`, plus la marche clavier du
-panneau droit du Replayer). Il est **orchestré** par
-`tests/trainer/smoke_trainer.py` (contrat `test_smoke_orchestration_contract.py`,
-PASS) et exécuté par le job gelé `browser-smoke` de
-`.github/workflows/trainer-smoke.yml`, qui n'est pas modifié par cette tâche.
+**Référence de preuve : [`docs/desktop-modes-fit-evidence.md`](./desktop-modes-fit-evidence.md)**
+(preuve de fit T3, en-tête `schema: poker-issue-394-desktop-modes-fit-evidence/v3`).
+**Autorité pour le smoke lui-même : le job gelé `browser-smoke` de
+`.github/workflows/trainer-smoke.yml` dans la PR**, qui dispose du réseau, de
+`repro-browser` et d'un Chromium chargeable, sert `site/` par
+`python3 -m http.server 8765 --directory site`, puis lance
+`python3 tests/trainer/smoke_trainer.py`. Ce job **n'est pas modifié** par cette
+tâche, et sa CI n'a **pas** été observée depuis ce sandbox : **aucun état vert de
+CI et aucun `PASS` du smoke gelé n'est affirmé ici.**
 
-**Résultat local : NON REJOUÉ, fail-closed, pour une raison d'environnement de
-sandbox — pas une régression produit.**
+Les deux commandes exigées ont été **lancées** au HEAD final `c83c72f…` ; le
+résultat observé est un **échec fail-closed d'origine environnementale**, jamais
+un `PASS` :
 
 ```
 $ python3 tests/trainer/smoke_modes_desktop.py
-smoke_modes_desktop: Playwright is unavailable (ModuleNotFoundError("No module named 'playwright'")).
-Install the locked dependencies (requirements.lock.txt) and the pinned browser runtime
-(python3 tools/repro_ci_browser.py install) before running this smoke.
+smoke_modes_desktop: Playwright is unavailable (ModuleNotFoundError("No module named 'playwright'")). Install the locked dependencies (requirements.lock.txt) and the pinned browser runtime (python3 tools/repro_ci_browser.py install) before running this smoke.
 EXIT=1
+```
 
+```
 $ python3 tests/trainer/smoke_trainer.py
+Traceback (most recent call last):
   File "…/tests/trainer/smoke_trainer.py", line 10, in <module>
     from playwright.async_api import async_playwright
 ModuleNotFoundError: No module named 'playwright'
 EXIT=1
-
-$ python3 tests/trainer/smoke_equity_scale_invariance.py   # idem
-EXIT=1  (ModuleNotFoundError: No module named 'playwright')
-$ python3 tests/trainer/smoke_opponent_range_numeric.py    # idem
-EXIT=1  (ModuleNotFoundError: No module named 'playwright')
 ```
 
-Le comportement observé est **exactement** le contrat voulu par #394 : le smoke
-échoue explicitement au lieu de sauter silencieusement quand Playwright manque
-(`main()` de `smoke_modes_desktop.py` lève un `SystemExit` explicite). Causes
-constatées dans ce sandbox, toutes environnementales :
+`smoke_trainer.py` échoue à l'import, donc **avant** `run_driver_smokes()` :
+l'orchestrateur n'est pas atteint localement. Causes constatées dans ce sandbox,
+toutes environnementales :
 
 | Preuve | Sortie |
 | --- | --- |
 | `python3 -c "import playwright"` | `ModuleNotFoundError: No module named 'playwright'` |
-| `python3 -m pip --version` | `/usr/bin/python3: No module named pip` (`ensurepip` absent aussi) → aucune installation possible |
-| `python3 -c "import socket; socket.socket()"` / `bind` / `connect` sur `127.0.0.1` | `PermissionError: [Errno 1] Operation not permitted` → ni serveur statique local ni connexion CDP possible |
-| `~/.cache/ms-playwright/chromium-1187/chrome-linux/chrome --headless=new …` | `error while loading shared libraries: libnspr4.so: cannot open shared object file` |
+| `python3 -c "import socket; socket.socket()"` | `PermissionError: [Errno 1] Operation not permitted` → ni serveur statique local ni connexion CDP possible |
+| `~/.cache/ms-playwright/chromium_headless_shell-1187/...` | binaire présent mais dépendances système (`libnspr4.so`, …) absentes du `LD_LIBRARY_PATH` par défaut |
 
-Tentative de contournement **écartée** : un harnais Node/CDP a été écrit dans
-`/tmp` (hors dépôt) pour rejouer l'audit avec le Chromium épinglé sans Playwright ;
-il n'a pas pu s'exécuter parce que le sandbox refuse la création de sockets
-(`bind`/`connect` → `EPERM`) et que le binaire Chromium ne charge pas ses
-bibliothèques système. Aucune mesure navigateur n'est donc revendiquée ici, et
-aucun résultat de smoke n'est inventé.
+**Re-mesure au HEAD final (au-delà de l'exigence « smoke non exécutable
+localement »)** : le fit a été **rejoué au HEAD final** avec le **même harnais
+dégradé hors contrat** que T3 a déclaré dans
+`docs/desktop-modes-fit-evidence.md` § 2 (Playwright 1.55.0 épinglé chargé hors
+dépôt, transport par interception de requêtes Playwright puisque la création de
+socket loopback est refusée, navigation par `element.click()` en JS, import de la
+fixture par le vrai `#hhFileInput`, et la métrique du smoke
+`scrollHeight`/`clientHeight` plus l'audit sensible au clipping du § 4).
 
-Ce qui est **réellement vérifié au HEAD réel** pour ce volet : le contrat
-d'orchestration du smoke (workflow gelé, entrée unique `smoke_trainer.py`,
-`DRIVER_SMOKES` déclarés et réellement lancés, doc de contrat à jour) via
-`test_smoke_orchestration_contract.py`, et les contrats statiques du shell desktop
-qui encadrent les mêmes garanties (`test_desktop_accessibility_contract.py`,
-`test_product_architecture_contract.py`, `test_appview_no_recompute_contract.py`).
-La mesure navigateur effective reste portée par la CI distante
-(`browser-smoke` → `python3 tests/trainer/smoke_trainer.py`).
+```
+$ PYTHONPATH="$PWD/tests/trainer:/tmp/opencode/pylibs" LD_PRELOAD=/tmp/fitpilot/fitshim.so \
+  LD_LIBRARY_PATH=/tmp/opencode/browserlibs/sysroot/usr/lib/x86_64-linux-gnu \
+  python3 -u /tmp/nx3/measure.py "$PWD/site" /tmp/9i2/final_a.json 9i2
+== viewport 1500x1000 ==
+  home      1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/11
+  spotlab   1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/17
+  review    1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/6
+  review    1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/13
+  replayer  1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/19
+  review    1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/11
+  training  1500x1000  root=1000/1000 shell=990/990   clipped=0 unreachable_controls=0/18
+  strategy  1500x1000  root=1000/1000 shell=1000/1000 clipped=0 unreachable_controls=0/2
+== viewport 1366x768 ==
+  home      1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=1/11
+  spotlab   1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=0/17
+  review    1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=0/6
+  review    1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=0/13
+  replayer  1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=0/19
+  review    1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=0/11
+  training  1366x768   root=768/768   shell=758/758   clipped=0 unreachable_controls=0/18
+  strategy  1366x768   root=768/768   shell=768/768   clipped=0 unreachable_controls=0/2
+[1500x1000] reviewImportTab present=True
+[1500x1000] imported=['3210001']
+[1500x1000] hero-ranges.html navigated (hors contrat de coque)
+[1366x768] reviewImportTab present=True
+[1366x768] imported=['3210001']
+[1366x768] hero-ranges.html navigated (hors contrat de coque)
+wrote /tmp/9i2/final_a.json
+EXIT=0
+```
+
+Les seize lignes du tableau sont **identiques** à celles publiées par
+`docs/desktop-modes-fit-evidence.md` § 5 (mesures T3, même `site/**` — T1 est
+antérieur, aucune tâche postérieure n'a touché `site/**`) ; l'unique cellule non
+nulle (`home` à 1366x768, `1/11`) est la réserve **déjà nommée et qualifiée** au
+§ 6 de cette preuve (le bouton flottant `#quickNavToggle` couvre le **centre** du
+raccourci Review ; l'élément n'est pas clippé et reste atteignable ailleurs dans
+sa boîte). Les hit-tests T2 de la surface d'import sont eux aussi reproduits :
+`4/4` (`details` fermé) et `5/5` (`details` ouvert, `#hhBenchmarkExportBtn` monté)
+`reachable: true` aux deux viewports.
+
+Deux exécutions indépendantes ont été produites et sont **byte-identiques**
+(même sha256), donc la mesure est stable au HEAD final :
+
+```
+$ sha256sum /tmp/9i2/final_a.json /tmp/9i2/final_b.json
+59dcbc82a9fe90fe100794fe2367b63c3027a03cc8c9d74508093a8a050845a7  /tmp/9i2/final_a.json
+59dcbc82a9fe90fe100794fe2367b63c3027a03cc8c9d74508093a8a050845a7  /tmp/9i2/final_b.json
+```
+
+La **calibration anti-clipping** de la preuve (§ 4.1) a également été rejouée au
+HEAD final et reproduit les mêmes valeurs qu'en T3, ce qui confirme que le
+détecteur échoue bien sur un panneau `overflow:hidden` tronqué (la forme de
+défaut que le job gelé a signalée) :
+
+```
+$ PYTHONPATH="$PWD/tests/trainer:/tmp/opencode/pylibs" LD_PRELOAD=/tmp/fitpilot/fitshim.so \
+  LD_LIBRARY_PATH=/tmp/opencode/browserlibs/sysroot/usr/lib/x86_64-linux-gnu \
+  python3 -u /tmp/nx3/calib.py "$PWD/site" /tmp/9i2/calib_measure.json 9i2
+baseline: clipped=0 unreachable=0/6 old_evasion=0
+inject: {'height': 120}
+synthetic-clip: clipped=6 unreachable=2/6 old_evasion=0
+restore: {'height': 621.859375}
+restored: clipped=0 unreachable=0/6 old_evasion=0
+EXIT=0
+```
+
+**Limites de cette re-mesure** (identiques à celles déclarées par la preuve § 2.2)
+: ce **n'est pas** le smoke gelé ; la livraison d'événements synthétiques
+Playwright (souris/clavier) bloque dans ce sandbox, donc la confirmation
+`locator.click(trial=True)` de l'assertion T2 et le parcours clavier du Replayer
+n'ont **pas** été exécutés localement et restent couverts par le job gelé ; enfin
+aucune valeur ci-dessus n'est un résultat de CI. Le harnais et ses sorties
+(`/tmp/nx3/measure.py`, `/tmp/nx3/calib.py`, `/tmp/9i2/final_a.json`,
+`/tmp/9i2/final_b.json`) sont **hors dépôt et non versionnés** : ils ne sont pas
+une dépendance du contrat, seulement la trace de la méthode réellement employée.
+
+Ce qui est **réellement vérifié au HEAD final** pour ce volet côté contrats : le
+contrat d'orchestration du smoke (`test_smoke_orchestration_contract.py`, PASS)
+et les contrats statiques du shell desktop qui encadrent les mêmes garanties
+(`test_desktop_accessibility_contract.py`, `test_product_architecture_contract.py`,
+`test_appview_no_recompute_contract.py`, tous PASS dans la boucle § 4).
 
 ## Conformité aux contraintes globales
 
 | Contrainte | Statut |
 | --- | --- |
-| Worktree isolé `n8n/issue-394/task-backlog-4s0` | respecté |
+| Worktree isolé `n8n/issue-394/task-backlog-9i2` | respecté |
 | Aucun commit / push / rebase / `git add` | respecté (opérations jamais exécutées) |
 | Aucun merge | respecté |
-| Aucune modification de `.github/workflows/**` | respecté (`git status` ne liste que le rapport) |
-| Aucune modification modèle / science / équité | respecté (aucun fichier `training/models/**`, `src/**` scientifique ou artefact d'équité dans le diff) |
-| Diff Git non vide | respecté : ajout de `docs/issue-394-release-identity-ci-report.md` |
+| Aucune modification de `.github/workflows/**` ni `.github/actions/**` | respecté (`git diff --stat HEAD -- .github/` vide) |
+| Aucune modification modèle / science / équité | respecté |
+| Diff Git non vide | respecté : ce rapport (`docs/issue-394-release-identity-ci-report.md`) |
+| Aucune écriture `site/**` qui survive à cette tâche | respecté : `site/RELEASE.json` et `site/packs/catalog.json` régénérés **sans delta** ; T4 est le dernier écrivain de `site/**` |
 | Aucun skip ni assertion affaiblie | respecté (48/48 contrats, aucun test modifié) |
 
 ## Annexe — commandes exactes et sorties
 
 ```
 $ git rev-parse HEAD
-942952bd966f7cd6535bd2de021b868267234868
+c83c72fef98778c023db257cb39f0540e5319cac
 
-$ git status --porcelain          # avant l'ajout de ce rapport
+$ git status --porcelain          # avant l'écriture de ce rapport
 (aucune sortie)
+
+$ sha256sum site/index.html site/trainer.js > /tmp/9i2_before.sha
+$ python3 tools/patches/apply_trainer_mvp.py
+trainer MVP integration patch applied
+$ sha256sum site/index.html site/trainer.js > /tmp/9i2_after.sha
+$ diff -u /tmp/9i2_before.sha /tmp/9i2_after.sha
+EXIT=0
 
 $ python3 tools/write_site_release.py
 wrote site/RELEASE.json
@@ -352,25 +474,16 @@ $ git status --porcelain          # régénération neutre
 $ python3 tools/write_site_release.py --check
 release source anchor verified: site/RELEASE.json; assembled identity can be materialized
 EXIT=0
+$ git status --porcelain site/packs/catalog.json
+(aucune sortie)
 
 $ git rev-parse HEAD:site/index.html
-c9835c2aa6bcb91e0e6282eee5e5f21989e831d4
-
-$ sha256sum site/index.html site/trainer.js
-e1134aeaf9c29abd72402b190c205503570931087a40dfc8795b7b3f4b69f890  site/index.html
-cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
-
-$ sha256sum site/index.html site/trainer.js > /tmp/before.sha
-$ python3 tools/patches/apply_trainer_mvp.py
-trainer MVP integration patch applied
-$ sha256sum site/index.html site/trainer.js > /tmp/after.sha
-$ diff -u /tmp/before.sha /tmp/after.sha
-EXIT=0
+c22f0f2dcec3758a39f8404c99ff8c11fba661d6
 
 $ node --check site/trainer.js
 EXIT=0
 
-$ for test in tests/trainer/test_*.py; do python3 "$test"; done
+$ for t in tests/trainer/test_*.py; do python3 "$t"; done
 … 48 modules, 48 PASS, 0 échec …
 
 $ PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
@@ -378,5 +491,9 @@ REPRO workflow batch-1 tests: 9 passed
 
 $ python3 tests/trainer/smoke_modes_desktop.py      # smoke navigateur des modes
 smoke_modes_desktop: Playwright is unavailable (ModuleNotFoundError("No module named 'playwright'")). …
-EXIT=1   # fail-closed attendu, cause environnementale (voir § Smoke navigateur)
+EXIT=1   # fail-closed observé, cause environnementale (voir § Smoke navigateur)
+
+$ python3 tests/trainer/smoke_trainer.py
+ModuleNotFoundError: No module named 'playwright'
+EXIT=1   # échec à l'import, avant run_driver_smokes()
 ```
