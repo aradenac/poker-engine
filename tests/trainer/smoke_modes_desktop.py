@@ -45,6 +45,19 @@ Covered journeys (each on a fresh context, both viewports):
 * a minimal keyboard/focus control: `Tab` until the Replayer right-panel tabs
   are focused, then `ArrowRight`/`ArrowLeft` (roving focus + activation) and
   `Enter` (explicit keyboard activation) must only toggle pane visibility.
+* a Review **race**: the mode card is clicked as soon as `setAppView` and the
+  initial `document.body.dataset.appView` exist, i.e. while the asynchronous
+  local restore is still opening IndexedDB, and the readiness barrier is only
+  awaited afterwards. The view picked during that window must survive the end of
+  the restore (`document.body.dataset.appView === "review"`, `#reviewDashboard`
+  visible, `#historiesSection` hidden) — the failure mode of `cd97db1`.
+
+Every journey additionally crosses a **readiness barrier**: `run_viewport` waits
+for `state.persistenceReady === true` right after the initial navigation, before
+the first mode-card click, because the local restore settles `state.appView` when
+it finishes. The barrier waits on that real readiness signal only — never a
+retry, a skip or a mask of a failure: a restore that never settles fails here
+instead of letting the journey race it.
 
 It is a representation/application-shell smoke only: no model/fit, no equity
 kernel and no immutable repro evidence is touched. It starts its own ephemeral
@@ -124,6 +137,28 @@ REPLAYER_TABS_JS = """() => {
     selected: tabs.filter(t => t.getAttribute("aria-selected") === "true").map(t => t.dataset.appSubview),
     roving: tabs.filter(t => t.tabIndex === 0).map(t => t.dataset.appSubview),
     hidden
+  };
+}"""
+
+# #394 T2 — the Review shell is a tab row of sub-views. Landing on Review must
+# select exactly one of them (`pilotage`), scoped to the Review shell so a
+# pytest/smoke of another view can never satisfy it.
+REVIEW_SELECTED_SUBTABS_JS = """() => Array.from(
+  document.querySelectorAll('[data-view-shell="review"] [data-app-subview][aria-selected="true"]')
+).map(tab => tab.dataset.appSubview)"""
+
+# #394 T2 — measured verdict of the Review race. Every field is read back from
+# the page *after* the restore settled, so a view overwritten by the restore is
+# named with its measured values instead of a bare boolean. Pane visibility is
+# measured separately with Playwright's own visibility check (the same
+# instrument the Review landing assertions use), so a shell that the restore
+# remounted over the click cannot pass through this probe.
+RACE_PROBE_JS = """() => {
+  return {
+    mounted: document.body.dataset.appView || '',
+    appView: state.appView,
+    userNavigated: !!state.userNavigated,
+    persistenceReady: state.persistenceReady === true
   };
 }"""
 
@@ -320,6 +355,33 @@ async def _wait_view(page, view: str, timeout: int = 30_000) -> None:
     )
 
 
+# #394 T2 — readiness barrier of the asynchronous local restore
+# (`restoreLocalState()` opens IndexedDB and only then settles `state.appView`).
+# A mode card clicked while that restore is still in flight is a race, so the
+# normal journey crosses this barrier right after the initial navigation and
+# before its first mode-card click. It waits on the real readiness signal
+# (`state.persistenceReady`) and is neither a retry, a skip nor a mask: a restore
+# that never settles fails here on the timeout with that state measured.
+READINESS_TIMEOUT_MS = 30_000
+
+
+async def _wait_persistence_ready(page, timeout: int = READINESS_TIMEOUT_MS) -> None:
+    await page.wait_for_function("() => state.persistenceReady===true", timeout=timeout)
+
+
+def _review_race_verdict(probe: dict, width: int, height: int) -> str:
+    """Explicit measured verdict of the Review race (no retry, no skip)."""
+    return (
+        f"course Review (viewport {width}x{height}) — "
+        f"document.body.dataset.appView={probe.get('mounted')!r} "
+        f"state.appView={probe.get('appView')!r} "
+        f"state.userNavigated={probe.get('userNavigated')} "
+        f"state.persistenceReady={probe.get('persistenceReady')} "
+        f"#reviewDashboard visible={probe.get('reviewDashboardVisible')} "
+        f"#historiesSection masqué={probe.get('historiesHidden')}"
+    )
+
+
 async def _measure(page, mode: str, width: int, height: int, audit: list[dict]) -> dict:
     result = await page.evaluate(MEASURE_JS)
     audit.append(
@@ -402,6 +464,11 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
     page.on("pageerror", lambda exc: page_errors.append(str(exc)))
     try:
         await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+        # #394 T2 — readiness barrier, placed before the first mode-card click:
+        # the asynchronous local restore settles `state.appView` when it ends, so
+        # the journeys below start from a settled view. It is a wait on a real
+        # readiness signal, not a retry, a skip or a mask of a failure.
+        await _wait_persistence_ready(page)
         await _wait_view(page, "home")
         await _measure(page, "home", width, height, audit)
 
@@ -419,6 +486,13 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         #    surface is its own pane, reached by a real click on the Import tab.
         await page.click('button.mode-card[data-app-view="review"]')
         await _wait_view(page, "review")
+        # #394 T2 — landing on Review selects exactly its Pilotage sub-view: the
+        # tab row of the Review shell must carry a single `aria-selected="true"`.
+        selected_subtabs = await page.evaluate(REVIEW_SELECTED_SUBTABS_JS)
+        assert selected_subtabs == ["pilotage"], (
+            "l'atterrissage Accueil → Review doit sélectionner exactement l'onglet Pilotage "
+            f"({width}x{height}) — onglets sélectionnés: {selected_subtabs}"
+        )
         assert await page.locator("#reviewDashboard").is_visible(), (
             f"Review doit atterrir sur le panneau Pilotage ({width}x{height})"
         )
@@ -659,6 +733,79 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
     return page_errors
 
 
+async def run_review_race_viewport(
+    browser, url: str, width: int, height: int, audit: list[dict]
+) -> list[str]:
+    """#394 T2 — Review mode-card race, in its own fresh context, per viewport.
+
+    Reproduces the CI failure of `cd97db1`: the Review mode card is clicked while
+    the asynchronous local restore is still opening IndexedDB, so the restore is
+    what completes *after* the user navigation. With the T1 guard the picked view
+    is final and the race resolves to Review; without it the restore re-applies
+    the restored/default view over the click (the view is overwritten).
+
+    The click waits only for the two probes that make the card clickable at all
+    (`typeof setAppView === 'function'` — the script has parsed — and the initial
+    `document.body.dataset.appView` mounted by the synchronous `updateAppView()`),
+    never for readiness. The readiness barrier is crossed afterwards and the
+    verdict is then *measured* (`document.body.dataset.appView`, both panes,
+    `state.userNavigated`, `state.persistenceReady`), so a view overwritten after
+    the navigation fails with those values. There is no retry and no skip; the
+    scenario also stays green when the restore had already finished before the
+    click (the click then simply selects Review on a settled page).
+    """
+    context = await browser.new_context(viewport={"width": width, "height": height})
+    page = await context.new_page()
+    page_errors: list[str] = []
+    page.on("pageerror", lambda exc: page_errors.append(str(exc)))
+    try:
+        await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+        await page.wait_for_function(
+            "() => typeof setAppView === 'function' && !!document.body.dataset.appView",
+            timeout=45_000,
+        )
+        await page.click('button.mode-card[data-app-view="review"]', timeout=10_000)
+        # Only now does the race resolve: cross the readiness barrier (the restore
+        # has settled `state.appView` and `state.persistenceReady`), then read the
+        # verdict back from the page.
+        await _wait_persistence_ready(page)
+        probe = await page.evaluate(RACE_PROBE_JS)
+        # The two panes are measured with Playwright's own visibility check, the
+        # same instrument the Review landing assertions use: a shell that the
+        # restore remounted over the click makes `#reviewDashboard` invisible even
+        # though its `hidden` property was never touched.
+        probe["reviewDashboardVisible"] = await page.locator("#reviewDashboard").is_visible()
+        probe["historiesHidden"] = await page.locator("#historiesSection").is_hidden()
+        audit.append(
+            {
+                "race": True,
+                "mode": "review",
+                "viewport": f"{width}x{height}",
+                "mounted": probe["mounted"],
+                "appView": probe["appView"],
+                "userNavigated": probe["userNavigated"],
+                "persistenceReady": probe["persistenceReady"],
+                "reviewDashboardVisible": probe["reviewDashboardVisible"],
+                "historiesHidden": probe["historiesHidden"],
+            }
+        )
+        assert probe["mounted"] == "review", (
+            "la vue Review sélectionnée pendant l'ouverture d'IndexedDB a été écrasée par la "
+            f"fin de la restauration locale ({width}x{height}) — {_review_race_verdict(probe, width, height)}"
+        )
+        assert probe["reviewDashboardVisible"], (
+            "le panneau Pilotage (#reviewDashboard) doit rester visible après la course "
+            f"({width}x{height}) — {_review_race_verdict(probe, width, height)}"
+        )
+        assert probe["historiesHidden"], (
+            "le panneau Import (#historiesSection) doit rester masqué après la course "
+            f"({width}x{height}) — {_review_race_verdict(probe, width, height)}"
+        )
+    finally:
+        await context.close()
+    return page_errors
+
+
 async def run() -> None:
     assert FIXTURE.is_file() and FIXTURE_HAND_ID, f"fixture HH repro introuvable: {FIXTURE}"
     audit: list[dict] = []
@@ -673,6 +820,17 @@ async def run() -> None:
                     errors = await run_viewport(browser, url, width, height, audit)
                     for error in errors:
                         print(f"  page error ({width}x{height}): {error}", file=sys.stderr)
+                    # #394 T2 — the Review race runs per viewport too, in its own
+                    # fresh context: the journey above is deterministic thanks to
+                    # the readiness barrier, this one deliberately races it.
+                    race_errors = await run_review_race_viewport(
+                        browser, url, width, height, audit
+                    )
+                    for error in race_errors:
+                        print(
+                            f"  page error (course Review, {width}x{height}): {error}",
+                            file=sys.stderr,
+                        )
             finally:
                 await browser.close()
     finally:
@@ -680,6 +838,16 @@ async def run() -> None:
 
     print("desktop modes overflow audit (document.scrollingElement):")
     for record in audit:
+        if record.get("race"):
+            # #394 T2 — the Review race verdict, measured after the restore
+            # settled: which view survived the race and which panes are mounted.
+            print(
+                "  mode=review    viewport={viewport:<10} course Review: "
+                "persistenceReady={persistenceReady} mounted={mounted} "
+                "userNavigated={userNavigated} #reviewDashboard={reviewDashboardVisible} "
+                "#historiesSection masqué={historiesHidden}".format(**record)
+            )
+            continue
         if "hit_test" in record:
             # The import surface verdict is measured too (see
             # `_assert_import_surface_hit_testable`): `elementFromPoint` at the
@@ -704,7 +872,8 @@ async def run() -> None:
     print(
         "modes desktop smoke: PASS "
         f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard "
-        "+ measured Review import surface reachability: elementFromPoint hit-test + click trial)"
+        "+ measured Review import surface reachability: elementFromPoint hit-test + click trial "
+        "+ persistenceReady readiness barrier + Review race scenario)"
     )
 
 
