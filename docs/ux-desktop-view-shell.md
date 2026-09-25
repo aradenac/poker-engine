@@ -25,8 +25,12 @@ and the exported constants are
     APP_ALLOWED_SCROLL_ZONES  (site/index.html, page script)
 
 UI labels are French because the static application is French-facing. The
-desktop scope is `@media(min-width:901px)`; the `<901px` rendering keeps its
-historical document flow and is explicitly out of this contract.
+contract distinguishes two scopes. The **desktop shell** (`100dvh`, no global
+scroll, fixed-height view shells, §1) is scoped to `@media(min-width:901px)`;
+the **sub-view / tab / pane pattern** (§2) is **global** — it is declared
+outside every media query, so Review, Spot Lab, Training and Replayer are tabbed
+below `901px` too, with one pane visible at a time, while `html`/`body` keep
+their historical document flow (§2.1).
 
 ## 1. Rule: `100dvh`, no global scroll
 
@@ -51,6 +55,14 @@ bounded **allow-listed** zone (§3). No view may reintroduce a global scroll:
 `@media(min-width:901px)` block, and the narrow-viewport scroll boxes stay
 declared inside `max-width` blocks.
 
+That desktop-only statement covers the `100dvh` / global-scroll rule only. The
+sub-view pattern is **not** part of it: `.app-subviews`, `.app-subview-tab`,
+`.app-subview-panel` and `.app-subview-panel[hidden]{display:none!important}`
+are base rules, declared outside every media query, so the same pattern also
+drives the `<901px` rendering (§2.1). The desktop block therefore cannot leak a
+shell rule below `901px`: the narrow rendering keeps the normal document flow of
+`html`/`body` and only inherits the in-flow pattern rules.
+
 ## 2. Mode → view → sub-view mapping
 
 | Mode (Accueil) | `state.appView` | Shell (`data-view-shell`) | Sub-views (`data-app-subview`) |
@@ -68,6 +80,15 @@ plus a `[data-app-subview-panel="<name>"]` pane; the inactive panes are
 returns `node.closest("[data-view-shell]")`, and `activateAppSubview(name)`
 toggles only the panels of that scope, so a tab in one view can never blank a
 neighbouring view.
+
+The pattern is **global**, never re-scoped into `@media(min-width:901px)`: the
+base rules `.app-subviews`, `.app-subview-tab`, `.app-subview-panel` and
+`.app-subview-panel[hidden]{display:none!important}` sit outside every media
+query, and `activateAppSubview(name)` toggles `hidden` without any width guard.
+The `!important` on the `[hidden]` rule is deliberate — a pane class may declare
+its own `display` (`.replayer-context-pane{display:flex}`, the Spot Lab
+`.panel`), and a class rule would otherwise beat the user-agent
+`[hidden]{display:none}`.
 
 The Review shell exposes its excess as three sibling panes of equal standing —
 Pilotage (`#reviewDashboard`), Import (`#historiesSection`) and Inbox
@@ -127,6 +148,50 @@ which shrinks its page size until
 `hhHandsEl.scrollHeight <= hhHandsEl.clientHeight + 1`, with `#hhListPager`
 (`.app-list-pager`, `#hhPagePrev` / `#hhPageNext`) driving the pages. No row is
 ever lost behind `overflow:hidden`.
+
+### 2.1 Rendering below `901px`: the sub-view pattern is global
+
+Below `901px` the dense views stay tabbed: one pane visible at a time, selected
+by its own `role="tab"` thumb, while `html`/`body` keep their historical
+document flow (no `100dvh`, no global `overflow`; the tab strip is plain in-flow
+content). The pattern is the same at every width — it is declared for the
+desktop shell, never restricted to it — and it is pinned statically by
+`tests/trainer/test_desktop_accessibility_contract.py`.
+
+Mobile-UX inventory (static): the panes that carry `hidden` in the markup and
+the tab that owns each of them —
+
+- Review: `import` (`#historiesSection`, tab `#reviewImportTab`) and `inbox`
+  (`#handSelectionSection`, tab `#reviewInboxTab`);
+- Spot Lab: `spotlab-board` (`#cardsSection`, tab `#spotlabBoardTab`),
+  `spotlab-range` (`#rangeDisplaySection`, tab `#spotlabRangeTab`) and
+  `spotlab-equity` (`#equitySection`, tab `#spotlabEquityTab`);
+- Training: `trainer-session` (`#trainerSessionPanel`, tab `#trainerSessionTab`),
+  `trainer-profiles` (`#trainerProfilesPanel`, tab `#trainerProfilesTab`) and
+  `trainer-test` (`#trainerTestPanel`, tab `#trainerTestTab`);
+- Replayer: `replayer-ranges` (`#replayerRangesPanel`, tab `#replayerRangesTab`)
+  and `replayer-details` (`#hhReplayDetail`, tab `#replayerDetailsTab`).
+
+The other panes — `pilotage` (`#reviewDashboard`), `spotlab-situation`
+(`#opponentsSection`), `trainer-coaching` (`#trainerCoachPanel`) and
+`replayer-decision` (`#replayerDecisionPanel`) — are the landing panes and are
+visible without any click.
+
+Verdict: **no pane without a tab, no unreachable pane.** Every
+`[data-app-subview-panel]` of the document has exactly one owning
+`[data-app-subview]` tab in the same shell, and `activateAppSubview` un-hides it
+whatever the viewport width. `#hhReplayDetail` additionally carries
+`mode-hidden` until `renderHistoryReplay()` paints the hand's replay, but the
+Replayer shell is only ever mounted with a selected hand (`openAppView("replayer")`
+is a no-op without `state.selectedHand`, and the asynchronous local restore never
+restores `replayer`), so that class is already cleared when its tab can be
+clicked. No correction was needed: the minimal diff is the documentation and the
+static guard, not a mobile rework.
+
+No rule of the desktop block leaks below `901px`: the `100dvh` / `overflow`
+rules of `site/index.html` and the Training fixed-height shell of
+`site/trainer.css` are declared inside their `@media(min-width:901px)` block,
+and the only base rules the pattern adds are the in-flow rules quoted above.
 
 ## 3. Allowed overflow policies
 
@@ -412,8 +477,9 @@ EXIT=1
 ## 8. Verification
 
 - `tests/trainer/test_desktop_accessibility_contract.py` — the static shell
-  contract, the `APP_ALLOWED_SCROLL_ZONES` allow-list and the optional browser
-  measurement.
+  contract, the global scope of the sub-view pattern and the resulting mobile
+  inventory (§2.1), the `APP_ALLOWED_SCROLL_ZONES` allow-list and the optional
+  browser measurement.
 - `tests/trainer/test_product_architecture_contract.py` — this document: the
   `100dvh` / no-scroll rule, the mode → view → sub-view mapping, the overflow
   policies, the navigation / deep-link contract, the no-recalculation rule and

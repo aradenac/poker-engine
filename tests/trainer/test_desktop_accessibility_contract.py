@@ -19,10 +19,17 @@ Two layers are checked.
      are the ones declared in `APP_ALLOWED_SCROLL_ZONES`, each with a written
      justification. Everything else is `overflow:hidden`, so nothing reachable
      can be lost behind a clipped shell;
-   * the `<901px` rendering is untouched: every shell rule lives in a
-     `@media(min-width:901px)` block (e.g. the preserved dense-desktop label
-     floor), and the narrow-viewport scroll boxes stay declared inside
-     `max-width` blocks.
+   * the `<901px` rendering keeps its historical document flow: the `100dvh` /
+     `overflow` rules live in a `@media(min-width:901px)` block (e.g. the
+     preserved dense-desktop label floor), and the narrow-viewport scroll boxes
+     stay declared inside `max-width` blocks;
+   * the reusable sub-view / tab / pane pattern is **global**, not re-scoped
+     into `@media(min-width:901px)`: `.app-subviews`, `.app-subview-tab`,
+     `.app-subview-panel` and `.app-subview-panel[hidden]{display:none!important}`
+     are base rules declared outside every media query, `activateAppSubview`
+     toggles `hidden` with no width guard, and every pane has exactly one owning
+     tab — so the dense views stay tabbed below `901px` and no pane is
+     unreachable at any width.
 
 2. Browser measurement (opt-in, `python3 ... --browser` or
    `DESKTOP_SHELL_BROWSER_CHECK=1`): serves `site/index.html` locally and asserts
@@ -44,6 +51,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 INDEX = (ROOT / 'site/index.html').read_text(encoding='utf-8')
 TRAINER_CSS = (ROOT / 'site/trainer.css').read_text(encoding='utf-8')
+SHELL_DOC = (ROOT / 'docs/ux-desktop-view-shell.md').read_text(encoding='utf-8')
 
 DESKTOP_MIN_WIDTH = 901
 SHELL_VIEWS = ('home', 'review', 'spotlab', 'strategy', 'training', 'replayer')
@@ -190,7 +198,8 @@ def check_desktop_shell_contract() -> None:
     assert body is not None, 'body must be a flex column so a view shell can own the viewport height'
     assert 'display:flex' in body and 'flex-direction:column' in body, body
     # The narrow rendering keeps its normal document flow: the base body rule is
-    # untouched, and no viewport-height/scroll rule escapes the desktop block.
+    # an in-flow rule, and no viewport-height/scroll rule escapes the desktop
+    # block.
     base_body = declarations_for('body')
     assert base_body is not None and not SCROLL_DECLARATION.search(base_body), base_body
     for media, selector, declarations in rules:
@@ -380,6 +389,100 @@ def check_desktop_shell_contract() -> None:
     assert '.matrixwrap{overflow:hidden;margin-top:12px}' in INDEX
 
 
+def check_subview_scope_and_mobile_inventory() -> None:
+    """#394 T2 — the sub-view pattern is global, the `100dvh` shell is not.
+
+    Divergence #2 of the review: the documents and the CSS comment used to claim
+    the `<901px` rendering was unaffected by the shell, while the sub-view rules
+    were (correctly) declared outside every media query and `activateAppSubview`
+    toggles `hidden` with no width guard. The contract now states the truth, and
+    this static guard pins it: the pattern is global, only the `100dvh` /
+    no-global-scroll rule stays inside `@media(min-width:901px)`, and every pane
+    keeps an owning tab so no pane is unreachable at any width.
+    """
+    rules = css_rules(INDEX)
+
+    # The reusable pattern must live outside every media query: it is the single
+    # excess mechanism of Review/Spot Lab/Training/Replayer below 901px too.
+    for selector in ('.app-subviews', '.app-subview-tab', '.app-subview-panel'):
+        base = [declarations for media, sel, declarations in rules if media is None and sel == selector]
+        assert base, f'{selector} must be declared outside any media query'
+        rescoped = [
+            media
+            for media, sel, _ in rules
+            if media and 'min-width:901px' in media and sel == selector
+        ]
+        assert not rescoped, f'{selector} must not be re-scoped into a desktop block: {rescoped}'
+
+    hidden_panel = [decl for media, sel, decl in rules if media is None and sel == '.app-subview-panel[hidden]']
+    assert any('display:none!important' in declarations for declarations in hidden_panel), hidden_panel
+    assert not [
+        media
+        for media, sel, _ in rules
+        if media and 'min-width:901px' in media and sel == '.app-subview-panel[hidden]'
+    ], 'the pane `[hidden]` rule is global, it is never desktop-only'
+    # The `!important` is required because a pane class may declare its own
+    # `display` (`.replayer-context-pane{display:flex}`, the Spot Lab `.panel`),
+    # which would otherwise beat the user-agent `[hidden]{display:none}`.
+    assert '.replayer-context-pane{display:flex' in INDEX
+    assert 'function activateAppSubview(name){' in INDEX
+    activate = INDEX.split('function activateAppSubview(name){', 1)[1].split('function activateAppSubviewForTarget', 1)[0]
+    assert 'panel.hidden=panel.dataset.appSubviewPanel!==name;' in activate
+    assert 'matchMedia' not in activate, 'the pane toggle must not be width-guarded'
+
+    # `100dvh` / global `overflow` stay desktop-only: below 901px `html`/`body`
+    # keep the normal document flow, whatever the global pattern rules do.
+    for media, selector, declarations in rules:
+        if selector not in ('html', 'body', 'html,body'):
+            continue
+        if '100dvh' in declarations:
+            assert media and 'min-width:901px' in media, (media, selector, declarations)
+        if SCROLL_DECLARATION.search(declarations):
+            raise AssertionError(f'global scroll declared by {selector} under {media or "no media"}')
+
+    # Static mobile inventory: every pane is owned by exactly one tab, so no pane
+    # is unreachable below 901px, and the inventory is versioned (each sub-view
+    # name is listed in §2.1 of the shell document).
+    # The markup only: the CSS comment spells the attribute names with a
+    # placeholder (`data-app-subview-panel="<nom>"`).
+    markup = INDEX.split('<body', 1)[1]
+    pane_tags = re.findall(r'<[^>]*data-app-subview-panel="[^"]+"[^>]*>', markup)
+    panels = [re.search(r'data-app-subview-panel="([^"]+)"', tag).group(1) for tag in pane_tags]
+    tabs = re.findall(r'data-app-subview="([^"]+)"', markup)
+    assert panels and tabs
+    assert len(set(panels)) == len(panels), 'a pane name is duplicated'
+    assert len(set(tabs)) == len(tabs), 'a tab name is duplicated'
+    assert sorted(panels) == sorted(tabs), (sorted(panels), sorted(tabs))
+    hidden_by_default = []
+    for tag, name in zip(pane_tags, panels):
+        pane_id = re.search(r'id="([^"]+)"', tag).group(1)
+        # The owning tab is the one that controls this pane, inside the same shell.
+        assert f'aria-controls="{pane_id}"' in markup, (name, pane_id)
+        assert f'data-app-subview="{name}"' in markup, name
+        if re.search(r'\shidden(?=[\s>])', tag):
+            hidden_by_default.append(name)
+        assert f'`{name}`' in SHELL_DOC, f'the mobile inventory must document the `{name}` sub-view'
+    assert hidden_by_default, 'the pattern only exists because some panes start hidden'
+    # The versioned inventory is exactly the markup truth: the hidden-by-default
+    # panes are the inventory bullets, and the landing panes are listed apart.
+    inventory = SHELL_DOC.split('Mobile-UX inventory', 1)[1].split('The other panes', 1)[0]
+    for name in hidden_by_default:
+        assert f'`{name}`' in inventory, f'the inventory must list the hidden `{name}` pane'
+    for name in set(panels) - set(hidden_by_default):
+        assert f'`{name}`' not in inventory, f'the landing `{name}` pane is not hidden by default'
+
+    # The documents state the corrected scope. The two literals below are the
+    # retired claims: they must not reappear in the shell document or in this
+    # module's docstring.
+    doc_flat = ' '.join(SHELL_DOC.split())
+    module_doc = ' '.join((__doc__ or '').split())
+    for stale_claim in ('untouched', 'out of this contract'):
+        assert stale_claim not in doc_flat, stale_claim
+        assert stale_claim not in module_doc, stale_claim
+    assert 'the sub-view pattern is global' in doc_flat
+    assert 'no pane without a tab, no unreachable pane' in doc_flat
+
+
 def check_allowed_scroll_zones() -> None:
     zones = allowed_scroll_zones()
     assert zones, 'APP_ALLOWED_SCROLL_ZONES must document the tolerated scroll zones'
@@ -480,6 +583,7 @@ async def measure_desktop_shell() -> None:
 def main() -> None:
     check_modal_accessibility_contract()
     check_desktop_shell_contract()
+    check_subview_scope_and_mobile_inventory()
     check_allowed_scroll_zones()
     print('desktop accessibility contract checks: OK')
 

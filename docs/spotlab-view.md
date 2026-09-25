@@ -12,7 +12,10 @@ The general desktop shell rules this view builds on (`100dvh` / no global
 scroll, the reusable sub-view / pagination pattern, the allowed overflow zones,
 the navigation / deep-link contract and the no-recalculation-on-a-view-change
 rule) are owned by `docs/ux-desktop-view-shell.md`; this document only adds the
-Spot Lab mapping and the floating-equity rule.
+Spot Lab mapping and the floating-equity rule. That document also owns the fact
+that the sub-view pattern is **global**: only the `100dvh` / no-global-scroll
+rule is desktop-only, so the Spot Lab tabs also drive the `<901px` rendering
+(§6 below).
 
 ## 1. The view
 
@@ -81,7 +84,29 @@ everywhere else (`home`, `review`, `strategy`, `training`) the widget is
 anchored top-right and starts **collapsed** (36 px, the `EQ` toggle) until the
 user expands it, so it only covers the pane on explicit request.
 
-## 6. Verification
+## 6. Rendu <901px
+
+The sub-view pattern is **global**, not desktop-only. Below `901px` the Spot Lab
+shell is tabbed exactly like above it: one pane visible at a time, selected by
+its own `role="tab"` thumb, while `html`/`body` keep their normal document flow
+(no `100dvh`, no global `overflow`). Only the desktop shell rules
+(`@media(min-width:901px)`) are desktop-only.
+
+The four panes behave the same at every width. `opponentsSection`
+(`spotlab-situation`) is the landing pane, and `cardsSection`
+(`spotlab-board`), `rangeDisplaySection` (`spotlab-range`) and `equitySection`
+(`spotlab-equity`) are `hidden` until their tab is selected — it is the same
+`activateAppSubview(name)` call, with no width guard, so a Spot Lab pane can
+never be unreachable below `901px`. The global
+`.app-subview-panel[hidden]{display:none!important}` rule is what keeps them
+hidden there, since `.panel` declares its own `display`.
+
+The complete mobile inventory of every view (panes hidden by default with their
+owning tab) and the explicit "no pane without a tab, no unreachable pane"
+verdict are versioned in `docs/ux-desktop-view-shell.md` §2.1; the static guard
+lives in `tests/trainer/test_desktop_accessibility_contract.py`.
+
+## 7. Verification
 
 - `tests/trainer/test_spotlab_subviews_contract.py` — static contract for this
   document, the tab/pane mapping, the unique ids and the floating-equity rule.

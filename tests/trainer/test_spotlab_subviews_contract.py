@@ -109,6 +109,15 @@ def main() -> None:
     assert "methodSelect" in DOC and "trialsSelect" in DOC
     assert "manual-import.html" in DOC
 
+    # The <901px rendering is documented: the sub-view pattern is global (only
+    # the 100dvh shell is desktop-only), so a Spot Lab pane is never unreachable
+    # below 901px. The full mobile inventory is versioned in the shell document.
+    assert "## 6. Rendu <901px" in DOC
+    assert "is **global**" in DOC
+    assert "activateAppSubview(name)" in DOC
+    assert "docs/ux-desktop-view-shell.md" in DOC
+    assert "no unreachable pane" in DOC or "no pane without a tab" in DOC
+
     print("spot lab sub-views contract checks: OK")
 
 
