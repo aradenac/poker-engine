@@ -236,7 +236,7 @@ every mode, Home included:
 - `#quickNav` and the Home mode cards (`[data-app-view]`) route through
   `appView` instead of scrolling. Every `#quickNav` entry is an **in-app**
   navigation, Strategy included: the entry `data-product-domain="strategy"`
-  carries the in-document `href="#strategyPage"` (`site/index.html:1279`) like
+  carries the in-document `href="#strategyPage"` (`site/index.html:1306`) like
   the Review / Equity Lab / Settings entries, so the generic hash path
   (`focusAppSection`) mounts the embedded shell of §4.1. The `.quick-nav a`
   handler therefore has no `strategy` branch and no `domain` variable; the only
@@ -261,6 +261,19 @@ every mode, Home included:
   link) reveals the import pane instead of scrolling a view that never scrolls.
 - `[data-home-back]` controls (`.app-view-back`) return to Home through
   `goHome()`.
+- The floating navigation is a left rail for as long as it is the vertical one
+  (`min-width:761px`; below that it becomes the mobile bottom bar) and its
+  `#quickNavToggle` button overhangs the rail's right border. The Home column
+  therefore reserves a **named gutter** (`--home-nav-gutter`, derived from
+  `--nav-rail-left` / `--nav-rail-width` / `--nav-toggle-width` /
+  `--nav-toggle-right` plus `--nav-rail-clearance`) through its own
+  `padding-left`: the whole interactive column starts strictly to the right of
+  `--nav-rail-end`, so no Home control — the Accueil « Review » shortcut
+  (`#homePage a[href="#historiesSection"]`) included — falls under the rail or
+  its toggle at 1500x1000 as well as at 1366x768. The separation is recomputed
+  from those declared numbers by
+  `tests/trainer/test_desktop_accessibility_contract.py`, whose optional browser
+  mode also resolves that shortcut's centre with `document.elementFromPoint`.
 - `state.appView` is persisted through the prefs whitelist and restored on load;
   `training` and `replayer` are not restored blindly (the Trainer needs its
   runtime bootstrap, the Replayer needs `state.selectedHand`).
@@ -278,7 +291,7 @@ which entry reaches which one — neither is a substitute for the other:
   (`site/index.html:9829`, at the end of the asynchronous local restore) and on
   `hashchange`, and `focusAppSection(id)` mounts the shell
   (`site/index.html:6792-6837`). The `#quickNav` Strategy entry carries exactly
-  that in-document `href="#strategyPage"` (`site/index.html:1279`), so the
+  that in-document `href="#strategyPage"` (`site/index.html:1306`), so the
   generic `.quick-nav a` handler routes it onto the same path — it is an in-app
   navigation like Review / Equity Lab / Settings, **not** a link to the
   standalone editor. That deep link is the measured entry of the shell in the

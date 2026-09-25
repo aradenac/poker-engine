@@ -34,8 +34,26 @@ Two layers are checked.
 2. Browser measurement (opt-in, `python3 ... --browser` or
    `DESKTOP_SHELL_BROWSER_CHECK=1`): serves `site/index.html` locally and asserts
    `document.scrollingElement.scrollHeight <= clientHeight` at 1500x1000 and
-   1366x768 for home/review/spotlab/training/replayer. It is skipped when
+  1366x768 for home/review/spotlab/training/replayer. It is skipped when
    Playwright is unavailable so the frozen static CI job stays hermetic.
+   The same session also resolves the centre of the Accueil « Review » shortcut
+   (`#homePage a[href="#historiesSection"]`) with `document.elementFromPoint`
+   and requires that link — or one of its descendants — to receive the point,
+   i.e. the floating rail must not intercept the click.
+
+3. Static rail / Home separation (#394 R1, no browser):
+
+   * the rail geometry (`--nav-rail-left`, `--nav-rail-width`,
+     `--nav-toggle-width`, `--nav-toggle-right`) and the gutter token
+     (`--home-nav-gutter`) are the single authority: the guard recomputes the
+     horizontal interval the rail and its toggle occupy at 1500x1000 and
+     1366x768 from those very declarations (px literals, `var()` and `calc()`
+     sums are resolved) and requires the interactive Home column — the column of
+     the Accueil « Review » shortcut — to start strictly to its right at both
+     reference viewports, and across the whole width range where the rail is the
+     vertical one;
+   * no `z-index` / `pointer-events` bypass, no negative offset pulling the Home
+     column back under the rail and no positioned Home column is accepted.
 """
 from __future__ import annotations
 
@@ -57,6 +75,24 @@ DESKTOP_MIN_WIDTH = 901
 SHELL_VIEWS = ('home', 'review', 'spotlab', 'strategy', 'training', 'replayer')
 MEASURED_VIEWS = ('home', 'review', 'spotlab', 'training', 'replayer')
 MEASURED_VIEWPORTS = ((1500, 1000), (1366, 768))
+
+# #394 R1 — the floating navigation rail is a left gutter while it is vertical
+# (`min-width:761px`; below that the nav becomes the bottom bar) and its toggle
+# overhangs the rail's right border. The Home column therefore reserves a named
+# gutter (`--home-nav-gutter`) instead of relying on its centred max-width.
+RAIL_SELECTOR = '.quick-nav'
+RAIL_TOGGLE_SELECTOR = '.quick-nav-toggle'
+WRAP_SELECTOR = '.wrap'
+HOME_COLUMN_SELECTOR = '#homePage'
+HOME_COLUMN_MARKUP = '<div id="homePage" class="wrap home-page" data-view-shell="home">'
+HOME_SHORTCUT_SELECTOR = '#homePage a[href="#historiesSection"]'
+HOME_SHORTCUT_MARKUP = '<a href="#historiesSection" class="filelabel"'
+HOME_ACTIONS_SELECTOR = '.product-home-actions'
+VERTICAL_RAIL_MIN_WIDTH = 761
+# The two reference viewports plus the width range where the rail stays vertical:
+# the separation is a property of the column, so it must not only hold for the
+# two smoke viewports.
+SEPARATION_SWEEP_WIDTHS = (761, 800, 900, 1024, 1180, 1181, 1280, 1366, 1440, 1500, 1920)
 
 # `overflow:auto|scroll` is forbidden in the desktop scope unless the rule is one
 # of the bounded, justified zones below. This regex deliberately ignores
@@ -114,6 +150,122 @@ def applies_at_desktop(media: str | None) -> bool:
         if int(value) < DESKTOP_MIN_WIDTH:
             return False
     return True
+
+
+def media_applies(media: str | None, width: int) -> bool:
+    """True when a media condition can apply at this exact viewport width.
+
+    `applies_at_desktop` answers the coarse "is this desktop scope?" question;
+    the rail/Home separation needs the real verdict per viewport, because the
+    rail narrows below 1181px (`@media(max-width:1180px)`).
+    """
+    if not media:
+        return True
+    for operator, value in re.findall(r'(min|max)-width\s*:\s*(\d+)px', media):
+        pixels = int(value)
+        if operator == 'min' and width < pixels:
+            return False
+        if operator == 'max' and width > pixels:
+            return False
+    return True
+
+
+def css_variables(css: str) -> dict[str, str]:
+    """The `--token: value` table declared on `:root`, whatever guards it.
+
+    The very first rule of `site/index.html` is read from the whole document: its
+    prelude still carries the markup of `<head>` before `:root`, so the token
+    table is matched on the selector tail.
+    """
+    variables: dict[str, str] = {}
+    for _media, selector, declarations in css_rules(css):
+        if selector.split('\n')[-1].strip() not in (':root', 'html', ':root,html'):
+            continue
+        for name, value in re.findall(r'(--[\w-]+)\s*:\s*([^;]+)', declarations):
+            variables[name] = value.strip()
+    return variables
+
+
+LENGTH_TERM = re.compile(r'var\(\s*(--[\w-]+)\s*\)|(-?\d+(?:\.\d+)?)px|([+-])')
+
+
+def _strip_calc(value: str) -> str:
+    text = value.strip()
+    while text[:5].lower() == 'calc(' and text.endswith(')'):
+        inner = text[5:-1]
+        depth = 0
+        for char in inner:
+            if char == '(':
+                depth += 1
+            elif char == ')':
+                depth -= 1
+                if depth < 0:
+                    break
+        if depth != 0:
+            break
+        text = inner.strip()
+    return text
+
+
+def resolve_css_length(value: str, variables: dict[str, str], depth: int = 0) -> float:
+    """Resolve a declared length made of px literals, `var()` and `calc()` sums.
+
+    The separation guard must recompute *the numbers the shell declares*, so it
+    resolves the very tokens and `calc()` expressions the stylesheet uses rather
+    than a second, hand-copied constant that could silently drift.
+    """
+    assert depth <= 8, f'CSS variable cycle around {value!r}'
+    total = 0.0
+    term_sign = 1.0
+    found = False
+    for reference, pixels, operator in LENGTH_TERM.findall(_strip_calc(value)):
+        if operator:
+            term_sign = 1.0 if operator == '+' else -1.0
+            continue
+        if reference:
+            assert reference in variables, f'{reference} is not declared'
+            total += term_sign * resolve_css_length(variables[reference], variables, depth + 1)
+        else:
+            total += term_sign * float(pixels)
+        term_sign = 1.0
+        found = True
+    assert found, f'unsupported CSS length {value!r}'
+    return total
+
+
+def declared_property(css: str, selector: str, prop: str, width: int) -> str | None:
+    """Last declared value of `prop` for `selector` among the rules applying at `width`."""
+    value = None
+    for media, name, declarations in css_rules(css):
+        if name != selector or not media_applies(media, width):
+            continue
+        for declared, raw in re.findall(r'([\w-]+)\s*:\s*([^;]+)', declarations):
+            if declared == prop:
+                value = raw.strip()
+    return value
+
+
+def rail_interval(width: int, variables: dict[str, str], css: str = INDEX) -> tuple[float, float]:
+    """Horizontal interval the floating rail **and its toggle** occupy at `width`."""
+    rail_left = resolve_css_length(declared_property(css, RAIL_SELECTOR, 'left', width) or '', variables)
+    rail_width = resolve_css_length(declared_property(css, RAIL_SELECTOR, 'width', width) or '', variables)
+    toggle_width = resolve_css_length(declared_property(css, RAIL_TOGGLE_SELECTOR, 'width', width) or '', variables)
+    toggle_right = resolve_css_length(declared_property(css, RAIL_TOGGLE_SELECTOR, 'right', width) or '', variables)
+    rail_right = rail_left + rail_width
+    toggle_start = rail_right + toggle_right
+    # The toggle only counts as an extra covered band when it overhangs the rail.
+    assert toggle_start >= rail_left, (toggle_start, rail_left)
+    return rail_left, max(rail_right, toggle_start + toggle_width)
+
+
+def home_column_left(width: int, variables: dict[str, str], css: str = INDEX) -> float:
+    """Left edge of the interactive Home column at `width`, from declared numbers."""
+    max_width = resolve_css_length(declared_property(css, WRAP_SELECTOR, 'max-width', width) or '', variables)
+    wrap_left = (width - min(float(width), max_width)) / 2
+    padding_left = resolve_css_length(
+        declared_property(css, HOME_COLUMN_SELECTOR, 'padding-left', width) or '', variables
+    )
+    return wrap_left + padding_left
 
 
 def desktop_scroll_selectors() -> dict[str, str]:
@@ -526,6 +678,111 @@ def check_allowed_scroll_zones() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# #394 R1 — static separation between the floating rail and the Home column.
+# --------------------------------------------------------------------------- #
+def check_home_nav_separation() -> None:
+    """The Home column starts strictly to the right of the floating rail.
+
+    Root cause of the #394 CI failure: at 1366x768 the centred Home column began
+    at x=97 (`(1366-1220)/2 + 24`), while `#quickNavToggle` — anchored to the
+    right border of the always-floating `.quick-nav` — covered x=114..142. The
+    centre of the Accueil « Review » shortcut therefore received the toggle, so
+    the frozen smoke's real click waited and timed out. The fix reserves an
+    explicit, named gutter on the Home column itself rather than masking the
+    overlap.
+
+    Everything below is recomputed from the declared CSS numbers: the rail box
+    (`.quick-nav`), the toggle box (`.quick-nav-toggle`), the centred column
+    (`.wrap`) and the gutter token (`--home-nav-gutter`).
+    """
+    variables = css_variables(INDEX)
+
+    # The column that must clear the rail is the Home shell itself, and the
+    # measured shortcut is the first control of its direct-access row: the column
+    # left edge is therefore the shortcut's own left edge.
+    assert HOME_COLUMN_MARKUP in INDEX, HOME_COLUMN_MARKUP
+    assert f'<nav id="quickNav" class="quick-nav"' in INDEX
+    assert f'<button id="quickNavToggle" type="button" class="quick-nav-toggle"' in INDEX
+    home_markup = INDEX.split(HOME_COLUMN_MARKUP, 1)[1].split('<div id="spotlabPage"', 1)[0]
+    assert HOME_SHORTCUT_MARKUP in home_markup, HOME_SHORTCUT_MARKUP
+    actions = (
+        home_markup.split('<div class="actions product-home-actions"', 1)[1]
+        .split('>', 1)[1]
+        .split('</div>', 1)[0]
+    )
+    assert actions.strip().startswith('<a href="#historiesSection"'), actions
+    actions_base = [
+        declarations
+        for media, selector, declarations in css_rules(INDEX)
+        if media is None and selector == HOME_ACTIONS_SELECTOR
+    ]
+    assert actions_base and 'display:flex' in actions_base[0], actions_base
+
+    # The column is centred by `margin:auto` on `.wrap`, so its left edge is a
+    # declared number and not a measured one.
+    wrap = [
+        declarations
+        for media, selector, declarations in css_rules(INDEX)
+        if media is None and selector == WRAP_SELECTOR
+    ]
+    assert wrap and 'margin:auto' in wrap[0] and 'max-width:1220px' in wrap[0], wrap
+
+    # The gutter has a single authority: one `padding-left` on the Home column,
+    # effective from the width where the rail is the vertical one, and expressed
+    # with the named token instead of a duplicated magic number.
+    gutter_rules = [
+        (media, declarations)
+        for media, selector, declarations in css_rules(INDEX)
+        if selector == HOME_COLUMN_SELECTOR and 'padding-left' in declarations
+    ]
+    assert len(gutter_rules) == 1, f'the Home gutter must have one authority: {gutter_rules}'
+    gutter_media, gutter_declarations = gutter_rules[0]
+    assert gutter_media and f'min-width:{VERTICAL_RAIL_MIN_WIDTH}px' in gutter_media, gutter_media
+    assert 'var(--home-nav-gutter)' in gutter_declarations, gutter_declarations
+
+    # No bypass: the rail keeps its stacking (the overlap is removed, not hidden
+    # behind the content), the toggle never stops receiving pointer events, and
+    # the Home column is neither positioned nor pulled back under the rail.
+    assert declared_property(INDEX, RAIL_SELECTOR, 'z-index', 1366) == '9997'
+    for media, selector, declarations in css_rules(INDEX):
+        if 'pointer-events' in declarations:
+            assert 'quickNavToggle' not in selector and selector != RAIL_TOGGLE_SELECTOR, (media, selector)
+        if selector in (HOME_COLUMN_SELECTOR, '.home-page', WRAP_SELECTOR, HOME_ACTIONS_SELECTOR):
+            flat = declarations.replace(' ', '')
+            for forbidden in ('position:fixed', 'position:absolute', 'margin-left:-', 'translateX(-', 'left:-', 'z-index:'):
+                assert forbidden not in flat, f'{selector} may not use {forbidden} ({media or "no media"})'
+
+    # Reference viewports: the acceptance case, recomputed from the declarations.
+    for width, height in MEASURED_VIEWPORTS:
+        rail_start, rail_end = rail_interval(width, variables)
+        column_left = home_column_left(width, variables)
+        assert column_left > rail_end, (
+            f'la colonne interactive de Home doit commencer strictement à droite du rail '
+            f'flottant à {width}x{height} : colonne left={column_left:g}px, '
+            f'rail+toggle=[{rail_start:g}, {rail_end:g}]px '
+            f'(max-width .wrap={resolve_css_length("1220px", variables):g}px, '
+            f'padding-left #homePage={resolve_css_length(gutter_declarations.split("padding-left:", 1)[1], variables):g}px)'
+        )
+
+    # The gutter is a column property, so it also clears the rail across the whole
+    # range where the rail is vertical — including where the centred column has no
+    # side margin left (<= 1220px wide).
+    gutter = resolve_css_length('var(--home-nav-gutter)', variables)
+    widest_rail_end = max(rail_interval(width, variables)[1] for width in SEPARATION_SWEEP_WIDTHS)
+    for width in SEPARATION_SWEEP_WIDTHS:
+        rail_start, rail_end = rail_interval(width, variables)
+        column_left = home_column_left(width, variables)
+        assert column_left > rail_end, (
+            f'rail/Home separation lost at {width}px: rail+toggle=[{rail_start:g}, {rail_end:g}]px '
+            f'vs colonne Home left={column_left:g}px (--home-nav-gutter={gutter:g}px)'
+        )
+    assert gutter >= widest_rail_end, (
+        f'--home-nav-gutter={gutter:g}px must cover the widest rail+toggle band '
+        f'({widest_rail_end:g}px) since the column may have no side margin at all'
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Optional browser measurement of acceptance criterion "no global scroll".
 # --------------------------------------------------------------------------- #
 MEASURE_JS = """async (view) => {
@@ -542,6 +799,53 @@ MEASURE_JS = """async (view) => {
     shell:!!document.querySelector(`[data-view-shell="${document.body.dataset.appView}"]`)
   };
 }"""
+
+# #394 R1 — the real hit-test of the Accueil « Review » shortcut: the centre of
+# its box must resolve that link (or one of its descendants), i.e. neither the
+# rail nor its toggle may intercept it. The measured boxes of the rail and of the
+# toggle are reported too, so a failure prints both sides of the overlap.
+HOME_SHORTCUT_PROBE_JS = """async () => {
+  const link=document.querySelector('#homePage a[href="#historiesSection"]');
+  if(!link) return {missing:true};
+  const rect=link.getBoundingClientRect();
+  const point=[rect.left+rect.width/2, rect.top+rect.height/2];
+  const at=document.elementFromPoint(point[0], point[1]);
+  const describe=(el)=>el?`${el.tagName.toLowerCase()}${el.id?'#'+el.id:''}`:null;
+  const nav=document.getElementById('quickNav');
+  const toggle=document.getElementById('quickNavToggle');
+  const navBox=nav?nav.getBoundingClientRect():null;
+  const toggleBox=toggle?toggle.getBoundingClientRect():null;
+  return {
+    missing:false,
+    point:point,
+    rect:[rect.left, rect.top, rect.right, rect.bottom],
+    at:describe(at),
+    atTag:at?at.tagName:null,
+    hits:!!at && (at===link || link.contains(at)),
+    railBox:navBox?[navBox.left, navBox.right]:null,
+    toggleBox:toggleBox?[toggleBox.left, toggleBox.right]:null,
+    railEnd:Math.max(navBox?navBox.right:0, toggleBox?toggleBox.right:0),
+    linkLeft:rect.left
+  };
+}"""
+
+
+async def assert_home_shortcut_hit_testable(page, width: int, height: int) -> None:
+    """`document.elementFromPoint` at the centre of the Review shortcut (#394 R1)."""
+    probe = await page.evaluate(HOME_SHORTCUT_PROBE_JS)
+    assert not probe.get('missing'), (
+        f'raccourci Accueil « Review » absent ({HOME_SHORTCUT_SELECTOR}, {width}x{height})'
+    )
+    assert probe['hits'], (
+        f'le centre du raccourci Accueil « Review » doit résoudre le lien '
+        f'({width}x{height}) — rect={probe["rect"]} point={probe["point"]} '
+        f'at={probe["at"]} (tag={probe["atTag"]}) rail={probe["railBox"]} '
+        f'toggle={probe["toggleBox"]}'
+    )
+    assert probe['linkLeft'] > probe['railEnd'], (
+        f'la colonne Home doit rester à droite du rail ({width}x{height}) — '
+        f'lien left={probe["linkLeft"]} railEnd={probe["railEnd"]}'
+    )
 
 
 class _QuietHandler(SimpleHTTPRequestHandler):
@@ -573,6 +877,9 @@ async def measure_desktop_shell() -> None:
                         f'{view} scrolls globally at {width}x{height}',
                         result,
                     )
+                    if view == 'home':
+                        # #394 R1 — the rail must not intercept the Home shortcuts.
+                        await assert_home_shortcut_hit_testable(page, width, height)
                 await page.close()
             await browser.close()
     finally:
@@ -585,6 +892,7 @@ def main() -> None:
     check_desktop_shell_contract()
     check_subview_scope_and_mobile_inventory()
     check_allowed_scroll_zones()
+    check_home_nav_separation()
     print('desktop accessibility contract checks: OK')
 
     wants_browser = '--browser' in sys.argv or os.environ.get('DESKTOP_SHELL_BROWSER_CHECK') == '1'

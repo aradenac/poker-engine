@@ -9,6 +9,20 @@
     --bg:#0b1020; --panel:#131a2d; --panel2:#192238; --text:#eef2ff; --muted:#9aa7c2;
     --border:#2a3655; --accent:#7c8cff; --accent2:#5ce1b9; --danger:#ff7b7b;
     --shadow:0 14px 40px rgba(0,0,0,.28);
+    /* #394 R1 — géométrie du rail de navigation flottant : autorité unique.
+       `#quickNavToggle` est ancré au bord droit du rail et en déborde de
+       `--nav-toggle-right` (négatif), donc `--nav-rail-end` est le bord droit
+       réellement occupé par la nav à l'écran et `--home-nav-gutter` la
+       gouttière que la colonne Home réserve pour qu'aucun contrôle interactif
+       ne passe dessous. Les nombres sont recalculés à partir de ces jetons par
+       tests/trainer/test_desktop_accessibility_contract.py. */
+    --nav-rail-left:10px;
+    --nav-rail-width:118px;
+    --nav-toggle-width:28px;
+    --nav-toggle-right:-14px;
+    --nav-rail-clearance:32px;
+    --nav-rail-end:calc(var(--nav-rail-left) + var(--nav-rail-width) + var(--nav-toggle-width) + var(--nav-toggle-right));
+    --home-nav-gutter:calc(var(--nav-rail-end) + var(--nav-rail-clearance));
   }
   *{box-sizing:border-box}
   body{margin:0;background:linear-gradient(180deg,#090e1b,#0d1424 45%,#0a1020);color:var(--text);
@@ -639,8 +653,8 @@
   .mode-hidden{display:none!important}
   @media(max-width:700px){.hh-hand{grid-template-columns:92px minmax(0,1fr)}.hh-cards{grid-column:2}}
   .quick-nav{
-    position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:9997;
-    width:118px;padding:6px;border:1px solid var(--border);border-radius:12px;
+    position:fixed;left:var(--nav-rail-left);top:50%;transform:translateY(-50%);z-index:9997;
+    width:var(--nav-rail-width);padding:6px;border:1px solid var(--border);border-radius:12px;
     background:rgba(13,21,39,.94);box-shadow:0 6px 18px rgba(0,0,0,.28);
     backdrop-filter:blur(8px)
   }
@@ -747,8 +761,8 @@
   .quick-nav{transition:transform .22s ease,opacity .18s ease,box-shadow .18s ease}
   .quick-nav.collapsed{transform:translate(calc(-100% + 28px),-50%);opacity:.96}
   .quick-nav-toggle{
-    position:absolute;top:50%;right:-14px;transform:translateY(-50%);
-    width:28px;height:58px;border-radius:0 10px 10px 0;border:1px solid var(--border);
+    position:absolute;top:50%;right:var(--nav-toggle-right);transform:translateY(-50%);
+    width:var(--nav-toggle-width);height:58px;border-radius:0 10px 10px 0;border:1px solid var(--border);
     border-left:0;background:rgba(13,21,39,.98);color:var(--text);cursor:pointer;
     display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;
     box-shadow:0 4px 12px rgba(0,0,0,.22)
@@ -760,6 +774,16 @@
     .quick-nav-toggle{display:none}
     .quick-nav.collapsed{transform:translateX(-50%)}
     .quick-nav.collapsed .quick-nav-title,.quick-nav.collapsed a{opacity:1;pointer-events:auto}
+  }
+
+  /* #394 R1 — tant que le rail est vertical (donc dès 761px, la nav devenant
+     une barre basse à ≤760px), la colonne Home réserve cette gouttière : le
+     raccourci « Review » et tout autre contrôle de Home commencent
+     strictement à droite de `--nav-rail-end`. Réserver la gouttière sur la
+     colonne elle-même (et non sur une ligne) couvre tout contrôle qui
+     traverserait la bande verticale du rail pendant le défilement interne. */
+  @media(min-width:761px){
+    #homePage{padding-left:calc(24px + var(--home-nav-gutter))}
   }
 
   .street-timeline,.replay-action-banner,.replay-stage,.table-center,.seat,.street-event,.bet-spot,.board-card,.hole-card{
@@ -1175,7 +1199,10 @@
     body{display:flex;flex-direction:column}
     [data-view-shell]{display:flex;flex-direction:column;flex:1 1 auto;width:100%;height:100dvh;max-height:100dvh;min-height:0;overflow:hidden;padding:14px 18px 16px}
     [data-view-shell].mode-hidden{display:none}
-    #homePage{padding:18px 24px 16px}
+    /* #394 R1 — la colonne Home garde ses marges verticales/latérales
+       déclarées séparément : son `padding-left` (la gouttière du rail) reste
+       une autorité unique, portée par le jeton `--home-nav-gutter`. */
+    #homePage{padding-top:18px;padding-right:24px;padding-bottom:16px}
     .app-view-head{flex:0 0 auto;margin:0 0 10px}
     .app-view-body{flex:1 1 auto;overflow:hidden}
     #spotlabPage .app-view-body>.grid{display:flex;flex-direction:column;gap:0;flex:1 1 auto;min-height:0;overflow:hidden}
