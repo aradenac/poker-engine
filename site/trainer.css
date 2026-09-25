@@ -70,7 +70,13 @@ body.trainer-view-open{overflow-x:hidden}body.trainer-view-open #floatingEquity{
    canvas borné `#trainerTable` (`.app-canvas-pane`) et le rail dans ses
    sous-vues bornées (`.app-subview-panel.app-scroll-zone`), toutes deux
    déclarées dans `APP_ALLOWED_SCROLL_ZONES`.
-   Rendu <901px : hors périmètre de cette règle, la page garde son flux normal. */
+   Portée : la règle `100dvh` / pas de scroll global reste **desktop only**
+   (bloc `@media(min-width:901px)` ci-dessous). Le pattern sous-vue / onglet est
+   **global** : les sous-vues bornées du rail (`.app-subview-panel`, dont
+   `.app-subview-panel[hidden]{display:none!important}`) et
+   `activateAppSubview` vivent dans la coque de `index.html`, hors media query.
+   Le Training reste donc une vue à onglets sous 901px (un seul panneau visible
+   à la fois) tandis que `html`/`body` gardent leur flux documentaire normal. */
 @media(min-width:901px){
   /* coque plein écran */
   .trainer-page{display:flex;flex-direction:column;height:100dvh;max-height:100dvh;min-height:0;overflow:hidden;padding:12px 18px 14px}

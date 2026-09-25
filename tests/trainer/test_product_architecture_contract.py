@@ -11,8 +11,17 @@ It is also the static consumer of the normative shell document
 allowed overflow policies, the navigation/deep-link contract, the
 no-recalculation-on-a-view-change rule and the browser-smoke orchestration
 shape must all stay coherent with the delivered implementation.
+
+It finally runs the #394 anti-claims guard
+`tools/check_issue394_stale_claims.py`: no versioned file may re-affirm the three
+claims the review rejected (the `#quickNav` Strategy entry reaching the
+standalone editor, the narrow rendering being outside the shell rule's scope,
+and the fit measurement leaning on a harness outside the checkout). The guard
+also proves the implementation still contradicts each of them.
 """
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -319,8 +328,22 @@ def main() -> None:
     assert 'prefs?.appView==="replayer"&&state.selectedHand' in restore
 
     check_ux_desktop_view_shell_doc()
+    check_issue394_stale_claims()
     print('product architecture contract checks: OK')
     print('ux desktop view shell doc contract checks: OK')
+
+
+def check_issue394_stale_claims() -> None:
+    """#394 — the anti-claims guard is part of the frozen static contract."""
+    completed = subprocess.run(
+        [sys.executable, 'tools/check_issue394_stale_claims.py'],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert 'issue-394 stale claims guard: PASS' in completed.stdout, completed.stdout
+    print('issue-394 stale claims guard: PASS')
 
 
 if __name__ == '__main__':
