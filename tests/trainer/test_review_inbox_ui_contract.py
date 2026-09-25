@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -41,6 +42,56 @@ def main() -> None:
     assert 'STREET_ASC' in index
     assert 'POSITION_ASC' in index
     assert 'HAND_ID_ASC' in index
+
+    # #394 T3/T1: Review is a dedicated view made of exactly three panes — the
+    # pilotage dashboard, the import surface and the review inbox. The import
+    # surface is its own pane so the whole import block (advanced options
+    # included) fits in the bounded shell instead of sharing the shell height
+    # with the dashboard. The manual tools (cards/board, opponents, method,
+    # equity, range edition) live in the Spot Lab view, never here.
+    review_view = index.split('<div id="mainPage"', 1)[1].split('<div id="strategyPage"', 1)[0]
+    assert 'id="reviewDashboard"' in review_view
+    assert 'id="historiesSection"' in review_view
+    assert 'id="handSelectionSection"' in review_view
+    for manual_id in ("opponentsSection", "cardsSection", "rangeDisplaySection", "equitySection"):
+        assert f'id="{manual_id}"' not in review_view, manual_id
+    assert set(re.findall(r'data-app-subview-panel="([^"]+)"', review_view)) == {"pilotage", "import", "inbox"}
+    assert set(re.findall(r'data-app-subview="([^"]+)"', review_view)) == {"pilotage", "import", "inbox"}
+    assert (
+        '<section id="historiesSection" class="panel wide app-subview-panel"'
+        ' role="tabpanel" aria-labelledby="reviewImportTab"'
+        ' data-app-subview-panel="import" hidden>'
+    ) in review_view
+    assert (
+        '<button type="button" class="app-subview-tab" id="reviewImportTab"'
+        ' role="tab" aria-selected="false" aria-controls="historiesSection"'
+        ' data-app-subview="import">Import</button>'
+    ) in review_view
+    # The dashboard CTA opens the Import pane before clicking the file input, so
+    # the picker never depends on an input inside a `hidden` pane.
+    assert 'reviewDashboardImportBtn?.addEventListener("click",()=>{activateAppSubview("import");hhFileInput?.click();});' in index
+
+    # #394 T3 — Replayer entry/return contract: the Replayer is opened from the
+    # Review inbox by openReplayerPage(), and its "Retour" brings the user back to
+    # the Review view with the selected hand preserved. The return is a pure view
+    # change: it activates the inbox pane, never scrolls the document, and never
+    # re-schedules the background review scoring (T8 contract).
+    replayer_entry = index[index.index('function openReplayerPage('):index.index('function returnToHandsPage')]
+    assert "state.appView='replayer'" in replayer_entry
+    assert 'scheduleBackgroundReviewScoring' not in replayer_entry
+    assert 'scheduleAutoCalculate' not in replayer_entry
+    back = index[index.index('function returnToHandsPage'):index.index('function leaveHistoryMode')]
+    assert 'if(state.hhMode) leaveHistoryMode();' in back
+    assert 'activateAppSubview("inbox")' in back
+    assert 'scrollIntoView' not in back
+    assert 'scheduleBackgroundReviewScoring' not in back
+    assert 'state.selectedHand=null' not in back
+    assert 'replayerBackBtn?.addEventListener("click",returnToHandsPage);' in index
+    # The dashboard leak CTA switches to the Inbox pane the same way, without
+    # scrolling the document either.
+    leak_cta = index[index.index('function openReviewDashboardLeak'):index.index('function openReviewDashboardTraining')]
+    assert 'activateAppSubview("inbox")' in leak_cta
+    assert 'scrollIntoView' not in leak_cta
 
     # #393 T3: the Inbox exposes the canonical analysis-state taxonomy as the
     # primary status label and as an explicit filter, while the raw reason codes

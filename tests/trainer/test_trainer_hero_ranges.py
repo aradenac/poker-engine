@@ -2,12 +2,16 @@
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 ASSET = ROOT / "site/assets/trainer/hero/custom_ranges_v1.json"
 PACK = ROOT / "site/assets/trainer/population.json"
 JS = (ROOT / "site/trainer.js").read_text(encoding="utf-8")
+INDEX = (ROOT / "site/index.html").read_text(encoding="utf-8")
+HERO_HTML = (ROOT / "site/hero-ranges.html").read_text(encoding="utf-8")
+HERO_APP = (ROOT / "site/hero-ranges-app.js").read_text(encoding="utf-8")
 
 data = json.loads(ASSET.read_text(encoding="utf-8"))
 assert data["schema"] == "trainer-hero-preflop-ranges/v1"
@@ -81,4 +85,92 @@ for needle in required:
 
 assert 'hole[heroSeat]=[trainerDraw(deck),trainerDraw(deck)]' not in JS, "uniform Hero deal reintroduced"
 assert 'const remaining=deck.filter(c=>!blocked.has(c))' not in JS, "removed Hero deck was reused"
+
+
+def check_hero_ranges_mode_contract() -> None:
+    """#394 T6 — the standalone editor is the Stratégie Hero mode of the Accueil.
+
+    The mode entry opens `hero-ranges.html` with a stable deep link built from
+    the active population, the editor offers a coherent return to the Accueil and
+    keeps its own deep link current, and the Home banner still carries the
+    compact active-strategy/source identity.
+    """
+    home = INDEX.split('<div id="homePage"', 1)[1].split('<div id="mainPage"', 1)[0]
+
+    # 1. Home exposes Stratégie Hero as a mode whose surface is the editor page.
+    mode_card = '<a class="mode-card" data-app-view="strategy" data-hero-ranges-entry href="./hero-ranges.html">'
+    assert mode_card in home, "the Stratégie Hero mode card must open hero-ranges.html"
+    assert '<span class="mode-card-title">Stratégie Hero</span>' in home
+    assert home.count('class="mode-card"') == 5, home
+    # #394 — the standalone editor is reached by the mode card and the embedded
+    # shell's own link, never by the `#quickNav` Strategy entry: that entry is an
+    # in-app navigation carrying the `#strategyPage` anchor, and the `.quick-nav a`
+    # listener keeps no `strategy` special case.
+    nav = INDEX.split('<nav id="quickNav"', 1)[1].split('</nav>', 1)[0]
+    assert '<a href="#strategyPage" data-product-domain="strategy">Strategy</a>' in nav, nav
+    assert 'hero-ranges.html' not in nav, nav
+    nav_handler = INDEX.split('document.querySelectorAll(".quick-nav a").forEach', 1)[1].split(
+        'document.querySelectorAll(".mode-card[data-app-view]")', 1
+    )[0]
+    assert 'dataset.productDomain' not in nav_handler, nav_handler
+    assert 'openAppView(' not in nav_handler, nav_handler
+    # The in-app view switch must not swallow the editor navigation.
+    cards_handler = INDEX.split('document.querySelectorAll(".mode-card[data-app-view]").forEach', 1)[1].split(
+        'document.querySelectorAll("[data-home-back]")', 1
+    )[0]
+    assert 'if(card.tagName==="A"&&card.getAttribute("href")) return;' in cards_handler, cards_handler
+    assert "openAppView(view,{scrollTop:true});" in cards_handler, cards_handler
+
+    # 2. Every Accueil entry point carries a deep link derived from the active
+    # population instead of the editor's own default population.
+    assert "function heroRangesDeepLinkHref()" in INDEX
+    assert "function syncHeroRangesDeepLinks()" in INDEX
+    assert 'params.set("population",population)' in INDEX
+    assert 'document.querySelectorAll("[data-hero-ranges-entry]")' in INDEX
+    assert "heroRangesOpenBtn,strategyPageEditorLink" in INDEX
+    assert 'params.set("position"' in INDEX and 'params.set("stack"' in INDEX
+    assert 'params.set("spot"' in INDEX and "window.PokerHeroRanges?.SPOTS" in INDEX
+    assert 'return query?`./hero-ranges.html?${query}`:"./hero-ranges.html";' in INDEX
+    identity_ui = INDEX.split("function updateProductIdentityUi(){", 1)[1].split("\nasync function", 1)[0]
+    assert "syncHeroRangesDeepLinks();" in identity_ui, "identity refresh must refresh the deep links"
+    strategy_page = INDEX.split('<div id="strategyPage"', 1)[1].split('<div id="trainerPage"', 1)[0]
+    assert 'id="strategyPageEditorLink"' in strategy_page and 'href="./hero-ranges.html"' in strategy_page, strategy_page
+
+    # 3. The Accueil banner keeps the compact active strategy + source identity.
+    banner = INDEX.split('<div class="home-banner"', 1)[1].split('<div class="mode-cards"', 1)[0]
+    for element_id in ("activePopulationIdentity", "activeStrategyIdentity", "activeStrategySourceIdentity"):
+        assert f'id="{element_id}"' in banner, element_id
+    assert "const strategy=productHeroStrategyIdentityText(resolution);" in INDEX
+    assert "activeStrategySourceIdentity.textContent=`${strategy.source} · version ${strategy.version}`" in INDEX
+
+    # 4. The editor has a coherent return to the Accueil, not a dangling label.
+    assert '<a id="heroRangesBack" class="back" href="./index.html" data-return-view="home"' in HERO_HTML
+    assert 'aria-label="Retour à l’Accueil">← Accueil</a>' in HERO_HTML
+    assert "← Strategy</a>" not in HERO_HTML
+    assert 'data-app-mode="strategy"' in HERO_HTML
+
+    # 5. Autonomy: the page loads directly from its own relative assets only.
+    scripts = re.findall(r'<script src="([^"]+)"', HERO_HTML)
+    assert scripts == ["./hero-ranges.js", "./hero-range-migration.js", "./hero-strategy-resolver.js", "./hero-ranges-app.js"], scripts
+    styles = re.findall(r'<link rel="stylesheet" href="([^"]+)"', HERO_HTML)
+    assert styles == ["./hero-ranges.css"], styles
+    for ref in scripts + styles:
+        assert ref.startswith("./") and "index.html" not in ref, ref
+        assert (ROOT / "site" / ref[2:]).is_file(), ref
+    assert "http://" not in HERO_HTML and "https://" not in HERO_HTML, "the editor must not depend on remote assets"
+    for element_id in ("heroGrid", "sourceBadge", "positionSelect", "strategySourceBadge"):
+        assert f'id="{element_id}"' in HERO_HTML, element_id
+
+    # 6. The editor honours the deep link and keeps it stable across renders.
+    assert 'new URLSearchParams(location.search||"").get("population")' in HERO_APP
+    assert "function applyDeepLink()" in HERO_APP and "applyDeepLink();" in HERO_APP
+    assert "function syncDeepLink()" in HERO_APP
+    assert 'history.replaceState(null,"",href)' in HERO_APP
+    for key in ("population", "position", "spot", "stack", "hand"):
+        assert f'params.set("{key}"' in HERO_APP, key
+    assert "function renderAll(){syncDeepLink();" in HERO_APP, "every render must re-sync the deep link"
+
+
+check_hero_ranges_mode_contract()
 print("trainer Hero custom-range contract: OK")
+print("trainer Hero mode / deep link contract: OK")

@@ -35,6 +35,11 @@ DRIVER_SMOKES = (
     Path(__file__).resolve().parent / "smoke_opponent_range_numeric.py",
     Path(__file__).resolve().parent / "smoke_equity_scale_invariance.py",
     Path(__file__).resolve().parent / "smoke_trainer_d6_render_matrix.py",
+    # #394 T4: desktop modes smoke + per-mode overflow audit (Accueil → Review →
+    # Replayer → Review, Spot Lab without any imported hand, Training, Stratégie
+    # Hero and the Replayer right-panel keyboard/focus control). It serves its own
+    # ephemeral copy of `site/` at the two reference viewports.
+    Path(__file__).resolve().parent / "smoke_modes_desktop.py",
 )
 
 
@@ -187,7 +192,8 @@ async def main() -> None:
         assert preflop_runtime["unsupported"]["target"] is None and preflop_runtime["unsupported"]["cost"] is None, preflop_runtime
         assert preflop_runtime["unsupported"]["alternatives"] == 0 and "SPOT_NON_COUVERT" in preflop_runtime["unsupported"]["reasons"], preflop_runtime
 
-        # Product architecture exposes only the five stable top-level domains.
+        # Product architecture: the App shell mounts one view at a time, driven by
+        # state.appView; Home is the landed mode screen and lists the mode cards.
         product_architecture = await page.evaluate(
             """() => ({
                 nav:[...document.querySelectorAll('#quickNav a')].map(a=>({
@@ -195,7 +201,12 @@ async def main() -> None:
                     href:a.getAttribute('href'),
                     domain:a.dataset.productDomain||''
                 })),
-                home:[...document.querySelectorAll('.product-home-actions > a,.product-home-actions > button')].map(x=>x.textContent.trim()),
+                homeModes:[...document.querySelectorAll('.mode-card .mode-card-title')].map(x=>x.textContent.trim()),
+                homeShell:document.querySelector('#homePage')?.dataset.viewShell||'',
+                shells:['home','review','spotlab','strategy','training','replayer'].filter(v=>!!document.querySelector(`[data-view-shell="${v}"]`)),
+                appViews:[...APP_VIEWS],
+                appView:state.appView,
+                mounted:[...document.querySelectorAll('[data-view-shell]')].filter(el=>!el.classList.contains('mode-hidden')).map(el=>el.dataset.viewShell),
                 packsInSettings:!!document.querySelector('#settingsSection a[href="./packs.html"]'),
                 advancedImportInSettings:document.querySelector('#advancedManualImportLink')?.getAttribute('href')||'',
                 legacyImportsHidden:!!document.querySelector('#rangesSection[hidden][data-legacy-import-surface="advanced-only"]'),
@@ -205,8 +216,16 @@ async def main() -> None:
         )
         assert [x["text"] for x in product_architecture["nav"]] == ["Review", "Training", "Strategy", "Equity Lab", "Settings"], product_architecture
         assert [x["domain"] for x in product_architecture["nav"]] == ["review", "training", "strategy", "equity-lab", "settings"], product_architecture
-        assert product_architecture["nav"][2]["href"] == "./hero-ranges.html", product_architecture
-        assert product_architecture["home"] == ["Review", "Training", "Strategy", "Equity Lab"], product_architecture
+        # #394 — the Strategy nav entry is an in-app navigation to the embedded
+        # shell; the standalone editor keeps its own real link on the Accueil mode
+        # card and on `#strategyPageEditorLink`.
+        assert product_architecture["nav"][2]["href"] == "#strategyPage", product_architecture
+        assert product_architecture["homeModes"] == ["Review", "Training", "Stratégie Hero", "Spot Lab", "Packs/paramètres"], product_architecture
+        assert product_architecture["homeShell"] == "home", product_architecture
+        assert product_architecture["shells"] == ["home", "review", "spotlab", "strategy", "training", "replayer"], product_architecture
+        assert product_architecture["appViews"] == ["home", "review", "replayer", "spotlab", "training", "strategy"], product_architecture
+        assert product_architecture["appView"] in product_architecture["appViews"], product_architecture
+        assert len(product_architecture["mounted"]) == 1, product_architecture
         assert product_architecture["packsInSettings"], product_architecture
         assert product_architecture["advancedImportInSettings"] == "./manual-import.html", product_architecture
         assert product_architecture["legacyImportsHidden"], product_architecture
@@ -1043,6 +1062,21 @@ async def main() -> None:
         assert information_boundary["retrospective_changed"], information_boundary
         assert information_boundary["low"]["recommended"] == "FOLD", information_boundary
 
+        # The App lands on the Home mode screen: enter Review before exercising the
+        # HH import surface, then leave the trainer back on Home.
+        await page.click('.mode-card[data-app-view="review"]')
+        await page.wait_for_selector("#mainPage:not(.mode-hidden)", timeout=10_000)
+
+        # #394 T1 — Review lands on its Pilotage pane and the import surface lives in
+        # its own pane, so the import block is reached by a real click on the Import
+        # tab before any interaction with `.hh-import-advanced`: the file input and
+        # the advanced options are never clicked while their pane is `hidden`.
+        assert await page.locator("#reviewDashboard").is_visible()
+        assert await page.locator("#historiesSection").is_hidden()
+        await page.click("#reviewImportTab")
+        assert await page.locator("#historiesSection").is_visible()
+        assert await page.locator("#reviewDashboard").is_hidden()
+
         # HH import keeps the primary path compact while preserving advanced controls.
         hh_import_ux = await page.evaluate(
             """() => ({
@@ -1183,6 +1217,11 @@ async def main() -> None:
         assert local_persistence["eraseResult"] is False, local_persistence
         assert "annulé" in folded(local_persistence["eraseStatus"]), local_persistence
         assert local_persistence["detailsOpenAfterCancel"] is False, local_persistence
+
+        # The shell lands on Home: return there so the shared chrome trigger is
+        # mounted/visible for the focus-return assertion below.
+        await page.evaluate("() => goHome()")
+        await page.wait_for_selector("#homePage:not(.mode-hidden)", timeout=10_000)
 
         # Desktop modal accessibility: focus enters the dialog, wraps on Tab/Shift+Tab,
         # Escape closes it, and focus returns to the trigger.
@@ -1480,7 +1519,7 @@ async def main() -> None:
 
         # Trainer must not destroy the analyser navigation when returning.
         await page.click("#trainerBackBtn")
-        assert await page.locator("#mainPage").is_visible()
+        assert await page.locator("#homePage").is_visible()
         assert await page.locator("#trainerPage").is_hidden()
 
         snapshot = {

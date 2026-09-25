@@ -9,6 +9,20 @@
     --bg:#0b1020; --panel:#131a2d; --panel2:#192238; --text:#eef2ff; --muted:#9aa7c2;
     --border:#2a3655; --accent:#7c8cff; --accent2:#5ce1b9; --danger:#ff7b7b;
     --shadow:0 14px 40px rgba(0,0,0,.28);
+    /* #394 R1 — géométrie du rail de navigation flottant : autorité unique.
+       `#quickNavToggle` est ancré au bord droit du rail et en déborde de
+       `--nav-toggle-right` (négatif), donc `--nav-rail-end` est le bord droit
+       réellement occupé par la nav à l'écran et `--home-nav-gutter` la
+       gouttière que la colonne Home réserve pour qu'aucun contrôle interactif
+       ne passe dessous. Les nombres sont recalculés à partir de ces jetons par
+       tests/trainer/test_desktop_accessibility_contract.py. */
+    --nav-rail-left:10px;
+    --nav-rail-width:118px;
+    --nav-toggle-width:28px;
+    --nav-toggle-right:-14px;
+    --nav-rail-clearance:32px;
+    --nav-rail-end:calc(var(--nav-rail-left) + var(--nav-rail-width) + var(--nav-toggle-width) + var(--nav-toggle-right));
+    --home-nav-gutter:calc(var(--nav-rail-end) + var(--nav-rail-clearance));
   }
   *{box-sizing:border-box}
   body{margin:0;background:linear-gradient(180deg,#090e1b,#0d1424 45%,#0a1020);color:var(--text);
@@ -92,10 +106,22 @@
   .bar{height:100%;width:0;background:linear-gradient(90deg,#6073ff,#5ce1b9);transition:width .12s linear}
   .range-info{font-size:13px;color:var(--muted)}
   .range-info strong{color:var(--text)}
-  .matrixwrap{overflow:auto;margin-top:12px}
+  .matrixwrap{overflow:hidden;margin-top:12px}
   .matrix{display:grid;grid-template-columns:repeat(13,42px);gap:3px;width:max-content}
   .cell{height:34px;border-radius:5px;background:#0f1729;border:1px solid #202c48;color:#52617e;
         display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;position:relative}
+  /* #394 T1 — budget vertical de la coque desktop : à 1366x768 le panneau
+     « Range adverse » ne laisse qu'environ 418px à la grille, alors que
+     13 rangées de 34px + 12 gouttières de 3px en réclament 478 et sont
+     incompressibles (hauteur de rangée = hauteur de cellule). Cette règle
+     comprime les rangées (13*26 + 12*2 = 362px) sans toucher aux 13 colonnes ni
+     aux 169 cellules ; elle reste gatée `min-width:901px` + `max-height:900px`
+     pour ne rien changer au viewport de référence 1500x1000 ni au rendu < 901px
+     (qui garde son flux documentaire défilant). */
+  @media(min-width:901px) and (max-height:900px){
+    .matrix{gap:2px}
+    .cell{height:26px}
+  }
   .cell.on{color:#f3f6ff;border-color:#45567d}
   .cell.editable{cursor:pointer;user-select:none}
   .cell.editable:hover{border-color:#7c8cff;transform:translateY(-1px)}
@@ -118,6 +144,7 @@
   .method-note{font-size:11px;color:var(--muted);margin-top:7px}
 
   #floatingEquity{
+    display:none;
     position:fixed;top:14px;right:0;z-index:9999;width:324px;min-width:0;padding:0;
     border:1px solid rgba(92,225,185,.32);border-right:0;border-radius:14px 0 0 14px;
     background:rgba(15,23,41,.90);box-shadow:0 5px 18px rgba(0,0,0,.18);
@@ -144,6 +171,14 @@
   .floating-eq-row.range .floating-eq-value{color:#f1c66d}
   .floating-eq-row.hero-range .floating-eq-value{color:#f1c66d}
   .floating-eq-row.hero-hand .floating-eq-value{color:var(--accent2)}
+  /* #394 T4 — floating equity visibility rule (see docs/spotlab-view.md).
+     The widget belongs only to the surfaces that actually produce a Hero equity:
+     the Spot Lab manual calculator (state.mainEquity) and the Replayer seat
+     equities (state.seatEquities). Everywhere else (home, review, strategy,
+     training) it stays hidden so it never overlays unrelated content, and when
+     shown it starts collapsed (36px) until the user expands it. */
+  body[data-app-view="spotlab"] #floatingEquity,
+  body[data-app-view="replayer"] #floatingEquity{display:block}
   .seat-equities.hero4{
     display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0
   }
@@ -167,7 +202,7 @@
   .street-btn:hover{background:#17223a;color:var(--text);border-color:transparent}
   .street-btn.active{background:#263452;color:#fff;box-shadow:0 1px 5px rgba(0,0,0,.25)}
   .street-btn:disabled{opacity:.3;cursor:not-allowed;background:transparent;color:var(--muted)}
-  .hh-list{margin-top:10px;max-height:310px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+  .hh-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;padding-right:2px}
   .hh-hand{width:100%;display:grid;grid-template-columns:118px minmax(0,1fr) auto 116px 92px;gap:9px;align-items:center;
     text-align:left;padding:9px 10px;background:#0f1729;border:1px solid var(--border);border-radius:10px}
   .hh-hand:hover{background:#151f35}
@@ -334,6 +369,22 @@
     scroll-margin-top:18px
   }
   #replayerSection .hh-visual,#replayerSection .hh-replay{width:100%}
+  /* #394 T2 — panneau contextuel du Replayer : sous-vues Décision / Ranges /
+     Détails. Les onglets réutilisent le pattern `.app-subviews` /
+     `.app-subview-tab` / `.app-subview-panel` ; ces règles ne stylent que le
+     contenu propre aux panneaux. Activer un onglet ne fait que basculer
+     `hidden` : aucun panneau n'est (re)rendu, aucun calcul n'est déclenché. */
+  #replayerContextPanel .app-subviews{margin:0 0 8px;gap:4px}
+  #replayerContextPanel .app-subview-tab{padding:7px 10px}
+  .app-subview-tab:focus-visible{outline:2px solid rgba(92,225,185,.78);outline-offset:2px}
+  .replayer-context-pane{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#0d1527}
+  .replayer-context-empty{font-size:11px;color:var(--muted)}
+  .replayer-context-note{font-size:10px;color:var(--muted)}
+  .replayer-range-row{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#0f1729}
+  .replayer-range-main{display:flex;align-items:center;gap:7px;min-width:0;flex:1 1 150px}
+  .replayer-range-name{font-size:12px;font-weight:850;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .replayer-range-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap}
+  .replayer-range-row .population-range-btn{flex:0 0 auto;width:auto}
   .hh-visual{margin-top:10px;border:1px solid var(--border);border-radius:12px;background:#0d1527;padding:10px}
   .hh-visual-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
   .hh-visual-title{font-size:12px;font-weight:850;color:var(--text)}
@@ -614,8 +665,8 @@
   .mode-hidden{display:none!important}
   @media(max-width:700px){.hh-hand{grid-template-columns:92px minmax(0,1fr)}.hh-cards{grid-column:2}}
   .quick-nav{
-    position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:9997;
-    width:118px;padding:6px;border:1px solid var(--border);border-radius:12px;
+    position:fixed;left:var(--nav-rail-left);top:50%;transform:translateY(-50%);z-index:9997;
+    width:var(--nav-rail-width);padding:6px;border:1px solid var(--border);border-radius:12px;
     background:rgba(13,21,39,.94);box-shadow:0 6px 18px rgba(0,0,0,.28);
     backdrop-filter:blur(8px)
   }
@@ -722,8 +773,8 @@
   .quick-nav{transition:transform .22s ease,opacity .18s ease,box-shadow .18s ease}
   .quick-nav.collapsed{transform:translate(calc(-100% + 28px),-50%);opacity:.96}
   .quick-nav-toggle{
-    position:absolute;top:50%;right:-14px;transform:translateY(-50%);
-    width:28px;height:58px;border-radius:0 10px 10px 0;border:1px solid var(--border);
+    position:absolute;top:50%;right:var(--nav-toggle-right);transform:translateY(-50%);
+    width:var(--nav-toggle-width);height:58px;border-radius:0 10px 10px 0;border:1px solid var(--border);
     border-left:0;background:rgba(13,21,39,.98);color:var(--text);cursor:pointer;
     display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;
     box-shadow:0 4px 12px rgba(0,0,0,.22)
@@ -735,6 +786,16 @@
     .quick-nav-toggle{display:none}
     .quick-nav.collapsed{transform:translateX(-50%)}
     .quick-nav.collapsed .quick-nav-title,.quick-nav.collapsed a{opacity:1;pointer-events:auto}
+  }
+
+  /* #394 R1 — tant que le rail est vertical (donc dès 761px, la nav devenant
+     une barre basse à ≤760px), la colonne Home réserve cette gouttière : le
+     raccourci « Review » et tout autre contrôle de Home commencent
+     strictement à droite de `--nav-rail-end`. Réserver la gouttière sur la
+     colonne elle-même (et non sur une ligne) couvre tout contrôle qui
+     traverserait la bande verticale du rail pendant le défilement interne. */
+  @media(min-width:761px){
+    #homePage{padding-left:calc(24px + var(--home-nav-gutter))}
   }
 
   .street-timeline,.replay-action-banner,.replay-stage,.table-center,.seat,.street-event,.bet-spot,.board-card,.hole-card{
@@ -1104,6 +1165,122 @@
   .seat-stack{font-size:10px;font-weight:950;color:#f3f6ff;white-space:nowrap;padding:2px 5px;border-radius:6px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09)}
   .seat.folded .seat-stack{color:#b9c2d2}
 
+  /* ── #394 — coque desktop 100dvh (≥901px) ──────────────────────────────────
+     Règle UX : aucune vue applicative ne produit de scroll global. `html`/`body`
+     sont figés à `100dvh` ; chaque vue est une coque de hauteur fixe
+     (en-tête figé + corps contraint). L'excédent de contenu ne passe jamais par
+     un défilement de vue : il passe par le pattern réutilisable
+     sous-vue / onglet / pagination :
+       .app-view-body      corps de la coque (flex, min-height:0)
+       .app-subviews       barre d'onglets (role=tablist)
+       .app-subview-tab    onglet, `data-app-subview="<nom>"`
+       .app-subview-panel  panneau, `data-app-subview-panel="<nom>"`
+       .app-list-pager     pagination d'une liste bornée
+     Zones défilantes autorisées : liste exhaustive et justifiée dans
+     `APP_ALLOWED_SCROLL_ZONES` (script de la page) et vérifiée par
+     tests/trainer/test_desktop_accessibility_contract.py. Aucune autre zone ne
+     peut porter `overflow:auto|scroll` dans la portée desktop.
+     Portée : la règle `100dvh` / pas de scroll global reste **desktop only**
+     (bloc `@media(min-width:901px)` ci-dessous). Le pattern sous-vue / onglet,
+     lui, est **global** : `.app-subviews`, `.app-subview-tab` et
+     `.app-subview-panel[hidden]{display:none!important}` sont déclarés hors
+     media query, donc Review / Spot Lab / Training / Replayer restent des vues
+     à onglets sous 901px (un seul panneau visible à la fois) tandis que
+     `html`/`body` gardent leur flux documentaire normal. */
+
+  .app-view-body{display:flex;flex-direction:column;min-height:0}
+  .app-subviews{display:flex;flex:0 0 auto;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 12px;padding:4px;border:1px solid var(--border);border-radius:12px;background:#0f1729}
+  .app-subview-tab{width:auto;min-width:0;padding:8px 13px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:850}
+  .app-subview-tab:hover{border-color:transparent;background:#17223a;color:var(--text)}
+  .app-subview-tab[aria-selected="true"]{background:#263452;color:#fff}
+  .app-subview-panel{min-height:0}
+  .app-subview-panel[hidden]{display:none!important}
+  .app-list-pager{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:10px;margin:10px 0 0}
+  .app-list-pager[hidden]{display:none!important}
+  .app-list-pager button{width:auto;min-width:104px;padding:7px 12px}
+  .app-list-pager-info{font-size:11px;color:var(--muted);white-space:nowrap}
+  /* Zones défilantes bornées : classes réservées aux entrées de
+     APP_ALLOWED_SCROLL_ZONES. Elles ne remplacent jamais une coque de vue. */
+  .app-scroll-zone,.app-canvas-pane,.app-scroll-x{overscroll-behavior:contain}
+  .app-scroll-zone{overflow:auto}
+  .app-canvas-pane{overflow:auto}
+  .app-scroll-x{overflow-x:auto;overflow-y:hidden}
+
+  @media(min-width:901px){
+    html,body{height:100dvh;max-height:100dvh;overflow:hidden}
+    body{display:flex;flex-direction:column}
+    [data-view-shell]{display:flex;flex-direction:column;flex:1 1 auto;width:100%;height:100dvh;max-height:100dvh;min-height:0;overflow:hidden;padding:14px 18px 16px}
+    [data-view-shell].mode-hidden{display:none}
+    /* #394 R1 — la colonne Home garde ses marges verticales/latérales
+       déclarées séparément : son `padding-left` (la gouttière du rail) reste
+       une autorité unique, portée par le jeton `--home-nav-gutter`. */
+    #homePage{padding-top:18px;padding-right:24px;padding-bottom:16px}
+    .app-view-head{flex:0 0 auto;margin:0 0 10px}
+    .app-view-body{flex:1 1 auto;overflow:hidden}
+    #spotlabPage .app-view-body>.grid{display:flex;flex-direction:column;gap:0;flex:1 1 auto;min-height:0;overflow:hidden}
+    #mainPage .app-view-body>.app-subview-panel,#spotlabPage .app-view-body>.grid>.app-subview-panel{flex:1 1 auto;min-height:0;overflow:hidden}
+    /* The Review shell is three sibling panes — Pilotage (`#reviewDashboard`),
+       Import (`#historiesSection`) and Inbox (`#handSelectionSection`) — so no
+       pane ever shares the height of the shell with another one. The dashboard
+       pane keeps its compact padding but is bounded like every other pane. */
+    #mainPage .app-view-body>.review-dashboard{margin:0;padding:12px}
+    #mainPage .app-view-body>.app-subviews{margin:0 0 8px}
+    #historiesSection,#handSelectionSection,#opponentsSection{display:flex;flex-direction:column;overflow:hidden}
+    #handSelectionSection>*{flex:0 0 auto}
+    #handSelectionSection>.hh-list{flex:1 1 auto}
+    #opponentsSection>.opponents{flex:1 1 auto;min-height:0}
+    .matrixwrap{overflow:hidden}
+    .hh-list{flex:1 1 auto;min-height:0;max-height:none;overflow:hidden}
+    .replayer-page{height:100dvh;min-height:0;padding:12px 18px 14px}
+    .replayer-page-shell{width:100%;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    /* #394 T5 : le Training est une coque dédiée à hauteur fixe. Ses règles de
+       coque (100dvh, corps contraint, table + rail ajustés) vivent avec les
+       primitives de sa table, dans `site/trainer.css` : une seule autorité. */
+    /* #394 T1/T2 — coque Replayer : trois colonnes fixes dans une seule coque,
+       sans empilement vertical du contenu de replay :
+         [ timeline/actions + contrôles ] [ table ] [ panneau contextuel ].
+       La troisième colonne est un panneau contextuel à onglets
+       Décision / Ranges / Détails (`#replayerContextPanel`) : les trois
+       panneaux sont rendus une seule fois, un seul est visible à la fois.
+       `#hhVisualReplay` reste le panneau rendu par `renderVisualReplay()` et
+       `display:contents` laisse ses deux colonnes prendre place dans la grille ;
+       aucun de ces blocs n'est un substitut de coque (pas de scroll de vue).
+       Les zones réellement bornées réutilisent les classes déjà déclarées dans
+       `APP_ALLOWED_SCROLL_ZONES` : `.app-scroll-zone` (colonne contrôles/flux et
+       panneaux contextuels) et `.app-canvas-pane` (scène de table). */
+    #replayerSection{
+      flex:1 1 auto;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);
+      grid-template-columns:minmax(240px,320px) minmax(0,1fr) minmax(240px,340px);
+      gap:12px;align-items:stretch;overflow:hidden
+    }
+    #replayerSection>#hhVisualReplay{display:contents}
+    #replayerSection .replayer-col{
+      min-height:0;display:flex;flex-direction:column;gap:8px;
+      border:1px solid var(--border);border-radius:12px;background:#0d1527;padding:10px
+    }
+    #replayerSection .replayer-col-center{padding:8px 10px}
+    /* Colonne gauche : contrôles puis timeline/actions, jamais en travers de la
+       scène. Les contrôles passent en grille pour rester lisibles à 240-320px. */
+    #replayerSection .replayer-col-left .hh-visual-top{flex-direction:column;align-items:stretch;gap:8px;margin:0}
+    #replayerSection .replayer-col-left .hh-replayer-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    #replayerSection .replayer-col-left .hh-replayer-controls button{min-width:0;padding:7px 8px}
+    #replayerSection .replayer-col-left .hh-replayer-range{flex:0 0 auto;min-width:0;margin:0}
+    #replayerSection .replayer-col-left .hh-visual-step{margin:0}
+    #replayerSection .replayer-col-left .street-timeline{margin:0}
+    /* La scène partage la largeur avec deux colonnes : on resserre la marge
+       réservée aux équités de siège pour qu'aucun bloc ne déborde de la colonne. */
+    #replayerSection .replayer-col-center .poker-table-wrap{padding-right:170px}
+    /* Colonne droite : panneau contextuel à onglets (Décision / Ranges /
+       Détails). Chaque panneau reste borné par `.app-scroll-zone`, jamais par
+       la coque ; un seul est visible (`hidden`) et activer un onglet ne fait
+       que basculer cette visibilité (aucun panneau n'est recalculé). */
+    #replayerSection>#replayerContextPanel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+    #replayerSection>#replayerContextPanel>.app-subview-panel{flex:1 1 auto;min-height:0;margin:0}
+    /* Une seule colonne de streets dans le panneau contextuel : deux colonnes
+       écraseraient les lignes d'action dans une colonne de 240-340px. */
+    #replayerSection>#replayerContextPanel .hh-streets{grid-template-columns:1fr}
+  }
+
 </style>
 <link rel="stylesheet" href="./trainer.css">
 </head>
@@ -1143,13 +1320,14 @@
   <div class="quick-nav-title">Espaces</div>
   <a href="#historiesSection" data-product-domain="review">Review</a>
   <a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>
-  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>
+  <a href="#strategyPage" data-product-domain="strategy">Strategy</a>
   <a href="#equityLabSection" data-product-domain="equity-lab">Equity Lab</a>
   <a href="#settingsSection" data-product-domain="settings">Settings</a>
 </nav>
-<div id="mainPage" class="wrap">
-  <h1>Review</h1>
-  <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
+<div id="homePage" class="wrap home-page" data-view-shell="home">
+  <h1>Poker Trainer</h1>
+  <div class="sub">Choisissez un mode de travail. Toutes vos données restent dans ce navigateur.</div>
+  <div class="home-banner" aria-label="Contexte actif">
   <div class="product-identity" aria-label="Contexte actif">
     <span class="product-identity-chip">Population <b id="activePopulationIdentity">non chargée</b></span>
     <span class="product-identity-chip">Stratégie Hero <b id="activeStrategyIdentity">stratégie indisponible</b> <span id="activeStrategySourceIdentity" class="product-identity-detail">source indisponible · version —</span></span>
@@ -1163,32 +1341,8 @@
     <button id="centralRestorePackBtn" type="button" class="secondary">Revenir au pack actif</button>
     <span id="centralOverrideStatus" class="central-override-status"></span>
   </div>
-  <section id="reviewDashboard" class="review-dashboard" aria-labelledby="reviewDashboardTitle" aria-live="polite">
-    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">Données insuffisantes</span></div>
-    <div class="review-dashboard-metrics">
-      <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
-      <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
-      <div class="review-dashboard-metric"><span>Perte EV totale</span><b id="reviewDashboardLoss">0,00 BB</b></div>
-      <div class="review-dashboard-metric"><span>Décisions analysées</span><b id="reviewDashboardAnalyzed">0</b></div>
-    </div>
-    <div class="review-dashboard-focus">
-      <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
-      <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
-    </div>
-    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
-    <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
-  </section>
-  <div class="actions product-home-actions" aria-label="Accès directs">
-    <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
-    <button id="trainerOpenBtn" type="button" class="primary">Training</button>
-    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
-    <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
-  </div>
-  <section id="settingsSection" class="product-settings" aria-label="Settings">
-  <div class="product-settings-title">Settings</div>
-  <div class="product-settings-links"><a href="./packs.html">Packs de population</a><a id="advancedManualImportLink" href="./manual-import.html">Outils avancés / Import manuel</a></div>
   <details id="runtimeIdentityDetails" class="runtime-identity">
-    <summary>Identité du produit</summary>
+    <summary>État runtime</summary>
     <div class="runtime-identity-grid">
       <div>Application<b id="runtimeAppVersion">v83</b></div>
       <div>Engine<b id="runtimeEngineVersion">v83</b></div>
@@ -1198,6 +1352,38 @@
       <div>Provenance / hash<code id="runtimeHashIdentity">—</code></div>
     </div>
   </details>
+  </div>
+  <div class="mode-cards" role="navigation" aria-label="Modes de travail">
+    <button type="button" class="mode-card" data-app-view="review">
+      <span class="mode-card-title">Review</span>
+      <span class="mode-card-sub">Analyser mes mains importées et mes leaks</span>
+    </button>
+    <button type="button" class="mode-card" data-app-view="training">
+      <span class="mode-card-title">Training</span>
+      <span class="mode-card-sub">Session 6-max avec coaching ACTION / SIZING / EV</span>
+    </button>
+    <a class="mode-card" data-app-view="strategy" data-hero-ranges-entry href="./hero-ranges.html">
+      <span class="mode-card-title">Stratégie Hero</span>
+      <span class="mode-card-sub">Éditer les ranges Hero de la population active</span>
+    </a>
+    <button type="button" class="mode-card" data-app-view="spotlab">
+      <span class="mode-card-title">Spot Lab</span>
+      <span class="mode-card-sub">Equity Lab · ranges adverses · équité</span>
+    </button>
+    <a class="mode-card" href="./packs.html">
+      <span class="mode-card-title">Packs/paramètres</span>
+      <span class="mode-card-sub">Packs de population et outils avancés</span>
+    </a>
+  </div>
+  <div class="actions product-home-actions" aria-label="Accès directs">
+    <a href="#historiesSection" class="filelabel" style="width:auto;text-decoration:none">Review</a>
+    <button id="trainerOpenBtn" type="button" class="primary">Training</button>
+    <a id="heroRangesOpenBtn" href="./hero-ranges.html" class="filelabel" style="width:auto;text-decoration:none">Strategy</a>
+    <a href="#equityLabSection" class="filelabel" style="width:auto;text-decoration:none">Equity Lab</a>
+  </div>
+  <section id="settingsSection" class="product-settings" aria-label="Settings">
+  <div class="product-settings-title">Settings</div>
+  <div class="product-settings-links"><a href="./packs.html">Packs de population</a><a id="advancedManualImportLink" href="./manual-import.html">Outils avancés / Import manuel</a></div>
   <div class="local-persistence">
     <span id="localPersistenceStatus" class="local-persistence-chip busy" role="status" aria-live="polite">Restauration locale…</span>
     <details id="localPersistenceDetails" class="local-persistence-details">
@@ -1214,6 +1400,23 @@
   </div>
   </section>
 
+</div>
+
+<div id="spotlabPage" class="wrap mode-hidden" data-view-shell="spotlab" aria-hidden="true">
+  <div class="app-view-head">
+    <button type="button" class="secondary app-view-back" data-home-back>← Accueil</button>
+    <div>
+      <div class="domain-title">Spot Lab</div>
+      <div class="domain-sub">Calculer une équité indépendante des mains importées : situation, range adverse, résultat.</div>
+    </div>
+  </div>
+  <div class="app-view-body">
+  <div class="app-subviews" role="tablist" aria-label="Sous-vues du Spot Lab">
+    <button type="button" class="app-subview-tab" id="spotlabSituationTab" role="tab" aria-selected="true" aria-controls="opponentsSection" data-app-subview="spotlab-situation">Situation &amp; adversaires</button>
+    <button type="button" class="app-subview-tab" id="spotlabBoardTab" role="tab" aria-selected="false" aria-controls="cardsSection" data-app-subview="spotlab-board">Main &amp; board</button>
+    <button type="button" class="app-subview-tab" id="spotlabRangeTab" role="tab" aria-selected="false" aria-controls="rangeDisplaySection" data-app-subview="spotlab-range">Range adverse</button>
+    <button type="button" class="app-subview-tab" id="spotlabEquityTab" role="tab" aria-selected="false" aria-controls="equitySection" data-app-subview="spotlab-equity">Résultat d’équité</button>
+  </div>
   <div class="grid">
     <div id="equityLabSection" class="domain-heading wide" aria-labelledby="equityLabTitle">
       <div id="equityLabTitle" class="domain-title">Equity Lab</div>
@@ -1257,40 +1460,167 @@
       </div>
     </section>
 
-    <section id="historiesSection" class="panel wide">
-      <h2>Review</h2>
-      <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
-      <div class="hh-import-primary">
-        <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
-        <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
-        <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
-      </div>
-      <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
-      <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
-      <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
-      <details class="hh-import-advanced">
-        <summary>Options d’import et outils avancés</summary>
-        <div class="hh-import-advanced-body">
-          <div class="hh-import-row">
-            <div class="field">
-              <label for="hhImportMode">Comportement du prochain import</label>
-              <select id="hhImportMode">
-                <option value="replace">Remplacer les mains chargées</option>
-                <option value="add">Ajouter aux mains chargées</option>
-              </select>
-            </div>
-            <div class="actions">
-              <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
-              <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
-              <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
-              <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
-            </div>
-          </div>
-          <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
+    <section id="opponentsSection" class="panel wide app-subview-panel" data-app-subview-panel="spotlab-situation" aria-labelledby="spotlabSituationTab">
+      <h2>Adversaires</h2>
+      <div class="row">
+        <input id="streetSelect" type="hidden" value="3">
+        <div class="field"><label>Méthode de calcul</label>
+          <select id="methodSelect">
+            <option value="auto">Auto — exact si raisonnable</option>
+            <option value="exact">Exact</option>
+            <option value="mc">Monte-Carlo</option>
+          </select>
         </div>
-      </details>
+        <div class="field"><label>Simulations Monte-Carlo</label>
+          <select id="trialsSelect">
+            <option value="50000">50 000</option>
+            <option value="200000" selected>200 000</option>
+            <option value="1000000">1 000 000</option>
+          </select>
+        </div>
+      </div>
+      <div class="method-note">En mode Auto, l'application conserve le calcul exhaustif tant que le nombre de scénarios reste raisonnable, puis utilise un échantillonnage pondéré.</div>
+      <div id="opponents" class="opponents app-scroll-zone"></div>
+      <div class="actions"><button id="addOpponent" class="secondary" disabled>+ Ajouter un adversaire</button></div>
+    </section>
 
-      <div id="handSelectionSection" class="hh-selection-section">
+    <section id="cardsSection" class="panel wide app-subview-panel" data-app-subview-panel="spotlab-board" aria-labelledby="spotlabBoardTab" hidden>
+      <h2>Main et board</h2>
+      <div class="cards-layout">
+        <div>
+          <div class="slots-title">Votre main</div>
+          <div id="heroSlots" class="slots"></div>
+          <div class="slots-title">Board</div>
+          <div id="streetPicker" class="street-picker" role="group" aria-label="Street du board">
+            <button type="button" class="street-btn active" data-street="3">Flop</button>
+            <button type="button" class="street-btn" data-street="4">Turn</button>
+            <button type="button" class="street-btn" data-street="5">River</button>
+          </div>
+          <div id="boardSlots" class="slots"></div>
+          <div class="actions">
+            <button id="clearCards" class="secondary">Effacer les cartes</button>
+          </div>
+          <div class="legend">
+            Cliquez d’abord sur un emplacement, puis sur une carte du paquet.
+            Code 4 couleurs :
+            <span class="card-token small suit-s"><span class="card-glyph">A♠</span></span>
+            <span class="card-token small suit-h"><span class="card-glyph">A♥</span></span>
+            <span class="card-token small suit-d"><span class="card-glyph">A♦</span></span>
+            <span class="card-token small suit-c"><span class="card-glyph">A♣</span></span>
+          </div>
+        </div>
+        <div>
+          <div id="deck" class="deck"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rangeDisplaySection" class="panel wide app-subview-panel" data-app-subview-panel="spotlab-range" aria-labelledby="spotlabRangeTab" hidden>
+      <h2>Range adverse</h2>
+      <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range adverse estimée, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
+      <div class="range-toolbar">
+        <button id="rangeEditionBtn" class="secondary toggle-btn">Édition range adverse : OFF</button>
+        <button id="knownHandsBtn" class="secondary toggle-btn" disabled>Mains connues HH : OFF</button>
+        <button id="rangeResetBtn" class="secondary" disabled>Réinitialiser depuis le fichier</button>
+        <button id="rangeClearBtn" class="secondary" disabled>Tout vider</button>
+        <button id="rangeAllBtn" class="secondary" disabled>Tout sélectionner</button>
+      </div>
+      <div id="rangeModeNote" class="range-mode-note">Les fréquences du fichier sont utilisées sans modification.</div>
+      <div class="matrixwrap"><div id="matrix" class="matrix"></div></div>
+    </section>
+
+    <section id="equitySection" class="panel wide app-subview-panel" data-app-subview-panel="spotlab-equity" aria-labelledby="spotlabEquityTab" hidden>
+      <h2>Résultat d’équité</h2>
+      <div class="row">
+        <button id="calcBtn" class="primary" disabled>Recalculer maintenant</button>
+      </div>
+      <div class="progress"><div id="bar" class="bar"></div></div>
+      <div id="calcStatus" class="filemeta">Le recalcul se lance automatiquement dès que la configuration est complète.</div>
+      <div class="method-note">L’équité de showdown reste une probabilité brute : le rake ne change pas la probabilité de gagner. Dans le replayer, le rake réel indiqué par la Hand History est déduit du pot (au taux effectif de la main, proratisé à la taille du pot) pour calculer les seuils de rentabilité, l’EV des calls et les verdicts.</div>
+
+      <div id="results" style="display:none">
+        <div class="resultgrid">
+          <div class="metric hero"><div class="k">Équité</div><div id="eq" class="v">—</div></div>
+          <div class="metric"><div class="k">Victoire</div><div id="win" class="v">—</div></div>
+          <div class="metric"><div class="k">Égalité</div><div id="tie" class="v">—</div></div>
+          <div class="metric"><div class="k">Défaite</div><div id="loss" class="v">—</div></div>
+        </div>
+        <div class="detail">
+          <div>Adversaires<b id="opponentCount">—</b></div>
+          <div>Méthode utilisée<b id="methodUsed">—</b></div>
+          <div>Scénarios / simulations<b id="scenarioCount">—</b></div>
+          <div>Temps de calcul<b id="elapsed">—</b></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  </div>
+</div>
+
+<div id="mainPage" class="wrap mode-hidden" data-view-shell="review" aria-hidden="true">
+  <div class="app-view-head">
+    <button type="button" class="secondary app-view-back" data-home-back>← Accueil</button>
+    <div>
+      <h1>Review</h1>
+      <div class="sub">Que faut-il revoir ou travailler maintenant ?</div>
+    </div>
+  </div>
+  <div class="app-view-body">
+  <div class="app-subviews" role="tablist" aria-label="Sous-vues de la Review">
+    <button type="button" class="app-subview-tab" id="reviewPilotageTab" role="tab" aria-selected="true" aria-controls="reviewDashboard" data-app-subview="pilotage">Pilotage</button>
+    <button type="button" class="app-subview-tab" id="reviewImportTab" role="tab" aria-selected="false" aria-controls="historiesSection" data-app-subview="import">Import</button>
+    <button type="button" class="app-subview-tab" id="reviewInboxTab" role="tab" aria-selected="false" aria-controls="handSelectionSection" data-app-subview="inbox">Inbox de review</button>
+  </div>
+  <section id="reviewDashboard" class="review-dashboard app-subview-panel" role="tabpanel" aria-labelledby="reviewDashboardTitle" aria-live="polite" data-app-subview-panel="pilotage">
+    <div class="review-dashboard-head"><div><div id="reviewDashboardTitle" class="review-dashboard-title">À travailler</div><div id="reviewDashboardMessage" class="review-dashboard-message">Importez vos Hand Histories pour construire votre Review.</div></div><span id="reviewDashboardState" class="review-dashboard-state">Données insuffisantes</span></div>
+    <div class="review-dashboard-metrics">
+      <div class="review-dashboard-metric"><span>Mains chargées</span><b id="reviewDashboardHands">0</b></div>
+      <div class="review-dashboard-metric"><span>Décisions à revoir</span><b id="reviewDashboardDecisions">0</b></div>
+      <div class="review-dashboard-metric"><span>Perte EV totale</span><b id="reviewDashboardLoss">0,00 BB</b></div>
+      <div class="review-dashboard-metric"><span>Décisions analysées</span><b id="reviewDashboardAnalyzed">0</b></div>
+    </div>
+    <div class="review-dashboard-focus">
+      <div class="review-dashboard-card"><span>Principal leak</span><strong id="reviewDashboardLeak">Aucun leak significatif</strong><small id="reviewDashboardLeakMeta">Les leaks apparaîtront après analyse de décisions comparables.</small></div>
+      <div class="review-dashboard-card"><span>Main / décision prioritaire</span><strong id="reviewDashboardPriority">Aucune décision prioritaire</strong><small id="reviewDashboardPriorityMeta">—</small></div>
+    </div>
+    <div class="review-dashboard-actions"><button id="reviewDashboardImportBtn" type="button" class="primary">Importer mes mains</button><button id="reviewDashboardReviewBtn" type="button" class="primary" hidden>Revoir la décision</button><button id="reviewDashboardLeakBtn" type="button" class="secondary" hidden>Voir le leak</button><button id="reviewDashboardTrainingBtn" type="button" class="secondary" hidden>S’entraîner sur ce leak</button></div>
+    <div id="reviewDashboardTrace" class="review-dashboard-trace"></div>
+  </section>
+  <section id="historiesSection" class="panel wide app-subview-panel" role="tabpanel" aria-labelledby="reviewImportTab" data-app-subview-panel="import" hidden>
+    <h2>Review</h2>
+    <div id="reviewInboxSummary" class="review-inbox-summary">Aucune main chargée.</div>
+    <div class="hh-import-primary">
+      <label class="filelabel hh-import-main" for="hhFileInput">Importer mes mains</label>
+      <input id="hhFileInput" type="file" accept=".txt,text/plain" multiple>
+      <button id="hhWatchBtn" type="button" class="secondary">Surveiller mes HH</button>
+    </div>
+    <div id="hhImportEffect" class="hh-import-effect">Par défaut, un nouvel import remplace les mains actuellement chargées.</div>
+    <div id="hhFileMeta" class="hh-import-summary">Aucune main importée.</div>
+    <div id="hhStatus" class="status" style="margin-top:9px">Importez un ou plusieurs fichiers PokerStars .txt pour commencer.</div>
+    <details class="hh-import-advanced">
+      <summary>Options d’import et outils avancés</summary>
+      <div class="hh-import-advanced-body">
+        <div class="hh-import-row">
+          <div class="field">
+            <label for="hhImportMode">Comportement du prochain import</label>
+            <select id="hhImportMode">
+              <option value="replace">Remplacer les mains chargées</option>
+              <option value="add">Ajouter aux mains chargées</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button id="hhClearBtn" type="button" class="secondary">Vider les mains chargées</button>
+            <button id="hhWatchStopBtn" type="button" class="secondary" disabled>Arrêter la surveillance</button>
+            <button id="hhAnalyzeAllBtn" type="button" class="secondary">Analyser tout</button>
+            <button id="hhBenchmarkExportBtn" type="button" class="secondary">Exporter benchmark simulateur</button>
+          </div>
+        </div>
+        <div id="hhWatchStatus" class="status" style="margin-top:9px">Vérification de la capacité de surveillance…</div>
+      </div>
+    </details>
+  </section>
+
+  <div id="handSelectionSection" class="hh-selection-section panel app-subview-panel" role="tabpanel" aria-labelledby="reviewInboxTab" data-app-subview-panel="inbox" hidden>
         <div class="hh-selection-title">Inbox de review</div>
         <div class="review-inbox-primary-tools">
           <div class="field">
@@ -1344,111 +1674,40 @@
           <div id="reviewInboxReasons" class="review-inbox-reasons">Aucune raison technique.</div>
         </details>
         <div id="reviewInboxNotice" class="review-inbox-notice" aria-live="polite"></div>
-        <div id="hhHands" class="hh-list"></div>
-      </div>
-
-    </section>
-
-    <section id="opponentsSection" class="panel wide">
-      <h2>Adversaires</h2>
-      <div class="row">
-        <input id="streetSelect" type="hidden" value="3">
-        <div class="field"><label>Méthode de calcul</label>
-          <select id="methodSelect">
-            <option value="auto">Auto — exact si raisonnable</option>
-            <option value="exact">Exact</option>
-            <option value="mc">Monte-Carlo</option>
-          </select>
-        </div>
-        <div class="field"><label>Simulations Monte-Carlo</label>
-          <select id="trialsSelect">
-            <option value="50000">50 000</option>
-            <option value="200000" selected>200 000</option>
-            <option value="1000000">1 000 000</option>
-          </select>
-        </div>
-      </div>
-      <div class="method-note">En mode Auto, l'application conserve le calcul exhaustif tant que le nombre de scénarios reste raisonnable, puis utilise un échantillonnage pondéré.</div>
-      <div id="opponents" class="opponents"></div>
-      <div class="actions"><button id="addOpponent" class="secondary" disabled>+ Ajouter un adversaire</button></div>
-    </section>
-
-    <section id="cardsSection" class="panel wide">
-      <h2>Main et board</h2>
-      <div class="cards-layout">
-        <div>
-          <div class="slots-title">Votre main</div>
-          <div id="heroSlots" class="slots"></div>
-          <div class="slots-title">Board</div>
-          <div id="streetPicker" class="street-picker" role="group" aria-label="Street du board">
-            <button type="button" class="street-btn active" data-street="3">Flop</button>
-            <button type="button" class="street-btn" data-street="4">Turn</button>
-            <button type="button" class="street-btn" data-street="5">River</button>
-          </div>
-          <div id="boardSlots" class="slots"></div>
-          <div class="actions">
-            <button id="clearCards" class="secondary">Effacer les cartes</button>
-          </div>
-          <div class="legend">
-            Cliquez d’abord sur un emplacement, puis sur une carte du paquet.
-            Code 4 couleurs :
-            <span class="card-token small suit-s"><span class="card-glyph">A♠</span></span>
-            <span class="card-token small suit-h"><span class="card-glyph">A♥</span></span>
-            <span class="card-token small suit-d"><span class="card-glyph">A♦</span></span>
-            <span class="card-token small suit-c"><span class="card-glyph">A♣</span></span>
-          </div>
-        </div>
-        <div>
-          <div id="deck" class="deck"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="rangeDisplaySection" class="panel wide">
-      <h2>Range adverse</h2>
-      <div class="tiny">Cliquez sur « Afficher » pour choisir l’adversaire visualisé. Chaque adversaire peut utiliser soit sa range adverse estimée, soit sa main exacte connue dans l’historique, de façon réversible et indépendamment des autres.</div>
-      <div class="range-toolbar">
-        <button id="rangeEditionBtn" class="secondary toggle-btn">Édition range adverse : OFF</button>
-        <button id="knownHandsBtn" class="secondary toggle-btn" disabled>Mains connues HH : OFF</button>
-        <button id="rangeResetBtn" class="secondary" disabled>Réinitialiser depuis le fichier</button>
-        <button id="rangeClearBtn" class="secondary" disabled>Tout vider</button>
-        <button id="rangeAllBtn" class="secondary" disabled>Tout sélectionner</button>
-      </div>
-      <div id="rangeModeNote" class="range-mode-note">Les fréquences du fichier sont utilisées sans modification.</div>
-      <div class="matrixwrap"><div id="matrix" class="matrix"></div></div>
-    </section>
-
-    <section id="equitySection" class="panel wide">
-      <h2>Résultat d’équité</h2>
-      <div class="row">
-        <button id="calcBtn" class="primary" disabled>Recalculer maintenant</button>
-      </div>
-      <div class="progress"><div id="bar" class="bar"></div></div>
-      <div id="calcStatus" class="filemeta">Le recalcul se lance automatiquement dès que la configuration est complète.</div>
-      <div class="method-note">L’équité de showdown reste une probabilité brute : le rake ne change pas la probabilité de gagner. Dans le replayer, le rake réel indiqué par la Hand History est déduit du pot (au taux effectif de la main, proratisé à la taille du pot) pour calculer les seuils de rentabilité, l’EV des calls et les verdicts.</div>
-
-      <div id="results" style="display:none">
-        <div class="resultgrid">
-          <div class="metric hero"><div class="k">Équité</div><div id="eq" class="v">—</div></div>
-          <div class="metric"><div class="k">Victoire</div><div id="win" class="v">—</div></div>
-          <div class="metric"><div class="k">Égalité</div><div id="tie" class="v">—</div></div>
-          <div class="metric"><div class="k">Défaite</div><div id="loss" class="v">—</div></div>
-        </div>
-        <div class="detail">
-          <div>Adversaires<b id="opponentCount">—</b></div>
-          <div>Méthode utilisée<b id="methodUsed">—</b></div>
-          <div>Scénarios / simulations<b id="scenarioCount">—</b></div>
-          <div>Temps de calcul<b id="elapsed">—</b></div>
-        </div>
-      </div>
-    </section>
+      <div id="hhHands" class="hh-list"></div>
+      <nav id="hhListPager" class="app-list-pager" aria-label="Pagination de l’inbox de review" hidden>
+        <button id="hhPagePrev" type="button" class="secondary" aria-label="Page précédente de l’inbox">‹ Précédent</button>
+        <span id="hhPageInfo" class="app-list-pager-info" role="status" aria-live="polite">Page 1 / 1</span>
+        <button id="hhPageNext" type="button" class="secondary" aria-label="Page suivante de l’inbox">Suivant ›</button>
+      </nav>
+  </div>
   </div>
 </div>
 
-<div id="trainerPage" class="trainer-page mode-hidden" aria-hidden="true">
+<div id="strategyPage" class="wrap mode-hidden" data-view-shell="strategy" aria-hidden="true">
+  <div class="app-view-head">
+    <button type="button" class="secondary app-view-back" data-home-back>← Accueil</button>
+    <div>
+      <h1>Stratégie Hero</h1>
+      <div class="sub">Sélection et édition des ranges Hero de la population active.</div>
+    </div>
+  </div>
+  <section class="panel wide">
+    <h2>Stratégie Hero de la population active</h2>
+    <div class="runtime-identity-grid">
+      <div>Population<b id="strategyPagePopulation">—</b></div>
+      <div>Stratégie Hero<b id="strategyPageStrategy">—</b></div>
+      <div>Source / version<b id="strategyPageSource">—</b></div>
+    </div>
+    <div class="actions" style="margin-top:10px"><a id="strategyPageEditorLink" class="filelabel" href="./hero-ranges.html" style="width:auto;text-decoration:none">Ouvrir l’éditeur de Stratégie Hero</a></div>
+    <div class="tiny" style="margin-top:8px">La Stratégie Hero décrit la politique de référence utilisée par la Review, le Training et le Spot Lab. L’éditeur s’ouvre dans un espace dédié (hero-ranges.html) dont le deep link conserve la population active ; l’Accueil reste accessible à tout moment.</div>
+  </section>
+</div>
+
+<div id="trainerPage" class="trainer-page mode-hidden" data-view-shell="training" aria-hidden="true">
   <div class="trainer-shell">
     <div class="trainer-head">
-      <button id="trainerBackBtn" type="button" class="secondary">← Accueil</button>
+      <button id="trainerBackBtn" type="button" class="secondary app-view-back">← Accueil</button>
       <div>
         <div class="trainer-title">Training 6-max</div>
         <div class="trainer-sub">100 BB · <span id="trainerPopulationIdentity">population en chargement</span> · coaching ACTION / SIZING / EV</div>
@@ -1486,48 +1745,63 @@
           </div>
           <div id="trainerTargetSupport" class="tiny" style="margin-top:7px" aria-live="polite"></div>
         </section>
-        <div id="trainerTable"></div>
+        <div id="trainerTable" class="app-canvas-pane"></div>
         <div id="trainerControls"></div>
       </section>
       <aside class="trainer-side">
-        <div id="trainerRecommendation"></div>
-        <div id="trainerFeedback"></div>
-        <section id="trainerTargetSummarySection" hidden>
-          <div class="trainer-section-title">Bilan ciblé</div>
-          <div id="trainerTargetSummary" class="trainer-note"></div>
-        </section>
-        <section>
-          <div class="trainer-section-title">Session</div>
-          <div id="trainerStats"></div>
-        </section>
-        <section>
-          <div class="trainer-section-title">Erreurs par spot</div>
-          <div id="trainerBreakdown" class="trainer-breakdown"></div>
-        </section>
-        <section>
-          <div class="trainer-section-title">Profils à table</div>
-          <div id="trainerProfiles" class="trainer-profile-list"></div>
-        </section>
-        <section>
-          <div class="trainer-section-title">Bilan Test</div>
-          <div id="trainerTestLog" class="trainer-test-log"></div>
-        </section>
-        <details class="action-advanced">
-          <summary>Détails techniques du Trainer</summary>
-          <div class="action-advanced-body">
-            <div id="trainerTechnicalIdentity" class="trainer-note">Population — · Model A v5 · Model B v2 · stratégie Hero indisponible.</div>
-            <div class="trainer-note">Model B pilote les profils, fréquences d’action et sizings adverses. Sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Model A reste la source de recommandation Hero et d’EV.</div>
-          </div>
-        </details>
+        <div class="app-subviews" role="tablist" aria-label="Panneaux du Training">
+          <button type="button" class="app-subview-tab" id="trainerCoachingTab" role="tab" aria-selected="true" aria-controls="trainerCoachPanel" data-app-subview="trainer-coaching">Coaching</button>
+          <button type="button" class="app-subview-tab" id="trainerSessionTab" role="tab" aria-selected="false" aria-controls="trainerSessionPanel" data-app-subview="trainer-session">Session</button>
+          <button type="button" class="app-subview-tab" id="trainerProfilesTab" role="tab" aria-selected="false" aria-controls="trainerProfilesPanel" data-app-subview="trainer-profiles">Profils</button>
+          <button type="button" class="app-subview-tab" id="trainerTestTab" role="tab" aria-selected="false" aria-controls="trainerTestPanel" data-app-subview="trainer-test">Test</button>
+        </div>
+        <div id="trainerCoachPanel" class="trainer-rail-panel app-subview-panel app-scroll-zone" role="tabpanel" aria-labelledby="trainerCoachingTab" data-app-subview-panel="trainer-coaching">
+          <div id="trainerRecommendation"></div>
+          <div id="trainerFeedback"></div>
+        </div>
+        <div id="trainerSessionPanel" class="trainer-rail-panel app-subview-panel app-scroll-zone" role="tabpanel" aria-labelledby="trainerSessionTab" data-app-subview-panel="trainer-session" hidden>
+          <section id="trainerTargetSummarySection" hidden>
+            <div class="trainer-section-title">Bilan ciblé</div>
+            <div id="trainerTargetSummary" class="trainer-note"></div>
+          </section>
+          <section>
+            <div class="trainer-section-title">Session</div>
+            <div id="trainerStats"></div>
+          </section>
+          <section>
+            <div class="trainer-section-title">Erreurs par spot</div>
+            <div id="trainerBreakdown" class="trainer-breakdown"></div>
+          </section>
+        </div>
+        <div id="trainerProfilesPanel" class="trainer-rail-panel app-subview-panel app-scroll-zone" role="tabpanel" aria-labelledby="trainerProfilesTab" data-app-subview-panel="trainer-profiles" hidden>
+          <section>
+            <div class="trainer-section-title">Profils à table</div>
+            <div id="trainerProfiles" class="trainer-profile-list"></div>
+          </section>
+        </div>
+        <div id="trainerTestPanel" class="trainer-rail-panel app-subview-panel app-scroll-zone" role="tabpanel" aria-labelledby="trainerTestTab" data-app-subview-panel="trainer-test" hidden>
+          <section>
+            <div class="trainer-section-title">Bilan Test</div>
+            <div id="trainerTestLog" class="trainer-test-log app-scroll-zone"></div>
+          </section>
+          <details class="action-advanced">
+            <summary>Détails techniques du Trainer</summary>
+            <div class="action-advanced-body">
+              <div id="trainerTechnicalIdentity" class="trainer-note">Population — · Model A v5 · Model B v2 · stratégie Hero indisponible.</div>
+              <div class="trainer-note">Model B pilote les profils, fréquences d’action et sizings adverses. Sa politique postflop est conditionnée par le profil et le contexte, mais pas encore par la combo cachée exacte. Model A reste la source de recommandation Hero et d’EV.</div>
+            </div>
+          </details>
+        </div>
       </aside>
     </div>
   </div>
 </div>
 
-<div id="replayerPage" class="replayer-page mode-hidden" aria-hidden="true">
+<div id="replayerPage" class="replayer-page mode-hidden" data-view-shell="replayer" aria-hidden="true">
   <div class="replayer-page-shell">
     <div class="replayer-page-head">
-      <button id="replayerBackBtn" type="button" class="secondary replayer-back-btn">← Retour aux mains</button>
+      <button id="replayerHomeBtn" type="button" class="secondary" style="width:auto;min-width:110px;padding:8px 12px" data-home-back>← Accueil</button>
+      <button id="replayerBackBtn" type="button" class="secondary replayer-back-btn">← Retour à la Review</button>
       <button id="replayerExportBtn" type="button" class="secondary replayer-export-btn" title="Copier un export JSON complet de cette main pour analyse par une IA">Exporter pour IA</button>
       <span id="replayerExportStatus" class="replayer-export-status" aria-live="polite"></span>
       <div>
@@ -1536,8 +1810,27 @@
       </div>
     </div>
     <div id="replayerSection">
+      <!-- #394 T1/T2 : coque Replayer à 3 colonnes fixes (timeline/actions |
+           table | panneau contextuel). `#hhVisualReplay` reste le panneau rendu
+           par `renderVisualReplay()` ; ses deux colonnes participent à la
+           grille de la coque (voir le `@media(min-width:901px)` de la section
+           « dedicated replayer view ») et ne sont jamais pilotées par un onglet,
+           sinon sélectionner un onglet viderait la timeline et la table.
+           La troisième colonne est un panneau contextuel à onglets
+           Décision / Ranges / Détails : les trois panneaux sont rendus une seule
+           fois par le runtime, un seul est visible, et activer un onglet ne fait
+           que basculer `hidden` (aucun recalcul, aucun id dupliqué). -->
       <div id="hhVisualReplay" class="hh-visual mode-hidden"></div>
-      <div id="hhReplayDetail" class="hh-replay mode-hidden"></div>
+      <aside id="replayerContextPanel" class="replayer-context-panel" aria-label="Panneau contextuel du replayer">
+        <div class="app-subviews" role="tablist" aria-label="Sous-vues du Replayer">
+          <button type="button" class="app-subview-tab" id="replayerDecisionTab" role="tab" aria-selected="true" aria-controls="replayerDecisionPanel" data-app-subview="replayer-decision">Décision</button>
+          <button type="button" class="app-subview-tab" id="replayerRangesTab" role="tab" aria-selected="false" aria-controls="replayerRangesPanel" data-app-subview="replayer-ranges" tabindex="-1">Ranges</button>
+          <button type="button" class="app-subview-tab" id="replayerDetailsTab" role="tab" aria-selected="false" aria-controls="hhReplayDetail" data-app-subview="replayer-details" tabindex="-1">Détails</button>
+        </div>
+        <div id="replayerDecisionPanel" class="replayer-context-pane app-scroll-zone app-subview-panel" role="tabpanel" aria-labelledby="replayerDecisionTab" data-app-subview-panel="replayer-decision"></div>
+        <div id="replayerRangesPanel" class="replayer-context-pane app-scroll-zone app-subview-panel" role="tabpanel" aria-labelledby="replayerRangesTab" data-app-subview-panel="replayer-ranges" hidden></div>
+        <div id="hhReplayDetail" class="hh-replay app-scroll-zone app-subview-panel mode-hidden" role="tabpanel" aria-labelledby="replayerDetailsTab" data-app-subview-panel="replayer-details" hidden></div>
+      </aside>
     </div>
   </div>
 </div>
@@ -1630,6 +1923,10 @@ const state = {
   reviewInboxUserMetadataByScope:Object.create(null),
   reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
   reviewInboxView:null,
+  // #394: the inbox is a bounded paginated list; the page size is measured on
+  // the constrained shell so no row is ever clipped behind `overflow:hidden`.
+  reviewInboxPage:0,
+  reviewInboxPageSize:8,
   reviewDashboardView:null,
   reviewDashboardLastError:"",
   reviewInboxPersistTimer:null,
@@ -1646,7 +1943,8 @@ const state = {
   reviewBatchRun:null,
   hhImportMode:"replace",
   hhMode:false,
-  appView:"main",
+  appView:"home",
+  restoredAppView:null,
   knownHandsMode:false,
   selectedHand:null,
   hhFullBoard:[],
@@ -1682,6 +1980,7 @@ const state = {
   mainEquity:null,
   restoringLocalState:false,
   persistenceReady:false,
+  userNavigated:false,
   persistPrefsTimer:null,
   hhSourceSnapshots:[],
   calculating:false
@@ -1698,9 +1997,14 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       rangeModeNote=$("rangeModeNote"), hhFileInput=$("hhFileInput"), hhFileMeta=$("hhFileMeta"), hhImportEffect=$("hhImportEffect"),
       hhWatchBtn=$("hhWatchBtn"), hhWatchStopBtn=$("hhWatchStopBtn"), hhWatchStatus=$("hhWatchStatus"),
       hhStatus=$("hhStatus"), hhVisualReplay=$("hhVisualReplay"), hhReplayDetail=$("hhReplayDetail"),
-      mainPage=$("mainPage"), replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
+      homePage=$("homePage"), mainPage=$("mainPage"), spotlabPage=$("spotlabPage"), strategyPage=$("strategyPage"),
+      strategyPagePopulation=$("strategyPagePopulation"), strategyPageStrategy=$("strategyPageStrategy"), strategyPageSource=$("strategyPageSource"),
+      strategyPageEditorLink=$("strategyPageEditorLink"), heroRangesOpenBtn=$("heroRangesOpenBtn"),
+      replayerPage=$("replayerPage"), replayerBackBtn=$("replayerBackBtn"), replayerExportBtn=$("replayerExportBtn"), replayerExportStatus=$("replayerExportStatus"), replayerPageSub=$("replayerPageSub"),
+      replayerContextPanel=$("replayerContextPanel"), replayerDecisionPanel=$("replayerDecisionPanel"), replayerRangesPanel=$("replayerRangesPanel"),
       hhImportModeSelect=$("hhImportMode"), hhClearBtn=$("hhClearBtn"), hhBenchmarkExportBtn=$("hhBenchmarkExportBtn"),
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
+      hhListPager=$("hhListPager"), hhPageInfo=$("hhPageInfo"), hhPagePrev=$("hhPagePrev"), hhPageNext=$("hhPageNext"),
       reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
       reviewStatusFilter=$("reviewStatusFilter"), reviewCoverageFilter=$("reviewCoverageFilter"),
       reviewAnalysisStateFilter=$("reviewAnalysisStateFilter"), reviewInboxReasons=$("reviewInboxReasons"),
@@ -1990,14 +2294,51 @@ function productHeroStrategyIdentityText(resolution){
   if(status==="RETAIN_REFERENCE")return {identity:"Stratégie indisponible pour cette population",source:`provenance ${resolution.source||"POPULATION"} · référence ${strategyId||"sans identifiant"} retenue non admissible`,version};
   return fallback;
 }
-function updateProductIdentityUi(){
+function productPopulationIdentityText(){
   let population="";
   if(typeof trainerState!=="undefined"&&trainerState?.populationId) population=String(trainerState.populationId);
   else if(state.populationModelMeta?.name) population=compactIdentityName(state.populationModelMeta.name);
   const packIdentity=state.manualOverrideContract?.base_active_pack||null;
   if(!population&&packIdentity?.population_id)population=String(packIdentity.population_id);
   if(!population&&packIdentity?.id==="embedded-fallback")population="fallback embarqué";
-  if(activePopulationIdentity) activePopulationIdentity.textContent=population||"non chargée";
+  return population||"non chargée";
+}
+// #394 T6 — Stratégie Hero est un mode de l'Accueil dont la surface est l'éditeur
+// autonome `hero-ranges.html`. Les points d'entrée portent un deep link stable,
+// construit depuis la population active (et, quand une main d'entraînement est
+// ouverte, son contexte), afin que l'éditeur s'ouvre sur la population annoncée
+// par l'Accueil au lieu de retomber sur sa population par défaut.
+function heroRangesDeepLinkHref(){
+  const params=new URLSearchParams();
+  const population=productPopulationIdentityText();
+  if(population&&population!=="non chargée")params.set("population",population);
+  if(typeof trainerState!=="undefined"&&trainerState?.hand&&!trainerState.hand.ended){
+    const hand=trainerState.hand, hero=Number(hand.heroSeat);
+    const position=String(hand.positions?.[hero]||"").toUpperCase();
+    if(position)params.set("position",position);
+    const stack=Number(hand.stacks?.[hero]);
+    if(Number.isFinite(stack)&&stack>0)params.set("stack",String(stack));
+    // The Training hand also carries its canonical preflop family; reuse the
+    // trainer mapping so the editor opens on the same spot when it is one of
+    // the editor's supported spots (an unknown family is simply omitted).
+    try{
+      const context=typeof trainerHeroOverrideContext==="function"?trainerHeroOverrideContext(typeof trainerWarmAssets!=="undefined"?trainerWarmAssets.population:null):null;
+      const spot=String(context?.spot||"").toUpperCase();
+      const editorSpots=window.PokerHeroRanges?.SPOTS;
+      if(spot&&Array.isArray(editorSpots)&&editorSpots.includes(spot))params.set("spot",spot);
+    }catch(_){/* no canonical context: the population-only deep link stays valid */}
+  }
+  const query=params.toString();
+  return query?`./hero-ranges.html?${query}`:"./hero-ranges.html";
+}
+function syncHeroRangesDeepLinks(){
+  const href=heroRangesDeepLinkHref();
+  const targets=[heroRangesOpenBtn,strategyPageEditorLink,...document.querySelectorAll("[data-hero-ranges-entry]")].filter(Boolean);
+  for(const link of targets)link.setAttribute("href",href);
+}
+function updateProductIdentityUi(){
+  const population=productPopulationIdentityText();
+  if(activePopulationIdentity) activePopulationIdentity.textContent=population;
 
   const resolution=productHeroStrategyResolution();
   const strategy=productHeroStrategyIdentityText(resolution);
@@ -2023,6 +2364,8 @@ function updateProductIdentityUi(){
   if(runtimeModelBIdentity){
     runtimeModelBIdentity.textContent=(typeof trainerState!=="undefined"&&trainerState?.modelB)?"v2 · chargé":"v2 · chargé à l’ouverture du Training";
   }
+  appViewUpdateIdentityMirror();
+  syncHeroRangesDeepLinks();
 }
 async function loadRuntimeReleaseIdentity(){
   try{
@@ -3774,8 +4117,10 @@ function openReviewDashboardLeak(){
   if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
   if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
   state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
+  // #394 T3: the Review shell selects the Inbox pane; it never scrolls the
+  // document, so the filtered list is reached without moving the viewport.
+  activateAppSubview("inbox");
   renderHistoryHands();
-  requestAnimationFrame(()=>document.getElementById("historiesSection")?.scrollIntoView({behavior:"smooth",block:"start"}));
   return {opened:true,reason:"EXACT_LEAK_FILTER",dimension:target.dimension,key:String(target.key)};
 }
 function openReviewDashboardTraining(){
@@ -4498,7 +4843,7 @@ function actionSizingEVTableHtml(summary){
       Chaque ligne associe directement <b>l’action</b>, <b>son sizing propre</b> et <b>son EV finale</b>, classées de la meilleure à la moins bonne.
       Pour un raise, « ajoute » est le montant supplémentaire engagé maintenant ; « total rue » est le montant total atteint sur la street.
     </div>
-    <div style="overflow-x:auto">
+    <div class="app-scroll-x">
       <table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead><tr>
           <th style="text-align:left;padding:6px">Action / sizing</th>
@@ -4745,7 +5090,7 @@ function preflopDecisionDetailHtml(decision){
     return `<div class="section"><div class="section-title">${title}</div><div class="action-detail-point">Aucune recommandation EV n’est exposée pour ce contexte. <b>${escapeHtml(decision.facing_context||"UNKNOWN")}</b>.</div>${technical}</div>`;
   }
   const rows=(decision.alternatives||[]).map(a=>`<tr><td><b>${escapeHtml(a.action)}</b></td><td>${escapeHtml(preflopDecisionSizingText(a.target_sizing))}</td><td style="text-align:right">${escapeHtml(formatBB(a.incremental_cost_bb))}</td><td style="text-align:right"><b>${escapeHtml(formatBB(a.ev_bb))}</b></td></tr>`).join("");
-  return `<div class="section"><div class="section-title">Décision préflop canonique</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Action <b>${escapeHtml(decision.recommended_action)}</b></span><span class="action-detail-chip">Cible <b>${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))}</b></span><span class="action-detail-chip">Coût <b>${escapeHtml(formatBB(decision.incremental_cost_bb))}</b></span><span class="action-detail-chip">EV <b>${escapeHtml(formatBB(decision.recommended_ev_bb))}</b></span><span class="action-detail-chip">Support <b>${Number(decision.support?.observations||0).toLocaleString("fr-FR")}</b></span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left">Action</th><th style="text-align:left">Sizing</th><th style="text-align:right">Coût</th><th style="text-align:right">EV</th></tr></thead><tbody>${rows}</tbody></table></div><div class="action-analysis-meta" style="margin-top:8px">Source : référence active conservée après #108 · candidate non activée · objet <code>poker-preflop-decision/v1</code> partagé sans recalcul par surface.</div>${technical}</div>`;
+  return `<div class="section"><div class="section-title">Décision préflop canonique</div><div class="action-detail-meta-strip"><span class="action-detail-chip">Action <b>${escapeHtml(decision.recommended_action)}</b></span><span class="action-detail-chip">Cible <b>${escapeHtml(preflopDecisionSizingText(decision.recommended_target_sizing))}</b></span><span class="action-detail-chip">Coût <b>${escapeHtml(formatBB(decision.incremental_cost_bb))}</b></span><span class="action-detail-chip">EV <b>${escapeHtml(formatBB(decision.recommended_ev_bb))}</b></span><span class="action-detail-chip">Support <b>${Number(decision.support?.observations||0).toLocaleString("fr-FR")}</b></span></div><div class="app-scroll-x"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left">Action</th><th style="text-align:left">Sizing</th><th style="text-align:right">Coût</th><th style="text-align:right">EV</th></tr></thead><tbody>${rows}</tbody></table></div><div class="action-analysis-meta" style="margin-top:8px">Source : référence active conservée après #108 · candidate non activée · objet <code>poker-preflop-decision/v1</code> partagé sans recalcul par surface.</div>${technical}</div>`;
 }
 /* #393 T6 — Replayer opponent taxonomy (rule D5).
    The adversary surface exposes only: the observed action, the support/
@@ -5563,8 +5908,9 @@ function replaySeatHtml(player,step,hand){
 
   const actionType=st.lastActionType||"";
   const amountText=replayActionAmountText(step,player.name);
-  const populationRangeButton=player.name===hand.heroName ? "" :
-    `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range adverse estimée à cette étape">Range adverse</button>`;
+  // Single rendering authority for the opponent-range trigger: the Ranges pane
+  // of the contextual panel reuses the exact same helper (see T2).
+  const populationRangeButton=player.name===hand.heroName ? "" : populationRangeButtonHtml(player);
 
   const actionHtml=actionType ? `<div class="seat-action">
     ${amountText?`<div class="seat-action-main"><span class="seat-action-amount">${escapeHtml(amountText)}</span></div>`:""}
@@ -5897,6 +6243,60 @@ function handleReplayShortcut(e){
   }
 }
 
+/* #394 T2 — Replayer contextual panel (right column).
+   The three panes are painted once per replay repaint inside
+   `renderVisualReplay()`; selecting a tab only toggles `hidden` through
+   `activateAppSubview`, so a tab never schedules a computation. Every pane
+   reuses an existing render instead of duplicating one:
+     - Décision : `replayActionBannerHtml` + `safeActionAnalysisHtml` for the
+       displayed step (the same helpers as the street feed);
+     - Ranges   : the `data-population-player` trigger
+       (`populationRangeButtonHtml`, the single rendering authority also used by
+       the table seats) that opens the existing opponent-range modal;
+     - Détails  : `renderHistoryReplay()` / `#hhReplayDetail`, the hand's
+       street-by-street detail.
+   No pane introduces a new DOM id, and no pane re-renders another one. */
+function populationRangeButtonHtml(player){
+  if(!player) return "";
+  return `<button type="button" class="population-range-btn" data-population-player="${escapeHtml(player.name)}" title="Visualiser la range adverse estimée à cette étape">Range adverse</button>`;
+}
+function replayerDecisionPanelHtml(step){
+  if(!step) return `<div class="replayer-context-empty">Aucune étape de replay disponible.</div>`;
+  const banner=replayActionBannerHtml(step);
+  const analysis=safeActionAnalysisHtml(state.replayIndex,step);
+  if(!banner&&!analysis) return `<div class="replayer-context-empty">Aucune décision à cette étape : distribution des cartes.</div>`;
+  return `<div class="replayer-context-note">Décision affichée · étape ${state.replayIndex+1}/${state.replaySteps.length}</div>${banner}${analysis}`;
+}
+function replayerRangesPanelHtml(hand){
+  if(!state.hhMode||!hand) return "";
+  const opponents=[...(hand.players||[])].filter(p=>p.name!==hand.heroName).sort((a,b)=>a.seat-b.seat);
+  if(!opponents.length) return `<div class="replayer-context-empty">Aucun adversaire dans cette main.</div>`;
+  // Read-only reuse of the seat equities already produced for the displayed
+  // step: the pane never estimates a range by itself (the modal does that on
+  // demand), so switching to "Ranges" cannot trigger a computation.
+  const eq=state.seatEquities||{};
+  const pending=eq.status==="running";
+  const rows=opponents.map(player=>{
+    const known=replayKnownHandHtml(player,hand,{small:true});
+    const hasRange=!!eq.hasRange?.[player.name];
+    const value=eq.range?.[player.name];
+    const equityText=pending?"…":(hasRange&&Number.isFinite(value)?fmtPct(value):"—");
+    return `<div class="replayer-range-row">
+      <div class="replayer-range-main">
+        <span class="replayer-range-name" title="${escapeHtml(player.name)}">${escapeHtml(player.name)}</span>
+        <span class="tiny">${escapeHtml(player.hhPosition||("Seat "+player.seat))}</span>
+        ${known?`<span class="known-hand-compact">${known}</span>`:""}
+      </div>
+      <div class="replayer-range-meta">
+        <span>Équité range</span>
+        <span><b>${escapeHtml(equityText)}</b></span>
+      </div>
+      ${populationRangeButtonHtml(player)}
+    </div>`;
+  }).join("");
+  return `<div class="replayer-context-note">Ranges adverses estimées à l’étape affichée. « Range adverse » ouvre la grille 169, les combos exacts et l’historique de conditionnement du posterior.</div>${rows}`;
+}
+
 function renderVisualReplay(){
   renderFloatingEquity();
   if(!hhVisualReplay) return;
@@ -5905,6 +6305,8 @@ function renderVisualReplay(){
     stopReplayTimer();
     hhVisualReplay.classList.add("mode-hidden");
     hhVisualReplay.innerHTML="";
+    if(replayerDecisionPanel) replayerDecisionPanel.innerHTML="";
+    if(replayerRangesPanel) replayerRangesPanel.innerHTML="";
     return;
   }
 
@@ -5931,38 +6333,49 @@ function renderVisualReplay(){
     : state.seatEquities.status==="running"
       ? `Recalcul des équités pour cette étape (${escapeHtml(step?.label||"")})…`
       : `Équités calculées pour l'étape affichée (${escapeHtml(step?.label||"")}) et son board exact · « adversaires réels » utilise les cartes HH connues et conserve la range pour les mains inconnues.`;
-  hhVisualReplay.innerHTML=`<div class="hh-visual-top">
-    <div class="hh-visual-title">Replayer visuel de la main <span class="tiny" title="Raccourcis clavier">· ←/→ étape · ↑ début · ↓ fin · Espace lecture/pause</span></div>
-    <div class="hh-replayer-controls">
-      <button type="button" id="replayStartBtn" class="secondary">⏮ Début</button>
-      <button type="button" id="replayPrevBtn" class="secondary">◀ Préc.</button>
-      <button type="button" id="replayPlayBtn" class="secondary">${playLabel}</button>
-      <button type="button" id="replayNextBtn" class="secondary">Suiv. ▶</button>
-      <button type="button" id="replayEndBtn" class="secondary">Fin ⏭</button>
+  /* #394 T1/T2 — le contenu de replay est peint en deux colonnes seulement
+     (contrôles + timeline/actions, puis scène de table) ; la troisième colonne
+     de la coque est le panneau contextuel `#replayerContextPanel`, dont les
+     trois sous-vues sont remplies juste après. Aucun calcul nouveau : même
+     rendu, même `state`, seuls la coque et le panneau contextuel changent. */
+  hhVisualReplay.innerHTML=`<div class="replayer-col replayer-col-left app-scroll-zone">
+    <div class="hh-visual-top">
+      <div class="hh-visual-title">Replayer visuel de la main <span class="tiny" title="Raccourcis clavier">· ←/→ étape · ↑ début · ↓ fin · Espace lecture/pause</span></div>
+      <div class="hh-replayer-controls">
+        <button type="button" id="replayStartBtn" class="secondary">⏮ Début</button>
+        <button type="button" id="replayPrevBtn" class="secondary">◀ Préc.</button>
+        <button type="button" id="replayPlayBtn" class="secondary">${playLabel}</button>
+        <button type="button" id="replayNextBtn" class="secondary">Suiv. ▶</button>
+        <button type="button" id="replayEndBtn" class="secondary">Fin ⏭</button>
+      </div>
     </div>
+    <div class="hh-replayer-range">
+      <span class="tiny">Étape</span>
+      <input id="replayRange" type="range" min="0" max="${Math.max(0,stepCount-1)}" value="${state.replayIndex}">
+      <span class="tiny">${stepNo}/${stepCount}</span>
+    </div>
+    <div class="hh-visual-step">${escapeHtml(step?.label||"")} · Pot ${escapeHtml(potText)}</div>
+    ${replayStreetTimelineHtml(step,state.replayIndex)}
   </div>
-  <div class="hh-replayer-range">
-    <span class="tiny">Étape</span>
-    <input id="replayRange" type="range" min="0" max="${Math.max(0,stepCount-1)}" value="${state.replayIndex}">
-    <span class="tiny">${stepNo}/${stepCount}</span>
-  </div>
-  <div class="hh-visual-step">${escapeHtml(step?.label||"")} · Pot ${escapeHtml(potText)}</div>
-  ${replayActionBannerHtml(step)}
-  <div class="tiny" style="margin:0 0 10px">${eqCaption}</div>
-  ${replayStreetTimelineHtml(step,state.replayIndex)}
-  <div class="replay-stage">
-    <div class="poker-table-wrap">
-      <div class="poker-table">
-        <div class="table-center">
-          <div class="table-pot">Pot<br><b>${escapeHtml(potText)}</b></div>
-          <div class="table-board">${boardHtml}</div>
+  <div class="replayer-col replayer-col-center app-canvas-pane">
+    <div class="tiny" style="margin:0 0 10px">${eqCaption}</div>
+    <div class="replay-stage">
+      <div class="poker-table-wrap">
+        <div class="poker-table">
+          <div class="table-center">
+            <div class="table-pot">Pot<br><b>${escapeHtml(potText)}</b></div>
+            <div class="table-board">${boardHtml}</div>
+          </div>
+          ${replayDealerButtonHtml(h)}
+          ${replayBetSpotsHtml(sortedPlayers,step)}
+          ${seatHtml}
         </div>
-        ${replayDealerButtonHtml(h)}
-        ${replayBetSpotsHtml(sortedPlayers,step)}
-        ${seatHtml}
       </div>
     </div>
   </div>`;
+
+  if(replayerDecisionPanel) replayerDecisionPanel.innerHTML=replayerDecisionPanelHtml(step);
+  if(replayerRangesPanel) replayerRangesPanel.innerHTML=replayerRangesPanelHtml(h);
 
   const startBtn=hhVisualReplay.querySelector("#replayStartBtn");
   const prevBtn=hhVisualReplay.querySelector("#replayPrevBtn");
@@ -5997,7 +6410,14 @@ function renderVisualReplay(){
     el.addEventListener('click',e=>{ if(e.target.closest('button,a,input,select,textarea,summary,details')) return; open(); });
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
   });
-  hhVisualReplay.querySelectorAll("[data-population-player]").forEach(btn=>{
+  /* #394 T2 — the `data-population-player` triggers exist on the table seats and
+     in the Ranges pane; both open the same opponent-range modal through this
+     single handler (no duplicated rendering, no duplicated id). */
+  const populationTriggers=[
+    ...hhVisualReplay.querySelectorAll("[data-population-player]"),
+    ...(replayerContextPanel?replayerContextPanel.querySelectorAll("[data-population-player]"):[])
+  ];
+  populationTriggers.forEach(btn=>{
     btn.onclick=e=>{
       e.stopPropagation();
       openPopulationRangeModal(btn.dataset.populationPlayer);
@@ -6386,24 +6806,197 @@ async function exportCurrentHandForAi(){
   }
 }
 
-function updateAppView({scrollTop=false}={}){
-  window.pokerComputeScheduler.hold('replayer',state.appView==='replayer');
-  const showReplay=state.appView==='replayer'&&state.hhMode&&!!state.selectedHand;
-  mainPage?.classList.toggle('mode-hidden',showReplay);
-  replayerPage?.classList.toggle('mode-hidden',!showReplay);
-  replayerPage?.setAttribute('aria-hidden',showReplay?'false':'true');
-  quickNav?.classList.toggle('mode-hidden',showReplay);
-  document.body.classList.toggle('replayer-view-open',showReplay);
-  if(replayerPageSub){
-    const h=state.selectedHand;
-    replayerPageSub.textContent=h?(()=>{const r=reviewSummaryForHand(h);return `Main #${h.id} · ${h.dateText} · ${h.heroName} · ${handStreetLabel(h)}${r?` · Revue ΣΔEV ${formatBB(r.totalLossBB)}${r.complete?'':' (partiel)'}`:''}`;})():'Aucune main sélectionnée.';
+const APP_VIEWS=["home","review","replayer","spotlab","training","strategy"];
+function currentAppView(){
+  return APP_VIEWS.includes(state.appView)?state.appView:"home";
+}
+function setAppView(view,{scrollTop=false,persist=true}={}){
+  if(!APP_VIEWS.includes(view)) return currentAppView();
+  // Every caller of setAppView is an explicit user navigation (mode cards,
+  // quickNav, goHome, focusAppSection). The async local restore must therefore
+  // never overwrite the view the user already picked.
+  state.userNavigated=true;
+  state.appView=view;
+  if(persist) schedulePersistPrefs(30);
+  updateAppView({scrollTop});
+  return view;
+}
+function goHome(){
+  if(state.hhMode) leaveHistoryMode();
+  return setAppView("home",{scrollTop:true});
+}
+function appViewUpdateIdentityMirror(){
+  if(!strategyPageStrategy) return;
+  const resolution=productHeroStrategyResolution();
+  const strategy=productHeroStrategyIdentityText(resolution);
+  if(strategyPagePopulation) strategyPagePopulation.textContent=productPopulationIdentityText();
+  strategyPageStrategy.textContent=strategy.identity;
+  if(strategyPageSource) strategyPageSource.textContent=`${strategy.source} · version ${strategy.version}`;
+}
+function appViewForHashTarget(id){
+  const map={
+    review:"review", reviewDashboard:"review", historiesSection:"review", handSelectionSection:"review", reviewInboxSummary:"review",
+    training:"training", trainerPage:"training",
+    spotlab:"spotlab", equityLabSection:"spotlab", rangesSection:"spotlab", opponentsSection:"spotlab", cardsSection:"spotlab", rangeDisplaySection:"spotlab", equitySection:"spotlab",
+    home:"home", homePage:"home", settingsSection:"home", runtimeIdentityDetails:"home", localPersistenceDetails:"home",
+    strategy:"strategy", strategyPage:"strategy",
+    replayer:"replayer", replayerPage:"replayer", replayerSection:"replayer"
+  };
+  return map[String(id||"")]||null;
+}
+function openAppView(view,{scrollTop=false}={}){
+  if(view==="training"){
+    // The Trainer owns its own runtime bootstrap; opening it settles appView.
+    if(typeof trainerOpenBtn!=="undefined"&&trainerOpenBtn){state.userNavigated=true;trainerOpenBtn.click();return "training";}
+    return setAppView("training",{scrollTop});
   }
-  if(showReplay){
+  if(view==="replayer"&&!state.selectedHand) return null;
+  if(view==="review"){
+    // Review always lands on its Pilotage pane, whatever sub-tab or inherited
+    // hash a previous visit left behind. Callers that target a specific pane
+    // (focusAppSection → activateAppSubviewForTarget) select it afterwards.
+    const applied=setAppView("review",{scrollTop});
+    activateAppSubview("pilotage");
+    return applied;
+  }
+  return setAppView(view,{scrollTop});
+}
+function focusAppSection(id){
+  const view=appViewForHashTarget(id);
+  if(view) openAppView(view);
+  // #394: a deep link can target a pane that lives in a sub-view; the hash must
+  // select the owning tab before focusing, since the shell never scrolls.
+  activateAppSubviewForTarget(id);
+  requestAnimationFrame(()=>{
+    const target=document.getElementById(id);
+    target?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+}
+function routeFromHash(){
+  const id=String(window.location.hash||"").replace(/^#/,"");
+  const view=appViewForHashTarget(id);
+  if(!view) return null;
+  focusAppSection(id);
+  return view;
+}
+function updateAppView({scrollTop=false}={}){
+  const view=currentAppView();
+  const showReplay=view==='replayer'&&state.hhMode&&!!state.selectedHand;
+  const mount=showReplay?'replayer':view;
+  window.pokerComputeScheduler.hold('replayer',mount==='replayer');
+  window.pokerComputeScheduler.hold('training',mount==='training');
+  document.querySelectorAll('[data-view-shell]').forEach(el=>{
+    const on=el.dataset.viewShell===mount;
+    el.classList.toggle('mode-hidden',!on);
+    el.setAttribute('aria-hidden',on?'false':'true');
+  });
+  quickNav?.classList.toggle('mode-hidden',mount==='replayer'||mount==='training');
+  document.body.classList.toggle('replayer-view-open',mount==='replayer');
+  document.body.classList.toggle('trainer-view-open',mount==='training');
+  document.body.dataset.appView=mount;
+  if(mount==='replayer'){
+    if(replayerPageSub){
+      const h=state.selectedHand;
+      replayerPageSub.textContent=h?(()=>{const r=reviewSummaryForHand(h);return `Main #${h.id} · ${h.dateText} · ${h.heroName} · ${handStreetLabel(h)}${r?` · Revue ΣΔEV ${formatBB(r.totalLossBB)}${r.complete?'':' (partiel)'}`:''}`;})():'Aucune main sélectionnée.';
+    }
     renderVisualReplay();
     renderHistoryReplay();
-    if(scrollTop) requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
   }
+  if(mount==='strategy') appViewUpdateIdentityMirror();
+  if(scrollTop) requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
 }
+/* #394 — coque desktop : pattern réutilisable sous-vue / onglet / pagination.
+   APP_ALLOWED_SCROLL_ZONES est le contrat des zones défilantes tolérées dans la
+   portée desktop (≥901px). Chaque entrée est bornée et justifiée ; aucune n'est
+   un substitut de coque de vue (pas de scroll global, pas de vue défilante).
+   tests/trainer/test_desktop_accessibility_contract.py vérifie cette liste. */
+const APP_ALLOWED_SCROLL_ZONES=[
+  {selector:".app-scroll-zone",scope:"desktop",kind:"liste / panneau borné",reason:"Listes et panneaux d'onglet bornés en lecture : journal de test du Trainer (max-height:180px), liste d'adversaires du Spot Lab, panneaux du rail Trainer, colonne contrôles/timeline et panneaux contextuels (Décision / Ranges / Détails) du Replayer. Bornés par la coque (flex + min-height:0), jamais un substitut de vue."},
+  {selector:".app-canvas-pane",scope:"desktop",kind:"canvas borné",reason:"Canvas interactif borné (table Trainer / colonne table du Replayer) : géométrie de sièges fixe, borné par la coque et resté atteignable sur écran court."},
+  {selector:".app-scroll-x",scope:"desktop",kind:"table bornée",reason:"Table de décision bornée (alternatives préflop, 4 colonnes) : débordement horizontal seulement."},
+  {selector:".street-timeline-list",scope:"desktop",kind:"liste bornée",reason:"Feed horizontal des événements de la street courante : liste bornée à une street."},
+  {selector:".population-modal",scope:"dialogue",kind:"dialogue",reason:"Dialogue modal de range adverse, hors coque de vue (role=dialog, aria-modal)."},
+  {selector:".population-modal-grid-wrap",scope:"dialogue",kind:"dialogue",reason:"Grille 13×13 du dialogue de range adverse."},
+  {selector:".population-combo-list",scope:"dialogue",kind:"dialogue",reason:"Liste de combos du dialogue de range adverse (max-height:370px)."},
+  {selector:".action-verdict-detail-modal",scope:"dialogue",kind:"dialogue",reason:"Dialogue modal de verdict d'action, hors coque de vue."},
+];
+const APP_HASH_SUBVIEWS={
+  // #394 T1 — the Review import surface is its own bounded pane (`import`), so a
+  // deep link to `#historiesSection`/`#reviewInboxSummary` selects that pane
+  // instead of counting on a landing pane that stacked the dashboard and the
+  // import surface in the same shell height. `#reviewDashboard` stays `pilotage`.
+  reviewDashboard:"pilotage",historiesSection:"import",reviewInboxSummary:"import",handSelectionSection:"inbox",reviewInboxNotice:"inbox",
+  equityLabSection:"spotlab-situation",opponentsSection:"spotlab-situation",rangesSection:"spotlab-situation",
+  cardsSection:"spotlab-board",rangeDisplaySection:"spotlab-range",equitySection:"spotlab-equity",
+  trainerPage:"trainer-coaching",trainerTable:"trainer-coaching",trainerRecommendation:"trainer-coaching",
+  // #394 T2 — the Replayer shell itself and its two documented anchors belong to
+  // the owning contextual pane (Décision). A deep link selects that tab before
+  // focusing instead of scrolling the shell into view.
+  replayerSection:"replayer-decision",replayerPage:"replayer-decision"
+};
+function appSubviewForHashTarget(id){
+  return APP_HASH_SUBVIEWS[String(id||"")]||null;
+}
+function appSubviewTabs(){
+  return Array.from(document.querySelectorAll("[data-app-subview]"));
+}
+function appSubviewPanels(scope){
+  const root=scope||document;
+  return Array.from(root.querySelectorAll("[data-app-subview-panel]"));
+}
+function appSubviewScopeFor(node){
+  return (node&&node.closest("[data-view-shell]"))||document;
+}
+/* #394 T4 — a sub-view is scoped to its owning view shell. Activating a Spot Lab
+   tab (the manual tools move) must never toggle the panes of Review/Training/
+   Replayer, otherwise leaving Spot Lab would blank the next view. The shell
+   guarantees a single mounted view; pane visibility stays local to that shell. */
+function activateAppSubview(name){
+  if(!name) return false;
+  const tab=appSubviewTabs().find(candidate=>candidate.dataset.appSubview===name);
+  if(!tab) return false;
+  const scope=appSubviewScopeFor(tab);
+  const list=tab.parentElement;
+  if(list){
+    Array.from(list.children).forEach(sibling=>{
+      if(!(sibling instanceof Element)||!sibling.dataset||sibling.dataset.appSubview===undefined) return;
+      const active=sibling.dataset.appSubview===name;
+      sibling.setAttribute("aria-selected",active?"true":"false");
+      sibling.tabIndex=active?0:-1;
+    });
+  }
+  appSubviewPanels(scope).forEach(panel=>{panel.hidden=panel.dataset.appSubviewPanel!==name;});
+  // A bounded list can only compute its page size once its pane is really laid out.
+  if(name==="inbox") renderHistoryHands();
+  return true;
+}
+function activateAppSubviewForTarget(id){
+  return activateAppSubview(appSubviewForHashTarget(id));
+}
+document.addEventListener("click",e=>{
+  const tab=e.target instanceof Element?e.target.closest("[data-app-subview]"):null;
+  if(!tab) return;
+  activateAppSubview(tab.dataset.appSubview);
+});
+document.addEventListener("keydown",e=>{
+  const tab=e.target instanceof Element?e.target.closest("[data-app-subview]"):null;
+  if(!tab) return;
+  // Enter / Space activate the focused tab, mirroring the native button
+  // activation for users who reach the tab row with the keyboard.
+  if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){
+    e.preventDefault();
+    activateAppSubview(tab.dataset.appSubview);
+    return;
+  }
+  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return;
+  const siblings=appSubviewTabs().filter(candidate=>candidate.parentElement===tab.parentElement);
+  const index=siblings.indexOf(tab);
+  if(index<0) return;
+  e.preventDefault();
+  const next=siblings[(index+(e.key==="ArrowRight"?1:siblings.length-1))%siblings.length];
+  next.focus();
+  activateAppSubview(next.dataset.appSubview);
+});
 function openReplayerPage({scrollTop=true}={}){
   if(!state.hhMode||!state.selectedHand)return;
   state.appView='replayer';
@@ -6411,24 +7004,30 @@ function openReplayerPage({scrollTop=true}={}){
   updateAppView({scrollTop});
 }
 function returnToHandsPage(){
-  // Review is an implicit context: leaving it restores the independent manual Equity Lab.
-  // selectedHand and imported HH data are intentionally preserved for a later reopen.
+  // #394 T3 — the Replayer "Retour" hands the user back to the Review view.
+  // Review is an implicit context: leaving it restores the independent manual
+  // Equity Lab, while selectedHand and imported HH data are intentionally
+  // preserved for a later reopen.
   if(state.hhMode) leaveHistoryMode();
   else{
-    state.appView='main';
+    state.appView='review';
     schedulePersistPrefs(30);
     updateAppView();
   }
-  scheduleBackgroundReviewScoring(80);
+  // #394 T3 / T8: returning to Review is a pure view change — it must reuse the
+  // scores already produced instead of re-scheduling the background review
+  // scoring (and it must not scroll the document, the shell selects the pane).
   requestAnimationFrame(()=>{
-    const target=document.getElementById('handSelectionSection')||document.getElementById('historiesSection');
-    target?.scrollIntoView({behavior:'auto',block:'start'});
+    // #394: the inbox lives in the "Inbox de review" sub-view of the Review shell.
+    activateAppSubview("inbox");
   });
 }
 function leaveHistoryMode(){
   // Internal scientific/reconstruction context only; there is no user-facing HH mode.
   state.hhMode=false;
-  state.appView="main";
+  // Leaving Review returns to the owning view: the Replayer hands back to the
+  // Review inbox, while clearing cards from Spot Lab stays in Spot Lab.
+  if(state.appView==="replayer") state.appView="review";
   state.knownHandsMode=false;
   schedulePersistPrefs();
   state.hhFullBoard=[];
@@ -6541,9 +7140,47 @@ function visibleHistoryHands(){
   const byId=new Map((state.hhHands||[]).map(h=>[String(h.id),h]));
   return items.map(item=>byId.get(String(item.hand_id))).filter(Boolean);
 }
+/* #394 — bornage de l'inbox (liste bornée paginée).
+   La coque desktop ne défile pas : on ne rend que les lignes qui tiennent dans
+   la hauteur contrainte, et la pagination rend le reste atteignable. La taille
+   de page est mesurée puis réduite tant que la liste déborderait. */
+const REVIEW_INBOX_PAGE_SIZE_DEFAULT=8;
+const REVIEW_INBOX_ROW_PITCH_MIN=56;
+function reviewInboxIsHeightBound(){
+  return typeof window.matchMedia==="function"&&window.matchMedia("(min-width:901px)").matches;
+}
+function reviewInboxRowPitch(){
+  const row=hhHandsEl?.querySelector(".hh-hand");
+  const measured=row?.getBoundingClientRect().height;
+  const gap=Number.parseFloat(getComputedStyle(hhHandsEl).rowGap||"0")||0;
+  if(Number.isFinite(measured)&&measured>0)return Math.max(REVIEW_INBOX_ROW_PITCH_MIN,measured+gap);
+  return 64;
+}
+function reviewInboxPageSizeGuess(total){
+  if(!reviewInboxIsHeightBound())return total;
+  const available=Number(hhHandsEl?.clientHeight)||0;
+  if(available<=0)return Math.min(total,state.reviewInboxPageSize||REVIEW_INBOX_PAGE_SIZE_DEFAULT);
+  const fits=Math.floor((available+2)/reviewInboxRowPitch());
+  return Math.max(1,Math.min(total,fits));
+}
+function updateReviewInboxPager({page=0,pages=1,total=0,first=0,last=0}={}){
+  if(!hhListPager)return;
+  const multipage=pages>1;
+  hhListPager.hidden=!multipage;
+  if(!multipage)return;
+  if(hhPageInfo)hhPageInfo.textContent=`Page ${page+1} / ${pages} · mains ${first+1}–${last} sur ${total}`;
+  if(hhPagePrev)hhPagePrev.disabled=page<=0;
+  if(hhPageNext)hhPageNext.disabled=page>=pages-1;
+}
+function reviewInboxPageWindow(total,size){
+  const pageSize=Math.max(1,size);
+  const pages=Math.max(1,Math.ceil(total/pageSize));
+  const page=Math.min(Math.max(0,Number(state.reviewInboxPage)||0),pages-1);
+  state.reviewInboxPage=page;
+  return {page,pages,start:page*pageSize,end:Math.min(total,(page+1)*pageSize)};
+}
 function renderHistoryHands(){
   renderReviewDashboard();
-  hhHandsEl.innerHTML="";
   if(hhSortSelect)hhSortSelect.value=state.hhSort;
   if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
   if(reviewStatusFilter)reviewStatusFilter.value=state.reviewInboxFilters.status||"";
@@ -6554,10 +7191,12 @@ function renderHistoryHands(){
   if(reviewOverbetFilter)reviewOverbetFilter.value=state.reviewInboxFilters.overbet||"";
 
   if(!state.hhHands.length){
+    hhHandsEl.innerHTML="";
     hhListCount.textContent="0 main affichée";
     if(reviewInboxSummary)reviewInboxSummary.textContent="Aucune main chargée.";
     if(reviewInboxNotice){reviewInboxNotice.textContent="";reviewInboxNotice.className="review-inbox-notice";}
     if(reviewInboxReasons)reviewInboxReasons.textContent="Aucune raison technique.";
+    updateReviewInboxPager({page:0,pages:1,total:0});
     return;
   }
 
@@ -6582,10 +7221,34 @@ function renderHistoryHands(){
   }
 
   if(!hands.length){
+    updateReviewInboxPager({page:0,pages:1,total:0});
+    hhHandsEl.innerHTML="";
     const empty=document.createElement("div");empty.className="status";empty.textContent="Aucune main ne correspond aux filtres actifs.";hhHandsEl.appendChild(empty);return;
   }
 
-  for(const h of hands){
+  renderReviewInboxPage(hands,byId);
+}
+/* Peint une page bornée de l'inbox. La taille de page est réduite jusqu'à ce que
+   la liste tienne dans la hauteur contrainte de la coque (desktop) : aucune
+   ligne n'est perdue derrière `overflow:hidden`, les suivantes sont paginées. */
+function renderReviewInboxPage(hands,byId){
+  let size=reviewInboxPageSizeGuess(hands.length);
+  let pageWindow=reviewInboxPageWindow(hands.length,size);
+  for(let attempt=0;attempt<6;attempt++){
+    paintReviewInboxRows(hands.slice(pageWindow.start,pageWindow.end),byId);
+    const heightBound=reviewInboxIsHeightBound()&&hhHandsEl.clientHeight>0;
+    const count=pageWindow.end-pageWindow.start;
+    if(!heightBound||count<=1||size<=1)break;
+    if(hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1)break;
+    size-=1;
+    pageWindow=reviewInboxPageWindow(hands.length,size);
+  }
+  state.reviewInboxPageSize=Math.max(1,size);
+  updateReviewInboxPager({page:pageWindow.page,pages:pageWindow.pages,total:hands.length,first:pageWindow.start,last:pageWindow.end});
+}
+function paintReviewInboxRows(pageHands,byId){
+  hhHandsEl.innerHTML="";
+  for(const h of pageHands){
     const item=byId.get(String(h.id));if(!item)continue;
     const decision=item.costliest_decision||item.primary_decision;
     const row=document.createElement("div");
@@ -6628,7 +7291,7 @@ async function clearLoadedHands({persist=true,reason="Mains vidées."}={}){
   state.hhHands=[];
   state.hhSourceSnapshots=[];
   state.selectedHand=null;
-  state.appView="main";
+  state.appView="review";
   state.hhFullBoard=[];
   state.replaySteps=[];
   state.replayIndex=0;
@@ -6888,14 +7551,18 @@ hhClearBtn?.addEventListener("click",()=>clearLoadedHands({persist:true,reason:"
 
 hhWatchBtn.addEventListener("click",startHHWatch);
 hhWatchStopBtn.addEventListener("click",()=>stopHHWatch("Surveillance automatique arrêtée · les mains déjà chargées restent disponibles."));
+hhPagePrev?.addEventListener("click",()=>{state.reviewInboxPage=Math.max(0,(Number(state.reviewInboxPage)||0)-1);renderHistoryHands();});
+hhPageNext?.addEventListener("click",()=>{state.reviewInboxPage=(Number(state.reviewInboxPage)||0)+1;renderHistoryHands();});
 
 hhSortSelect?.addEventListener("change",()=>{
   state.hhSort=hhSortSelect.value;
+  state.reviewInboxPage=0;
   schedulePersistPrefs();
   renderHistoryHands();
 });
 hhKnownFilter?.addEventListener("change",()=>{
   state.hhKnownOnly=hhKnownFilter.checked;
+  state.reviewInboxPage=0;
   schedulePersistPrefs();
   renderHistoryHands();
 });
@@ -6904,7 +7571,7 @@ hhKnownFilter?.addEventListener("change",()=>{
   [reviewPositionFilter,"position"],[reviewSpotFilter,"spot_family"],[reviewPlayedFilter,"action_played"],
   [reviewRecommendedFilter,"action_recommended"],[reviewSizingFilter,"sizing_error"],
   [reviewJamFilter,"jam"],[reviewOverbetFilter,"overbet"]
-].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;renderHistoryHands();}));
+].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;state.reviewInboxPage=0;renderHistoryHands();}));
 
 knownHandsBtn.addEventListener("click",()=>{
   if(knownHandsBtn.disabled) return;
@@ -9141,7 +9808,7 @@ async function restoreLocalState(){
       if(["review_desc","status_asc","street_asc","position_asc","hand_asc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
       state.hhKnownOnly=!!prefs.hhKnownOnly;
       if(["replace","add"].includes(prefs.hhImportMode)) state.hhImportMode=prefs.hhImportMode;
-      if(["main","replayer"].includes(prefs.appView)) state.appView=prefs.appView;
+      if(APP_VIEWS.includes(prefs.appView)) state.restoredAppView=prefs.appView;
       state.quickNavCollapsed=!!prefs.quickNavCollapsed;
       updateQuickNavUi();
     }
@@ -9171,14 +9838,19 @@ async function restoreLocalState(){
       state.selectedHand=state.hhHands.find(h=>h.id===String(prefs.selectedHandId))||null;
     }
 
-    if(prefs?.appView==="replayer"&&state.selectedHand){
+    // #394 T1 — a view the user already picked while IndexedDB was still opening
+    // is final: neither the replayer restore nor the restored/default view may
+    // (re)apply state.appView over it. Both applications stay guarded explicitly.
+    if(!state.userNavigated&&prefs?.appView==="replayer"&&state.selectedHand){
       state.hhMode=true;
       loadSelectedHistoryHand(false);
       openReplayerPage({scrollTop:false});
-    }else{
-      // A remembered hand may stay selected, but main view is always the independent Equity Lab context.
+    }else if(!state.userNavigated){
+      // A remembered hand may stay selected; the rest of the time the last mode
+      // is restored, with Home as the safe default (Training needs its runtime).
       state.hhMode=false;
-      state.appView='main';
+      const restored=state.restoredAppView;
+      state.appView=["home","review","spotlab","strategy"].includes(restored)?restored:"home";
       updateAppView();
       updateHistoryUi();
     }
@@ -9198,6 +9870,7 @@ async function restoreLocalState(){
     updateHistoryUi();
     updateRangeEditionUi();
     updateCalcReady();
+    routeFromHash();
     if(state.hhMode&&state.selectedHand) scheduleAutoCalculate(120);
     if(state.appView!=="replayer")scheduleBackgroundReviewScoring(250);
     await refreshCentralManualOverrideState(state.manualOverrideContract);
@@ -9219,10 +9892,16 @@ localPersistenceRetryBtn?.addEventListener("click",retryLocalPersistence);
 localPersistenceClearBtn?.addEventListener("click",clearLocalPersistenceWithConfirmation);
 centralRestorePackBtn?.addEventListener("click",()=>{void centralRestoreActivePack().catch(()=>{});});
 replayerExportBtn?.addEventListener("click",exportCurrentHandForAi);
-hhHandsEl.addEventListener('scroll',()=>scheduleBackgroundReviewScoring(180),{passive:true});
+/* #394 T3 — no scroll listener may re-schedule the background review scoring.
+   The inbox list is bounded by its pagination (renderReviewInboxPage + #hhListPager),
+   not by scroll visibility, so a view switch stays a pure DOM toggle and scrolling
+   the list never restarts a computation. */
 $('hhAnalyzeAllBtn').addEventListener('click',()=>{state.reviewAnalyzeAll=true;scheduleBackgroundReviewScoring(0);});
 hhBenchmarkExportBtn?.addEventListener("click",exportPolicyBenchmarkForSimulator);
-reviewDashboardImportBtn?.addEventListener("click",()=>hhFileInput?.click());
+/* #394 T1 — the CTA lives in the Pilotage pane while the file input lives in the
+   Import pane: the click selects that pane first, so the picker is never opened
+   from an input that is still inside a `hidden` pane. */
+reviewDashboardImportBtn?.addEventListener("click",()=>{activateAppSubview("import");hhFileInput?.click();});
 reviewDashboardReviewBtn?.addEventListener("click",openReviewDashboardReview);
 reviewDashboardLeakBtn?.addEventListener("click",openReviewDashboardLeak);
 reviewDashboardTrainingBtn?.addEventListener("click",openReviewDashboardTraining);
@@ -9233,6 +9912,12 @@ loadRuntimeReleaseIdentity();
 updateAppView();
 document.querySelectorAll(".quick-nav a").forEach(a=>{
   a.addEventListener("click",e=>{
+    /* #394 — every `#quickNav` entry is an in-app navigation: the Strategy entry
+       carries `href="#strategyPage"` like the Review / Equity Lab / Settings ones,
+       so the generic hash path below mounts the embedded `[data-view-shell="strategy"]`
+       shell. The standalone editor keeps its own real link on the Accueil mode card
+       (`a.mode-card[data-app-view="strategy"][data-hero-ranges-entry]`) and on
+       `#strategyPageEditorLink`. */
     const href=a.getAttribute("href")||"";
     if(!href.startsWith("#")) return;
     e.preventDefault();
@@ -9241,12 +9926,35 @@ document.querySelectorAll(".quick-nav a").forEach(a=>{
       trainerOpenBtn?.click();
       return;
     }
-    if(state.appView==="replayer"){state.appView="main";state.hhMode=false;updateAppView();}
-    const target=id?document.getElementById(id):null;
-    if(!target)return;
-    requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
+    focusAppSection(id);
   });
 });
+document.querySelectorAll(".mode-card[data-app-view]").forEach(card=>{
+  card.addEventListener("click",e=>{
+    const view=card.dataset.appView;
+    if(!APP_VIEWS.includes(view)) return;
+    // The Strategy mode card is the standalone editor's real link: it must
+    // navigate (deep link preserved, openable in a new tab) instead of being
+    // swallowed by the in-app view switch. The embedded shell is reached by the
+    // in-app `#strategyPage` deep link carried by the `#quickNav` entry.
+    if(card.tagName==="A"&&card.getAttribute("href")) return;
+    e.preventDefault();
+    openAppView(view,{scrollTop:true});
+  });
+});
+document.querySelectorAll("[data-home-back]").forEach(btn=>{
+  btn.addEventListener("click",()=>goHome());
+});
+document.addEventListener("click",e=>{
+  const link=e.target?.closest?.('a[href^="#"]');
+  if(!link||link.closest("#quickNav")) return;
+  const id=(link.getAttribute("href")||"").slice(1);
+  if(!id||!appViewForHashTarget(id)) return;
+  e.preventDefault();
+  focusAppSection(id);
+  try{history.replaceState(null,"",`#${id}`);}catch(_){}
+});
+window.addEventListener("hashchange",()=>{routeFromHash();});
 updateCalcReady();
 populationModelUi();
 restoreLocalState();

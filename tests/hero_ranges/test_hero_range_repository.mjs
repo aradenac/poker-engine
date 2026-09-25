@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import childProcess from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import zlib from 'node:zlib';
 import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
 const require=createRequire(import.meta.url);
 const H=require('../../site/hero-ranges.js');
 
@@ -106,4 +111,77 @@ assert.equal(stats.personal_combo_slots,4);
 assert.equal(stats.contexts,3);
 assert.ok(stats.legacy_ranges>0);
 
-console.log(`Hero range repository contract: PASS (${legacy.length} legacy ranges, ${stats.contexts} contexts)`);
+// --- Frozen `hero-range-editor` job: patch idempotence ---------------------
+// `.github/workflows/hero-range-editor.yml` (frozen, sha256-pinned by
+// tests/ci/test_repro_workflow_batch2.py) runs
+// `python3 tools/patches/apply_hero_range_editor.py` in place on site/index.html
+// and then requires the sha256 to be unchanged: the committed index is already
+// patched and a second run is a strict no-op. This is the only test Python step
+// of that job whose file may be edited, so it reproduces the contract here — on
+// throwaway copies, never in the checkout — and adds the positive control the
+// workflow cannot express: remove `#heroRangesOpenBtn`, insert it exactly once,
+// then prove the next run touches no byte.
+const REPO_ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..','..');
+const PATCH_SCRIPT=path.join(REPO_ROOT,'tools/patches/apply_hero_range_editor.py');
+const INDEX=path.join(REPO_ROOT,'site/index.html');
+const HERO_RANGES_OPEN_BTN=/^[ \t]*<a id="heroRangesOpenBtn"[^\n]*\n/m;
+const HERO_RANGES_OPEN_BTN_MARKER='id="heroRangesOpenBtn"';
+
+function sha256(file){return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');}
+function occurrences(text,needle){return text.split(needle).length-1;}
+function runPatch(indexPath,...args){
+  const result=childProcess.spawnSync('python3',[PATCH_SCRIPT,'--index',indexPath,...args],{cwd:REPO_ROOT,encoding:'utf8'});
+  const label=`apply_hero_range_editor.py --index ${indexPath} ${args.join(' ')}`.trim();
+  const detail=result.error?result.error.message:(result.stderr||result.stdout);
+  assert.equal(result.status,0,`${label} must succeed: ${detail}`);
+  return result;
+}
+
+// Navigation invariants: the Strategy view is an in-app surface and the frozen
+// patch must never re-expose the standalone `hero-ranges.html` page as a
+// `#quickNav` entry — the nav entry carries `#strategyPage`, and the real
+// editor links stay outside the navigation.
+const indexText=fs.readFileSync(INDEX,'utf8');
+const committedSha=sha256(INDEX);
+const quickNav=/<nav id="quickNav"[\s\S]*?<\/nav>/.exec(indexText);
+assert.ok(quickNav,'site/index.html must keep the #quickNav block');
+assert.equal(quickNav[0].includes('hero-ranges.html'),false,'#quickNav must not re-expose the standalone hero-ranges.html page');
+assert.equal(occurrences(quickNav[0],'<a '),5,'#quickNav must keep exactly 5 entries');
+assert.equal(occurrences(indexText,HERO_RANGES_OPEN_BTN_MARKER),1,'the index must declare #heroRangesOpenBtn exactly once');
+
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'hero-range-editor-'));
+try{
+  // Idempotence: patching an already patched copy changes no byte, and `--check`
+  // agrees without writing. Both properties are asserted on the bytes.
+  const appliedCopy=path.join(temp,'applied.html');
+  fs.copyFileSync(INDEX,appliedCopy);
+  const copyBefore=sha256(appliedCopy);
+  runPatch(appliedCopy);
+  assert.equal(sha256(appliedCopy),copyBefore,'patching an applied index must not change a single byte');
+  runPatch(appliedCopy,'--check');
+  assert.equal(sha256(appliedCopy),copyBefore,'--check must report the applied index without writing it');
+
+  // Positive control (non-vacuous): with the link stripped the first run inserts
+  // it exactly once — rebuilding the committed bytes — and the second run is a
+  // strict no-op, so the guard cannot pass by simply doing nothing.
+  const linkLine=HERO_RANGES_OPEN_BTN.exec(indexText)[0];
+  const strippedText=indexText.replace(HERO_RANGES_OPEN_BTN,'');
+  assert.equal(occurrences(strippedText,HERO_RANGES_OPEN_BTN_MARKER),0,'the positive control needs the link actually removed');
+  assert.equal(indexText.length-strippedText.length,linkLine.length,'the positive control must strip exactly the link line');
+  const controlCopy=path.join(temp,'control.html');
+  fs.writeFileSync(controlCopy,strippedText);
+  runPatch(controlCopy);
+  const insertedText=fs.readFileSync(controlCopy,'utf8');
+  assert.equal(occurrences(insertedText,HERO_RANGES_OPEN_BTN_MARKER),1,'the patch must insert #heroRangesOpenBtn exactly once');
+  assert.equal(occurrences(insertedText,linkLine),1,'the inserted entry must be the exact committed link line');
+  assert.equal(insertedText,indexText,'the patch must rebuild the committed index byte-for-byte');
+  const insertedSha=sha256(controlCopy);
+  runPatch(controlCopy);
+  assert.equal(sha256(controlCopy),insertedSha,'a second run over a freshly patched index must not change bytes');
+  runPatch(controlCopy,'--check');
+}finally{
+  fs.rmSync(temp,{recursive:true,force:true});
+}
+assert.equal(sha256(INDEX),committedSha,'the patch contract must never write into the checkout');
+
+console.log(`Hero range repository contract: PASS (${legacy.length} legacy ranges, ${stats.contexts} contexts, hero range editor patch idempotent)`);
