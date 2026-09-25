@@ -1,0 +1,3823 @@
+{
+  "base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
+  "blocker_catalog": {
+    "ARTIFACT_DISCARD_RISK": "cancel-in-progress could discard produced artifacts that downstream consumers still read",
+    "FAIL_CLOSED_UNSAFE_SIDE_EFFECT": "fail-closed: repository-write, publication or unknown capability is never cancellation-safe",
+    "FROZEN_TELEMETRY_PREDATES_HEAD": "the only queue telemetry is the frozen #242 sample (100 runs) which predates this HEAD, so no per-workflow queue delta can be attributed to a new change",
+    "NO_MEASURED_IMPROVEMENT": "no measured improvement: the authorized method is a static structural proxy that is blind to queue/cancel semantics, so a concurrency-only change leaves runs/jobs/cost byte-identical by construction",
+    "OUT_OF_SCOPE_CHANGE_SURFACE": "explicitly excluded from this task's change surface"
+  },
+  "change_surface": {
+    "cancellation_surface_changed": false,
+    "declared_change_scope": [
+      "tools/audit_active_workflow_dag.py",
+      "analysis/workflow_audit/consolidation_decision_v1.json",
+      "docs/ci-workflow-dag.md",
+      "docs/ci-workflow-audit.md",
+      "tests/ci/test_consolidation_decision.py"
+    ],
+    "declared_workflow_changes": [],
+    "project_state_consistency_modified": false,
+    "publication_surface_expanded": false,
+    "repository_write_surface_expanded": false,
+    "scientific_surface_expanded": false,
+    "unchanged_frozen_evidence": [
+      "analysis/workflow_audit/active_workflow_dag_v2.json"
+    ],
+    "workflow_files_modified": false
+  },
+  "counts": {
+    "active_automatic_workflow_count": 54,
+    "blocked_not_applied_count": 11,
+    "cancel_in_progress_false_count": 10,
+    "cancel_in_progress_true_count": 28,
+    "duplicate_push_and_pull_request_exposure_count": 34,
+    "inventory_workflow_count": 69,
+    "manual_only_count": 15,
+    "safe_candidate_not_applied_count": 15,
+    "without_concurrency_count": 16
+  },
+  "dag_evidence": "analysis/workflow_audit/active_workflow_dag_v2.json",
+  "decision": "NO_FURTHER_CONSOLIDATION_JUSTIFIED",
+  "decision_statement": "No safe trigger/concurrency consolidation is demonstrated for the active DAG at HEAD, so no workflow file is modified: every recommendation stays unapplied and carries an explicit blocker.",
+  "doc": "docs/ci-workflow-dag.md",
+  "fail_closed_invariants": [
+    "a recommendation is marked fail-closed safe only when its side-effect class is READ_ONLY or ARTIFACT_ONLY",
+    "REPOSITORY_WRITE, PUBLICATION_CAPABLE and UNKNOWN are never marked safe",
+    "every unapplied recommendation carries at least one blocker",
+    "no change is applied while the decision is NO_FURTHER_CONSOLIDATION_JUSTIFIED",
+    ".github/workflows/project-state-consistency.yml is never modified",
+    "job and artifact names are preserved and digest-pinned for every workflow"
+  ],
+  "frozen_name_digest": "0c41337e1ebe5291f808cc09348dabb00d74ad3df8ea86b8b957a4fb2e690035",
+  "inventory_sha256": "5ca3beda7e4486bf9cf9871454fe00610ed2d9c860e23ff4412807e1fa1f3d9f",
+  "inventory_source": "analysis/workflow_audit/workflows.json",
+  "issue": 382,
+  "measurement_method": {
+    "billed": false,
+    "kind": "static structural proxy",
+    "statement": "Every run/job/cost figure here is a static structural proxy, not GitHub-billed minutes; the pinned base and HEAD carry byte-identical workflow definitions, so each before/after pair coincides by construction."
+  },
+  "method_sensitivity": {
+    "concurrency_sensitive_inputs": [],
+    "proxy_inputs": [
+      "checkout",
+      "download_artifact",
+      "npm_install",
+      "pip_install",
+      "playwright_install",
+      "setup_node",
+      "setup_python",
+      "upload_artifact"
+    ],
+    "statement": "the proxy is a function of job/checkout/setup/install/artifact counts only, so a trigger/concurrency-only edit cannot move the measured runs/jobs/cost figures; the decision therefore cannot claim a measured improvement"
+  },
+  "parent_issue": 204,
+  "planner_estimate": {
+    "active_automatic": 53,
+    "cancel_in_progress_true": 37,
+    "manual_only": 15,
+    "without_concurrency": 19
+  },
+  "planner_estimate_delta": {
+    "active_automatic": 1,
+    "cancel_in_progress_true": -9,
+    "manual_only": 0,
+    "without_concurrency": -3
+  },
+  "planner_estimate_notes": [
+    "the planner counted concurrency across all 69 workflow files, including the 15 manual-only ones, which yields 19 files without a concurrency block and 38 files with cancel-in-progress: true; this decision counts only the 54 active workflows, which yields 16 and 28, hence the -3 and -9 deltas",
+    "the planner's 53 automatic workflows predates the HEAD measurement of 54",
+    "no reconciliation delta changes the decision: it is taken on the active set only"
+  ],
+  "recommendations": {
+    "applied": [],
+    "blocked_not_applied": [
+      ".github/workflows/game-core.yml",
+      ".github/workflows/ingest-artifacts.yml",
+      ".github/workflows/model-b-response-audit.yml",
+      ".github/workflows/persist-issue-107-pfpc.yml",
+      ".github/workflows/plan-ingested-cycle.yml",
+      ".github/workflows/population-pack.yml",
+      ".github/workflows/preflop-contract.yml",
+      ".github/workflows/preflop-strategy-test-pfpc.yml",
+      ".github/workflows/preflop-strategy-validation-pfpc.yml",
+      ".github/workflows/recover-issue-107-pfpc.yml",
+      ".github/workflows/release-no-pending-snapshot-proof.yml"
+    ],
+    "safe_candidates_not_applied": [
+      ".github/workflows/continuous-training-cycle.yml",
+      ".github/workflows/full-hand-arena.yml",
+      ".github/workflows/full-hand-protocol.yml",
+      ".github/workflows/hero-calculated-range-export.yml",
+      ".github/workflows/hero-pfpc-evidence-validation.yml",
+      ".github/workflows/issue-367-real-iso-ev-observable.yml",
+      ".github/workflows/issue-367-real-iso-ev.yml",
+      ".github/workflows/model-a-continuation.yml",
+      ".github/workflows/model-b-card-aware-runtime.yml",
+      ".github/workflows/model-b-reveal-aware.yml",
+      ".github/workflows/population-certification.yml",
+      ".github/workflows/preflop-grid-evaluator.yml",
+      ".github/workflows/preflop-topology-contract.yml",
+      ".github/workflows/project-state-consistency.yml",
+      ".github/workflows/user-artifact-bundle.yml"
+    ],
+    "unapplied_count": 26
+  },
+  "scenario_count": 14,
+  "scenarios": [
+    {
+      "after": {
+        "cost_proxy": 92,
+        "jobs": 22,
+        "runs": 17
+      },
+      "before": {
+        "cost_proxy": 92,
+        "jobs": 22,
+        "runs": 17
+      },
+      "billed": false,
+      "changed_paths": [
+        ".github/actions/repro-runtime/action.yml"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "repro_runtime_composite",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 25,
+        "jobs": 7,
+        "runs": 4
+      },
+      "before": {
+        "cost_proxy": 25,
+        "jobs": 7,
+        "runs": 4
+      },
+      "billed": false,
+      "changed_paths": [
+        ".github/actions/repro-browser/action.yml"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "repro_browser_composite",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 31,
+        "jobs": 7,
+        "runs": 5
+      },
+      "before": {
+        "cost_proxy": 31,
+        "jobs": 7,
+        "runs": 5
+      },
+      "billed": false,
+      "changed_paths": [
+        "site/trainer.js"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "trainer_js",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 71,
+        "jobs": 8,
+        "runs": 6
+      },
+      "before": {
+        "cost_proxy": 71,
+        "jobs": 8,
+        "runs": 6
+      },
+      "billed": false,
+      "changed_paths": [
+        "tools/simulation/game_core.py"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "game_core",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 23,
+        "jobs": 5,
+        "runs": 5
+      },
+      "before": {
+        "cost_proxy": 23,
+        "jobs": 5,
+        "runs": 5
+      },
+      "billed": false,
+      "changed_paths": [
+        "src/preflop/decision.js"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "preflop_decision",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 57,
+        "jobs": 8,
+        "runs": 4
+      },
+      "before": {
+        "cost_proxy": 57,
+        "jobs": 8,
+        "runs": 4
+      },
+      "billed": false,
+      "changed_paths": [
+        "training/datasets/NLHE_100-200/source/NLHE 100-200.zip"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "push",
+      "method": "static structural proxy",
+      "scenario": "dataset_nlhe_100_200",
+      "simulation_disposition": "UNKNOWN",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 53,
+        "jobs": 9,
+        "runs": 5
+      },
+      "before": {
+        "cost_proxy": 53,
+        "jobs": 9,
+        "runs": 5
+      },
+      "billed": false,
+      "changed_paths": [
+        "training/models/preflop_population_model_v5.json"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "preflop_model",
+      "simulation_disposition": "UNKNOWN",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 52,
+        "jobs": 11,
+        "runs": 10
+      },
+      "before": {
+        "cost_proxy": 52,
+        "jobs": 11,
+        "runs": 10
+      },
+      "billed": false,
+      "changed_paths": [
+        "tools/repro_ci_environment.py"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "push",
+      "method": "static structural proxy",
+      "scenario": "repro_helper",
+      "simulation_disposition": "UNKNOWN",
+      "write_capable_jobs_potentially_reachable": 2
+    },
+    {
+      "after": {
+        "cost_proxy": 115,
+        "jobs": 22,
+        "runs": 20
+      },
+      "before": {
+        "cost_proxy": 115,
+        "jobs": 22,
+        "runs": 20
+      },
+      "billed": false,
+      "changed_paths": [
+        ".python-version"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "python_version",
+      "simulation_disposition": "UNKNOWN",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 74,
+        "jobs": 14,
+        "runs": 12
+      },
+      "before": {
+        "cost_proxy": 74,
+        "jobs": 14,
+        "runs": 12
+      },
+      "billed": false,
+      "changed_paths": [
+        ".node-version"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "node_version",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 11,
+        "jobs": 3,
+        "runs": 3
+      },
+      "before": {
+        "cost_proxy": 11,
+        "jobs": 3,
+        "runs": 3
+      },
+      "billed": false,
+      "changed_paths": [
+        "tools/training/build_release_handoff.py"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "release_handoff_tooling",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 11,
+        "jobs": 3,
+        "runs": 3
+      },
+      "before": {
+        "cost_proxy": 11,
+        "jobs": 3,
+        "runs": 3
+      },
+      "billed": false,
+      "changed_paths": [
+        "tools/training/independent_profiles/card_aware_behavior_fit.py"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "push",
+      "method": "static structural proxy",
+      "scenario": "model_b_training",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 5,
+        "jobs": 1,
+        "runs": 1
+      },
+      "before": {
+        "cost_proxy": 5,
+        "jobs": 1,
+        "runs": 1
+      },
+      "billed": false,
+      "changed_paths": [
+        "docs/README.md"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "docs_only",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    },
+    {
+      "after": {
+        "cost_proxy": 5,
+        "jobs": 1,
+        "runs": 1
+      },
+      "before": {
+        "cost_proxy": 5,
+        "jobs": 1,
+        "runs": 1
+      },
+      "billed": false,
+      "changed_paths": [
+        ".github/workflows/finalize-training-cycle.yml"
+      ],
+      "delta": {
+        "cost_proxy": 0,
+        "jobs": 0,
+        "runs": 0
+      },
+      "event": "pull_request",
+      "method": "static structural proxy",
+      "scenario": "historical_manual_workflow",
+      "simulation_disposition": "SUPPORTED_STATIC_SUBSET",
+      "write_capable_jobs_potentially_reachable": 0
+    }
+  ],
+  "schema": "poker-workflow-concurrency-consolidation-decision/v1",
+  "task": "backlog-85b",
+  "totals": {
+    "after": {
+      "cost_proxy": 625,
+      "jobs": 121,
+      "runs": 96
+    },
+    "before": {
+      "cost_proxy": 625,
+      "jobs": 121,
+      "runs": 96
+    },
+    "billed": false,
+    "delta": {
+      "cost_proxy": 0,
+      "jobs": 0,
+      "runs": 0
+    },
+    "method": "static structural proxy"
+  },
+  "workflows": [
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "analysis-state-contract-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "src/analytics/analysis-state.js",
+            "site/analytics/analysis-state.js",
+            "src/analytics/review-inbox.js",
+            "site/analytics/review-inbox.js",
+            "src/analytics/review-dashboard.js",
+            "site/analytics/review-dashboard.js",
+            "src/analytics/review-score-adapter.js",
+            "site/analytics/review-score-adapter.js",
+            "site/index.html",
+            "site/trainer.js",
+            "contracts/analytics/analysis-state.schema.json",
+            "contracts/analytics/review-inbox.schema.json",
+            "docs/analysis-state-contract.md",
+            "tests/analytics/test_analysis_state.js",
+            "tests/analytics/test_analysis_state_contract.py",
+            "tests/analytics/test_analysis_state_mirror_parity.js",
+            "tests/trainer/test_analysis_state_mirror_contract.py",
+            "tests/trainer/test_analysis_state_consistency_contract.py",
+            "tests/trainer/test_trainer_d6_exposure_contract.py",
+            ".github/workflows/analysis-state-contract.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "src/analytics/analysis-state.js",
+            "site/analytics/analysis-state.js",
+            "src/analytics/review-inbox.js",
+            "site/analytics/review-inbox.js",
+            "src/analytics/review-dashboard.js",
+            "site/analytics/review-dashboard.js",
+            "src/analytics/review-score-adapter.js",
+            "site/analytics/review-score-adapter.js",
+            "site/index.html",
+            "site/trainer.js",
+            "contracts/analytics/analysis-state.schema.json",
+            "contracts/analytics/review-inbox.schema.json",
+            "docs/analysis-state-contract.md",
+            "tests/analytics/test_analysis_state.js",
+            "tests/analytics/test_analysis_state_contract.py",
+            "tests/analytics/test_analysis_state_mirror_parity.js",
+            "tests/trainer/test_analysis_state_mirror_contract.py",
+            "tests/trainer/test_analysis_state_consistency_contract.py",
+            "tests/trainer/test_trainer_d6_exposure_contract.py",
+            ".github/workflows/analysis-state-contract.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate analysis-state taxonomy contract",
+      "path": ".github/workflows/analysis-state-contract.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "validation_or_utility",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "continuous-cycle-execution-${{ github.run_id }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "continuous-training-cycle-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/datasets/build_population_increment.py",
+            "tools/datasets/certify_population.py",
+            "tools/training/run_continuous_cycle.py",
+            "tools/training/atomic_promotion.py",
+            "tools/training/plan_snapshot_cycle.py",
+            "tools/training/recalculation_plan.py",
+            "tools/training/execute_recalculation_plan.py",
+            "tools/training/classify_increment.py",
+            "tools/training/write_increment_gate.py",
+            "tests/datasets/test_build_population_increment.py",
+            "tests/training/test_continuous_cycle.py",
+            "tests/training/test_snapshot_cycle_planner.py",
+            "tests/training/test_recalculation_plan.py",
+            "tests/training/test_execute_recalculation_plan.py",
+            "training/automation/**",
+            ".github/workflows/continuous-training-cycle.yml"
+          ]
+        },
+        "push": {
+          "branches_ignore": [
+            "main"
+          ],
+          "paths": [
+            "tools/datasets/build_population_increment.py",
+            "tools/datasets/certify_population.py",
+            "tools/training/run_continuous_cycle.py",
+            "tools/training/atomic_promotion.py",
+            "tools/training/plan_snapshot_cycle.py",
+            "tools/training/recalculation_plan.py",
+            "tools/training/execute_recalculation_plan.py",
+            "tools/training/classify_increment.py",
+            "tools/training/write_increment_gate.py",
+            "tests/datasets/test_build_population_increment.py",
+            "tests/training/test_continuous_cycle.py",
+            "tests/training/test_snapshot_cycle_planner.py",
+            "tests/training/test_recalculation_plan.py",
+            "tests/training/test_execute_recalculation_plan.py",
+            "training/automation/**",
+            ".github/workflows/continuous-training-cycle.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "repro-environment",
+        "safety-contract",
+        "run-committed-cycle"
+      ],
+      "name": "Continuous training cycle",
+      "path": ".github/workflows/continuous-training-cycle.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "training_orchestration",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 13,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "training/registry.json",
+            "training/datasets/**",
+            "training/runs/20260909_population_increment_v2/**",
+            "training/runs/20260912_population_increment_cycle/**",
+            "tools/datasets/**",
+            "tools/training/**",
+            "tests/datasets/**",
+            "tests/training/**",
+            ".github/workflows/dataset-integrity.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "training/registry.json",
+            "training/datasets/**",
+            "training/runs/20260909_population_increment_v2/**",
+            "training/runs/20260912_population_increment_cycle/**",
+            "tools/datasets/**",
+            "tools/training/**",
+            "tests/datasets/**",
+            "tests/training/**",
+            ".github/workflows/dataset-integrity.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "integrity"
+      ],
+      "name": "Persisted dataset integrity",
+      "path": ".github/workflows/dataset-integrity.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "dataset_population",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 3,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-105-retained-model-b-smoke-${{ github.sha }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            ".python-version",
+            ".node-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/simulation/full_hand_scenarios.py",
+            "tools/simulation/full_hand_arena.py",
+            "tools/simulation/full_hand_benchmark.py",
+            "tools/simulation/model_b_public_reference.py",
+            "tests/simulation/test_full_hand_arena.py",
+            "tests/simulation/test_full_hand_arena_seeds.py",
+            "tests/simulation/test_full_hand_model_b_contract.py",
+            "tests/simulation/test_full_hand_paired_contract.py",
+            "tests/simulation/test_full_hand_scenarios_population.py",
+            "tools/simulation/game_core.py",
+            "tests/simulation/test_game_core.py",
+            "tests/simulation/test_game_core_consolidated_regressions.py",
+            "docs/full_hand_arena.md",
+            "training/runs/20260915_model_b_card_aware_v1/RESULT.json",
+            ".github/workflows/full-hand-arena.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "full-hand-arena",
+        "retained-model-b-smoke"
+      ],
+      "name": "Validate full-hand multiway arena",
+      "path": ".github/workflows/full-hand-arena.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "simulation_benchmark",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 12,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "training/full_hand/**",
+            "training/populations/registry.json",
+            "training/datasets/NLHE_100-200/population_certification.json",
+            "training/PROMOTION_GATE_CONTRACT.json",
+            "tools/training/validate_full_hand_protocol.py",
+            "tools/training/validate_preflop_strategy_benchmark.py",
+            "tests/training/test_full_hand_protocol.py",
+            "tests/training/test_preflop_strategy_benchmark.py",
+            ".github/workflows/full-hand-protocol.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "training/full_hand/**",
+            "training/populations/registry.json",
+            "training/datasets/NLHE_100-200/population_certification.json",
+            "training/PROMOTION_GATE_CONTRACT.json",
+            "tools/training/validate_full_hand_protocol.py",
+            "tools/training/validate_preflop_strategy_benchmark.py",
+            "tests/training/test_full_hand_protocol.py",
+            "tests/training/test_preflop_strategy_benchmark.py",
+            ".github/workflows/full-hand-protocol.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "validate"
+      ],
+      "name": "Full-hand evaluation protocol",
+      "path": ".github/workflows/full-hand-protocol.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "simulation_benchmark",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/game_core.py",
+            "tools/simulation/hand_history_state.py",
+            "tests/simulation/test_game_core.py",
+            "tests/simulation/test_game_core_consolidated_regressions.py",
+            "tests/simulation/test_hand_history_state.py",
+            "tests/simulation/test_rollout_accounting.py",
+            "docs/full_hand_game_core.md",
+            ".python-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tests/ci/test_repro_current_core_batch.py",
+            "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+            ".github/workflows/game-core.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": false,
+      "job_ids": [
+        "game-core"
+      ],
+      "name": "Validate full-hand game core",
+      "path": ".github/workflows/game-core.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "simulation_benchmark",
+      "side_effect_class": "UNKNOWN",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-107-real-generation-smoke-${{ github.sha }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "src/preflop/decision.js",
+            "src/preflop/hero_range_export.js",
+            "site/hero-ranges.js",
+            "tools/training/generate_hero_range_decisions.py",
+            "tools/training/generate_certified_hero_range_decisions.py",
+            "tools/training/export_calculated_hero_candidate.mjs",
+            "tools/training/build_certified_population_decisions.py",
+            "tools/simulation/preflop_grid_evaluator.py",
+            "tools/simulation/model_a_continuation.py",
+            "tools/simulation/model_a_preflop_rollout.py",
+            "tests/preflop/test_decision_contract.js",
+            "tests/hero_ranges/test_hero_range_repository.mjs",
+            "tests/hero_ranges/test_calculated_range_export.mjs",
+            "tests/hero_ranges/test_squeeze_range_export.mjs",
+            "tests/training/test_generate_hero_range_decisions.py",
+            "tests/training/test_certified_preflop_sizing_evidence.py",
+            "training/datasets/NLHE_100-200/population_certification.json",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+            "docs/hero-calculated-range-candidate.md",
+            ".github/workflows/hero-calculated-range-export.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "calculated-range-contract"
+      ],
+      "name": "Validate calculated Hero range export",
+      "path": ".github/workflows/hero-calculated-range-export.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "hero_preflop",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-107-shard-${{ matrix.shard }}-${{ github.sha }}",
+        null,
+        "issue-107-full-169-${{ github.sha }}"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "hero-full-169-${{ github.event.pull_request.number || github.ref }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/workflows/hero-full-169-evidence.yml",
+            "tools/training/generate_certified_hero_range_decisions.py",
+            "tools/training/merge_hero_range_decision_runs.py",
+            "tools/training/build_certified_population_decisions.py",
+            "tools/simulation/preflop_grid_evaluator.py",
+            "tools/simulation/model_a_continuation.py",
+            "tools/simulation/model_a_preflop_rollout.py",
+            "training/datasets/NLHE_100-200/population_certification.json",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+            "training/runs/20260917_hero_preflop_169_btn_unopened_v1/**"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "detect-persisted",
+        "verify-persisted",
+        "generate-shards",
+        "merge-full-169"
+      ],
+      "name": "Generate full 169 Hero candidate evidence",
+      "path": ".github/workflows/hero-full-169-evidence.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "hero_preflop",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 30,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/training/validate_hero_pfpc_evidence.py",
+            "tools/training/merge_hero_range_decision_runs.py",
+            "tests/training/test_validate_hero_pfpc_evidence.py",
+            "tests/training/test_merge_hero_range_decision_runs.py",
+            ".github/workflows/hero-pfpc-evidence-validation.yml",
+            "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/**"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "tools/training/validate_hero_pfpc_evidence.py",
+            "tools/training/merge_hero_range_decision_runs.py",
+            "tests/training/test_validate_hero_pfpc_evidence.py",
+            "tests/training/test_merge_hero_range_decision_runs.py",
+            ".github/workflows/hero-pfpc-evidence-validation.yml",
+            "training/runs/20260918_hero_preflop_unopened_5pos_pfpc_v1/**"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "validate"
+      ],
+      "name": "Validate persisted Hero PFPC evidence",
+      "path": ".github/workflows/hero-pfpc-evidence-validation.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "hero_preflop",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "hero-population-strategy-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            "site/hero-ranges.js",
+            "site/hero-range-migration.js",
+            "site/hero-strategy-resolver.js",
+            "site/hero-compliance.js",
+            "site/hero-compliance-replayer.js",
+            "site/hero-ranges-app.js",
+            "site/index.html",
+            "site/trainer.js",
+            "site/analytics/review-score-adapter.js",
+            "site/review-score-adapter.js",
+            "src/analytics/review-score-adapter.js",
+            "site/RELEASE.json",
+            "tests/hero_ranges/**",
+            "tests/analytics/test_review_scope_resolution.js",
+            "tests/analytics/test_review_score_adapter.js",
+            "tools/write_site_release.py",
+            ".github/workflows/hero-population-strategy.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            "site/hero-ranges.js",
+            "site/hero-range-migration.js",
+            "site/hero-strategy-resolver.js",
+            "site/hero-compliance.js",
+            "site/hero-compliance-replayer.js",
+            "site/hero-ranges-app.js",
+            "site/index.html",
+            "site/trainer.js",
+            "site/analytics/review-score-adapter.js",
+            "site/review-score-adapter.js",
+            "src/analytics/review-score-adapter.js",
+            "site/RELEASE.json",
+            "tests/hero_ranges/**",
+            "tests/analytics/test_review_scope_resolution.js",
+            "tests/analytics/test_review_score_adapter.js",
+            "tools/write_site_release.py",
+            ".github/workflows/hero-population-strategy.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate population-bound Hero strategy",
+      "path": ".github/workflows/hero-population-strategy.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "hero_preflop",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "hero-range-compliance-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
+            "site/hero-compliance.js",
+            "site/hero-compliance-replayer.js",
+            "site/hero-ranges-app.js",
+            "site/trainer.js",
+            "site/RELEASE.json",
+            "tests/hero_ranges/test_hero_compliance.mjs",
+            "tests/hero_ranges/smoke_hero_compliance.py",
+            "tests/hero_ranges/smoke_hero_compliance_browser.py",
+            "tests/regression/hand_262024556922.json",
+            "tools/patches/patch_hero_compliance_replayer_v1.py",
+            "tools/patches/patch_hero_compliance_release_v1.py",
+            "tools/write_site_release.py",
+            ".github/workflows/hero-range-compliance.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
+            "site/hero-compliance.js",
+            "site/hero-compliance-replayer.js",
+            "site/hero-ranges-app.js",
+            "site/trainer.js",
+            "site/RELEASE.json",
+            "tests/hero_ranges/test_hero_compliance.mjs",
+            "tests/hero_ranges/smoke_hero_compliance.py",
+            "tests/hero_ranges/smoke_hero_compliance_browser.py",
+            "tests/regression/hand_262024556922.json",
+            "tools/patches/patch_hero_compliance_replayer_v1.py",
+            "tools/patches/patch_hero_compliance_release_v1.py",
+            "tools/write_site_release.py",
+            ".github/workflows/hero-range-compliance.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "browser-smoke"
+      ],
+      "name": "Validate Hero range compliance",
+      "path": ".github/workflows/hero-range-compliance.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "product_browser_validation",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 6,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "hero-range-editor-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
+            "site/hero-ranges.html",
+            "site/hero-ranges.js",
+            "site/hero-ranges-app.js",
+            "site/hero-ranges.css",
+            "site/index.html",
+            "site/RELEASE.json",
+            "tests/hero_ranges/**",
+            "tools/patches/apply_hero_range_editor.py",
+            "tools/write_site_release.py",
+            ".github/workflows/hero-range-editor.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
+            "site/hero-ranges.html",
+            "site/hero-ranges.js",
+            "site/hero-ranges-app.js",
+            "site/hero-ranges.css",
+            "site/index.html",
+            "site/RELEASE.json",
+            "tests/hero_ranges/**",
+            "tools/patches/apply_hero_range_editor.py",
+            "tools/write_site_release.py",
+            ".github/workflows/hero-range-editor.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "browser-smoke"
+      ],
+      "name": "Validate Hero range repository and editor",
+      "path": ".github/workflows/hero-range-editor.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "product_browser_validation",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 6,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "hero-range-pfc-context-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            ".node-version",
+            "site/hero-ranges.js",
+            "tools/preflop/context_contract.py",
+            "tools/preflop/policy_context.py",
+            "tools/simulation/hero_preflop_overlay.py",
+            "tools/training/generate_hero_range_decisions.py",
+            "tools/training/enrich_hero_range_context.py",
+            "tools/training/materialize_hero_pfc_source.py",
+            "tools/training/merge_hero_policy_context_sources.py",
+            "tests/hero_ranges/test_hero_range_repository.mjs",
+            "tests/preflop/test_context_contract.py",
+            "tests/simulation/test_preflop_policy_context.py",
+            "tests/simulation/test_hero_preflop_overlay.py",
+            "tests/training/test_enrich_hero_range_context.py",
+            "tests/training/test_persisted_hero_pfc_binding.py",
+            "tests/training/test_hero_policy_context_sources.py",
+            "training/runs/20260917_hero_preflop_169_btn_unopened_pfc_v1/**",
+            ".github/workflows/hero-range-pfc-context.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "issue-107-canonical-pfc-generator-sol",
+            "issue-107-policy-context-sol",
+            "issue-107-unopened-multiposition-sol"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate Hero range PFC/PFPC context binding",
+      "path": ".github/workflows/hero-range-pfc-context.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "hero_preflop",
+      "side_effect_class": "UNKNOWN",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-107-certified-train-sizing-${{ github.sha }}",
+        "issue-107-certified-train-sizing-${{ github.sha }}",
+        "issue-107-lj-aa-support-closure-smoke-${{ github.sha }}",
+        "issue-107-certified-train-sizing-${{ github.sha }}",
+        "issue-107-${{ matrix.position }}-shard-${{ matrix.shard }}-${{ github.sha }}",
+        null,
+        "issue-107-source-${{ matrix.position }}-${{ github.sha }}",
+        null,
+        "issue-107-unopened-5pos-pfpc-${{ github.sha }}"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "hero-unopened-multiposition-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "issue-107-multiposition-generation-sol"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "prepare-sizing-corpus",
+        "smoke-lj-aa",
+        "generate-shards",
+        "merge-position",
+        "merge-pfpc-candidate"
+      ],
+      "name": "Generate multi-position Hero unopened PFPC candidate",
+      "path": ".github/workflows/hero-unopened-multiposition-generation.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "hero_preflop",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 47,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "artifact-ingest-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "paths": [
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "artifacts/inbox/*.json",
+            "tools/ingest_artifact.py",
+            "tools/ingest_dispatch.py",
+            "tests/datasets/test_build_hand_history_increment.py",
+            "training/datasets/**/snapshots/**/source/*.zip",
+            ".github/workflows/ingest-artifacts.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "ingest"
+      ],
+      "name": "Ingest staged artifacts",
+      "path": ".github/workflows/ingest-artifacts.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "dataset_population",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue358-inputs",
+        "issue358-inputs",
+        "issue358-part-${{ matrix.context_index }}-${{ matrix.hand_shard_index }}",
+        "issue358-inputs",
+        null,
+        "issue358-final-generation"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "issue-358-hero-preflop-generation",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "execute/issue-358-hero-preflop-generation-noniso"
+          ],
+          "paths": [
+            ".github/triggers/issue-358-generate"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "preflight",
+        "prepare",
+        "generate",
+        "assemble"
+      ],
+      "name": "Generate issue 358 Hero preflop non-ISO candidate",
+      "path": ".github/workflows/issue-358-hero-preflop-generation.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "hero_preflop",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 34,
+      "triggers": [
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-367-real-iso-ev-observable-${{ github.sha }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "issue-367-real-iso-ev-observable-${{ github.sha }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/triggers/issue-367-observable-execute"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "execute"
+      ],
+      "name": "Execute issue 367 real ISO EV observable",
+      "path": ".github/workflows/issue-367-real-iso-ev-observable.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-367-real-iso-ev-${{ github.sha }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "issue-367-real-iso-ev-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/admitted_model_a_iso_provider.py",
+            "tools/simulation/run_issue367_real_iso_ev.py",
+            "tests/preflop/test_issue367_scientific_provider.py",
+            "training/runs/20260919_issue367_real_iso_ev_v1/PROTOCOL.json",
+            ".github/workflows/issue-367-real-iso-ev.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "agent-B/issue-367-real-iso-ev"
+          ],
+          "paths": [
+            ".github/triggers/issue-367-real-iso-ev"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "execute"
+      ],
+      "name": "Execute issue 367 real ISO EV",
+      "path": ".github/workflows/issue-367-real-iso-ev.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 12,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "materialize-certified-population-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/datasets/materialize_certified_population.py",
+            "tests/datasets/test_materialize_certified_population.py",
+            ".github/workflows/materialize-certified-population.yml",
+            "training/populations/pokerstars_nlhe_100-200_zoom_play_6max_v1/data/baseline/**"
+          ]
+        },
+        "push": {
+          "branches": [
+            "issue-112-materialize-certified-population-sol"
+          ],
+          "paths": [
+            "tools/datasets/materialize_certified_population.py",
+            "tests/datasets/test_materialize_certified_population.py",
+            ".github/workflows/materialize-certified-population.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "repro-environment",
+        "contract",
+        "materialize-zoom-baseline"
+      ],
+      "name": "Materialize certified population baseline",
+      "path": ".github/workflows/materialize-certified-population.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "dataset_population",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 11,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/model_a_continuation.py",
+            "tools/simulation/model_a_preflop_rollout.py",
+            "tools/simulation/model_a_support_closure.py",
+            "tests/simulation/test_model_a_continuation.py",
+            "tests/simulation/test_model_a_preflop_rollout.py",
+            "tests/simulation/test_model_a_support_closure.py",
+            "tools/simulation/game_core.py",
+            "tools/training/model_a_latent_ranges.py",
+            "tools/training/model_a_postflop_runtime.py",
+            "tools/training/refit_postflop_combo_policy.py",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "training/runs/20260916_model_a_postflop_continuation_v1/postflop-selected-overlay.json",
+            ".python-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tests/ci/test_repro_current_core_batch.py",
+            "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+            ".github/workflows/model-a-continuation.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "tools/simulation/model_a_continuation.py",
+            "tools/simulation/model_a_preflop_rollout.py",
+            "tools/simulation/model_a_support_closure.py",
+            "tests/simulation/test_model_a_continuation.py",
+            "tests/simulation/test_model_a_preflop_rollout.py",
+            "tests/simulation/test_model_a_support_closure.py",
+            ".python-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tests/ci/test_repro_current_core_batch.py",
+            "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+            ".github/workflows/model-a-continuation.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "contracts"
+      ],
+      "name": "Validate Model A multiway continuation",
+      "path": ".github/workflows/model-a-continuation.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-298-model-b-aggressive-tail"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "model-b-aggressive-tail-issue-298",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "agent-B/issue-298-aggressive-tail-calibration"
+          ],
+          "paths": [
+            "tools/simulation/model_b_aggressive_tail.py",
+            "tools/training/independent_profiles/evaluate_aggressive_tail_v1.py",
+            "tests/simulation/test_model_b_aggressive_tail.py",
+            "tests/training/test_aggressive_tail_v1.py",
+            "training/runs/20260919_model_b_aggressive_tail_v1/PROTOCOL.json",
+            "training/runs/20260919_model_b_aggressive_tail_v1/TAIL_GRAPH.json",
+            ".github/workflows/model-b-aggressive-tail.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "validation"
+      ],
+      "name": "Model B aggressive-tail calibration",
+      "path": ".github/workflows/model-b-aggressive-tail.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "model-b-card-aware-v1-${{ github.sha }}"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "model-b-card-aware-fit-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "issue-104-card-aware-model-b-runtime-sol"
+          ],
+          "paths": [
+            "training/runs/20260915_model_b_card_aware_v1/PROTOCOL.json",
+            "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+            "tools/simulation/model_b_card_aware_runtime.py",
+            "tools/training/independent_profiles/card_aware_behavior_fit.py",
+            "tools/training/independent_profiles/run_card_aware_behavior_cycle.py",
+            "tests/simulation/test_model_b_card_aware_runtime.py",
+            "tests/training/test_card_aware_behavior_fit.py",
+            ".github/workflows/model-b-card-aware-fit.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "fit-validate"
+      ],
+      "name": "Model B card-aware fit",
+      "path": ".github/workflows/model-b-card-aware-fit.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 9,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            ".python-version",
+            ".node-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/simulation/model_b_card_aware_runtime.py",
+            "tools/training/independent_profiles/card_aware_behavior_fit.py",
+            "tests/simulation/test_model_b_card_aware_runtime.py",
+            "tests/training/test_card_aware_behavior_fit.py",
+            "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+            ".github/workflows/model-b-card-aware-runtime.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            ".python-version",
+            ".node-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/simulation/model_b_card_aware_runtime.py",
+            "tools/training/independent_profiles/card_aware_behavior_fit.py",
+            "tests/simulation/test_model_b_card_aware_runtime.py",
+            "tests/training/test_card_aware_behavior_fit.py",
+            "training/model_b/CARD_AWARE_BEHAVIOR_CONTRACT.json",
+            ".github/workflows/model-b-card-aware-runtime.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "runtime-contract"
+      ],
+      "name": "Card-aware Model B runtime",
+      "path": ".github/workflows/model-b-card-aware-runtime.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "model_b",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 3,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-272-model-b-calibration"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "model-b-observed-vs-simulated-calibration-issue-272",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "agent-B/issue-272-observed-sim-calibration"
+          ],
+          "paths": [
+            "tools/training/independent_profiles/evaluate_observed_vs_simulated_calibration_v1.py",
+            "tests/training/test_observed_vs_simulated_calibration_v1.py",
+            "training/runs/20260919_model_b_observed_vs_simulated_calibration_v1/PROTOCOL.json",
+            ".github/workflows/model-b-observed-vs-simulated-calibration.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "calibration"
+      ],
+      "name": "Model B observed vs simulated calibration",
+      "path": ".github/workflows/model-b-observed-vs-simulated-calibration.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-340-model-b-preflop-response-price-2a"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/model_b_preflop_response_to_price.py",
+            "tools/training/evaluate_preflop_response_to_price_2a.py",
+            "tests/training/test_preflop_response_to_price_2a.py",
+            "training/runs/20260919_model_b_preflop_response_to_price_2a/**",
+            ".github/workflows/model-b-preflop-response-price-2a.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "agent-C/issue-340-model-b-response-price-2a"
+          ],
+          "paths": [
+            "tools/simulation/model_b_preflop_response_to_price.py",
+            "tools/training/evaluate_preflop_response_to_price_2a.py",
+            "tests/training/test_preflop_response_to_price_2a.py",
+            "training/runs/20260919_model_b_preflop_response_to_price_2a/**",
+            ".github/workflows/model-b-preflop-response-price-2a.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "train-validation"
+      ],
+      "name": "Model B preflop response-to-price tranche 2A",
+      "path": ".github/workflows/model-b-preflop-response-price-2a.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-315-preflop-response-price-scaffold"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "model-b-preflop-response-price-scaffold-315",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "agent-B/issue-315-preflop-response-price-scaffold"
+          ],
+          "paths": [
+            "tools/simulation/model_b_preflop_response_to_price.py",
+            "tools/simulation/model_b_preflop_price_diagnostics.py",
+            "tests/simulation/test_model_b_preflop_response_to_price.py",
+            "tests/training/test_preflop_response_to_price_scaffold_v1.py",
+            "tests/fixtures/model_b_preflop_response_to_price/**",
+            "training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/FEATURE_CONTRACT.json",
+            "training/runs/20260919_model_b_preflop_response_to_price_scaffold_v1/BACKOFF_GRAPH.json",
+            ".github/workflows/model-b-preflop-response-price-scaffold.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "synthetic-scaffold"
+      ],
+      "name": "Model B preflop response-to-price scaffold",
+      "path": ".github/workflows/model-b-preflop-response-price-scaffold.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-344-model-b-preflop-sensitivity-harness"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/model_b_preflop_sensitivity_harness.py",
+            "tests/simulation/test_model_b_preflop_sensitivity_harness.py",
+            "tests/fixtures/model_b_preflop_sensitivity/**",
+            "contracts/training/model-b-preflop-sensitivity-harness-request.schema.json",
+            "training/runs/20260919_model_b_preflop_sensitivity_harness_v1/**",
+            "docs/model-b-preflop-sensitivity-harness.md",
+            ".github/workflows/model-b-preflop-sensitivity-harness.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "agent-C/issue-344-model-b-sensitivity-harness"
+          ],
+          "paths": [
+            "tools/simulation/model_b_preflop_sensitivity_harness.py",
+            "tests/simulation/test_model_b_preflop_sensitivity_harness.py",
+            "tests/fixtures/model_b_preflop_sensitivity/**",
+            "contracts/training/model-b-preflop-sensitivity-harness-request.schema.json",
+            "training/runs/20260919_model_b_preflop_sensitivity_harness_v1/**",
+            "docs/model-b-preflop-sensitivity-harness.md",
+            ".github/workflows/model-b-preflop-sensitivity-harness.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "synthetic-harness"
+      ],
+      "name": "Model B preflop sensitivity synthetic harness",
+      "path": ".github/workflows/model-b-preflop-sensitivity-harness.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "paths": [
+            "tools/training/independent_profiles/audit_response_conditioning.py",
+            "tests/independent_profiles/test_audit_response_conditioning.py",
+            ".github/workflows/model-b-response-audit.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": false,
+      "job_ids": [
+        "audit"
+      ],
+      "name": "Model B response-conditioning audit",
+      "path": ".github/workflows/model-b-response-audit.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-197-response-to-price-raw"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "model-b-response-to-price-issue-197",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "agent-B/issue-197-scientific-evaluation"
+          ],
+          "paths": [
+            "tools/training/independent_profiles/evaluate_response_to_price_v1.py",
+            "tools/simulation/model_b_price_response.py",
+            "tools/simulation/model_b_price_diagnostics.py",
+            "tools/simulation/model_b_price_arena.py",
+            "tests/training/test_evaluate_response_to_price_v1.py",
+            "tests/simulation/test_model_b_price_response.py",
+            "tests/simulation/test_model_b_price_arena.py",
+            "training/runs/20260919_model_b_response_to_price_v1/PROTOCOL.json",
+            ".github/workflows/model-b-response-to-price-evaluation.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "scientific-evaluation"
+      ],
+      "name": "Model B response-to-price scientific evaluation",
+      "path": ".github/workflows/model-b-response-to-price-evaluation.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 16,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "model-b-reveal-aware-v3-validation"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/training/independent_profiles/reveal_aware_ranges.py",
+            "tools/training/independent_profiles/build_reveal_aware_candidate.py",
+            "tools/training/independent_profiles/evaluate_reveal_aware_ranges.py",
+            "tests/training/test_reveal_aware_ranges.py",
+            "training/runs/20260915_model_b_reveal_aware_v3/**",
+            ".github/workflows/model-b-reveal-aware.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "validation"
+      ],
+      "name": "Model B reveal-aware ranges",
+      "path": ".github/workflows/model-b-reveal-aware.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "model_b",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-286-model-b-support-aware-backoff"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "model-b-support-aware-backoff-issue-286",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "push": {
+          "branches": [
+            "agent-B/issue-286-support-aware-backoff"
+          ],
+          "paths": [
+            "tools/simulation/model_b_support_aware_backoff.py",
+            "tools/training/independent_profiles/evaluate_support_aware_backoff_v1.py",
+            "tests/simulation/test_model_b_support_aware_backoff.py",
+            "tests/training/test_support_aware_backoff_v1.py",
+            "training/runs/20260919_model_b_support_aware_backoff_v1/PROTOCOL.json",
+            "training/runs/20260919_model_b_support_aware_backoff_v1/BACKOFF_GRAPH.json",
+            ".github/workflows/model-b-support-aware-backoff.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "validation"
+      ],
+      "name": "Model B support-aware hierarchical backoff",
+      "path": ".github/workflows/model-b-support-aware-backoff.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "model_b",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-107-unopened-5pos-pfpc-${{ env.SOURCE_SHA }}",
+        null
+      ],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "persist-issue-107-pfpc-d7ec5e532dc5",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/workflows/persist-issue-107-pfpc.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "trigger/issue-107-persist-d7ec5e532dc5"
+          ],
+          "paths": [
+            ".github/triggers/issue-107-persist-d7ec5e532dc5"
+          ]
+        },
+        "workflow_run": {
+          "types": [
+            "completed"
+          ],
+          "workflows": [
+            "Generate multi-position Hero unopened PFPC candidate"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "safety-contract",
+        "persist-generated-evidence"
+      ],
+      "name": "Persist issue 107 generated PFPC evidence",
+      "path": ".github/workflows/persist-issue-107-pfpc.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 10,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_run"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "training/populations/registry.json",
+            "tools/populations/**",
+            "tools/datasets/build_population_increment.py",
+            "tools/datasets/certify_population.py",
+            "tools/training/plan_snapshot_cycle.py",
+            "tools/training/classify_increment.py",
+            "tools/training/write_increment_gate.py",
+            "tests/datasets/test_build_population_increment.py",
+            "tests/populations/**",
+            "tests/training/test_snapshot_cycle_planner.py",
+            ".github/workflows/ingest-artifacts.yml",
+            ".github/workflows/plan-ingested-cycle.yml"
+          ]
+        },
+        "push": {
+          "branches_ignore": [
+            "main"
+          ],
+          "paths": [
+            "training/populations/registry.json",
+            "tools/populations/**",
+            "tools/datasets/build_population_increment.py",
+            "tools/datasets/certify_population.py",
+            "tools/training/plan_snapshot_cycle.py",
+            "tools/training/classify_increment.py",
+            "tools/training/write_increment_gate.py",
+            "tests/datasets/test_build_population_increment.py",
+            "tests/populations/**",
+            "tests/training/test_snapshot_cycle_planner.py",
+            ".github/workflows/plan-ingested-cycle.yml"
+          ]
+        },
+        "workflow_dispatch": {},
+        "workflow_run": {
+          "types": [
+            "completed"
+          ],
+          "workflows": [
+            "Ingest staged artifacts"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "repro-environment",
+        "planner-contract",
+        "plan-and-materialize"
+      ],
+      "name": "Plan ingested training cycle",
+      "path": ".github/workflows/plan-ingested-cycle.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "dataset_population",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 11,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch",
+        "workflow_run"
+      ]
+    },
+    {
+      "artifact_names": [
+        "population-certification-${{ github.sha }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "training/datasets/NLHE_100-200/**",
+            "tools/datasets/certify_population.py",
+            "tests/datasets/test_certify_population.py",
+            ".github/workflows/population-certification.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "training/datasets/NLHE_100-200/**",
+            "tools/datasets/certify_population.py",
+            "tests/datasets/test_certify_population.py",
+            ".github/workflows/population-certification.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "repro-environment",
+        "certify"
+      ],
+      "name": "Certify NLHE 100-200 population",
+      "path": ".github/workflows/population-certification.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "dataset_population",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 8,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "population-pack-catalog-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            "site/packs.html",
+            "site/packs.css",
+            "site/packs-app.js",
+            "site/population-packs.js",
+            "site/population-pack-sw.js",
+            "site/assets/trainer/**",
+            "tools/write_pack_catalog.py",
+            "tools/write_site_release.py",
+            "tools/patches/apply_pack_manager_link.py",
+            "tests/packs/**",
+            "user/packs/**",
+            "wrangler.jsonc",
+            ".python-version",
+            ".node-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_ci_browser.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "analysis/workflow_audit/helper_consumers.json",
+            "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
+            "tests/ci/test_repro_population_pack_catalog.py",
+            ".github/workflows/population-pack-catalog.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "browser-smoke"
+      ],
+      "name": "Validate population pack catalogue",
+      "path": ".github/workflows/population-pack-catalog.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "product_browser_validation",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 8,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-350-real-pack-admission-audit"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/audit_population_pack_admission_real.py",
+            "tests/audit/test_population_pack_admission_real.py",
+            "training/runs/20260919_population_pack_admission_real_audit/**",
+            ".github/workflows/population-pack-real-admission-audit.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "agent-C/issue-350-pack-admission-audit"
+          ],
+          "paths": [
+            "tools/audit_population_pack_admission_real.py",
+            "tests/audit/test_population_pack_admission_real.py",
+            "training/runs/20260919_population_pack_admission_real_audit/**",
+            ".github/workflows/population-pack-real-admission-audit.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "repro-environment",
+        "audit"
+      ],
+      "name": "Audit real Zoom pack admission",
+      "path": ".github/workflows/population-pack-real-admission-audit.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "validation_or_utility",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 8,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "population-pack-${{ github.sha }}"
+      ],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/build_population_pack.py",
+            "tools/validate_population_pack.py",
+            "tests/packs/**",
+            "user/packs/**",
+            "user/artifacts/NLHE_100-200/**",
+            "training/populations/registry.json",
+            "site/RELEASE.json",
+            ".github/workflows/population-pack.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "tools/build_population_pack.py",
+            "tools/validate_population_pack.py",
+            "tests/packs/**",
+            "user/packs/**",
+            "user/artifacts/NLHE_100-200/**",
+            "training/populations/registry.json",
+            "site/RELEASE.json",
+            ".github/workflows/population-pack.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": false,
+      "job_ids": [
+        "repro-environment",
+        "validate",
+        "publish"
+      ],
+      "name": "Validate and publish population pack",
+      "path": ".github/workflows/population-pack.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "PUBLICATION_CAPABLE",
+      "static_cost_proxy": 13,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "model-a-postflop-stage-b-evidence"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "postflop-continuation-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/training/refit_postflop_response_models.py",
+            "tools/training/refit_postflop_combo_policy.py",
+            "tools/training/sample_postflop_stage_b_decisions.py",
+            "tools/training/model_a_latent_ranges.py",
+            "tools/training/model_a_postflop_runtime.py",
+            "tools/training/audit_model_a_latent_ranges.py",
+            "tools/training/build_certified_population_decisions.py",
+            "tests/training/test_postflop_response_refit.py",
+            "tests/training/test_postflop_refit_protocol.py",
+            "tests/training/test_model_a_latent_ranges.py",
+            "tests/training/test_model_a_postflop_runtime.py",
+            "tests/training/test_postflop_combo_refit.py",
+            "training/datasets/NLHE_100-200/population_certification.json",
+            ".github/workflows/postflop-response-refit.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/training/refit_postflop_response_models.py",
+            "tools/training/refit_postflop_combo_policy.py",
+            "tools/training/sample_postflop_stage_b_decisions.py",
+            "tools/training/model_a_latent_ranges.py",
+            "tools/training/model_a_postflop_runtime.py",
+            "tools/training/audit_model_a_latent_ranges.py",
+            "tools/training/build_certified_population_decisions.py",
+            "tests/training/test_postflop_response_refit.py",
+            "tests/training/test_postflop_refit_protocol.py",
+            "tests/training/test_model_a_latent_ranges.py",
+            "tests/training/test_model_a_postflop_runtime.py",
+            "tests/training/test_postflop_combo_refit.py",
+            "training/datasets/NLHE_100-200/population_certification.json",
+            ".github/workflows/postflop-response-refit.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "refit"
+      ],
+      "name": "Validate Model A postflop continuation refit",
+      "path": ".github/workflows/postflop-response-refit.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "validation_or_utility",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "src/preflop/**",
+            "tools/preflop/**",
+            "tools/sync_shared_modules.py",
+            "tools/training/increment_decisions.py",
+            "tools/training/audit_preflop_key_runtime_parity.py",
+            "site/preflop-contract.js",
+            "site/index.html",
+            "site/RELEASE.json",
+            "tools/write_site_release.py",
+            "tests/preflop/**",
+            "tests/fixtures/preflop_contract_cases.json",
+            "tests/training/test_preflop_key_runtime_parity.py",
+            ".python-version",
+            ".node-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tests/ci/test_repro_current_core_batch.py",
+            "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+            ".github/workflows/preflop-contract.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": false,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate preflop context contract",
+      "path": ".github/workflows/preflop-contract.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "preflop_strategy",
+      "side_effect_class": "UNKNOWN",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            ".node-version",
+            "tools/simulation/preflop_grid_evaluator.py",
+            "tools/simulation/game_core.py",
+            "src/preflop/decision.js",
+            "tests/simulation/test_preflop_grid_evaluator.py",
+            "tests/simulation/test_game_core.py",
+            "tests/preflop/test_decision_contract.js",
+            "docs/preflop-grid-evaluator.md",
+            ".github/workflows/preflop-grid-evaluator.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "preflop-grid"
+      ],
+      "name": "Validate preflop grid evaluator",
+      "path": ".github/workflows/preflop-grid-evaluator.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "preflop_strategy",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 3,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "preflop-policy169-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": false,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tools/training/preflop_policy169.py",
+            "tools/training/rebuild_preflop_increment_candidate.py",
+            "tools/training/build_certified_population_decisions.py",
+            "tools/training/evaluate_preflop_policy169_candidate.py",
+            "training/runs/20260915_preflop_policy169_refit/PROTOCOL.json",
+            "tests/training/test_preflop_policy169.py",
+            "tests/training/test_preflop_policy169_rebuild.py",
+            "tests/training/test_evaluate_preflop_policy169_candidate.py",
+            ".github/workflows/preflop-policy169.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate preflop policy169 refit",
+      "path": ".github/workflows/preflop-policy169.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "preflop_strategy",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "preflop-search-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "src/preflop/contract.js",
+            "src/preflop/decision.js",
+            "src/preflop/search.js",
+            "src/preflop/hero_range_export.js",
+            "tests/preflop/test_decision_contract.js",
+            "tests/preflop/test_search.js",
+            "tests/hero_ranges/test_calculated_range_export.mjs",
+            "docs/preflop-search-orchestrator.md",
+            ".github/workflows/preflop-search.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            ".node-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "src/preflop/contract.js",
+            "src/preflop/decision.js",
+            "src/preflop/search.js",
+            "src/preflop/hero_range_export.js",
+            "tests/preflop/test_decision_contract.js",
+            "tests/preflop/test_search.js",
+            "tests/hero_ranges/test_calculated_range_export.mjs",
+            "docs/preflop-search-orchestrator.md",
+            ".github/workflows/preflop-search.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate preflop action sizing search",
+      "path": ".github/workflows/preflop-search.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "preflop_strategy",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 3,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "preflop-strategy-benchmark-v2-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "training/full_hand/HERO_REFERENCE_POLICY_20260917.json",
+            "training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json",
+            "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json",
+            "tools/simulation/model_b_sensitivity.py",
+            "tools/simulation/hero_preflop_overlay.py",
+            "tools/simulation/preflop_strategy_benchmark_v2.py",
+            "tools/training/validate_preflop_strategy_benchmark_v2.py",
+            "tests/simulation/test_model_b_sensitivity.py",
+            "tests/simulation/test_hero_preflop_overlay.py",
+            "tests/simulation/test_preflop_strategy_benchmark_v2_execution.py",
+            "tests/training/test_preflop_strategy_benchmark_v2.py",
+            ".github/workflows/preflop-strategy-benchmark-v2.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "issue-108-reference-baseline-v2-sol"
+          ],
+          "paths": [
+            "training/full_hand/HERO_REFERENCE_POLICY_20260917.json",
+            "training/full_hand/MODEL_B_SENSITIVITY_ENVIRONMENTS_20260917.json",
+            "training/full_hand/PREFLOP_STRATEGY_BENCHMARK_CONTRACT_20260917.json",
+            "tools/simulation/model_b_sensitivity.py",
+            "tools/simulation/hero_preflop_overlay.py",
+            "tools/simulation/preflop_strategy_benchmark_v2.py",
+            "tools/training/validate_preflop_strategy_benchmark_v2.py",
+            "tests/simulation/test_model_b_sensitivity.py",
+            "tests/simulation/test_hero_preflop_overlay.py",
+            "tests/simulation/test_preflop_strategy_benchmark_v2_execution.py",
+            "tests/training/test_preflop_strategy_benchmark_v2.py",
+            ".github/workflows/preflop-strategy-benchmark-v2.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "contracts"
+      ],
+      "name": "Validate preflop strategy benchmark v2",
+      "path": ".github/workflows/preflop-strategy-benchmark-v2.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "preflop_strategy",
+      "side_effect_class": "UNKNOWN",
+      "static_cost_proxy": 7,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "issue-108-pfpc-test-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        null,
+        "issue-108-pfpc-test-result-${{ github.sha }}",
+        "issue-108-pfpc-test-result-${{ github.sha }}"
+      ],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "preflop-strategy-pfpc-test-20260918",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/preflop_strategy_test_confirmation.py",
+            "tests/simulation/test_preflop_strategy_test_confirmation.py",
+            ".github/workflows/preflop-strategy-test-pfpc.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "execute/issue-108-pfpc-test-20260918"
+          ],
+          "paths": [
+            ".github/triggers/issue-108-pfpc-test-20260918"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "prepare-test",
+        "mark-holdout-consumed",
+        "environment",
+        "confirm",
+        "persist-final-result"
+      ],
+      "name": "Execute preflop strategy PFPC TEST confirmation",
+      "path": ".github/workflows/preflop-strategy-test-pfpc.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "preflop_strategy",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 46,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        "issue-108-pfpc-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        null,
+        "issue-108-pfpc-validation-result-${{ github.sha }}",
+        "issue-108-pfpc-validation-result-${{ github.sha }}"
+      ],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "preflop-strategy-pfpc-validation-20260918",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/workflows/preflop-strategy-validation-pfpc.yml",
+            "tools/training/select_preflop_strategy_validation.py",
+            "tests/simulation/test_preflop_strategy_exposure_guard.py"
+          ]
+        },
+        "push": {
+          "branches": [
+            "execute/issue-108-pfpc-validation-20260918"
+          ],
+          "paths": [
+            ".github/triggers/issue-108-pfpc-validation-20260918"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "prepare",
+        "environment",
+        "select",
+        "persist-result-branch"
+      ],
+      "name": "Execute preflop strategy PFPC VALIDATION",
+      "path": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "preflop_strategy",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 41,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/training/evaluate_preflop_topology_candidate.py",
+            "tools/training/audit_preflop_runtime_topology_overlap.py",
+            "tools/training/audit_preflop_key_runtime_parity.py",
+            "tools/training/explain_preflop_key_runtime_mismatches.py",
+            "tools/training/evaluate_preflop_free_check_matcher.py",
+            "tests/training/test_preflop_topology_candidate.py",
+            "tests/training/test_preflop_key_runtime_parity.py",
+            "tests/training/test_preflop_free_check_matcher.py",
+            "training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json",
+            "training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json",
+            ".python-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tests/ci/test_repro_current_core_batch.py",
+            "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+            ".github/workflows/preflop-topology-contract.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/training/evaluate_preflop_topology_candidate.py",
+            "tools/training/audit_preflop_runtime_topology_overlap.py",
+            "tools/training/audit_preflop_key_runtime_parity.py",
+            "tools/training/explain_preflop_key_runtime_mismatches.py",
+            "tools/training/evaluate_preflop_free_check_matcher.py",
+            "tests/training/test_preflop_topology_candidate.py",
+            "tests/training/test_preflop_key_runtime_parity.py",
+            "tests/training/test_preflop_free_check_matcher.py",
+            "training/runs/20260912_population_increment_cycle/evaluation/preflop_targeted_topology_selection.json",
+            "training/runs/20260912_population_increment_cycle/evaluation/preflop_canonical_runtime_parity.json",
+            ".python-version",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "tests/ci/test_repro_current_core_batch.py",
+            "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+            ".github/workflows/preflop-topology-contract.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Preflop topology contract",
+      "path": ".github/workflows/preflop-topology-contract.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "preflop_strategy",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "OUT_OF_SCOPE_CHANGE_SURFACE"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {},
+        "push": {
+          "branches": [
+            "main"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "project-state-consistency"
+      ],
+      "name": "Project state consistency",
+      "path": ".github/workflows/project-state-consistency.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        null,
+        null,
+        "issue-107-LJ-shard-13-${{ env.SOURCE_SHA }}",
+        "issue-107-LJ-shard-8-${{ env.SOURCE_SHA }}",
+        "issue-107-LJ-shard-10-${{ env.SOURCE_SHA }}",
+        "issue-107-LJ-shard-19-${{ env.SOURCE_SHA }}"
+      ],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "recover-issue-107-pfpc-d7ec5e532dc5",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/workflows/recover-issue-107-pfpc.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "trigger/issue-107-recover-d7ec5e532dc5"
+          ],
+          "paths": [
+            ".github/triggers/issue-107-recover-d7ec5e532dc5"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "safety-contract",
+        "recover-and-persist"
+      ],
+      "name": "Recover issue 107 PFPC from immutable shards",
+      "path": ".github/workflows/recover-issue-107-pfpc.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 22,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "release-handoff-contract-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            "training/automation/RELEASE_HANDOFF_CONTRACT.json",
+            "tools/validate_release_handoff.py",
+            "tools/training/build_release_handoff.py",
+            "tools/training/build_promote_release_handoff.py",
+            "tools/training/finalize_cycle_release.py",
+            "tools/training/verify_live_release.py",
+            "tests/test_release_handoff.py",
+            "tests/training/test_build_release_handoff.py",
+            "tests/training/test_build_promote_release_handoff.py",
+            "tests/training/test_finalize_cycle_release.py",
+            "tests/training/test_verify_live_release.py",
+            ".github/workflows/release-handoff-contract.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "issue-113-release-handoff-contract-sol",
+            "issue-113-no-publication-handoff-sol"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Validate release handoff contract",
+      "path": ".github/workflows/release-handoff-contract.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "release_promotion",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 3,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "FAIL_CLOSED_UNSAFE_SIDE_EFFECT"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "release-no-pending-snapshot-proof-20260918",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            ".github/workflows/release-no-pending-snapshot-proof.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "execute/issue-113-no-pending-release-20260918"
+          ],
+          "paths": [
+            ".python-version",
+            "tools/repro_ci_environment.py",
+            "tools/repro_environment_identity.py",
+            "tools/repro_container.py",
+            "tools/repro_hardening.py",
+            "tools/repro_environment.py",
+            "reproducibility/environment.lock.json",
+            "requirements.lock.txt",
+            "package-lock.json",
+            "reproducibility/os-base.lock.json",
+            "reproducibility/container-base.lock.json",
+            "reproducibility/Dockerfile.science",
+            "reproducibility/system-packages.apt.txt",
+            "reproducibility/apt-snapshot.lock.json",
+            "reproducibility/system-packages.resolution.lock.json",
+            "reproducibility/browser-identity.lock.json",
+            "reproducibility/ubuntu-snapshot.sources",
+            ".github/triggers/issue-113-no-pending-release-20260918"
+          ]
+        }
+      },
+      "fail_closed_safe": false,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract",
+        "prove-no-publication"
+      ],
+      "name": "Prove no-pending-snapshot release handoff",
+      "path": ".github/workflows/release-no-pending-snapshot-proof.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "BLOCKED_NOT_APPLIED",
+      "role": "release_promotion",
+      "side_effect_class": "REPOSITORY_WRITE",
+      "static_cost_proxy": 10,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "repro-environment-${{ github.sha }}"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "repro-scientific-environment-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".python-version",
+            ".node-version",
+            "requirements.in",
+            "requirements.lock.txt",
+            "package.json",
+            "package-lock.json",
+            "reproducibility/**",
+            "tools/repro_*.py",
+            "tests/test_repro_*.py",
+            ".github/workflows/repro-scientific-environment.yml",
+            ".github/workflows/continuous-training-cycle.yml",
+            ".github/workflows/population-certification.yml",
+            ".github/workflows/population-pack.yml",
+            ".github/workflows/user-artifact-bundle.yml",
+            ".github/workflows/plan-ingested-cycle.yml",
+            ".github/workflows/materialize-certified-population.yml"
+          ]
+        },
+        "push": {
+          "branches_ignore": [
+            "main"
+          ],
+          "paths": [
+            ".python-version",
+            ".node-version",
+            "requirements.in",
+            "requirements.lock.txt",
+            "package.json",
+            "package-lock.json",
+            "reproducibility/**",
+            "tools/repro_*.py",
+            "tests/test_repro_*.py",
+            ".github/workflows/repro-scientific-environment.yml",
+            ".github/workflows/continuous-training-cycle.yml",
+            ".github/workflows/population-certification.yml",
+            ".github/workflows/population-pack.yml",
+            ".github/workflows/user-artifact-bundle.yml",
+            ".github/workflows/plan-ingested-cycle.yml",
+            ".github/workflows/materialize-certified-population.yml"
+          ]
+        },
+        "workflow_call": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "guard"
+      ],
+      "name": "REPRO scientific environment guard",
+      "path": ".github/workflows/repro-scientific-environment.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "validation_or_utility",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 9,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_call"
+      ]
+    },
+    {
+      "artifact_names": [
+        "sequential-arena-reproducibility",
+        "v83-model-b-v2-baseline-validation",
+        "v83-model-b-v2-baseline-test"
+      ],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "sequential-arena-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/simulation/**",
+            "tests/simulation/**",
+            "tools/populations/**",
+            "tests/populations/**",
+            "tools/sequential_postflop_population_sim_v4.py",
+            "training/registry.json",
+            "training/populations/**",
+            "training/runs/20260912_independent_profiles_v2/model/**",
+            "training/datasets/NLHE_100-200/**/*.zip",
+            "training/PROMOTION_GATE_CONTRACT.json",
+            "training/gates/**",
+            "tools/evaluate_promotion_gates.py",
+            "tests/test_promotion_gates.py",
+            "site/RELEASE.json",
+            "site/index.html",
+            ".github/workflows/sequential-arena.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/simulation/**",
+            "tests/simulation/**",
+            "tools/populations/**",
+            "tests/populations/**",
+            "tools/sequential_postflop_population_sim_v4.py",
+            "training/registry.json",
+            "training/populations/**",
+            "training/runs/20260912_independent_profiles_v2/model/**",
+            "training/datasets/NLHE_100-200/**/*.zip",
+            "training/PROMOTION_GATE_CONTRACT.json",
+            "training/gates/**",
+            "tools/evaluate_promotion_gates.py",
+            "tests/test_promotion_gates.py",
+            "site/RELEASE.json",
+            "site/index.html",
+            ".github/workflows/sequential-arena.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "deterministic-core",
+        "browser-smoke",
+        "v83-baseline-validation",
+        "v83-baseline-test"
+      ],
+      "name": "Validate sequential independent arena",
+      "path": ".github/workflows/sequential-arena.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "simulation_benchmark",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 41,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [],
+      "cancel_in_progress": true,
+      "concurrency_group": "trainer-smoke-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
+            "site/index.html",
+            "site/trainer.js",
+            "site/trainer.css",
+            "site/RELEASE.json",
+            "site/deployment-meta.css",
+            "site/assets/trainer/**",
+            "tests/trainer/**",
+            "tests/regression/**",
+            "tools/patches/apply_trainer_mvp.py",
+            "tools/write_deployment_metadata.py",
+            "tools/write_site_release.py",
+            "wrangler.jsonc",
+            ".github/workflows/trainer-smoke.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            ".github/actions/repro-runtime/action.yml",
+            ".github/actions/repro-browser/action.yml",
+            "site/index.html",
+            "site/trainer.js",
+            "site/trainer.css",
+            "site/RELEASE.json",
+            "site/deployment-meta.css",
+            "site/assets/trainer/**",
+            "tests/trainer/**",
+            "tests/regression/**",
+            "tools/patches/apply_trainer_mvp.py",
+            "tools/write_deployment_metadata.py",
+            "tools/write_site_release.py",
+            "wrangler.jsonc",
+            ".github/workflows/trainer-smoke.yml"
+          ]
+        }
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "static-contract",
+        "browser-smoke"
+      ],
+      "name": "Validate interactive trainer",
+      "path": ".github/workflows/trainer-smoke.yml",
+      "proposed_change": "none: cancel-in-progress is already true",
+      "recommendation_state": "ALREADY_CANCEL_IN_PROGRESS",
+      "role": "product_browser_validation",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 8,
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "artifact_names": [
+        "nlhe-100-200-user-artifacts-${{ github.sha }}"
+      ],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD",
+        "ARTIFACT_DISCARD_RISK"
+      ],
+      "cancel_in_progress": null,
+      "concurrency_group": null,
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "user/artifacts/NLHE_100-200/**",
+            "tools/build_user_artifact_bundle.py",
+            "training/runs/20260912_population_increment_cycle/FINAL_STATE.json",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "training/registry.json",
+            ".github/workflows/user-artifact-bundle.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "user/artifacts/NLHE_100-200/**",
+            "tools/build_user_artifact_bundle.py",
+            "training/runs/20260912_population_increment_cycle/FINAL_STATE.json",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "training/registry.json",
+            ".github/workflows/user-artifact-bundle.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": false,
+      "job_ids": [
+        "repro-environment",
+        "build-and-verify"
+      ],
+      "name": "NLHE 100-200 user artifact bundle",
+      "path": ".github/workflows/user-artifact-bundle.yml",
+      "proposed_change": "add a concurrency group with cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "ARTIFACT_ONLY",
+      "static_cost_proxy": 8,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    }
+  ]
+}

@@ -20,6 +20,33 @@ from tools.audit_github_workflows import (MANUAL_ONLY_LIFECYCLE, automatic, pars
 BASE_SHA = "4559315b08fd224409c5469a4073e07ee89225b3"
 INVENTORY = "analysis/workflow_audit/workflows.json"
 OUTPUT = "analysis/workflow_audit/active_workflow_dag_v2.json"
+DECISION = "analysis/workflow_audit/consolidation_decision_v1.json"
+DECISION_SCHEMA = "poker-workflow-concurrency-consolidation-decision/v1"
+DECISION_VALUES = ("NO_FURTHER_CONSOLIDATION_JUSTIFIED", "MINIMAL_FAIL_CLOSED_CHANGE_APPLIED")
+UNSAFE_SIDE_EFFECT_CLASSES = ("REPOSITORY_WRITE", "PUBLICATION_CAPABLE", "UNKNOWN")
+SAFE_SIDE_EFFECT_CLASSES = ("READ_ONLY", "ARTIFACT_ONLY")
+FROZEN_OUT_OF_SCOPE_WORKFLOWS = (".github/workflows/project-state-consistency.yml",)
+# Planner key T4 estimate recorded on the parent issue; reconciled against the HEAD measurements below.
+PLANNER_ESTIMATE = {"active_automatic": 53, "manual_only": 15,
+                    "without_concurrency": 19, "cancel_in_progress_true": 37}
+DECLARED_CHANGE_SCOPE = ("tools/audit_active_workflow_dag.py",
+                         "analysis/workflow_audit/consolidation_decision_v1.json",
+                         "docs/ci-workflow-dag.md", "docs/ci-workflow-audit.md",
+                         "tests/ci/test_consolidation_decision.py")
+BLOCKER_CATALOG = {
+    "FAIL_CLOSED_UNSAFE_SIDE_EFFECT":
+        "fail-closed: repository-write, publication or unknown capability is never cancellation-safe",
+    "NO_MEASURED_IMPROVEMENT":
+        "no measured improvement: the authorized method is a static structural proxy that is blind to queue/cancel "
+        "semantics, so a concurrency-only change leaves runs/jobs/cost byte-identical by construction",
+    "FROZEN_TELEMETRY_PREDATES_HEAD":
+        "the only queue telemetry is the frozen #242 sample (100 runs) which predates this HEAD, so no per-workflow "
+        "queue delta can be attributed to a new change",
+    "ARTIFACT_DISCARD_RISK":
+        "cancel-in-progress could discard produced artifacts that downstream consumers still read",
+    "OUT_OF_SCOPE_CHANGE_SURFACE":
+        "explicitly excluded from this task's change surface",
+}
 DOC = "docs/ci-workflow-dag.md"
 SCENARIOS = (
     ("repro_runtime_composite", "pull_request", ".github/actions/repro-runtime/action.yml", "main"),
@@ -129,11 +156,14 @@ def _artifact_steps(text: str) -> list[dict[str, Any]]:
     return rows
 
 
+COST_PATTERNS = {"checkout": r"actions/checkout@", "setup_python": r"actions/setup-python@",
+    "setup_node": r"actions/setup-node@", "pip_install": r"(?:\bpip(?:3)?\s+install\b|python3?\s+-m\s+pip\s+install)",
+    "playwright_install": r"playwright\s+install", "npm_install": r"\bnpm\s+(?:ci|install)\b",
+    "upload_artifact": r"actions/upload-artifact@", "download_artifact": r"(?:actions/download-artifact@|\bgh\s+run\s+download\b)"}
+
+
 def _cost(text: str, path: str, name: str, jobs: list[dict]) -> dict[str, Any]:
-    patterns = {"checkout": r"actions/checkout@", "setup_python": r"actions/setup-python@",
-        "setup_node": r"actions/setup-node@", "pip_install": r"(?:\bpip(?:3)?\s+install\b|python3?\s+-m\s+pip\s+install)",
-        "playwright_install": r"playwright\s+install", "npm_install": r"\bnpm\s+(?:ci|install)\b",
-        "upload_artifact": r"actions/upload-artifact@", "download_artifact": r"(?:actions/download-artifact@|\bgh\s+run\s+download\b)"}
+    patterns = COST_PATTERNS
     counts = {key: len(re.findall(rx, text)) for key, rx in patterns.items()}
     score = (len(jobs) + 2 * counts["checkout"] + 2 * counts["setup_python"] +
              2 * counts["setup_node"] + 2 * counts["pip_install"] +
@@ -352,6 +382,277 @@ def split_active(rows: dict[str, Any]) -> tuple[list[str], list[str]]:
     return sorted(path for path in rows if path not in excluded), manual_only
 
 
+def _same_ref_duplicate_exposure(row: dict[str, Any]) -> bool:
+    """True when push and pull_request can both fire for the same ref (duplicate-run exposure)."""
+    triggers = row["triggers"]
+    if "push" not in triggers or "pull_request" not in triggers:
+        return False
+    push_branches = set(triggers["push"].get("branches", []))
+    pr_branches = set(triggers["pull_request"].get("branches", []))
+    if not push_branches or not pr_branches:
+        # An unbounded trigger on either side can overlap; this is a conservative exposure signal.
+        return True
+    return bool(push_branches & pr_branches)
+
+
+def _unapplied_blockers(row: dict[str, Any], safe: bool) -> list[str]:
+    """Why a concurrency recommendation is deliberately not applied by this tranche (codes from BLOCKER_CATALOG)."""
+    if not safe:
+        return ["FAIL_CLOSED_UNSAFE_SIDE_EFFECT"]
+    blockers = ["NO_MEASURED_IMPROVEMENT", "FROZEN_TELEMETRY_PREDATES_HEAD"]
+    if row["artifacts"]:
+        blockers.append("ARTIFACT_DISCARD_RISK")
+    if row["path"] in FROZEN_OUT_OF_SCOPE_WORKFLOWS:
+        blockers.append("OUT_OF_SCOPE_CHANGE_SURFACE")
+    return blockers
+
+
+def _proposed_change(row: dict[str, Any]) -> str:
+    if not row["concurrency"]:
+        return "add a concurrency group with cancel-in-progress: true"
+    if row["concurrency"].get("cancel_in_progress") is not True:
+        return "keep the existing group and set cancel-in-progress: true"
+    return "none: cancel-in-progress is already true"
+
+
+def _decision_row(row: dict[str, Any]) -> dict[str, Any]:
+    recommendation = row["concurrency_recommendation"]
+    concurrency = row["concurrency"]
+    cancel = concurrency.get("cancel_in_progress")
+    safe = bool(recommendation["safe_candidate_for_future_cancellation_change"])
+    if cancel is True:
+        state, blockers = "ALREADY_CANCEL_IN_PROGRESS", []
+    elif safe:
+        state, blockers = "SAFE_CANDIDATE_NOT_APPLIED", _unapplied_blockers(row, safe)
+    else:
+        state, blockers = "BLOCKED_NOT_APPLIED", _unapplied_blockers(row, safe)
+    return {"path": row["path"], "name": row["name"], "role": row["role"],
+            "triggers": sorted(row["triggers"]),
+            "event_filters": {event: cfg for event, cfg in sorted(row["triggers"].items())},
+            "has_concurrency": bool(concurrency), "concurrency_group": concurrency.get("group"),
+            "cancel_in_progress": cancel,
+            "duplicate_push_and_pull_request_exposure": _same_ref_duplicate_exposure(row),
+            "side_effect_class": row["side_effect_class"], "fail_closed_safe": safe,
+            "proposed_change": _proposed_change(row), "recommendation_state": state,
+            "blockers": blockers, "job_ids": [job["id"] for job in row["jobs"]],
+            "artifact_names": [artifact["name"] for artifact in row["artifacts"]],
+            "static_cost_proxy": row["static_cost_proxy"]["score"]}
+
+
+def _name_digest(rows: list[dict[str, Any]]) -> str:
+    payload = json.dumps({row["path"]: {"job_ids": [job["id"] for job in row["jobs"]],
+                                        "artifact_names": [artifact["name"] for artifact in row["artifacts"]]}
+                          for row in rows}, sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def _scenario_row(simulation: dict[str, Any]) -> dict[str, Any]:
+    before, after = simulation["before"], simulation["after"]
+    return {"scenario": simulation["scenario"], "event": after["event"],
+            "changed_paths": after["changed_paths"],
+            "before": {"runs": before["workflow_count"], "jobs": before["job_count"],
+                       "cost_proxy": before["cost_proxy"]},
+            "after": {"runs": after["workflow_count"], "jobs": after["job_count"],
+                      "cost_proxy": after["cost_proxy"]},
+            "delta": {"runs": after["workflow_count"] - before["workflow_count"],
+                      "jobs": after["job_count"] - before["job_count"],
+                      "cost_proxy": after["cost_proxy"] - before["cost_proxy"]},
+            "method": "static structural proxy", "billed": False,
+            "write_capable_jobs_potentially_reachable": len(after["write_capable_jobs_potentially_reachable"]),
+            "simulation_disposition": after["simulation_disposition"]}
+
+
+def build_decision(data: dict[str, Any]) -> dict[str, Any]:
+    """Fail-closed trigger/concurrency decision for the active DAG."""
+    rows = [_decision_row(row) for row in data["workflows"]]
+    unapplied = [row for row in rows if row["recommendation_state"] != "ALREADY_CANCEL_IN_PROGRESS"]
+    safe_candidates = [row for row in unapplied if row["fail_closed_safe"]]
+    blocked = [row for row in unapplied if not row["fail_closed_safe"]]
+    scenarios = [_scenario_row(item) for item in data["representative_scenarios"]]
+    before_totals = {key: sum(item["before"][key] for item in scenarios) for key in ("runs", "jobs", "cost_proxy")}
+    after_totals = {key: sum(item["after"][key] for item in scenarios) for key in ("runs", "jobs", "cost_proxy")}
+    counts = {"inventory_workflow_count": data["inventory_workflow_count"],
+              "active_automatic_workflow_count": data["active_workflow_count"],
+              "manual_only_count": data["manual_only_count"],
+              "without_concurrency_count": sum(1 for row in rows if not row["has_concurrency"]),
+              "cancel_in_progress_true_count": sum(1 for row in rows if row["cancel_in_progress"] is True),
+              "cancel_in_progress_false_count": sum(1 for row in rows if row["cancel_in_progress"] is False),
+              "duplicate_push_and_pull_request_exposure_count":
+                  sum(1 for row in rows if row["duplicate_push_and_pull_request_exposure"]),
+              "safe_candidate_not_applied_count": len(safe_candidates),
+              "blocked_not_applied_count": len(blocked)}
+    measured = {"active_automatic": counts["active_automatic_workflow_count"],
+                "manual_only": counts["manual_only_count"],
+                "without_concurrency": counts["without_concurrency_count"],
+                "cancel_in_progress_true": counts["cancel_in_progress_true_count"]}
+    decision = {
+        "schema": DECISION_SCHEMA, "issue": data["issue"], "parent_issue": data["parent_issue"],
+        "task": "backlog-85b", "base_sha": data["base_sha"],
+        "inventory_source": data["inventory_source"], "inventory_sha256": data["inventory_sha256"],
+        "dag_evidence": OUTPUT, "doc": DOC,
+        "decision": "NO_FURTHER_CONSOLIDATION_JUSTIFIED",
+        "decision_statement": ("No safe trigger/concurrency consolidation is demonstrated for the active DAG at "
+                               "HEAD, so no workflow file is modified: every recommendation stays unapplied and "
+                               "carries an explicit blocker."),
+        "measurement_method": {"kind": "static structural proxy", "billed": False,
+                               "statement": ("Every run/job/cost figure here is a static structural proxy, not "
+                                             "GitHub-billed minutes; the pinned base and HEAD carry byte-identical "
+                                             "workflow definitions, so each before/after pair coincides by "
+                                             "construction.")},
+        "method_sensitivity": {
+            "proxy_inputs": sorted(COST_PATTERNS),
+            "concurrency_sensitive_inputs": [],
+            "statement": ("the proxy is a function of job/checkout/setup/install/artifact counts only, so a "
+                          "trigger/concurrency-only edit cannot move the measured runs/jobs/cost figures; the "
+                          "decision therefore cannot claim a measured improvement")},
+        "counts": counts, "planner_estimate": dict(PLANNER_ESTIMATE),
+        "planner_estimate_delta": {key: measured[key] - value for key, value in PLANNER_ESTIMATE.items()},
+        "planner_estimate_notes": [
+            "the planner counted concurrency across all 69 workflow files, including the 15 manual-only ones, "
+            "which yields 19 files without a concurrency block and 38 files with cancel-in-progress: true; this "
+            "decision counts only the 54 active workflows, which yields 16 and 28, hence the -3 and -9 deltas",
+            "the planner's 53 automatic workflows predates the HEAD measurement of 54",
+            "no reconciliation delta changes the decision: it is taken on the active set only",
+        ],
+        "totals": {"before": before_totals, "after": after_totals,
+                   "delta": {key: after_totals[key] - before_totals[key] for key in before_totals},
+                   "method": "static structural proxy", "billed": False},
+        "scenarios": scenarios, "scenario_count": len(scenarios),
+        "workflows": rows,
+        "recommendations": {"applied": [],
+                            "safe_candidates_not_applied": [row["path"] for row in safe_candidates],
+                            "blocked_not_applied": [row["path"] for row in blocked],
+                            "unapplied_count": len(unapplied)},
+        "blocker_catalog": dict(BLOCKER_CATALOG),
+        "fail_closed_invariants": [
+            "a recommendation is marked fail-closed safe only when its side-effect class is READ_ONLY or "
+            "ARTIFACT_ONLY",
+            "REPOSITORY_WRITE, PUBLICATION_CAPABLE and UNKNOWN are never marked safe",
+            "every unapplied recommendation carries at least one blocker",
+            "no change is applied while the decision is NO_FURTHER_CONSOLIDATION_JUSTIFIED",
+            f"{FROZEN_OUT_OF_SCOPE_WORKFLOWS[0]} is never modified",
+            "job and artifact names are preserved and digest-pinned for every workflow",
+        ],
+        "frozen_name_digest": _name_digest(data["workflows"]),
+        "change_surface": {"workflow_files_modified": False, "repository_write_surface_expanded": False,
+                           "publication_surface_expanded": False, "scientific_surface_expanded": False,
+                           "cancellation_surface_changed": False,
+                           "project_state_consistency_modified": False,
+                           "declared_change_scope": list(DECLARED_CHANGE_SCOPE),
+                           "declared_workflow_changes": [],
+                           "unchanged_frozen_evidence": [OUTPUT]},
+    }
+    validate_decision(decision)
+    return decision
+
+
+def validate_decision(decision: dict[str, Any]) -> None:
+    """Fail-closed validator; every mutation test in tests/ci/test_residual_repro_dag.py targets this."""
+    if decision.get("schema") != DECISION_SCHEMA:
+        raise AuditError("decision schema mismatch")
+    if decision.get("decision") not in DECISION_VALUES:
+        raise AuditError("unknown consolidation decision")
+    rows = decision.get("workflows", [])
+    paths = [row.get("path") for row in rows]
+    if len(paths) != len(set(paths)) or not paths:
+        raise AuditError("decision workflow table is empty or duplicated")
+    seen = set()
+    for row in rows:
+        side_effect = row.get("side_effect_class")
+        safe = row.get("fail_closed_safe")
+        if not isinstance(safe, bool):
+            raise AuditError(f"{row.get('path')}: fail-closed status must be an explicit boolean")
+        if side_effect not in SAFE_SIDE_EFFECT_CLASSES + UNSAFE_SIDE_EFFECT_CLASSES:
+            raise AuditError(f"{row.get('path')}: unsupported side-effect class {side_effect}")
+        if safe != (side_effect in SAFE_SIDE_EFFECT_CLASSES):
+            raise AuditError(f"{row.get('path')}: fail-closed status contradicts the side-effect class")
+        if side_effect in UNSAFE_SIDE_EFFECT_CLASSES and safe:
+            raise AuditError(f"unsafe concurrency recommendation: {row.get('path')}")
+        if safe and side_effect not in SAFE_SIDE_EFFECT_CLASSES:
+            raise AuditError(f"{row.get('path')}: safe status outside the artifact/read-only surface")
+        state = row.get("recommendation_state")
+        if state == "ALREADY_CANCEL_IN_PROGRESS":
+            if row.get("cancel_in_progress") is not True:
+                raise AuditError(f"{row.get('path')}: applied state without cancel-in-progress: true")
+        elif state in {"SAFE_CANDIDATE_NOT_APPLIED", "BLOCKED_NOT_APPLIED"}:
+            if row.get("cancel_in_progress") is True:
+                raise AuditError(f"{row.get('path')}: unapplied recommendation already applied")
+            if not row.get("blockers"):
+                raise AuditError(f"{row.get('path')}: unapplied recommendation without a blocker")
+            unknown = set(row["blockers"]) - set(decision.get("blocker_catalog", {}))
+            if unknown:
+                raise AuditError(f"{row.get('path')}: blocker outside the catalog: {sorted(unknown)}")
+        else:
+            raise AuditError(f"{row.get('path')}: unknown recommendation state {state}")
+        seen.add(row.get("path"))
+    applied = decision.get("recommendations", {}).get("applied", [])
+    for change in applied:
+        if not change.get("fail_closed_safe") or change.get("path") not in seen:
+            raise AuditError(f"applied change is not fail-closed: {change.get('path')}")
+        if not change.get("mutation_test") or not change.get("job_and_artifact_names_preserved"):
+            raise AuditError(f"applied change lacks mutation/name-preservation evidence: {change.get('path')}")
+        if change.get("path") in FROZEN_OUT_OF_SCOPE_WORKFLOWS:
+            raise AuditError(f"frozen out-of-scope workflow cannot be changed: {change.get('path')}")
+    if decision["decision"] == "NO_FURTHER_CONSOLIDATION_JUSTIFIED" and applied:
+        raise AuditError("no-further-consolidation decision must not apply any change")
+    if decision["decision"] == "MINIMAL_FAIL_CLOSED_CHANGE_APPLIED" and not applied:
+        raise AuditError("minimal-change decision must apply at least one change")
+    if decision.get("scenario_count") != len(SCENARIOS):
+        raise AuditError("representative scenario set is incomplete")
+    scenarios = decision.get("scenarios", [])
+    if len(scenarios) != len(SCENARIOS):
+        raise AuditError("representative scenario rows are incomplete")
+    for item in scenarios:
+        expected = {key: item["after"][key] - item["before"][key] for key in ("runs", "jobs", "cost_proxy")}
+        if item["delta"] != expected or item["billed"] is not False:
+            raise AuditError(f"scenario delta is inconsistent: {item.get('scenario')}")
+    for key in ("runs", "jobs", "cost_proxy"):
+        if decision["totals"]["before"][key] != sum(item["before"][key] for item in scenarios):
+            raise AuditError(f"before totals are inconsistent: {key}")
+        if decision["totals"]["after"][key] != sum(item["after"][key] for item in scenarios):
+            raise AuditError(f"after totals are inconsistent: {key}")
+    counts = decision["counts"]
+    sensitivity = decision.get("method_sensitivity", {})
+    if sorted(sensitivity.get("proxy_inputs", [])) != sorted(COST_PATTERNS):
+        raise AuditError("method sensitivity does not match the static proxy inputs")
+    if sensitivity.get("concurrency_sensitive_inputs"):
+        raise AuditError("method sensitivity claims a concurrency-sensitive input")
+    if any(token in name for name in COST_PATTERNS for token in ("concurrency", "cancel", "trigger")):
+        raise AuditError("the static proxy unexpectedly depends on triggers/concurrency")
+    if counts["without_concurrency_count"] != sum(1 for row in rows if not row["has_concurrency"]):
+        raise AuditError("concurrency counts are inconsistent")
+    if counts["cancel_in_progress_true_count"] != sum(1 for row in rows if row["cancel_in_progress"] is True):
+        raise AuditError("cancel-in-progress counts are inconsistent")
+    if counts["duplicate_push_and_pull_request_exposure_count"] != sum(
+            1 for row in rows if row["duplicate_push_and_pull_request_exposure"]):
+        raise AuditError("duplicate-trigger exposure count is inconsistent")
+    if counts["active_automatic_workflow_count"] != len(rows):
+        raise AuditError("decision table does not cover the active workflows")
+    surface = decision["change_surface"]
+    for key in ("repository_write_surface_expanded", "publication_surface_expanded",
+                "scientific_surface_expanded", "project_state_consistency_modified"):
+        if surface.get(key) is not False:
+            raise AuditError(f"change surface widened: {key}")
+    changed = bool(applied)
+    for key in ("workflow_files_modified", "cancellation_surface_changed"):
+        if surface.get(key) is not changed:
+            raise AuditError(f"change surface flag does not match the applied change set: {key}")
+    declared_workflows = surface.get("declared_workflow_changes", [])
+    if declared_workflows != [change["path"] for change in applied]:
+        raise AuditError("declared workflow changes do not match the applied change set")
+    for path in declared_workflows:
+        row = next((item for item in rows if item["path"] == path), None)
+        if row is None or not row["fail_closed_safe"] or row["side_effect_class"] not in SAFE_SIDE_EFFECT_CLASSES:
+            raise AuditError(f"declared workflow change is not fail-closed: {path}")
+        if path in FROZEN_OUT_OF_SCOPE_WORKFLOWS:
+            raise AuditError(f"frozen out-of-scope workflow cannot be declared: {path}")
+        if row["recommendation_state"] != "SAFE_CANDIDATE_NOT_APPLIED":
+            raise AuditError(f"declared workflow change was not an unapplied safe candidate: {path}")
+    if not changed and any(path.startswith(".github/workflows/")
+                           for path in surface.get("declared_change_scope", [])):
+        raise AuditError("declared scope widens the workflow surface without an applied change")
+
+
 def build() -> dict[str, Any]:
     inventory_text = (ROOT / INVENTORY).read_text()
     document = json.loads(inventory_text)
@@ -427,7 +728,8 @@ def validate_data(data: dict[str, Any], expected_current: set[str]) -> None:
             raise AuditError(f"unsafe concurrency recommendation: {row.get('path')}")
 
 
-def markdown(data: dict[str, Any]) -> str:
+def markdown(data: dict[str, Any], decision: dict[str, Any] | None = None) -> str:
+    decision = decision if decision is not None else build_decision(data)
     out = ["# Active CI workflow DAG", "",
         f"Generated for issue #204 (DAG v2, originally #382) from base `{data['base_sha']}` against inventory snapshot "
         f"`{data.get('inventory_snapshot_base_sha')}`. This is a static model, not billed-minute telemetry.", "",
@@ -468,11 +770,73 @@ def markdown(data: dict[str, Any]) -> str:
             "a future tranche that edits triggers or concurrency must re-pin the base to observe a delta."]
     out += ["", "## Concurrency recommendations", "",
             "Recommendations are read-only. `UNKNOWN`, repository-write, and publication-capable workflows are never marked safe.", "",
-            "| Workflow | Has concurrency | Cancel now | Safe future candidate | Blockers |", "|---|---:|---:|---:|---|"]
-    for row in data["workflows"]:
-        c = row["concurrency_recommendation"]
-        out.append(f"| `{row['path']}` | {str(c['has_concurrency']).lower()} | {c['cancel_in_progress']} | {str(c['safe_candidate_for_future_cancellation_change']).lower()} | {', '.join(c['blockers']) or 'none'} |")
-    out += ["", "## Static-model boundary", "",
+            "| Workflow | Has concurrency | Concurrency group | Cancel now | Fail-closed safe (yes/no) | Recommendation state | Blockers |",
+            "|---|---:|---|---:|---:|---|---|"]
+    for row in decision["workflows"]:
+        group = row["concurrency_group"]
+        group_text = f"`{group}`" if group else "none"
+        blockers = "; ".join(row["blockers"]) or "none"
+        out.append(f"| `{row['path']}` | {str(row['has_concurrency']).lower()} | {group_text} | "
+                   f"{row['cancel_in_progress']} | {'yes' if row['fail_closed_safe'] else 'no'} | "
+                   f"{row['recommendation_state']} | {blockers} |")
+    out += ["", "## Concurrency consolidation decision", "",
+            f"Decision: **{decision['decision']}** (fail-closed; no workflow file is modified in this tranche).",
+            "", decision["decision_statement"], "",
+            f"Method: {decision['measurement_method']['statement']}", "",
+            "| Measure | Value |", "|---|---:|",
+            f"| Inventory workflows | {decision['counts']['inventory_workflow_count']} |",
+            f"| Active automatic workflows | {decision['counts']['active_automatic_workflow_count']} |",
+            f"| Manual-only workflows excluded | {decision['counts']['manual_only_count']} |",
+            f"| Active workflows without a concurrency block | {decision['counts']['without_concurrency_count']} |",
+            f"| Active workflows with `cancel-in-progress: true` | {decision['counts']['cancel_in_progress_true_count']} |",
+            f"| Active workflows with `cancel-in-progress: false` | {decision['counts']['cancel_in_progress_false_count']} |",
+            f"| Active workflows exposed to a same-ref push+pull_request duplicate | "
+            f"{decision['counts']['duplicate_push_and_pull_request_exposure_count']} |",
+            f"| Fail-closed safe candidates left unapplied | {decision['counts']['safe_candidate_not_applied_count']} |",
+            f"| Blocked recommendations left unapplied | {decision['counts']['blocked_not_applied_count']} |",
+            "", "### Planner estimate reconciliation", "",
+            "The planner key T4 estimate is reconciled against the HEAD measurements; no delta changes the decision.", "",
+            "| Measure | Planner estimate | Measured at HEAD | Delta |", "|---|---:|---:|---:|"]
+    measured_key = {"active_automatic": "active_automatic_workflow_count", "manual_only": "manual_only_count",
+                    "without_concurrency": "without_concurrency_count",
+                    "cancel_in_progress_true": "cancel_in_progress_true_count"}
+    for key, value in decision["planner_estimate"].items():
+        out.append(f"| {key} | {value} | {decision['counts'][measured_key[key]]} | "
+                   f"{decision['planner_estimate_delta'][key]} |")
+    out += ["", "Notes:", ""]
+    out += [f"- {note}" for note in decision["planner_estimate_notes"]]
+    out += ["", "### Unapplied recommendations and blockers", "",
+            "Every concurrency recommendation stays unapplied. `safe=yes` means only that the workflow has no "
+            "repository-write, publication or unknown capability; it is not an asserted improvement.", ""]
+    unapplied = [row for row in decision["workflows"]
+                 if row["recommendation_state"] != "ALREADY_CANCEL_IN_PROGRESS"]
+    if unapplied:
+        out += ["| Workflow | Proposed change | Safe (yes/no) | Blockers |", "|---|---|---:|---|"]
+        for row in unapplied:
+            out.append(f"| `{row['path']}` | {row['proposed_change']} | "
+                       f"{'yes' if row['fail_closed_safe'] else 'no'} | "
+                       f"{', '.join(f'`{code}`' for code in row['blockers'])} |")
+        out += ["", "Blocker catalog:", "", "| Code | Meaning |", "|---|---|"]
+        out += [f"| `{code}` | {text} |" for code, text in sorted(decision["blocker_catalog"].items())]
+    else:
+        out.append("- None")
+    out += ["", "### Representative before/after totals", "",
+            f"Scenario-set sums across the {decision['scenario_count']} representative scenarios (a workflow may be "
+            f"matched by several scenarios): before "
+            f"{decision['totals']['before']['runs']}/{decision['totals']['before']['jobs']}/"
+            f"{decision['totals']['before']['cost_proxy']} vs after "
+            f"{decision['totals']['after']['runs']}/{decision['totals']['after']['jobs']}/"
+            f"{decision['totals']['after']['cost_proxy']} runs/jobs/cost proxy "
+            f"(delta {decision['totals']['delta']['runs']}/{decision['totals']['delta']['jobs']}/"
+            f"{decision['totals']['delta']['cost_proxy']}). Static structural proxy, not GitHub-billed minutes.", "",
+            f"Method sensitivity: the proxy inputs are `{', '.join(decision['method_sensitivity']['proxy_inputs'])}`; "
+            f"concurrency-sensitive inputs: `{decision['method_sensitivity']['concurrency_sensitive_inputs']}`. "
+            "A concurrency-only edit therefore cannot move the measured figures, which is why no improvement is "
+            "claimed and no change is applied.", "",
+            f"Job and artifact names are preserved and digest-pinned (`{decision['frozen_name_digest']}`); the "
+            "declared change surface contains no `.github/workflows/**` file, no write/publication/scientific "
+            f"widening, and never touches `{FROZEN_OUT_OF_SCOPE_WORKFLOWS[0]}`.", ""]
+    out += ["## Static-model boundary", "",
             "Path and branch filtering uses the documented literal/`*`/`**` subset. Complex job expressions are reported as `UNKNOWN`; they are retained as potentially reachable and never used to claim safety.", ""]
     return "\n".join(out)
 
@@ -484,15 +848,18 @@ def main() -> int:
     mode.add_argument("--write", action="store_true")
     args = parser.parse_args()
     try:
-        data = build(); doc = markdown(data)
+        data = build(); decision = build_decision(data); doc = markdown(data, decision)
         if args.check:
             stored = json.loads((ROOT / OUTPUT).read_text())
-            if stored != data or (ROOT / DOC).read_text() != doc:
+            stored_decision = json.loads((ROOT / DECISION).read_text())
+            if stored != data or stored_decision != decision or (ROOT / DOC).read_text() != doc:
                 raise AuditError("generated DAG evidence/docs are stale")
         else:
             (ROOT / OUTPUT).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+            (ROOT / DECISION).write_text(json.dumps(decision, indent=2, sort_keys=True) + "\n")
             (ROOT / DOC).write_text(doc)
-        print(f"Active workflow DAG: PASS ({data['active_workflow_count']} workflows; {len(SCENARIOS)} scenarios)")
+        print(f"Active workflow DAG: PASS ({data['active_workflow_count']} workflows; {len(SCENARIOS)} scenarios; "
+              f"decision={decision['decision']})")
         return 0
     except (AuditError, OSError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"Active workflow DAG: FAIL: {exc}", file=sys.stderr)

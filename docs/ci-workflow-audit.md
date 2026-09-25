@@ -155,6 +155,11 @@ Ils sont exclus de toute factorisation dans cette phase.
 
 Le DAG machine-readable est `analysis/workflow_audit/active_workflow_dag_v2.json` (base `4559315b08fd224409c5469a4073e07ee89225b3`, **54** workflows actifs) et sa vue Markdown `docs/ci-workflow-dag.md`.
 
+La décision de consolidation triggers/concurrency est gelée dans `analysis/workflow_audit/consolidation_decision_v1.json`
+(`NO_FURTHER_CONSOLIDATION_JUSTIFIED`) : aucune recommandation n'est appliquée, chacune porte un blocker explicite,
+et le statut fail-closed (`safe=oui/non`) de chaque workflow actif y est chiffré avec les runs/jobs/coût proxy
+avant/après des **14** scénarios représentatifs (méthode statique, **non facturée**).
+
 Traits pleins : dépendances GitHub `workflow_run` explicites. Traits pointillés : chaîne de données/responsabilités conceptuelle, **pas** une dépendance d'exécution implicite.
 
 ```mermaid

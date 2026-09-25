@@ -117,62 +117,150 @@ a future tranche that edits triggers or concurrency must re-pin the base to obse
 
 Recommendations are read-only. `UNKNOWN`, repository-write, and publication-capable workflows are never marked safe.
 
-| Workflow | Has concurrency | Cancel now | Safe future candidate | Blockers |
-|---|---:|---:|---:|---|
-| `.github/workflows/analysis-state-contract.yml` | true | True | true | none |
-| `.github/workflows/continuous-training-cycle.yml` | true | False | true | none |
-| `.github/workflows/dataset-integrity.yml` | true | True | true | none |
-| `.github/workflows/full-hand-arena.yml` | false | None | true | none |
-| `.github/workflows/full-hand-protocol.yml` | false | None | true | none |
-| `.github/workflows/game-core.yml` | false | None | false | write/publication or unknown permission surface |
-| `.github/workflows/hero-calculated-range-export.yml` | false | None | true | none |
-| `.github/workflows/hero-full-169-evidence.yml` | true | True | true | none |
-| `.github/workflows/hero-pfpc-evidence-validation.yml` | false | None | true | none |
-| `.github/workflows/hero-population-strategy.yml` | true | True | true | none |
-| `.github/workflows/hero-range-compliance.yml` | true | True | true | none |
-| `.github/workflows/hero-range-editor.yml` | true | True | true | none |
-| `.github/workflows/hero-range-pfc-context.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/hero-unopened-multiposition-generation.yml` | true | True | true | none |
-| `.github/workflows/ingest-artifacts.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/issue-358-hero-preflop-generation.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/issue-367-real-iso-ev-observable.yml` | true | False | true | none |
-| `.github/workflows/issue-367-real-iso-ev.yml` | true | False | true | none |
-| `.github/workflows/materialize-certified-population.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-a-continuation.yml` | false | None | true | none |
-| `.github/workflows/model-b-aggressive-tail.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-card-aware-fit.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-card-aware-runtime.yml` | false | None | true | none |
-| `.github/workflows/model-b-observed-vs-simulated-calibration.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-preflop-response-price-2a.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-preflop-response-price-scaffold.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-preflop-sensitivity-harness.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-response-audit.yml` | false | None | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-response-to-price-evaluation.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/model-b-reveal-aware.yml` | false | None | true | none |
-| `.github/workflows/model-b-support-aware-backoff.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/persist-issue-107-pfpc.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/plan-ingested-cycle.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/population-certification.yml` | false | None | true | none |
-| `.github/workflows/population-pack-catalog.yml` | true | True | true | none |
-| `.github/workflows/population-pack-real-admission-audit.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/population-pack.yml` | false | None | false | write/publication or unknown permission surface |
-| `.github/workflows/postflop-response-refit.yml` | true | True | true | none |
-| `.github/workflows/preflop-contract.yml` | false | None | false | write/publication or unknown permission surface |
-| `.github/workflows/preflop-grid-evaluator.yml` | false | None | true | none |
-| `.github/workflows/preflop-policy169.yml` | true | True | true | none |
-| `.github/workflows/preflop-search.yml` | true | True | true | none |
-| `.github/workflows/preflop-strategy-benchmark-v2.yml` | true | True | false | write/publication or unknown permission surface |
-| `.github/workflows/preflop-strategy-test-pfpc.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/preflop-strategy-validation-pfpc.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/preflop-topology-contract.yml` | false | None | true | none |
-| `.github/workflows/project-state-consistency.yml` | false | None | true | none |
-| `.github/workflows/recover-issue-107-pfpc.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/release-handoff-contract.yml` | true | True | true | none |
-| `.github/workflows/release-no-pending-snapshot-proof.yml` | true | False | false | write/publication or unknown permission surface |
-| `.github/workflows/repro-scientific-environment.yml` | true | True | true | none |
-| `.github/workflows/sequential-arena.yml` | true | True | true | none |
-| `.github/workflows/trainer-smoke.yml` | true | True | true | none |
-| `.github/workflows/user-artifact-bundle.yml` | false | None | true | none |
+| Workflow | Has concurrency | Concurrency group | Cancel now | Fail-closed safe (yes/no) | Recommendation state | Blockers |
+|---|---:|---|---:|---:|---|---|
+| `.github/workflows/analysis-state-contract.yml` | true | `analysis-state-contract-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/continuous-training-cycle.yml` | true | `continuous-training-cycle-${{ github.ref }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/dataset-integrity.yml` | true | `${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/full-hand-arena.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/full-hand-protocol.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/game-core.yml` | false | none | None | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/hero-calculated-range-export.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/hero-full-169-evidence.yml` | true | `hero-full-169-${{ github.event.pull_request.number || github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/hero-pfpc-evidence-validation.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/hero-population-strategy.yml` | true | `hero-population-strategy-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/hero-range-compliance.yml` | true | `hero-range-compliance-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/hero-range-editor.yml` | true | `hero-range-editor-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/hero-range-pfc-context.yml` | true | `hero-range-pfc-context-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/hero-unopened-multiposition-generation.yml` | true | `hero-unopened-multiposition-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/ingest-artifacts.yml` | true | `artifact-ingest-${{ github.ref }}` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/issue-358-hero-preflop-generation.yml` | true | `issue-358-hero-preflop-generation` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/issue-367-real-iso-ev-observable.yml` | true | `issue-367-real-iso-ev-observable-${{ github.sha }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/issue-367-real-iso-ev.yml` | true | `issue-367-real-iso-ev-${{ github.event_name }}-${{ github.ref }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/materialize-certified-population.yml` | true | `materialize-certified-population-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-a-continuation.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/model-b-aggressive-tail.yml` | true | `model-b-aggressive-tail-issue-298` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-card-aware-fit.yml` | true | `model-b-card-aware-fit-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-card-aware-runtime.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/model-b-observed-vs-simulated-calibration.yml` | true | `model-b-observed-vs-simulated-calibration-issue-272` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-preflop-response-price-2a.yml` | true | `${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-preflop-response-price-scaffold.yml` | true | `model-b-preflop-response-price-scaffold-315` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-preflop-sensitivity-harness.yml` | true | `${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-response-audit.yml` | false | none | None | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/model-b-response-to-price-evaluation.yml` | true | `model-b-response-to-price-issue-197` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/model-b-reveal-aware.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/model-b-support-aware-backoff.yml` | true | `model-b-support-aware-backoff-issue-286` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/persist-issue-107-pfpc.yml` | true | `persist-issue-107-pfpc-d7ec5e532dc5` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/plan-ingested-cycle.yml` | true | `plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/population-certification.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+| `.github/workflows/population-pack-catalog.yml` | true | `population-pack-catalog-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/population-pack-real-admission-audit.yml` | true | `${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/population-pack.yml` | false | none | None | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/postflop-response-refit.yml` | true | `postflop-continuation-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/preflop-contract.yml` | false | none | None | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/preflop-grid-evaluator.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/preflop-policy169.yml` | true | `preflop-policy169-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/preflop-search.yml` | true | `preflop-search-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/preflop-strategy-benchmark-v2.yml` | true | `preflop-strategy-benchmark-v2-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/preflop-strategy-test-pfpc.yml` | true | `preflop-strategy-pfpc-test-20260918` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/preflop-strategy-validation-pfpc.yml` | true | `preflop-strategy-pfpc-validation-20260918` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/preflop-topology-contract.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/project-state-consistency.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; OUT_OF_SCOPE_CHANGE_SURFACE |
+| `.github/workflows/recover-issue-107-pfpc.yml` | true | `recover-issue-107-pfpc-d7ec5e532dc5` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/release-handoff-contract.yml` | true | `release-handoff-contract-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/release-no-pending-snapshot-proof.yml` | true | `release-no-pending-snapshot-proof-20260918` | False | no | BLOCKED_NOT_APPLIED | FAIL_CLOSED_UNSAFE_SIDE_EFFECT |
+| `.github/workflows/repro-scientific-environment.yml` | true | `repro-scientific-environment-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/sequential-arena.yml` | true | `sequential-arena-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/trainer-smoke.yml` | true | `trainer-smoke-${{ github.ref }}` | True | yes | ALREADY_CANCEL_IN_PROGRESS | none |
+| `.github/workflows/user-artifact-bundle.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
+
+## Concurrency consolidation decision
+
+Decision: **NO_FURTHER_CONSOLIDATION_JUSTIFIED** (fail-closed; no workflow file is modified in this tranche).
+
+No safe trigger/concurrency consolidation is demonstrated for the active DAG at HEAD, so no workflow file is modified: every recommendation stays unapplied and carries an explicit blocker.
+
+Method: Every run/job/cost figure here is a static structural proxy, not GitHub-billed minutes; the pinned base and HEAD carry byte-identical workflow definitions, so each before/after pair coincides by construction.
+
+| Measure | Value |
+|---|---:|
+| Inventory workflows | 69 |
+| Active automatic workflows | 54 |
+| Manual-only workflows excluded | 15 |
+| Active workflows without a concurrency block | 16 |
+| Active workflows with `cancel-in-progress: true` | 28 |
+| Active workflows with `cancel-in-progress: false` | 10 |
+| Active workflows exposed to a same-ref push+pull_request duplicate | 34 |
+| Fail-closed safe candidates left unapplied | 15 |
+| Blocked recommendations left unapplied | 11 |
+
+### Planner estimate reconciliation
+
+The planner key T4 estimate is reconciled against the HEAD measurements; no delta changes the decision.
+
+| Measure | Planner estimate | Measured at HEAD | Delta |
+|---|---:|---:|---:|
+| active_automatic | 53 | 54 | 1 |
+| manual_only | 15 | 15 | 0 |
+| without_concurrency | 19 | 16 | -3 |
+| cancel_in_progress_true | 37 | 28 | -9 |
+
+Notes:
+
+- the planner counted concurrency across all 69 workflow files, including the 15 manual-only ones, which yields 19 files without a concurrency block and 38 files with cancel-in-progress: true; this decision counts only the 54 active workflows, which yields 16 and 28, hence the -3 and -9 deltas
+- the planner's 53 automatic workflows predates the HEAD measurement of 54
+- no reconciliation delta changes the decision: it is taken on the active set only
+
+### Unapplied recommendations and blockers
+
+Every concurrency recommendation stays unapplied. `safe=yes` means only that the workflow has no repository-write, publication or unknown capability; it is not an asserted improvement.
+
+| Workflow | Proposed change | Safe (yes/no) | Blockers |
+|---|---|---:|---|
+| `.github/workflows/continuous-training-cycle.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/full-hand-arena.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/full-hand-protocol.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/game-core.yml` | add a concurrency group with cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/hero-calculated-range-export.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/hero-pfpc-evidence-validation.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/ingest-artifacts.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/issue-367-real-iso-ev-observable.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/issue-367-real-iso-ev.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/model-a-continuation.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/model-b-card-aware-runtime.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/model-b-response-audit.yml` | add a concurrency group with cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/model-b-reveal-aware.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/persist-issue-107-pfpc.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/plan-ingested-cycle.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/population-certification.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+| `.github/workflows/population-pack.yml` | add a concurrency group with cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/preflop-contract.yml` | add a concurrency group with cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/preflop-grid-evaluator.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/preflop-strategy-test-pfpc.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/preflop-strategy-validation-pfpc.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/preflop-topology-contract.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/project-state-consistency.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `OUT_OF_SCOPE_CHANGE_SURFACE` |
+| `.github/workflows/recover-issue-107-pfpc.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/release-no-pending-snapshot-proof.yml` | keep the existing group and set cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
+| `.github/workflows/user-artifact-bundle.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
+
+Blocker catalog:
+
+| Code | Meaning |
+|---|---|
+| `ARTIFACT_DISCARD_RISK` | cancel-in-progress could discard produced artifacts that downstream consumers still read |
+| `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` | fail-closed: repository-write, publication or unknown capability is never cancellation-safe |
+| `FROZEN_TELEMETRY_PREDATES_HEAD` | the only queue telemetry is the frozen #242 sample (100 runs) which predates this HEAD, so no per-workflow queue delta can be attributed to a new change |
+| `NO_MEASURED_IMPROVEMENT` | no measured improvement: the authorized method is a static structural proxy that is blind to queue/cancel semantics, so a concurrency-only change leaves runs/jobs/cost byte-identical by construction |
+| `OUT_OF_SCOPE_CHANGE_SURFACE` | explicitly excluded from this task's change surface |
+
+### Representative before/after totals
+
+Scenario-set sums across the 14 representative scenarios (a workflow may be matched by several scenarios): before 96/121/625 vs after 96/121/625 runs/jobs/cost proxy (delta 0/0/0). Static structural proxy, not GitHub-billed minutes.
+
+Method sensitivity: the proxy inputs are `checkout, download_artifact, npm_install, pip_install, playwright_install, setup_node, setup_python, upload_artifact`; concurrency-sensitive inputs: `[]`. A concurrency-only edit therefore cannot move the measured figures, which is why no improvement is claimed and no change is applied.
+
+Job and artifact names are preserved and digest-pinned (`0c41337e1ebe5291f808cc09348dabb00d74ad3df8ea86b8b957a4fb2e690035`); the declared change surface contains no `.github/workflows/**` file, no write/publication/scientific widening, and never touches `.github/workflows/project-state-consistency.yml`.
 
 ## Static-model boundary
 
