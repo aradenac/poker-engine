@@ -46,20 +46,34 @@ bytes* and to the *served contract*:
    holds them. Under the target it demands the measured capacity *and* the
    overflow of a target-sized page. Three in-memory mutations (a removed call,
    a weakened capacity bound, a widened served target) must all be rejected.
+8. the *paint read* is causal and the *view / paint waits* carry named budgets
+   (T2): every read of the `#hhHands .hh-hand` counter happens inside a
+   `wait_for_function` whose predicate is that very counter (`_wait_paint()`),
+   so no bare counter taken after a fixed delay can come back, and the two
+   budgets (`VIEW_READY_TIMEOUT_MS`, `PAINT_TIMEOUT_MS`) are pinned above the
+   20 s floor the pre-fix smoke died on. Seven in-memory mutations (a 20 s paint
+   budget, a 20 s view literal, a delay-carried paint, a non-causal paint wait,
+   a reintroduced bare counter, a delay inserted in front of the causal read and
+   a split inject/read) must all be rejected, and the causal read helper itself
+   is replayed against a stub page (`_wait_paint()` polled to the first non-zero
+   painted count on the named budget, with no fixed delay in reach).
 
 Static + node only: no browser, no server, no network, and no file of the
 repository is written (mutations live in memory or in a temporary directory).
 """
 from __future__ import annotations
 
+import asyncio
 import copy
 import hashlib
+import io
 import importlib.util
 import json
 import re
 import shutil
 import subprocess
 import tempfile
+import tokenize
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -148,6 +162,46 @@ SMOKE_MEASUREMENT_CALLS = (
 # admitted when the measured heights prove the target would overflow.
 SMOKE_CAPACITY_BOUND = "assert size >= min(total, PAGE_SIZE_MIN, fit), ("
 SMOKE_TARGET_JUSTIFICATION = "assert PAGE_SIZE_MIN * pitch - gap > client + 1, ("
+# #395 T2 — causalité des lectures de peinture et budget minimal des attentes de
+# vue/peinture. Le smoke pré-fix mourait sur un budget de 20 s ; le plancher du
+# garde est donc *au-dessus* de ces 20 s, aligné sur le budget que le settle de
+# l'import accorde déjà (30 s). Les deux budgets de la smoke sont *nommés* : un
+# littéral sur une attente de vue ou de peinture est refusé, et donc un retour
+# au `timeout=20_000` du défaut T1 aussi.
+DEFECT_TIMEOUT_MS = 20_000
+MIN_VIEW_PAINT_TIMEOUT_MS = 30_000
+VIEW_WAIT_CONSTANT = "VIEW_READY_TIMEOUT_MS"
+PAINT_WAIT_CONSTANT = "PAINT_TIMEOUT_MS"
+PAINT_SELECTOR = "#hhHands .hh-hand"
+PAINT_COUNT_EXPRESSION = f"document.querySelectorAll('{PAINT_SELECTOR}').length"
+PAINT_WAIT_PREDICATE = f"() => {PAINT_COUNT_EXPRESSION}"
+PAINT_READ_HELPER = "async def _wait_paint(page) -> int:"
+PAINT_HELPER_CALLS = (
+    "painted_by_click = await _wait_paint(page)",
+    "restored_painted_by_click = await _wait_paint(page)",
+)
+PAINT_COUNT_ASSERTS = ("assert painted_by_click > 0, (", "assert restored_painted_by_click > 0, (")
+# La lecture *échantillonnée* du reste du fichier : injecter les scores
+# déterministes (ce qui repeint), puis lire la page peinte, dans le même
+# `page.evaluate` — jamais deux tours séparés par un délai.
+ATOMIC_READ_ASSIGNMENT = "return await page.evaluate(INJECT_AND_READ_JS, payload)"
+ATOMIC_READ_INJECT = "window.__reviewInboxSmoke.inject(payload);"
+ATOMIC_READ_DOM = "return window.__reviewInboxSmoke.read();"
+# La forme causale livrée : l'attente *est* la lecture du compteur de peinture.
+PAINT_WAIT_BODY = (
+    "    handle = await page.wait_for_function(\n"
+    f'        "{PAINT_WAIT_PREDICATE}",\n'
+    "        timeout=PAINT_TIMEOUT_MS,\n"
+    "    )\n"
+    "    return int(await handle.json_value())"
+)
+VIEW_SWITCH_TOKENS = (
+    "document.body.dataset.appView==='review'",
+    "document.body.dataset.appView==='replayer'",
+)
+# Les sections du corps de `run()` (`# --- ... ---`) : la causalité se vérifie
+# « dans la même section », jamais sur le fichier entier.
+SECTION_MARKER_RE = re.compile(r"(?m)^[ \t]*# --- ")
 
 
 def load_module(path: Path, name: str):
@@ -497,6 +551,399 @@ def check_page_size_target_non_vacuity() -> None:
     assert (ROOT / "site" / "index.html").read_text(encoding="utf-8") == SERVED_INDEX
 
 
+def _mask_comments(source: str) -> str:
+    """`source` with its Python comments blanked out, *same length*.
+
+    Offsets are preserved, so a call span found on the masked text lines up with
+    the real source; a commented-out wait or a commented-out paint read can
+    never satisfy (nor break) the contract.
+    """
+    starts: list[int] = []
+    offset = 0
+    for line in source.splitlines(keepends=True):
+        starts.append(offset)
+        offset += len(line)
+    masked = list(source)
+    for token in tokenize.generate_tokens(io.StringIO(source).readline):
+        if token.type != tokenize.COMMENT:
+            continue
+        base = starts[token.start[0] - 1] + token.start[1]
+        for index in range(base, base + len(token.string)):
+            if masked[index] != "\n":
+                masked[index] = " "
+    return "".join(masked)
+
+
+def _skip_string(source: str, start: int) -> int:
+    """Index just past the Python string literal starting at `start`."""
+    quote = source[start]
+    if source.startswith(quote * 3, start):
+        end = source.find(quote * 3, start + 3)
+        return len(source) if end < 0 else end + 3
+    index = start + 1
+    while index < len(source):
+        char = source[index]
+        if char == "\\":
+            index += 2
+            continue
+        if char == quote:
+            return index + 1
+        if char == "\n":
+            return index
+        index += 1
+    return index
+
+
+def _match_paren(source: str, open_index: int) -> int:
+    """Index just past the `)` closing the `(` at `open_index` (strings skipped)."""
+    depth = 0
+    index = open_index
+    while index < len(source):
+        char = source[index]
+        if char in "'\"":
+            index = _skip_string(source, index)
+            continue
+        if char == "#":
+            newline = source.find("\n", index)
+            index = len(source) if newline < 0 else newline + 1
+            continue
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+        index += 1
+    raise AssertionError(f"appel non fermé à l'offset {open_index}")
+
+
+def _iter_calls(source: str, name: str) -> list[tuple[int, int, str]]:
+    """Every `<name>(...)` call of `source` as `(start, end, arguments)` spans.
+
+    The scan is parenthesis-balanced and string-aware, so a call whose arguments
+    carry brackets, braces or nested calls is returned whole, and the same name
+    quoted inside a string literal is not a call.
+    """
+    calls: list[tuple[int, int, str]] = []
+    index = 0
+    while index < len(source):
+        char = source[index]
+        if char in "'\"":
+            index = _skip_string(source, index)
+            continue
+        if char == "#":
+            newline = source.find("\n", index)
+            index = len(source) if newline < 0 else newline + 1
+            continue
+        previous = source[index - 1] if index else ""
+        if source.startswith(name, index) and not (previous.isalnum() or previous == "_"):
+            after = index + len(name)
+            while after < len(source) and source[after] in " \t\r\n":
+                after += 1
+            if after < len(source) and source[after] == "(":
+                end = _match_paren(source, after)
+                calls.append((index, end, source[after + 1 : end - 1]))
+                index = end
+                continue
+        index += 1
+    return calls
+
+
+def _named_int_constant(source: str, name: str) -> int:
+    """The pinned integer value of a module-level `NAME = <int>` declaration."""
+    match = re.search(rf"(?m)^{name}\s*=\s*([0-9][0-9_]*)\s*$", source)
+    assert match is not None, (
+        f"la smoke doit déclarer le budget nommé `{name} = <entier>` (aucun littéral "
+        "sur une attente de vue/peinture)"
+    )
+    return int(match.group(1).replace("_", ""))
+
+
+def _section_spans(source: str) -> list[tuple[int, int]]:
+    """Spans of the `# --- ... ---` sections of the smoke's `run()` body."""
+    marks = [match.start() for match in SECTION_MARKER_RE.finditer(source)]
+    assert len(marks) >= 5, marks
+    bounds = marks + [len(source)]
+    return [(bounds[index], bounds[index + 1]) for index in range(len(marks))]
+
+
+def check_paint_causality_and_budget(smoke_source: str) -> dict:
+    """#395 T2 — causalité des lectures de peinture et budget des attentes.
+
+    Deux récidives sont interdites, statiquement, sur la source de la smoke :
+
+    * une lecture de la peinture `#hhHands .hh-hand` qui ne serait pas portée par
+      l'attente causale *de la même expression* — c'est-à-dire une peinture
+      garantie par un délai fixe (`wait_for_timeout`) suivie d'un compteur nu,
+      la forme condamnée en T1. La lecture livrée *est* l'attente
+      (`_wait_paint()` → `wait_for_function` sur le compteur de lignes peintes),
+      donc aucun compteur nu ne peut revenir sans faire échouer ce contrôle ;
+    * une attente de *vue* (`dataset.appView`) ou de *peinture* dont le budget
+      serait un littéral, ou descendrait sous le plancher
+      `MIN_VIEW_PAINT_TIMEOUT_MS` : le `timeout=20_000` du défaut T1 est refusé
+      par construction, que ce soit sur la vue ou sur la peinture.
+    """
+    assert MIN_VIEW_PAINT_TIMEOUT_MS > DEFECT_TIMEOUT_MS, (
+        MIN_VIEW_PAINT_TIMEOUT_MS,
+        DEFECT_TIMEOUT_MS,
+    )
+    code = _mask_comments(smoke_source)
+    budgets = {
+        name: _named_int_constant(code, name)
+        for name in (VIEW_WAIT_CONSTANT, PAINT_WAIT_CONSTANT)
+    }
+    for name, value in budgets.items():
+        assert value >= MIN_VIEW_PAINT_TIMEOUT_MS, (
+            f"le budget `{name}` de la smoke est sous le plancher T2 "
+            f"({value} < {MIN_VIEW_PAINT_TIMEOUT_MS})",
+            budgets,
+        )
+
+    waits = _iter_calls(code, "wait_for_function")
+    paint_waits = [call for call in waits if PAINT_COUNT_EXPRESSION in call[2]]
+    view_waits = [call for call in waits if any(token in call[2] for token in VIEW_SWITCH_TOKENS)]
+    # Non-vacuité du contrôle lui-même : la smoke doit porter les deux familles.
+    assert len(paint_waits) >= 1, (
+        "la smoke doit lire sa peinture par une attente causale portant le compteur "
+        f"`{PAINT_COUNT_EXPRESSION}`"
+    )
+    for token in VIEW_SWITCH_TOKENS:
+        assert any(token in call[2] for call in view_waits), (
+            f"la smoke doit attendre la vue servie ({token}) par une attente nommée",
+        )
+    for start, end, arguments in paint_waits:
+        timeout = re.search(r"\btimeout\s*=\s*([A-Za-z_][A-Za-z0-9_]*|\d[\d_]*)", arguments)
+        assert timeout is not None, (start, end, arguments)
+        assert timeout.group(1) == PAINT_WAIT_CONSTANT, (
+            "une attente de peinture ne porte jamais de littéral : elle doit passer "
+            f"`timeout={PAINT_WAIT_CONSTANT}` (trouvé {timeout.group(1)!r})",
+            smoke_source[start:end],
+        )
+    for start, end, arguments in view_waits:
+        timeout = re.search(r"\btimeout\s*=\s*([A-Za-z_][A-Za-z0-9_]*|\d[\d_]*)", arguments)
+        assert timeout is not None, (start, end, arguments)
+        assert timeout.group(1) == VIEW_WAIT_CONSTANT, (
+            "une attente de vue ne porte jamais de littéral : elle doit passer "
+            f"`timeout={VIEW_WAIT_CONSTANT}` (trouvé {timeout.group(1)!r})",
+            smoke_source[start:end],
+        )
+
+    # (1) Toute lecture du compteur de peinture doit être *dans* l'attente causale
+    # de la même expression : un compteur nu (`page.evaluate(...)`) est refusé.
+    spans = [(start, end) for start, end, _ in paint_waits]
+    reads = [match.start() for match in re.finditer(re.escape(PAINT_COUNT_EXPRESSION), code)]
+    assert reads, PAINT_COUNT_EXPRESSION
+    for offset in reads:
+        assert any(start <= offset < end for start, end in spans), (
+            "chaque lecture de la peinture doit être portée par l'attente causale "
+            f"`wait_for_function` de la même expression (`{PAINT_COUNT_EXPRESSION}`)",
+            smoke_source[offset - 200 : offset + 200],
+        )
+    # (2) La lecture causale est un helper, appelé dans les deux sections qui
+    # peignent (première visite, reload), et le compteur mesuré est asserté.
+    assert PAINT_READ_HELPER in code, PAINT_READ_HELPER
+    tail = code[code.index(PAINT_READ_HELPER) :]
+    ends = [
+        tail.index(marker)
+        for marker in ("\n\n\nasync def ", "\n\n\ndef ", "\n\n\nclass ")
+        if marker in tail
+    ]
+    helper = tail[: min(ends)]
+    assert PAINT_WAIT_BODY in helper, helper
+    assert "wait_for_timeout" not in helper, (
+        "la lecture de la peinture ne peut pas être garantie par un délai fixe", helper
+    )
+    for call in PAINT_HELPER_CALLS:
+        assert call in code, call
+    for assertion in PAINT_COUNT_ASSERTS:
+        assert assertion in code, assertion
+    # (3) Un délai fixe ne peut pas préparer une lecture de peinture : aucune
+    # section qui lit la peinture ne porte de `wait_for_timeout` avant elle.
+    call_sites = re.compile("|".join(re.escape(call) for call in PAINT_HELPER_CALLS))
+    located = [match.start() for match in call_sites.finditer(code)]
+    assert len(located) >= len(PAINT_HELPER_CALLS), located
+    for index, call in enumerate(located):
+        section = next(
+            (span for span in _section_spans(smoke_source) if span[0] <= call < span[1]), None
+        )
+        assert section is not None, (index, call, code[call : call + 60])
+        prefix = code[section[0] : call]
+        assert "wait_for_timeout" not in prefix, (
+            "un délai fixe ne peut pas porter une lecture de peinture "
+            "(section, offset)",
+            index,
+            call,
+        )
+    # The delivered smoke really carries the pinned pair: nothing was mutated.
+    assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
+    # (4) Les lectures échantillonnées du reste du fichier (`_read` /
+    # `_inject_and_read`) lisent une peinture *causée dans le même tour* :
+    # l'injection, qui repeint (`renderHistoryHands()` dans le helper installé),
+    # et la lecture DOM sont dans un seul `page.evaluate`, jamais séparées.
+    for token in (ATOMIC_READ_ASSIGNMENT, ATOMIC_READ_INJECT, ATOMIC_READ_DOM):
+        assert token in code, token
+    assert code.index(ATOMIC_READ_INJECT) < code.index(ATOMIC_READ_DOM), (
+        "la lecture échantillonnée doit injecter (donc repeindre) avant de lire",
+    )
+    return {
+        "budgets": budgets,
+        "paint_waits": len(paint_waits),
+        "view_waits": len(view_waits),
+        "paint_reads": len(reads),
+    }
+
+
+def _assert_paint_wait_rejects(mutated_smoke: str, label: str) -> str:
+    """The non-vacuity harness: a mutated source must fail the T2 contract.
+
+    Returns the reason the mutated source was refused, so the executed
+    demonstration is *consigned* in the suite output instead of staying implicit.
+    """
+    assert mutated_smoke != SMOKE_SOURCE, f"la mutation doit modifier la copie du smoke: {label}"
+    try:
+        check_paint_causality_and_budget(mutated_smoke)
+    except AssertionError as error:
+        return str(error).splitlines()[0]
+    raise AssertionError(f"le contrat de causalité/budget de peinture doit rejeter: {label}")
+
+
+def check_paint_wait_non_vacuity() -> list[tuple[str, str]]:
+    """#395 T2 — sept mutations en mémoire doivent être refusées.
+
+    (a) le budget nommé de peinture ramené à 20 s ; (b) une attente de vue
+    laissée à un littéral de 20 s (le budget sur lequel la smoke pré-fix
+    mourait) ; (c) la peinture garantie par un délai fixe suivi d'un compteur nu
+    ; (d) une attente de peinture dont le prédicat ne porte plus l'expression
+    causale ; (e) le compteur nu réintroduit au clic d'onglet ; (f) un délai
+    fixe ajouté *devant* la lecture causale, la peinture « prise en garantie »
+    par le délai ; (g) la lecture échantillonnée coupée en deux tours (injecter
+    puis lire hors du même `page.evaluate`). Aucune mutation n'est écrite sur
+    disque.
+    """
+    fixed_delay = (
+        f"    await page.wait_for_timeout({PAINT_WAIT_CONSTANT})\n"
+        f'    value = await page.evaluate("() => {PAINT_COUNT_EXPRESSION}")\n'
+        "    return int(value)"
+    )
+    non_causal_wait = (
+        '    handle = await page.wait_for_function(\n'
+        '        "() => Array.isArray(state.hhHands)",\n'
+        f"        timeout={PAINT_WAIT_CONSTANT},\n"
+        "    )\n"
+        f'    value = await page.evaluate("() => {PAINT_COUNT_EXPRESSION}")\n'
+        "    return int(value)"
+    )
+    bare_count = (
+        "painted_by_click = await page.evaluate(\n"
+        f'                    "() => {PAINT_COUNT_EXPRESSION}"\n'
+        "                )"
+    )
+    delay_before_read = SMOKE_SOURCE.replace(
+        f"                {PAINT_HELPER_CALLS[0]}",
+        f"                await page.wait_for_timeout(500)\n"
+        f"                {PAINT_HELPER_CALLS[0]}",
+        1,
+    )
+    split_read = SMOKE_SOURCE.replace(
+        f"    {ATOMIC_READ_ASSIGNMENT}",
+        "    await page.evaluate(INJECT_REVIEW_SCORES_FN, payload)\n"
+        '    return await page.evaluate("() => window.__reviewInboxSmoke.read()")',
+        1,
+    )
+    mutations = (
+        (
+            "budget de peinture ramené à 20 s",
+            SMOKE_SOURCE.replace(
+                f"{PAINT_WAIT_CONSTANT} = 30_000", f"{PAINT_WAIT_CONSTANT} = 20_000", 1
+            ),
+        ),
+        (
+            "attente de vue laissée à un littéral de 20 s",
+            SMOKE_SOURCE.replace(
+                f"timeout={VIEW_WAIT_CONSTANT}", f"timeout={DEFECT_TIMEOUT_MS}", 1
+            ),
+        ),
+        (
+            "peinture garantie par un délai fixe",
+            SMOKE_SOURCE.replace(PAINT_WAIT_BODY, fixed_delay, 1),
+        ),
+        (
+            "attente de peinture sans expression causale",
+            SMOKE_SOURCE.replace(PAINT_WAIT_BODY, non_causal_wait, 1),
+        ),
+        (
+            "compteur nu réintroduit au clic d'onglet",
+            SMOKE_SOURCE.replace(PAINT_HELPER_CALLS[0], bare_count, 1),
+        ),
+        ("délai fixe ajouté devant la lecture causale", delay_before_read),
+        ("lecture échantillonnée coupée en deux tours", split_read),
+    )
+    rejected: list[tuple[str, str]] = []
+    for label, mutated in mutations:
+        rejected.append((label, _assert_paint_wait_rejects(mutated, label)))
+    # The delivered smoke still carries the pinned form: nothing was written.
+    assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
+    return rejected
+
+
+class _FakeCountHandle:
+    """The handle `wait_for_function` resolves to, holding the painted count."""
+
+    def __init__(self, value: int):
+        self.value = value
+
+    async def json_value(self) -> int:
+        return self.value
+
+
+class _FakePaintPage:
+    """A page that only answers the causal paint wait, and records it.
+
+    It implements exactly Playwright's `wait_for_function` contract (resolve on
+    the first *truthy* value) and nothing else: a `_wait_paint` that reached for
+    `wait_for_timeout` / `evaluate` instead of the causal wait would raise
+    `AttributeError` here, and a predicate that did not carry the painted-counter
+    expression would fail the recorded assertion.
+    """
+
+    def __init__(self, counts: list[int]):
+        self.counts = list(counts)
+        self.waits: list[tuple[str, object]] = []
+        self.polls = 0
+
+    async def wait_for_function(self, expression: str, *, timeout=None):
+        self.waits.append((expression, timeout))
+        assert PAINT_SELECTOR in expression, expression
+        value = 0
+        while not value:
+            self.polls += 1
+            value = self.counts.pop(0)
+        return _FakeCountHandle(value)
+
+
+def check_paint_read_helper(smoke) -> dict:
+    """#395 T2 — `_wait_paint()` rejoué hors navigateur sur une page factice.
+
+    La lecture causale n'est pas qu'un jeton de texte : le helper est *exécuté*
+    et doit lire le compteur peint par l'attente causale — les sondages à 0 sont
+    des attentes, la première valeur non nulle est la peinture mesurée — sur le
+    budget nommé, sans jamais toucher à un délai fixe.
+    """
+    page = _FakePaintPage([0, 0, 7])
+    painted = asyncio.run(smoke._wait_paint(page))
+    assert painted == 7, painted
+    # Playwright sonde le prédicat lui-même : un seul `wait_for_function`, trois
+    # sondages dont le dernier a peint 7 lignes.
+    assert len(page.waits) == 1 and page.polls == 3, (page.waits, page.polls)
+    for expression, timeout in page.waits:
+        assert PAINT_WAIT_PREDICATE in expression, expression
+        assert timeout == smoke.PAINT_TIMEOUT_MS, (expression, timeout)
+        assert timeout >= MIN_VIEW_PAINT_TIMEOUT_MS, (expression, timeout)
+    # ...et la même expression est bien celle des deux lectures livrées.
+    assert PAINT_COUNT_EXPRESSION in page.waits[0][0], page.waits[0]
+    return {"polls": page.polls, "painted": painted}
+
+
 def check_smoke_shape(smoke) -> None:
     assert smoke.HAND_TOTAL >= MIN_HANDS, smoke.HAND_TOTAL
     assert smoke.PAGE_SIZE_MAX == PAGE_SIZE_MAX, smoke.PAGE_SIZE_MAX
@@ -649,8 +1096,15 @@ def main() -> None:
     check_pagination_polarity_non_vacuity()
     check_page_size_target_logic(smoke)
     check_page_size_target_non_vacuity()
+    paint = check_paint_causality_and_budget(SMOKE_SOURCE)
+    paint_rejections = check_paint_wait_non_vacuity()
+    paint_helper = check_paint_read_helper(smoke)
     check_smoke_shape(smoke)
     check_ci_registration()
+    # La démonstration est consignée dans la sortie : chaque mutation rejouée en
+    # mémoire, et la raison exacte pour laquelle le garde la refuse.
+    for label, reason in paint_rejections:
+        print(f"  refusé (T2): {label} → {reason[:150]}")
     print(
         "review inbox large list smoke contract checks: OK "
         f"({len(specs)} mains · {len(SORT_CODES)} tris rejoués par le contrat servi · "
@@ -659,6 +1113,13 @@ def main() -> None:
         "mesurées rejouée) · "
         "pagination Précédent/Suivant épinglée au pager servi "
         "(page 1: Précédent désactivé, Suivant actif · assertion inverse rejouée) · "
+        f"peinture lue causalement ({paint['paint_reads']} lecture(s) "
+        f"`{PAINT_COUNT_EXPRESSION}` dans l'attente · helper rejoué "
+        f"{paint_helper['polls']} sondages → {paint_helper['painted']} lignes peintes) · "
+        f"budgets vue/peinture nommés "
+        f"{paint['budgets'][VIEW_WAIT_CONSTANT]} / {paint['budgets'][PAINT_WAIT_CONSTANT]} ms "
+        f"(plancher {MIN_VIEW_PAINT_TIMEOUT_MS}, {DEFECT_TIMEOUT_MS} refusé · "
+        "7 mutations rejouées) · "
         f"fixture={contract['probe']['fixture']})"
     )
 

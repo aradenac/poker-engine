@@ -235,3 +235,46 @@ attrapé par aucun contrat statique. Une assertion dans
 `Sauvegarde locale automatique active` testé sur `#localPersistenceStatus`,
 exiger la lecture de `localDbGet("prefs")` / du libellé servi
 `Sauvegardé localement`) empêcherait la récidive à coût nul.
+
+## 10. T2 — verrou statique de la causalité et du budget des attentes
+
+Task : `backlog-hsx` (branche `n8n/issue-395/task-backlog-hsx`). Le même contrat
+statique épingle désormais, sur la source de la smoke, deux récidives :
+
+1. **Causalité de la peinture.** Toute lecture du compteur
+   `document.querySelectorAll('#hhHands .hh-hand').length` doit être *portée*
+   par l'attente causale de la même expression : `_wait_paint()`, dont le
+   `wait_for_function` a ce compteur pour prédicat et dont le budget nommé
+   n'est qu'un garde-fou. Un compteur nu (`page.evaluate(...)`), un
+   `wait_for_timeout` placé devant une lecture, ou une lecture échantillonnée
+   coupée en deux tours (hors du `page.evaluate(INJECT_AND_READ_JS, payload)`
+   atomique) sont refusés.
+2. **Budget minimal des attentes de vue/peinture.** La smoke déclare
+   `VIEW_READY_TIMEOUT_MS = 30_000` et `PAINT_TIMEOUT_MS = 30_000` ; le garde
+   lit ces valeurs et exige qu'elles restent ≥ son plancher
+   `MIN_VIEW_PAINT_TIMEOUT_MS` (30 s, au-dessus des 20 s du défaut T1). Une
+   attente de vue (`dataset.appView`) ou de peinture qui repasserait à un
+   littéral — donc au `timeout=20_000` d'origine — est refusée.
+
+Non-vacuité rejouée en mémoire par `check_paint_wait_non_vacuity()` (aucune
+écriture disque), sortie consignée par `main()` :
+
+| Mutation rejouée | Verdict du garde |
+| --- | --- |
+| `PAINT_TIMEOUT_MS = 20_000` | refusée — budget sous le plancher T2 |
+| attente de vue `timeout=20000` | refusée — littéral sur une attente de vue |
+| peinture garantie par un délai fixe + compteur nu | refusée — pas d'attente causale |
+| attente de peinture sans l'expression causale | refusée — pas d'attente causale |
+| compteur nu réintroduit au clic d'onglet | refusée — lecture hors attente |
+| `wait_for_timeout(500)` devant la lecture causale | refusée — délai devant la lecture |
+| `_inject_and_read` coupé en deux tours | refusée — lecture non atomique |
+
+`site/index.html` et `.github/workflows/trainer-smoke.yml` restent inchangés ;
+la suite `tests/trainer/test_review_inbox_large_list_smoke_contract.py` passe au
+HEAD corrigé.
+
+La lecture causale n'est pas qu'un jeton de texte : `check_paint_read_helper()`
+*exécute* `_wait_paint()` sur une page factice (sans navigateur) qui n'implémente
+que le contrat de `wait_for_function` — 3 sondages, dont le premier non nul peint
+7 lignes, un seul appel d'attente sur le budget nommé, et `AttributeError` si le
+helper touchait un `wait_for_timeout`/`evaluate`.

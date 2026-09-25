@@ -62,16 +62,25 @@ Why the waits are causal (and not timed)
 ----------------------------------------
 No paint and no persistence is carried by a fixed budget any more. The inbox
 tab click (`activateAppSubview("inbox")`) calls `renderHistoryHands()` inside
-the click itself: the smoke proves that synchronous paint with a DOM count taken
-the moment `page.click` returns, then measures the page with the same atomic
-inject+repaint read the rest of the file uses. The prefs step waits for what the
-reload really re-reads (`localDbGet("prefs")` → `hhSort` / `result`
+the click itself, so the first page is painted when `page.click` returns; the
+smoke reads that paint through `_wait_paint()`, whose `wait_for_function`
+predicate *is* the paint surface (`#hhHands .hh-hand`), and then measures the
+page with the same atomic inject+repaint read the rest of the file uses. A paint
+is therefore always read causally (on the counted expression itself), never
+through a bare counter taken after a fixed delay. The prefs step waits for what
+the reload really re-reads (`localDbGet("prefs")` → `hhSort` / `result`
 `reviewInboxFilters.result`, the two fields `restoreLocalState` applies), plus
 the served saved chip, instead of matching a status *message* against the
 status *chip* — the exact mismatch that made the old 20 s wait unsatisfiable
 (`persistenceStatus` writes « Sauvegardé localement » into
 `#localPersistenceStatus` and the message into `#localPersistenceDetail`,
 `site/index.html:2546-2548`).
+
+View switches and paint reads carry *named* budgets (`VIEW_READY_TIMEOUT_MS`,
+`PAINT_TIMEOUT_MS`), both above the 20 s floor the pre-fix smoke died on; the
+static contract of this smoke (`#395 T2`) pins those values and the causality of
+every paint read, so neither a literal 20 s budget nor a delay-carried paint can
+come back unnoticed.
 
 Why the review scores are injected
 ----------------------------------
@@ -165,6 +174,15 @@ REVIEW_SCORE_SETTLE_MS = 400
 PERSISTENCE_SAVED_LABEL = "Sauvegardé localement"
 PREFS_PERSIST_POLL_MS = 100
 PREFS_PERSIST_TIMEOUT_MS = 20_000
+# #395 T2 — les budgets *nommés* des attentes de vue et de peinture, lus et
+# épinglés (valeur plancher incluse) par le contrat statique
+# `tests/trainer/test_review_inbox_large_list_smoke_contract.py`. Le défaut
+# corrigé en T1 était une peinture portée par un budget fixe de 20 s : ces deux
+# budgets sont donc nommés — aucune attente de vue/peinture ne porte de littéral
+# — et tenus au-dessus du plancher T2 (`MIN_VIEW_PAINT_TIMEOUT_MS`), aligné sur
+# le budget que le settle de l'import accorde déjà (`30_000` plus bas).
+VIEW_READY_TIMEOUT_MS = 30_000
+PAINT_TIMEOUT_MS = 30_000
 
 
 def _parse_timestamp(value: str) -> datetime:
@@ -409,6 +427,22 @@ async def _inject_and_read(page, payload: dict) -> dict:
     return await page.evaluate(INJECT_AND_READ_JS, payload)
 
 
+async def _wait_paint(page) -> int:
+    """#395 T2 — lire la peinture `#hhHands .hh-hand` *causalement*.
+
+    Le prédicat de l'attente *est* la peinture mesurée : le compteur de lignes
+    `#hhHands .hh-hand`. La peinture se lit donc toujours par une attente
+    causale sur la même expression — jamais un compteur nu pris après un délai
+    fixe — et le budget nommé `PAINT_TIMEOUT_MS` n'est qu'un garde-fou
+    supérieur, jamais la garantie de la peinture.
+    """
+    handle = await page.wait_for_function(
+        "() => document.querySelectorAll('#hhHands .hh-hand').length",
+        timeout=PAINT_TIMEOUT_MS,
+    )
+    return int(await handle.json_value())
+
+
 def assert_bounded(page_state: dict, label: str) -> None:
     """`rendu borné sans scroll de liste` (#395 T7)."""
     assert page_state["listOverflowY"] in ("hidden", "clip"), (label, page_state)
@@ -650,7 +684,8 @@ async def run() -> None:
                 # deterministic scores below can never race it.
                 await page.click('button.mode-card[data-app-view="review"]')
                 await page.wait_for_function(
-                    "() => document.body.dataset.appView==='review'", timeout=20_000
+                    "() => document.body.dataset.appView==='review'",
+                    timeout=VIEW_READY_TIMEOUT_MS,
                 )
                 await page.click("#reviewImportTab")
                 assert await page.locator("#historiesSection").is_visible()
@@ -679,15 +714,14 @@ async def run() -> None:
                 # #395 T1 (rework) — la peinture n'est plus portée par un budget
                 # fixe. `activateAppSubview("inbox")` (site/index.html:7029)
                 # rappelle `renderHistoryHands()` *dans le clic* : l'appli a donc
-                # déjà peint sa première page quand `page.click` rend la main, et
-                # le décompte ci-dessous le prouve sans aucun délai. La mesure
-                # ensuite relit la même page par l'évaluation atomique
+                # déjà peint sa première page quand `page.click` rend la main.
+                # #395 T2 — le décompte ci-dessous est lu par `_wait_paint()` :
+                # l'attente causale porte le compteur `#hhHands .hh-hand` lui-même
+                # (aucun délai fixe, budget nommé `PAINT_TIMEOUT_MS`). La mesure
+                # relit ensuite la même page par l'évaluation atomique
                 # inject+repaint (`window.__reviewInboxSmoke.inject` →
-                # `renderHistoryHands` → lecture DOM) : aucune attente de temps
-                # ne garantit plus la peinture, celle-ci est un état mesuré.
-                painted_by_click = await page.evaluate(
-                    "() => document.querySelectorAll('#hhHands .hh-hand').length"
-                )
+                # `renderHistoryHands` → lecture DOM).
+                painted_by_click = await _wait_paint(page)
                 assert painted_by_click > 0, (
                     "le clic sur l'onglet Inbox doit peindre la première page "
                     f"(lignes peintes: {painted_by_click})"
@@ -865,11 +899,10 @@ async def run() -> None:
                 await page.click("#reviewInboxTab")
                 assert await page.locator("#handSelectionSection").is_visible()
                 # Même peinture causale qu'à la première visite : le clic
-                # d'onglet peint, puis la relecture inject+repaint mesure la page
-                # restaurée, sans budget de temps.
-                restored_painted_by_click = await page.evaluate(
-                    "() => document.querySelectorAll('#hhHands .hh-hand').length"
-                )
+                # d'onglet peint, `_wait_paint()` lit ce compteur causalement
+                # (budget nommé `PAINT_TIMEOUT_MS`, jamais un délai fixe), puis la
+                # relecture inject+repaint mesure la page restaurée.
+                restored_painted_by_click = await _wait_paint(page)
                 assert restored_painted_by_click > 0, (
                     "le clic sur l'onglet Inbox doit repeindre la liste restaurée "
                     f"(lignes peintes: {restored_painted_by_click})"
@@ -956,7 +989,8 @@ async def run() -> None:
                     f"#hhHands .hh-hand[data-hand-id='{target['handId']}'] .review-inbox-open"
                 )
                 await page.wait_for_function(
-                    "() => document.body.dataset.appView==='replayer'", timeout=20_000
+                    "() => document.body.dataset.appView==='replayer'",
+                    timeout=VIEW_READY_TIMEOUT_MS,
                 )
                 opened = await page.evaluate(OPEN_DEEP_LINK_JS)
                 assert opened["selectedHandId"] == target["handId"], (target, opened)
@@ -970,7 +1004,8 @@ async def run() -> None:
 
                 await page.click("#replayerBackBtn")
                 await page.wait_for_function(
-                    "() => document.body.dataset.appView==='review'", timeout=20_000
+                    "() => document.body.dataset.appView==='review'",
+                    timeout=VIEW_READY_TIMEOUT_MS,
                 )
                 # Selecting the hand let the app rewrite that hand's score from
                 # its own (asynchronous) replayer work: the read below restores
@@ -1030,7 +1065,8 @@ async def run() -> None:
                     f"#hhHands .hh-hand[data-hand-id='{no_decision['hand_id']}'] .review-inbox-open"
                 )
                 await page.wait_for_function(
-                    "() => document.body.dataset.appView==='replayer'", timeout=20_000
+                    "() => document.body.dataset.appView==='replayer'",
+                    timeout=VIEW_READY_TIMEOUT_MS,
                 )
                 incomplete = await page.evaluate(OPEN_DEEP_LINK_JS)
                 assert incomplete["selectedHandId"] == no_decision["hand_id"], (no_decision, incomplete)
