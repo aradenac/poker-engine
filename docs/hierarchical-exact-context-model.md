@@ -180,3 +180,19 @@ support isolation rule, the granularity decision, the reason-code semantics, the
 holdout proofs, tripwire rejection, byte-identical regeneration and the frozen
 thresholds. `tests/training/test_hierarchical_tree_sparsity_parity.py` continues
 to guard the #388 reproduction that the spec binds to.
+
+## Contract and active-pointer invariance
+
+`tools/training/audit_hierarchical_candidate_contract.py` pins the candidate
+contract in
+`analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json`: the new
+`candidate_id`, the mandatory hierarchical fields (estimated status, exact
+empirical observations, effective sample size, pooling level/source, uncertainty,
+reason codes), provider/schema parity for every frozen constant, and live
+validation of provider outputs at all three statuses. The same artifact records
+that `training/registry.json` still promotes the pinned
+`training/models/preflop_population_model_v5.json` reference
+(`ff952055...`) and that the candidate is never registered, never set active and
+never replaces the exact-price v1/v2 contracts.
+`tests/training/test_hierarchical_candidate_contract.py` re-derives and verifies
+all of it.

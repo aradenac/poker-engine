@@ -499,8 +499,7 @@
           ]
         },
         "unresolved_reason": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/reasonCode"
         },
         "support": {
           "type": "object",
@@ -935,6 +934,14 @@
         "EXACT_EMPIRICAL_STRONG",
         "EXACT_HIERARCHICAL_ESTIMATE",
         "EXACT_UNRESOLVED"
+      ]
+    },
+    "reasonCode": {
+      "description": "Reason code carried by an EXACT_UNRESOLVED response. The provider never emits a nearest-price or nearest-context substitution code; a coarse-key support borrowing raises COARSE_KEY_SUPPORT_LAUNDERING instead of emitting a response.",
+      "enum": [
+        "NO_ADMISSIBLE_POOLING_LEVEL",
+        "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "NO_EXACT_SUPPORT_AND_NO_CONTEXT"
       ]
     }
   }

@@ -1,0 +1,400 @@
+{
+  "active_pointer": {
+    "candidate_mentioned_in_registry": false,
+    "candidate_promoted": false,
+    "pointer_unchanged": true,
+    "postflop_pointer_unchanged": true,
+    "preflop_pointer_targets_reference": true,
+    "preflop_pointer_unchanged": true,
+    "promoted_postflop": "training/models/postflop_population_model_v5.json",
+    "promoted_preflop": "training/models/preflop_population_model_v5.json",
+    "promoted_run": "20260909_population_increment_v2",
+    "promoted_run_unchanged": true,
+    "reference_matches_pin": true,
+    "reference_model_path": "training/models/preflop_population_model_v5.json",
+    "reference_model_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "reference_pinned_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "registry_path": "training/registry.json",
+    "registry_sha256": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+  },
+  "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+  "candidate_ids": [
+    "model-a-preflop-sizing-hierarchical-candidate-v1"
+  ],
+  "exact_price_non_regression": {
+    "all_valid": true,
+    "backoff_policy_unchanged": true,
+    "candidate_enum": [
+      "model-a-preflop-sizing-aware-candidate-v1",
+      "model-a-preflop-sizing-aware-candidate-v2",
+      "model-a-preflop-sizing-hierarchical-candidate-v1"
+    ],
+    "candidates": {
+      "v1": {
+        "backoff_level": "MARGINAL_EXACT_PRICE",
+        "candidate_id": "model-a-preflop-sizing-aware-candidate-v1",
+        "candidate_sha256": "41724977ac329091a8b426e8766686d8c4319b7f2511a55b07c92a2de2b252f7",
+        "resolved_status": "RESOLVED",
+        "schema_errors": [],
+        "valid": true
+      },
+      "v2": {
+        "backoff_level": "MARGINAL_EXACT_PRICE",
+        "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+        "candidate_sha256": "6f02bdd2bff46836c8b98ce73a08aa3f4591eca0b7bfa5023d22572b05cb0668",
+        "resolved_status": "RESOLVED",
+        "schema_errors": [],
+        "valid": true
+      }
+    },
+    "hierarchical_registered_in_identity_list": true,
+    "nearest_price_fallback_false": true,
+    "non_regressed": true,
+    "v1_present": true,
+    "v2_present": true
+  },
+  "issue": 419,
+  "protected_files_before_after_sha256": {
+    "after": {
+      "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c",
+      "contracts/training/model-a-preflop-sizing-likelihood.schema.json": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "before": {
+      "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c",
+      "contracts/training/model-a-preflop-sizing-likelihood.schema.json": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "unchanged": true
+  },
+  "provider_outputs": {
+    "all_valid": true,
+    "outputs": {
+      "exact_empirical_strong": {
+        "candidate_schema_errors": [],
+        "candidate_sha256": "afd2f2a9619988e82b9411bff8cb182917dac63378111f4c707fcdf5c894e9c4",
+        "pooling_level": "L0_EXACT_KEY",
+        "pooling_source_key": "MAPSUP_fe30f71401958ef18e85:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=4|call=3|public=0c7f64e2cd6f40060dacaa533547a1152adb4ff9c2923ff2415965565e2a06c7",
+        "reason_code": "EXACT_EMPIRICAL_STRONG",
+        "response_schema_errors": [],
+        "response_sha256": "e13d8124a6db57b648a6d4d8bb69e266d3cf8ba5d215b1b03db9de82e778f063",
+        "status": "EXACT_EMPIRICAL_STRONG",
+        "support_effective_sample_size": 20.0,
+        "support_observations": 20,
+        "uncertainty_method": "DIRICHLET_MARGINAL_BETA_CREDIBLE_INTERVAL",
+        "unresolved_reason": null,
+        "valid": true
+      },
+      "hierarchical_estimate": {
+        "candidate_schema_errors": [],
+        "candidate_sha256": "80a68d12ce843fbff6b8dad466d349da636618525888860d96ad69d2fab9b8e4",
+        "pooling_level": "L1_STACK_POOL",
+        "pooling_source_key": "LEVELKEY_1_a2afda12bbec37dc12cde73143942e138693b1662fc888db07da5ae5ca7f0d88",
+        "reason_code": "EXACT_HIERARCHICAL_ESTIMATE",
+        "response_schema_errors": [],
+        "response_sha256": "4e686fabfb9a9403a610d410357a4d13774053bcedbbf9671d86e32ccac12c80",
+        "status": "EXACT_HIERARCHICAL_ESTIMATE",
+        "support_effective_sample_size": 1.0,
+        "support_observations": 1,
+        "uncertainty_method": "DIRICHLET_MARGINAL_BETA_CREDIBLE_INTERVAL",
+        "unresolved_reason": null,
+        "valid": true
+      },
+      "unresolved": {
+        "candidate_schema_errors": [],
+        "candidate_sha256": "fbde25218230b5355f67ac24a6aac62f518c25350933753202ae25ddb6f7b5b6",
+        "pooling_level": null,
+        "pooling_source_key": null,
+        "reason_code": "EXACT_UNRESOLVED",
+        "response_schema_errors": [],
+        "response_sha256": "7b7196fa6ca4063becef5fa18a2a0c02b4ce563fb31f9acf98f04d017296b46d",
+        "status": "EXACT_UNRESOLVED",
+        "support_effective_sample_size": 0.0,
+        "support_observations": 0,
+        "uncertainty_method": null,
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL",
+        "valid": true
+      }
+    },
+    "statuses": [
+      "EXACT_EMPIRICAL_STRONG",
+      "EXACT_HIERARCHICAL_ESTIMATE",
+      "EXACT_UNRESOLVED"
+    ]
+  },
+  "provider_schema_parity": {
+    "all_match": true,
+    "entries": [
+      {
+        "location": "properties.schema.const",
+        "match": true,
+        "name": "schema",
+        "provider": "poker-model-a-preflop-sizing-hierarchical-likelihood/v1",
+        "schema": "poker-model-a-preflop-sizing-hierarchical-likelihood/v1"
+      },
+      {
+        "location": "$defs.identity.properties.candidate_id.const",
+        "match": true,
+        "name": "candidate_id",
+        "provider": "model-a-preflop-sizing-hierarchical-candidate-v1",
+        "schema": "model-a-preflop-sizing-hierarchical-candidate-v1"
+      },
+      {
+        "location": "$defs.identity.properties.model_family.const",
+        "match": true,
+        "name": "model_family",
+        "provider": "MODEL_A_PREFLOP",
+        "schema": "MODEL_A_PREFLOP"
+      },
+      {
+        "location": "$defs.identity.properties.status.const",
+        "match": true,
+        "name": "status",
+        "provider": "CANDIDATE_ONLY_NOT_ACTIVE",
+        "schema": "CANDIDATE_ONLY_NOT_ACTIVE"
+      },
+      {
+        "location": "$defs.identity.properties.feature_contract.const",
+        "match": true,
+        "name": "feature_contract",
+        "provider": "poker-model-a-preflop-sizing-public-context/v1",
+        "schema": "poker-model-a-preflop-sizing-public-context/v1"
+      },
+      {
+        "location": "$defs.identity.properties.likelihood_contract.const",
+        "match": true,
+        "name": "likelihood_contract",
+        "provider": "poker-model-a-preflop-sizing-hierarchical-likelihood/v1",
+        "schema": "poker-model-a-preflop-sizing-hierarchical-likelihood/v1"
+      },
+      {
+        "location": "$defs.identity.properties.response_contract.const",
+        "match": true,
+        "name": "response_contract",
+        "provider": "poker-hierarchical-support-response/v1",
+        "schema": "poker-hierarchical-support-response/v1"
+      },
+      {
+        "location": "$defs.identity.properties.hierarchy_spec_schema.const",
+        "match": true,
+        "name": "hierarchy_spec_schema",
+        "provider": "poker-hierarchical-exact-context-model-spec/v1",
+        "schema": "poker-hierarchical-exact-context-model-spec/v1"
+      },
+      {
+        "location": "$defs.identity.properties.identity_granularity.const",
+        "match": true,
+        "name": "identity_granularity",
+        "provider": "hierarchical_exact_key",
+        "schema": "hierarchical_exact_key"
+      },
+      {
+        "location": "$defs.identity.properties.support_isolation_rule.const",
+        "match": true,
+        "name": "support_isolation_rule",
+        "provider": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+        "schema": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+      },
+      {
+        "location": "$defs.identity.properties.active_model_replaced.const",
+        "match": true,
+        "name": "active_model_replaced",
+        "provider": false,
+        "schema": false
+      },
+      {
+        "location": "$defs.status.enum",
+        "match": true,
+        "name": "statuses",
+        "provider": [
+          "EXACT_EMPIRICAL_STRONG",
+          "EXACT_HIERARCHICAL_ESTIMATE",
+          "EXACT_UNRESOLVED"
+        ],
+        "schema": [
+          "EXACT_EMPIRICAL_STRONG",
+          "EXACT_HIERARCHICAL_ESTIMATE",
+          "EXACT_UNRESOLVED"
+        ]
+      },
+      {
+        "location": "$defs.reasonCode.enum",
+        "match": true,
+        "name": "reason_codes",
+        "provider": [
+          "NO_ADMISSIBLE_POOLING_LEVEL",
+          "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+          "NO_EXACT_SUPPORT_AND_NO_CONTEXT"
+        ],
+        "schema": [
+          "NO_ADMISSIBLE_POOLING_LEVEL",
+          "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+          "NO_EXACT_SUPPORT_AND_NO_CONTEXT"
+        ]
+      },
+      {
+        "location": "$defs.reasonCode.enum excludes support laundering",
+        "match": true,
+        "name": "support_laundering_is_not_a_response_reason",
+        "provider": false,
+        "schema": false
+      },
+      {
+        "location": "$defs.poolingLevel.properties.level.enum",
+        "match": true,
+        "name": "pooling_levels",
+        "provider": [
+          "L0_EXACT_KEY",
+          "L1_STACK_POOL",
+          "L2_POT_POOL",
+          "L3_RUNTIME_SUPPORT_CONTEXT",
+          "L4_POSITION_PRICE_PRIOR"
+        ],
+        "schema": [
+          "L0_EXACT_KEY",
+          "L1_STACK_POOL",
+          "L2_POT_POOL",
+          "L3_RUNTIME_SUPPORT_CONTEXT",
+          "L4_POSITION_PRICE_PRIOR"
+        ]
+      },
+      {
+        "location": "properties.shrinkage.properties.kappa0.const",
+        "match": true,
+        "name": "kappa0",
+        "provider": 16.0,
+        "schema": 16.0
+      },
+      {
+        "location": "properties.shrinkage.properties.alpha_per_legal_marginal_action.const",
+        "match": true,
+        "name": "alpha_per_legal_marginal_action",
+        "provider": 0.5,
+        "schema": 0.5
+      },
+      {
+        "location": "properties.thresholds.properties.minimum_marginal_observations.const",
+        "match": true,
+        "name": "minimum_marginal_observations",
+        "provider": 20,
+        "schema": 20
+      },
+      {
+        "location": "properties.thresholds.properties.minimum_distinct_hands.const",
+        "match": true,
+        "name": "minimum_distinct_hands",
+        "provider": 20,
+        "schema": 20
+      },
+      {
+        "location": "$defs.response.properties.granularity.properties.identity.const",
+        "match": true,
+        "name": "granularity.identity",
+        "provider": "hierarchical_exact_key",
+        "schema": "hierarchical_exact_key"
+      },
+      {
+        "location": "$defs.response.properties.granularity.properties.support.const",
+        "match": true,
+        "name": "granularity.support",
+        "provider": "L0_EXACT_KEY",
+        "schema": "L0_EXACT_KEY"
+      },
+      {
+        "location": "$defs.response.properties.support.properties.effective_sample_size",
+        "match": true,
+        "name": "support.effective_sample_size present",
+        "provider": true,
+        "schema": true
+      }
+    ],
+    "mismatches": []
+  },
+  "required_hierarchical_fields": {
+    "all_present": true,
+    "effective_sample_size": {
+      "present": true,
+      "required_in_support": true,
+      "schema_pointer": "$defs/response/properties/support/properties/effective_sample_size"
+    },
+    "exact_empirical_observations": {
+      "present": true,
+      "required_in_support": true,
+      "schema_pointer": "$defs/response/properties/support/properties/observations"
+    },
+    "pooling_level": {
+      "present": true,
+      "required_in_pooling": true,
+      "schema_pointer": "$defs/response/properties/pooling/properties/level"
+    },
+    "pooling_source": {
+      "present": true,
+      "required_in_pooling": true,
+      "schema_pointer": "$defs/response/properties/pooling/properties/source_key"
+    },
+    "pooling_support_source": {
+      "present": true,
+      "required_in_pooling": true,
+      "schema_pointer": "$defs/response/properties/pooling/properties/support_source_key"
+    },
+    "reason_code": {
+      "present": true,
+      "required_in_response": true,
+      "schema_pointer": "$defs/response/properties/reason_code"
+    },
+    "reason_codes": {
+      "is_enum": true,
+      "present": true,
+      "schema_pointer": "$defs/reasonCode"
+    },
+    "reason_detail": {
+      "present": true,
+      "schema_pointer": "$defs/response/properties/reason_detail"
+    },
+    "status": {
+      "present": true,
+      "required_in_response": true,
+      "schema_pointer": "$defs/response/properties/status"
+    },
+    "uncertainty": {
+      "present": true,
+      "required_in_response": true,
+      "schema_pointer": "$defs/response/properties/uncertainty"
+    },
+    "unresolved_reason": {
+      "present": true,
+      "schema_pointer": "$defs/response/properties/unresolved_reason"
+    }
+  },
+  "schema": "poker-hierarchical-candidate-contract/v1",
+  "schemas": {
+    "exact_price": {
+      "$id": "https://poker-engine.local/contracts/training/model-a-preflop-sizing-likelihood.schema.json",
+      "path": "contracts/training/model-a-preflop-sizing-likelihood.schema.json",
+      "sha256": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298"
+    },
+    "hierarchical": {
+      "$id": "https://poker-engine.local/contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+      "path": "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+      "sha256": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c"
+    }
+  },
+  "source_files_sha256": {
+    "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c",
+    "contracts/training/model-a-preflop-sizing-likelihood.schema.json": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298",
+    "tools/preflop/model_a_sizing_hierarchical.py": "1cd25c17bc67c16e78d54fc105cf468e92d9dc7b27d4a5b259141715fd34be18",
+    "tools/preflop/model_a_sizing_likelihood.py": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a",
+    "tools/training/audit_hierarchical_candidate_contract.py": "61b53378e2ed29b663669487689736abb5907f139a6c531eab0bc4fbcf52bdad",
+    "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+  },
+  "statuses": [
+    "EXACT_EMPIRICAL_STRONG",
+    "EXACT_HIERARCHICAL_ESTIMATE",
+    "EXACT_UNRESOLVED"
+  ]
+}
