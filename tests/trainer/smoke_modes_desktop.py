@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Desktop modes smoke + overflow audit (#394 · task T4).
+r"""Desktop modes smoke + overflow audit (#394 · task T4).
 
 Browser smoke of the desktop application shell. It drives the real UI (no
 in-page shortcut where a click exists) and measures, **per mode and per
@@ -38,10 +38,25 @@ Covered journeys (each on a fresh context, both viewports):
 * Accueil → Spot Lab: reached **without any imported hand** (`state.hhHands`
   stays empty), i.e. the manual tools stay independent from the Review import;
 * Accueil → Training: the Trainer shell is mounted from the Accueil mode card;
-* Accueil → Stratégie Hero: the embedded `#strategyPage` shell is measured, and
-  the Accueil mode card is proven to navigate to the standalone
-  `./hero-ranges.html` editor. The standalone page is deliberately **not**
-  asserted no-scroll — it is not part of the fixed-height desktop shell;
+* Accueil → Stratégie Hero: the embedded `[data-view-shell="strategy"]` shell is
+  reached through its real entry point, the `#strategyPage` deep link
+  (`appViewForHashTarget()` maps the id onto `state.appView`, `routeFromHash()`
+  resolves it at load and `hashchange` replays it — the same path the Review
+  `#historiesSection` deep link above already exercises), and measured. The
+  `#quickNav` Strategy entry is *not* the entry of that shell: its `href` points
+  at the standalone editor, so the shell is never joined through it;
+* Accueil → éditeur Stratégie Hero: the Accueil mode card is a real link to the
+  standalone `./hero-ranges.html` editor and the editor URL is its **deep link**
+  (#394 T6), measured three times — the query is mandatory (the query-less glob
+  below never matches a rewritten URL) and each of its five parameters is
+  compared to the real `#populationInput`, `#positionSelect`, `#spotSelect`,
+  `#stackInput` and active hand of `#heroGrid`; a real `.hand-cell` click
+  re-renders the editor and rewrites that URL **in place** (`history.length`
+  unchanged, `page.go_back()` lands back on `index.html`, i.e. the editor adds a
+  single entry); and `page.reload()` restores the very same context, so a
+  refresh, a bookmark or a shared link reopens the displayed context instead of
+  the editor defaults. The standalone page is deliberately **not** asserted
+  no-scroll — it is not part of the fixed-height desktop shell;
 * a minimal keyboard/focus control: `Tab` until the Replayer right-panel tabs
   are focused, then `ArrowRight`/`ArrowLeft` (roving focus + activation) and
   `Enter` (explicit keyboard activation) must only toggle pane visibility.
@@ -59,6 +74,21 @@ it finishes. The barrier waits on that real readiness signal only — never a
 retry, a skip or a mask of a failure: a restore that never settles fails here
 instead of letting the journey race it.
 
+The URL globs are audited. `grep -rn "wait_for_url" --include=*.py .` returns
+exactly two call sites — step 7 below and
+`tests/hero_ranges/smoke_hero_compliance_browser.py:209` — and both use the
+query-tolerant `**/hero-ranges.html?**` convention, because the editor rewrites
+its own URL (`syncDeepLink()`, `site/hero-ranges-app.js:126`) with
+`history.replaceState()` as soon as it renders. A Playwright glob is anchored, so
+the query-less `**/hero-ranges.html` never matches
+`hero-ranges.html?population=…&hand=AA`: measured with the Playwright 1.55
+matcher itself (`globToRegexPattern("**/hero-ranges.html")` →
+`^((?:[^/]*(?:/|$))*)hero-ranges\.html$`, which the rewritten URL does not
+satisfy, while `**/hero-ranges.html?**` → `…hero-ranges\.html\?([^/]*)$` does).
+The `?**` tail is therefore not cosmetic: it is what makes the *rewritten* URL
+the measured one, and an editor that stopped writing its deep link would fail the
+wait instead of passing it silently.
+
 It is a representation/application-shell smoke only: no model/fit, no equity
 kernel and no immutable repro evidence is touched. It starts its own ephemeral
 static server over `site/` (like `smoke_equity_scale_invariance.py`) and it fails
@@ -73,6 +103,7 @@ import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qsl, urlsplit
 
 try:  # pragma: no cover - import guard, asserted in `main`
     from playwright.async_api import async_playwright
@@ -229,6 +260,40 @@ IMPORT_SURFACE_SELECTORS = (
     "#hhWatchBtn",
 )
 IMPORT_ADVANCED_SELECTOR = "#hhBenchmarkExportBtn"
+
+# #394 T6 — the standalone Stratégie Hero editor publishes its rendered context
+# as a deep link: `syncDeepLink()` (`site/hero-ranges-app.js:126`) rewrites the
+# address bar in place with these five parameters every time it renders. They are
+# therefore mandatory in the measured URL and each one is compared to the real
+# control of the page (`#populationInput`, `#positionSelect`, `#spotSelect`,
+# `#stackInput`) and to the active hand of `#heroGrid` below — never assumed from
+# the href that led to the page.
+EDITOR_DEEP_LINK_PARAMS = ("population", "position", "spot", "stack", "hand")
+
+EDITOR_CONTEXT_JS = """() => {
+  const value = (id) => {
+    const el = document.getElementById(id);
+    return el ? String(el.value) : null;
+  };
+  return {
+    population: value('populationInput'),
+    position: value('positionSelect'),
+    spot: value('spotSelect'),
+    stack: value('stackInput'),
+    selectedHands: Array.from(
+      document.querySelectorAll('#heroGrid .hand-cell.selected[data-hand]')
+    ).map((cell) => cell.dataset.hand),
+    title: String((document.getElementById('selectedHandTitle') || {}).textContent || '').trim()
+  };
+}"""
+
+# `[data-app-mode="strategy"]` belongs to the served HTML, so it exists before any
+# script runs. The 169 cells of `#heroGrid` are rendered by `renderAll()`, which
+# calls `syncDeepLink()` first: the grid is the observable readiness signal of
+# the editor (and of its deep link).
+EDITOR_READY_JS = (
+    "() => document.querySelectorAll('#heroGrid .hand-cell[data-hand]').length === 169"
+)
 
 
 def _surface_verdict(selector: str, entry: dict, step: str, width: int, height: int) -> str:
@@ -412,6 +477,97 @@ async def _measure(page, mode: str, width: int, height: int, audit: list[dict]) 
 async def _back_to_home(page, shell: str) -> None:
     await page.click(f'[data-view-shell="{shell}"] [data-home-back]')
     await _wait_view(page, "home")
+
+
+def _editor_query(page_url: str) -> dict[str, str]:
+    """Deep-link query of the editor URL (last value wins, blanks kept)."""
+    query: dict[str, str] = {}
+    for key, value in parse_qsl(urlsplit(page_url).query, keep_blank_values=True):
+        query[key] = value
+    return query
+
+
+def _editor_deep_link_verdict(
+    page_url: str, measured: dict, step: str, width: int, height: int
+) -> str:
+    """Explicit measured verdict of the editor deep link (no retry, no skip)."""
+    return (
+        f"deep link de l'éditeur ({step}, viewport {width}x{height}) — url={page_url} "
+        f"query={_editor_query(page_url)} "
+        f"#populationInput={measured.get('population')!r} "
+        f"#positionSelect={measured.get('position')!r} "
+        f"#spotSelect={measured.get('spot')!r} "
+        f"#stackInput={measured.get('stack')!r} "
+        f"mains actives={measured.get('selectedHands')!r} "
+        f"#selectedHandTitle={measured.get('title')!r}"
+    )
+
+
+async def _wait_editor_ready(page, timeout: int = 20_000) -> None:
+    await page.wait_for_function(EDITOR_READY_JS, timeout=timeout)
+
+
+async def _measure_editor_deep_link(
+    page, step: str, width: int, height: int, audit: list[dict]
+) -> dict:
+    """Measure the editor deep link against the real controls of the page.
+
+    Every verdict is measured, never deduced: the five parameters of `page.url`
+    are mandatory and compared to `#populationInput`, `#positionSelect`,
+    `#spotSelect`, `#stackInput` and the active hand of `#heroGrid`, and
+    `history.length` is read back at the same instant so the in-place rewrite can
+    be asserted around a real interaction (arrival, rewrite, reload). A failure
+    names the URL, the parsed query and the measured controls.
+    """
+    page_url = page.url
+    measured = await page.evaluate(EDITOR_CONTEXT_JS)
+    query = _editor_query(page_url)
+    record = {
+        "mode": "strategy-editor",
+        "editor_deep_link": True,
+        "step": step,
+        "viewport": f"{width}x{height}",
+        "url": page_url,
+        "query": query,
+        "controls": measured,
+        "historyLength": await page.evaluate("() => history.length"),
+    }
+    audit.append(record)
+    verdict = _editor_deep_link_verdict(page_url, measured, step, width, height)
+
+    assert urlsplit(page_url).path.endswith("/hero-ranges.html"), (
+        f"la page mesurée doit être l'éditeur autonome hero-ranges.html — {verdict}"
+    )
+    for key in EDITOR_DEEP_LINK_PARAMS:
+        assert query.get(key), (
+            f"le paramètre `{key}` du deep link de l'éditeur est obligatoire et non vide "
+            f"— {verdict}"
+        )
+    try:
+        deep_link_stack = float(query["stack"])
+    except ValueError:
+        raise AssertionError(
+            f"le paramètre `stack` du deep link de l'éditeur doit être numérique — {verdict}"
+        ) from None
+    assert query["population"] == measured["population"], (
+        f"population du deep link ≠ #populationInput — {verdict}"
+    )
+    assert query["position"] == measured["position"], (
+        f"position du deep link ≠ #positionSelect — {verdict}"
+    )
+    assert query["spot"] == measured["spot"], (
+        f"spot du deep link ≠ #spotSelect — {verdict}"
+    )
+    assert deep_link_stack == float(measured["stack"]), (
+        f"stack du deep link ≠ #stackInput — {verdict}"
+    )
+    assert measured["selectedHands"] == [query["hand"]], (
+        f"la main active de #heroGrid doit être exactement la main du deep link — {verdict}"
+    )
+    assert measured["title"] == query["hand"], (
+        f"#selectedHandTitle doit porter la main du deep link — {verdict}"
+    )
+    return record
 
 
 async def _replayer_tabs_state(page) -> dict:
@@ -717,17 +873,122 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         await _wait_view(page, "home")
 
         # 6. Accueil → Stratégie Hero (embedded shell, measured on #strategyPage).
-        await page.click('#quickNav a[data-product-domain="strategy"]')
+        #    The shell is joined through its real entry point, the `#strategyPage`
+        #    deep link: `appViewForHashTarget()` maps that id onto `state.appView`
+        #    and `routeFromHash()` resolves it at load (`hashchange` replays it) —
+        #    the very path the Review `#historiesSection` deep link above already
+        #    exercises. The `#quickNav` Strategy entry is *not* used: its href is
+        #    the standalone editor (`./hero-ranges.html`), whose real link is
+        #    measured by the Accueil mode card in step 7.
+        await page.goto(f"{url}#strategyPage", wait_until="domcontentloaded", timeout=45_000)
+        # The reload replays that URL as a *load-time* deep link — the bookmark /
+        # shared-link path (`routeFromHash()` runs at the end of the asynchronous
+        # local restore) — so the shell is proven to be reached by the deep link,
+        # not merely kept mounted by the hash change.
+        await page.reload(wait_until="domcontentloaded", timeout=45_000)
+        await _wait_persistence_ready(page)
         await _wait_view(page, "strategy")
+        assert await page.evaluate("() => String(window.location.hash)") == "#strategyPage", (
+            "l'entrée mesurée doit être le deep link #strategyPage "
+            f"({width}x{height}) — hash={await page.evaluate('() => window.location.hash')!r}"
+        )
         await _measure(page, "strategy", width, height, audit)
         await _back_to_home(page, "strategy")
+        # The deep-link fragment of the *test's own* entry is rewritten back to the
+        # plain Accueil URL before step 7, so the entry the editor returns to (T6,
+        # `page.go_back()`) is `index.html` without a residual fragment. It is an
+        # in-place rewrite of the current entry (`history.replaceState`), not a
+        # navigation: measured, `page.goto(url)` from `url#strategyPage` is not a
+        # same-document fragment navigation in the pinned Chromium — it reloads the
+        # document and the restored local preferences remount the strategy shell
+        # (history 3 → 4, the Accueil is lost), while `replaceState` keeps the
+        # mounted Accueil, adds no entry and fires no `hashchange`.
+        await page.evaluate("() => history.replaceState(null, '', location.pathname)")
+        assert page.url == url, (
+            "le fragment du deep link doit être re-tiré de l'entrée d'historique, "
+            f"sans quitter l'Accueil ({width}x{height}) — obtenu {page.url!r}"
+        )
+        await _wait_view(page, "home")
 
         # 7. Accueil → Stratégie Hero editor: the mode card is a real link to the
-        #    standalone page. It is navigated to and mounted, but never asserted
-        #    no-scroll: the standalone editor is outside the fixed-height shell.
+        #    standalone page, and the URL it lands on is the editor deep link
+        #    (#394 T6). Three measured verdicts: (1) the query is mandatory and
+        #    coherent with the real controls of the editor, (2) a real
+        #    `#heroGrid` click re-renders the editor and rewrites that URL in
+        #    place (no history entry, and going back lands on `index.html`), and
+        #    (3) `page.reload()` restores the very same context. The page is never
+        #    asserted no-scroll: the standalone editor is outside the fixed-height
+        #    shell.
         await page.click('a.mode-card[data-app-view="strategy"]')
-        await page.wait_for_url("**/hero-ranges.html", timeout=45_000)
+        # A Playwright glob is anchored: `**/hero-ranges.html` never matches the
+        # URL `syncDeepLink()` rewrites (`hero-ranges.html?population=…&hand=AA`).
+        # `**/hero-ranges.html?**` is the repo convention
+        # (tests/hero_ranges/smoke_hero_compliance_browser.py:209) and is only
+        # satisfied by a URL *carrying* a query, so the rewrite is measured
+        # instead of being bypassed.
+        await page.wait_for_url("**/hero-ranges.html?**", timeout=45_000)
         await page.wait_for_selector('[data-app-mode="strategy"]', timeout=20_000)
+        await _wait_editor_ready(page)
+        arrival = await _measure_editor_deep_link(page, "arrivée", width, height, audit)
+
+        # (2) A real interaction that re-renders the editor: the click on a
+        #     `#heroGrid` hand cell rewrites the deep link **in place**.
+        target_hand = "KK" if arrival["query"]["hand"] != "KK" else "QQ"
+        history_before = arrival["historyLength"]
+        await page.click(f'#heroGrid .hand-cell[data-hand="{target_hand}"]')
+        await page.wait_for_function(
+            "(hand) => new URLSearchParams(location.search).get('hand') === hand",
+            arg=target_hand,
+            timeout=10_000,
+        )
+        rewritten = await _measure_editor_deep_link(page, "réécriture", width, height, audit)
+        assert rewritten["query"]["hand"] == target_hand, (
+            "le clic sur une case de #heroGrid doit écrire la main cliquée dans le deep link "
+            f"({width}x{height}) — attendu {target_hand!r}, "
+            f"obtenu {rewritten['query']['hand']!r} (url={rewritten['url']})"
+        )
+        assert rewritten["historyLength"] == history_before, (
+            "la réécriture d'URL de l'éditeur doit être en place (`history.replaceState`), "
+            "donc sans entrée d'historique ajoutée "
+            f"({width}x{height}) — history.length avant={history_before}, "
+            f"après={rewritten['historyLength']}, url={rewritten['url']}"
+        )
+        for key in ("population", "position", "spot", "stack"):
+            assert rewritten["query"][key] == arrival["query"][key], (
+                f"un clic sur une main ne doit changer que `hand` dans le deep link "
+                f"(`{key}`) ({width}x{height}) — arrivée {arrival['query']!r}, "
+                f"réécriture {rewritten['query']!r}"
+            )
+
+        # (3) The reload restores the context of the deep link: same parameters,
+        #     same controls, same active hand — and still one single entry.
+        await page.reload(wait_until="domcontentloaded", timeout=45_000)
+        await _wait_editor_ready(page)
+        restored = await _measure_editor_deep_link(page, "reload", width, height, audit)
+        assert restored["query"] == rewritten["query"], (
+            "le reload doit réécrire exactement le même deep link "
+            f"({width}x{height}) — avant {rewritten['query']!r}, après {restored['query']!r}"
+        )
+        assert restored["controls"] == rewritten["controls"], (
+            "le reload doit restaurer les mêmes contrôles et la même main active "
+            f"({width}x{height}) — avant {rewritten['controls']!r}, "
+            f"après {restored['controls']!r}"
+        )
+        assert restored["historyLength"] == rewritten["historyLength"], (
+            "un reload ne doit pas ajouter d'entrée d'historique "
+            f"({width}x{height}) — avant={rewritten['historyLength']}, "
+            f"après={restored['historyLength']}"
+        )
+
+        # The back navigation lands on the Accueil entry: navigating to the editor
+        # added exactly one history entry, the URL rewrite zero.
+        await page.go_back(wait_until="domcontentloaded", timeout=45_000)
+        back_url = urlsplit(page.url)
+        assert back_url.path.endswith("/index.html") and not back_url.query and not back_url.fragment, (
+            "page.go_back() depuis l'éditeur doit revenir à l'Accueil `index.html` nu "
+            f"(une seule entrée d'historique, réécriture en place) ({width}x{height}) — "
+            f"obtenu {page.url} (history.length={restored['historyLength']})"
+        )
     finally:
         await context.close()
     return page_errors
@@ -864,6 +1125,18 @@ async def run() -> None:
                 )
             )
             continue
+        if record.get("editor_deep_link"):
+            # #394 T6 — the editor deep link verdict: the parsed query, the real
+            # controls of the editor and the active hand, plus `history.length`
+            # (asserted around a real `#heroGrid` click).
+            print(
+                "  mode=strategy-editor viewport={viewport:<10} deep link[{step}]: "
+                "query={query} contrôles=[population:{controls[population]} "
+                "position:{controls[position]} spot:{controls[spot]} "
+                "stack:{controls[stack]}] main active={controls[selectedHands]} "
+                "history.length={historyLength}".format(**record)
+            )
+            continue
         print(
             "  mode={mode:<9} viewport={viewport:<10} scrollHeight={scrollHeight} <= clientHeight={clientHeight}".format(
                 **record
@@ -873,7 +1146,9 @@ async def run() -> None:
         "modes desktop smoke: PASS "
         f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard "
         "+ measured Review import surface reachability: elementFromPoint hit-test + click trial "
-        "+ persistenceReady readiness barrier + Review race scenario)"
+        "+ persistenceReady readiness barrier + Review race scenario "
+        "+ #strategyPage deep link of the embedded shell "
+        "+ editor deep link (query↔contrôles, réécriture en place, reload))"
     )
 
 

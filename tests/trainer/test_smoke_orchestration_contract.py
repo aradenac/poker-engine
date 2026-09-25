@@ -14,6 +14,14 @@ guard that keeps the single-entrypoint shape:
 - ``smoke_trainer.py`` must list the three scripts in ``DRIVER_SMOKES`` and
   actually execute them from its ``__main__`` entry point.
 
+It also owns the #394 T6 URL contract of the desktop journey: the embedded
+Stratégie Hero shell is joined by its real entry point, the ``#strategyPage``
+deep link (never by the ``#quickNav`` Strategy entry, whose ``href`` is the
+standalone editor), and the standalone editor is measured through its own deep
+link behind a query-tolerant ``wait_for_url`` glob — the repo convention
+``**/hero-ranges.html?**``, because an anchored Playwright glob without it can
+never match the URL the editor rewrites with its rendered context.
+
 It is a representation/orchestration contract only: no model/fit, no equity
 semantics and no immutable repro evidence is touched.
 """
@@ -25,6 +33,11 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = (ROOT / ".github/workflows/trainer-smoke.yml").read_text(encoding="utf-8")
 SMOKE_TRAINER = (ROOT / "tests/trainer/smoke_trainer.py").read_text(encoding="utf-8")
 MODES_SMOKE = (ROOT / "tests/trainer/smoke_modes_desktop.py").read_text(encoding="utf-8")
+# The only other `wait_for_url` call site of the repo (audited below): it already
+# uses the query-tolerant glob the desktop journey now shares.
+HERO_COMPLIANCE_SMOKE = (
+    ROOT / "tests/hero_ranges/smoke_hero_compliance_browser.py"
+).read_text(encoding="utf-8")
 DOC = (ROOT / "docs/opponent-range-display-contract.md").read_text(encoding="utf-8")
 # #394 T7: the desktop modes fit evidence. The frozen browser job can only run
 # in CI, so this versioned artefact is what a reviewer reads; it must stay
@@ -93,7 +106,12 @@ def main() -> None:
         "#replayerBackBtn",  # Replayer → Review
         'button.mode-card[data-app-view="spotlab"]',
         'button.mode-card[data-app-view="training"]',
-        '#quickNav a[data-product-domain="strategy"]',  # embedded #strategyPage shell
+        # #394 T6 — the embedded Stratégie Hero shell is joined by its real entry
+        # point, the `#strategyPage` deep link (`appViewForHashTarget()` /
+        # `routeFromHash()`), never by the `#quickNav` Strategy entry: that entry
+        # is the standalone editor's real link and is exercised by the mode card
+        # of step 7.
+        'f"{url}#strategyPage"',
         'a.mode-card[data-app-view="strategy"]',  # navigation to ./hero-ranges.html
         'page.keyboard.press("Tab")',
         'page.keyboard.press("ArrowRight")',
@@ -176,6 +194,69 @@ def main() -> None:
     assert run_viewport_block.index("await _wait_persistence_ready(page)") < run_viewport_block.index(
         'button.mode-card[data-app-view="spotlab"]'
     ), "the restore must settle before the journey's first mode-card click"
+
+    # #394 T6 — the desktop journey is deterministic end to end on its two URL
+    # boundaries, and both are guarded here because both used to be implicit:
+    #
+    # (a) the embedded Stratégie Hero shell is joined by its real entry point, the
+    #     `#strategyPage` deep link resolved by `appViewForHashTarget()` /
+    #     `routeFromHash()`, exactly like the Review `#historiesSection` deep link
+    #     of step 2 — and the reload replays it as the load-time deep link;
+    # (b) the standalone editor is measured through its own deep link, and the
+    #     `wait_for_url` glob that waits for it must stay query-tolerant. A
+    #     Playwright glob is anchored, so the query-less `**/hero-ranges.html`
+    #     never matches the URL `syncDeepLink()` rewrites
+    #     (`hero-ranges.html?population=…&hand=AA`): it would fail the step, or be
+    #     silently satisfied by the un-rewritten URL. Both `wait_for_url` call
+    #     sites of the repo use the `**/hero-ranges.html?**` convention
+    #     (`grep -rn "wait_for_url" --include=*.py .` → this smoke + the hero
+    #     compliance browser smoke below).
+    assert MODES_SMOKE.count("wait_for_url(") == 1, (
+        "the desktop journey waits on a single URL: the editor deep link"
+    )
+    assert 'wait_for_url("**/hero-ranges.html?**"' in MODES_SMOKE
+    assert 'wait_for_url("**/hero-ranges.html"' not in MODES_SMOKE, (
+        "the anchored, query-less URL glob never matches the rewritten editor URL"
+    )
+    assert HERO_COMPLIANCE_SMOKE.count("wait_for_url(") == 1
+    assert 'wait_for_url("**/hero-ranges.html?**"' in HERO_COMPLIANCE_SMOKE
+    # The audit itself is consigned in the smoke it protects.
+    for audited in ("--include=*.py", "smoke_hero_compliance_browser.py:209"):
+        assert audited in MODES_SMOKE, audited
+
+    # The three T6 verdicts are measured, never deduced: the five parameters are
+    # parsed out of `page.url` and compared to the real controls of the editor,
+    # the in-place rewrite is asserted around a real `#heroGrid` click and the
+    # reload has to restore the same context. Every token below is the real call
+    # of the journey, so the guard cannot be kept alive by prose.
+    assert 'EDITOR_DEEP_LINK_PARAMS = ("population", "position", "spot", "stack", "hand")' in MODES_SMOKE
+    assert "for key in EDITOR_DEEP_LINK_PARAMS:" in MODES_SMOKE
+    assert "def _measure_editor_deep_link(" in MODES_SMOKE
+    assert "async def _wait_editor_ready(" in MODES_SMOKE
+    for control in ("#populationInput", "#positionSelect", "#spotSelect", "#stackInput"):
+        assert control in MODES_SMOKE, control
+    for measured in (
+        "page_url = page.url",
+        "await page.evaluate(EDITOR_CONTEXT_JS)",
+        'await page.evaluate("() => history.length")',
+        '#heroGrid .hand-cell.selected[data-hand]',
+    ):
+        assert measured in MODES_SMOKE, measured
+    journey_block = MODES_SMOKE.split("async def run_viewport(", 1)[1].split(
+        "async def run_review_race_viewport(", 1
+    )[0]
+    assert journey_block.count("await _measure_editor_deep_link(") >= 3
+    assert '_measure_editor_deep_link(page, "arrivée"' in journey_block
+    assert '_measure_editor_deep_link(page, "réécriture"' in journey_block
+    assert '_measure_editor_deep_link(page, "reload"' in journey_block
+    assert "await _wait_editor_ready(page)" in journey_block
+    assert 'f"{url}#strategyPage"' in journey_block
+    assert "history.replaceState(null, '', location.pathname)" in journey_block
+    assert 'await page.reload(wait_until="domcontentloaded"' in journey_block
+    assert '#heroGrid .hand-cell[data-hand="' in journey_block
+    assert 'assert rewritten["historyLength"] == history_before' in journey_block
+    assert 'assert restored["controls"] == rewritten["controls"]' in journey_block
+    assert 'await page.go_back(wait_until="domcontentloaded"' in journey_block
 
     # #394 T2 — the Review landing is deterministic, asserted and scoped: the
     # selected sub-views are queried inside the Review shell only, exactly
