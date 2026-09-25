@@ -13,6 +13,9 @@ four stale claims:
    ``<a href="#strategyPage" data-product-domain="strategy">Strategy</a>`` (an
    in-app navigation), and the only real ``./hero-ranges.html`` links are the
    Accueil mode card, ``#heroRangesOpenBtn`` and ``#strategyPageEditorLink``.
+   ``tools/patches/apply_hero_range_editor.py`` — the last contradiction in
+   code — no longer anchors an insertion on ``id="trainerNavLink"`` and emits no
+   ``data-product-domain="strategy"`` nav entry pointing at ``./hero-ranges.html``.
 
 2. ``narrow-rendering-out-of-scope`` — the ``<901px`` rendering is untouched /
    outside the rule's scope. ``site/index.html`` contradicts it: only the
@@ -58,8 +61,10 @@ the revision is absent from a shallow checkout.
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -187,20 +192,163 @@ def read(rel: str) -> str:
     return (ROOT / rel).read_text(encoding="utf-8")
 
 
-def check_nav_entry_claim_is_contradicted() -> None:
-    index = read("site/index.html")
+# The nav contract the delivered shell must keep: exactly five in-app entries,
+# Strategy reached through the embedded `#strategyPage` anchor, and no
+# standalone `./hero-ranges.html` link inside `#quickNav`.
+NAV_PATCH_SCRIPT = "tools/patches/apply_hero_range_editor.py"
+NAV_EXPECTED_ENTRIES = (
+    ("Review", "#historiesSection", "review"),
+    ("Training", "#trainerPage", "training"),
+    ("Strategy", "#strategyPage", "strategy"),
+    ("Equity Lab", "#equityLabSection", "equity-lab"),
+    ("Settings", "#settingsSection", "settings"),
+)
+NAV_REAL_EDITOR_LINKS = (
+    '<a class="mode-card" data-app-view="strategy" data-hero-ranges-entry href="./hero-ranges.html">',
+    '<a id="heroRangesOpenBtn" href="./hero-ranges.html"',
+    '<a id="strategyPageEditorLink"',
+)
+
+
+def string_literals(source: str) -> list[str]:
+    """Every string literal carried by ``source`` (docstrings included)."""
+    tree = ast.parse(source)
+    return [
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+    ]
+
+
+def quick_nav_ids(index: str) -> set[str]:
+    """The ``id="..."`` values scoped to the delivered ``#quickNav`` block."""
     nav = index.split('<nav id="quickNav"', 1)[1].split("</nav>", 1)[0]
-    assert '<a href="#strategyPage" data-product-domain="strategy">Strategy</a>' in nav, nav
-    assert "hero-ranges.html" not in nav, (
-        "the #quickNav Strategy entry is an in-app navigation; the real editor "
-        "links live outside the navigation"
+    return set(re.findall(r'id="([^"]+)"', nav))
+
+
+def patch_nav_anchor_ids(source: str) -> set[str]:
+    """Ids the patch could anchor an insertion on, from its own literals.
+
+    A pure ``id="..."`` marker literal and any emitted HTML tag literal both
+    count; prose that merely names an id (a docstring sentence) does not.
+    """
+    ids: set[str] = set()
+    for literal in string_literals(source):
+        if "<" in literal or re.fullmatch(r'id="[^"]+"', literal.strip()):
+            ids.update(re.findall(r'id="([^"]+)"', literal))
+    return ids
+
+
+def nav_entry_claim_failures(index: str, patch_source: str) -> list[str]:
+    """Reasons the stale claim would stand again, for the given sources.
+
+    Separate from the assertion so the ``--self-test`` can drive it against a
+    mutated *copy* of the patch script and against an index whose in-app
+    Strategy entry disappeared, without ever touching the versioned files.
+    """
+    failures: list[str] = []
+    if '<nav id="quickNav"' not in index:
+        return ["site/index.html no longer exposes the #quickNav block"]
+    nav = index.split('<nav id="quickNav"', 1)[1].split("</nav>", 1)[0]
+    links = [line for line in nav.splitlines() if line.strip().startswith("<a ")]
+    if len(links) != 5:
+        failures.append(f"#quickNav must expose exactly 5 entries, found {len(links)}")
+    for label, href, domain in NAV_EXPECTED_ENTRIES:
+        if (
+            f'href="{href}"' not in nav
+            or f'data-product-domain="{domain}"' not in nav
+            or f">{label}</a>" not in nav
+        ):
+            failures.append(f'#quickNav lost its in-app "{label}" entry ({href}, {domain})')
+    if '<a href="#strategyPage" data-product-domain="strategy">Strategy</a>' not in nav:
+        failures.append("#quickNav must reach Strategy through the in-app #strategyPage anchor")
+    if "hero-ranges.html" in nav:
+        failures.append("#quickNav carries a standalone ./hero-ranges.html link")
+    for real_link in NAV_REAL_EDITOR_LINKS:
+        if real_link not in index:
+            failures.append(f"the standalone editor lost its real out-of-nav link: {real_link}")
+
+    # The patch script was the contradiction in code: it re-inserted the
+    # standalone entry the navigation had dropped. It may only anchor on the
+    # Accueil `trainerOpenBtn` marker and must emit no product-domain nav entry.
+    if 'id="trainerNavLink"' in patch_source:
+        failures.append('the patch anchors an insertion on id="trainerNavLink"')
+    if 'id="trainerOpenBtn"' not in patch_source:
+        failures.append(
+            'the patch must keep anchoring its insertion on the out-of-nav '
+            'Accueil marker id="trainerOpenBtn"'
+        )
+    try:
+        literals = string_literals(patch_source)
+        nav_ids = quick_nav_ids(index)
+        for anchor_id in sorted(patch_nav_anchor_ids(patch_source) & nav_ids):
+            failures.append(
+                f'the patch anchors an insertion on the #quickNav id "{anchor_id}"'
+            )
+    except SyntaxError as error:  # pragma: no cover - defensive
+        failures.append(f"the patch script is not parsable: {error}")
+        literals = []
+    for literal in literals:
+        if "hero-ranges.html" in literal and "data-product-domain=" in literal:
+            failures.append(
+                "the patch emits a product-domain nav entry pointing at "
+                "./hero-ranges.html"
+            )
+    return failures
+
+
+def check_nav_entry_claim_is_contradicted() -> None:
+    failures = nav_entry_claim_failures(read("site/index.html"), read(NAV_PATCH_SCRIPT))
+    assert not failures, failures
+
+
+def nav_entry_non_vacuity_notes() -> list[str]:
+    """Positive and negative controls for the claim-1 structural block."""
+    notes: list[str] = []
+    index = read("site/index.html")
+    patch_source = read(NAV_PATCH_SCRIPT)
+    assert not nav_entry_claim_failures(index, patch_source), nav_entry_claim_failures(
+        index, patch_source
     )
-    for real_link in (
-        '<a class="mode-card" data-app-view="strategy" data-hero-ranges-entry href="./hero-ranges.html">',
-        '<a id="heroRangesOpenBtn" href="./hero-ranges.html"',
-        '<a id="strategyPageEditorLink"',
-    ):
-        assert real_link in index, real_link
+
+    # Positive control — the in-app `href="#strategyPage"` entry disappears from
+    # `#quickNav`; the block must stop being silent.
+    broken_index = index.replace(
+        '<a href="#strategyPage" data-product-domain="strategy">Strategy</a>', ""
+    )
+    index_failures = nav_entry_claim_failures(broken_index, patch_source)
+    assert any("#strategyPage" in failure for failure in index_failures), index_failures
+    notes.append(
+        "nav-entry-points-to-standalone-editor: fails without the in-app "
+        "#strategyPage entry"
+    )
+
+    # Negative control — a *temporary copy* of the patch script reintroduces a
+    # standalone Strategy nav entry: its insertion anchor becomes the `#quickNav`
+    # link and its payload becomes a product-domain link to `./hero-ranges.html`.
+    # The copy stays syntactically valid so the block fails on the reintroduced
+    # entry itself, never on an unparsable script.
+    mutated = patch_source.replace(
+        'id="trainerOpenBtn"',
+        'id="trainerNavLink" href="#trainerPage" data-product-domain="training"',
+    ).replace(
+        'href="./hero-ranges.html" class="filelabel"',
+        'data-product-domain="strategy" href="./hero-ranges.html" class="filelabel"',
+    )
+    assert mutated != patch_source, "the negative-control mutation is empty"
+    ast.parse(mutated)  # the mutation must model real code, not a syntax error
+    with tempfile.TemporaryDirectory() as tmp:
+        copy = Path(tmp) / "apply_hero_range_editor.py"
+        copy.write_text(mutated, encoding="utf-8")
+        mutated_copy = copy.read_text(encoding="utf-8")
+    assert mutated_copy == mutated, "the temporary copy must carry the mutation"
+    patch_failures = nav_entry_claim_failures(index, mutated_copy)
+    assert any("trainerNavLink" in failure for failure in patch_failures), patch_failures
+    assert any("hero-ranges.html" in failure for failure in patch_failures), patch_failures
+    assert not any("not parsable" in failure for failure in patch_failures), patch_failures
+    assert read(NAV_PATCH_SCRIPT) == patch_source, "the versioned patch script must stay untouched"
+    notes.append("nav-entry-points-to-standalone-editor: fails on a mutated copy of the patch script")
+    return notes
 
 
 def check_narrow_rendering_claim_is_contradicted() -> None:
@@ -291,6 +439,7 @@ def self_test() -> list[str]:
             hit = [pattern for pattern in claim.patterns if re.search(pattern, text, re.IGNORECASE)]
             assert hit, f"{claim.claim_id}: no detector matched {rev}:{path}"
             notes.append(f"{claim.claim_id}: {len(hit)} detector(s) matched {rev}:{path}")
+    notes.extend(nav_entry_non_vacuity_notes())
     return notes
 
 
