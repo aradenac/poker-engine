@@ -110,6 +110,18 @@
   .matrix{display:grid;grid-template-columns:repeat(13,42px);gap:3px;width:max-content}
   .cell{height:34px;border-radius:5px;background:#0f1729;border:1px solid #202c48;color:#52617e;
         display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;position:relative}
+  /* #394 T1 — budget vertical de la coque desktop : à 1366x768 le panneau
+     « Range adverse » ne laisse qu'environ 418px à la grille, alors que
+     13 rangées de 34px + 12 gouttières de 3px en réclament 478 et sont
+     incompressibles (hauteur de rangée = hauteur de cellule). Cette règle
+     comprime les rangées (13*26 + 12*2 = 362px) sans toucher aux 13 colonnes ni
+     aux 169 cellules ; elle reste gatée `min-width:901px` + `max-height:900px`
+     pour ne rien changer au viewport de référence 1500x1000 ni au rendu < 901px
+     (qui garde son flux documentaire défilant). */
+  @media(min-width:901px) and (max-height:900px){
+    .matrix{gap:2px}
+    .cell{height:26px}
+  }
   .cell.on{color:#f3f6ff;border-color:#45567d}
   .cell.editable{cursor:pointer;user-select:none}
   .cell.editable:hover{border-color:#7c8cff;transform:translateY(-1px)}
