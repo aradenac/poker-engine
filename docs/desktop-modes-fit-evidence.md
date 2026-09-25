@@ -599,3 +599,126 @@ Conséquences, écrites telles quelles :
 Cette sous-section ne modifie aucun octet de `site/**`, de
 `.github/workflows/**` ni du smoke : elle n'ajoute que l'observation ci-dessus,
 ses URLs et ses extraits.
+
+### 8.7 Pré-vol hors navigateur des deux jobs gelés au HEAD livré `b3baf65` (task `backlog-3bh`)
+
+Cette sous-section est **strictement additive** : elle consigne, tels qu'ils ont été
+**réellement enregistrés** par la task `backlog-3bh` au **§ 10** de
+`docs/issue-394-release-identity-ci-report.md`, le **pré-vol hors CI** du corps
+**hors navigateur** des **deux jobs gelés** — l'étape d'idempotence du job
+`contract` de `.github/workflows/hero-range-editor.yml`, et les étapes non
+navigateur du job `static-contract` de `.github/workflows/trainer-smoke.yml`. Elle
+ne produit **aucune mesure navigateur** et **aucun `PASS` de job gelé** : un
+pré-vol local **n'est pas** un PASS d'acceptation, et aucune ligne ci-dessous ne
+doit être lue comme tel.
+
+#### 8.7.1 L'état de livraison observé localement : aucun run CI pour les octets livrés
+
+| Élément | Valeur enregistrée par `backlog-3bh` (§ 10.1 du rapport) |
+| --- | --- |
+| HEAD du pré-vol | `b3baf65e8a263bad2cda8d06c734b55876b455e9` |
+| Branche de ce worktree | `n8n/issue-394/task-backlog-3bh` |
+| Commits d'avance sur le tip distant | **7** (`git rev-list --count 8ff970b..HEAD`) |
+| Tip distant (dernier HEAD poussé) | `8ff970bde9726852ffd77537499e4b7161698c2c` — **tête de la PR #416** |
+| Runs CI sur les octets livrés | **aucun** (`ci_delivered_head_runs: NONE`) |
+
+Le tip distant `8ff970b` est la tête de la PR #416 : les corrections livrées ne sont
+**pas** dans la branche épique, donc **aucun run CI n'existe pour les octets
+livrés** — ni pour le pré-vol, ni pour la présente révision. C'est la raison du
+§ 8.6 : seul un HEAD **poussé** peut alimenter les jobs gelés, et un pré-vol local,
+quel que soit son verdict, ne les remplace pas.
+
+#### 8.7.2 Les six commandes rejouées, hors CI, au HEAD `b3baf65`
+
+Le pré-vol a exécuté **6** commandes — les étapes non-navigateur des deux jobs
+gelés — et **chacune** est sortie `EXIT=0` ; les codes de sortie sont **observés**,
+jamais extrapolés (§ 10.2 du rapport) :
+
+| # | Commande (exacte) | Observation enregistrée | Code de sortie |
+| --- | --- | --- | --- |
+| 1 | `PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py` | `REPRO workflow batch-1 tests: 9 passed` | **0** |
+| 2 | `node --check site/trainer.js` | aucune sortie (syntaxe OK) | **0** |
+| 3 | `python3 tools/write_site_release.py --check` | `release source anchor verified: site/RELEASE.json; assembled identity can be materialized` | **0** |
+| 4 | `for test in tests/trainer/test_*.py; do python3 "$test"; done` | **48 modules**, **0 échec**, `TOTAL_MODULES=48` (§ 10.8 du rapport) | **0** |
+| 5 | étape « Patch idempotence » : `sha256sum site/index.html site/trainer.js` → `python3 tools/patches/apply_trainer_mvp.py` → comparaison | `sha256` avant = après pour les deux fichiers, `diff -u` vide (§ 10.3) | **0** |
+| 6 | étape « Main application integration is idempotent » : `sha256sum site/index.html` → `python3 tools/patches/apply_hero_range_editor.py` → comparaison | `sha256` avant = après, `diff -u` vide (§ 10.4) | **0** |
+
+L'étape 6 est **exactement** l'étape qui était **rouge** au HEAD poussé `8ff970b`
+(§ 8.5, § 8.6.3, et § 8 du rapport) : le `diff -u` y retournait `1` parce que la
+révision alors versionnée du patch réinsérait l'entrée de rail autonome dans
+`#quickNav`. Rejouée au HEAD `b3baf65` sur une copie **byte-identique** des octets
+servis — aucun octet de `site/**` écrit par le pré-vol, les octets d'origine
+sauvegardés puis restaurés par copie, `git hash-object` égal aux blobs `HEAD` — la
+révision corrigée du patch laisse le `sha256` **inchangé** et le `diff -u` retourne
+**`EXIT=0`** : le marqueur de garde `id="heroRangesOpenBtn"` est présent exactement
+une fois, donc `patch_text()` rend le texte inchangé, et les deux empreintes
+encadrantes sont **égales** :
+
+```
+-4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html  # avant
++4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html  # après, identique
+```
+
+Le même pré-vol a exercé les modes `--index` / `--check` de ce patch : `--index`
+sur une copie non patchée écrit **au plus une fois** puis devient inerte, `--check`
+sur cette copie patchée sort `EXIT=0`, et `--check` sur une copie non patchée sort
+`EXIT=1` (« hero range editor patch is not applied ») — le garde fail-closed
+attendu.
+
+#### 8.7.3 Ce qui reste non prouvé : la moitié navigateur, observable seulement par le job gelé `browser-smoke`
+
+Les six commandes de § 8.7.2 sont **statiques** : aucune n'exécute un navigateur.
+Restent donc **non prouvés** hors CI, et **non revendiqués** ici :
+
+- l'**absence de défilement global** — `document.scrollingElement.scrollHeight <= clientHeight`
+  — pour les **six modes** `home`, `spotlab`, `review`, `replayer`, `training`,
+  `strategy`, **aux deux viewports de référence** `1500x1000` et `1366x768` ;
+- l'**atteignabilité réelle** des panneaux **Spot Lab**, **Replayer** et **Trainer**
+  (les hit-tests de panneaux que la revue humaine nommait comme jamais mesurés à
+  `1366x768`, § 8.6.5) ;
+- le **clic réel** du raccourci Accueil `#homePage a[href="#historiesSection"]`,
+  **non intercepté** : `tests/trainer/smoke_modes_desktop.py` exécute
+  `await page.click('#homePage a[href="#historiesSection"]')`, sans `force=True`,
+  sans `dispatch_event`, sans retry et sans skip.
+
+Le **seul** canal qui observe ces trois points est le job gelé `browser-smoke` de
+`.github/workflows/trainer-smoke.yml`, exécuté sur un HEAD **poussé** (§ 1, § 8.6,
+et § 10.5 du rapport). **Aucun `PASS` de ce job n'est écrit ici** : il n'a pas été
+observé depuis ce worker, et le pré-vol hors navigateur ne couvre pas cette moitié
+de l'acceptation.
+
+#### 8.7.4 Le repli navigateur local est irréalisable sur cet hôte
+
+Le pré-vol a **vérifié**, et non supposé, que le repli navigateur est
+**irréalisable** ici (§ 10.6 du rapport) : le module Python `playwright` est
+**absent** (`ModuleNotFoundError: No module named 'playwright'`), si bien que
+`tests/trainer/smoke_modes_desktop.py` et `tests/trainer/smoke_trainer.py` sortent
+`EXIT=1` — le second à l'import, donc **avant** `run_driver_smokes()` — et le
+**Chromium pinné** (révision `1187`, version `140.0.7339.16`, cf.
+`reproducibility/browser-identity.lock.json` et
+`reproducibility/environment.lock.json`) est **présent mais ne démarre pas** : il
+manque `libnspr4.so` et `libnss3.so`, absents de l'hôte, et le **réseau** (DNS) est
+coupé, donc ces bibliothèques ne peuvent pas être installées ici. Aucun smoke
+navigateur n'est exécutable localement.
+
+#### 8.7.5 Jetons inchangés : le pré-vol ne bascule rien
+
+Le pré-vol hors navigateur **ne remplace pas** un run CI poussé (§ 10.7 du
+rapport). Donc, inchangés :
+
+- `ci_green` reste **`NOT_OBSERVED`** ;
+- `frozen_job_rerun_required` reste **`true`** : le job gelé `browser-smoke` doit
+  tourner sur les octets livrés d'un HEAD **poussé** ;
+- `contract_job_rerun_required` reste **`true`** : l'étape d'idempotence du job
+  `contract` est rouge au HEAD poussé `8ff970b`, sa correction n'y est pas ;
+- `red_workflows` **nomme** toujours le workflow réellement rouge observé,
+  `.github/workflows/hero-range-editor.yml` (job `contract`, run `36081969061`,
+  étape « Main application integration is idempotent »).
+
+Aucune bascule n'est possible sans un run réel au HEAD livré : ce pré-vol ne mesure
+que le périmètre **hors navigateur**, et le job gelé `browser-smoke` de
+`.github/workflows/trainer-smoke.yml` demeure la **seule autorité** pour la règle
+« aucun scroll global » (`scrollHeight` / `clientHeight` à `1500x1000` et
+`1366x768`, pour les six modes `home`, `spotlab`, `review`, `replayer`, `training`,
+`strategy`). Cette sous-section n'écrit **aucun octet** de `site/**`, de
+`.github/**`, de `tests/` ni de `tools/` : elle n'ajoute que la lecture ci-dessus.
