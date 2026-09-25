@@ -23,6 +23,23 @@ real mouse clicks. This measurement happens at **empty hands**, before any
 import, at both reference viewports, and never retries or skips: a clipped
 target fails with its measured rectangle, viewport and `elementFromPoint`.
 
+The panels the human review named as never measured at `1366x768` are measured
+with that very instrument (#394 T1), in the same per-viewport journey: Spot Lab's
+`Range adverse` pane is mounted by a real click on `#spotlabRangeTab` before
+`#rangeDisplaySection` and the 169-cell `#matrix` grid are hit-tested; the
+Replayer is measured on its three columns (`.replayer-col-left`,
+`.replayer-col-center`, `#replayerContextPanel`) and on each of its
+`#replayerDecisionTab` / `#replayerRangesTab` / `#replayerDetailsTab` tabs with
+their panes, each tab activated by a real click (a hidden pane cannot be
+hit-tested); and the Training rail on its four tabs (`#trainerCoachingTab`,
+`#trainerSessionTab`, `#trainerProfilesTab`, `#trainerTestTab`) with their rail
+panes, again tab by tab. Every one of those measurements is serialised in the
+`panel_surfaces` bucket of the report, `_verdict()` turns `FAIL` as soon as one
+of them is not reachable, and a per-viewport inventory line derived from the
+audit is printed (for a green *and* a red run alike), so the log of the frozen
+job proves the `1366x768` legs really ran the panel hit-tests and names every
+target that was not reachable.
+
 Covered journeys (each on a fresh context, both viewports):
 
 * Accueil → Review → Replayer → Review: the `kts_sb_two_limp_iso4_three_calls`
@@ -100,9 +117,13 @@ The run also serialises the audit it already built as JSON (``--report``, or
 ``SMOKE_MODES_DESKTOP_REPORT``, default
 ``artifacts/desktop-modes-fit/measurements.json``), so the measurement behind the
 "aucun scroll global" rule is auditable from the repository instead of living in
-a throwaway local harness. The report is strictly additive: it carries the
-measured records verbatim, is written at the end of a successful run only, and no
-value is invented, re-derived or hard-coded anywhere in it.
+a throwaway local harness. The report carries the measured records verbatim —
+per-mode measurements, Review import hit-tests, `panel_surfaces` (#394 T1: the
+Spot Lab / Replayer / Trainer panels), editor deep links, Review race — and its
+`verdict` is derived from those same records, so a single unreachable panel is
+enough to turn it `FAIL`. It is strictly additive: it is written at the end of a
+successful run only, and no value is invented, re-derived or hard-coded anywhere
+in it.
 """
 from __future__ import annotations
 
@@ -184,6 +205,8 @@ def _record_kind(record: dict) -> str:
     """Bucket of one audit record, read from the record itself."""
     if record.get("race"):
         return "review_races"
+    if record.get("panel_surface"):
+        return "panel_surfaces"
     if "hit_test" in record:
         return "import_hit_tests"
     if record.get("editor_deep_link"):
@@ -201,11 +224,30 @@ def _verdict(report: dict) -> str:
         for record in report["import_hit_tests"]
         for entry in record["hit_test"].values()
     )
+    # #394 T1 — the Spot Lab / Replayer / Trainer panels carry their own
+    # contract: every measured target is reachable, *and* both reference
+    # viewports really measured them. A target that is not hit-testable turns the
+    # verdict `FAIL`; so does an empty bucket, which no real run can produce
+    # (each per-viewport journey measures the panels), so the bucket can never
+    # pass by vacuity.
+    panels_reachable = all(
+        entry.get("reachable")
+        for record in report["panel_surfaces"]
+        for entry in record["hit_test"].values()
+    )
+    panels_measured = all(
+        any(record["viewport"] == f"{width}x{height}" for record in report["panel_surfaces"])
+        for width, height in VIEWPORTS
+    )
     deep_linked = all(
         bool(record.get("query")) for record in report["editor_deep_links"]
     )
     raced = all(record.get("mounted") == "review" for record in report["review_races"])
-    return "PASS" if fits and reachable and deep_linked and raced else "FAIL"
+    return (
+        "PASS"
+        if fits and reachable and panels_reachable and panels_measured and deep_linked and raced
+        else "FAIL"
+    )
 
 
 def build_report(audit: list[dict], *, head: str) -> dict:
@@ -213,7 +255,8 @@ def build_report(audit: list[dict], *, head: str) -> dict:
 
     Every record keeps the fields it was measured with; this only groups them by
     kind (per-mode measurements, Review import hit-tests, editor deep links,
-    Review race) and derives the global verdict from those same records.
+    Review race, Spot Lab / Replayer / Trainer panel surfaces) and derives the
+    global verdict from those same records.
     """
     report: dict = {
         "schema": REPORT_SCHEMA,
@@ -222,6 +265,7 @@ def build_report(audit: list[dict], *, head: str) -> dict:
         "modes": list(MODES),
         "records": [],
         "import_hit_tests": [],
+        "panel_surfaces": [],
         "editor_deep_links": [],
         "review_races": [],
     }
@@ -298,20 +342,22 @@ RACE_PROBE_JS = """() => {
   };
 }"""
 
-# #394 T1/T2 — the Review import surface reachability is measured, never
-# deduced: each target is resolved with the very hit-test a real mouse click
-# performs (`document.elementFromPoint` at the centre of its box) and must be
-# visible, inside the viewport and inside the bounded `review` shell.
+# #394 T1/T2 — surface reachability is measured, never deduced: each target is
+# resolved with the very hit-test a real mouse click performs
+# (`document.elementFromPoint` at the centre of its box) and must be visible,
+# inside the viewport and inside the bounded view shell it belongs to (the
+# `review` shell for the import surface, `[data-view-shell="spotlab"]` /
+# `…="replayer"` / `…="training"` for the panel surfaces of #394 T1).
 # `elementFromPoint` must return the target **or one of its descendants**
 # (`at === el || el.contains(at)`); an ancestor that merely owns the box is not a
 # hit target. A clipped target (the frozen smoke failure this fixes) reports
 # `hit: false` / `inShell: false` with the measured rectangle, viewport and
 # elementFromPoint verdict.
-IMPORT_HIT_TEST_JS = """(selectors) => {
-  const shell = document.querySelector('[data-view-shell="review"]');
+SURFACE_HIT_TEST_JS = """(payload) => {
+  const shell = document.querySelector(payload.shell);
   const shellBox = shell ? shell.getBoundingClientRect() : null;
   const out = {};
-  for (const selector of selectors) {
+  for (const selector of payload.selectors) {
     const el = document.querySelector(selector);
     if (!el) {
       out[selector] = { present: false };
@@ -351,6 +397,16 @@ IMPORT_HIT_TEST_JS = """(selectors) => {
   return out;
 }"""
 
+# The view shells the panel surfaces are scoped to (#394 T1). Scoping to the
+# shell is what makes a measurement non-vacuous: a target that is laid out
+# outside its own shell is clipped by the fixed-height desktop shell, whatever
+# the document-level scroll metrics say.
+PANEL_SHELLS = {
+    "spotlab": '[data-view-shell="spotlab"]',
+    "replayer": '[data-view-shell="replayer"]',
+    "training": '[data-view-shell="training"]',
+}
+
 # The import surface itself: the Import tab, the primary label that proxies the
 # visually hidden `#hhFileInput` (`input[type=file]{display:none}`) and the
 # watcher button. `#hhBenchmarkExportBtn` is added once the advanced details is
@@ -365,6 +421,31 @@ IMPORT_SURFACE_SELECTORS = (
     "#hhWatchBtn",
 )
 IMPORT_ADVANCED_SELECTOR = "#hhBenchmarkExportBtn"
+
+# #394 T1 — the panels the human review named as never measured at 1366x768.
+# Spot Lab: the `Range adverse` sub-view is mounted by a real click on
+# `#spotlabRangeTab`, then the pane and the 169-cell `#matrix` grid it owns are
+# hit-tested. Replayer: the three columns of `#replayerSection`, plus each
+# right-panel tab with its pane (a hidden pane cannot be hit-tested, so each tab
+# is activated by a real click first). Training: the four rail tabs with their
+# rail panes, again tab by tab.
+SPOTLAB_RANGE_SURFACE_SELECTORS = ("#spotlabRangeTab", "#rangeDisplaySection", "#matrix")
+REPLAYER_COLUMN_SELECTORS = (
+    ".replayer-col-left",
+    ".replayer-col-center",
+    "#replayerContextPanel",
+)
+REPLAYER_TAB_SURFACES = (
+    ("#replayerDecisionTab", "#replayerDecisionPanel", "replayer-decision"),
+    ("#replayerRangesTab", "#replayerRangesPanel", "replayer-ranges"),
+    ("#replayerDetailsTab", "#hhReplayDetail", "replayer-details"),
+)
+TRAINER_RAIL_SURFACES = (
+    ("#trainerCoachingTab", "#trainerCoachPanel", "trainer-coaching"),
+    ("#trainerSessionTab", "#trainerSessionPanel", "trainer-session"),
+    ("#trainerProfilesTab", "#trainerProfilesPanel", "trainer-profiles"),
+    ("#trainerTestTab", "#trainerTestPanel", "trainer-test"),
+)
 
 # #394 T6 — the standalone Stratégie Hero editor publishes its rendered context
 # as a deep link: `syncDeepLink()` (`site/hero-ranges-app.js:126`) rewrites the
@@ -401,10 +482,24 @@ EDITOR_READY_JS = (
 )
 
 
-def _surface_verdict(selector: str, entry: dict, step: str, width: int, height: int) -> str:
-    """Explicit measured verdict for one import target (no retry, no skip)."""
+def _surface_verdict(
+    selector: str,
+    entry: dict,
+    step: str,
+    width: int,
+    height: int,
+    *,
+    label: str = "surface d'import",
+) -> str:
+    """Explicit measured verdict for one hit-tested target (no retry, no skip).
+
+    The same sentence carries the import surface (#394 T2) and the panel
+    surfaces (#394 T1); only the noun changes, so a red run always prints the
+    measured fields of the failing target — `rect`, `viewport`, `point`,
+    `elementFromPoint` and `shellBox`.
+    """
     return (
-        f"surface d'import non atteignable: {selector} ({step}, viewport {width}x{height}) — "
+        f"{label} non atteignable: {selector} ({step}, viewport {width}x{height}) — "
         f"present={entry.get('present')} visible={entry.get('visible')} "
         f"inViewport={entry.get('inViewport')} inShell={entry.get('inShell')} "
         f"hit={entry.get('hit')} reachable={entry.get('reachable')} "
@@ -414,8 +509,15 @@ def _surface_verdict(selector: str, entry: dict, step: str, width: int, height: 
     )
 
 
-async def _assert_import_surface_click_trial(
-    page, selectors: tuple[str, ...], step: str, width: int, height: int, report: dict
+async def _assert_surface_click_trial(
+    page,
+    selectors: tuple[str, ...],
+    step: str,
+    width: int,
+    height: int,
+    report: dict,
+    *,
+    label: str,
 ) -> None:
     """Confirm reachability with Playwright's own hit-test (`click(trial=True)`).
 
@@ -434,16 +536,29 @@ async def _assert_import_surface_click_trial(
         except Exception as exc:  # pragma: no cover - red path, re-raised explicitly
             entry = report.get(selector, {"present": False})
             raise AssertionError(
-                f"surface d'import non cliquable (click trial Playwright): {selector} "
-                f"({step}, viewport {width}x{height}) — {_surface_verdict(selector, entry, step, width, height)} "
+                f"{label} non cliquable (click trial Playwright): {selector} "
+                f"({step}, viewport {width}x{height}) — "
+                f"{_surface_verdict(selector, entry, step, width, height, label=label)} "
                 f"— playwright={type(exc).__name__}: {exc}"
             ) from exc
+
+
+async def _assert_import_surface_click_trial(
+    page, selectors: tuple[str, ...], step: str, width: int, height: int, report: dict
+) -> None:
+    """Import-surface flavour of `_assert_surface_click_trial` (#394 T2)."""
+    await _assert_surface_click_trial(
+        page, selectors, step, width, height, report, label="surface d'import"
+    )
 
 
 async def _assert_import_surface_hit_testable(
     page, selectors: tuple[str, ...], step: str, width: int, height: int, audit: list[dict]
 ) -> dict:
-    report = await page.evaluate(IMPORT_HIT_TEST_JS, list(selectors))
+    report = await page.evaluate(
+        SURFACE_HIT_TEST_JS,
+        {"shell": '[data-view-shell="review"]', "selectors": list(selectors)},
+    )
     audit.append(
         {
             "mode": "review",
@@ -471,6 +586,99 @@ async def _assert_import_surface_hit_testable(
     return report
 
 
+async def _assert_panel_surface_hit_testable(
+    page,
+    shell: str,
+    selectors: tuple[str, ...],
+    *,
+    mode: str,
+    step: str,
+    width: int,
+    height: int,
+    audit: list[dict],
+) -> dict:
+    """#394 T1 — measured reachability of one panel surface (Spot Lab / Replayer / Trainer).
+
+    Same instrument as the Review import surface: `elementFromPoint` at the
+    centre of each box (the target or one of its descendants must receive the
+    point) plus a Playwright `click(trial=True)` hit-test, scoped to the view
+    shell that owns the panel. The record is filed under the `panel_surfaces`
+    bucket of the report, which `_verdict()` reads. Nothing here retries, skips
+    or forces a click: an unreachable panel fails with its measured fields.
+    """
+    label = f"panneau {mode}"
+    report = await page.evaluate(
+        SURFACE_HIT_TEST_JS, {"shell": shell, "selectors": list(selectors)}
+    )
+    audit.append(
+        {
+            "mode": mode,
+            "viewport": f"{width}x{height}",
+            "surface": step,
+            "shell": shell,
+            "panel_surface": True,
+            "hit_test": report,
+        }
+    )
+    for selector in selectors:
+        entry = report[selector]
+        assert entry["present"], (
+            f"{label} introuvable: {selector} ({step}, {width}x{height})"
+        )
+        for field in ("visible", "inViewport", "inShell", "hit"):
+            assert entry[field], (
+                f"{_surface_verdict(selector, entry, step, width, height, label=label)} "
+                f"[champ en échec: {field}=false] "
+                "(verdict mesuré par elementFromPoint + boîte, jamais déduit, jamais de retry)"
+            )
+        assert entry["reachable"], (
+            f"{_surface_verdict(selector, entry, step, width, height, label=label)} "
+            "[verdict composite reachable=false]"
+        )
+    await _assert_surface_click_trial(
+        page, selectors, step, width, height, report, label=label
+    )
+    return report
+
+
+def panel_inventory_lines(audit: list[dict]) -> list[str]:
+    """One inventory line per reference viewport, derived from the audit.
+
+    The frozen browser job only keeps the smoke log: this line is what proves
+    that the `1366x768` leg really ran the Spot Lab / Replayer / Trainer panel
+    hit-tests, with the measured verdict of every target of every panel surface.
+    It is derived from the audit records themselves — no value is invented.
+    """
+    lines: list[str] = []
+    for width, height in VIEWPORTS:
+        viewport = f"{width}x{height}"
+        records = [
+            record
+            for record in audit
+            if record.get("panel_surface") and record["viewport"] == viewport
+        ]
+        targets = {
+            selector: entry
+            for record in records
+            for selector, entry in record["hit_test"].items()
+        }
+        reachable = sum(1 for entry in targets.values() if entry.get("reachable"))
+        detail = " · ".join(
+            f"{record['surface']}=["
+            + ", ".join(
+                f"{selector}={'ok' if entry.get('reachable') else 'MISS'}"
+                for selector, entry in record["hit_test"].items()
+            )
+            + "]"
+            for record in records
+        )
+        lines.append(
+            f"inventaire panneaux viewport={viewport} mesures={len(records)} "
+            f"cibles={len(targets)} atteignables={reachable}/{len(targets)} — {detail}"
+        )
+    return lines
+
+
 HIDDEN_DECISION = {"replayer-decision": False, "replayer-ranges": True, "replayer-details": True}
 HIDDEN_RANGES = {"replayer-decision": True, "replayer-ranges": False, "replayer-details": True}
 HIDDEN_DETAILS = {"replayer-decision": True, "replayer-ranges": True, "replayer-details": False}
@@ -492,6 +700,14 @@ DETAILS_TAB_STATE = {
     "selected": ["replayer-details"],
     "roving": ["replayer-details"],
     "hidden": HIDDEN_DETAILS,
+}
+# #394 T1 — expected `hidden` map of `REPLAYER_TABS_JS` once a right-panel tab
+# has been activated by a real click: exactly one pane of
+# `#replayerContextPanel` is mounted at a time.
+REPLAYER_TAB_HIDDEN_STATES = {
+    "replayer-decision": HIDDEN_DECISION,
+    "replayer-ranges": HIDDEN_RANGES,
+    "replayer-details": HIDDEN_DETAILS,
 }
 
 
@@ -741,6 +957,36 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
             "() => Array.isArray(state.hhHands) && state.hhHands.length === 0"
         ), f"le Spot Lab doit rester indépendant des mains importées ({width}x{height})"
         await _measure(page, "spotlab", width, height, audit)
+        # #394 T1 — the `Range adverse` pane is a real sub-view of the Spot Lab
+        # shell: a real click on `#spotlabRangeTab` mounts it, then the pane and
+        # the 169-cell `#matrix` grid it owns are hit-tested. A pane that is only
+        # rendered (clipped by the fixed-height shell) fails here with its
+        # measured rectangle, viewport and `elementFromPoint`.
+        await page.click("#spotlabRangeTab")
+        assert await page.get_attribute("#spotlabRangeTab", "aria-selected") == "true", (
+            "le clic réel sur #spotlabRangeTab doit le passer à aria-selected=true "
+            f"({width}x{height}), obtenu "
+            f"{await page.get_attribute('#spotlabRangeTab', 'aria-selected')!r}"
+        )
+        assert await page.locator("#rangeDisplaySection").is_visible(), (
+            f"l'onglet Range adverse doit monter son panneau #rangeDisplaySection ({width}x{height})"
+        )
+        assert await page.locator("#opponentsSection").is_hidden(), (
+            f"un seul panneau du Spot Lab est monté à la fois ({width}x{height})"
+        )
+        assert await page.evaluate(
+            "() => document.querySelectorAll('#matrix .cell').length === 169"
+        ), f"la matrice #matrix doit porter ses 169 classes de mains ({width}x{height})"
+        await _assert_panel_surface_hit_testable(
+            page,
+            PANEL_SHELLS["spotlab"],
+            SPOTLAB_RANGE_SURFACE_SELECTORS,
+            mode="spotlab",
+            step="spotlab-range",
+            width=width,
+            height=height,
+            audit=audit,
+        )
         await _back_to_home(page, "spotlab")
 
         # 2. Accueil → Review. Review lands on its Pilotage pane; the import
@@ -957,6 +1203,49 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         await _assert_replayer_keyboard(page, width, height)
         # A tab activation is a pure visibility toggle: the shell still never scrolls.
         await _measure(page, "replayer", width, height, audit)
+        # #394 T1 — the Replayer layout is measured as a panel surface too: the
+        # three columns of `#replayerSection`, then each right-panel tab with its
+        # own pane. A hidden pane cannot be hit-tested, so every tab is activated
+        # by a real click first and its `aria-selected` flip plus the single
+        # mounted pane are asserted before the measurement.
+        await _assert_panel_surface_hit_testable(
+            page,
+            PANEL_SHELLS["replayer"],
+            REPLAYER_COLUMN_SELECTORS,
+            mode="replayer",
+            step="replayer-columns",
+            width=width,
+            height=height,
+            audit=audit,
+        )
+        for tab_selector, panel_selector, subview in REPLAYER_TAB_SURFACES:
+            await page.click(tab_selector)
+            assert await page.get_attribute(tab_selector, "aria-selected") == "true", (
+                f"le clic réel sur {tab_selector} doit le passer à aria-selected=true "
+                f"({width}x{height}), obtenu "
+                f"{await page.get_attribute(tab_selector, 'aria-selected')!r}"
+            )
+            assert await page.locator(panel_selector).is_visible(), (
+                f"l'onglet {tab_selector} doit monter son panneau {panel_selector} "
+                f"({width}x{height})"
+            )
+            assert (await _replayer_tabs_state(page))["hidden"] == (
+                REPLAYER_TAB_HIDDEN_STATES[subview]
+            ), (
+                f"un seul panneau du Replayer est monté à la fois après le clic réel "
+                f"sur {tab_selector} ({width}x{height}) — "
+                f"{(await _replayer_tabs_state(page))['hidden']}"
+            )
+            await _assert_panel_surface_hit_testable(
+                page,
+                PANEL_SHELLS["replayer"],
+                (tab_selector, panel_selector),
+                mode="replayer",
+                step=subview,
+                width=width,
+                height=height,
+                audit=audit,
+            )
 
         # 4. Replayer → Review: the return is a pure view change that reuses the
         #    imported hands and lands back on the Review inbox.
@@ -974,6 +1263,40 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         await page.click('button.mode-card[data-app-view="training"]')
         await _wait_view(page, "training")
         await _measure(page, "training", width, height, audit)
+        # #394 T1 — the Training rail is a real tab row: each of its four tabs is
+        # activated by a real click and measured with its own rail pane, so a rail
+        # pane clipped by the fixed-height shell fails here instead of being
+        # assumed reachable.
+        for tab_selector, panel_selector, subview in TRAINER_RAIL_SURFACES:
+            await page.click(tab_selector)
+            assert await page.get_attribute(tab_selector, "aria-selected") == "true", (
+                f"le clic réel sur {tab_selector} doit le passer à aria-selected=true "
+                f"({width}x{height}), obtenu "
+                f"{await page.get_attribute(tab_selector, 'aria-selected')!r}"
+            )
+            assert await page.locator(panel_selector).is_visible(), (
+                f"l'onglet {tab_selector} doit monter son panneau {panel_selector} "
+                f"({width}x{height})"
+            )
+            mounted = await page.evaluate(
+                "() => Array.from(document.querySelectorAll("
+                "'#trainerPage [data-app-subview-panel]'))"
+                ".filter(p => !p.hidden).map(p => p.dataset.appSubviewPanel)"
+            )
+            assert mounted == [subview], (
+                f"un seul panneau du rail Training est monté à la fois après le clic "
+                f"réel sur {tab_selector} ({width}x{height}) — montés: {mounted}"
+            )
+            await _assert_panel_surface_hit_testable(
+                page,
+                PANEL_SHELLS["training"],
+                (tab_selector, panel_selector),
+                mode="training",
+                step=subview,
+                width=width,
+                height=height,
+                audit=audit,
+            )
         await page.click("#trainerBackBtn")
         await _wait_view(page, "home")
 
@@ -1173,36 +1496,15 @@ async def run_review_race_viewport(
     return page_errors
 
 
-async def run() -> None:
-    assert FIXTURE.is_file() and FIXTURE_HAND_ID, f"fixture HH repro introuvable: {FIXTURE}"
-    audit: list[dict] = []
-    httpd, url = _serve_site()
-    try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"]
-            )
-            try:
-                for width, height in VIEWPORTS:
-                    errors = await run_viewport(browser, url, width, height, audit)
-                    for error in errors:
-                        print(f"  page error ({width}x{height}): {error}", file=sys.stderr)
-                    # #394 T2 — the Review race runs per viewport too, in its own
-                    # fresh context: the journey above is deterministic thanks to
-                    # the readiness barrier, this one deliberately races it.
-                    race_errors = await run_review_race_viewport(
-                        browser, url, width, height, audit
-                    )
-                    for error in race_errors:
-                        print(
-                            f"  page error (course Review, {width}x{height}): {error}",
-                            file=sys.stderr,
-                        )
-            finally:
-                await browser.close()
-    finally:
-        httpd.shutdown()
+def print_audit(audit: list[dict]) -> None:
+    """Print the audit the run already built, plus its per-viewport inventory.
 
+    It is printed for a green *and* a red run: the log of the frozen
+    `browser-smoke` job is the only trace a reviewer reads, so it has to carry
+    the measured verdicts — including the `MISS` of a clipped panel — even when a
+    leg fails. Only the *report* stays success-only (it is written after every
+    assertion of `run()`, so a red run still leaves no file behind).
+    """
     print("desktop modes overflow audit (document.scrollingElement):")
     for record in audit:
         if record.get("race"):
@@ -1213,6 +1515,20 @@ async def run() -> None:
                 "persistenceReady={persistenceReady} mounted={mounted} "
                 "userNavigated={userNavigated} #reviewDashboard={reviewDashboardVisible} "
                 "#historiesSection masqué={historiesHidden}".format(**record)
+            )
+            continue
+        if record.get("panel_surface"):
+            # #394 T1 — the Spot Lab / Replayer / Trainer panel verdict, measured
+            # exactly like the import surface (`elementFromPoint` at the centre of
+            # each box + Playwright click trial) and printed per target as the
+            # composite `reachable` verdict.
+            reached = ", ".join(
+                f"{selector}={'ok' if entry.get('reachable') else 'MISS'}"
+                for selector, entry in record["hit_test"].items()
+            )
+            print(
+                "  mode={mode:<9} viewport={viewport:<10} panneau[{surface}]: "
+                "{reached}".format(reached=reached, **record)
             )
             continue
         if "hit_test" in record:
@@ -1249,6 +1565,47 @@ async def run() -> None:
             )
         )
 
+    # #394 T1 — one inventory line per reference viewport, derived from the audit
+    # above: it names every measured panel surface, every hit-tested target and
+    # its verdict, so the log of the frozen job proves the 1366x768 legs really
+    # ran the Spot Lab / Replayer / Trainer panel hit-tests.
+    for line in panel_inventory_lines(audit):
+        print(f"  {line}")
+
+
+async def run() -> None:
+    assert FIXTURE.is_file() and FIXTURE_HAND_ID, f"fixture HH repro introuvable: {FIXTURE}"
+    audit: list[dict] = []
+    httpd, url = _serve_site()
+    try:
+        try:
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"]
+                )
+                try:
+                    for width, height in VIEWPORTS:
+                        errors = await run_viewport(browser, url, width, height, audit)
+                        for error in errors:
+                            print(f"  page error ({width}x{height}): {error}", file=sys.stderr)
+                        # #394 T2 — the Review race runs per viewport too, in its own
+                        # fresh context: the journey above is deterministic thanks to
+                        # the readiness barrier, this one deliberately races it.
+                        race_errors = await run_review_race_viewport(
+                            browser, url, width, height, audit
+                        )
+                        for error in race_errors:
+                            print(
+                                f"  page error (course Review, {width}x{height}): {error}",
+                                file=sys.stderr,
+                            )
+                finally:
+                    await browser.close()
+        finally:
+            httpd.shutdown()
+    finally:
+        print_audit(audit)
+
     # #394 (backlog-31r) — auditability: the very audit printed above is
     # serialised as JSON before the final verdict. It happens *after* every
     # assertion of the run, so a red run (an overflow, an unreachable import
@@ -1265,6 +1622,7 @@ async def run() -> None:
         "modes desktop smoke: PASS "
         f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard "
         "+ measured Review import surface reachability: elementFromPoint hit-test + click trial "
+        "+ measured Spot Lab / Replayer / Trainer panel reachability (panel_surfaces) "
         "+ persistenceReady readiness barrier + Review race scenario "
         "+ #strategyPage deep link of the embedded shell "
         "+ editor deep link (query↔contrôles, réécriture en place, reload))"
@@ -1277,9 +1635,10 @@ def main(argv: list[str] | None = None) -> None:
             "Desktop modes smoke + overflow audit (#394): measures "
             "document.scrollingElement.scrollHeight <= clientHeight for the six "
             "modes at both reference viewports and serialises that audit as JSON "
-            "(per-mode measurements, Review import hit-tests, editor deep links, "
-            "Review race, global verdict) so the measurement is auditable from "
-            "the repository. The report is written by a real run only."
+            "(per-mode measurements, Review import hit-tests, Spot Lab / Replayer "
+            "/ Trainer panel surfaces, editor deep links, Review race, global "
+            "verdict) so the measurement is auditable from the repository. The "
+            "report is written by a real run only."
         )
     )
     parser.add_argument(
