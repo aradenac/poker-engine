@@ -169,8 +169,12 @@ every mode, Home included:
   (`trainerOpenBtn.click()`), and `openAppView("replayer")` is a no-op without
   `state.selectedHand`. `goHome()` returns to the Accueil screen.
 - `#quickNav` and the Home mode cards (`[data-app-view]`) route through
-  `appView` instead of scrolling. The Strategy mode is the standalone editor
-  page (`./hero-ranges.html`), so its real link is preserved.
+  `appView` instead of scrolling. The **Strategy** mode is the one exception
+  (§4.1): its entries keep a real `href` to the standalone editor
+  `./hero-ranges.html` — the `#quickNav` entry `data-product-domain="strategy"`
+  (`site/index.html:1279`) and the Home mode card
+  `a.mode-card[data-app-view="strategy"]` — so that real link is preserved and
+  the editor stays a genuine destination beside the embedded shell.
 - Deep links: `appViewForHashTarget(id)` maps an element id to its owning view,
   `routeFromHash()` reads `window.location.hash`, `focusAppSection(id)` opens the
   owning view, and `window.addEventListener("hashchange", …)` re-routes.
@@ -194,7 +198,64 @@ every mode, Home included:
   `training` and `replayer` are not restored blindly (the Trainer needs its
   runtime bootstrap, the Replayer needs `state.selectedHand`).
 
-### 4.1 Invariant: an explicit navigation always wins
+### 4.1 Decision: Stratégie Hero has two surfaces
+
+The `strategy` mode owns **two** surfaces, and the contract is explicit about
+which entry reaches which one — neither is a substitute for the other:
+
+- **Embedded shell** — `[data-view-shell="strategy"]` (`#strategyPage`,
+  `site/index.html:1643`) is reached by its **deep link** `#strategyPage`:
+  `appViewForHashTarget(id)` maps the id onto `state.appView`,
+  `routeFromHash()` reads `window.location.hash` at load
+  (`site/index.html:9829`, at the end of the asynchronous local restore — the
+  bookmark / shared-link path) and on `hashchange`, and `focusAppSection(id)`
+  mounts the shell (`site/index.html:6792-6837`). That deep link is the measured
+  entry of the shell in the desktop modes smoke, which loads
+  `index.html#strategyPage` and then reloads it so the load-time routing is the
+  proven one.
+- **Standalone editor** — `site/hero-ranges.html` is reached through its **real
+  link**: the Home mode card `a.mode-card[data-app-view="strategy"]` and the
+  `#quickNav` entry `data-product-domain="strategy"` (`site/index.html:1279`)
+  both carry `href="./hero-ranges.html"`. That real link is preserved — it is
+  never rewritten into an in-document `#hash` — so the editor stays a genuine
+  destination (followable, openable in a new tab) beside the shell. The mode
+  card additionally carries `data-hero-ranges-entry`, so
+  `syncHeroRangesDeepLinks()` *decorates* its href with the active population
+  (and, when a Training hand is open, its position / stack / spot) instead of
+  dropping the link.
+
+The embedded shell is therefore joined through its `#strategyPage` deep link
+(§6), never through the `#quickNav` Strategy entry: that entry's `href` is the
+standalone editor, and the desktop journey measures the editor from the Home
+mode card.
+
+### 4.2 Decision: the editor query is mandatory
+
+Once the editor is loaded, its URL **always** carries the five context
+parameters, in this order: `population`, `position`, `spot`, `stack`, `hand`
+(`deepLinkHref()`, `site/hero-ranges-app.js:117-125`). `renderAll()` calls
+`syncDeepLink()` on every render — hence after every control change and after
+every `#heroGrid` hand click — and the rewrite goes through
+`history.replaceState(null,"",href)`: in place, **without a further history
+entry** and without firing `hashchange`. `applyDeepLink()`
+(`site/hero-ranges-app.js:103-110`) reads exactly the same five names back on
+load, so a refresh, a bookmark or a shared link reopens the displayed context
+instead of the editor defaults.
+
+The query is therefore the **target behaviour**, not the accident of one
+interaction: a bare `hero-ranges.html` URL is never the state of a rendered
+editor. Any assertion expecting the query-less URL is false, and the browser
+smokes wait for the editor with the query-tolerant matcher
+`**/hero-ranges.html?**` (`tests/trainer/smoke_modes_desktop.py`,
+`tests/hero_ranges/smoke_hero_compliance_browser.py:209`). A Playwright glob is
+anchored, so `**/hero-ranges.html` only satisfies the un-rewritten URL and can
+never observe the rewrite; the `?**` tail is what makes the rewritten URL the
+measured one. The five parameters are measured against the real controls
+(`#populationInput`, `#positionSelect`, `#spotSelect`, `#stackInput`, the
+selected `#heroGrid .hand-cell`), never deduced from the href that led to the
+page.
+
+### 4.3 Invariant: an explicit navigation always wins
 
 The restore is **subordinate to an explicit navigation**, and that order is an
 invariant of the shell, not an implementation detail:
@@ -279,6 +340,13 @@ entry point**:
   skips) when Playwright is unavailable. It adds no workflow step — the modes
   smoke is exercised through the same frozen entry point as the numeric smokes,
   not as an opt-in measurement;
+- the two Stratégie Hero surfaces are measured on their own entry points (§4.1):
+  the embedded shell through its `#strategyPage` deep link, loaded and then
+  reloaded so the load-time `routeFromHash()` path is the measured one, and the
+  standalone editor through the Home mode card's real link, behind the
+  query-tolerant `page.wait_for_url("**/hero-ranges.html?**")` glob (§4.2). The
+  editor is deliberately **not** asserted no-scroll: it is a standalone document
+  outside the fixed-height shell contract;
 - the import surface of Review is reached through the real UI by both smokes, and
   measured at both reference viewports, never deduced. `smoke_trainer.py` enters
   Review, asserts that the Pilotage pane is the landing pane, opens the Import
@@ -327,6 +395,12 @@ EXIT=1
 - `docs/spotlab-view.md`: Spot Lab's sub-view mapping and the floating-equity
   visibility rule stay owned by that document; this document owns the general
   shell rules they build on.
+- `docs/desktop-modes-fit-evidence.md`: the standalone `./hero-ranges.html`
+  editor of §4.1 is navigated by the fit harness but stays **hors contrat** of
+  the shell — it is a standalone document, so the no-scroll rule of §1 and the
+  fixed-height shell are not asserted on it, only the mandatory deep link of
+  §4.2. Its two entries and its five-parameter query are part of this document's
+  navigation contract, not an exception to it.
 
 ## 8. Verification
 
@@ -345,7 +419,12 @@ EXIT=1
   frozen entry point and the per-viewport measurement; both reach the Review
   import pane through a real click on `#reviewImportTab`, and the modes smoke
   measures that the whole import surface (advanced options included) is
-  hit-testable at 1500x1000 and 1366x768.
+  hit-testable at 1500x1000 and 1366x768. The modes smoke also measures the two
+  Stratégie Hero surfaces of §4.1 on their own entry points (the `#strategyPage`
+  deep link for the embedded shell, the Home mode card for the standalone
+  editor) and waits for the editor with the query-tolerant
+  `**/hero-ranges.html?**` matcher that §4.2 makes mandatory, comparing the five
+  parameters to the real editor controls.
 - `tests/trainer/test_appview_no_recompute_contract.py` — the no-recalculation
   guard itself: statically, that no `scroll` / `scrollend` / `onscroll` /
   `IntersectionObserver` / `visibilitychange` path re-schedules a computation
