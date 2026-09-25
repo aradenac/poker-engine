@@ -474,7 +474,8 @@ async def run() -> None:
                 first_page = await _read(page)
                 assert_bounded(first_page, "page 1")
                 assert first_page["page"] == 0 and len(first_page["ids"]) < HAND_TOTAL, first_page
-                assert not first_page["prevDisabled"], first_page
+                assert first_page["prevDisabled"], first_page
+                assert not first_page["nextDisabled"], first_page
                 assert len(first_page["ids"]) == first_page["pageSize"], first_page
 
                 # --- Ordering, page by page, for the five first-level sorts ----
