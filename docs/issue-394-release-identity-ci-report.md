@@ -44,6 +44,20 @@ browser_smoke_authority: "job gelé browser-smoke de .github/workflows/trainer-s
 red_workflows: [".github/workflows/hero-range-editor.yml — job contract rouge au HEAD poussé 8ff970b (run 36081969061, étape « Main application integration is idempotent »), correction T1/T2/T3 non poussée"]
 report_self_delta: "révision task-backlog-lzl (T4) : le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, 1e17f90f05811b3dba4e6c830180578f42c391e1 (chore(n8n): task backlog-3p7 for issue #394), relevé juste avant l'écriture de ce fichier (git rev-parse HEAD) ; cette révision AJOUTE le § 8 (échec CI réel du job gelé contract de .github/workflows/hero-range-editor.yml à l'étape « Main application integration is idempotent », cause markup, correction T1/T2/T3) et deux sous-sections documentaires (§ 8.5 de docs/desktop-modes-fit-evidence.md, annotation additive de docs/hero-strategy-population-binding-ci-report.md) ; elle n'écrit AUCUN octet de site/** ni de .github/** (git status --porcelain vide sur ces familles), donc le rapport reste postérieur au dernier écrivain commité de site/** (8ed9ef0, R1) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
 g0t_self_delta: "révision task-backlog-g0t (T3, observation CI) : AJOUTE le § 9 de ce rapport et le § 8.6 de docs/desktop-modes-fit-evidence.md, qui consignent l'observation CI RÉELLE des jobs gelés relevée par le connecteur GitHub le 2026-09-25T02:23Z au HEAD poussé 8ff970bde9726852ffd77537499e4b7161698c2c (runs 36081969038 et 36081969061, URLs de runs et de jobs, conclusions et extraits de journaux) ; les jetons ci_green (NOT_OBSERVED), contract_job_rerun_required (true) et frozen_job_rerun_required (true) restent INCHANGÉS parce que le job gelé contract est rouge au HEAD poussé et que les octets livrés (2d0856024a1859cf778dd889b3911035c1d10378, non poussé) n'ont aucun run ; red_workflows passe de [] au workflow réellement rouge observé ; cette révision n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (git status --porcelain limité aux deux documents de preuve)"
+frozen_job_rerun_required: true
+b3bh_preflight_head: b3baf65e8a263bad2cda8d06c734b55876b455e9
+b3bh_preflight_branch: n8n/issue-394/task-backlog-3bh
+b3bh_preflight_commits_ahead_of_remote_tip: 7
+b3bh_preflight_remote_tip: 8ff970bde9726852ffd77537499e4b7161698c2c
+b3bh_preflight_delivered_bytes_have_ci_run: NO
+b3bh_preflight_frozen_commands_executed: 6
+b3bh_preflight_frozen_commands_exit: "5 commandes de job + 1 étape d'idempotence rejouée sur une copie sous /tmp, toutes EXIT=0 en pré-vol local ; l'indisponibilité navigateur de cet hôte reste signalée séparément et n'est jamais convertie en PASS de job gelé"
+b3bh_preflight_trainer_loop: "48 modules, 0 échec"
+b3bh_preflight_patch_idempotence: "PASS byte-identique (apply_trainer_mvp.py et apply_hero_range_editor.py : sha256 avant = après, diff -u EXIT=0)"
+b3bh_preflight_frozen_job_verdict: NOT_OBSERVED_FROM_THIS_WORKER
+b3bh_preflight_browser_coverage: NOT_PROVEN_BY_THIS_WORKER
+b3bh_preflight_browser_unavailable: "Module Python playwright absent ET Chromium pinné 1187 non démarrable (libnspr4/libnss3 absents) ET DNS coupé — repli navigateur local irréalisable sur cet hôte"
+b3bh_self_delta: "révision task-backlog-3bh (pré-vol hors navigateur) : AJOUTE le § 10 de ce rapport, qui consigne l'exécution RÉELLE, commande par commande, des deux jobs gelés au HEAD du worktree b3baf65e8a263bad2cda8d06c734b55876b455e9 (7 commits d'avance sur le tip distant 8ff970b) — codes de sortie observés, jamais extrapolés — et l'indisponibilité navigateur de cet hôte ; elle AJOUTE la clé frozen_job_rerun_required: true et n'altère AUCUN jeton existant (ci_green: NOT_OBSERVED, contract_job_rerun_required: true et red_workflows restent inchangés) ; elle n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (les octets de site/index.html et site/trainer.js ont été sauvés avant les deux essais d'idempotence puis restaurés par copie, sha256 identiques aux blobs HEAD) ; l'orchestrateur gère le commit et la PR"
 ---
 
 # Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, révisé par task-backlog-lzl)
@@ -761,3 +775,293 @@ autorité** de la règle « aucun scroll global » (`scrollHeight` / `clientHeig
 `1500x1000` et `1366x768`, pour les six modes `home`, `spotlab`, `review`,
 `replayer`, `training`, `strategy`). Cette section n'écrit **aucun octet** de
 `site/**`, de `.github/**`, de test ou d'outil : elle est strictement additive.
+
+## (10) Pré-vol hors navigateur des deux jobs gelés, au HEAD livré `b3baf65`
+
+Cette section est **strictement additive** : elle consigne l'exécution **réelle**,
+commande par commande, du corps **hors navigateur** des **deux jobs gelés** au
+HEAD du worktree épique **`b3baf65e8a263bad2cda8d06c734b55876b455e9`**
+(`chore(n8n): task backlog-g0t for issue #394`). Chaque code de sortie ci-dessous
+est **observé**, jamais extrapolé ; aucun échec d'environnement n'est requalifié en
+`PASS`.
+
+### (10.1) À quel HEAD, et pourquoi aucun run CI n'existe pour les octets livrés
+
+| Élément | Valeur observée |
+| --- | --- |
+| HEAD du pré-vol | `b3baf65e8a263bad2cda8d06c734b55876b455e9` |
+| Sujet du HEAD | `chore(n8n): task backlog-g0t for issue #394` |
+| Branche de ce worktree | `n8n/issue-394/task-backlog-3bh` |
+| Commits d'avance sur le tip distant | **7** (`git rev-list --count 8ff970b..HEAD`) |
+| Tip distant (dernier HEAD poussé) | `8ff970bde9726852ffd77537499e4b7161698c2c` |
+| Runs CI sur les octets livrés | **aucun** (`ci_delivered_head_runs: NONE`, § 9) |
+| `git status --porcelain` à l'ouverture | vide (worktree propre) |
+| Environnement observé | Python `3.14.4`, Node `v24.21.0`, worktree inscriptible |
+
+Le `head_sha` du front-matter (`1e17f90…`) est **inchangé** : il reste l'ancre de la
+révision `lzl`, conservée telle quelle par cette édition additive. Le HEAD des
+exécutions de ce § 10 est celui relevé ci-dessus, `b3baf65…`, **7 commits
+d'avance** sur `8ff970b` — il n'y a donc **aucun run CI pour les octets livrés**.
+La conséquence est directe : seule la relance des jobs gelés sur un HEAD **poussé**
+peut observer l'acceptation ; ce pré-vol ne mesure que le périmètre hors navigateur.
+
+### (10.2) Les six commandes, réellement exécutées au HEAD `b3baf65`
+
+| # | Commande (exacte) | Observation | Code de sortie |
+| --- | --- | --- | --- |
+| 1 | `PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py` | `REPRO workflow batch-1 tests: 9 passed` | **0** |
+| 2 | `node --check site/trainer.js` | aucune sortie (syntaxe OK) | **0** |
+| 3 | `python3 tools/write_site_release.py --check` | `release source anchor verified: site/RELEASE.json; assembled identity can be materialized` | **0** |
+| 4 | `for test in tests/trainer/test_*.py; do python3 "$test"; done` | **48 modules**, **0 échec** (§ 10.2.1) | **0** |
+| 5 | étape « Patch idempotence » : `sha256sum site/index.html site/trainer.js` → `apply_trainer_mvp.py` → comparaison | `sha256` avant = après, `diff -u` vide (§ 10.3) | **0** |
+| 6 | étape « Main application integration is idempotent » : `sha256sum site/index.html` → `apply_hero_range_editor.py` → comparaison | `sha256` avant = après, `diff -u` vide (§ 10.4) | **0** |
+
+Les commandes 1–3 sont les trois premières étapes du job `static-contract` de
+`.github/workflows/trainer-smoke.yml` ; la commande 1 est aussi la première étape
+du job `contract` de `.github/workflows/hero-range-editor.yml`.
+
+#### (10.2.1) Commande 4 — la boucle gelée « All trainer regression contracts »
+
+```
+$ for test in tests/trainer/test_*.py; do echo "=== $test"; python3 "$test"; echo "EXIT[$test]=$?"; done
+…
+TOTAL_MODULES=48
+```
+
+Les **48 modules** ont été exécutés et **chacun** est sorti avec `EXIT=0` : la
+**liste exacte des échecs est vide**. Les 48 chemins sont recopiés en § 10.8.
+
+**Aucun échec de type « no usable temporary directory » ni « filesystem
+read-only » n'a été observé** : `TMPDIR` est inscriptible sur cet hôte et l'arbre de
+travail l'est aussi (§ 10.7). De tels échecs, s'ils survenaient, seraient nommés
+**environnementaux** et **jamais** convertis en `PASS` ; ici ils ne se produisent
+pas, donc rien n'est requalifié.
+
+### (10.3) Commande 5 — idempotence du patch Trainer MVP (octets sauvés, restaurés par copie)
+
+```
+$ cp site/index.html /tmp/b3bh/index.html.orig
+$ cp site/trainer.js /tmp/b3bh/trainer.js.orig
+$ sha256sum site/index.html site/trainer.js > /tmp/b3bh/before-trainer.sha
+$ python3 tools/patches/apply_trainer_mvp.py
+trainer MVP integration patch applied
+$ sha256sum site/index.html site/trainer.js > /tmp/b3bh/after-trainer.sha
+$ diff -u /tmp/b3bh/before-trainer.sha /tmp/b3bh/after-trainer.sha
+EXIT=0
+```
+
+| Fichier | `sha256` avant | `sha256` après | Byte-identique |
+| --- | --- | --- | --- |
+| `site/index.html` | `4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b` | `4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b` | **oui** |
+| `site/trainer.js` | `cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7` | `cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7` | **oui** |
+
+Le patch imprime `trainer MVP integration patch applied` et **n'écrit aucun
+octet** : les deux empreintes encadrantes sont **égales** et le `diff -u` — la
+comparaison que la CI utilise — retourne **`EXIT=0`**.
+
+### (10.4) Commande 6 — idempotence du patch Hero range editor (job `contract`)
+
+C'est exactement l'étape **rouge** observée à `8ff970b` (§ 8 et § 9). Elle est ici
+rejouée au HEAD `b3baf65` :
+
+```
+$ grep -c 'id="heroRangesOpenBtn"' site/index.html
+1
+$ sha256sum site/index.html > /tmp/b3bh/index-before.sha
+$ python3 tools/patches/apply_hero_range_editor.py
+/home/…/site/index.html
+$ sha256sum site/index.html > /tmp/b3bh/index-after.sha
+$ diff -u /tmp/b3bh/index-before.sha /tmp/b3bh/index-after.sha
+EXIT=0
+```
+
+| Fichier | `sha256` avant | `sha256` après | Byte-identique |
+| --- | --- | --- | --- |
+| `site/index.html` | `4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b` | `4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b` | **oui** |
+
+Le marqueur de garde `id="heroRangesOpenBtn"` est présent **exactement une fois**,
+donc `patch_text()` retourne le texte inchangé : `sha256` avant = après et
+`diff -u` `EXIT=0` — **plus l'échec de § 8**, dont la cause (la réinsertion dans
+`#quickNav`) a été retirée en T1 (`3ff4f45`).
+
+#### (10.4.1) Modes `--index` / `--check` du même patch
+
+```
+$ python3 tools/patches/apply_hero_range_editor.py --check         # index du dépôt (déjà patché)
+/home/…/site/index.html
+EXIT=0
+
+# copie byte-identique SANS le marqueur, écrite sous /tmp (aucun octet du dépôt touché)
+$ sha256sum /tmp/b3bh/index-mode/index-unpatched.html
+63294b6809f20aebb8ad90cd2729471432a1c731ee373e54451c5dc5c17623f3  /tmp/b3bh/index-mode/index-unpatched.html
+$ python3 tools/patches/apply_hero_range_editor.py --index /tmp/b3bh/index-mode/index-unpatched.html
+/tmp/b3bh/index-mode/index-unpatched.html
+EXIT=0            # 1er run : écrit une fois
+$ sha256sum /tmp/b3bh/index-mode/index-unpatched.html
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  /tmp/b3bh/index-mode/index-unpatched.html
+$ python3 tools/patches/apply_hero_range_editor.py --index /tmp/b3bh/index-mode/index-unpatched.html
+EXIT=0            # 2e run : idempotent, sha256 inchangé
+$ sha256sum /tmp/b3bh/index-mode/index-unpatched.html
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  (identique)
+$ python3 tools/patches/apply_hero_range_editor.py --index /tmp/b3bh/index-mode/index-unpatched.html --check
+EXIT=0            # --check sur une copie patchée : PASS
+$ python3 tools/patches/apply_hero_range_editor.py --index /tmp/b3bh/index-mode/index-plain.html --check
+hero range editor patch is not applied
+EXIT=1            # --check sur une copie NON patchée : échec fail-closed attendu
+```
+
+La copie patchée (`4bcfbcf5…`) est **byte-identique** à `site/index.html` du
+dépôt : la copie non patchée n'en différait que par la ligne Strategy de l'Accueil.
+Le double `--index` montre que le patch écrit **au plus une fois** puis devient
+inerte ; `--check` est un garde fail-closed qui échoue (`EXIT=1`) quand l'entrée
+attendue manque.
+
+### (10.5) Couverture NON prouvée : la moitié navigateur
+
+Ce pré-vol **ne couvre pas** — et ne prétend pas couvrir — la moitié navigateur de
+l'acceptation #394. Restent **non prouvés localement** :
+
+- l'**absence de défilement global** (`document.scrollingElement.scrollHeight <=
+  clientHeight`) pour les **six modes** `home`, `spotlab`, `review`, `replayer`,
+  `training`, `strategy`, **aux deux viewports de référence** `1500x1000` et
+  `1366x768` ;
+- l'**atteignabilité réelle** des panneaux Spot Lab, Replayer et Trainer (les
+  hit-tests de panneaux à `1366x768` nommés par la revue humaine) ;
+- le **clic réel** du raccourci Accueil `#homePage a[href="#historiesSection"]`,
+  **non intercepté** — `tests/trainer/smoke_modes_desktop.py` (≈ ligne 1141)
+  exécute `await page.click('#homePage a[href="#historiesSection"]')`, sans
+  `force=True`, sans `dispatch_event`, sans retry et sans skip.
+
+Les commandes 1–6 ci-dessus sont **statiques** : aucune n'exécute un navigateur. Le
+**seul** canal qui observe ces trois points est le job gelé `browser-smoke` de
+`.github/workflows/trainer-smoke.yml` (§ 7 et § 9), plus le job `browser-smoke` de
+`.github/workflows/hero-range-editor.yml` pour l'éditeur autonome. **Aucun `PASS`
+de ces jobs n'est écrit ici** : ils n'ont pas été observés depuis ce worker.
+
+### (10.6) Repli navigateur local : irréalisable sur cet hôte (constat observé)
+
+Le repli navigateur demandé par la revue est **irréalisable sur cet hôte**, et les
+trois raisons ont été **vérifiées** ici, pas supposées :
+
+```
+$ python3 -c "import playwright"
+ModuleNotFoundError: No module named 'playwright'
+$ python3 tests/trainer/smoke_modes_desktop.py
+smoke_modes_desktop: Playwright is unavailable (ModuleNotFoundError("No module named 'playwright'")). …
+EXIT=1
+$ python3 tests/trainer/smoke_trainer.py
+ModuleNotFoundError: No module named 'playwright'     # échec à l'import, avant run_driver_smokes()
+EXIT=1
+$ ~/.cache/ms-playwright/chromium-1187/chrome-linux/chrome --version
+…/chrome: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
+EXIT=127
+$ ~/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell --version
+…/headless_shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
+EXIT=127
+$ ldconfig -p | grep -Ei 'libnspr4|libnss3'
+NO libnspr4/libnss3 in ldconfig cache
+$ ls /usr/lib/x86_64-linux-gnu/libnspr4.so /usr/lib/x86_64-linux-gnu/libnss3.so
+ls: cannot access '…/libnspr4.so': No such file or directory
+ls: cannot access '…/libnss3.so': No such file or directory
+$ timeout 8 curl -sS https://pypi.org/simple/
+curl: (6) Could not resolve host: pypi.org            # DNS coupé, EXIT=6
+```
+
+Chromium **pinné** (révision `1187`, version `140.0.7339.16`, cf.
+`reproducibility/browser-identity.lock.json` et
+`reproducibility/environment.lock.json`) est **présent** dans le cache mais **ne
+démarre pas** : il manque `libnspr4.so` (et `libnss3.so`), absents de l'hôte. Le
+module Python `playwright` est lui aussi **absent**, et le **réseau** (DNS) est
+coupé, donc ces bibliothèques **ne peuvent pas être installées ici**. Conclusion :
+aucun smoke navigateur n'est exécutable localement, et **la seule autorité reste le
+run des jobs gelés sur un HEAD poussé**.
+
+### (10.7) Conséquence sur les jetons, et clôture
+
+La condition de bascule de § 9 n'est pas remplie : le pré-vol local ne remplace pas
+un run CI poussé. Donc :
+
+- `ci_green` reste **`NOT_OBSERVED`** ;
+- `frozen_job_rerun_required` reste **`true`** (désormais aussi porté comme clé de
+  front-matter) : le job gelé `browser-smoke` doit tourner sur les octets livrés ;
+- `contract_job_rerun_required` reste **`true`** : l'étape d'idempotence du job
+  `contract` est rouge au HEAD poussé `8ff970b`, sa correction n'y est pas ;
+- `red_workflows` **nomme** toujours le workflow rouge réellement observé,
+  `.github/workflows/hero-range-editor.yml` (job `contract`, run `36081969061`,
+  étape « Main application integration is idempotent »).
+
+Après restauration par copie, l'arbre est rendu **intact** :
+
+```
+$ cp /tmp/b3bh/index.html.orig site/index.html && cp /tmp/b3bh/trainer.js.orig site/trainer.js
+$ sha256sum site/index.html site/trainer.js
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html
+cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
+$ git hash-object site/index.html site/trainer.js
+033e6517619c162f9033a226d2a5a8e05247401b   # == git rev-parse HEAD:site/index.html
+70490af692872b663a74ad1d2b180cefe9446568   # == git rev-parse HEAD:site/trainer.js
+$ git status --porcelain
+ M docs/issue-394-release-identity-ci-report.md
+$ python3 tools/write_site_release.py --check
+release source anchor verified: site/RELEASE.json; assembled identity can be materialized
+EXIT=0
+```
+
+`git status --porcelain` ne montre **que** le fichier de rapport modifié ; les
+octets de `site/**` sont **identiques aux blobs HEAD** (aucun `git checkout`,
+`reset` ni `stash` n'a été utilisé — la restauration s'est faite par copie) ; et
+`python3 tools/write_site_release.py --check` sort **`0`**. Cette section n'écrit
+**aucun octet** de `site/**` ni de `.github/**` : elle est strictement additive.
+
+### (10.8) Annexe — les 48 modules de la boucle gelée (tous `EXIT=0`)
+
+```
+tests/trainer/test_action_sizing_ev_presentation.py                     EXIT=0
+tests/trainer/test_advanced_import_central_ui_contract.py               EXIT=0
+tests/trainer/test_analysis_state_consistency_contract.py               EXIT=0
+tests/trainer/test_analysis_state_mirror_contract.py                    EXIT=0
+tests/trainer/test_appview_no_recompute_contract.py                     EXIT=0
+tests/trainer/test_auxiliary_scale_surfaces_contract.py                 EXIT=0
+tests/trainer/test_d6_render_matrix_contract.py                         EXIT=0
+tests/trainer/test_decision_summary_contract.py                         EXIT=0
+tests/trainer/test_delta_ev_primary_contract.py                         EXIT=0
+tests/trainer/test_deployment_metadata.py                               EXIT=0
+tests/trainer/test_desktop_accessibility_contract.py                    EXIT=0
+tests/trainer/test_hh_import_ux_contract.py                             EXIT=0
+tests/trainer/test_implicit_review_context.py                           EXIT=0
+tests/trainer/test_known_hand_override_contract.py                      EXIT=0
+tests/trainer/test_leak_training_ui_contract.py                         EXIT=0
+tests/trainer/test_local_persistence_ux_contract.py                     EXIT=0
+tests/trainer/test_model_b_robustness_ui_contract.py                    EXIT=0
+tests/trainer/test_opponent_analysis_state_contract.py                  EXIT=0
+tests/trainer/test_opponent_range_display_contract.py                   EXIT=0
+tests/trainer/test_opponent_range_semantics_rework_contract.py          EXIT=0
+tests/trainer/test_posterior_state_contract.py                          EXIT=0
+tests/trainer/test_preflop_runtime_contract.py                          EXIT=0
+tests/trainer/test_prior_posterior_ui_contract.py                       EXIT=0
+tests/trainer/test_product_architecture_contract.py                     EXIT=0
+tests/trainer/test_product_identity_ux_contract.py                      EXIT=0
+tests/trainer/test_range_display_docs_contract.py                       EXIT=0
+tests/trainer/test_range_vocabulary_contract.py                         EXIT=0
+tests/trainer/test_replayer_actor_comment_semantics.py                  EXIT=0
+tests/trainer/test_replayer_analysis_state_contract.py                  EXIT=0
+tests/trainer/test_replayer_hand_class.py                               EXIT=0
+tests/trainer/test_replayer_modal_prior_states.py                       EXIT=0
+tests/trainer/test_review_dashboard_ui_contract.py                      EXIT=0
+tests/trainer/test_review_hero_actual_result.py                         EXIT=0
+tests/trainer/test_review_inbox_ui_contract.py                          EXIT=0
+tests/trainer/test_site_release_identity.py                             EXIT=0
+tests/trainer/test_smoke_orchestration_contract.py                      EXIT=0
+tests/trainer/test_source_prior_unconditioned_contract.py               EXIT=0
+tests/trainer/test_spotlab_subviews_contract.py                         EXIT=0
+tests/trainer/test_trainer_analysis_state_contract.py                   EXIT=0
+tests/trainer/test_trainer_d6_exposure_contract.py                      EXIT=0
+tests/trainer/test_trainer_hero_ranges.py                               EXIT=0
+tests/trainer/test_trainer_latency_contract.py                          EXIT=0
+tests/trainer/test_trainer_parallel_review_contract.py                  EXIT=0
+tests/trainer/test_trainer_preload_contract.py                          EXIT=0
+tests/trainer/test_trainer_result_cache_contract.py                     EXIT=0
+tests/trainer/test_trainer_rng_determinism.py                           EXIT=0
+tests/trainer/test_trainer_smoke_determinism_contract.py                EXIT=0
+tests/trainer/test_trainer_static.py                                    EXIT=0
+```
