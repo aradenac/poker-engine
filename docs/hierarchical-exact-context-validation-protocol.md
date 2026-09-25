@@ -110,3 +110,22 @@ per-decision fields every answered decision must carry, the fixed flags
 (`test_consumed=false`, `production_effect=NONE`, `active_model_replaced=false`,
 `automatic_promotion=false`), and the rule that the result must embed both the
 protocol byte digest and its canonical payload digest.
+
+## 7. After the evaluation (T7)
+
+The result now exists:
+`analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json`, written
+once by `tools/training/validate_hierarchical_validation.py --run` and verified by
+`--check`. Its verdict is `RETAIN_ACTIVE_REFERENCE`: the frozen `coverage_floor`
+and `calibration_absolute` gates fail on the measured evidence, so the active
+Model A v5 pointer, the thresholds, the pooling limits and the #367 boundary are
+all unchanged. TEST was never parsed.
+
+Two consequences are expected rather than defects. First, the T6 order guard now
+reports the consumed holdout, so a second `--run` and
+`write_frozen_validation_protocol.py --check` abort with
+`VALIDATION_ORDER_GUARD`: the protocol was frozen *before* the read and that
+ordering cannot be replayed after it. Second, the protocol payload itself is
+byte-identical to the frozen revision — its regression suite re-proves this by
+replaying the pre-freeze order-guard evidence — so no threshold can have been
+edited after the read.

@@ -1,0 +1,4432 @@
+{
+  "active_model_replaced": false,
+  "automatic_promotion": false,
+  "candidate": {
+    "byte_sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+    "canonical_payload_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "data_scope": "TRAIN_ONLY",
+    "fit_scope": "TRAIN_ONLY_FIT_COMPLETE",
+    "identity_granularity": "hierarchical_exact_key",
+    "observations": 192,
+    "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json",
+    "support_isolation_rule": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+  },
+  "comparators": {
+    "active_reference": {
+      "id": "active-model-a-preflop-v5",
+      "path": "training/models/preflop_population_model_v5.json",
+      "role": "ACTIVE_REFERENCE",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "candidate_v2_352": {
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "fit_artifact": {
+        "path": "analysis/model_a_preflop_sizing_v2_fit.json",
+        "sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e"
+      },
+      "id": "model-a-preflop-sizing-aware-candidate-v2",
+      "role": "ADMITTED_EXACT_PRICE_COMPARATOR",
+      "validation_evidence": {
+        "byte_sha256": "0e93640bd56e37d445438c9b663d2cb77b623f33d01dc91836ed12fd4651bf06",
+        "evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+        "outcome": "ADMIT_CANDIDATE",
+        "path": "analysis/model_a_preflop_sizing_v2_validation.json",
+        "test_consumed": false
+      }
+    },
+    "comparator_count": 3
+  },
+  "coverage": {
+    "abstain_rate_vs_exact_price_universe": 0.9997970367363507,
+    "comparable_universe_decisions": 9854,
+    "comparable_universe_hands": 2323,
+    "coverage_vs_exact_price_universe": 0.00020296326364927948,
+    "coverage_vs_focus_family": 0.000783289817232376,
+    "focus_family_decisions": 11490,
+    "identifiable_decisions": 9,
+    "identifiable_hands": 9,
+    "mean_pooling_level_effective_sample_size": 37.0,
+    "mean_support_effective_sample_size": 0.0
+  },
+  "decisions": [
+    {
+      "active_model_a_v5": {
+        "CALL": 0.37515807818601865,
+        "FOLD": 0.5429928069856269,
+        "JAM": 0.03062100929434933,
+        "RAISE": 0.05122810553400523
+      },
+      "hand_id": "261780009476",
+      "model_a_preflop_sizing_aware_candidate_v2": {
+        "CALL": 0.3064516129032258,
+        "FOLD": 0.6612903225806451,
+        "JAM": 0.016129032258064516,
+        "RAISE": 0.016129032258064516
+      },
+      "observed_action": "FOLD",
+      "pooling": {
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "source_key": "MAPSUP_4a7d345e260602b841e6:family=VS_ISO|actor=BB|aggressor=SB|limpers=1|callers=0|target=5|call=4"
+      },
+      "pooling_source_effective_sample_size": 29.0,
+      "posterior": {
+        "CALL": 0.306451612903,
+        "FOLD": 0.661290322581,
+        "JAM": 0.016129032258,
+        "RAISE": 0.016129032258
+      },
+      "reason_code": "EXACT_HIERARCHICAL_ESTIMATE",
+      "requested_key": "MAPSUP_4a7d345e260602b841e6:family=VS_ISO|actor=BB|aggressor=SB|limpers=1|callers=0|target=5|call=4|public=9c97827c86aac137b82e8c8a37437b2727ae6fe6efcc77fc2ee5d6c5de62290a",
+      "support": {
+        "distinct_hands": 0,
+        "effective_sample_size": 0.0,
+        "observations": 0,
+        "source_key": "MAPSUP_4a7d345e260602b841e6:family=VS_ISO|actor=BB|aggressor=SB|limpers=1|callers=0|target=5|call=4|public=9c97827c86aac137b82e8c8a37437b2727ae6fe6efcc77fc2ee5d6c5de62290a"
+      }
+    },
+    {
+      "active_model_a_v5": {
+        "CALL": 0.3816075600946218,
+        "FOLD": 0.5708840005030831,
+        "JAM": 0.005947353959726698,
+        "RAISE": 0.04156108544256844
+      },
+      "hand_id": "261787644340",
+      "model_a_preflop_sizing_aware_candidate_v2": {
+        "CALL": 0.1595744680851064,
+        "FOLD": 0.7978723404255319,
+        "JAM": 0.031914893617021274,
+        "RAISE": 0.010638297872340425
+      },
+      "observed_action": "FOLD",
+      "pooling": {
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "source_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      "pooling_source_effective_sample_size": 45.0,
+      "posterior": {
+        "CALL": 0.159574468085,
+        "FOLD": 0.797872340426,
+        "JAM": 0.031914893617,
+        "RAISE": 0.010638297872
+      },
+      "reason_code": "EXACT_HIERARCHICAL_ESTIMATE",
+      "requested_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=c29564309d581bcd8df7170aac6baffb5763a629c9c34ea44e274cdc01cde8b7",
+      "support": {
+        "distinct_hands": 0,
+        "effective_sample_size": 0.0,
+        "observations": 0,
+        "source_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=c29564309d581bcd8df7170aac6baffb5763a629c9c34ea44e274cdc01cde8b7"
+      }
+    }
+  ],
+  "evidence_sha256": "760247b44fa3299c9a75e2058e59ec591ecb9800e3e5a6f9f7f5a05f4c651770",
+  "gate": {
+    "all_gates_pass": false,
+    "failing_gates": [
+      "coverage_floor",
+      "calibration_absolute"
+    ],
+    "gates": [
+      {
+        "claim_supportable": true,
+        "gate": "split_discipline",
+        "measured": {
+          "split_consumed": "VALIDATION",
+          "test_consumed": false,
+          "test_decisions_read": 0,
+          "test_hands_parsed": 0
+        },
+        "pass": true,
+        "rule": "evaluate VALIDATION only; TEST stays unconsumed and unauthorized"
+      },
+      {
+        "claim_supportable": false,
+        "gate": "coverage_floor",
+        "measured": {
+          "identifiable_decisions": 9,
+          "identifiable_hands": 9,
+          "required_decisions": 200,
+          "required_hands": 100
+        },
+        "pass": false,
+        "rule": "identifiable VALIDATION decisions >= 200 and distinct hands >= 100"
+      },
+      {
+        "claim_supportable": false,
+        "gate": "candidate_not_inferior_to_active",
+        "measured": {
+          "ci95_upper": -0.19709688759932775,
+          "delta_logloss": -0.2659297301568112,
+          "paired_decisions": 2
+        },
+        "pass": true,
+        "rule": "paired candidate-minus-active 95% CI upper bound <= 0"
+      },
+      {
+        "claim_supportable": false,
+        "gate": "candidate_not_inferior_to_v2",
+        "measured": {
+          "ci95_upper": -5.365152766501069e-13,
+          "delta_logloss": -5.615508058554042e-13,
+          "paired_decisions": 2
+        },
+        "pass": true,
+        "rule": "paired candidate-minus-#352-v2 95% CI upper bound <= 0"
+      },
+      {
+        "claim_supportable": false,
+        "gate": "calibration_absolute",
+        "measured": {
+          "bins_meeting_minimum_support": 0,
+          "ece": 0.13520933424825002,
+          "maximum_absolute_ece": 0.05
+        },
+        "pass": false,
+        "rule": "pooled ECE <= 0.05"
+      },
+      {
+        "claim_supportable": false,
+        "gate": "calibration_delta_vs_active",
+        "measured": {
+          "active_ece": 0.22153079812782253,
+          "candidate_ece": 0.13520933424825002,
+          "delta_ece": null,
+          "maximum_ece_delta_vs_active": 0.02
+        },
+        "pass": true,
+        "rule": "candidate ECE minus active ECE <= 0.02"
+      },
+      {
+        "claim_supportable": true,
+        "gate": "pooling_discipline",
+        "measured": {
+          "answered_decisions": 9,
+          "answered_without_pooling": 0
+        },
+        "pass": true,
+        "rule": "every answered decision carries pooling.level and pooling.source_key == requested_key"
+      },
+      {
+        "claim_supportable": true,
+        "gate": "support_isolation",
+        "measured": {
+          "answered_decisions": 9,
+          "rule": "support.source_key == requested_key on every answered decision",
+          "violations": 0
+        },
+        "pass": true,
+        "rule": "support.source_key == requested_key for every answered decision"
+      },
+      {
+        "claim_supportable": true,
+        "gate": "exact_claim_discipline",
+        "measured": {
+          "exact_empirical_strong": 0,
+          "violations": 0
+        },
+        "pass": true,
+        "rule": "EXACT_EMPIRICAL_STRONG is emitted only at L0_EXACT_KEY"
+      }
+    ],
+    "unsupported_claims": [
+      "candidate_not_inferior_to_active",
+      "candidate_not_inferior_to_v2",
+      "calibration_absolute",
+      "calibration_delta_vs_active"
+    ]
+  },
+  "hero_ev_consumed": false,
+  "holdout_boundary": {
+    "checks": [
+      {
+        "check": "self_source_scan_for_test_loaders",
+        "detail": "AST scan: the evaluation command declares none of the forbidden TEST/holdout loader symbols; VALIDATION is read through the certified split loader, which fails closed on any non-VALIDATION row",
+        "forbidden_symbols": [
+          "load_test_records",
+          "TEST_HANDS",
+          "test_hand_ids",
+          "test_decisions",
+          "load_holdout",
+          "holdout_records"
+        ],
+        "hits": [],
+        "result": "PASS"
+      },
+      {
+        "check": "frozen_protocol_reverified_before_the_validation_read",
+        "guard_id": "VALIDATION_ORDER_GUARD",
+        "order_guard": "PASS",
+        "protocol_byte_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+        "result": "PASS"
+      }
+    ],
+    "split_consumed": "VALIDATION",
+    "test_authorized": false,
+    "test_consumed": false,
+    "test_decisions_read": 0,
+    "test_hands_parsed": 0,
+    "test_rows_seen_by_the_evaluator": 0,
+    "validation_consumed": true,
+    "validation_decisions_in_scope": 11490,
+    "validation_hands_parsed": 2324
+  },
+  "issue": 419,
+  "issue_314_real_optimization": false,
+  "kind": "FROZEN_VALIDATION_EVALUATION",
+  "metrics": {
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "method": "paired_percentile_bootstrap",
+      "samples": 5000,
+      "seed": 419
+    },
+    "pairwise": {
+      "candidate_minus_active": {
+        "delta_logloss": -0.2659297301568112,
+        "left": "candidate_hierarchical",
+        "paired_bootstrap": {
+          "ci95": [
+            -0.33476257271429477,
+            -0.19709688759932775
+          ],
+          "hands": 2,
+          "mean": -0.26592973015681126,
+          "probability_candidate_better": 1.0,
+          "samples": 5000,
+          "seed": 419
+        },
+        "right": "active_model_a_v5"
+      },
+      "candidate_minus_v2_352": {
+        "delta_logloss": -5.615508058554042e-13,
+        "left": "candidate_hierarchical",
+        "paired_bootstrap": {
+          "ci95": [
+            -5.866696017875483e-13,
+            -5.365152766501069e-13
+          ],
+          "hands": 2,
+          "mean": -5.615924392188276e-13,
+          "probability_candidate_better": 1.0,
+          "samples": 5000,
+          "seed": 420
+        },
+        "right": "model_a_preflop_sizing_aware_candidate_v2"
+      }
+    },
+    "primary": {
+      "definition": "mean over scored decisions of -ln p_hat(observed_action | requested_key)",
+      "epsilon_clip": 1e-12,
+      "evaluated_decisions": 2,
+      "evaluated_hands": 2,
+      "multiclass_log_loss": {
+        "active_model_a_v5": 0.5856142236934883,
+        "candidate_hierarchical": 0.31968449353667705,
+        "model_a_preflop_sizing_aware_candidate_v2": 0.3196844935372386
+      },
+      "name": "multiclass_log_loss",
+      "paired_unit": "hand_id"
+    },
+    "secondary": {
+      "abstain_rate": 0.9997970367363507,
+      "brier_score": {
+        "active_model_a_v5": 0.34234434444490314,
+        "candidate_hierarchical": 0.13830423171848188,
+        "model_a_preflop_sizing_aware_candidate_v2": 0.13830423171878925
+      },
+      "calibration_detail": {
+        "active_model_a_v5": {
+          "bins_meeting_minimum_support": 0,
+          "bins_per_action_class": 10,
+          "claim_supportable": false,
+          "ece": 0.22153079812782253,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.37838281914032024,
+            "FOLD": 0.443061596255645,
+            "JAM": 0.018284181627038015,
+            "RAISE": 0.04639459548828684
+          }
+        },
+        "candidate_hierarchical": {
+          "bins_meeting_minimum_support": 0,
+          "bins_per_action_class": 10,
+          "claim_supportable": false,
+          "ece": 0.13520933424825002,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.233013040494,
+            "FOLD": 0.27041866849650004,
+            "JAM": 0.024021962937500002,
+            "RAISE": 0.013383665065000001
+          }
+        },
+        "model_a_preflop_sizing_aware_candidate_v2": {
+          "bins_meeting_minimum_support": 0,
+          "bins_per_action_class": 10,
+          "claim_supportable": false,
+          "ece": 0.13520933424845574,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.2330130404941661,
+            "FOLD": 0.2704186684969115,
+            "JAM": 0.024021962937542895,
+            "RAISE": 0.013383665065202471
+          }
+        }
+      },
+      "coverage": 0.00020296326364927948,
+      "ece_delta_candidate_minus_active": null,
+      "expected_calibration_error": {
+        "active_model_a_v5": 0.22153079812782253,
+        "candidate_hierarchical": 0.13520933424825002,
+        "model_a_preflop_sizing_aware_candidate_v2": 0.13520933424845574
+      },
+      "mean_effective_sample_size": 37.0
+    },
+    "stratification": {
+      "by_pooling_level": {
+        "L3_RUNTIME_SUPPORT_CONTEXT": 2
+      },
+      "by_reason_code": {
+        "EXACT_HIERARCHICAL_ESTIMATE": 2
+      },
+      "by_support_distinct_hands_bucket": {
+        "ZERO": 2
+      },
+      "by_support_observations_bucket": {
+        "ZERO": 2
+      }
+    }
+  },
+  "model_b_consumed": false,
+  "node_classification": {
+    "exact_empirical_strong_nodes": 0,
+    "nodes": [
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+        "path": [
+          "SB:ISO@5"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 5,
+              "JAM": 1,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 6,
+            "source_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+            "source_observations": 6,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 7,
+              "JAM": 1,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 8,
+            "source_key": "LEVELKEY_1_32475a42a583a2e498f739822df2855a3c38f46ecdcbb18e91f8dcccdd24f1ff",
+            "source_observations": 8,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 7,
+              "JAM": 1,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 8,
+            "source_key": "LEVELKEY_2_b1518d0d7cacc9ed7c3f1f64c09def56094467855a998cf3f8f231d0410a42b1",
+            "source_observations": 8,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 7,
+              "FOLD": 37,
+              "JAM": 1,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": true,
+            "rank": 3,
+            "source_distinct_hands": 45,
+            "source_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+            "source_observations": 45,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 22,
+              "FOLD": 82,
+              "JAM": 1,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 105,
+            "source_key": "LEVELKEY_4_162e3ad46fe91becffbf812cf8dfc8e23e9fa413ae09404786fa29b35a920d19",
+            "source_observations": 105,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+        "response_sha256": "8c85d75e87f61d07619106c434361e212d6699bfa2361197543d7ee29872d739",
+        "runtime_exact_preflop_node_key": "MAPNODE_2d1c7cbb86c3fabad985ce36301dc3a3cc378c97595ac77b5221d4e26ebf4415",
+        "runtime_support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 5,
+            "JAM": 1,
+            "RAISE": 0
+          },
+          "distinct_hands": 6,
+          "observations": 6
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=ebdd6e0b41a62e1bc9f7dbb07345b3ec888c99efc29bed92515160fc99ab8fc2",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_afdf2c462a1da2bf7d7029752c03bd0a8bfb23648b839dc91035dc0955f44b86",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_1496a9ffffc71e37df0c1d17a4c73f66bf9fd7e158fdc36c52b3ff688687193a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 10,
+              "FOLD": 4,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 14,
+            "source_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+            "source_observations": 14,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 30,
+              "FOLD": 9,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 39,
+            "source_key": "LEVELKEY_4_9e8a63502efe27fa750b9183b8cd216591efff28dbc181c1d1ae6d4acb272fba",
+            "source_observations": 39,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=ebdd6e0b41a62e1bc9f7dbb07345b3ec888c99efc29bed92515160fc99ab8fc2",
+        "response_sha256": "ec74f95c86767991bc1745806ab21942f6efa5b6575571c85bd6d00bdf5edfd1",
+        "runtime_exact_preflop_node_key": "MAPNODE_2600c38a4545ff21491d9f51d941b4250503cc2a8e933db210dcfeede37b7a98",
+        "runtime_support_context_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4|public=a7e233cbb17db340a8f39361b08ba90c5e3422cfdfd0224dd6aca033bee5254a",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_fcdffc420fa6a159510e0e763c59f1f16efcaae8be941ad0048c4d73ad10cdb1",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_02830eef0484b84885a7afdf4c009ac4000fee0204df94e94370ad1938923f1d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 1,
+              "FOLD": 1,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 2,
+            "source_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4",
+            "source_observations": 2,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 26,
+              "FOLD": 17,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 43,
+            "source_key": "LEVELKEY_4_3558ee998af130e8f15d5073e10bce20ec07a3968dee1fdf84fdc0903aa4ec73",
+            "source_observations": 43,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4|public=a7e233cbb17db340a8f39361b08ba90c5e3422cfdfd0224dd6aca033bee5254a",
+        "response_sha256": "37960edb5a213ffd5377d9ce8d96a90c9de65f716e35cfffdff2e67d021900b8",
+        "runtime_exact_preflop_node_key": "MAPNODE_3a6961db2db1ff7ddc4c70bc0cb677dc7b0e98c97b965200b0a3f80356dd4b4b",
+        "runtime_support_context_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "f205810c4839cc1008610bb1ad87a6a296cf513cc8b8b3592c44249b3ab33ea4",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2bd5e9af76e08890db692868f41e4cc4330677c546de73e52f0ef71cdc2247f",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_944e71e676ee67fea51023efecc9dca065a321b7c9a3d085e6419191c1bb306a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_06034665ff6ee0a9fb813f6cf9e94052b1ea502f794f73b108329a42c8759018",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_b149c7d8f324d52ea8db6cd4c326d2b6f618fae0a36155dea61e44a13ada1995",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2bd5e9af76e08890db692868f41e4cc4330677c546de73e52f0ef71cdc2247f",
+        "response_sha256": "47f992e1bf180fe7aa210e5d06b6ccae9f7cef55a1e7e8f2b6fbc6284f5a2a2b",
+        "runtime_exact_preflop_node_key": "MAPNODE_70179831e2627b530b70b0f6444cc3dce1d25a8ddebe72ede48ea2892ba4c8d9",
+        "runtime_support_context_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "b01046512efee292a217dde5bd3dc5549b5f1d1a22f4de6c6e3baa6c10bec67a",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=1c047e14f02bd05ff2f6ec45f2adc0b07db0576449ea4a7537dcd22e50c9067c",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_7f9498810e4ce2716bce02bcd7eb42b7d1585b88ca2693318edf2a613206b36a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_a57de1c2e7c46daec9400ac0d7d36b2114877a0c1860d2844dd8a9fcb5b6b81c",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_cf02ba5e753bd63691e2abb7696ebea1d7463ca540f31028167ccf6ee54e4ca4",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=1c047e14f02bd05ff2f6ec45f2adc0b07db0576449ea4a7537dcd22e50c9067c",
+        "response_sha256": "d33f83df9bcb15945515051a1b7cad107dfab4dc7969a21fabdd7e84a61f8e3a",
+        "runtime_exact_preflop_node_key": "MAPNODE_ad0be264bf2a4374e53434ff9c805620bb4321dedba6b9b6d5cad67bacae8b11",
+        "runtime_support_context_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "6911c7cb48a6a2fb8bb9778f39cf29bad91b7abaefae911f383514932dd2b598",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:CALL",
+          "BB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95|public=178a05fcc6bffba15bc408d0eb5ca9755663717c7578921f9b2e860e38a95d8b",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_df11124240001630f3449444c5a3270bd9bb33c3587f5ad6eaee17f7107c7144",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_47568c4ddabef64e4ac438ad851503988c670173dd4b7f2af9ddb16975cd1315",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_08c44a523c3d0fdaf2f8f48cb6f83c6f992e4cef47ac295045857a3203c17b90",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95|public=178a05fcc6bffba15bc408d0eb5ca9755663717c7578921f9b2e860e38a95d8b",
+        "response_sha256": "5193cdafdc908b16c2fbaeaed78f7acc3dbe6ed8c738d277e10d934b068f7dc7",
+        "runtime_exact_preflop_node_key": "MAPNODE_74a325468e56813480ce4667d01909aee2943c302abd30947405731f514e0996",
+        "runtime_support_context_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "4087f0c8efc91c1b2a3f445302cc8bdba8b8a6e69324ff017ada2f43fb95508b",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:CALL",
+          "BB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=0020904a47247270b12c055022c3700a94559316f8317e5a935d1072495356c4",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_658f64b2661788d27858ae8c10314f52639304c1e0b7cddc4dfa0608e719e4e9",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_e4ef7f83d21db42728b93419d32c3bdfab7db2e6f384b248e11dda4762bfdd14",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_08c44a523c3d0fdaf2f8f48cb6f83c6f992e4cef47ac295045857a3203c17b90",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=0020904a47247270b12c055022c3700a94559316f8317e5a935d1072495356c4",
+        "response_sha256": "f504fe74f03ae3879ac908be81d2109d0094f2898194b1ad07ae5278ef988fe7",
+        "runtime_exact_preflop_node_key": "MAPNODE_aea4e9624221cac57ded2f68d993b28a912b44d8b40095425674cfe1080db192",
+        "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "c7030a04aebdd344027d7546c431aa7a13cc6f66247daea6e2b43ce3120b5703",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2ece05f288c624dc10bf0dd60878fef7e0bf8c4acbe3ec7e7f4f253bd7d3b60",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_1989df9df2cb4ea1267274782271b06a2330227217153e77f3a6775cc3d350d4",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_6e90ea388e2803631c85ba9c19dcd74be64160588e54d5f41e8d6c4749e5810a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_cf02ba5e753bd63691e2abb7696ebea1d7463ca540f31028167ccf6ee54e4ca4",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2ece05f288c624dc10bf0dd60878fef7e0bf8c4acbe3ec7e7f4f253bd7d3b60",
+        "response_sha256": "e0c3ccfdb6f451b292dd9b5049bf9ff02464a9d146faf045e09034ae5a185f91",
+        "runtime_exact_preflop_node_key": "MAPNODE_cbd2e3c40de0daff30750a417a70db43c6d0399bbe02c89ac6171bc66494c669",
+        "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "2d12402d24411ccd4e6027ab70a84cd579441467211acf5fd1d1f5866f6ccd87",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:FOLD",
+          "BB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=c9550cf9d780bda980875292c067d269921b6de0de12497d84478996274874eb",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_e2394799a3440cab74fe401d77c4f2881b31041d653a99b53489f4dab7fecb9d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_567201a11f31372effe777a72019c63f9a04ee4e559ca17da5383b3109bc4df9",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_08c44a523c3d0fdaf2f8f48cb6f83c6f992e4cef47ac295045857a3203c17b90",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=c9550cf9d780bda980875292c067d269921b6de0de12497d84478996274874eb",
+        "response_sha256": "2bd9894fa76b8144283136a1ac6afc5a8962e8a8661db34c215631ae149e2ab6",
+        "runtime_exact_preflop_node_key": "MAPNODE_df120f28fee332733637e97b0ae90f9ace30b517915d0b3b76a0fef176d1f22c",
+        "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "bb7e6df64e700d39a8d49b34f84b2766d0af617b8e64c33ae4db54d26a9f3e02",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:FOLD",
+          "BB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=bcff9e5463ad7428c54f3f13e3895d3509128346d71bef7d3f7fa1342f18f031",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_1d1a91e5b3c739e85cd3a0952aff1a284437eacaa626ee3d4785e906f27e123b",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_90647f72c8d6b1f985f12a0b1cd0f3be9c72c825fc5533c9f69de496a461a7b7",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_08c44a523c3d0fdaf2f8f48cb6f83c6f992e4cef47ac295045857a3203c17b90",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=bcff9e5463ad7428c54f3f13e3895d3509128346d71bef7d3f7fa1342f18f031",
+        "response_sha256": "47b6f3227221cec34e096a0b0afe2c385bb1bf3b97f9fb569eacb56f48e0015a",
+        "runtime_exact_preflop_node_key": "MAPNODE_a77b3dc5aed3ffb51ba85370f763810bc3aea99d4c8b7b621d886442b9a22626",
+        "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=298241d5d97f8eacaaf46ecf11e688982d9c9ddbd343559db86d1635727a8225",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_7e0da85927481f53e0f57667babd1d0c36d7dbcb032063e715548c92664a532e",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_3b8ce61a3796f33b14fd28db81346ffe1a413d005f1c0bb1cbc3e3dbf66d0d57",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 15,
+              "FOLD": 6,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": true,
+            "rank": 3,
+            "source_distinct_hands": 21,
+            "source_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+            "source_observations": 21,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 26,
+              "FOLD": 17,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 43,
+            "source_key": "LEVELKEY_4_3558ee998af130e8f15d5073e10bce20ec07a3968dee1fdf84fdc0903aa4ec73",
+            "source_observations": 43,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=298241d5d97f8eacaaf46ecf11e688982d9c9ddbd343559db86d1635727a8225",
+        "response_sha256": "be39f5fd85e10e2936a115f71a97466777ffcf84cc18a791879493e316c02a05",
+        "runtime_exact_preflop_node_key": "MAPNODE_5dbf880a9604d5be9c70e8b19d7e78814e526e38f6936ac5ce402b3ed966e80f",
+        "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "df10c340efa286e36dcd5a6be2f07940a49ac786eae0c13c9b1c986dd29752a8",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:FOLD",
+          "BTN:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=223692443a9fa62fb78a818e80c9b20fb7f9f7e14f434e3f3d402d68e80a3b73",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_28a38e95664aa85e12a2e4e855cea1cd8add86d4bdebb4483edaec515f0a162c",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_ccae52b7751a72bbb85356852eb452b8453cfe7d25491469ab17dfd67f6c3c26",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_b149c7d8f324d52ea8db6cd4c326d2b6f618fae0a36155dea61e44a13ada1995",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=223692443a9fa62fb78a818e80c9b20fb7f9f7e14f434e3f3d402d68e80a3b73",
+        "response_sha256": "274b8d16ea0659432910848d05bc1d22a33ee69c9ca429c5895ec8c02f3febac",
+        "runtime_exact_preflop_node_key": "MAPNODE_0c7ed0428548306d80e08650cf70cb8d41c14ba73de04b48d33f5e6d83db5bdd",
+        "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "6a7a98c82478e0cc739c9c9a50751b892b087e3902c2e5085f2a9adb5dc596d6",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:FOLD",
+          "BTN:JAM@100",
+          "SB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=e936fc7e3647208d474ae69dfdf53c154b04c5a1bed941038ba198de7b946990",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_f82fc8511c0b81ca5033a98a262adde8173b344cac53ad4f2984f99d100cbc70",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_eb602439fb34d89d6eea0c86a2f0878aee460aabfa6d0aae3b471f4e2f66f4fe",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_cf02ba5e753bd63691e2abb7696ebea1d7463ca540f31028167ccf6ee54e4ca4",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=e936fc7e3647208d474ae69dfdf53c154b04c5a1bed941038ba198de7b946990",
+        "response_sha256": "769c0a80e7e536027ca7261872fca65ccd21755324a94f3eace5654d57cc279b",
+        "runtime_exact_preflop_node_key": "MAPNODE_e6714d167bd4be7f480aea90b91369f6ea056ff242f0611f980efcf42a85014e",
+        "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "7ae0579a66304ad900f044afd7bfa04029cd7c4899875367a8721a62cf053a05",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:FOLD",
+          "BTN:JAM@100",
+          "SB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=12386f31933668bfda35be438f6b3f29e3cedef9f6e084863cd8296bf515e078",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_2b71d58cf420a9b8098e7f7b1c8ccd15d377f454eb1c6858e3059686ab454db8",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_b48e9d218bb088759a4635394209573448af1e2092ed9cb5f5f395c1b2b24065",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_cf02ba5e753bd63691e2abb7696ebea1d7463ca540f31028167ccf6ee54e4ca4",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=12386f31933668bfda35be438f6b3f29e3cedef9f6e084863cd8296bf515e078",
+        "response_sha256": "36894be1aba63e6a9ce2e9d758daf729604791dc0b6002f88aa242a66605e58f",
+        "runtime_exact_preflop_node_key": "MAPNODE_6328d3e9f61a79d35d033d9343fd34fbb05de24f354beb71038ed4915a8f92bf",
+        "runtime_support_context_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "734eeb07d849a9c5b3f111465fa13af71d78cd6ec6384ac10c1d0c9545776653",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99|public=3483fabfd76ec1b2386dc74d1f3741a503c1e872ecd817810a069002c01317af",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_3c6345ea96fb5a03bac038c713e478cd87d4c68d4f326c9c1aa500377e477dea",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_275ba3d1f52da471285d6acab8e62e8ae1721547213ff0b20a8c700246be89fa",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_258ca32c2338c27a967e5ae3888a67c9fdea78fea98bc46699e07d89b02019f9",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99|public=3483fabfd76ec1b2386dc74d1f3741a503c1e872ecd817810a069002c01317af",
+        "response_sha256": "48fa14641b0274cb459cb850bda61f3b379118070cd5001054ba046b6a8b3fb0",
+        "runtime_exact_preflop_node_key": "MAPNODE_7c695a96787a44ed221db879075da4abf50ff559f178ca79857405354a5e85b7",
+        "runtime_support_context_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "629727be5d7f746dd5dbb941effd9e16823cb93e1c2e19d55c0d4b77f56310bd",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100",
+          "BTN:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=b1905749ed944a88c739ab90e09120b835a15b1e979061406506e849aace5ce5",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_c8f5b870b95a1e302fce4722756ffba651a9672763584d6da86668910a91e33c",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_b38f5d29f39ddcba524e75df59947f18e8baf1bd295f70d4e26b874354b84108",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1beb8187f2e76c812c4b0d953e7ef350f8531c9781e488d00f2fc4aaf01f7948",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=b1905749ed944a88c739ab90e09120b835a15b1e979061406506e849aace5ce5",
+        "response_sha256": "ef55200d06a6cc9b918408bf74e629b580fb4c97b9331ab961b6b533da2bc0e5",
+        "runtime_exact_preflop_node_key": "MAPNODE_806a27fb587429c24de30428cc3bd64d8677215d8bb4f1ba44f4f5c698d82bf4",
+        "runtime_support_context_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "ae9030283b711afc8b60df92ea7bdd735b9c22d8d1967c57d70e7c9c4309f3f8",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100",
+          "BTN:CALL",
+          "SB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95|public=5496e4c6be2c9d0750c25614da33b00b0a31ccbb3b9781f730731b29f57eb56d",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_59511dcec68b2c748a74bdc6361c885e23b361c601e760090abd7e9c974ed0b3",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_fb9dbe6062e2d15e0aaa4ce8dd1cfd951507cdfb115f27098baa9b2ab0a006b1",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1b09d09e3a27e15f9c1cbbbbb5a113eb03cd778dec20d14c32a4a223956b3e9d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95|public=5496e4c6be2c9d0750c25614da33b00b0a31ccbb3b9781f730731b29f57eb56d",
+        "response_sha256": "28a3eeb4466b3988579bca75a6fe9b385e2eab2075210ff0afda2ea84e3980b4",
+        "runtime_exact_preflop_node_key": "MAPNODE_6d07606210679083e98030c2c6b3270738846b7ec266cc1eb818e5f03aedadaa",
+        "runtime_support_context_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "66ed6f9352caf94fa236005162437dd4e9976f61a0c7f7de9f0ced1378be47c5",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100",
+          "BTN:CALL",
+          "SB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=53e3ae16c00237f50f3d70dc4d8b7267d89f56c3802c36c46617ebe8f56749af",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_bdd8a3a25c92e4e111a6852b58fbbc07102cf6ccd3c90d129ec2fb1d0c5d33ef",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_95f5496d691a64a22b4f0ade51a07dd7c47c36f1b4853659dfd3632cd1afafa3",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1b09d09e3a27e15f9c1cbbbbb5a113eb03cd778dec20d14c32a4a223956b3e9d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=53e3ae16c00237f50f3d70dc4d8b7267d89f56c3802c36c46617ebe8f56749af",
+        "response_sha256": "e57e094aa50b1547d7e89871afe7ab31e601f13695949f4c3093a022ff7a82bd",
+        "runtime_exact_preflop_node_key": "MAPNODE_3f7ab17316a2be6f6c08a16f956c2960c23f1bc2c9955fa00b39da5d3b4a6c49",
+        "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "4d28d3cc7b63d5c7f74c42db1d4ae640a6ffc7cd7d042459cf3e5c519fc49b97",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100",
+          "BTN:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=c8e5b82391c0a00facb4e469459b737fa7ce410f8a91276cbccafd7a7ed6cc7f",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_d4adb54f5853eb46b24f3010c621fadf2bb4c99dac6c6891456408a0a297b0a9",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_bde3f2f01013e5857de510e863cb0e0780cd58fca97c5b71a0d46b5c117f7d4d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1beb8187f2e76c812c4b0d953e7ef350f8531c9781e488d00f2fc4aaf01f7948",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=c8e5b82391c0a00facb4e469459b737fa7ce410f8a91276cbccafd7a7ed6cc7f",
+        "response_sha256": "504492c60fcfca126a4c8b5653505d81034d41a6c55ba3959e43933cc536a93a",
+        "runtime_exact_preflop_node_key": "MAPNODE_f0c6e0270b5bef47ba7a3e8020483e904d115f608776708b537be11f904f76f6",
+        "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "47bdce68db1066fa54b2b40cd515bbf90662d9b50920f860541f56d1ea79da03",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100",
+          "BTN:FOLD",
+          "SB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=2516f2969a5e1c12ae53b3bbec37e1aa7178dcf78954c1462d68302e62745745",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_88f1d4ab3d911fb2cb0238dfa6529c4ed29f83b4b0e55fd14f7f2912f160fddd",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_75b6ab75a30466ff0df8c1376a9a85eab039de52fe5163280db3d953999c98ba",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1b09d09e3a27e15f9c1cbbbbb5a113eb03cd778dec20d14c32a4a223956b3e9d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=2516f2969a5e1c12ae53b3bbec37e1aa7178dcf78954c1462d68302e62745745",
+        "response_sha256": "e34ef2a69423bff3ce5e5906e8607a738733eefb7d568b51173b9c77ca7f233c",
+        "runtime_exact_preflop_node_key": "MAPNODE_f9a06738e268e0f071587b40605c21fe5912289fc4138156202669272673beab",
+        "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "3bba27143b49488f94c1a844c6dcf8d87a7a57bf8569be05fae0921fea9ed624",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:JAM@100",
+          "BTN:FOLD",
+          "SB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=ad63c474fb8050b62a313bc4e8d4a9420174e2506b5bb8415d922a24e9d3a2c6",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_ac8c4389d8f1811aee62f2d3c62fe19c916fae37fee9ce578d5220557f5d126f",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_01a4805947134673bf5c4d166d8fbd0d4e8d20dcbee47f279b730f1fcf85df0d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1b09d09e3a27e15f9c1cbbbbb5a113eb03cd778dec20d14c32a4a223956b3e9d",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=ad63c474fb8050b62a313bc4e8d4a9420174e2506b5bb8415d922a24e9d3a2c6",
+        "response_sha256": "f3ba439086703981bbdb9db942afb9cc146e604e630fc748e14903972b5b7675",
+        "runtime_exact_preflop_node_key": "MAPNODE_2e21dfd7dc29d779e514b66cc357d80ef5ff66bd29ad99c478bd4fccf5c68723",
+        "runtime_support_context_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 4,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 4,
+            "source_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+            "source_observations": 4,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 7,
+              "FOLD": 1,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 8,
+            "source_key": "LEVELKEY_1_c4b2305b77560e7e2ab82d22e49dda977603b402eacc22ddbcb4d0287e993219",
+            "source_observations": 8,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 7,
+              "FOLD": 1,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 8,
+            "source_key": "LEVELKEY_2_6475faede1958fdf34998c742df8cbede7cfd48fb87376d3eb94288c7ce1d9c7",
+            "source_observations": 8,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 12,
+              "FOLD": 2,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 14,
+            "source_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+            "source_observations": 14,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 30,
+              "FOLD": 9,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 39,
+            "source_key": "LEVELKEY_4_9e8a63502efe27fa750b9183b8cd216591efff28dbc181c1d1ae6d4acb272fba",
+            "source_observations": 39,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+        "response_sha256": "3713adba043c1a525e907ca47184f43de5f737ab497c5459f7bf08eb5dd79214",
+        "runtime_exact_preflop_node_key": "MAPNODE_f03eb080b6331092395fd4e69c76adc4706fa9d44fb7054f0c3e35f4ddfc1f78",
+        "runtime_support_context_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 4,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "distinct_hands": 4,
+          "observations": 4
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 3,
+              "FOLD": 1,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 4,
+            "source_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=2b7c76eb49290b98d296d593a3f6c948c89a6bc71c93fdf55a62e7e25e54f69a",
+            "source_observations": 4,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 4,
+              "FOLD": 2,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 6,
+            "source_key": "LEVELKEY_1_7f9f562b68d3e2d5eb47aefc404834114c4a485205117487f4f51ec8c6ec2a3a",
+            "source_observations": 6,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 4,
+              "FOLD": 2,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 6,
+            "source_key": "LEVELKEY_2_4a8e80d1a484e5adfa9284c086f6963a0178db4eefad05d7a598ed30b79b762c",
+            "source_observations": 6,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 15,
+              "FOLD": 6,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": true,
+            "rank": 3,
+            "source_distinct_hands": 21,
+            "source_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+            "source_observations": 21,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 26,
+              "FOLD": 17,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 43,
+            "source_key": "LEVELKEY_4_3558ee998af130e8f15d5073e10bce20ec07a3968dee1fdf84fdc0903aa4ec73",
+            "source_observations": 43,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=2b7c76eb49290b98d296d593a3f6c948c89a6bc71c93fdf55a62e7e25e54f69a",
+        "response_sha256": "ef099cd3b49ef02460492b423d906aff88f2b3e3ff8816d7e96cc0f386db600c",
+        "runtime_exact_preflop_node_key": "MAPNODE_bc1e6aadedd2bd9d0cbcce7a4c54d8f3af4be57e12bcb7027c5d45cab09d5c66",
+        "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 3,
+            "FOLD": 1,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "distinct_hands": 4,
+          "observations": 4
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "4910b50cf1cdd1b97cfa26c1240e77aca8533ab773cd3926c09c60eb161cdece",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:CALL",
+          "BTN:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=a98f4400811e36d77d9805677f205460d2a02b6219d51f1fc286ec346330005e",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_be85ae6dc3eab41e6d6cb6a31c498f9450df099dfab73900b8375ad5a791974e",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_de4f26ff936feef90b1da83fd42fcf76809f85f4605ae9ff92ed56ef24dd1ac1",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_b149c7d8f324d52ea8db6cd4c326d2b6f618fae0a36155dea61e44a13ada1995",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=a98f4400811e36d77d9805677f205460d2a02b6219d51f1fc286ec346330005e",
+        "response_sha256": "03fc3f409387ee7dffa967af4d56a69a64388c1077b008041c5ec544b08b6930",
+        "runtime_exact_preflop_node_key": "MAPNODE_5feca1ad47f8e16e9e36fb6f38ca32e4a4fa75bc6847fa2c1296a5ad39f31c43",
+        "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "c11e7e28432fc6ddc45b8d5943af30c6c0929dc288479e59601c77f26af02e19",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=2e60666acae349984b67131e988825c257ce6bfa7675eb442186db9083644ec9",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_eda59b1ffb1999b6ad194b4bd264685732b4c94dc582a49cdf075b05ab1d31d6",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_503de0ecd0a26ee4970091bade68802755690b20b5fc3205bdad86006181c408",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_08c44a523c3d0fdaf2f8f48cb6f83c6f992e4cef47ac295045857a3203c17b90",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=2e60666acae349984b67131e988825c257ce6bfa7675eb442186db9083644ec9",
+        "response_sha256": "e7263fd82e34bdbd7fa154ea3d5257e92bc71f156f5cdd5f90545b26f61b1b34",
+        "runtime_exact_preflop_node_key": "MAPNODE_a55ac22c3a38cd8156eb49d6c531845da4a1ecfb16a569e135591d4fedc535c9",
+        "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "2b0b325852d542d87bcbe7ba9304db02db08bde65a7fab8bcf9db01cac63e6ad",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:CALL",
+          "BTN:JAM@100",
+          "SB:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=ea05ac20d26ec53baa6330de73738c753610023f6891f514da6fcb1df8e8d305",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_a39ac72793a9772c4aaf4150be4dac702d5d15ddda956c74ff1cb52e5b5087f1",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_5224c1aea62126c6baeaeb06a719089838a558133a9cbc100bc96b6ac40964f4",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_08c44a523c3d0fdaf2f8f48cb6f83c6f992e4cef47ac295045857a3203c17b90",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=ea05ac20d26ec53baa6330de73738c753610023f6891f514da6fcb1df8e8d305",
+        "response_sha256": "8bc573e3cfdcee4ade49646dc08752b3c4bd1296281e6b93706ab96f0b57111f",
+        "runtime_exact_preflop_node_key": "MAPNODE_b7bb2ea2fed23f7b43fc26cbe9170eef759be3ed41f7eb792ef103bcba37e0fa",
+        "runtime_support_context_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL",
+          "RAISE",
+          "JAM"
+        ],
+        "node_id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 1,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 1,
+            "source_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=bdad5deb937783aa8476196ec2e1c4c464d7221f1d6294d969906b68e0097b1f",
+            "source_observations": 1,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 1,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 1,
+            "source_key": "LEVELKEY_1_3f0fa099c82f2bdac6100de214e75d5b19ae2da4e05478a7ab27ed9e30fb8724",
+            "source_observations": 1,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 1,
+              "FOLD": 0,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 1,
+            "source_key": "LEVELKEY_2_9e2345053e11a7650efd9b591561c77b8c32d8c2e8438b2e7e7d872ad2f07196",
+            "source_observations": 1,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 5,
+              "FOLD": 4,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 9,
+            "source_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+            "source_observations": 9,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 26,
+              "FOLD": 17,
+              "JAM": 0,
+              "RAISE": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": true,
+            "rank": 4,
+            "source_distinct_hands": 43,
+            "source_key": "LEVELKEY_4_3558ee998af130e8f15d5073e10bce20ec07a3968dee1fdf84fdc0903aa4ec73",
+            "source_observations": 43,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "UNRESOLVED_SIZING_FRONTIER",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=bdad5deb937783aa8476196ec2e1c4c464d7221f1d6294d969906b68e0097b1f",
+        "response_sha256": "6de600cb03dc5c4a1542662fea2a5b205c14bb3be14d2b9d3d92c9dcb8ba48c6",
+        "runtime_exact_preflop_node_key": "MAPNODE_2a816dad5861a8dcee48760db2c45069b6f6cbeaa2073e410cafa3f5377b50ff",
+        "runtime_support_context_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 1,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "distinct_hands": 1,
+          "observations": 1
+        },
+        "unresolved_reason": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "3fd9ad542318313526bcc60e68ea07e536c20bc633598acdd0f61658fb0858b0",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:FOLD",
+          "BTN:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95|public=f1713216c63d825dd796dbb37d839cf7ccf50a9f78d004e79f1ff27d2e5a033d",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_70c0ccc20af5a4bec21691f9da67d72887c175b9f041159bc59f1b7434edff59",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_9cee314f0d1b7264696fbfb00e465797cf8d267f8218f061ccb16a069a237d9a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_b149c7d8f324d52ea8db6cd4c326d2b6f618fae0a36155dea61e44a13ada1995",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95|public=f1713216c63d825dd796dbb37d839cf7ccf50a9f78d004e79f1ff27d2e5a033d",
+        "response_sha256": "5ce1dcacddff3b510f770268da3cb32c9072e3eb3c914ac2ae500a423d6cbdab",
+        "runtime_exact_preflop_node_key": "MAPNODE_0a9dc47b5aad9c9902ec96c458166d331e4d30001687ff2a4a960b7cecbddbd0",
+        "runtime_support_context_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "af292e858c4e3ab89c1faaa4265fd220ef5bad5343eb5d473f88a20f8176ed49",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99|public=7d020171231b8dd37b5e37a7d66c4581fdef49e3e853294fe6eac52c4535bd2a",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_ab3bfb64c9f2bed4e361e23f6d92ccccd89256251332e8df8525135fdbd69ea7",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_12f11daccf036bec829a61812b79a2a23644d86ea5322c7228db94dcf75fb3ad",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_258ca32c2338c27a967e5ae3888a67c9fdea78fea98bc46699e07d89b02019f9",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99|public=7d020171231b8dd37b5e37a7d66c4581fdef49e3e853294fe6eac52c4535bd2a",
+        "response_sha256": "42159b0a08646c28218791453c1931cb4a63644dd6131fafbdbe25e15224acf3",
+        "runtime_exact_preflop_node_key": "MAPNODE_ae5454e47e2ab37e41567fe6bd82cf32a0fc4f05df499aea1b85449a317be533",
+        "runtime_support_context_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "7d26ac51d011e3fa724de90c68e063a7445eed1cd89fb2dfe91a469cc3897a00",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:JAM@100",
+          "BTN:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=484959c3f47532580632859efa53057a02d0b518212f023b07fc82166e3b478e",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_8e8f3edee7c6481b0d3ec8f6d74dc3ac11429a1f10e8a961675a021f370ab81a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_92c31f41ef0eff2cfe40cd8bde5ee597fd96ddce0778ce97f18df2351196c4cd",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1beb8187f2e76c812c4b0d953e7ef350f8531c9781e488d00f2fc4aaf01f7948",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=484959c3f47532580632859efa53057a02d0b518212f023b07fc82166e3b478e",
+        "response_sha256": "b341dff5444ddb1675391293a962bd69833b5ea00935e270a2e1ed01e410eff1",
+        "runtime_exact_preflop_node_key": "MAPNODE_2bca64ee66905dc7a96cc42ff2ee92d99db0595e425424771cccb9ff94813e08",
+        "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "8abcc6ed6d665213f0ca942c803d149072bcf8571ea6ae85139284df9f70d8c1",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:JAM@100",
+          "BTN:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95|public=c8b96c9cd625da7f93490ca5753e4a7558666a3e5155609a11489686c2ee2d68",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_c814685fbaeab28446a9db3633d4fcb92bc519754936673ee680aefb0bca8f87",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_08ab508dba446d2a061e521875c6ec37e399349c7a519a5067c3530e19230854",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_1beb8187f2e76c812c4b0d953e7ef350f8531c9781e488d00f2fc4aaf01f7948",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95|public=c8b96c9cd625da7f93490ca5753e4a7558666a3e5155609a11489686c2ee2d68",
+        "response_sha256": "f102ef43827f8b59479c7b837baf47122688f0564c0e64aea9376b5d5c262b06",
+        "runtime_exact_preflop_node_key": "MAPNODE_e138dd583cd0af30c485f419e7a8e74bd316d7550f24c25529019e5aedab3030",
+        "runtime_support_context_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "d7d6ca98a026242055e196699a2bbe77d9be48beb229c2d5d9b34e0255248ada",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=33fabc7346d1e70256efde230154c21080d40b206f76c0d8f0c4c1c9ecc17d64",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_6bfb8db99fdd1bea81169651396bc5196d29be6019d1e282ce3da50014d910f7",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_906bd14796ad32f59580ac16786ee2a4be0d58f194c05eb786a6efe0852b8249",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 1
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 1,
+            "source_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99",
+            "source_observations": 1,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 3
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 3,
+            "source_key": "LEVELKEY_4_faea735c0b29d32d8ffadead6b17f903bc3e65bbaea4df08784062ae02a42734",
+            "source_observations": 3,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=33fabc7346d1e70256efde230154c21080d40b206f76c0d8f0c4c1c9ecc17d64",
+        "response_sha256": "121955da346df5674408ca6b73e31748f4887149f2fee6f50ace0917511e39c1",
+        "runtime_exact_preflop_node_key": "MAPNODE_da5e3bca849f8cbcaa8952f57df6354d0ce99dbb565f1a7ba44a41431f04c78e",
+        "runtime_support_context_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "857419f1860beb31906c980849a219bab6d2feab9604fc8545bbaa8efe343aab",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100",
+          "CO:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99|public=d062b9d8f0c739e7a2da63ab6f97d03135fa65e524a1e452473898b588bfd617",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_b715c3374e680fd13638448627fa50352a6ebdf7d3c6db77df3604085767d9b6",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_a135137d0173fb4f4804e142110fd7d15fb7e38ee7425624c443db38235b9365",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 2
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 2,
+            "source_key": "LEVELKEY_4_ed57102c3770ddaf5bf3a90d52e4cd62f515d160c410712c3d16ec7838b13431",
+            "source_observations": 2,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99|public=d062b9d8f0c739e7a2da63ab6f97d03135fa65e524a1e452473898b588bfd617",
+        "response_sha256": "2b69a14d3734d03891d4774025a4e557ced30322495b2c9ba2565c52d829a942",
+        "runtime_exact_preflop_node_key": "MAPNODE_8f22f720aa1621127c72f0bf5b9e9ef7c54e1ab2ed545c749ff59c8cba09eff4",
+        "runtime_support_context_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "b1dc19c37214e8abfd75784132d1f6f519ef6934c008dbcffd7fa302541cdcf6",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100",
+          "CO:CALL",
+          "BTN:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95|public=683092a612139c237e14e7515450f95cdf49d38068a0f7b2632af5b996055a66",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_7cb4991482fd1cc9bb70e0c19b557de57b5f2c9b2138b65af8f4b1c75e82d860",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_6026ad2b0bf8cfd2c5459c6dd4d668203a0e6e62ff23c9ef0c4d870aa1187a74",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_3a6c260be71f5238fded241b826b2fa6b1f8bd82b72ee8799f9583ff6ceca3de",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95|public=683092a612139c237e14e7515450f95cdf49d38068a0f7b2632af5b996055a66",
+        "response_sha256": "5fe7c7cc7b225d5ee2872b98dc5ba0adfaa2f9ac50205104a166d03b77e365c2",
+        "runtime_exact_preflop_node_key": "MAPNODE_db22d93e3aeb493ab24ca1f5129fa5d6431f2b1c73b6078b6f709b044e408a73",
+        "runtime_support_context_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "4d0a924f8d2997df417e6cb66d16486bf8e07180915376f014c06607bea123f4",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100",
+          "CO:CALL",
+          "BTN:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=7db167a29a0566237d4cd914609c5dfd49335a54929ac09355fa1ead58dcac1e",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_b3c52a9403de57007fbd733a78292ad260f1545e9a489a1cf513a19342282bf3",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_881ae01d3929d6964422e907cba5a5ecbf59f30feb4d8d633ae61e74d006b392",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_3a6c260be71f5238fded241b826b2fa6b1f8bd82b72ee8799f9583ff6ceca3de",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=7db167a29a0566237d4cd914609c5dfd49335a54929ac09355fa1ead58dcac1e",
+        "response_sha256": "cc9a1e42a1555780351e55ee681e9a6ca884e3202a3b1cff352c43815282f4d5",
+        "runtime_exact_preflop_node_key": "MAPNODE_42bd68ce6f69e67a391a83fdcb6ebfbf063bbca11ce410dfb10ad980b16e139e",
+        "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "e3bdbcf92a3e45dc48dec6de365cda2d365a85ef238b0ce2f2974bba98739bae",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100",
+          "CO:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=a00499e81ff19cbc7dcaf4e3755fbc446ea59108cea73b7ec44346236270e3e5",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_0dbbf35be21b12430e835b6e9dbb7099683666aea9916a61305abadb5c1085a2",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_02935fa5f1b85da78dd0e2bc5f3a6f3e919089b8370855d139cfae4be33f5fd8",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 2
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 2,
+            "source_key": "LEVELKEY_4_ed57102c3770ddaf5bf3a90d52e4cd62f515d160c410712c3d16ec7838b13431",
+            "source_observations": 2,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=a00499e81ff19cbc7dcaf4e3755fbc446ea59108cea73b7ec44346236270e3e5",
+        "response_sha256": "f959b33090266ce190f2592cd502be776c5cf2c4e14d1dda948a8a57c9e1357f",
+        "runtime_exact_preflop_node_key": "MAPNODE_857c59a53ec46ee7cb315334a15f5827410703e755e1a645b51aa54f1bda2b79",
+        "runtime_support_context_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "8b3ba0ac09e6229be6b4e8dd044a4f1484cbe8f56d46de6dc783d87de699d1a9",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100",
+          "CO:FOLD",
+          "BTN:CALL"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=ea2ecf1bc79c21f91e303caa79cd33c585855b8cef19c954a1d65b977841d672",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_923dae8530a1369bc908d9c558be65eea913eeaea4109b599001b92b5b8c8e10",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_9e104887c775c013883ee83b0a091ccee6a415686dccfd62ff3550593c231b2a",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_3a6c260be71f5238fded241b826b2fa6b1f8bd82b72ee8799f9583ff6ceca3de",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=ea2ecf1bc79c21f91e303caa79cd33c585855b8cef19c954a1d65b977841d672",
+        "response_sha256": "78120ae323730fb51363a6c56d89c48e59532c835eafe650cda11a2a06bb5a3b",
+        "runtime_exact_preflop_node_key": "MAPNODE_bb7f2d3f3ea3feddb1ef5d1caaf348f863fb53c84746d76dcb478dfc0c84c8f4",
+        "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      },
+      {
+        "legal_actions": [
+          "FOLD",
+          "CALL"
+        ],
+        "node_id": "ab9a36e3aca3b45bb9b84678d9802336393cd0e4d4f01efd54106aefcbddd61f",
+        "path": [
+          "SB:ISO@5",
+          "BB:JAM@100",
+          "CO:FOLD",
+          "BTN:FOLD"
+        ],
+        "pooling": null,
+        "pooling_diagnostics": [
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L0_EXACT_KEY",
+            "qualifies": false,
+            "rank": 0,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95|public=fdb55cdac03e5208165b695f305bc5d92011341ee29b4f94bda2fff94057771c",
+            "source_observations": 0,
+            "support_source_allowed": true
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L1_STACK_POOL",
+            "qualifies": false,
+            "rank": 1,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_1_f22f63c6885e3653f0999f8e9c8f88e504feb5e40284b43b3139628ef7a6f1d5",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L2_POT_POOL",
+            "qualifies": false,
+            "rank": 2,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_2_7d329c9bcb0ee6bd3d3b79d318bd227b7591b9a3b20830a15112b40fbfc3a0d8",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+            "qualifies": false,
+            "rank": 3,
+            "source_distinct_hands": 0,
+            "source_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95",
+            "source_observations": 0,
+            "support_source_allowed": false
+          },
+          {
+            "action_counts": {
+              "CALL": 0,
+              "FOLD": 0
+            },
+            "level": "L4_POSITION_PRICE_PRIOR",
+            "qualifies": false,
+            "rank": 4,
+            "source_distinct_hands": 0,
+            "source_key": "LEVELKEY_4_3a6c260be71f5238fded241b826b2fa6b1f8bd82b72ee8799f9583ff6ceca3de",
+            "source_observations": 0,
+            "support_source_allowed": false
+          }
+        ],
+        "posterior": null,
+        "raise_sizing_state": "NO_RAISE_BRANCH",
+        "reason_code": "EXACT_UNRESOLVED",
+        "requested_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95|public=fdb55cdac03e5208165b695f305bc5d92011341ee29b4f94bda2fff94057771c",
+        "response_sha256": "ea8767bb56d39cf8d8fb7dd960ac70fba18cc4dd3d526289f82adda5f4ed03dc",
+        "runtime_exact_preflop_node_key": "MAPNODE_a5c4aec10f59da739eac1eccacdeb9cd6c4628ef4cc724e2ca25ff5307dc22e2",
+        "runtime_support_context_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95",
+        "status": "EXACT_UNRESOLVED",
+        "support": {
+          "action_counts": {
+            "CALL": 0,
+            "FOLD": 0
+          },
+          "distinct_hands": 0,
+          "observations": 0
+        },
+        "unresolved_reason": "NO_ADMISSIBLE_POOLING_LEVEL"
+      }
+    ],
+    "reconciled_with_train_fit_report": true,
+    "share_exact_hierarchical_estimate": 0.0,
+    "status_counts": {
+      "EXACT_EMPIRICAL_STRONG": 0,
+      "EXACT_HIERARCHICAL_ESTIMATE": 0,
+      "EXACT_UNRESOLVED": 38
+    },
+    "total_nodes": 38
+  },
+  "outcome": "RETAIN_ACTIVE_REFERENCE",
+  "parent_issue": 314,
+  "phase": "VALIDATION",
+  "pooling_limits": {
+    "acceptable_levels": [
+      {
+        "allowed_in_validation_output": true,
+        "level": "L0_EXACT_KEY",
+        "purpose": "SUPPORT_AND_IDENTITY",
+        "rank": 0,
+        "support_source_allowed": true
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L1_STACK_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 1,
+        "support_source_allowed": false
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L2_POT_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 2,
+        "support_source_allowed": false
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 3,
+        "support_source_allowed": false
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L4_POSITION_PRICE_PRIOR",
+        "purpose": "LAST_RESORT_PARAMETERS_ONLY",
+        "rank": 4,
+        "support_source_allowed": false
+      }
+    ],
+    "alpha_per_legal_marginal_action": 0.5,
+    "discipline": "an estimate reported above L0_EXACT_KEY is labelled EXACT_HIERARCHICAL_ESTIMATE, is never counted as exact support, and never satisfies an exact-support gate",
+    "fixed_shrinkage_strength_kappa0": 16.0,
+    "forbidden": [
+      "cross-key support borrowing",
+      "coarse-key support laundering",
+      "support counts smoothed across levels",
+      "nearest-price or nearest-context substitution",
+      "representative raise price",
+      "hidden-hand imputation",
+      "pseudo-observations",
+      "raising the 20/20 support thresholds after reading VALIDATION"
+    ],
+    "frozen": true,
+    "immutable_after_freeze": true,
+    "maximum_pooling_depth": 4,
+    "maximum_pooling_level_for_a_reported_estimate": "L4_POSITION_PRICE_PRIOR",
+    "maximum_pooling_level_for_an_exact_support_claim": "L0_EXACT_KEY",
+    "only_support_source_level": "L0_EXACT_KEY",
+    "rule_id": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+    "statement": "a key A may never be declared supported by observations of a different key B; support counts are exact and pooling only feeds the prior"
+  },
+  "production_effect": "NONE",
+  "protected_inputs": {
+    "after": {
+      "active_reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "candidate_byte_sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "protocol_byte_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    "before": {
+      "active_reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "candidate_byte_sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "protocol_byte_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    "mutated": false
+  },
+  "protocol": {
+    "frozen_at": "2026-09-25T00:00:00Z",
+    "order_guard": {
+      "frozen_at": "2026-09-25T00:00:00Z",
+      "guard_id": "VALIDATION_ORDER_GUARD",
+      "order_guard": {
+        "candidate_reference_tokens": [
+          "model-a-preflop-sizing-hierarchical-candidate-v1",
+          "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+          "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999"
+        ],
+        "check": "no_candidate_validation_result_exists_before_freeze",
+        "declared_result_locations": [
+          "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+          "analysis/issue419_hierarchical_tree/validation/FROZEN_VALIDATION_RESULT.json"
+        ],
+        "declared_result_locations_present": [],
+        "excluded_from_scan": "protocol artifacts (schema/kind mentions protocol, or a *protocol* filename) and every result that does not reference the hierarchical candidate \u2014 including the #352 exact-price comparator, which consumed VALIDATION under its own frozen protocol",
+        "guard_id": "VALIDATION_ORDER_GUARD",
+        "result": "PASS",
+        "scanned_tree": "analysis/**/*.json",
+        "violations": []
+      },
+      "protocol_byte_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "protocol_canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+      "result": "PASS"
+    },
+    "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+    "schema": "poker-hierarchical-frozen-validation-protocol/v1",
+    "status": "FROZEN_BEFORE_VALIDATION"
+  },
+  "protocol_byte_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+  "protocol_canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+  "protocol_consumption": {
+    "note": "the T6 order guard fails closed once this candidate VALIDATION result exists, so a second --run and `write_frozen_validation_protocol.py --check` are expected to abort with VALIDATION_ORDER_GUARD; the frozen protocol bytes and every threshold stay unchanged and pinned",
+    "result_path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "single_shot": true
+  },
+  "reason": "one or more frozen VALIDATION gates failed; the active Model A v5 pointer stays unchanged",
+  "schema": "poker-hierarchical-validation-result/v1",
+  "split": "VALIDATION",
+  "test_authorized": false,
+  "test_consumed": false,
+  "thresholds": {
+    "abstention_is_not_a_failure": true,
+    "coverage_is_not_an_admission_gate": "a lower coverage than the active reference never counts as an admission and never justifies lowering a frozen support threshold; fail-closed abstention is correctness",
+    "exact_claim_requires": "L0_EXACT_KEY meeting both the 20-observation and 20-distinct-hands thresholds",
+    "frozen": true,
+    "immutable_after_freeze": true,
+    "maximum_absolute_ece": 0.05,
+    "maximum_ece_delta_vs_active": 0.02,
+    "minimum_distinct_hands": 20,
+    "minimum_identifiable_validation_decisions": 200,
+    "minimum_identifiable_validation_hands": 100,
+    "minimum_marginal_observations": 20,
+    "non_inferiority_ci_upper_bound": 0.0
+  },
+  "thresholds_unchanged_after_read": true,
+  "ui_modified": false,
+  "universe": {
+    "abstention_reasons": {
+      "NO_ADMISSIBLE_POOLING_LEVEL": 11458,
+      "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE": 23
+    },
+    "answerable_level_keys_per_level": {
+      "L0_EXACT_KEY": [],
+      "L1_STACK_POOL": [],
+      "L2_POT_POOL": [],
+      "L3_RUNTIME_SUPPORT_CONTEXT": [
+        "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+        "MAPSUP_4a7d345e260602b841e6:family=VS_ISO|actor=BB|aggressor=SB|limpers=1|callers=0|target=5|call=4",
+        "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+      ],
+      "L4_POSITION_PRICE_PRIOR": [
+        "LEVELKEY_4_162e3ad46fe91becffbf812cf8dfc8e23e9fa413ae09404786fa29b35a920d19",
+        "LEVELKEY_4_3558ee998af130e8f15d5073e10bce20ec07a3968dee1fdf84fdc0903aa4ec73",
+        "LEVELKEY_4_9e8a63502efe27fa750b9183b8cd216591efff28dbc181c1d1ae6d4acb272fba"
+      ]
+    },
+    "answerable_pooling_level_counts": {
+      "L3_RUNTIME_SUPPORT_CONTEXT": 2,
+      "L4_POSITION_PRICE_PRIOR": 7
+    },
+    "answerable_status_counts": {
+      "EXACT_HIERARCHICAL_ESTIMATE": 9,
+      "EXACT_UNRESOLVED": 23
+    },
+    "answering_prefilter": {
+      "exact_not_approximate": true,
+      "rule": "a decision can only resolve when one of its level keys is a qualifying level key of the frozen candidate; every other decision fails closed with NO_ADMISSIBLE_POOLING_LEVEL"
+    },
+    "candidate_answerable_decisions": 9,
+    "candidate_answerable_hands": 9,
+    "candidate_answerable_in_comparable_universe_decisions": 2,
+    "candidate_answerable_in_comparable_universe_hands": 2,
+    "definition": "non-Hero public preflop decisions of the #319/#321 focus families where the candidate and every comparator both answer the same exact requested key",
+    "exact_price_comparable_decisions": 9854,
+    "exact_price_comparable_hands": 2323,
+    "excluded_from_paired_metrics": {
+      "legal_action_set_differs_from_comparator_marginal_set": 0
+    },
+    "focus_family_decisions": 11490,
+    "paired_decisions": 2,
+    "paired_hands": 2,
+    "qualifying_level_key_counts": {
+      "L0_EXACT_KEY": 0,
+      "L1_STACK_POOL": 0,
+      "L2_POT_POOL": 0,
+      "L3_RUNTIME_SUPPORT_CONTEXT": 3,
+      "L4_POSITION_PRICE_PRIOR": 3
+    },
+    "split": "VALIDATION"
+  }
+}

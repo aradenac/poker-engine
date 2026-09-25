@@ -69,7 +69,18 @@ class FrozenValidationProtocolTests(unittest.TestCase):
         self.assertEqual(self.protocol['kind'], 'FROZEN_VALIDATION_PROTOCOL')
 
     def test_deterministic_regeneration_matches_the_persisted_protocol(self):
-        rebuilt = write_tool.build(frozen_at=self.protocol['frozen_at'])
+        # T7 (`analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json`)
+        # consumed the holdout after this freeze, so a live rebuild now aborts in
+        # the order guard by design.  Replaying the *pre-freeze* order-guard
+        # evidence shows the frozen payload itself did not move: the rebuilt bytes
+        # are still identical to the persisted protocol.
+        pre_freeze_evidence = dict(self.protocol['holdout_boundary']['checks'][2])
+        with mock.patch.object(
+            write_tool.guard,
+            'assert_validation_not_yet_consumed',
+            return_value=pre_freeze_evidence,
+        ):
+            rebuilt = write_tool.build(frozen_at=self.protocol['frozen_at'])
         self.assertEqual(write_tool.serialize(rebuilt), self.protocol_bytes)
         self.assertEqual(rebuilt, self.protocol)
         self.assertEqual(
@@ -315,10 +326,9 @@ class FrozenValidationProtocolTests(unittest.TestCase):
         self.assertEqual(publication['production_effect'], 'NONE')
 
     # ------------------------------------------------------------ order guard
-    def test_guard_passes_on_the_real_tree(self):
-        evidence = guard.assert_validation_not_yet_consumed(ROOT)
-        self.assertEqual(evidence['result'], 'PASS')
-        self.assertEqual(evidence['violations'], [])
+    def test_guard_reports_the_consumed_validation_result(self):
+        # The freeze-time order-guard evidence is immutable: it recorded the tree
+        # as clean *before* the VALIDATION holdout was opened.
         self.assertEqual(self.protocol['order_guard']['result'], 'PASS')
         self.assertEqual(self.protocol['order_guard']['violations'], [])
         self.assertTrue(self.protocol['order_guard']['freeze_authored_before_validation'])
@@ -327,10 +337,21 @@ class FrozenValidationProtocolTests(unittest.TestCase):
             self.protocol['order_guard']['guard_source_sha256'],
             guard.sha256_file(guard.SOURCE_PATH),
         )
-        frozen = guard.assert_protocol_frozen_before_validation(
-            write_tool.PROTOCOL_PATH, expected_byte_sha256=self.digest)
-        self.assertEqual(frozen['result'], 'PASS')
-        self.assertEqual(frozen['order_guard']['result'], 'PASS')
+        # T7 consumed the holdout exactly once, so the live guard must now fail
+        # closed instead of letting a second read (or a post-read re-freeze) hide
+        # behind the frozen protocol.
+        result_path = ROOT / 'analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json'
+        self.assertTrue(result_path.is_file())
+        self.assertIn(
+            result_path.relative_to(ROOT).as_posix(),
+            guard.validation_result_artifacts(ROOT),
+        )
+        with self.assertRaises(guard.ValidationOrderError):
+            guard.assert_validation_not_yet_consumed(ROOT)
+        with self.assertRaises(guard.ValidationOrderError):
+            guard.assert_protocol_frozen_before_validation(
+                write_tool.PROTOCOL_PATH, expected_byte_sha256=self.digest
+            )
 
     def test_order_guard_fails_when_a_candidate_validation_result_exists(self):
         with tempfile.TemporaryDirectory() as tmp:

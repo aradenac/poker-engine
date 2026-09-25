@@ -1,0 +1,11 @@
+{
+  "SUMMARY.md": {
+    "object": "sha256/794b16baacf3d477dcdef56bd1311b55672f5553e28ee83ddef38cbb6004b9f1.md",
+    "sha256": "794b16baacf3d477dcdef56bd1311b55672f5553e28ee83ddef38cbb6004b9f1"
+  },
+  "VALIDATION_RESULT.json": {
+    "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",
+    "object": "sha256/0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68.json",
+    "sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+  }
+}
