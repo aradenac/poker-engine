@@ -42,6 +42,7 @@ ci_delivered_head_run_job: "browser-smoke — job 107925214120 — étape « Exe
 matrix_failure_recorded: "panneau Spot Lab « Range adverse » : la grille #matrix (169 cellules) n'est pas atteignable à 1366x768 — assertion de tests/trainer/smoke_modes_desktop.py ; voir § 9.2"
 matrix_fix_recorded: "site/index.html — @media(min-width:901px) and (max-height:900px){ .matrix{gap:2px} .cell{height:26px} } (13*26 + 12*2 = 362px au lieu de 13*34 + 12*3 = 478px) + ancre site/RELEASE.json réassemblée (blob index.html 033e6517… -> 75b26fb1…) ; voir § 9.4"
 unobserved_at_1366x768: "jamais observées vertes depuis l'instrument T1 : jambes 1366x768 du Replayer (3 colonnes + 3 couples onglet/panneau) et du rail Trainer (4 onglets) — le run s'arrête à la première assertion ; voir § 9.3"
+panels_fit_derivation: "task-backlog-ed7 — § 10 : les 20 cibles de panneaux mesurées par le smoke sont dérivées depuis les constantes CSS déclarées à 1366x768 (et contrôlées à 1500x1000) par tests/trainer/test_desktop_panels_fit_contract.py, avec 16 contrôles de mutation CSS et 7 contrôles d'instrument refusés (non-vacuité) ; aucun dépassement dérivé, donc aucun octet de site/** modifié et site/RELEASE.json non régénéré"
 ci_observation_section_delivered: "§ 9"
 ---
 
@@ -937,3 +938,203 @@ comme un `PASS` de job gelé.
 Cette section se **réfère** à `docs/issue-394-release-identity-ci-report.md`, qui
 reste le rapport PASS/FAIL des jobs gelés (§ 8 et § 11 du rapport) : elle n'en
 modifie aucun octet.
+
+## 10. Dérivation statique bornée des cibles `1366x768` jamais mesurées (task `backlog-ed7`)
+
+Cette section est **strictement additive** : elle consigne la dérivation
+arithmétique, faite depuis les octets livrés, des **20 cibles de panneaux** que le
+smoke mesure et dont le § 9.3 a montré qu'elles n'ont **jamais été observées
+vertes** à `1366x768`. Elle n'écrit aucun octet de `site/**`, de `.github/**`
+ni de `tools/` ; le seul ajout de code de cette task est le module
+`tests/trainer/test_desktop_panels_fit_contract.py`, qui recalcule la dérivation
+ci-dessous — `tests/trainer/smoke_modes_desktop.py`, lui, **n'est pas modifié**
+(son instrument est lu par AST et épinglé par mutation, § 10.3). Les jetons
+de garde du § 8 restent ceux du § 8 (`ci_green: NOT_OBSERVED`,
+`frozen_job_rerun_required: true`, `contract_job_rerun_required: true`) : aucun
+d'eux n'est basculé ici, et **aucun `PASS` de job gelé** n'est écrit.
+
+### 10.1 Ce qui est dérivé, et pourquoi ce n'est pas une mesure
+
+`tests/trainer/smoke_modes_desktop.py` mesure vingt cibles par viewport de
+référence : la surface `Range adverse` du Spot Lab (`#spotlabRangeTab`,
+`#rangeDisplaySection`, `#matrix`), les trois colonnes du Replayer
+(`.replayer-col-left`, `.replayer-col-center`, `#replayerContextPanel`), les trois
+couples onglet/panneau du panneau contextuel du Replayer (Décision / Ranges /
+Détails) et les quatre couples onglet/panneau du rail Trainer. Le job gelé
+s'arrête à la **première** assertion en échec : à `1366x768` c'est `#matrix`, donc
+dix-sept de ces vingt cibles n'ont jamais été mesurées vertes à ce viewport
+(§ 9.3).
+
+Le module `tests/trainer/test_desktop_panels_fit_contract.py` lit ces cibles
+**par AST dans le smoke** (`SPOTLAB_RANGE_SURFACE_SELECTORS`,
+`REPLAYER_COLUMN_SELECTORS`, `REPLAYER_TAB_SURFACES`, `TRAINER_RAIL_SURFACES`,
+`PANEL_SHELLS`, `REPLAYER_TAB_HIDDEN_STATES`) et échoue si l'un de ces noms
+disparaît, cesse d'être un littéral, change de forme ou de valeur, ou cesse
+d'être utilisé par le parcours ; il épingle aussi l'instrument lui-même
+(`elementFromPoint` au centre de la boîte, les quatre champs
+`visible` / `inViewport` / `inShell` / `hit`, le bucket `panel_surfaces`) et
+vérifie que chaque sélecteur mesuré est bien déclaré dans le markup livré.
+
+Pour chaque cible, la dérivation n'utilise que des **constantes CSS déclarées**
+de `site/index.html`, `site/trainer.css` et `site/deployment-meta.css`, évaluées
+avec le verdict **largeur et hauteur** des requêtes média :
+
+* `chrome` — l'offset déclaré du bord haut de la boîte (bannière de déploiement,
+  padding de coque, en-tête, barre d'onglets et son chrome) ;
+* `available` — la place verticale que le parent déclaré laisse à la boîte ;
+* `boîte` — la hauteur déclarée de la boîte.
+
+Deux inégalités en découlent, et ce sont elles qui sont assertées :
+`boîte <= available` (le bornage déclaré du parent) et `chrome + boîte <= 768`
+(la boîte reste dans le viewport). Les colonnes Replayer et les panneaux du rail
+Trainer sont des enfants de remplissage d'une chaîne déclarée
+`min-height:0` : leur boîte **est** la place restante, elle n'est jamais
+déduite de leur contenu. Les onglets sont des enfants dimensionnés par leur
+contenu dans une barre déclarée `flex:0 0 auto` : leur boîte est leur padding
+déclaré plus une ligne déclarée, et la dérivation **exige** que la barre tienne
+ses onglets sur **une seule ligne** à la largeur déclarée, faute de quoi elle
+échoue au lieu de passer à vide.
+
+Le contenu de chaque boîte bornée doit en outre voyager par une zone défilante
+**déclarée et allow-listée** (`APP_ALLOWED_SCROLL_ZONES` :
+`.app-scroll-zone` / `.app-canvas-pane`) : c'est ce qui distingue « borné et
+atteignable » de « coupé par la coque », le mode d'échec du § 9.2. Aucune de ces
+vérifications n'ouvre de navigateur, de serveur, de réseau ni de fichier
+temporaire.
+
+### 10.2 L'arithmétique dérivée à `1366x768`
+
+```
+$ python3 tests/trainer/test_desktop_panels_fit_contract.py
+spotlab-range @1366x768 shell=[data-view-shell="spotlab"]
+  chrome=shell_padding_top=14.00 view_header=55.95 tab_bar=56.00 -> box=626.05 + bottom inset 16.00 of 768px
+  derived: matrix_top=322.45 matrix_budget=429.55 tab_row_extent=605.60
+  spotlab-range      #spotlabRangeTab           chrome=  74.95 available=  34.00 box=  34.00 [  74.95.. 108.95] slack=  0.00
+  spotlab-range      #rangeDisplaySection       chrome= 125.95 available= 626.05 box= 626.05 [ 125.95.. 752.00] slack=  0.00
+  spotlab-range      #matrix                    chrome= 322.45 available= 429.55 box= 362.00 [ 322.45.. 684.45] slack= 67.55
+replayer @1366x768 shell=[data-view-shell="replayer"]
+  chrome=banner=24.45 shell_padding_top=12.00 head=105.00 -> box=612.55 + bottom inset 14.00 of 768px
+  derived: head_row_extent=817.92 context_tab_bar=50.00 context_tab_row_extent=224.24 context_panes=562.55
+  replayer-columns   .replayer-col-left         chrome= 141.45 available= 612.55 box= 612.55 [ 141.45.. 754.00] slack=  0.00
+  replayer-columns   .replayer-col-center       chrome= 141.45 available= 612.55 box= 612.55 [ 141.45.. 754.00] slack=  0.00
+  replayer-columns   #replayerContextPanel      chrome= 141.45 available= 612.55 box= 612.55 [ 141.45.. 754.00] slack=  0.00
+  replayer-decision  #replayerDecisionTab       chrome= 146.45 available=  32.00 box=  32.00 [ 146.45.. 178.45] slack=  0.00
+  replayer-decision  #replayerDecisionPanel     chrome= 191.45 available= 562.55 box= 562.55 [ 191.45.. 754.00] slack=  0.00
+  replayer-ranges    #replayerRangesTab         chrome= 146.45 available=  32.00 box=  32.00 [ 146.45.. 178.45] slack=  0.00
+  replayer-ranges    #replayerRangesPanel       chrome= 191.45 available= 562.55 box= 562.55 [ 191.45.. 754.00] slack=  0.00
+  replayer-details   #replayerDetailsTab        chrome= 146.45 available=  32.00 box=  32.00 [ 146.45.. 178.45] slack=  0.00
+  replayer-details   #hhReplayDetail            chrome= 191.45 available= 562.55 box= 562.55 [ 191.45.. 754.00] slack=  0.00
+training @1366x768 shell=[data-view-shell="training"]
+  chrome=banner=34.45 shell_padding_top=12.00 head=105.00 -> box=602.55 + bottom inset 14.00 of 768px
+  derived: head_row_extent=760.22 side_padding_and_border=26.00 rail_tab_bar=42.50 rail_tab_row_extent=275.32 rail_panes=524.05
+  trainer-coaching   #trainerCoachingTab        chrome= 169.45 available=  30.50 box=  30.50 [ 169.45.. 199.95] slack=  0.00
+  trainer-coaching   #trainerCoachPanel         chrome= 216.95 available= 524.05 box= 524.05 [ 216.95.. 741.00] slack=  0.00
+  trainer-session    #trainerSessionTab         chrome= 169.45 available=  30.50 box=  30.50 [ 169.45.. 199.95] slack=  0.00
+  trainer-session    #trainerSessionPanel       chrome= 216.95 available= 524.05 box= 524.05 [ 216.95.. 741.00] slack=  0.00
+  trainer-profiles   #trainerProfilesTab        chrome= 169.45 available=  30.50 box=  30.50 [ 169.45.. 199.95] slack=  0.00
+  trainer-profiles   #trainerProfilesPanel      chrome= 216.95 available= 524.05 box= 524.05 [ 216.95.. 741.00] slack=  0.00
+  trainer-test       #trainerTestTab            chrome= 169.45 available=  30.50 box=  30.50 [ 169.45.. 199.95] slack=  0.00
+  trainer-test       #trainerTestPanel          chrome= 216.95 available= 524.05 box= 524.05 [ 216.95.. 741.00] slack=  0.00
+desktop panels fit contract checks: OK (20 measured targets derived at 1366x768, 16 bounding mutations refused, no overflow derived, no CSS byte required — lowest box edge .replayer-col-left at 754.00px/768px, no box overflows the space its parent declares)
+$ echo $?
+0
+```
+
+Lecture : la coque absorbe la bannière, son padding haut, l'en-tête et la barre
+d'onglets ; le bas de chaque boîte reste **au-dessus** du viewport
+(`754.00px` pour les colonnes Replayer, `741.00px` pour les panneaux du rail
+Trainer, `752.00px` pour le panneau `Range adverse`) et sous la place que son
+parent déclare (`slack=0.00` pour les boîtes de remplissage, `67.55px` pour
+`#matrix`, dont le budget est celui — déjà dérivé et gaté — du § 9.4). Le
+`box=362.00` de `#matrix` est exactement la grille compressée du correctif
+`@media(min-width:901px) and (max-height:900px)` ; le reste de la table est
+indépendant de cette règle.
+
+### 10.3 Non-vacuité : seize contrôles CSS et sept contrôles d'instrument refusés
+
+La garde ne peut pas passer à vide : `MUTATION_CONTROLS` retire, une à une,
+**chaque déclaration porteuse** de l'extérieur vers l'intérieur — `min-height:0`
+de la coque `[data-view-shell]`, de `#replayerSection`, des colonnes
+`.replayer-col`, du panneau contextuel et de ses panneaux, `flex:1 1 auto` des
+pans de rail, `flex:0 0 auto` des barres d'onglets, `min-height:0` de
+`.app-view-body`, du `.grid` et des panneaux du Spot Lab, de `.trainer-shell`,
+`.trainer-grid`, `.trainer-side` et `.trainer-rail-panel`, `flex:0 0 auto` de
+l'en-tête Training, `grid-template-rows:minmax(0,1fr)` de `#replayerSection` et
+`display:contents` de `#hhVisualReplay` — puis **rejoue la garde entière** sur
+le document muté (en mémoire : les octets livrés ne sont jamais réécrits, la
+garde relit les fichiers livrés à la fin pour le prouver). Chaque mutation doit
+faire refuser la dérivation :
+
+```
+$ python3 tests/trainer/test_desktop_panels_fit_contract.py --self-test
+self-test mutation shell-min-height: refused (… must declare `min-height:0` …)
+self-test mutation replayer-section-min-height: refused (…)
+…
+self-test mutation trainer-rail-min-height: refused (…)
+self-test mutation trainer-head-flex: refused (…)
+self-test instrument measured-tuple-renamed: refused (… no longer declares `REPLAYER_COLUMN_SELECTORS` …)
+self-test instrument measured-selector-changed: refused (… '#replayerContextPane' …)
+self-test instrument tab-surface-shape-changed: refused (… must stay a (tab, panel, subview) triple …)
+self-test instrument panel-shells-not-literal: refused (… must keep `PANEL_SHELLS` a literal …)
+self-test instrument hit-test-fields-reduced: refused (… must keep asserting its four measured fields …)
+self-test instrument hit-test-centre-removed: refused (… no longer reads the box and the viewport)
+self-test instrument panel-helper-renamed: refused (… must keep the panel hit-test helper …)
+```
+
+Ces contrôles sont la preuve de non-vacuité demandée : si le bornage déclaré
+disparaît, la garde échoue **au lieu** de continuer à affirmer que ces boîtes
+tiennent ; et si l'instrument mesuré change (un tuple renommé, un sélecteur
+modifié, une forme cassée, une entrée non littérale, un verdict réduit à deux
+champs, un centre qui n'est plus résolu, un helper renommé), la lecture AST
+échoue **au lieu** de dériver des boîtes pour un parcours qui n'existe plus. Les
+sept contrôles d'instrument sont rejoués sur des **copies en mémoire** de
+`tests/trainer/smoke_modes_desktop.py` : la garde relit le fichier livré à la fin
+de la boucle pour prouver qu'aucun octet n'a été écrit.
+
+Ces contrôles ne remplacent pas la mesure du smoke : ils montrent seulement que
+l'arithmétique du § 10.2 n'est pas vraie par construction vide.
+
+### 10.4 Ce que la dérivation conclut : aucun octet de `site/**`, donc pas de `site/RELEASE.json`
+
+La dérivation **ne prouve aucun dépassement** : chaque boîte tient dans la place
+que ses parents déclarent, à `1366x768` comme au viewport de référence
+`1500x1000` (la garde dérive et vérifie les deux). La conséquence est
+explicite : **aucune règle responsive n'est ajoutée** pour ces panneaux, aucun
+octet de `site/index.html`, `site/trainer.css` ou `site/deployment-meta.css`
+n'est modifié, et `site/RELEASE.json` **n'est pas régénéré** — ses ancres
+portent les octets de `site/**`, qui sont inchangés (le job `static-contract`
+continue de le vérifier par `python3 tools/write_site_release.py --check`).
+
+La garde épingle cette absence de règle inutile : tout sélecteur supplémentaire
+porté par un bloc gaté `min-width:901px` + `max-height:900px` la fait échouer, et
+le bloc livré ne comprime toujours que la grille incompressible
+(`.matrix` / `.cell`), cas où la dérivation du § 9.4 **a** prouvé un
+dépassement. Elle épingle aussi que la bannière servie et celle que génère
+`tools/write_deployment_metadata.py` déclarent la même boîte (marges, police,
+`max-width`, `padding`) : les deux sources du chrome supérieur ne peuvent pas
+diverger en silence.
+
+### 10.5 Limites, et autorité inchangée
+
+Cette section **ne mesure rien** : c'est une dérivation de constantes déclarées.
+Elle ne voit ni les métriques de police, ni les textes remplis à l'exécution, ni
+l'ordre de peinture. Le chrome dont le texte est réécrit au runtime (la bannière
+de déploiement, le sous-titre du Replayer, celui du Trainer) est pris comme le
+texte déclaré du markup **majoré** de deux lignes déclarées supplémentaires
+(`RUNTIME_TEXT_ALLOWANCE_LINES`), pour qu'une substitution plus longue ne
+puisse pas invalider silencieusement les nombres.
+
+L'autorité reste **le job gelé `browser-smoke`** de
+`.github/workflows/trainer-smoke.yml` (§ 1, § 8.3, § 9.5) : lui seul observe
+`document.scrollingElement.scrollHeight <= clientHeight` et
+`elementFromPoint` sur les vraies boîtes, aux deux viewports et pour les six
+modes. La réserve du § 9.3 n'est donc **pas levée** ici : elle est **quantifiée**
+— dix-sept cibles jamais mesurées à `1366x768` deviennent dix-sept boîtes
+bornées, dérivées et couvertes par seize contrôles de mutation CSS plus sept
+contrôles d'instrument, en attendant le run qui les observera. Deux commandes
+rejouables suffisent à refaire ce document depuis le dépôt, sans navigateur :
+
+```
+$ python3 tests/trainer/test_desktop_panels_fit_contract.py             # table + EXIT=0
+$ python3 tests/trainer/test_desktop_panels_fit_contract.py --self-test  # + 16 mutations CSS et 7 contrôles d'instrument refusés
+```
