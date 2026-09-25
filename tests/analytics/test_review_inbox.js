@@ -484,6 +484,12 @@ assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
   assert.deepEqual(def.properties.state.enum,[
     'ANALYSE_DISPONIBLE','ANALYSE_PARTIELLE','CALCUL_EN_COURS','DONNEES_INSUFFISANTES','SPOT_NON_SUPPORTE','ERREUR_CALCUL'
   ]);
+  // #395 T1: the real result is part of the item contract.
+  assert.ok(item.required.includes('hero_net_bb'),'item.hero_net_bb must be required');
+  assert.ok(item.required.includes('result'),'item.result must be required');
+  assert.deepEqual(item.properties.hero_net_bb.type,['number','null'],'hero_net_bb is a number or null, never a coerced placeholder');
+  assert.deepEqual(item.properties.result.properties.state.enum,['WIN','LOSS','EVEN','UNKNOWN'],'result.state carries the settlement vocabulary');
+  assert.deepEqual(item.properties.result.properties.net_bb.type,['number','null']);
   for(const dimension of ['computational_status','model_support_status','statistical_support','ev_comparability','recommendation_admissibility','posterior_availability','error']){
     assert.ok(def.required.includes(dimension),'analysis_state dimension '+dimension+' must be required');
   }
@@ -526,6 +532,138 @@ assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
   assert.equal(scoped.scope.strategy_id,Adapter.UNAVAILABLE_STRATEGY_ID);
   assert.equal(scoped.scope.strategy_version,'UNAVAILABLE@RETAIN_REFERENCE@sig-A');
   assert.notEqual(scoped.scope_key,Leak.scopeKey({...SCOPE,strategy_version:'runtime-r1@sig-A'}),'unavailable scope must stay distinct from an admissible scope');
+}
+
+// #395 T1: the real hero settlement is an optional, independent input. Without
+// `hand_results` no item may claim a settled result, and every pre-existing
+// field keeps its value.
+{
+  for(const item of inbox.items){
+    assert.equal(item.hero_net_bb,null,'a hand without settlement evidence carries a null hero_net_bb');
+    assert.deepEqual(item.result,{state:'UNKNOWN',net_bb:null},'an absent settlement is UNKNOWN, never a fabricated EVEN');
+  }
+  assert.equal(i1.total_loss_bb,2.5,'the EV fields stay untouched by the real result');
+  assert.equal(Inbox.RESULT.UNKNOWN,'UNKNOWN');
+  assert.deepEqual(Inbox.RESULT_STATES,['WIN','LOSS','EVEN','UNKNOWN']);
+  for(const mode of ['EV_LOSS_DESC','TIMESTAMP_DESC','TIMESTAMP_ASC','RESULT_GAIN_DESC','RESULT_LOSS_DESC','STATUS_ASC','STREET_ASC','POSITION_ASC','SPOT_FAMILY_ASC','PLAYED_ACTION_ASC','RECOMMENDED_ACTION_ASC','HAND_ID_ASC']){
+    assert.ok(Inbox.SORT_MODES.includes(mode),'sort mode '+mode+' must stay supported');
+  }
+}
+
+// #395 T1: an explicit settlement drives hero_net_bb + result.state without
+// touching any other field of the item.
+{
+  const settled=Inbox.buildReviewInbox({
+    reviewScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,
+    user_metadata:metadata2,
+    hand_results:{'100001':-3.5,'100002':0,'100003':4.25,'100004':null}
+  });
+  const rows=new Map(settled.items.map(x=>[x.hand_id,x]));
+  assert.equal(rows.get('100001').hero_net_bb,-3.5);
+  assert.deepEqual(rows.get('100001').result,{state:'LOSS',net_bb:-3.5},'a real loss is LOSS');
+  assert.equal(rows.get('100002').hero_net_bb,0);
+  assert.deepEqual(rows.get('100002').result,{state:'EVEN',net_bb:0},'a zero settlement is EVEN');
+  assert.equal(rows.get('100003').hero_net_bb,4.25);
+  assert.deepEqual(rows.get('100003').result,{state:'WIN',net_bb:4.25},'a real gain is WIN');
+  assert.equal(rows.get('100004').hero_net_bb,null);
+  assert.deepEqual(rows.get('100004').result,{state:'UNKNOWN',net_bb:null},'an explicit null settlement stays UNKNOWN');
+  for(const id of ['100001','100002','100003','100004']){
+    const before=byId.get(id),after=rows.get(id);
+    for(const field of ['total_loss_bb','nominal_loss_bb','main_street','position','spot_family','action_played','action_recommended','status','deep_link','coverage_state','timestamp']){
+      assert.deepEqual(after[field],before[field],'the real result must not alter item.'+field);
+    }
+    assert.deepEqual(after.analysis_state,before.analysis_state,'the real result must not alter the analysis state');
+  }
+  assert.equal(Inbox.resultFor(2.5).state,'WIN');
+  assert.equal(Inbox.resultFor(0).state,'EVEN');
+  assert.equal(Inbox.resultFor(-0.25).state,'LOSS');
+  assert.equal(Inbox.resultFor(1e-12).state,'EVEN','the EVEN band uses the shared 1e-9 tolerance');
+  assert.equal(Inbox.resultFor(-1e-12).state,'EVEN','the EVEN band uses the shared 1e-9 tolerance');
+  // Malformed settlements are never coerced into a fabricated (positive) net.
+  for(const value of [null,undefined,'','   ','n/a',true,false,[2.5],{},NaN,Infinity,-Infinity]){
+    const item=Inbox.buildReviewInbox({
+      reviewScores:{'100001':reviewScores['100001']},
+      hhSources:[{name:'all.txt',content:HH1}],scope:SCOPE,user_metadata:metadata0,
+      hand_results:{'100001':value}
+    }).items[0];
+    assert.equal(item.hero_net_bb,null,'malformed settlement '+JSON.stringify(value)+' must never become a number');
+    assert.equal(item.result.state,'UNKNOWN','malformed settlement '+JSON.stringify(value)+' stays UNKNOWN');
+  }
+  // A well-formed serialized number stays admissible evidence.
+  const serialized=Inbox.buildReviewInbox({
+    reviewScores:{'100001':reviewScores['100001']},
+    hhSources:[{name:'all.txt',content:HH1}],scope:SCOPE,user_metadata:metadata0,
+    hand_results:{'100001':'-1.5'}
+  }).items[0];
+  assert.equal(serialized.hero_net_bb,-1.5);
+  assert.equal(serialized.result.state,'LOSS');
+}
+
+// #395 T1: result filters (single + multi), including the explicit UNKNOWN.
+{
+  const settled=Inbox.buildReviewInbox({
+    reviewScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,user_metadata:metadata0,
+    hand_results:{'100001':-3.5,'100002':0,'100003':4.25}
+  });
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'WIN'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100003']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'LOSS'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100001']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'EVEN'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100002']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'UNKNOWN'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100004'],'UNKNOWN must be filterable by its own code');
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'unknown'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100004'],'result filters are case-insensitive');
+  assert.deepEqual(Inbox.queryInbox(settled,{result:['WIN','LOSS']},'HAND_ID_ASC').items.map(x=>x.hand_id),['100001','100003']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:''},'HAND_ID_ASC').items.map(x=>x.hand_id),['100001','100002','100003','100004'],'an empty result filter matches everything');
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'WIN',min_loss_bb:4},'HAND_ID_ASC').items,[],'result composes with the other filters');
+}
+
+// #395 T1: temporal and real-result sorts, always tie-broken by hand_id.
+{
+  const settled=Inbox.buildReviewInbox({
+    reviewScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,user_metadata:metadata0,
+    hand_results:{'100001':-3.5,'100002':0,'100003':4.25}
+  });
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'TIMESTAMP_ASC').map(x=>x.hand_id),['100001','100002','100003','100004'],'TIMESTAMP_ASC orders on the real timestamps');
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'TIMESTAMP_DESC').map(x=>x.hand_id),['100004','100003','100002','100001'],'TIMESTAMP_DESC reverses the real timestamps');
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'RESULT_GAIN_DESC').map(x=>x.hand_id),['100003','100002','100001','100004'],'RESULT_GAIN_DESC puts the biggest gains first and UNKNOWN last');
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'RESULT_LOSS_DESC').map(x=>x.hand_id),['100001','100002','100003','100004'],'RESULT_LOSS_DESC puts the biggest losses first and UNKNOWN last');
+
+  const base=settled.items[0];
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'b',hero_net_bb:1,result:{state:'WIN',net_bb:1}},
+    {...base,hand_id:'a',hero_net_bb:1,result:{state:'WIN',net_bb:1}},
+    {...base,hand_id:'c',hero_net_bb:3,result:{state:'WIN',net_bb:3}}
+  ],'RESULT_GAIN_DESC').map(x=>x.hand_id),['c','a','b'],'RESULT_GAIN_DESC ties are deterministic by hand_id');
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'b',hero_net_bb:-1,result:{state:'LOSS',net_bb:-1}},
+    {...base,hand_id:'a',hero_net_bb:-1,result:{state:'LOSS',net_bb:-1}},
+    {...base,hand_id:'c',hero_net_bb:-3,result:{state:'LOSS',net_bb:-3}}
+  ],'RESULT_LOSS_DESC').map(x=>x.hand_id),['c','a','b'],'RESULT_LOSS_DESC ties are deterministic by hand_id');
+  assert.throws(()=>Inbox.sortInboxItems(settled.items,'NOPE_DESC'),/unsupported sort/);
+
+  // The timestamp comparison uses the parsed instant: a lexicographic compare
+  // would put 'Z'-less/offset timestamps in the wrong place.
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'late',timestamp:'2026-09-18T23:00:00+02:00'},
+    {...base,hand_id:'early',timestamp:'2026-09-18T20:30:00Z'},
+    {...base,hand_id:'undated',timestamp:null}
+  ],'TIMESTAMP_ASC').map(x=>x.hand_id),['early','late','undated'],'TIMESTAMP_ASC compares instants and carries undated items last');
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'late',timestamp:'2026-09-18T23:00:00+02:00'},
+    {...base,hand_id:'early',timestamp:'2026-09-18T20:30:00Z'},
+    {...base,hand_id:'undated',timestamp:'not-a-date'}
+  ],'TIMESTAMP_DESC').map(x=>x.hand_id),['late','early','undated'],'TIMESTAMP_DESC compares instants (23:00+02:00 = 21:00Z after 20:30Z) and carries undated items last');
+}
+
+// #395 T1: the runtime mirror served by the site stays byte-identical.
+{
+  const src=fs.readFileSync(path.join(__dirname,'../../src/analytics/review-inbox.js'),'utf8');
+  const runtime=fs.readFileSync(path.join(__dirname,'../../site/analytics/review-inbox.js'),'utf8');
+  assert.equal(runtime,src,'site/analytics/review-inbox.js must stay byte-identical to src/analytics/review-inbox.js');
 }
 
 console.log(JSON.stringify({

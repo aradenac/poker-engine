@@ -139,7 +139,7 @@
     "item": {
       "type": "object",
       "required": [
-        "schema", "hand_id", "timestamp", "scope", "total_loss_bb", "nominal_loss_bb",
+        "schema", "hand_id", "timestamp", "scope", "total_loss_bb", "nominal_loss_bb", "hero_net_bb", "result",
         "costliest_decision", "primary_decision", "main_street", "position", "spot_family",
         "action_played", "action_recommended", "sizing_error", "jam", "overbet",
         "coverage", "analysis_state", "user_review", "status", "status_label", "deep_link", "facets"
@@ -151,6 +151,19 @@
         "scope": {"$ref": "#/$defs/scope"},
         "total_loss_bb": {"type": "number", "minimum": 0},
         "nominal_loss_bb": {"type": "number", "minimum": 0},
+        "hero_net_bb": {
+          "description": "Real hero settlement of the hand in big blinds, from the optional `hand_results` input of buildReviewInboxes/buildReviewInbox. `null` means no admissible settlement evidence: the value is never coerced from malformed metadata (boolean/container/blank string) and is never invented from the EV fields.",
+          "type": ["number", "null"]
+        },
+        "result": {
+          "description": "Real-result projection of hero_net_bb. Its state is derived only from the settlement: WIN above the 1e-9 tolerance, LOSS below it, EVEN inside it and UNKNOWN when hero_net_bb is null. A missing settlement is therefore UNKNOWN, never a fabricated EVEN/0.",
+          "type": "object",
+          "required": ["state", "net_bb"],
+          "properties": {
+            "state": {"enum": ["WIN", "LOSS", "EVEN", "UNKNOWN"]},
+            "net_bb": {"type": ["number", "null"]}
+          }
+        },
         "costliest_decision": {"$ref": "#/$defs/decision"},
         "primary_decision": {"$ref": "#/$defs/decision"},
         "main_street": {"type": "string"},
