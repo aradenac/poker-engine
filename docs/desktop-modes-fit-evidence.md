@@ -1,13 +1,13 @@
 ---
-schema: poker-issue-394-desktop-modes-fit-evidence/v6
+schema: poker-issue-394-desktop-modes-fit-evidence/v7
 issue: 394
-task: task-backlog-cg8 (R2)
+task: task-backlog-lh8 (R2)
 planner_key: R2
 report_date: 2026-09-25
-head_sha: 2d0856024a1859cf778dd889b3911035c1d10378
-head_sha_previous_revision: 8ed9ef07ed40beec1f2717109bcf6b29ceeb205d
-branch: n8n/issue-394/task-backlog-g0t
-status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__CI_FAIL_AT_1366X768_RECORDED__R1_FIX_IN_TREE__FROZEN_JOB_RERUN_REQUIRED__LOCAL_RUNS_FAILED_EXIT_1
+head_sha: acc7d3f17a78b435e1a616083ac67eba61dd4323
+head_sha_previous_revision: 2d0856024a1859cf778dd889b3911035c1d10378
+branch: n8n/issue-394/task-backlog-lh8
+status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__CI_FAIL_AT_1366X768_RECORDED__R1_FIX_IN_TREE__FROZEN_JOB_RERUN_REQUIRED__LOCAL_RUNS_FAILED_EXIT_1__DELIVERED_BYTES_RUN_566_BROWSER_SMOKE_RED_ON_MATRIX__T1_ROW_BUDGET_FIX_DELIVERED
 merged: false
 pushed: false
 authority: .github/workflows/trainer-smoke.yml — job browser-smoke (non modifié par cette task)
@@ -34,9 +34,15 @@ ci_observed_merge_sha: 4fd6e701eeb37992768b4264c0f86bdcc6a12ca6
 ci_observed_trainer_smoke_run: "run #564 — https://github.com/aradenac/poker-engine/actions/runs/36081969038 — static-contract=PASS, browser-smoke=PASS"
 ci_observed_hero_range_editor_run: "run #440 — https://github.com/aradenac/poker-engine/actions/runs/36081969061 — contract=FAILURE (étape « Main application integration is idempotent »), browser-smoke=skipped"
 ci_frozen_jobs_all_green: false
-ci_delivered_head_pushed: NO
-ci_delivered_head_runs: NONE
+ci_delivered_head_pushed: YES
+ci_delivered_head_runs: "run #566 — https://github.com/aradenac/poker-engine/actions/runs/36088338545 — static-contract=success, browser-smoke=failure ; voir § 9"
 ci_observation_section: "§ 8.6"
+ci_delivered_head_sha_observed: 2c46f81cb77ef1645283a1dc249f9d53894c1aa7
+ci_delivered_head_run_job: "browser-smoke — job 107925214120 — étape « Exercise Training view », cible #matrix mesurée inViewport=false / inShell=false / hit=false à 1366x768 ; voir § 9"
+matrix_failure_recorded: "panneau Spot Lab « Range adverse » : la grille #matrix (169 cellules) n'est pas atteignable à 1366x768 — assertion de tests/trainer/smoke_modes_desktop.py ; voir § 9.2"
+matrix_fix_recorded: "site/index.html — @media(min-width:901px) and (max-height:900px){ .matrix{gap:2px} .cell{height:26px} } (13*26 + 12*2 = 362px au lieu de 13*34 + 12*3 = 478px) + ancre site/RELEASE.json réassemblée (blob index.html 033e6517… -> 75b26fb1…) ; voir § 9.4"
+unobserved_at_1366x768: "jamais observées vertes depuis l'instrument T1 : jambes 1366x768 du Replayer (3 colonnes + 3 couples onglet/panneau) et du rail Trainer (4 onglets) — le run s'arrête à la première assertion ; voir § 9.3"
+ci_observation_section_delivered: "§ 9"
 ---
 
 # Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
@@ -54,6 +60,14 @@ laissait vide : l'**échec CI réel** du job gelé à 1366x768, sa cause racine
 géométrique et la correction **R1** qui la lève. Cet ajout est documentaire : il
 ne change ni `site/**`, ni `.github/workflows/trainer-smoke.yml`, ni le smoke, et
 il ne réintroduit **aucune** mesure non reproductible depuis le dépôt.
+
+La task **`backlog-lh8`** ajoute au **§ 9** l'**échec CI observé sur les octets
+livrés** — le panneau Spot Lab `Range adverse`, dont la grille `#matrix` est
+mesurée inatteignable à `1366x768` par le job gelé `browser-smoke` — sa cause
+géométrique, le correctif livré et l'**inventaire honnête** de ce qui, dans ce
+même run, n'a **pas** été observé. Cet ajout est documentaire lui aussi : il
+n'écrit aucun octet de `site/**`, de `.github/**`, de `tests/` ni de `tools/`, il
+ne réintroduit aucune mesure locale, et il ne convertit aucun échec en verdict.
 
 ## 1. Autorité unique : le job gelé `browser-smoke`
 
@@ -722,3 +736,204 @@ que le périmètre **hors navigateur**, et le job gelé `browser-smoke` de
 `1366x768`, pour les six modes `home`, `spotlab`, `review`, `replayer`, `training`,
 `strategy`). Cette sous-section n'écrit **aucun octet** de `site/**`, de
 `.github/**`, de `tests/` ni de `tools/` : elle n'ajoute que la lecture ci-dessus.
+
+## 9. L'échec CI observé sur les octets livrés (`#matrix` à `1366x768`), sa cause et le correctif (task `backlog-lh8`)
+
+Cette section est **strictement additive** : elle consigne, à la suite du § 8,
+l'**échec CI réellement observé sur les octets livrés** — le panneau Spot Lab
+`Range adverse`, dont la grille `#matrix` est mesurée inatteignable à `1366x768`
+par le job gelé `browser-smoke` —, sa **cause géométrique**, le **correctif
+livré** qui la lève, et l'**inventaire honnête** de ce que ce même run n'a **pas**
+observé. Elle n'écrit aucun octet de `site/**`, de `.github/**`, de `tests/` ni de
+`tools/` : elle n'ajoute que la lecture ci-dessous. Les jetons de garde du § 8
+restent ceux du § 8 : `ci_green: NOT_OBSERVED`, `frozen_job_rerun_required: true`
+et `contract_job_rerun_required: true` — aucun d'eux n'est basculé ici.
+
+### 9.1 Le canal, l'instant, et le HEAD observé
+
+Le canal reste le **connecteur GitHub** en lecture seule : la résolution DNS vers
+`api.github.com` demeure coupée dans ce worker (§ 8.3), donc `curl` et `gh`
+échouent toujours, mais le connecteur interroge l'API GitHub et rend les runs, les
+jobs et leurs journaux. Le relevé de cette section est daté du
+**2026-09-25T03:27Z**.
+
+Ce qui est observé cette fois est le **HEAD poussé de la branche épique** de la
+PR #416 — `2c46f81cb77ef1645283a1dc249f9d53894c1aa7` (`chore(n8n): task
+backlog-imj for issue #394`) — et non le HEAD livré du worktree :
+
+```
+$ git rev-parse HEAD
+acc7d3f17a78b435e1a616083ac67eba61dd4323
+$ git rev-parse --abbrev-ref HEAD
+n8n/issue-394/task-backlog-lh8
+$ git merge-base --is-ancestor 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 HEAD && echo ancestor
+ancestor
+```
+
+Le SHA observé est donc un **ancêtre** de ce worktree : la branche épique, restée
+sur `8ff970b` lors de l'observation du § 8.6, a été poussée depuis à `2c46f81`,
+qui **porte les octets livrés** (extension T1 du smoke incluse, § 8.6.5). La CI
+`pull_request` a extrait ces octets sous la forme du commit de fusion
+`369bf056f5830dbec3ebe461763e989767b59eb2`, et c'est **ce** commit qu'elle a
+exécuté. Le constat du § 8.6.6 (« runs sur les octets livrés : aucun ») valait
+pour le HEAD de worktree `2d08560`, qui n'était pas poussé ; il est **remplacé ici
+par l'observation ci-dessous**, pas reconduit.
+
+### 9.2 L'échec observé : le job gelé `browser-smoke`, sur la cible `#matrix`
+
+| Workflow (gelé) | Job | Run observé | Étapes du job | Conclusion |
+| --- | --- | --- | --- | --- |
+| `.github/workflows/trainer-smoke.yml` | `static-contract` | `#566` — [run `36088338545`](https://github.com/aradenac/poker-engine/actions/runs/36088338545) | toutes `success` (REPRO batch-1, JavaScript syntax, Release identity, All trainer regression contracts, Patch idempotence) | **`success`** — [job `107925080169`](https://github.com/aradenac/poker-engine/actions/runs/36088338545/job/107925080169) |
+| `.github/workflows/trainer-smoke.yml` | `browser-smoke` | `#566` — [run `36088338545`](https://github.com/aradenac/poker-engine/actions/runs/36088338545) | `Exercise Training view` = **`failure`** ; `Exercise pathological engine regressions` = `skipped` | **`failure`** — [job `107925214120`](https://github.com/aradenac/poker-engine/actions/runs/36088338545/job/107925214120) |
+
+L'échec n'est ni infrastructurel ni aléatoire : le job installe l'environnement
+verrouillé (`PASS` du rapport d'environnement, `python` `3.11.9`), installe le
+Chromium pinné, sert `site/`, puis échoue sur l'**assertion déterministe** de
+`tests/trainer/smoke_modes_desktop.py` — la **première jauge de panneau** du
+parcours `1366x768`, celle du panneau `Range adverse` du Spot Lab. La cible
+mesurée est la grille `#matrix` (les 169 cellules), et le verdict mesuré la nomme
+par ses champs individuels, jamais par un booléen :
+
+| Cible mesurée | Viewport | `inViewport` | `inShell` | `hit` | `reachable` |
+| --- | --- | --- | --- | --- | --- |
+| `#matrix` (`SPOTLAB_RANGE_SURFACE_SELECTORS`) | `1366x768` | **`false`** | **`false`** | **`false`** | **`false`** |
+
+Les deux autres cibles du **même** relevé de panneau — `#spotlabRangeTab` et
+`#rangeDisplaySection` — sont, elles, mesurées atteignables : le panneau est bien
+monté par un clic réel, c'est la grille qu'il contient qui est coupée. Les deux
+lignes d'inventaire imprimées par le smoke (il les imprime pour un run vert comme
+pour un run rouge, depuis l'audit qu'il a construit) le prouvent, mot pour mot :
+
+```
+  inventaire panneaux viewport=1500x1000 mesures=9 cibles=20 atteignables=20/20 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=ok] · replayer-columns=[.replayer-col-left=ok, .replayer-col-center=ok, #replayerContextPanel=ok] · replayer-decision=[#replayerDecisionTab=ok, #replayerDecisionPanel=ok] · replayer-ranges=[#replayerRangesTab=ok, #replayerRangesPanel=ok] · replayer-details=[#replayerDetailsTab=ok, #hhReplayDetail=ok] · trainer-coaching=[#trainerCoachingTab=ok, #trainerCoachPanel=ok] · trainer-session=[#trainerSessionTab=ok, #trainerSessionPanel=ok] · trainer-profiles=[#trainerProfilesTab=ok, #trainerProfilesPanel=ok] · trainer-test=[#trainerTestTab=ok, #trainerTestPanel=ok]
+  inventaire panneaux viewport=1366x768 mesures=1 cibles=3 atteignables=2/3 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=MISS]
+trainer smoke failed: Command '[…]' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+```
+
+Le chemin absolu que l'orchestrateur `smoke_trainer.py` imprime dans sa ligne
+d'échec est élidé (`…`), pour que ce document ne cite aucun chemin hors du dépôt ;
+la ligne d'erreur du runner, elle, est reprise telle quelle.
+
+Un point compte pour la lecture de la règle : les mesures de défilement global
+(`scrollHeight <= clientHeight`) passent **avant** la jauge de panneau dans le
+parcours par viewport, et elles sont assertives. L'échec survient *après* celles
+des modes déjà parcourus à `1366x768` (`home`, `spotlab`) : la règle « aucun
+scroll global » **y était donc satisfaite**, et l'échec est exactement ce qu'elle
+ne peut pas voir — un contenu **coupé à l'intérieur d'un panneau borné**, pas un
+défilement du document.
+
+### 9.3 Ce que ce run n'a pas observé : l'inventaire honnête
+
+Le smoke **s'arrête à la première assertion en échec**, et cette assertion est la
+**première** jauge de panneau du parcours `1366x768`. L'audit imprimé à cet
+instant porte donc **un seul** relevé de panneau à `1366x768` (3 cibles) là où
+`1500x1000` en porte **neuf** (20 cibles) : les deux lignes du § 9.2 sont la
+preuve de ce qui a tourné et de ce qui n'a pas tourné. **Jamais observées vertes
+depuis l'ajout de l'instrument T1**, à `1366x768` :
+
+| Surface | Onglet | Cibles jamais observées à `1366x768` |
+| --- | --- | --- |
+| Replayer, colonnes | — (montage du Replayer) | `.replayer-col-left`, `.replayer-col-center`, `#replayerContextPanel` |
+| Replayer, onglets du panneau droit | `#replayerDecisionTab`, `#replayerRangesTab`, `#replayerDetailsTab` | `#replayerDecisionPanel`, `#replayerRangesPanel`, `#hhReplayDetail` |
+| Rail Trainer, onglets | `#trainerCoachingTab`, `#trainerSessionTab`, `#trainerProfilesTab`, `#trainerTestTab` | `#trainerCoachPanel`, `#trainerSessionPanel`, `#trainerProfilesPanel`, `#trainerTestPanel` |
+
+Restent également **non parcourues** à `1366x768` dans ce run, parce qu'elles sont
+en aval de l'assertion en échec dans le parcours par viewport : la surface
+d'import Review et ses hit-tests, la course Review, le deep link `#strategyPage`
+de la coque embarquée, et le deep link de l'éditeur autonome (arrivée, réécriture
+en place, reload).
+
+**Justification structurelle de cette réserve.** Les cibles listées ci-dessus sont
+les **panneaux bornés eux-mêmes**, posés par flex/grid avec `min-height:0` et leur
+propre `overflow:hidden` sous la coque `100dvh` — par exemple
+`#replayerSection>#replayerContextPanel{display:flex;flex-direction:column;min-height:0;overflow:hidden}`,
+`#replayerSection .replayer-col{min-height:0;display:flex;flex-direction:column;…}`,
+`.trainer-side{…;min-height:0;overflow:hidden}` et
+`.trainer-rail-panel{display:grid;gap:10px;flex:1 1 auto;min-height:0;align-content:start}`.
+`#matrix`, lui, n'est **pas** borné par ces mécanismes : c'est une grille
+d'hauteur incompressible (hauteur de rangée = hauteur de cellule) coupée par
+`.matrixwrap{overflow:hidden;margin-top:12px}`. Le correctif du § 9.4 porte sur le
+**budget de rangées de cette grille** ; il ne dit rien des panneaux déjà bornés
+par flex/grid et `min-height:0`, et leur atteignabilité à `1366x768` reste donc un
+risque **distinct**, non couvert par la levée ci-dessous.
+
+### 9.4 La cause géométrique, et le correctif livré
+
+La cause est déclarative, donc recalculable depuis les octets servis : la grille
+`#matrix` a **13 rangées** de `.cell{height:34px}` séparées par **12 gouttières**
+de `.matrix{gap:3px}`, soit
+
+```
+H = 13 * 34px + 12 * 3px = 478px
+```
+
+— une hauteur **incompressible** (une rangée ne peut pas être plus courte que la
+cellule qu'elle peint), alors que le panneau `Range adverse` ne dispose à
+`1366x768`, sous la coque `100dvh`, que d'un budget vertical inférieur. Le
+`.matrixwrap{overflow:hidden;margin-top:12px}` qui borne la grille en **coupe**
+donc le bas : la boîte existe, mais `#matrix` n'est ni dans le viewport, ni dans
+la coque, et `document.elementFromPoint` au centre de sa boîte ne rend pas la
+cible — les trois `false` du § 9.2.
+
+Le correctif **livré** (commit `70dc732`, task `backlog-qyb`) ajoute au bloc
+`<style>` de `site/index.html` la règle responsive :
+
+```
+  @media(min-width:901px) and (max-height:900px){
+    .matrix{gap:2px}
+    .cell{height:26px}
+  }
+```
+
+soit `13 * 26px + 12 * 2px = 362px` : la grille repasse sous le budget du panneau
+à `1366x768`. L'ancre de release est **réassemblée** dans le même commit
+(`site/RELEASE.json`, blob de `site/index.html` `033e6517…` → `75b26fb1…`), donc
+l'identité publiée suit les octets corrigés.
+
+Ce que ce correctif **n'est pas** : il ne touche ni les 13 colonnes, ni les 169
+cells, ni les valeurs non gatées (`.cell{height:34px}`, `.matrix{gap:3px}`, qui
+restent celles du viewport de référence `1500x1000`) — la règle est gatée
+`min-width:901px` **et** `max-height:900px`, donc elle ne change rien au viewport
+de référence `1500x1000` ni au rendu des largeurs sous `901px`, et il ne
+contourne rien : aucun `force=True`, aucun `dispatch_event`, aucun retry et aucun
+skip n'est ajouté au smoke, qui garde son clic réel et ses jauges.
+
+Ce correctif reste vérifiable **depuis le dépôt, sans navigateur** :
+`tests/trainer/test_spotlab_range_fit_contract.py` recalcule les deux côtés de la
+comparaison depuis les octets servis — `H` selon le verdict de la requête média
+(largeur **et** hauteur) et le budget du panneau — et exige que la grille **non
+gatée** (`478px`) soit **au-dessus** de ce budget, faute de quoi la garde échoue
+au lieu de passer à vide. C'est la même famille de garde statique que
+`tests/trainer/test_desktop_accessibility_contract.py` (§ 8.2), et elle ne
+remplace pas un run du job gelé.
+
+### 9.5 La condition de clôture
+
+Le run observé ici est **rouge**, et il porte sur des octets **antérieurs** au
+correctif du § 9.4 : il ne peut donc rien basculer.
+
+1. `ci_green` reste **`NOT_OBSERVED`** — aucune valeur n'est forcée, et le run
+   vert du job gelé sur les octets **corrigés** n'existe pas encore ;
+2. `frozen_job_rerun_required` reste **`true`** : `browser-smoke` doit être
+   relancé sur un HEAD **poussé** portant le correctif ;
+3. `contract_job_rerun_required` reste **`true`** (la correction du patch
+   d'idempotence du job `contract` n'est pas dans la branche épique, § 8.6.3) ;
+4. **seul** un run **vert** des jobs gelés sur le nouveau SHA fera passer
+   `ci_green` de `NOT_OBSERVED` à `OBSERVED`. Ni le pré-vol hors navigateur du
+   § 8.7, ni les gardes statiques des § 9.4 et § 8.2, ni la lecture de ce
+   document ne remplacent ce run : le job gelé `browser-smoke` de
+   `.github/workflows/trainer-smoke.yml` demeure la **seule autorité** pour la
+   règle « aucun scroll global » (`scrollHeight` / `clientHeight` à `1500x1000` et
+   `1366x768`, pour les six modes `home`, `spotlab`, `review`, `replayer`,
+   `training`, `strategy`) et pour l'atteignabilité des panneaux mesurés.
+
+Le seul vert consigné dans cette section est celui des **étapes** du run observé :
+le job gelé `static-contract` (`success`) et l'inventaire `1500x1000` de ses
+panneaux (`20/20`) — sur les octets d'**avant** le correctif. Aucun `PASS` du job
+`browser-smoke` n'est écrit ici, et aucune ligne de cette section ne doit être lue
+comme un `PASS` de job gelé.
+
+Cette section se **réfère** à `docs/issue-394-release-identity-ci-report.md`, qui
+reste le rapport PASS/FAIL des jobs gelés (§ 8 et § 11 du rapport) : elle n'en
+modifie aucun octet.
