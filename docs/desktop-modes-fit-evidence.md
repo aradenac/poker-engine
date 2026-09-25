@@ -244,7 +244,7 @@ son code de mesure tel quel :
 | atterrissage Review | `smoke_modes_desktop.REVIEW_SELECTED_SUBTABS_JS` |
 | scénario de course | `smoke_modes_desktop.RACE_PROBE_JS` + barrage `state.persistenceReady===true` (`READINESS_TIMEOUT_MS`) |
 | import de la main repro | `smoke_modes_desktop.importable_fixture_bytes()` via le **vrai** `#hhFileInput` (`set_input_files`) |
-| entrée de la coque Stratégie Hero | deep link `#strategyPage` (le point d'entrée réel du smoke, `appViewForHashTarget()` / `routeFromHash()`) — **pas** l'entrée `#quickNav` |
+| entrée de la coque Stratégie Hero | deep link `#strategyPage` (le point d'entrée réel du smoke, `appViewForHashTarget()` / `routeFromHash()`), et non un clic sur l'entrée `#quickNav` ; l'éditeur autonome `./hero-ranges.html` est atteint par le lien réel de la carte d'Accueil (§ 9) |
 
 Déviations imposées par le sandbox, toutes déclarées :
 

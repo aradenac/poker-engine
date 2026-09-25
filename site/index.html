@@ -1276,7 +1276,7 @@
   <div class="quick-nav-title">Espaces</div>
   <a href="#historiesSection" data-product-domain="review">Review</a>
   <a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>
-  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>
+  <a href="#strategyPage" data-product-domain="strategy">Strategy</a>
   <a href="#equityLabSection" data-product-domain="equity-lab">Equity Lab</a>
   <a href="#settingsSection" data-product-domain="settings">Settings</a>
 </nav>
@@ -9868,13 +9868,13 @@ loadRuntimeReleaseIdentity();
 updateAppView();
 document.querySelectorAll(".quick-nav a").forEach(a=>{
   a.addEventListener("click",e=>{
+    /* #394 — every `#quickNav` entry is an in-app navigation: the Strategy entry
+       carries `href="#strategyPage"` like the Review / Equity Lab / Settings ones,
+       so the generic hash path below mounts the embedded `[data-view-shell="strategy"]`
+       shell. The standalone editor keeps its own real link on the Accueil mode card
+       (`a.mode-card[data-app-view="strategy"][data-hero-ranges-entry]`) and on
+       `#strategyPageEditorLink`. */
     const href=a.getAttribute("href")||"";
-    const domain=a.dataset.productDomain||"";
-    if(domain==="strategy"){
-      e.preventDefault();
-      openAppView("strategy",{scrollTop:true});
-      return;
-    }
     if(!href.startsWith("#")) return;
     e.preventDefault();
     const id=href.slice(1);
@@ -9889,9 +9889,10 @@ document.querySelectorAll(".mode-card[data-app-view]").forEach(card=>{
   card.addEventListener("click",e=>{
     const view=card.dataset.appView;
     if(!APP_VIEWS.includes(view)) return;
-    // The Strategy mode is the standalone editor page: its link must navigate
-    // (deep link preserved, openable in a new tab) instead of being swallowed
-    // by the in-app view switch.
+    // The Strategy mode card is the standalone editor's real link: it must
+    // navigate (deep link preserved, openable in a new tab) instead of being
+    // swallowed by the in-app view switch. The embedded shell is reached by the
+    // in-app `#strategyPage` deep link carried by the `#quickNav` entry.
     if(card.tagName==="A"&&card.getAttribute("href")) return;
     e.preventDefault();
     openAppView(view,{scrollTop:true});

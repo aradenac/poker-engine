@@ -43,8 +43,10 @@ Covered journeys (each on a fresh context, both viewports):
   (`appViewForHashTarget()` maps the id onto `state.appView`, `routeFromHash()`
   resolves it at load and `hashchange` replays it — the same path the Review
   `#historiesSection` deep link above already exercises), and measured. The
-  `#quickNav` Strategy entry is *not* the entry of that shell: its `href` points
-  at the standalone editor, so the shell is never joined through it;
+  `#quickNav` Strategy entry carries that very anchor (`href="#strategyPage"`),
+  so it is a navigation *into* the shell, not into the standalone editor: the
+  smoke still measures the shell through the URL deep link, which is the
+  bookmark / shared-link path;
 * Accueil → éditeur Stratégie Hero: the Accueil mode card is a real link to the
   standalone `./hero-ranges.html` editor and the editor URL is its **deep link**
   (#394 T6), measured three times — the query is mandatory (the query-less glob
@@ -877,9 +879,10 @@ async def run_viewport(browser, url: str, width: int, height: int, audit: list[d
         #    deep link: `appViewForHashTarget()` maps that id onto `state.appView`
         #    and `routeFromHash()` resolves it at load (`hashchange` replays it) —
         #    the very path the Review `#historiesSection` deep link above already
-        #    exercises. The `#quickNav` Strategy entry is *not* used: its href is
-        #    the standalone editor (`./hero-ranges.html`), whose real link is
-        #    measured by the Accueil mode card in step 7.
+        #    exercises, and the very anchor the `#quickNav` Strategy entry carries
+        #    (`href="#strategyPage"`) — the entry is an in-app navigation, not a
+        #    link to the standalone editor. The editor's real link
+        #    (`./hero-ranges.html`) is measured by the Accueil mode card in step 7.
         await page.goto(f"{url}#strategyPage", wait_until="domcontentloaded", timeout=45_000)
         # The reload replays that URL as a *load-time* deep link — the bookmark /
         # shared-link path (`routeFromHash()` runs at the end of the asynchronous

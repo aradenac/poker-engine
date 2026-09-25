@@ -102,6 +102,18 @@ def check_hero_ranges_mode_contract() -> None:
     assert mode_card in home, "the Stratégie Hero mode card must open hero-ranges.html"
     assert '<span class="mode-card-title">Stratégie Hero</span>' in home
     assert home.count('class="mode-card"') == 5, home
+    # #394 — the standalone editor is reached by the mode card and the embedded
+    # shell's own link, never by the `#quickNav` Strategy entry: that entry is an
+    # in-app navigation carrying the `#strategyPage` anchor, and the `.quick-nav a`
+    # listener keeps no `strategy` special case.
+    nav = INDEX.split('<nav id="quickNav"', 1)[1].split('</nav>', 1)[0]
+    assert '<a href="#strategyPage" data-product-domain="strategy">Strategy</a>' in nav, nav
+    assert 'hero-ranges.html' not in nav, nav
+    nav_handler = INDEX.split('document.querySelectorAll(".quick-nav a").forEach', 1)[1].split(
+        'document.querySelectorAll(".mode-card[data-app-view]")', 1
+    )[0]
+    assert 'dataset.productDomain' not in nav_handler, nav_handler
+    assert 'openAppView(' not in nav_handler, nav_handler
     # The in-app view switch must not swallow the editor navigation.
     cards_handler = INDEX.split('document.querySelectorAll(".mode-card[data-app-view]").forEach', 1)[1].split(
         'document.querySelectorAll("[data-home-back]")', 1

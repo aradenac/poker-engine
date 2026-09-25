@@ -206,13 +206,28 @@ def main() -> None:
     for label, href, domain in (
         ('Review', '#historiesSection', 'review'),
         ('Training', '#trainerPage', 'training'),
-        ('Strategy', './hero-ranges.html', 'strategy'),
+        # #394 — the nav entry is an in-app navigation to the embedded shell
+        # (`#strategyPage`), never a link to the standalone `./hero-ranges.html`
+        # editor: the editor keeps its own real link on the Accueil mode card and
+        # on `#strategyPageEditorLink` (§4.1 of the shell document).
+        ('Strategy', '#strategyPage', 'strategy'),
         ('Equity Lab', '#equityLabSection', 'equity-lab'),
         ('Settings', '#settingsSection', 'settings'),
     ):
         assert f'href="{href}"' in nav, (label, nav)
         assert f'data-product-domain="{domain}"' in nav, (label, nav)
         assert f'>{label}</a>' in nav, (label, nav)
+
+    # The standalone editor keeps its real link, outside the navigation: the
+    # Accueil mode card (`data-hero-ranges-entry`, decorated by
+    # `syncHeroRangesDeepLinks`) and the embedded shell's own editor link.
+    strategy_card = (
+        '<a class="mode-card" data-app-view="strategy" data-hero-ranges-entry '
+        'href="./hero-ranges.html">'
+    )
+    assert strategy_card in INDEX, strategy_card
+    assert 'id="strategyPageEditorLink"' in INDEX
+    assert 'hero-ranges.html' not in nav, nav
 
     # Former calculator implementation details are no longer global destinations.
     for legacy in ('Replayer', 'Adversaires', 'Cartes', 'Range adverse', '>Calcul</a>'):
@@ -271,14 +286,25 @@ def main() -> None:
     for label in ('Review', 'Training', 'Strategy', 'Equity Lab'):
         assert label in home_actions, (label, home_actions)
 
-    # quickNav and the mode cards route through appView instead of scrolling; the
-    # strategy domain is an in-app mode and #hash deep links are mapped too.
+    # quickNav and the mode cards route through appView instead of scrolling, and
+    # the strategy domain is an in-app mode reached by the generic hash path: the
+    # #394 rework removed the `domain==="strategy"` / `openAppView("strategy"`
+    # special case, which contradicted the in-document `href="#strategyPage"`.
     handler = block('document.querySelectorAll(".quick-nav a").forEach', 'updateCalcReady();')
-    assert 'if(!href.startsWith("#")) return;' in handler
-    assert 'if(id==="trainerPage")' in handler
-    assert 'trainerOpenBtn?.click()' in handler
-    assert 'openAppView(' in handler
+    # The `.quick-nav a` listener itself (up to the mode-card listener) is the
+    # guard: it must carry the generic hash path only.
+    navigator = handler.split('document.querySelectorAll(".mode-card[data-app-view]")', 1)[0]
+    assert 'if(!href.startsWith("#")) return;' in navigator
+    assert 'if(id==="trainerPage")' in navigator
+    assert 'trainerOpenBtn?.click()' in navigator
+    assert 'focusAppSection(id);' in navigator
+    assert 'dataset.productDomain' not in navigator, navigator
+    assert 'domain===' not in navigator, navigator
+    assert 'openAppView(' not in navigator, navigator
+    assert 'openAppView("strategy"' not in INDEX
+    assert 'openAppView(\'strategy\'' not in INDEX
     assert 'focusAppSection(' in handler
+    assert 'openAppView(' in handler  # the mode cards still mount the in-app views
     assert 'appViewForHashTarget' in INDEX
     assert 'window.addEventListener("hashchange"' in INDEX
     assert 'routeFromHash();' in INDEX

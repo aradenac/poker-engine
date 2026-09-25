@@ -16,11 +16,13 @@ guard that keeps the single-entrypoint shape:
 
 It also owns the #394 T6 URL contract of the desktop journey: the embedded
 Stratégie Hero shell is joined by its real entry point, the ``#strategyPage``
-deep link (never by the ``#quickNav`` Strategy entry, whose ``href`` is the
-standalone editor), and the standalone editor is measured through its own deep
-link behind a query-tolerant ``wait_for_url`` glob — the repo convention
-``**/hero-ranges.html?**``, because an anchored Playwright glob without it can
-never match the URL the editor rewrites with its rendered context.
+deep link — the anchor the ``#quickNav`` Strategy entry itself carries, since
+that entry is an in-app navigation and not a link to the standalone editor — and
+the standalone editor is measured through its own deep link (the Home mode card's
+real ``./hero-ranges.html`` link) behind a query-tolerant ``wait_for_url`` glob —
+the repo convention ``**/hero-ranges.html?**``, because an anchored Playwright
+glob without it can never match the URL the editor rewrites with its rendered
+context.
 
 It is a representation/orchestration contract only: no model/fit, no equity
 semantics and no immutable repro evidence is touched.
@@ -108,11 +110,11 @@ def main() -> None:
         'button.mode-card[data-app-view="training"]',
         # #394 T6 — the embedded Stratégie Hero shell is joined by its real entry
         # point, the `#strategyPage` deep link (`appViewForHashTarget()` /
-        # `routeFromHash()`), never by the `#quickNav` Strategy entry: that entry
-        # is the standalone editor's real link and is exercised by the mode card
-        # of step 7.
+        # `routeFromHash()`), which is also the in-app anchor of the `#quickNav`
+        # Strategy entry; the standalone editor keeps its own real
+        # `./hero-ranges.html` link and is exercised by the mode card of step 7.
         'f"{url}#strategyPage"',
-        'a.mode-card[data-app-view="strategy"]',  # navigation to ./hero-ranges.html
+        'a.mode-card[data-app-view="strategy"]',  # real link to ./hero-ranges.html
         'page.keyboard.press("Tab")',
         'page.keyboard.press("ArrowRight")',
         'page.keyboard.press("Enter")',

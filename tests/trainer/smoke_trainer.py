@@ -216,7 +216,10 @@ async def main() -> None:
         )
         assert [x["text"] for x in product_architecture["nav"]] == ["Review", "Training", "Strategy", "Equity Lab", "Settings"], product_architecture
         assert [x["domain"] for x in product_architecture["nav"]] == ["review", "training", "strategy", "equity-lab", "settings"], product_architecture
-        assert product_architecture["nav"][2]["href"] == "./hero-ranges.html", product_architecture
+        # #394 — the Strategy nav entry is an in-app navigation to the embedded
+        # shell; the standalone editor keeps its own real link on the Accueil mode
+        # card and on `#strategyPageEditorLink`.
+        assert product_architecture["nav"][2]["href"] == "#strategyPage", product_architecture
         assert product_architecture["homeModes"] == ["Review", "Training", "Stratégie Hero", "Spot Lab", "Packs/paramètres"], product_architecture
         assert product_architecture["homeShell"] == "home", product_architecture
         assert product_architecture["shells"] == ["home", "review", "spotlab", "strategy", "training", "replayer"], product_architecture
