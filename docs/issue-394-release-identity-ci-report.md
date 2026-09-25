@@ -11,6 +11,16 @@ branch: n8n/issue-394/task-backlog-lzl
 merged: false
 pushed: false
 ci_green: NOT_OBSERVED
+ci_observation_channel: "connecteur GitHub (lecture seule) — le shell de ce worker garde un DNS coupé (curl/gh), le connecteur interroge l'API GitHub"
+ci_observation_timestamp_utc: "2026-09-25T02:23Z"
+ci_observation_section: "§ 9 (et docs/desktop-modes-fit-evidence.md § 8.6)"
+ci_observed_head: 8ff970bde9726852ffd77537499e4b7161698c2c
+ci_observed_merge_sha: 4fd6e701eeb37992768b4264c0f86bdcc6a12ca6
+ci_observed_trainer_smoke_run: "run #564 — https://github.com/aradenac/poker-engine/actions/runs/36081969038 — static-contract=PASS, browser-smoke=PASS"
+ci_observed_hero_range_editor_run: "run #440 — https://github.com/aradenac/poker-engine/actions/runs/36081969061 — contract=FAILURE (étape « Main application integration is idempotent »), browser-smoke=skipped"
+ci_frozen_jobs_all_green: false
+ci_delivered_head_pushed: NO
+ci_delivered_head_runs: NONE
 ci_authority: ".github/workflows/trainer-smoke.yml — workflow « Validate interactive trainer », jobs static-contract et browser-smoke (gelés, non modifiés par cette task)"
 ci_required_before_ready: "« Validate interactive trainer » observé au HEAD de la PR avec static-contract = PASS et browser-smoke = PASS ; non observable depuis ce sandbox"
 release_anchor_write: NO_DELTA_REGENERATION_IS_BYTE_IDENTICAL
@@ -31,8 +41,9 @@ javascript_syntax: PASS
 browser_smoke_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_SANDBOX
 browser_smoke_evidence: "docs/desktop-modes-fit-evidence.md"
 browser_smoke_authority: "job gelé browser-smoke de .github/workflows/trainer-smoke.yml — seule autorité de la règle « aucun scroll global » à 1500x1000 et 1366x768 et du clic réel du raccourci Accueil"
-red_workflows: []
+red_workflows: [".github/workflows/hero-range-editor.yml — job contract rouge au HEAD poussé 8ff970b (run 36081969061, étape « Main application integration is idempotent »), correction T1/T2/T3 non poussée"]
 report_self_delta: "révision task-backlog-lzl (T4) : le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, 1e17f90f05811b3dba4e6c830180578f42c391e1 (chore(n8n): task backlog-3p7 for issue #394), relevé juste avant l'écriture de ce fichier (git rev-parse HEAD) ; cette révision AJOUTE le § 8 (échec CI réel du job gelé contract de .github/workflows/hero-range-editor.yml à l'étape « Main application integration is idempotent », cause markup, correction T1/T2/T3) et deux sous-sections documentaires (§ 8.5 de docs/desktop-modes-fit-evidence.md, annotation additive de docs/hero-strategy-population-binding-ci-report.md) ; elle n'écrit AUCUN octet de site/** ni de .github/** (git status --porcelain vide sur ces familles), donc le rapport reste postérieur au dernier écrivain commité de site/** (8ed9ef0, R1) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
+g0t_self_delta: "révision task-backlog-g0t (T3, observation CI) : AJOUTE le § 9 de ce rapport et le § 8.6 de docs/desktop-modes-fit-evidence.md, qui consignent l'observation CI RÉELLE des jobs gelés relevée par le connecteur GitHub le 2026-09-25T02:23Z au HEAD poussé 8ff970bde9726852ffd77537499e4b7161698c2c (runs 36081969038 et 36081969061, URLs de runs et de jobs, conclusions et extraits de journaux) ; les jetons ci_green (NOT_OBSERVED), contract_job_rerun_required (true) et frozen_job_rerun_required (true) restent INCHANGÉS parce que le job gelé contract est rouge au HEAD poussé et que les octets livrés (2d0856024a1859cf778dd889b3911035c1d10378, non poussé) n'ont aucun run ; red_workflows passe de [] au workflow réellement rouge observé ; cette révision n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (git status --porcelain limité aux deux documents de preuve)"
 ---
 
 # Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, révisé par task-backlog-lzl)
@@ -678,3 +689,75 @@ EXIT=1   # échec à l'import, avant run_driver_smokes() (voir § 6)
 $ curl -sS https://api.github.com/rate_limit
 curl: (6) Could not resolve host: api.github.com       # CI non observable (voir § 7)
 ```
+
+## (9) Observation CI réelle des jobs gelés au HEAD livré — connecteur GitHub
+
+Le § 7 constate que le **shell** de ce worker n'a pas de réseau (DNS coupé) : il
+reste vrai, `curl` et `gh` échouent toujours. Un **second canal** a cependant
+permis de relever l'état CI **réel** des jobs gelés : le **connecteur GitHub**
+(lecture seule), interroge l'API GitHub et rend les runs, les jobs, leurs étapes
+et leurs journaux. L'observation ci-dessous a été faite le
+**2026-09-25T02:23Z** ; le récit viewport par viewport et les extraits
+d'exécution complets sont consignés en **§ 8.6 de
+`docs/desktop-modes-fit-evidence.md`**.
+
+### Ce qui a été observé, et à quel HEAD
+
+| Élément | Valeur |
+| --- | --- |
+| HEAD observé (branche épique = tête de PR #416) | `8ff970bde9726852ffd77537499e4b7161698c2c` |
+| Commit extrait par la CI `pull_request` | `4fd6e701eeb37992768b4264c0f86bdcc6a12ca6` (fusion de `8ff970b` dans `main`) |
+| HEAD livré du worktree | `2d0856024a1859cf778dd889b3911035c1d10378` — **non poussé** |
+| Runs CI sur les octets livrés | **aucun** : les corrections T1/T2/T3 (`tools/patches/apply_hero_range_editor.py`, `tests/hero_ranges/**`, `tests/trainer/**`) ne sont pas dans la branche épique |
+
+| Workflow (gelé) | Job | Run | Conclusion |
+| --- | --- | --- | --- |
+| `.github/workflows/trainer-smoke.yml` | `static-contract` | [run `36081969038`](https://github.com/aradenac/poker-engine/actions/runs/36081969038) (`#564`) | **`success`** — [job `107905680522`](https://github.com/aradenac/poker-engine/actions/runs/36081969038/job/107905680522) |
+| `.github/workflows/trainer-smoke.yml` | `browser-smoke` | [run `36081969038`](https://github.com/aradenac/poker-engine/actions/runs/36081969038) (`#564`) | **`success`** — [job `107905811137`](https://github.com/aradenac/poker-engine/actions/runs/36081969038/job/107905811137) |
+| `.github/workflows/hero-range-editor.yml` | `contract` | [run `36081969061`](https://github.com/aradenac/poker-engine/actions/runs/36081969061) (`#440`) | **`failure`** à l'étape « Main application integration is idempotent » — [job `107905680401`](https://github.com/aradenac/poker-engine/actions/runs/36081969061/job/107905680401) |
+| `.github/workflows/hero-range-editor.yml` | `browser-smoke` | [run `36081969061`](https://github.com/aradenac/poker-engine/actions/runs/36081969061) (`#440`) | **`skipped`** (`needs: contract`) |
+
+### Les extraits du journal
+
+L'étape d'idempotence est **rouge** au HEAD poussé, et le journal du job `contract`
+porte les deux empreintes du § 8 — il n'y a là aucune déduction :
+
+```
+Hero range editor links integrated
+--- /tmp/index-before.sha
++++ /tmp/index-after.sha
+@@ -1 +1 @@
+-4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html
++c5ac487a66360fa5b7cf05742aba79011ae631d5806d9ffa630ea3f1c8ccffa2  site/index.html
+##[error]Process completed with exit code 1.
+```
+
+Le job `browser-smoke` du run vert `#564` porte, lui, l'audit par mode **et par
+viewport** du smoke : les lignes `1366x768` de Spot Lab, Replayer, Training
+(rail Trainer), Stratégie Hero et de l'éditeur autonome y figurent, avec la ligne
+finale `modes desktop smoke: PASS (2 viewports · …)`. L'extrait complet est en
+§ 8.6.4 de `docs/desktop-modes-fit-evidence.md`.
+
+### Conséquence sur les jetons de ce rapport
+
+La condition de bascule n'est **pas** remplie : les jobs gelés ne sont pas tous
+verts, et les octets livrés n'ont pas encore de run. Donc :
+
+- `ci_green` reste **`NOT_OBSERVED`** — aucune valeur n'est forcée ;
+- `contract_job_rerun_required` reste **`true`** : l'étape d'idempotence du job
+  gelé `contract` est rouge au HEAD poussé, sa correction n'y est pas ;
+- `frozen_job_rerun_required` reste **`true`** : le job gelé `browser-smoke` de
+  `.github/workflows/trainer-smoke.yml` doit être relancé sur les octets livrés
+  (l'extension T1 du smoke touche `tests/trainer/**`, une famille de chemins que
+  ce workflow surveille, donc la poussée des corrections le redéclenche par
+  construction) ;
+- `red_workflows` n'est plus vide : il nomme le workflow réellement rouge au HEAD
+  poussé, `.github/workflows/hero-range-editor.yml`, avec son run et son étape —
+  la valeur précédente (`[]`) ne correspondait plus à l'échec consigné au § 8.
+
+Aucun `PASS` de job gelé n'est écrit ici pour un état non observé, et le job gelé
+`browser-smoke` de `.github/workflows/trainer-smoke.yml` reste la **seule
+autorité** de la règle « aucun scroll global » (`scrollHeight` / `clientHeight` à
+`1500x1000` et `1366x768`, pour les six modes `home`, `spotlab`, `review`,
+`replayer`, `training`, `strategy`). Cette section n'écrit **aucun octet** de
+`site/**`, de `.github/**`, de test ou d'outil : elle est strictement additive.

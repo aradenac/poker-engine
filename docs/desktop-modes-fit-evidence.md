@@ -4,8 +4,9 @@ issue: 394
 task: task-backlog-cg8 (R2)
 planner_key: R2
 report_date: 2026-09-25
-head_sha: 8ed9ef07ed40beec1f2717109bcf6b29ceeb205d
-branch: n8n/issue-394/task-backlog-cg8
+head_sha: 2d0856024a1859cf778dd889b3911035c1d10378
+head_sha_previous_revision: 8ed9ef07ed40beec1f2717109bcf6b29ceeb205d
+branch: n8n/issue-394/task-backlog-g0t
 status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__CI_FAIL_AT_1366X768_RECORDED__R1_FIX_IN_TREE__FROZEN_JOB_RERUN_REQUIRED__LOCAL_RUNS_FAILED_EXIT_1
 merged: false
 pushed: false
@@ -25,6 +26,17 @@ frozen_job_rerun_required: true
 hero_ranges_editor: navigué mais hors contrat de coque (aucune assertion de no-scroll)
 hero_range_editor_contract_failure: "RECORDED__JOB_CONTRACT_STEP_MAIN_APPLICATION_INTEGRATION_IS_IDEMPOTENT__PATCH_REINSERTING_THE_STANDALONE_STRATEGY_NAV_LINK"
 hero_range_editor_patch_correction: "DELIVERED_T1_T2_T3__CI_NOT_OBSERVED__RERUN_REQUIRED"
+ci_observation_channel: "connecteur GitHub (lecture seule) — le shell de ce worker garde un DNS coupé (curl/gh), le connecteur interroge l'API GitHub"
+ci_observation_timestamp_utc: "2026-09-25T02:23Z"
+ci_observation_scope: "PR #416 / branche épique, jobs gelés contract, static-contract et browser-smoke"
+ci_observed_head: 8ff970bde9726852ffd77537499e4b7161698c2c
+ci_observed_merge_sha: 4fd6e701eeb37992768b4264c0f86bdcc6a12ca6
+ci_observed_trainer_smoke_run: "run #564 — https://github.com/aradenac/poker-engine/actions/runs/36081969038 — static-contract=PASS, browser-smoke=PASS"
+ci_observed_hero_range_editor_run: "run #440 — https://github.com/aradenac/poker-engine/actions/runs/36081969061 — contract=FAILURE (étape « Main application integration is idempotent »), browser-smoke=skipped"
+ci_frozen_jobs_all_green: false
+ci_delivered_head_pushed: NO
+ci_delivered_head_runs: NONE
+ci_observation_section: "§ 8.6"
 ---
 
 # Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
@@ -409,3 +421,181 @@ autorité** pour la règle « aucun scroll global » (`scrollHeight` /
 `spotlab`, `review`, `replayer`, `training`, `strategy`) ; l'étape
 d'idempotence de § 8.5 ne porte aucun verdict de fit, et aucun octet de
 `.github/workflows/**` n'est modifié par cette task.
+
+### 8.6 Observation CI réelle des jobs gelés au HEAD livré (task `backlog-g0t`)
+
+Cette sous-section est **strictement additive** : elle consigne l'**état CI
+réellement observé** des trois jobs gelés — `contract` de
+`.github/workflows/hero-range-editor.yml`, `static-contract` et `browser-smoke`
+de `.github/workflows/trainer-smoke.yml` — au HEAD **poussé** de la branche
+épique / de la PR #416, tel qu'il a été relevé par le **connecteur GitHub** en
+lecture seule. Aucune des lignes ci-dessous n'est déduite : chaque URL, chaque
+conclusion et chaque extrait provient de la réponse de l'API (runs, jobs,
+étapes) et du journal du job concerné.
+
+#### 8.6.1 Le canal d'observation, le périmètre et l'instant
+
+Le canal disponible est le **connecteur GitHub**, pas le shell : la résolution
+DNS vers `api.github.com` reste coupée dans ce worker (§ 8.3), donc `curl` et
+`gh` échouent toujours, mais le connecteur interroge l'API GitHub et rend les
+runs, jobs et journaux. Ce qui est observé est le **HEAD poussé** de la branche
+épique — `8ff970bde9726852ffd77537499e4b7161698c2c` (PR #416), que la CI
+`pull_request` a extrait sous la forme du commit de fusion
+`4fd6e701eeb37992768b4264c0f86bdcc6a12ca6` — et non le HEAD livré du worktree :
+
+```
+$ git rev-parse HEAD
+2d0856024a1859cf778dd889b3911035c1d10378
+$ git rev-parse --abbrev-ref HEAD
+n8n/issue-394/task-backlog-g0t
+```
+
+Le workflow `Validate interactive trainer` ne se déclenche que sur une liste de
+chemins parmi lesquels `tests/trainer/**` et `tools/patches/apply_trainer_mvp.py` ;
+le workflow `Validate Hero range repository and editor` surveille de même
+`tools/patches/apply_hero_range_editor.py`, `tests/hero_ranges/**` et
+`site/index.html`. Les corrections T1/T2/T3 (§ 8.5) portent précisément sur ces
+familles de chemins — elles sont **dans le worktree, pas dans la branche
+épique** : il n'existe donc **aucun run** sur les octets livrés.
+
+#### 8.6.2 L'état observé des jobs gelés, run par run
+
+| Workflow (gelé) | Job | Run observé | Étapes du job | Conclusion |
+| --- | --- | --- | --- | --- |
+| `.github/workflows/trainer-smoke.yml` | `static-contract` | `#564` — [run `36081969038`](https://github.com/aradenac/poker-engine/actions/runs/36081969038) | toutes `success` (REPRO batch-1, JavaScript syntax, Release identity, All trainer regression contracts, Patch idempotence) | **`success`** — [job `107905680522`](https://github.com/aradenac/poker-engine/actions/runs/36081969038/job/107905680522) |
+| `.github/workflows/trainer-smoke.yml` | `browser-smoke` | `#564` — [run `36081969038`](https://github.com/aradenac/poker-engine/actions/runs/36081969038) | `Exercise Training view` = `success`, `Exercise pathological engine regressions` = `success` | **`success`** — [job `107905811137`](https://github.com/aradenac/poker-engine/actions/runs/36081969038/job/107905811137) |
+| `.github/workflows/hero-range-editor.yml` | `contract` | `#440` — [run `36081969061`](https://github.com/aradenac/poker-engine/actions/runs/36081969061) | étape 7 « Main application integration is idempotent » = **`failure`** ; `Release identity` = `skipped` | **`failure`** — [job `107905680401`](https://github.com/aradenac/poker-engine/actions/runs/36081969061/job/107905680401) |
+| `.github/workflows/hero-range-editor.yml` | `browser-smoke` | `#440` — [run `36081969061`](https://github.com/aradenac/poker-engine/actions/runs/36081969061) | aucune (dépendance `needs: contract`) | **`skipped`** |
+
+Le run `#564` de `trainer-smoke` est **vert** au HEAD poussé : ses deux jobs
+gelés sont `success`, y compris l'étape `Exercise Training view` qui porte le
+smoke des modes. Le run `#440` de `hero-range-editor` est **rouge** : son job
+`contract` échoue sur l'étape d'idempotence, ce qui met `browser-smoke` en
+`skipped`. Autrement dit, **les jobs gelés ne sont pas tous verts au HEAD de
+code observé**.
+
+#### 8.6.3 L'étape « Main application integration is idempotent » : extrait du journal, rouge
+
+L'échec de `#440` n'est pas rapporté de mémoire : c'est le journal du job
+`contract` qui le porte, et il reproduit exactement les deux empreintes
+consignées au § 8.5 et dans `docs/issue-394-release-identity-ci-report.md` § 8 —
+
+```
+$ sha256sum site/index.html > …          # empreinte « avant » de l'étape
+$ python3 tools/patches/apply_hero_range_editor.py
+Hero range editor links integrated
+$ sha256sum site/index.html > …          # empreinte « après » de l'étape
+$ diff -u …
+-4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html
++c5ac487a66360fa5b7cf05742aba79011ae631d5806d9ffa630ea3f1c8ccffa2  site/index.html
+##[error]Process completed with exit code 1
+```
+
+— donc l'étape est **rouge au HEAD poussé** : `diff -u` sort en `1` parce que le
+patch réinsérait l'entrée de rail autonome dans `#quickNav` (§ 8.5). Ce qui a
+été corrigé (T1/T2/T3) n'est pas encore dans la branche épique, et aucune
+relance n'a été demandée ni observée : l'étape n'est **pas** verte, et ce
+document ne l'écrit nulle part. Seul le chemin des deux empreintes temporaires
+de l'étape est élidé (`…`), pour que ce document ne cite aucun chemin hors du
+dépôt ; les lignes de `sha256` et la sortie d'erreur, elles, sont reprises mot
+pour mot du journal.
+
+#### 8.6.4 Les extraits qui prouvent l'exécution réelle des jambes `1366x768`
+
+Le job `browser-smoke` du run vert `#564` a imprimé, dans son journal, l'audit
+**par mode et par viewport** que le smoke construit — l'extrait ci-dessous est
+celui des lignes `1366x768` (les lignes `1500x1000` du même run sont identiques
+en structure, avec `scrollHeight=1000 <= clientHeight=1000`) :
+
+```
+  mode=home      viewport=1366x768   scrollHeight=768 <= clientHeight=768
+  mode=spotlab   viewport=1366x768   scrollHeight=768 <= clientHeight=768
+  mode=review    viewport=1366x768   scrollHeight=768 <= clientHeight=768
+  mode=review    viewport=1366x768   import surface[closed] reachability: #reviewImportTab=ok, label[for="hhFileInput"]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok
+  mode=review    viewport=1366x768   import surface[advanced-open] reachability: #reviewImportTab=ok, label[for="hhFileInput"]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok, #hhBenchmarkExportBtn=ok
+  mode=replayer  viewport=1366x768   scrollHeight=768 <= clientHeight=768
+  mode=training  viewport=1366x768   scrollHeight=768 <= clientHeight=768
+  mode=strategy  viewport=1366x768   scrollHeight=768 <= clientHeight=768
+  mode=strategy-editor viewport=1366x768   deep link[arrivée]: query={'population': 'legacy_pokerstars_nlhe_100-200_play_6max_mixed_v1', 'position': 'BTN', 'spot': 'UNOPENED', 'stack': '100', 'hand': 'AA'} contrôles=[population:… position:BTN spot:UNOPENED stack:100] main active=['AA'] history.length=4
+  mode=strategy-editor viewport=1366x768   deep link[réécriture]: query={… 'hand': 'KK'} contrôles=[…] main active=['KK'] history.length=4
+  mode=strategy-editor viewport=1366x768   deep link[reload]: query={… 'hand': 'KK'} contrôles=[…] main active=['KK'] history.length=4
+  mode=review    viewport=1366x768   course Review: persistenceReady=True mounted=review userNavigated=True #reviewDashboard=True #historiesSection masqué=True
+desktop modes measurements written: artifacts/desktop-modes-fit/measurements.json
+modes desktop smoke: PASS (2 viewports · home, spotlab, review, replayer, training, strategy · transitions + Replayer keyboard + measured Review import surface reachability: elementFromPoint hit-test + click trial + persistenceReady readiness barrier + Review race scenario + #strategyPage deep link of the embedded shell + editor deep link (query↔contrôles, réécriture en place, reload))
+```
+
+Ces lignes nomment, viewport par viewport, les jambes réellement parcourues à
+`1366x768` : Spot Lab, Replayer, Training (rail Trainer), Stratégie Hero et
+l'éditeur autonome du deep link, plus la surface d'import Review et la course
+Review. Elles sont **mesurées**, pas commentées : chaque valeur est celle que le
+smoke a sérialisée dans le rapport `artifacts/desktop-modes-fit/measurements.json`
+de ce run, et la ligne finale est le `PASS` **du run**, pas une affirmation de ce
+document.
+
+#### 8.6.5 La couverture élargie à `1366x768` (Spot Lab, Replayer, rail Trainer)
+
+Les panneaux que la revue humaine nommait comme jamais mesurés à `1366x768` sont
+mesurés par l'**extension `#394 T1`** du smoke, avec le **même instrument** que
+la surface d'import Review (`document.elementFromPoint` au centre de la boîte,
+puis hit-test Playwright `locator.click(trial=True)`), chacun monté par un
+**clic réel** sur son onglet, dans le parcours **par viewport** :
+
+| Surface | Onglet mesuré | Cibles mesurées |
+| --- | --- | --- |
+| Spot Lab, panneau `Range adverse` | `#spotlabRangeTab` | `#rangeDisplaySection` et la grille `#matrix` (169 cellules) |
+| Replayer, colonnes | — (montage du Replayer) | `.replayer-col-left`, `.replayer-col-center`, `#replayerContextPanel` |
+| Replayer, onglets du panneau droit | `#replayerDecisionTab`, `#replayerRangesTab`, `#replayerDetailsTab` | `#replayerDecisionPanel`, `#replayerRangesPanel`, `#hhReplayDetail` |
+| Rail Trainer, onglets | `#trainerCoachingTab`, `#trainerSessionTab`, `#trainerProfilesTab`, `#trainerTestTab` | `#trainerCoachPanel`, `#trainerSessionPanel`, `#trainerProfilesPanel`, `#trainerTestPanel` |
+
+Ces mesures sont sérialisées dans le compartiment `panel_surfaces` du rapport
+(un enregistrement par surface et par viewport), le verdict `reachable` est
+composé comme celui de la surface d'import, et un **inventaire par viewport** est
+imprimé depuis l'audit lui-même — vert ou rouge :
+
+```
+  inventaire panneaux viewport=1366x768 mesures=… cibles=… atteignables=…/… — spotlab-range=[…] · replayer-columns=[…] · replayer-tabs=[…] · trainer-rail=[…]
+```
+
+**Ce que cette preuve est, et ce qu'elle n'est pas encore.** L'inventaire de
+panneaux est produit par les **octets de l'extension T1**, et ces octets ne sont
+**pas poussés** : le run `#564` observé au § 8.6.2 est celui du HEAD poussé
+`8ff970b`, qui est **antérieur** à l'extension. Ses journaux portent donc les
+lignes citées au § 8.6.4 (audit de scroll, surface d'import, courses et deep
+links) mais **pas** les lignes `panneau[…]` / `inventaire panneaux` ci-dessus.
+La preuve d'exécution par viewport des **panneaux** à `1366x768` est donc
+**attendue au rerun du job gelé sur les octets livrés** : elle n'est **pas**
+revendiquée ici, et aucune ligne de ce document n'en affirme le résultat.
+
+#### 8.6.6 Le constat : HEAD livré non poussé, jetons de garde inchangés
+
+| Objet | État observé | Base |
+| --- | --- | --- |
+| `trainer-smoke` / `static-contract` au HEAD poussé `8ff970b` | **`success`** | run `#564`, § 8.6.2 |
+| `trainer-smoke` / `browser-smoke` au HEAD poussé `8ff970b` | **`success`** | § 8.6.2 et § 8.6.4 |
+| `hero-range-editor` / `contract` au HEAD poussé `8ff970b` | **`failure`** — étape d'idempotence | § 8.6.2 et § 8.6.3 |
+| `hero-range-editor` / `browser-smoke` au HEAD poussé `8ff970b` | **`skipped`** | § 8.6.2 |
+| Runs sur les octets **livrés** (worktree, `2d08560`, non poussé) | **aucun** | la branche épique est restée sur `8ff970b` |
+| Jobs gelés tous verts **au HEAD de code livré** | **non** | le job `contract` est rouge au HEAD poussé, et les octets livrés n'ont pas de run |
+
+Conséquences, écrites telles quelles :
+
+1. `ci_green` reste **`NOT_OBSERVED`** : la condition d'un `OBSERVED` — les
+   **trois** jobs gelés verts sur les octets du HEAD de code — n'est pas
+   satisfaite, et aucune valeur n'est forcée ;
+2. `frozen_job_rerun_required` reste **`true`** : le job gelé `browser-smoke`
+   doit être relancé sur les octets livrés, d'autant que l'extension T1 du smoke
+   touche `tests/trainer/**`, une famille de chemins que le workflow
+   `trainer-smoke` surveille — donc la poussée des corrections redéclenche le
+   workflow par construction ;
+3. `contract_job_rerun_required` reste **`true`** : la correction du patch
+   (`tools/patches/apply_hero_range_editor.py`) n'est pas dans la branche épique,
+   donc l'étape d'idempotence est encore rouge en CI ;
+4. aucun `PASS` n'est écrit pour un job gelé qui n'a pas été observé vert sur
+   les octets livrés, et l'autorité de la règle « aucun scroll global » reste le
+   job gelé `browser-smoke` de `.github/workflows/trainer-smoke.yml`, à
+   `1500x1000` et `1366x768`, pour les six modes `home`, `spotlab`, `review`,
+   `replayer`, `training`, `strategy`.
+
+Cette sous-section ne modifie aucun octet de `site/**`, de
+`.github/workflows/**` ni du smoke : elle n'ajoute que l'observation ci-dessus,
+ses URLs et ses extraits.
