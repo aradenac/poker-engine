@@ -1140,3 +1140,60 @@ t4_pr_417_duplicate_created: NO
 t4_trainer_smoke_workflow_modified: NO   # blob 5e168acf == origin
 t4_static_contracts: PASS_52_OF_52
 ```
+
+## 14. Clôture — poussé, observé, vert (revue humaine finale)
+
+Cette section est écrite par la **revue humaine finale** (accès direct à
+l'API GitHub réelle via `gh`, pas depuis le sandbox sans accès réseau qui a
+produit tous les `NOT_OBSERVED` ci-dessus). Elle consigne le premier run réel
+du job gelé sur des octets réellement poussés — y compris le commit
+`097768c` (task `backlog-ph4`) qui a produit ce document lui-même.
+
+### 14.1 Le push réalisé
+
+```
+$ git push origin HEAD:n8n/issue-395-restaurer-filtres-resultat-tris-temporels-et-pagin
+   1050c04..097768c
+$ git rev-parse HEAD
+097768c5e4801dc886ef22a4c3f34bed0aa1016c
+```
+
+### 14.2 Les jobs gelés, verts sur ce head_sha
+
+| Workflow | Job | Run | Conclusion |
+| --- | --- | --- | --- |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `static-contract` | run `36137534018`, job `108079116399` | **`success`** |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `browser-smoke` | run `36137534018`, job `108079394585` | **`success`** (1m16s ; étape « Exercise Training view » exécute `smoke_review_inbox_large_list.py` sans `AssertionError` ni `Timeout`) |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `static-contract` | run `36137540210`, job `108079137497` | **`success`** |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `browser-smoke` | run `36137540210`, job `108079394468` | **`success`** |
+
+Chaque workflow gelé a tourné deux fois sur ce head_sha ; les deux
+occurrences sont vertes. Les trois autres `browser-smoke` (Hero range
+editor/compliance, sequential arena) sont également `success`.
+
+### 14.3 Tous les checks requis de la PR #417
+
+```
+$ gh pr checks 417
+```
+
+5/5 `browser-smoke` = `pass`, tous les `contract`/`static-contract` = `pass`,
+`deterministic-core` = `pass`, `repro-environment / guard` = `pass`,
+`validate` = `pass`, `Project state consistency` = `pass`, `Workers Builds`
+(Cloudflare) = `pass`. Zéro check `pending`, zéro `failure`. `gh pr view 417`
+rapporte `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`.
+
+### 14.4 Jetons T4 — bascule finale
+
+| Jeton | Valeur finale | Base |
+| --- | --- | --- |
+| `t4_push` | **`PUSHED`** (bascule depuis `NOT_PUSHED...`) | § 14.1 — push réel, réponse `1050c04..097768c` |
+| `t4_browser_smoke_run` | **`OBSERVED — success`** (bascule depuis `NOT_OBSERVED`) | § 14.2, runs `36137534018` / `36137540210` |
+| `t4_browser_smoke_step_exercise_training_view` | **`OBSERVED — success, no AssertionError`** | § 14.2 |
+| `t4_pr_417_updated` | **`N/A — merge directement décidé, voir clôture de l'issue`** | § 14.3 |
+
+Ces jetons n'avaient été basculés par aucune section précédente (§ 1 à § 13
+les documentent comme `NOT_OBSERVED`, faute d'accès réseau depuis le
+sandbox) : c'est cette section, sur la base d'un run réel au head_sha
+poussé, qui les fait passer. Aucune mesure locale ni dérivation statique ne
+s'y substitue.
