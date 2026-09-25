@@ -1,0 +1,327 @@
+{
+  "active_pointer_mutated": false,
+  "admissible_exact_node_count": 0,
+  "admitted": false,
+  "blockers": [
+    {
+      "admissible_exact_nodes": 0,
+      "blocked_nodes": 38,
+      "class": "SCIENTIFIC_DATA",
+      "code": "REQUIRED_TREE_INCOMPLETE",
+      "detail": "the required #388/#419 response tree is not complete: no node carries an admissible exact answer at hierarchical_exact_key / L0_EXACT_KEY",
+      "failed_admissibility_conditions": [
+        "every_required_node_has_an_admissible_exact_answer",
+        "no_unresolved_raise_sizing_frontier",
+        "required_tree_fully_enumerated"
+      ],
+      "required_nodes": 38,
+      "rule": "required_tree_complete is true only when every condition holds; a fail-closed node is reported as EXACT_UNRESOLVED and is never repaired by lowering a frozen threshold",
+      "status_counts": {
+        "EXACT_UNRESOLVED": 38
+      },
+      "unresolved_reason_counts": {
+        "NO_ADMISSIBLE_POOLING_LEVEL": 31,
+        "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE": 7
+      }
+    },
+    {
+      "class": "SCIENTIFIC_STRUCTURAL",
+      "code": "UNRESOLVED_RAISE_SIZING_FRONTIER",
+      "detail": "raise-sizing frontiers stay unresolved: no exactly supported raise target exists at the frozen #367 structural node and no representative price may substitute it",
+      "frontiers_total": 7,
+      "independent_of_the_response_model": true,
+      "resolved_count": 0,
+      "unresolved_count": 7,
+      "unresolved_node_ids": [
+        "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+        "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+        "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+        "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+        "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+        "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+        "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b"
+      ]
+    },
+    {
+      "class": "SCIENTIFIC_EVIDENCE",
+      "code": "VALIDATION_GATES_FAILED",
+      "coverage_vs_focus_family": 0.000783289817232376,
+      "detail": "one or more frozen VALIDATION gates failed; the active Model A v5 pointer stays unchanged",
+      "failing_gates": [
+        "coverage_floor",
+        "calibration_absolute"
+      ],
+      "identifiable_decisions": 9,
+      "identifiable_hands": 9,
+      "outcome": "RETAIN_ACTIVE_REFERENCE",
+      "production_effect": "NONE"
+    }
+  ],
+  "bundle_dir": "analysis/issue419_hierarchical_tree/terminal_decision",
+  "candidate": {
+    "admitted": false,
+    "candidate_byte_sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+    "candidate_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "candidate_status_at_freeze": "CANDIDATE_ONLY_NOT_ACTIVE",
+    "distinct_from_issue_352": true,
+    "identity_granularity": "hierarchical_exact_key",
+    "issue_352_candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "issue_352_candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19"
+  },
+  "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+  "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+  "candidate_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+  "carried_risks": [
+    {
+      "detail": "the provider runtime key merges distinct public contexts; the exact identity granularity stays the fine hierarchical_exact_key",
+      "handled_by": "T2 HIERARCHICAL_MODEL_SPEC.granularity_decision",
+      "not_a_substitution": true,
+      "risk_id": "RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE",
+      "runtime_keys_merging_exact_states": 8
+    }
+  ],
+  "decision": "UNRESOLVED_HIERARCHICAL_TREE_GAP",
+  "decision_rule": {
+    "admission_requires": [
+      "required_tree_complete=true from the T8 exact-tree preflight",
+      "no nearest-price / nearest-context / borrowed-support substitution applied",
+      "VALIDATION outcome=ADMIT_CANDIDATE with every frozen gate passing"
+    ],
+    "authorized_when": [
+      "the frozen VALIDATION evaluation returns outcome=ADMIT_CANDIDATE",
+      "every frozen gate passes with the threshold values pinned in this protocol",
+      "the VALIDATION result is content-addressed (schema poker-hierarchical-validation-result/v1, embedded protocol_byte_sha256) and pinned in a new explicit #367 protocol revision",
+      "that #367 protocol revision names model_a.candidate_id=model-a-preflop-sizing-hierarchical-candidate-v1 and model_a.candidate_sha256=637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999"
+    ],
+    "consequence_when_forbidden": "no #367 real ISO EV run, no exact-support grid extension and no provider wiring may consume this candidate; #367 keeps its current admitted model",
+    "observed": {
+      "required_tree_complete": false,
+      "substitutions_applied": 0,
+      "unresolved_raise_sizing_frontiers": 7,
+      "validation_all_gates_pass": false,
+      "validation_outcome": "RETAIN_ACTIVE_REFERENCE"
+    },
+    "question": "is a #367 consumption of the hierarchical candidate authorized or forbidden?",
+    "rule_id": "ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE"
+  },
+  "evidence_bindings": {
+    "CANDIDATE_MANIFEST.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/fit",
+      "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
+      "object": "analysis/issue419_hierarchical_tree/fit/sha256/d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c.json",
+      "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+      "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
+    },
+    "EXACT_TREE_PREFLIGHT.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/exact_tree_preflight",
+      "canonical_payload_sha256": "fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd",
+      "object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6.json",
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+      "sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
+    },
+    "FROZEN_VALIDATION_PROTOCOL.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/validation_protocol",
+      "canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+      "object": "analysis/issue419_hierarchical_tree/validation_protocol/sha256/69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3.json",
+      "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+      "sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    "HIERARCHICAL_MODEL_SPEC.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/model_spec",
+      "canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+      "object": "analysis/issue419_hierarchical_tree/model_spec/sha256/5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c.json",
+      "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+      "sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c"
+    },
+    "HIERARCHICAL_TREE_SPARSITY_BASELINE.json": {
+      "bundle": ".",
+      "canonical_payload_sha256": "2d3fccc0a84e130ba483b8766ff96bc6467ad8260cfa64ae8c36e9cf662b6e2f",
+      "object": "analysis/issue419_hierarchical_tree/sha256/ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36.json",
+      "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+      "sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36"
+    },
+    "RAISE_SIZING_FRONTIER_RESOLUTION.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+      "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+      "object": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/sha256/93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e.json",
+      "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+      "sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e"
+    },
+    "TRAIN_FIT_REPORT.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/fit",
+      "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+      "object": "analysis/issue419_hierarchical_tree/fit/sha256/ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5.json",
+      "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+      "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+    },
+    "VALIDATION_RESULT.json": {
+      "bundle": "analysis/issue419_hierarchical_tree/validation",
+      "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",
+      "object": "analysis/issue419_hierarchical_tree/validation/sha256/0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68.json",
+      "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+    }
+  },
+  "exact_unresolved_node_count": 38,
+  "frozen_inputs_untouched": {
+    "active_reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "frozen_validation_protocol_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+    "hierarchical_model_spec_sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c",
+    "hierarchical_tree_sparsity_baseline_sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+    "root_artifacts_sha256": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+    "root_summary_sha256": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8"
+  },
+  "hero_ev_executed": false,
+  "hero_recommendation": null,
+  "identity_granularity": "hierarchical_exact_key",
+  "issue": 419,
+  "issue367_authorized": false,
+  "issue367_run": false,
+  "kind": "TERMINAL_HIERARCHICAL_EXACT_TREE_DECISION",
+  "n8n_task_result": {
+    "active_pointer_mutated": false,
+    "admitted": false,
+    "blockers": [
+      "REQUIRED_TREE_INCOMPLETE",
+      "UNRESOLVED_RAISE_SIZING_FRONTIER",
+      "VALIDATION_GATES_FAILED"
+    ],
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "decision": "UNRESOLVED_HIERARCHICAL_TREE_GAP",
+    "hero_ev_executed": false,
+    "issue": 419,
+    "issue367_run": false,
+    "next_issue": 367,
+    "primary_blocker": "REQUIRED_TREE_INCOMPLETE",
+    "required_tree_complete": false,
+    "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "status": "BLOCKED_SCIENTIFIC",
+    "test_consumed": false,
+    "type": "N8N_TASK_RESULT",
+    "validation_consumed": true,
+    "validation_outcome": "RETAIN_ACTIVE_REFERENCE"
+  },
+  "next_issue": 367,
+  "not_an_admission_by_default": "UNRESOLVED_HIERARCHICAL_TREE_GAP is a valid terminal outcome; admission is never forced and #367 is never run by this tool",
+  "parent_issue": 314,
+  "primary_blocker": "REQUIRED_TREE_INCOMPLETE",
+  "protected_files_before_after_sha256": {
+    "after": {
+      "analysis/issue419_hierarchical_tree/ARTIFACTS.json": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.sha256": "e2e6d5f0d825ee814f2eaa81fba82e6b0f0ecc2bdb05c8cbc30f098d65f950f8",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.sha256": "30f8244bd8dbfcbfbae279a13e9174b50df857479d9211a03de14301e0b2f41e",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+      "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "before": {
+      "analysis/issue419_hierarchical_tree/ARTIFACTS.json": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.sha256": "e2e6d5f0d825ee814f2eaa81fba82e6b0f0ecc2bdb05c8cbc30f098d65f950f8",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.sha256": "30f8244bd8dbfcbfbae279a13e9174b50df857479d9211a03de14301e0b2f41e",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+      "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "unchanged": true
+  },
+  "reproduction": {
+    "build": "python3 tools/training/finalize_hierarchical_exact_tree_decision.py",
+    "check": "python3 tools/training/finalize_hierarchical_exact_tree_decision.py --check"
+  },
+  "required_artifacts": {
+    "CANDIDATE_MANIFEST.json": {
+      "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
+      "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+      "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
+    },
+    "DECISION.json": {
+      "note": "self-referential: this artifact digest is recorded by the bundle index, not inside itself",
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "sha256_location": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json"
+    },
+    "EXACT_TREE_PREFLIGHT.json": {
+      "canonical_payload_sha256": "fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd",
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+      "sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
+    },
+    "FROZEN_VALIDATION_PROTOCOL.json": {
+      "canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+      "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+      "sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    "HIERARCHICAL_MODEL_SPEC.json": {
+      "canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+      "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+      "sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c"
+    },
+    "SUMMARY.md": {
+      "note": "self-referential: this artifact digest is recorded by the bundle index, not inside itself",
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/SUMMARY.md",
+      "sha256_location": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json"
+    },
+    "TRAIN_FIT_REPORT.json": {
+      "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+      "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+      "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+    },
+    "VALIDATION_RESULT.json": {
+      "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",
+      "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+    }
+  },
+  "required_tree_byte_sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+  "required_tree_complete": false,
+  "required_tree_node_count": 38,
+  "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+  "scenario_issue": 321,
+  "schema": "poker-hierarchical-exact-tree-terminal-decision/v1",
+  "source_files_sha256": {
+    "tools/training/finalize_hierarchical_exact_tree_decision.py": "e5ac5f429b1627c2356097b3d4841c5f9009694503bba00c2d2e6a511c021402"
+  },
+  "source_issue": 388,
+  "status": "BLOCKED_SCIENTIFIC",
+  "support_isolation_rule": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+  "test_authorized": false,
+  "test_consumed": false,
+  "unresolved_raise_sizing_frontier_count": 7,
+  "validation_consumed": true,
+  "validation_evidence_sha256": "760247b44fa3299c9a75e2058e59ec591ecb9800e3e5a6f9f7f5a05f4c651770",
+  "validation_failing_gates": [
+    "coverage_floor",
+    "calibration_absolute"
+  ],
+  "validation_outcome": "RETAIN_ACTIVE_REFERENCE",
+  "verified_bundles": [
+    "exact_tree_preflight",
+    "fit",
+    "model_spec",
+    "raise_sizing_frontiers",
+    "root",
+    "validation",
+    "validation_protocol"
+  ]
+}

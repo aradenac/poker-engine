@@ -1,0 +1,74 @@
+{
+  "CANDIDATE_MANIFEST.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/fit",
+    "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
+    "object": "analysis/issue419_hierarchical_tree/fit/sha256/d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c.json",
+    "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+    "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
+  },
+  "DECISION.json": {
+    "canonical_payload_sha256": "9b6aec99feeeb9c49424172f31a2d4657d8cf67cab2b80d2bbf66ecd22c261f5",
+    "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc.json",
+    "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+    "sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc"
+  },
+  "EXACT_TREE_PREFLIGHT.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/exact_tree_preflight",
+    "canonical_payload_sha256": "fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd",
+    "object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6.json",
+    "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+    "sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
+  },
+  "FROZEN_VALIDATION_PROTOCOL.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/validation_protocol",
+    "canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+    "object": "analysis/issue419_hierarchical_tree/validation_protocol/sha256/69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3.json",
+    "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+    "sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+  },
+  "HIERARCHICAL_MODEL_SPEC.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/model_spec",
+    "canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+    "object": "analysis/issue419_hierarchical_tree/model_spec/sha256/5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c.json",
+    "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+    "sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c"
+  },
+  "HIERARCHICAL_TREE_SPARSITY_BASELINE.json": {
+    "bundle": ".",
+    "canonical_payload_sha256": "2d3fccc0a84e130ba483b8766ff96bc6467ad8260cfa64ae8c36e9cf662b6e2f",
+    "object": "analysis/issue419_hierarchical_tree/sha256/ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36.json",
+    "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+    "sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36"
+  },
+  "N8N_TASK_RESULT.txt": {
+    "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/4fd1ab14ef254dd2ac250f5ab0ead1c54c5d0fe2e289921e326954d0c1d28333.txt",
+    "path": "analysis/issue419_hierarchical_tree/terminal_decision/N8N_TASK_RESULT.txt",
+    "sha256": "4fd1ab14ef254dd2ac250f5ab0ead1c54c5d0fe2e289921e326954d0c1d28333"
+  },
+  "RAISE_SIZING_FRONTIER_RESOLUTION.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "object": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/sha256/93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e.json",
+    "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e"
+  },
+  "SUMMARY.md": {
+    "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/bb9c1b6f15695bb94b287a940ffd0e542ba575c586725fcea4dad4ecc235ed8f.md",
+    "path": "analysis/issue419_hierarchical_tree/terminal_decision/SUMMARY.md",
+    "sha256": "bb9c1b6f15695bb94b287a940ffd0e542ba575c586725fcea4dad4ecc235ed8f"
+  },
+  "TRAIN_FIT_REPORT.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/fit",
+    "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+    "object": "analysis/issue419_hierarchical_tree/fit/sha256/ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5.json",
+    "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+    "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+  },
+  "VALIDATION_RESULT.json": {
+    "bundle": "analysis/issue419_hierarchical_tree/validation",
+    "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",
+    "object": "analysis/issue419_hierarchical_tree/validation/sha256/0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68.json",
+    "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+  }
+}
