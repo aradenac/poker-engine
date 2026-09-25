@@ -50,6 +50,17 @@ measured at that viewport — the calibration anchor.
 The module is static + ``node`` only: no browser, no server, no network, no
 write. ``site/index.html`` is never modified (the mutations only exist as
 strings in memory and the delivered bytes are re-read at the end).
+
+``#395 T3`` closes the loop on the *filtered* lists: the effectif of each served
+result state (``WIN`` / ``LOSS`` / ``EVEN`` / ``UNKNOWN``) is computed from the
+same 32-hand fixture and every state is painted through the **same** measured
+harness. A state whose effectif exceeds the measured page (lower bound
+``SHELL_MAJORANT_PAGE_SIZE``, upper bound ``SHELL_TYPOGRAPHIC_PAGE_SIZE``) is
+multi-page on the served window — ``EVEN`` (14) overflows even the upper bound —
+and the smoke that walks the filtered lists is bound statically to a page-by-page
+march: the page-1-only comparison (``sorted(filtered["ids"]) == wanted``) is
+forbidden, and reintroducing it in an in-memory copy of the smoke must fail the
+guard.
 """
 from __future__ import annotations
 
@@ -171,7 +182,11 @@ function pageSizeConsts(src){
 
 // A measured DOM: scrollHeight is derived from the painted rows, clientHeight
 // from the constrained shell minus the pager bar whenever the pager is shown.
-function harness({desktop=true,rowHeight=54,gap=6,baseHeight=900,pagerHeight=44,tallFrom=0,tallRowHeight=0}={}){
+// `seedRow` seeds one measured row before the render, i.e. the state a browser
+// is in when the inbox *re-renders* (a filter or a sort change, or the next page
+// of a walk): `reviewInboxRowPitch()` then measures the real pitch instead of
+// falling back to `REVIEW_INBOX_ROW_PITCH_FALLBACK`.
+function harness({desktop=true,rowHeight=54,gap=6,baseHeight=900,pagerHeight=44,tallFrom=0,tallRowHeight=0,seedRow=false}={}){
   const pagerState={visible:false};
   const paints=[];
   const hhHandsEl={
@@ -197,6 +212,12 @@ function harness({desktop=true,rowHeight=54,gap=6,baseHeight=900,pagerHeight=44,
   const hhPagePrev={disabled:false};
   const hhPageNext={disabled:false};
   const state={reviewInboxPage:0,reviewInboxPageSize:10,selectedHand:null};
+  if(seedRow){
+    hhHandsEl.appendChild({
+      className:'hh-hand review-inbox-row',handId:'',
+      height:rowHeight,getBoundingClientRect:()=>({height:rowHeight}),
+    });
+  }
   const sandbox={
     console,state,hhHandsEl,hhListPager,hhPageInfo,hhPagePrev,hhPageNext,
     window:{matchMedia:()=>({matches:!!desktop})},
@@ -306,6 +327,8 @@ if(!budget){
     rowHeight:budget.rowHeight,
     gap:budget.gap,
     total:budget.ids.length,
+    page:budget.page||0,
+    seedRow:!!budget.seedRow,
     ids:budget.ids,
   });
   results.budget=budget;
@@ -739,18 +762,32 @@ def shell_budget(index_text: str, factor: float) -> dict:
     }
 
 
-def fixture_hand_ids() -> list[str]:
-    """Les identifiants des 32 mains de la fixture du smoke grande liste."""
+def _fixture_builder():
+    """Le builder déterministe de la fixture, importé depuis son dossier."""
     fixture_dir = ROOT / "tests" / "trainer" / "fixtures"
     assert (fixture_dir / "review_inbox_large_list_builder.py").is_file(), fixture_dir
     if str(fixture_dir) not in sys.path:
         sys.path.insert(0, str(fixture_dir))
     import review_inbox_large_list_builder as builder
 
+    return builder
+
+
+def fixture_hand_ids() -> list[str]:
+    """Les identifiants des 32 mains de la fixture du smoke grande liste."""
+    builder = _fixture_builder()
     assert builder.HAND_TOTAL >= 32, builder.HAND_TOTAL
     ids = [str(spec["hand_id"]) for spec in builder.hand_specs()]
     assert len(ids) == builder.HAND_TOTAL and len(set(ids)) == len(ids), ids
     return ids
+
+
+def fixture_specs() -> list[dict]:
+    """La table authorée de la fixture : une ligne par main, dans l'ordre d'import."""
+    builder = _fixture_builder()
+    specs = builder.hand_specs()
+    assert len(specs) == builder.HAND_TOTAL >= 32, len(specs)
+    return specs
 
 
 def run_shell_budget(budget: dict) -> dict:
@@ -767,7 +804,7 @@ def run_shell_budget(budget: dict) -> dict:
     return json.loads(completed.stdout)
 
 
-def _shell_budget_payload(model: dict, ids: list[str]) -> dict:
+def _shell_budget_payload(model: dict, ids: list[str], page: int = 0, seed_row: bool = False) -> dict:
     """La géométrie dérivée, dans la forme attendue par le harnais node."""
     return {
         "baseHeight": model["available"] + model["pieces"]["pager"],
@@ -775,11 +812,13 @@ def _shell_budget_payload(model: dict, ids: list[str]) -> dict:
         "rowHeight": model["row"],
         "gap": model["gap"],
         "ids": list(ids),
+        "page": page,
+        "seedRow": seed_row,
     }
 
 
-def _serve_shell_measurement(model: dict, ids: list[str]) -> dict:
-    measured = run_shell_budget(_shell_budget_payload(model, ids))["measured"]
+def _serve_shell_measurement(model: dict, ids: list[str], page: int = 0, seed_row: bool = False) -> dict:
+    measured = run_shell_budget(_shell_budget_payload(model, ids, page, seed_row))["measured"]
     assert measured is not None, "le harnais doit mesurer la coque servie"
     return measured
 
@@ -974,10 +1013,327 @@ def check_shell_budget_measurement() -> None:
     }
 
 
+# --------------------------------------------------------------------------- #
+# #395 T3 — le garde-fou de contrat : tout état de résultat dont l'effectif
+# dépasse la page mesurée est multi-pages pour la smoke.
+# --------------------------------------------------------------------------- #
+#
+# La smoke du job gelé `browser-smoke` filtre l'inbox par état de résultat
+# (`#reviewResultFilter`) puis marche la liste filtrée **page par page** : une
+# comparaison « page 1 == liste filtrée » laisserait passer la régression sans
+# jamais visiter les pages suivantes. Cette section fait les deux moitiés du
+# contrat, sans navigateur :
+#
+#   * l'effectif de chaque état est calculé sur les **vraies** spécifications de
+#     la fixture 32 mains (`review_inbox_large_list_builder.hand_specs`), puis
+#     chaque état est peint par le **vrai** `renderReviewInboxPage` dans la coque
+#     mesurée de T5b (les deux modèles : borne basse `SHELL_MAJORANT_PAGE_SIZE`,
+#     borne haute `SHELL_TYPOGRAPHIC_PAGE_SIZE`). Un état dont l'effectif
+#     dépasse la page mesurée est **multi-pages** — `EVEN` (14 mains) dépasse
+#     même la borne haute — et ses pages se concatènent exactement sur la liste
+#     filtrée ;
+#   * la source de la smoke est liée statiquement : la boucle de filtre marche
+#     toutes les pages (`_walk_pages`), concatène les pages peintes et compare
+#     cette concaténation à l'ordre `recent_desc` restreint ; le motif
+#     « page 1 == liste filtrée » est interdit. Sa réintroduction dans une copie
+#     en mémoire de la smoke est rejouée : la garde doit la refuser.
+# Les quatre états de résultat servis (`reviewActualResult`) et leurs effectifs
+# de la fixture. Le pin est confronté aux spécifications lues, jamais recopié :
+# c'est la fixture qui est épinglée, pas une seconde vérité.
+RESULT_STATES = ("WIN", "LOSS", "EVEN", "UNKNOWN")
+FIXTURE_RESULT_COUNTS = {"WIN": 8, "LOSS": 8, "EVEN": 14, "UNKNOWN": 2}
+# La page mesurée est parquée dans la fenêtre T5b : le modèle conservateur donne
+# la borne basse, le modèle typographique la borne haute.
+MEASURED_PAGE_SIZES = (SHELL_MAJORANT_PAGE_SIZE, SHELL_TYPOGRAPHIC_PAGE_SIZE)
+# Le caption servi `Page x / y · mains a–b sur N` : la page et le nombre de pages
+# sont lus dans le texte que `updateReviewInboxPager` écrit, jamais re-dérivés.
+SERVED_PAGE_INFO_RE = re.compile(r"Page (\d+) / (\d+) · mains (\d+)–(\d+) sur (\d+)")
+# La source de la smoke, liée statiquement : la boucle de filtre y est lue
+# (jetons de la marche multi-pages) et le motif « page 1 == liste filtrée » y est
+# interdit, dans ses formulations voisines (`sorted(...)`, `set(...)`, nue).
+SMOKE_PATH = ROOT / "tests" / "trainer" / "smoke_review_inbox_large_list.py"
+SMOKE_SOURCE = SMOKE_PATH.read_text(encoding="utf-8")
+SMOKE_FILTER_LOOP_HEADER = 'for result_state in ("WIN", "LOSS", "EVEN", "UNKNOWN"):'
+SMOKE_FILTER_BLOCK_END = "# --- Preferences survive a reload"
+SMOKE_WALK_PAGES_HEADER = "async def _walk_pages("
+SMOKE_FILTER_WALK_TOKENS = (
+    "wanted = expected_ids_for_result(specs, result_state)",
+    'assert filtered["total"] == len(wanted), (result_state, filtered, wanted)',
+    'assert filtered["pagerHidden"] == (len(wanted) <= filtered["pageSize"]), (',
+    "pages = await _walk_pages(page)",
+    'expected_pages = -(-len(wanted) // max(1, filtered["pageSize"]))',
+    "assert len(pages) == expected_pages, (",
+    'painted.extend(painted_page["ids"])',
+    "assert painted == [",
+    'hand_id for hand_id in expected["recent_desc"] if hand_id in set(wanted)',
+)
+SMOKE_PAGE1_ONLY_RE = re.compile(
+    r"(?:sorted|set)[ \t]*\([ \t]*filtered[ \t]*\[[ \t]*[\"']ids[\"'][ \t]*\][ \t]*\)[ \t]*==[ \t]*"
+    r"(?:(?:sorted|set)[ \t]*\([ \t]*wanted[ \t]*\)|wanted)"
+    r"|filtered[ \t]*\[[ \t]*[\"']ids[\"'][ \t]*\][ \t]*==[ \t]*wanted"
+)
+
+
+def _parse_served_page_info(text: str) -> dict:
+    match = SERVED_PAGE_INFO_RE.search(text or "")
+    assert match, text
+    page, pages, first, last, total = (int(group) for group in match.groups())
+    return {"page": page, "pages": pages, "first": first, "last": last, "total": total}
+
+
+def fixture_result_ids(specs: list[dict]) -> dict[str, list[str]]:
+    """Les identifiants de chaque état de résultat, en ordre de contrat (par id).
+
+    Même définition que `expected_ids_for_result` de la smoke : chaque état
+    rassemble les mains dont le résultat réel authoré vaut cet état.
+    """
+    return {
+        state: sorted(row["hand_id"] for row in specs if row["result"] == state)
+        for state in RESULT_STATES
+    }
+
+
+def served_result_states() -> tuple[str, ...]:
+    """Les quatre valeurs de `#reviewResultFilter` déclarées dans la coque servie."""
+    select = INDEX[INDEX.index('id="reviewResultFilter"') :]
+    select = select[: select.index("</select>")]
+    return tuple(re.findall(r'<option value="([A-Z]+)"', select))
+
+
+def check_result_state_multi_page_contract(shell: dict) -> dict:
+    """#395 T3 — l'effectif par état, épinglé sur la coque mesurée.
+
+    Le calcul est fait sur la fixture, la classification (une page / plusieurs)
+    est faite sur les pages que le **vrai** `renderReviewInboxPage` peint dans
+    les deux modèles mesurés, et la marche page par page est la même que celle
+    de la smoke : ses pages concaténées sont exactement l'état filtré.
+    """
+    specs = fixture_specs()
+    ids = list(shell["ids"])
+    assert len(specs) == len(ids) == 32, (len(specs), len(ids))
+    assert {row["result"] for row in specs} == set(RESULT_STATES), specs
+    # La liste des états n'est pas une constante locale : ce sont les valeurs du
+    # filtre servi, et exactement celles que la boucle de filtre de la smoke
+    # visite.
+    assert served_result_states() == RESULT_STATES, served_result_states()
+    assert tuple(re.findall(r'"([A-Z]+)"', SMOKE_FILTER_LOOP_HEADER)) == RESULT_STATES, (
+        SMOKE_FILTER_LOOP_HEADER
+    )
+    wanted_by_state = fixture_result_ids(specs)
+    counts = {state: len(wanted) for state, wanted in wanted_by_state.items()}
+    # Les états partitionnent la fixture, dans les deux sens.
+    assert sorted(sum(wanted_by_state.values(), [])) == sorted(ids), wanted_by_state
+    assert len(set(ids)) == len(ids) and sum(counts.values()) == len(ids) == 32, counts
+    assert counts == FIXTURE_RESULT_COUNTS, (counts, FIXTURE_RESULT_COUNTS)
+    assert counts["EVEN"] == 14, counts
+
+    # Les bornes de la page mesurée sont celles que T5b vient d'épingler sur les
+    # deux modèles de la coque servie.
+    assert MEASURED_PAGE_SIZES == (10, 11), MEASURED_PAGE_SIZES
+    assert SHELL_MAJORANT_PAGE_SIZE <= SHELL_TYPOGRAPHIC_PAGE_SIZE, MEASURED_PAGE_SIZES
+    for name, pinned in (
+        ("majorant", SHELL_MAJORANT_PAGE_SIZE),
+        ("typographic", SHELL_TYPOGRAPHIC_PAGE_SIZE),
+    ):
+        assert shell[name]["pageSize"] == pinned, (name, shell[name])
+
+    # La fixture discrimine : `EVEN` (14) dépasse la page mesurée *dans les deux
+    # modèles* — l'état qui doit être multi-pages — et au moins un état tient sur
+    # une seule page, sans quoi le chemin `hhListPager.hidden = !multipage` de la
+    # smoke ne serait jamais exercé.
+    overflowing = sorted(
+        state for state, count in counts.items() if count > SHELL_TYPOGRAPHIC_PAGE_SIZE
+    )
+    assert overflowing == ["EVEN"], (counts, overflowing)
+    assert (
+        counts["EVEN"] > SHELL_MAJORANT_PAGE_SIZE
+        and counts["EVEN"] > SHELL_TYPOGRAPHIC_PAGE_SIZE
+    ), counts
+    single = sorted(state for state, count in counts.items() if count <= SHELL_MAJORANT_PAGE_SIZE)
+    assert single == ["LOSS", "UNKNOWN", "WIN"], (counts, single)
+
+    report: dict = {}
+    for state in RESULT_STATES:
+        wanted = wanted_by_state[state]
+        report[state] = {"count": len(wanted), "models": {}}
+        for name in ("majorant", "typographic"):
+            model = shell[name]
+            page_size = model["pageSize"]
+            expected_pages = -(-len(wanted) // max(1, page_size))
+            multi_page = expected_pages > 1
+            painted: list[str] = []
+            for page_index in range(expected_pages):
+                # `seedRow` : la smoke filtre une liste déjà peinte (et marche
+                # une page après l'autre), donc la rangée précédente est encore
+                # dans le DOM et `reviewInboxRowPitch()` mesure la vraie hauteur
+                # — pas le repli `REVIEW_INBOX_ROW_PITCH_FALLBACK`.
+                measured = _serve_shell_measurement(model, wanted, page_index, seed_row=True)
+                assert not measured["overflow"], (state, name, measured)
+                assert measured["paintedCount"] == len(measured["painted"]), (state, name, measured)
+                assert measured["size"] == min(len(wanted), page_size), (state, name, measured)
+                assert measured["everyPaintMeasuredWithPager"], (state, name, measured)
+                if multi_page:
+                    # La marche multi-pages est celle de la smoke : chaque page
+                    # porte son caption servi, la polarité du pager est exacte
+                    # aux deux bouts, et les lignes peintes se suivent.
+                    info = _parse_served_page_info(measured["info"])
+                    assert info == {
+                        "page": page_index + 1,
+                        "pages": expected_pages,
+                        "first": len(painted) + 1,
+                        "last": len(painted) + measured["paintedCount"],
+                        "total": len(wanted),
+                    }, (state, name, info, measured)
+                    assert measured["pagerVisible"], (state, name, measured)
+                    assert measured["prevDisabled"] == (page_index == 0), (state, name, measured)
+                    assert measured["nextDisabled"] == (page_index == expected_pages - 1), (
+                        state,
+                        name,
+                        measured,
+                    )
+                else:
+                    # Une seule page : `updateReviewInboxPager` masque le pager
+                    # (`if(!multipage)return`), donc pas de caption non plus.
+                    assert measured["info"] == "" and not measured["pagerVisible"], (state, name, measured)
+                painted.extend(measured["painted"])
+            # La concaténation des pages peintes est exactement l'état filtré :
+            # le motif « page 1 == liste filtrée » n'est pas une preuve.
+            assert painted == wanted, (state, name, painted)
+            report[state]["models"][name] = {
+                "pageSize": page_size,
+                "pages": expected_pages,
+                "multiPage": multi_page,
+                "painted": painted,
+            }
+
+    # Chaque état est classé par son effectif : au-dessus de la page mesurée il
+    # est multi-pages, en dessous il tient sur une page — et l'état qui dépasse
+    # la borne basse l'est au moins dans le modèle conservateur.
+    for state, count in counts.items():
+        for name in ("majorant", "typographic"):
+            entry = report[state]["models"][name]
+            assert entry["multiPage"] == (count > entry["pageSize"]), (state, name, entry)
+        if count > SHELL_MAJORANT_PAGE_SIZE:
+            assert report[state]["models"]["majorant"]["multiPage"], (state, report[state])
+        if count > SHELL_TYPOGRAPHIC_PAGE_SIZE:
+            assert report[state]["models"]["typographic"]["multiPage"], (state, report[state])
+            assert report[state]["models"]["majorant"]["multiPage"], (state, report[state])
+    # L'état épinglé par l'acceptation : EVEN (14) dépasse la page mesurée dans
+    # les deux modèles, donc deux pages — la smoke doit le marcher page par page.
+    for name in ("majorant", "typographic"):
+        entry = report["EVEN"]["models"][name]
+        assert report["EVEN"]["count"] == counts["EVEN"] == 14, report["EVEN"]
+        assert entry["multiPage"] and entry["pages"] >= 2, entry
+        assert entry["pages"] == -(-14 // entry["pageSize"]), entry
+    # Non-vacuité de la classification elle-même : le seuil est bien l'effectif
+    # comparé à la page mesurée, pas le nom de l'état. Un sous-ensemble d'`EVEN`
+    # qui tient sur la page mesurée redevient mono-page, et un effectif d'une
+    # main de plus que la page mesurée est déjà multi-pages — dans les deux
+    # modèles, sur le vrai `renderReviewInboxPage`.
+    for name in ("majorant", "typographic"):
+        model = shell[name]
+        page_size = model["pageSize"]
+        under = wanted_by_state["EVEN"][:page_size]
+        over = wanted_by_state["EVEN"][: page_size + 1]
+        under_measured = _serve_shell_measurement(model, under, 0, seed_row=True)
+        assert not under_measured["pagerVisible"] and under_measured["info"] == "", (name, under_measured)
+        assert under_measured["painted"] == under, (name, under_measured)
+        over_measured = _serve_shell_measurement(model, over, 0, seed_row=True)
+        assert over_measured["pagerVisible"], (name, over_measured)
+        assert _parse_served_page_info(over_measured["info"])["pages"] == 2, (name, over_measured)
+    return {
+        "counts": counts,
+        "wanted": wanted_by_state,
+        "report": report,
+        "measured_page_sizes": MEASURED_PAGE_SIZES,
+    }
+
+
+def check_result_state_filter_guard(smoke_source: str = SMOKE_SOURCE) -> None:
+    """#395 T3 — la smoke marche toutes les pages de chaque état filtré.
+
+    La garde lit la boucle de filtre de la *source* de la smoke : les quatre
+    états servis y sont visités, la liste filtrée y est reconstituée page par
+    page (`_walk_pages`), son pager n'y est masqué que pour une liste qui tient
+    sur une page, et la seule comparaison acceptée est la concaténation des
+    pages peintes contre l'ordre `recent_desc` restreint. Le motif
+    « page 1 == liste filtrée » y est interdit : c'est la régression que le
+    contrat empêche.
+    """
+    assert smoke_source.count(SMOKE_FILTER_LOOP_HEADER) == 1, SMOKE_FILTER_LOOP_HEADER
+    assert smoke_source.count(SMOKE_FILTER_BLOCK_END) == 1, SMOKE_FILTER_BLOCK_END
+    assert smoke_source.count(SMOKE_WALK_PAGES_HEADER) == 1, SMOKE_WALK_PAGES_HEADER
+    start = smoke_source.index(SMOKE_FILTER_LOOP_HEADER)
+    end = smoke_source.index(SMOKE_FILTER_BLOCK_END, start)
+    block = smoke_source[start:end]
+    for token in SMOKE_FILTER_WALK_TOKENS:
+        assert token in block, (token, block[:200])
+    # `_walk_pages` est la marche partagée : elle recule tant que `prevDisabled`
+    # est faux et avance tant que `nextDisabled` l'est, donc « visiter chaque
+    # état filtré » veut dire visiter ses deux bouts, page 1 incluse.
+    walk = smoke_source[smoke_source.index(SMOKE_WALK_PAGES_HEADER):]
+    assert "\n\ndef " in walk, "la marche `_walk_pages` doit rester une fonction à part"
+    walk = walk[: walk.index("\n\ndef ")]
+    assert 'while not pages[0]["prevDisabled"]:' in walk, walk
+    assert 'while not pages[-1]["nextDisabled"]:' in walk, walk
+    # ...et le motif fautif est absent de toute la source, pas seulement du bloc.
+    forbidden = SMOKE_PAGE1_ONLY_RE.search(smoke_source)
+    assert forbidden is None, (
+        "la smoke ne doit jamais comparer la seule page 1 à la liste filtrée "
+        f"(régression « page 1 == liste filtrée »): {forbidden.group(0)!r}"
+    )
+
+
+def _assert_filter_guard_rejects(mutated_smoke: str, label: str) -> None:
+    """La non-vacuité : une source mutée doit être refusée par la garde."""
+    try:
+        check_result_state_filter_guard(mutated_smoke)
+    except AssertionError:
+        return
+    raise AssertionError(f"le garde-fou de filtre multi-pages doit rejeter: {label}")
+
+
+def check_result_state_filter_non_vacuity() -> None:
+    """#395 T3 — trois mutations en mémoire doivent être refusées.
+
+    (a) la régression exacte — `sorted(filtered["ids"]) == wanted` réintroduit
+    après la lecture de la liste filtrée ; (b) la marche multi-pages retirée de
+    la boucle de filtre (`pages = [filtered]` : seule la page 1 est vue) ;
+    (c) la condition du pager affaiblie en `is True`. Aucune mutation n'est
+    écrite sur disque.
+    """
+    anchor = "wanted = expected_ids_for_result(specs, result_state)"
+    page1_only = 'assert sorted(filtered["ids"]) == wanted, (result_state, filtered, wanted)'
+    injected = SMOKE_SOURCE.replace(anchor, anchor + "\n                    " + page1_only, 1)
+    assert injected != SMOKE_SOURCE, anchor
+    _assert_filter_guard_rejects(injected, "comparaison page 1 == liste filtrée réintroduite")
+
+    start = SMOKE_SOURCE.index(SMOKE_FILTER_LOOP_HEADER)
+    end = SMOKE_SOURCE.index(SMOKE_FILTER_BLOCK_END, start)
+    block = SMOKE_SOURCE[start:end]
+    only_first_page = block.replace("pages = await _walk_pages(page)", "pages = [filtered]", 1)
+    assert only_first_page != block, "la marche de filtre doit rester présente pour être mutée"
+    mutated = SMOKE_SOURCE[:start] + only_first_page + SMOKE_SOURCE[end:]
+    _assert_filter_guard_rejects(mutated, "marche multi-pages retirée de la boucle de filtre")
+
+    weakened = SMOKE_SOURCE.replace(
+        'assert filtered["pagerHidden"] == (len(wanted) <= filtered["pageSize"])',
+        'assert filtered["pagerHidden"] is True',
+        1,
+    )
+    assert weakened != SMOKE_SOURCE, "la condition du pager doit rester présente pour être mutée"
+    _assert_filter_guard_rejects(weakened, "condition du pager affaiblie")
+    # Les octets livrés portent encore la garde : rien n'a été écrit.
+    assert SMOKE_PATH.read_text(encoding="utf-8") == SMOKE_SOURCE
+
+
 def main() -> None:
     check_static_contract()
     check_runtime_contract()
     shell = check_shell_budget_measurement()
+    filter_contract = check_result_state_multi_page_contract(shell)
+    check_result_state_filter_guard()
+    check_result_state_filter_non_vacuity()
     measured = shell["majorant"]
     print(
         "review inbox pagination contract checks: OK "
@@ -987,7 +1343,9 @@ def main() -> None:
         f"{SHELL_MAJORANT_PAGE_SIZE}–{SHELL_TYPOGRAPHIC_PAGE_SIZE} on the served shell with the "
         f"{len(shell['ids'])}-hand fixture — conservative budget: chrome "
         f"{measured['chrome']:.2f}px, list {measured['available']:.2f}px, row "
-        f"{measured['row']:.2f}px, pitch {measured['pitch']:.2f}px)"
+        f"{measured['row']:.2f}px, pitch {measured['pitch']:.2f}px; "
+        f"résultats {filter_contract['counts']} — EVEN ({filter_contract['counts']['EVEN']}) "
+        "multi-pages dans les deux modèles, garde « page 1 == liste filtrée » rejouée)"
     )
 
 
