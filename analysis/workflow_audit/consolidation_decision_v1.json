@@ -27,14 +27,14 @@
     "workflow_files_modified": false
   },
   "counts": {
-    "active_automatic_workflow_count": 54,
+    "active_automatic_workflow_count": 55,
     "blocked_not_applied_count": 11,
-    "cancel_in_progress_false_count": 10,
+    "cancel_in_progress_false_count": 11,
     "cancel_in_progress_true_count": 28,
-    "duplicate_push_and_pull_request_exposure_count": 34,
-    "inventory_workflow_count": 69,
+    "duplicate_push_and_pull_request_exposure_count": 35,
+    "inventory_workflow_count": 70,
     "manual_only_count": 15,
-    "safe_candidate_not_applied_count": 15,
+    "safe_candidate_not_applied_count": 16,
     "without_concurrency_count": 16
   },
   "dag_evidence": "analysis/workflow_audit/active_workflow_dag_v2.json",
@@ -49,8 +49,8 @@
     ".github/workflows/project-state-consistency.yml is never modified",
     "job and artifact names are preserved and digest-pinned for every workflow"
   ],
-  "frozen_name_digest": "0c41337e1ebe5291f808cc09348dabb00d74ad3df8ea86b8b957a4fb2e690035",
-  "inventory_sha256": "5ca3beda7e4486bf9cf9871454fe00610ed2d9c860e23ff4412807e1fa1f3d9f",
+  "frozen_name_digest": "d5f5a55db90cf9bc438b8f29ef82c198367756bf090a8cf9414177d6b1162c7a",
+  "inventory_sha256": "b6d95978c81a630956c9325f62b06e0957d4736db9c6700be7e2a0ee3c761cea",
   "inventory_source": "analysis/workflow_audit/workflows.json",
   "issue": 382,
   "measurement_method": {
@@ -80,7 +80,7 @@
     "without_concurrency": 19
   },
   "planner_estimate_delta": {
-    "active_automatic": 1,
+    "active_automatic": 2,
     "cancel_in_progress_true": -9,
     "manual_only": 0,
     "without_concurrency": -3
@@ -113,6 +113,7 @@
       ".github/workflows/hero-pfpc-evidence-validation.yml",
       ".github/workflows/issue-367-real-iso-ev-observable.yml",
       ".github/workflows/issue-367-real-iso-ev.yml",
+      ".github/workflows/issue-419-hierarchical-exact-tree.yml",
       ".github/workflows/model-a-continuation.yml",
       ".github/workflows/model-b-card-aware-runtime.yml",
       ".github/workflows/model-b-reveal-aware.yml",
@@ -122,7 +123,7 @@
       ".github/workflows/project-state-consistency.yml",
       ".github/workflows/user-artifact-bundle.yml"
     ],
-    "unapplied_count": 26
+    "unapplied_count": 27
   },
   "scenario_count": 14,
   "scenarios": [
@@ -1645,6 +1646,102 @@
       "triggers": [
         "pull_request",
         "push"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "issue-419-hierarchical-exact-tree-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/model_a_sizing_hierarchical.py",
+            "tools/simulation/issue419_exact_tree_preflight.py",
+            "tools/training/write_frozen_validation_protocol.py",
+            "tools/training/write_frozen_validation_protocol_v2.py",
+            "tools/training/write_hierarchical_model_spec.py",
+            "tools/training/finalize_hierarchical_exact_tree_decision.py",
+            "tools/training/resolve_raise_sizing_frontiers.py",
+            "tools/training/fit_model_a_preflop_sizing_hierarchical.py",
+            "tools/training/validate_hierarchical_validation.py",
+            "tools/training/validation_order_guard.py",
+            "tools/training/audit_hierarchical_candidate_contract.py",
+            "tools/training/audit_hierarchical_tree_sparsity.py",
+            "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+            "docs/hierarchical-exact-context-*.md",
+            "analysis/issue419_hierarchical_tree/**",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "tests/simulation/test_issue419_exact_tree_preflight.py",
+            "tests/preflop/test_model_a_sizing_hierarchical.py",
+            "tests/training/test_hierarchical_*.py",
+            "tests/training/test_frozen_validation_protocol.py",
+            "tests/training/test_frozen_validation_protocol_v2.py",
+            "tests/training/test_raise_sizing_frontier_resolution.py",
+            "tests/training/test_issue419_hierarchical_exact_tree.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            "docs/ci-workflow-dag.md",
+            ".github/workflows/issue-419-hierarchical-exact-tree.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/model_a_sizing_hierarchical.py",
+            "tools/simulation/issue419_exact_tree_preflight.py",
+            "tools/training/write_frozen_validation_protocol.py",
+            "tools/training/write_frozen_validation_protocol_v2.py",
+            "tools/training/write_hierarchical_model_spec.py",
+            "tools/training/finalize_hierarchical_exact_tree_decision.py",
+            "tools/training/resolve_raise_sizing_frontiers.py",
+            "tools/training/fit_model_a_preflop_sizing_hierarchical.py",
+            "tools/training/validate_hierarchical_validation.py",
+            "tools/training/validation_order_guard.py",
+            "tools/training/audit_hierarchical_candidate_contract.py",
+            "tools/training/audit_hierarchical_tree_sparsity.py",
+            "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+            "docs/hierarchical-exact-context-*.md",
+            "analysis/issue419_hierarchical_tree/**",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "tests/simulation/test_issue419_exact_tree_preflight.py",
+            "tests/preflop/test_model_a_sizing_hierarchical.py",
+            "tests/training/test_hierarchical_*.py",
+            "tests/training/test_frozen_validation_protocol.py",
+            "tests/training/test_frozen_validation_protocol_v2.py",
+            "tests/training/test_raise_sizing_frontier_resolution.py",
+            "tests/training/test_issue419_hierarchical_exact_tree.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            "docs/ci-workflow-dag.md",
+            ".github/workflows/issue-419-hierarchical-exact-tree.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Execute issue 419 hierarchical exact tree",
+      "path": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
       ]
     },
     {

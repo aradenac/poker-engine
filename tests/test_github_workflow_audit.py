@@ -1,10 +1,83 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from pathlib import Path
-import hashlib, json, shutil, sys, tempfile, unittest
+import hashlib, json, re, shutil, sys, tempfile, unittest
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from tools import audit_github_workflows as audit
+from tools import audit_active_workflow_dag as dag
+
+# Issue #419 ships one authoritative workflow. It must actually execute every
+# #419 suite (not merely declare them in its `paths` filters) and its path
+# filters must cover every file the issue changes. Both properties are guarded
+# here, together with a negative test proving the execution guard is not vacuous.
+ISSUE_419_WORKFLOW=".github/workflows/issue-419-hierarchical-exact-tree.yml"
+ISSUE_419_SUITES=(
+    "tests/simulation/test_issue419_exact_tree_preflight.py",
+    "tests/preflop/test_model_a_sizing_hierarchical.py",
+    "tests/training/test_hierarchical_train_fit.py",
+    "tests/training/test_hierarchical_validation_evaluation.py",
+    "tests/training/test_hierarchical_terminal_decision.py",
+    "tests/training/test_hierarchical_model_spec.py",
+    "tests/training/test_hierarchical_candidate_contract.py",
+    "tests/training/test_hierarchical_exact_context_contract_doc.py",
+    "tests/training/test_hierarchical_tree_sparsity_parity.py",
+    "tests/training/test_frozen_validation_protocol.py",
+    "tests/training/test_frozen_validation_protocol_v2.py",
+    "tests/training/test_raise_sizing_frontier_resolution.py",
+)
+ISSUE_419_EXTRA_SUITES=(
+    "tests/training/test_issue419_hierarchical_exact_tree.py",
+    "tests/test_github_workflow_audit.py",
+)
+ISSUE_419_CHANGED_PATHS=(
+    # production tools and the shared hierarchical provider
+    "tools/preflop/model_a_sizing_hierarchical.py",
+    "tools/simulation/issue419_exact_tree_preflight.py",
+    "tools/training/fit_model_a_preflop_sizing_hierarchical.py",
+    "tools/training/finalize_hierarchical_exact_tree_decision.py",
+    "tools/training/resolve_raise_sizing_frontiers.py",
+    "tools/training/write_frozen_validation_protocol.py",
+    "tools/training/write_frozen_validation_protocol_v2.py",
+    "tools/training/write_hierarchical_model_spec.py",
+    "tools/training/validate_hierarchical_validation.py",
+    "tools/training/validation_order_guard.py",
+    "tools/training/audit_hierarchical_candidate_contract.py",
+    "tools/training/audit_hierarchical_tree_sparsity.py",
+    # candidate contract
+    "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+    # documentation
+    "docs/hierarchical-exact-context-model.md",
+    "docs/hierarchical-exact-context-runtime-contract.md",
+    "docs/hierarchical-exact-context-validation-protocol.md",
+    # content-addressed #419 evidence (the directory glob must cover all of it)
+    "analysis/issue419_hierarchical_tree/SUMMARY.md",
+    "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+    "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+    "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json",
+    "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json",
+    "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+    "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+    "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+    # the suites this workflow is authoritative for (including the audit guard itself)
+    *ISSUE_419_SUITES,
+    *ISSUE_419_EXTRA_SUITES,
+    # the workflow and its regenerated audit evidence
+    ISSUE_419_WORKFLOW,
+    "analysis/workflow_audit/workflows.json",
+    "analysis/workflow_audit/active_workflow_dag_v2.json",
+    "analysis/workflow_audit/consolidation_decision_v1.json",
+    "docs/ci-workflow-dag.md",
+)
+
+
+def issue419_executed_suites(text: str) -> set[str]:
+    """Suites the workflow really runs: a `python3 <suite>` command outside a comment."""
+    executable="\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+    return {suite for suite in ISSUE_419_SUITES
+            if re.search(r"python3\s+"+re.escape(suite)+r"(?:\s|$)",executable)}
 
 HISTORICAL_EVIDENCE=(
     "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
@@ -123,4 +196,60 @@ jobs:
         committed=json.loads((ROOT/"analysis/workflow_audit/workflows.json").read_text())
         regenerated=audit.inventory(ROOT)
         self.assertEqual(committed,regenerated)
+
+    def test_issue419_changed_paths_are_all_covered_by_the_workflow(self):
+        """Every #419 change must trigger the authoritative workflow on push and on pull_request."""
+        text=(ROOT/ISSUE_419_WORKFLOW).read_text()
+        triggers=audit.parse_triggers(text.splitlines())
+        self.assertIn("push",triggers,ISSUE_419_WORKFLOW)
+        self.assertIn("pull_request",triggers,ISSUE_419_WORKFLOW)
+        for changed in ISSUE_419_CHANGED_PATHS:
+            self.assertTrue((ROOT/changed).exists(),f"declared #419 path is missing: {changed}")
+            for event in ("push","pull_request"):
+                with self.subTest(path=changed,event=event):
+                    patterns=triggers[event].get("paths",[])
+                    self.assertTrue(any(dag._glob(pattern,changed) for pattern in patterns),
+                                    f"{event} filters do not cover {changed}")
+
+    def test_issue419_workflow_executes_every_suite(self):
+        """The workflow must run each of the 12 #419 suites as a real command, not a declaration."""
+        text=(ROOT/ISSUE_419_WORKFLOW).read_text()
+        self.assertEqual(set(ISSUE_419_SUITES)-issue419_executed_suites(text),set())
+        # Each suite is executed independently so a failure cannot be masked by a later step.
+        for suite in ISSUE_419_SUITES:
+            with self.subTest(suite=suite):
+                self.assertRegex(text,r"python3\s+"+re.escape(suite)+r"(?:\s|$)")
+
+    def test_issue419_noop_workflow_is_detected(self):
+        """Negative guard: a workflow that only declares the suites in `paths` must be flagged."""
+        text=(ROOT/ISSUE_419_WORKFLOW).read_text()
+        declaration_only="\n".join(
+            line for line in text.splitlines()
+            if line.lstrip().startswith(("-","'")) or line.startswith("on:") or line.startswith("  paths:"))
+        self.assertEqual(set(),issue419_executed_suites(declaration_only))
+        # Dropping a single executed command is also detected, so the guard cannot silently pass.
+        for suite in ISSUE_419_SUITES:
+            with self.subTest(suite=suite):
+                dropped="\n".join(line for line in text.splitlines() if suite not in line)
+                self.assertIn(suite,set(ISSUE_419_SUITES)-issue419_executed_suites(dropped))
+
+    def test_issue419_workflow_is_read_only_and_registered(self):
+        """The #419 runner publishes no artifact and never widens the write surface."""
+        text=(ROOT/ISSUE_419_WORKFLOW).read_text()
+        self.assertIn("permissions:\n  contents: read",text)
+        for forbidden in ("upload-artifact","git push","pull_request_target","gh release create","wrangler deploy"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden,text)
+        row=next(r for r in audit.inventory(ROOT)["workflows"] if r["path"]==ISSUE_419_WORKFLOW)
+        self.assertTrue(row["automatic"])
+        self.assertEqual(row["triggers"],["push","pull_request","workflow_dispatch"])
+        self.assertEqual(row["artifacts"],[])
+
+    def test_issue419_decision_artifact_classifies_the_workflow_as_safe(self):
+        decision=json.loads((ROOT/dag.DECISION).read_text())
+        row=next(r for r in decision["workflows"] if r["path"]==ISSUE_419_WORKFLOW)
+        self.assertEqual("READ_ONLY",row["side_effect_class"])
+        self.assertIs(row["fail_closed_safe"],True)
+        self.assertEqual("SAFE_CANDIDATE_NOT_APPLIED",row["recommendation_state"])
+        self.assertTrue(row["blockers"])
 if __name__=="__main__": unittest.main()
