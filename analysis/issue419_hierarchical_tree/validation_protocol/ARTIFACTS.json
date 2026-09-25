@@ -1,0 +1,11 @@
+{
+  "FROZEN_VALIDATION_PROTOCOL.json": {
+    "canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+    "object": "sha256/69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3.json",
+    "sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/6d7672aa7c0b06d9127aadd45fb901b4f21e7e2a8143496bd23c489333ff8dee.md",
+    "sha256": "6d7672aa7c0b06d9127aadd45fb901b4f21e7e2a8143496bd23c489333ff8dee"
+  }
+}
