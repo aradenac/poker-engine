@@ -1624,32 +1624,56 @@
         <div class="hh-selection-title">Inbox de review</div>
         <div class="review-inbox-primary-tools">
           <div class="field">
-            <label for="reviewStatusFilter">Statut</label>
-            <select id="reviewStatusFilter">
-              <option value="">Tous</option>
-              <option value="TO_REVIEW">À revoir</option>
-              <option value="REVIEWED">Revue</option>
-              <option value="CORRECT">Correcte</option>
-              <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
+            <label for="reviewResultFilter">Résultat réel</label>
+            <select id="reviewResultFilter">
+              <option value="">Toutes</option>
+              <option value="WIN">Gagnées</option>
+              <option value="LOSS">Perdues</option>
+              <option value="EVEN">Neutres</option>
+              <option value="UNKNOWN">Inconnu</option>
             </select>
           </div>
           <div class="field">
-            <label for="reviewAnalysisStateFilter">État d’analyse</label>
-            <select id="reviewAnalysisStateFilter">
-              <option value="">Tous</option>
-              <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
-              <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
-              <option value="CALCUL_EN_COURS">Calcul en cours</option>
-              <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
-              <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
-              <option value="ERREUR_CALCUL">Erreur de calcul</option>
+            <label for="hhSortSelect">Tri</label>
+            <select id="hhSortSelect">
+              <option value="recent_desc">Plus récentes</option>
+              <option value="recent_asc">Plus anciennes</option>
+              <option value="ev_loss_desc">Perte EV — décroissante</option>
+              <option value="gain_desc">Gain réel — décroissant</option>
+              <option value="loss_desc">Perte réelle — décroissante</option>
+              <option value="status_asc">Statut</option>
+              <option value="street_asc">Street</option>
+              <option value="position_asc">Position</option>
+              <option value="hand_asc">ID de main</option>
             </select>
           </div>
           <div id="hhListCount" class="hh-list-count">0 main affichée</div>
         </div>
         <details class="review-inbox-filters">
-          <summary>Filtres secondaires et raisons techniques</summary>
+          <summary>Statut, analyse et filtres secondaires</summary>
           <div class="review-inbox-filter-grid">
+            <div class="field">
+              <label for="reviewStatusFilter">Statut</label>
+              <select id="reviewStatusFilter">
+                <option value="">Tous</option>
+                <option value="TO_REVIEW">À revoir</option>
+                <option value="REVIEWED">Revue</option>
+                <option value="CORRECT">Correcte</option>
+                <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="reviewAnalysisStateFilter">État d’analyse</label>
+              <select id="reviewAnalysisStateFilter">
+                <option value="">Tous</option>
+                <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
+                <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
+                <option value="CALCUL_EN_COURS">Calcul en cours</option>
+                <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
+                <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
+                <option value="ERREUR_CALCUL">Erreur de calcul</option>
+              </select>
+            </div>
             <div class="field"><label for="reviewCoverageFilter">Couverture (technique)</label><select id="reviewCoverageFilter"><option value="">Toutes</option><option value="COMPLETE">Complète</option><option value="INCOMPLETE">Incomplète</option></select></div>
             <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
             <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
@@ -1659,16 +1683,6 @@
             <div class="field"><label for="reviewSizingFilter">Sizing error</label><select id="reviewSizingFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
             <div class="field"><label for="reviewJamFilter">Jam</label><select id="reviewJamFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
             <div class="field"><label for="reviewOverbetFilter">Overbet</label><select id="reviewOverbetFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
-            <div class="field">
-              <label for="hhSortSelect">Ordre</label>
-              <select id="hhSortSelect">
-                <option value="review_desc">Perte EV — décroissante</option>
-                <option value="status_asc">Statut</option>
-                <option value="street_asc">Street</option>
-                <option value="position_asc">Position</option>
-                <option value="hand_asc">ID de main</option>
-              </select>
-            </div>
             <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
           </div>
           <div id="reviewInboxReasons" class="review-inbox-reasons">Aucune raison technique.</div>
@@ -1915,13 +1929,13 @@ const state = {
   rangeEdition:false,
   rangeEdits:Object.create(null),
   hhHands:[],
-  hhSort:"review_desc",
+  hhSort:"recent_desc",
   hhKnownOnly:false,
   reviewScores:Object.create(null),
   modelBRobustnessByDecision:Object.create(null),
   manualOverrideContract:null,
   reviewInboxUserMetadataByScope:Object.create(null),
-  reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
+  reviewInboxFilters:{result:"",status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
   reviewInboxView:null,
   // #394: the inbox is a bounded paginated list; the page size is measured on
   // the constrained shell so no row is ever clipped behind `overflow:hidden`.
@@ -2006,6 +2020,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
       hhListPager=$("hhListPager"), hhPageInfo=$("hhPageInfo"), hhPagePrev=$("hhPagePrev"), hhPageNext=$("hhPageNext"),
       reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
+      reviewResultFilter=$("reviewResultFilter"),
       reviewStatusFilter=$("reviewStatusFilter"), reviewCoverageFilter=$("reviewCoverageFilter"),
       reviewAnalysisStateFilter=$("reviewAnalysisStateFilter"), reviewInboxReasons=$("reviewInboxReasons"),
       reviewStreetFilter=$("reviewStreetFilter"), reviewPositionFilter=$("reviewPositionFilter"), reviewSpotFilter=$("reviewSpotFilter"),
@@ -2581,6 +2596,7 @@ function currentLocalPrefs(){
     hhMode:!!(state.appView==="replayer"&&state.selectedHand),
     appView:state.appView,
     hhSort:state.hhSort,
+    reviewInboxFilters:{...state.reviewInboxFilters},
     hhKnownOnly:!!state.hhKnownOnly,
     hhImportMode:state.hhImportMode,
     quickNavCollapsed:!!state.quickNavCollapsed
@@ -3994,6 +4010,36 @@ function reviewInboxSourceScores(){
   }
   return out;
 }
+/* #395 T4 — premier niveau de l'inbox : résultat réel + tri. Les codes de tri
+   sont des identifiants de préférence (persistés tels quels), traduits vers les
+   modes du contrat poker-review-inbox/v1 par reviewInboxSortMode(). L'ancien
+   code `review_desc` reste accepté et vaut la même chose que `ev_loss_desc`,
+   pour ne jamais casser une préférence déjà enregistrée. */
+const REVIEW_INBOX_SORT_CODES=["recent_desc","recent_asc","ev_loss_desc","gain_desc","loss_desc","status_asc","street_asc","position_asc","hand_asc"];
+const REVIEW_INBOX_LEGACY_SORT_CODES={review_desc:"ev_loss_desc"};
+const REVIEW_INBOX_SORT_MODES={
+  recent_desc:"TIMESTAMP_DESC",recent_asc:"TIMESTAMP_ASC",ev_loss_desc:"EV_LOSS_DESC",
+  gain_desc:"RESULT_GAIN_DESC",loss_desc:"RESULT_LOSS_DESC",
+  status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"
+};
+const REVIEW_INBOX_DEFAULT_SORT="recent_desc";
+function normalizeReviewInboxSortCode(value){
+  const raw=String(value||"");
+  const code=REVIEW_INBOX_LEGACY_SORT_CODES[raw]||raw;
+  return REVIEW_INBOX_SORT_CODES.includes(code)?code:REVIEW_INBOX_DEFAULT_SORT;
+}
+/* Le résultat réel Hero (net en jetons converti en BB par handNetBB) alimente
+   `hand_results` : un net indisponible reste UNKNOWN côté inbox, il n'est
+   jamais promu en EVEN fabriqué. */
+function reviewInboxHandResults(){
+  const out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand?.id??"");if(!id)continue;
+    const netBB=handNetBB(hand);
+    out[id]=Number.isFinite(netBB)?netBB:null;
+  }
+  return out;
+}
 function reviewInboxHHSources(){
   return (state.hhHands||[]).map((hand,index)=>({
     name:hand.sourceName||`review-inbox-${index+1}.txt`,
@@ -4004,7 +4050,7 @@ function reviewInboxBuild(){
   const Inbox=window.PokerReviewInbox;
   if(!Inbox?.buildReviewInbox){state.reviewInboxLastError="Contrat poker-review-inbox/v1 indisponible.";return null;}
   try{
-    const input={reviewScores:reviewInboxSourceScores(),hhSources:reviewInboxHHSources(),scope:reviewInboxScopeInput()};
+    const input={reviewScores:reviewInboxSourceScores(),hhSources:reviewInboxHHSources(),scope:reviewInboxScopeInput(),hand_results:reviewInboxHandResults()};
     const preview=Inbox.buildReviewInbox(input);
     const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
     const inbox=Inbox.buildReviewInbox({...input,user_metadata:metadata});
@@ -4116,7 +4162,7 @@ function openReviewDashboardLeak(){
   if(!cta?.enabled||!target)return {opened:false,reason:"NO_LEAK_TARGET"};
   if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
   if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
-  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
+  state.reviewInboxFilters={result:"",status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
   // #394 T3: the Review shell selects the Inbox pane; it never scrolls the
   // document, so the filtered list is reached without moving the viewport.
   activateAppSubview("inbox");
@@ -4134,14 +4180,14 @@ function openReviewDashboardTraining(){
 function reviewInboxFiltersInput(){
   const f=state.reviewInboxFilters||{};
   return {
-    status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
+    result:f.result||"",status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
     action_played:f.action_played||"",action_recommended:f.action_recommended||"",
     sizing_error:f.sizing_error||"",jam:f.jam||"",overbet:f.overbet||"",coverage:f.coverage||"",
     analysis_state:f.analysis_state||""
   };
 }
 function reviewInboxSortMode(){
-  return ({review_desc:"EV_LOSS_DESC",status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"})[state.hhSort]||"EV_LOSS_DESC";
+  return REVIEW_INBOX_SORT_MODES[normalizeReviewInboxSortCode(state.hhSort)]||REVIEW_INBOX_SORT_MODES[REVIEW_INBOX_DEFAULT_SORT];
 }
 function reviewInboxQuery(inbox=reviewInboxBuild()){
   const Inbox=window.PokerReviewInbox;
@@ -7181,8 +7227,9 @@ function reviewInboxPageWindow(total,size){
 }
 function renderHistoryHands(){
   renderReviewDashboard();
-  if(hhSortSelect)hhSortSelect.value=state.hhSort;
+  if(hhSortSelect)hhSortSelect.value=normalizeReviewInboxSortCode(state.hhSort);
   if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
+  if(reviewResultFilter)reviewResultFilter.value=state.reviewInboxFilters.result||"";
   if(reviewStatusFilter)reviewStatusFilter.value=state.reviewInboxFilters.status||"";
   if(reviewCoverageFilter)reviewCoverageFilter.value=state.reviewInboxFilters.coverage||"";
   if(reviewAnalysisStateFilter)reviewAnalysisStateFilter.value=state.reviewInboxFilters.analysis_state||"";
@@ -7555,7 +7602,7 @@ hhPagePrev?.addEventListener("click",()=>{state.reviewInboxPage=Math.max(0,(Numb
 hhPageNext?.addEventListener("click",()=>{state.reviewInboxPage=(Number(state.reviewInboxPage)||0)+1;renderHistoryHands();});
 
 hhSortSelect?.addEventListener("change",()=>{
-  state.hhSort=hhSortSelect.value;
+  state.hhSort=normalizeReviewInboxSortCode(hhSortSelect.value);
   state.reviewInboxPage=0;
   schedulePersistPrefs();
   renderHistoryHands();
@@ -7566,12 +7613,18 @@ hhKnownFilter?.addEventListener("change",()=>{
   schedulePersistPrefs();
   renderHistoryHands();
 });
+reviewResultFilter?.addEventListener("change",()=>{
+  state.reviewInboxFilters.result=reviewResultFilter.value;
+  state.reviewInboxPage=0;
+  schedulePersistPrefs();
+  renderHistoryHands();
+});
 [
   [reviewStatusFilter,"status"],[reviewCoverageFilter,"coverage"],[reviewAnalysisStateFilter,"analysis_state"],[reviewStreetFilter,"street"],
   [reviewPositionFilter,"position"],[reviewSpotFilter,"spot_family"],[reviewPlayedFilter,"action_played"],
   [reviewRecommendedFilter,"action_recommended"],[reviewSizingFilter,"sizing_error"],
   [reviewJamFilter,"jam"],[reviewOverbetFilter,"overbet"]
-].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;state.reviewInboxPage=0;renderHistoryHands();}));
+].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;state.reviewInboxPage=0;schedulePersistPrefs();renderHistoryHands();}));
 
 knownHandsBtn.addEventListener("click",()=>{
   if(knownHandsBtn.disabled) return;
@@ -9805,7 +9858,32 @@ async function restoreLocalState(){
     if(reviewInboxUserMetadataByScope&&typeof reviewInboxUserMetadataByScope==="object")state.reviewInboxUserMetadataByScope=reviewInboxUserMetadataByScope;
 
     if(prefs){
-      if(["review_desc","status_asc","street_asc","position_asc","hand_asc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
+      // #395 T4 — le tri et le filtre résultat sont restaurés depuis les mêmes
+      // codes que les contrôles premier niveau, sans casser une préférence
+      // antérieure : l'ancien code `review_desc` vaut `ev_loss_desc` et toute
+      // valeur inconnue est ignorée. Les whitelists restent locales à cette
+      // fonction, exécutée isolément par le contrat de non-recalcul (#394 T3).
+      const savedSort=String(prefs.hhSort??"");
+      if(savedSort==="review_desc") state.hhSort="ev_loss_desc";
+      else if(["recent_desc","recent_asc","ev_loss_desc","gain_desc","loss_desc","status_asc","street_asc","position_asc","hand_asc"].includes(savedSort)) state.hhSort=savedSort;
+      const savedFilters=prefs.reviewInboxFilters&&typeof prefs.reviewInboxFilters==="object"?prefs.reviewInboxFilters:null;
+      if(savedFilters){
+        if(!state.reviewInboxFilters||typeof state.reviewInboxFilters!=="object") state.reviewInboxFilters={};
+        const allowedValues={
+          result:["","WIN","LOSS","EVEN","UNKNOWN"],
+          status:["","TO_REVIEW","REVIEWED","CORRECT","INCOMPLETE_ANALYSIS"],
+          coverage:["","COMPLETE","INCOMPLETE"],
+          analysis_state:["","ANALYSE_DISPONIBLE","ANALYSE_PARTIELLE","CALCUL_EN_COURS","DONNEES_INSUFFISANTES","SPOT_NON_SUPPORTE","ERREUR_CALCUL"],
+          sizing_error:["","true","false"],jam:["","true","false"],overbet:["","true","false"]
+        };
+        for(const key of ["result","status","coverage","analysis_state","street","position","spot_family","action_played","action_recommended","sizing_error","jam","overbet"]){
+          const raw=savedFilters[key];
+          if(typeof raw!=="string")continue;
+          const allowed=allowedValues[key];
+          if(allowed&&!allowed.includes(raw))continue;
+          state.reviewInboxFilters[key]=raw;
+        }
+      }
       state.hhKnownOnly=!!prefs.hhKnownOnly;
       if(["replace","add"].includes(prefs.hhImportMode)) state.hhImportMode=prefs.hhImportMode;
       if(APP_VIEWS.includes(prefs.appView)) state.restoredAppView=prefs.appView;
