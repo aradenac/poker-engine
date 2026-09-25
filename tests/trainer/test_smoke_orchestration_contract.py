@@ -26,6 +26,13 @@ context.
 
 It is a representation/orchestration contract only: no model/fit, no equity
 semantics and no immutable repro evidence is touched.
+
+Since #394 R2 (``backlog-cg8``) it also keeps the failure *record* of the frozen
+job alive: ``docs/desktop-modes-fit-evidence.md`` § 8 has to consign the real CI
+failure of the Accueil « Review » click — intercepted by ``#quickNavToggle`` at
+1366x768, Playwright's default 30 s actionability timeout — and the R1 fix
+(``site/index.html`` plus the static separation guard), while the smoke keeps
+that click a real one (no forced JS click, no retry, no skip).
 """
 from __future__ import annotations
 
@@ -329,6 +336,51 @@ def main() -> None:
     assert "artifacts/desktop-modes-fit/measurements.json" in evidence_flat
     assert "SMOKE_MODES_DESKTOP_REPORT" in evidence_flat
     assert "--report artifacts/desktop-modes-fit/measurements.json" in evidence_flat
+
+    # #394 R2 (backlog-cg8) — the human review rejected the previous
+    # qualification of the Home failure: § 8 has to record the *real* CI failure
+    # of the frozen job and the R1 fix that removes it, not a re-reading of it.
+    # Two things are guarded here, so the record cannot silently decay:
+    #
+    # (a) the smoke keeps its real click on the Accueil « Review » shortcut. The
+    #     failure this document records *is* that click: Playwright's default
+    #     30 s actionability timeout expired because the centre of
+    #     `#homePage a[href="#historiesSection"]` received `#quickNavToggle`. A
+    #     `force=True`, a JS-dispatched click or a retry would hide exactly the
+    #     interception the R1 fix removes, so none of them may exist in the
+    #     smoke — the click is asserted verbatim, which also pins its default
+    #     timeout (no `timeout=` override);
+    # (b) the evidence must name that interception and that real click, the R1
+    #     fix, and the CI origin of the failure, and it may not requalify the
+    #     failure as an "artefact" of the centred column.
+    assert 'await page.click(\'#homePage a[href="#historiesSection"]\')' in MODES_SMOKE
+    for bypass in ("force=True", "dispatch_event"):
+        assert bypass not in MODES_SMOKE, bypass
+    assert "quickNavToggle" in evidence_flat
+    assert '#homePage a[href="#historiesSection"]' in evidence_flat
+    assert "intercept" in evidence_flat.casefold()
+    assert "30 s" in evidence_flat
+    for no_bypass in ("dispatch_event", "force=True", "retry", "skip"):
+        assert no_bypass in evidence_flat, no_bypass
+    assert "PR #416" in evidence_flat
+    assert "site/index.html" in evidence_flat
+    assert "tests/trainer/test_desktop_accessibility_contract.py" in evidence_flat
+    assert "artefact" not in evidence_flat.casefold(), (
+        "le constat doit rester l'échec CI réel, jamais une qualification d'artefact"
+    )
+    # The front-matter carries the provenance of this revision: the R2 key, no
+    # inherited HEAD of the previous revision, and a SHA-shaped value (the
+    # thread's HEAD at writing time — the orchestrator commits afterwards, so the
+    # value is deliberately not compared to `git rev-parse HEAD` here).
+    assert "planner_key: R2" in evidence_raw, "le front-matter doit porter la clé R2"
+    head_line = next(
+        line for line in evidence_raw.splitlines() if line.startswith("head_sha: ")
+    )
+    head_value = head_line.split("head_sha: ", 1)[1].strip()
+    assert len(head_value) == 40 and all(char in "0123456789abcdef" for char in head_value), head_value
+    assert head_value != "386f9d91e9fb229b042bd90588e19b806ce2324e", (
+        "le front-matter ne peut pas reconduire le HEAD de la révision précédente"
+    )
 
     print("smoke orchestration contract checks: OK")
 

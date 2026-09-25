@@ -1,11 +1,12 @@
 ---
 schema: poker-issue-394-desktop-modes-fit-evidence/v6
 issue: 394
-task: task-backlog-31r
+task: task-backlog-cg8 (R2)
+planner_key: R2
 report_date: 2026-09-25
-head_sha: 386f9d91e9fb229b042bd90588e19b806ce2324e
-branch: n8n/issue-394/task-backlog-31r
-status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__LOCAL_RUNS_FAILED_EXIT_1
+head_sha: 8ed9ef07ed40beec1f2717109bcf6b29ceeb205d
+branch: n8n/issue-394/task-backlog-cg8
+status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__CI_FAIL_AT_1366X768_RECORDED__R1_FIX_IN_TREE__FROZEN_JOB_RERUN_REQUIRED__LOCAL_RUNS_FAILED_EXIT_1
 merged: false
 pushed: false
 authority: .github/workflows/trainer-smoke.yml — job browser-smoke (non modifié par cette task)
@@ -18,10 +19,13 @@ smoke_modes_desktop_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_THIS_SANDBOX
 smoke_trainer_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_THIS_SANDBOX
 local_pass_claimed: false
 ci_green: NOT_OBSERVED
+ci_failure_recorded: "browser-smoke à 1366x768 : le clic réel #homePage a[href=#historiesSection] est intercepté par button#quickNavToggle (timeout 30 s) ; voir § 8"
+fix_recorded: "R1 — site/index.html (gouttière nommée --home-nav-gutter) + tests/trainer/test_desktop_accessibility_contract.py"
+frozen_job_rerun_required: true
 hero_ranges_editor: navigué mais hors contrat de coque (aucune assertion de no-scroll)
 ---
 
-# Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r)
+# Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
 
 Ce document est la preuve versionnée du fit des modes desktop. Il est réécrit par
 la task `task-backlog-31r` pour corriger une divergence de revue : la révision
@@ -30,6 +34,12 @@ Chromium de secours, sans `PASS`, donc la mesure n'était **pas auditable depuis
 dépôt**. La narration de ce harnais et ses tableaux non reproductibles sont
 supprimés ici (§ 7) ; ce qui les remplace est un rapport JSON produit par le
 smoke lui-même (§ 3), et une autorité explicitement désignée (§ 1).
+
+La task **R2** (`backlog-cg8`) ajoute au **§ 8** ce que la révision précédente
+laissait vide : l'**échec CI réel** du job gelé à 1366x768, sa cause racine
+géométrique et la correction **R1** qui la lève. Cet ajout est documentaire : il
+ne change ni `site/**`, ni `.github/workflows/trainer-smoke.yml`, ni le smoke, et
+il ne réintroduit **aucune** mesure non reproductible depuis le dépôt.
 
 ## 1. Autorité unique : le job gelé `browser-smoke`
 
@@ -125,14 +135,14 @@ Garanties, toutes mesurables :
 ## 4. Observation locale : les deux commandes échouent, aucun `PASS`
 
 Les deux commandes exigées ont été lancées depuis ce worktree au HEAD
-`386f9d91e9fb229b042bd90588e19b806ce2324e`. **Aucune ligne `PASS` n'est écrite
+`8ed9ef07ed40beec1f2717109bcf6b29ceeb205d`. **Aucune ligne `PASS` n'est écrite
 pour elles, ni pour le smoke gelé** : la cause est environnementale (le paquet
 Python `playwright` n'est pas installé dans ce sandbox), donc le smoke n'est pas
 rejouable ici et **aucun fit n'est revendiqué localement**.
 
 ```
 $ git rev-parse HEAD
-386f9d91e9fb229b042bd90588e19b806ce2324e
+8ed9ef07ed40beec1f2717109bcf6b29ceeb205d
 EXIT=0
 ```
 
@@ -217,16 +227,103 @@ Playwright et tous les marqueurs contractuels restent mot pour mot, et
 
 ## 8. Vérification
 
-- `python3 tests/trainer/test_smoke_orchestration_contract.py` → `smoke
-  orchestration contract checks: OK`, `EXIT=0`. Cette garde vérifie notamment que
-  ce document cite les deux commandes
-  (`python3 tests/trainer/smoke_modes_desktop.py` et
-  `python3 tests/trainer/smoke_trainer.py`), `git rev-parse HEAD`, `1500x1000` et
-  `1366x768`, `scrollHeight` et `clientHeight`, les six modes, un verdict, que
-  `hero-ranges.html` est **hors contrat** de coque, qu'il cite l'option de rapport
-  `--report`, et qu'il **ne cite aucun chemin** hors dépôt ;
-- `for test in tests/trainer/test_*.py; do python3 "$test"; done` → **48
-  fichiers, 0 échec** (`files=48 fails=0`), exécuté après la réécriture de ce
-  document ;
-- le job `browser-smoke` reste la mesure de référence : son résultat n'est
-  observable qu'en CI, et **cette CI n'a pas été observée** depuis ce sandbox.
+### 8.1 L'échec CI réel, et sa cause racine géométrique
+
+Le job gelé `browser-smoke` a échoué **en CI**, de façon déterministe, au HEAD de
+la **PR #416**, à **1366x768** : le clic réel du smoke
+
+```
+await page.click('#homePage a[href="#historiesSection"]')
+```
+
+— le raccourci Accueil « Review », `#homePage a[href="#historiesSection"]` — n'a
+jamais atteint sa cible. Le centre de la boîte du lien recevait
+`button#quickNavToggle`, la bascule du rail de navigation flottant : l'attente
+d'actionnabilité de Playwright expirait donc sur son délai **par défaut de 30 s**.
+Le smoke a échoué sur son propre clic réel, pas sur une mesure.
+
+Cause racine, géométrique et recalculable depuis les déclarations CSS : à
+1366x768 la colonne Home — centrée par `margin:auto` sur `.wrap`
+(`max-width:1220px`) puis décalée de son `padding` — commençait à **x≈99**, donc
+**à gauche du bord droit du toggle, x=142**. Ce bord est déclaré :
+`--nav-rail-left:10px` + `--nav-rail-width:118px` = bord droit du rail à 128,
+et la bascule `--nav-toggle-width:28px` déborde de `--nav-toggle-right:-14px`,
+soit l'intervalle 86..142. Le centre du raccourci tombait dans l'intervalle
+couvert par la bascule : l'interception n'était pas un aléa du run mais une
+propriété de la mise en page à ce viewport.
+
+Cette cause racine est aussi consignée, dans le dépôt, par la garde R1 elle-même
+(`check_home_nav_separation()` de
+`tests/trainer/test_desktop_accessibility_contract.py`), qui la recalcule depuis
+les mêmes jetons CSS : la lecture de § 8.1 et celle de la garde ne peuvent pas
+diverger.
+
+### 8.2 La correction R1, et le clic réel conservé
+
+La correction consignée ici est celle livrée par **R1** :
+
+- **`site/index.html`** : la géométrie du rail devient une autorité unique et
+  nommée (`--nav-rail-left`, `--nav-rail-width`, `--nav-toggle-width`,
+  `--nav-toggle-right`, `--nav-rail-end`, `--home-nav-gutter`) et la colonne Home
+  réserve cette gouttière par son propre `padding-left: var(--home-nav-gutter)` :
+  la colonne interactive commence strictement à droite de `--nav-rail-end`.
+  Aucun `z-index`, aucun `pointer-events` et aucun décalage négatif ne contourne
+  le recouvrement — il est supprimé, pas masqué ;
+- **`tests/trainer/test_desktop_accessibility_contract.py`** : la garde statique
+  correspondante, sans navigateur, qui recalcule cette séparation Home/rail
+  depuis ces mêmes déclarations (`var()` et `calc()` résolus) à `1500x1000` et
+  `1366x768` et sur toute la plage où le rail reste vertical.
+
+Le smoke, lui, **conserve son clic réel** : la correction ne remplace pas le clic
+par un clic JS forcé (`dispatch_event`, `evaluate("… .click()")`), et n'ajoute ni
+`force=True`, ni retry, ni skip sur ce raccourci. C'est exactement ce qui rend la
+garde R1 vérifiable : si le recouvrement revenait, c'est le clic réel du job gelé
+qui le signalerait, ici par ce timeout d'actionnabilité de 30 s.
+
+### 8.3 Ce qui est observé, et l'autorité gelée
+
+| Objet | État observé | Base |
+| --- | --- | --- |
+| `python3 tests/trainer/test_smoke_orchestration_contract.py` | **PASS** (`EXIT=0`) | exécuté dans ce worktree, au HEAD du front-matter |
+| `for test in tests/trainer/test_*.py; do python3 "$test"; done` | **PASS** (`files=48 fails=0`) | idem |
+| `python3 tests/trainer/smoke_modes_desktop.py` | **EXIT=1** — `Playwright is unavailable` : aucune mesure, aucun rapport | § 4 |
+| `python3 tests/trainer/smoke_trainer.py` | **EXIT=1** — `ModuleNotFoundError: No module named 'playwright'` | § 4 |
+| Job gelé `browser-smoke` **après** la correction | **non observé** — **relance exigée au nouveau HEAD, `PASS` attendu** | le job n'est observable qu'en CI ; aucun `PASS` n'est affirmé ici |
+
+Deux points d'autorité, sans exception :
+
+1. le job gelé `browser-smoke` de `.github/workflows/trainer-smoke.yml` reste la
+   **seule autorité** pour la règle « aucun scroll global »
+   (`document.scrollingElement.scrollHeight <= clientHeight`) aux deux viewports
+   de référence **1500x1000** et **1366x768**, pour les six modes (`home`,
+   `spotlab`, `review`, `replayer`, `training`, `strategy`) : c'est lui qui porte
+   le **verdict** ;
+2. son résultat **n'est pas observable depuis ce sandbox** : l'échec consigné en
+   § 8.1 est l'échec CI réel, et la correction R1 reste à confirmer par une
+   **relance du job gelé au nouveau HEAD**, qui doit y être `PASS`. Cette relance
+   est une exigence de clôture, pas une observation : aucun `PASS` de CI n'est
+   revendiqué dans ce document.
+
+Le seul `PASS` consigné ici est celui des gardes statiques exécutées dans ce
+worktree (§ 8.3, lignes 1 et 2). Le smoke lui-même ne revendique toujours aucun
+fit depuis le dépôt (§ 5), et l'option de rapport `--report` (§ 3) reste la seule
+façon de produire `artifacts/desktop-modes-fit/measurements.json` — par un run
+réel, jamais par ce document.
+
+### 8.4 La garde qui empêche ce constat de disparaître
+
+`python3 tests/trainer/test_smoke_orchestration_contract.py` → `smoke
+orchestration contract checks: OK`, `EXIT=0`. Cette garde vérifie notamment que
+ce document cite les deux commandes
+(`python3 tests/trainer/smoke_modes_desktop.py` et
+`python3 tests/trainer/smoke_trainer.py`), `git rev-parse HEAD`, `1500x1000` et
+`1366x768`, `scrollHeight` et `clientHeight`, les six modes, un verdict, que
+`hero-ranges.html` est **hors contrat** de coque, qu'il cite l'option de rapport
+`--report`, la variable `SMOKE_MODES_DESKTOP_REPORT` et le défaut
+`artifacts/desktop-modes-fit/measurements.json`, que le job gelé `browser-smoke`
+est la **seule autorité** (§ 8.3), que ce document **ne cite aucun chemin hors
+dépôt**, qu'il nomme l'**interception** (`#quickNavToggle`) et le **clic réel
+conservé** (`#homePage a[href="#historiesSection"]`, sans `dispatch_event`, sans
+`force=True`, sans retry et sans skip), et que sa lecture reste factuelle :
+l'échec y est un échec CI **observé**, nommé par son clic réel, sa cause et sa
+correction — pas une requalification de l'échec en effet de bord inoffensif.
