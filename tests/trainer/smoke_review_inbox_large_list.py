@@ -12,6 +12,15 @@ Review inbox **in a browser**:
    page never exceeds `REVIEW_INBOX_PAGE_SIZE_MAX = 15` rows, `.hh-list` stays
    `overflow:hidden`, `#hhHands.scrollHeight <= clientHeight` and the document
    itself never scrolls: no list scroll is needed to reach the hands;
+1b. measured page size — at the reference viewport the smoke *reads back* what
+   the page really paints: the served `reviewInboxFitCount()` / the measured row
+   pitch (`reviewInboxRowPitch()`), the constrained height, and
+   `state.reviewInboxPageSize`. It is consigned per sort in the audit and
+   **pinned**: a paginated list may not paint fewer rows than
+   `REVIEW_INBOX_PAGE_SIZE_MIN` when the measured height holds them, so a silent
+   regression below the documented page size fails here (the geometry itself is
+   derived from the served declarations, without a browser, by
+   `tests/trainer/test_review_inbox_pagination_contract.py`, #395 T5b);
 2. pagination — `#hhPageInfo` spells `Page x / y · mains a–b sur N`, `Précédent`
    / `Suivant` walk the whole list page by page without ever leaving a page
    behind, and the buttons are disabled exactly at the two ends;
@@ -105,6 +114,10 @@ RESULT_FILTER_SELECTOR = "#reviewResultFilter"
 # result (gain / loss) and EV loss.
 SORT_CODES = ("recent_desc", "recent_asc", "ev_loss_desc", "gain_desc", "loss_desc")
 PAGE_SIZE_MAX = 15
+# #395 T5b — la cible basse servie (`REVIEW_INBOX_PAGE_SIZE_MIN`), épinglée ici :
+# une liste paginée ne peut pas peindre moins de lignes que la cible quand la
+# hauteur **mesurée** les porte.
+PAGE_SIZE_MIN = 10
 HAND_TOTAL = fixture_builder.HAND_TOTAL
 # Bounded reconciliation of the background review batch: the smoke freezes the
 # batch, waits for it to settle and re-injects, then verifies the injected loss
@@ -167,6 +180,10 @@ READ_INBOX_FN = """() => {
       stepIndex:Number(row.dataset.stepIndex)
     })),
     pageSize:Number(state.reviewInboxPageSize)||0,
+    pageSizeMin:Number(REVIEW_INBOX_PAGE_SIZE_MIN)||0,
+    pageSizeMax:Number(REVIEW_INBOX_PAGE_SIZE_MAX)||0,
+    fitCount:(typeof reviewInboxFitCount==='function')?reviewInboxFitCount():-1,
+    rowPitch:(typeof reviewInboxRowPitch==='function')?reviewInboxRowPitch():-1,
     page:Number(state.reviewInboxPage)||0,
     pageInfo:(document.querySelector('#hhPageInfo')||{}).textContent||'',
     pagerHidden:!pager||pager.hidden===true,
@@ -183,6 +200,7 @@ READ_INBOX_FN = """() => {
     listOverflowY:getComputedStyle(list).overflowY,
     listScrollHeight:list.scrollHeight,
     listClientHeight:list.clientHeight,
+    listRowGap:(parseFloat(getComputedStyle(list).rowGap)||0),
     docScrollHeight:document.scrollingElement.scrollHeight,
     docClientHeight:document.scrollingElement.clientHeight
   };
@@ -340,6 +358,52 @@ def assert_bounded(page_state: dict, label: str) -> None:
     assert len(page_state["ids"]) <= PAGE_SIZE_MAX, (label, page_state)
 
 
+def assert_page_size_target(page_state: dict, label: str) -> None:
+    """#395 T5b — la borne basse mesurée au viewport de référence.
+
+    La page peinte est lue sur la vraie coque, puis comparée à ce que cette même
+    coque mesure : `reviewInboxFitCount()` (les lignes que la hauteur contrainte
+    porte au pas mesuré) et `state.reviewInboxPageSize`. Deux choses sont
+    épinglées :
+
+    * une liste **paginée** ne peut pas peindre moins de `REVIEW_INBOX_PAGE_SIZE_MIN`
+      lignes sans que la hauteur mesurée le justifie — une page de la cible
+      devrait alors déborder (`MIN * pas - gouttière > hauteur contrainte + 1`),
+      et la page peinte est exactement la capacité mesurée ;
+    * la page ne descend jamais sous ce que la hauteur mesurée peut porter, ni
+      au-dessus du plafond servi.
+    """
+    fit = page_state["fitCount"]
+    size = page_state["pageSize"]
+    pitch = page_state["rowPitch"]
+    client = page_state["listClientHeight"]
+    gap = page_state["listRowGap"]
+    total = page_state["total"]
+    assert page_state["pageSizeMin"] == PAGE_SIZE_MIN, (label, page_state)
+    assert page_state["pageSizeMax"] == PAGE_SIZE_MAX, (label, page_state)
+    assert fit >= 1 and pitch > 0, (label, page_state)
+    # La page ne peut pas être plus petite que ce que la hauteur mesurée porte,
+    # ni que la cible quand la liste a de quoi la remplir.
+    assert size >= min(total, PAGE_SIZE_MIN, fit), (
+        "la page peinte est plus petite que la cible portée par la hauteur mesurée",
+        label,
+        page_state,
+    )
+    if total > size and size < PAGE_SIZE_MIN:
+        assert size == fit, (
+            f"sous la cible ({PAGE_SIZE_MIN}), la page peinte doit être exactement "
+            "la capacité mesurée",
+            label,
+            page_state,
+        )
+        assert PAGE_SIZE_MIN * pitch - gap > client + 1, (
+            f"sous la cible ({PAGE_SIZE_MIN}), la hauteur mesurée doit prouver "
+            "qu'une page de la cible déborderait",
+            label,
+            page_state,
+        )
+
+
 async def _walk_pages(page) -> list[dict]:
     """Every painted page of the current query, from the first to the last."""
     current = await _read(page)
@@ -473,6 +537,7 @@ async def run() -> None:
                 )
                 first_page = await _read(page)
                 assert_bounded(first_page, "page 1")
+                assert_page_size_target(first_page, "page 1")
                 assert first_page["page"] == 0 and len(first_page["ids"]) < HAND_TOTAL, first_page
                 # #395 T1/T2 — le pager servi désactive « Précédent » sur la
                 # première page (`if(hhPagePrev)hhPagePrev.disabled=page<=0;`) et
@@ -485,6 +550,22 @@ async def run() -> None:
                     "Suivant actif sur la première page"
                 )
                 assert len(first_page["ids"]) == first_page["pageSize"], first_page
+                # #395 T5b — la mesure de référence, consignée dans l'audit : la
+                # taille de page peinte à 1500x1000 avec la fixture 32 mains, et
+                # les hauteurs qui la portent (capacité mesurée, pas de rangée,
+                # hauteur contrainte, gouttière de liste).
+                audit["page_size_reference"] = {
+                    "viewport": f"{VIEWPORT[0]}x{VIEWPORT[1]}",
+                    "hands": HAND_TOTAL,
+                    "page_size": first_page["pageSize"],
+                    "painted_rows": len(first_page["ids"]),
+                    "fit_count": first_page["fitCount"],
+                    "row_pitch": first_page["rowPitch"],
+                    "list_client_height": first_page["listClientHeight"],
+                    "list_row_gap": first_page["listRowGap"],
+                    "page_size_min": first_page["pageSizeMin"],
+                    "page_size_max": first_page["pageSizeMax"],
+                }
 
                 # --- Ordering, page by page, for the five first-level sorts ----
                 for code in SORT_CODES:
@@ -495,11 +576,21 @@ async def run() -> None:
                     pages = await _walk_pages(page)
                     for painted_page in pages:
                         assert_bounded(painted_page, f"{code} page {painted_page['page'] + 1}")
+                        assert_page_size_target(
+                            painted_page, f"{code} page {painted_page['page'] + 1}"
+                        )
                         assert painted_page["sortValue"] == code, painted_page
                     assert_pagination(pages, expected[code], f"tri {code}")
                     audit["sorts"][code] = {
                         "pages": len(pages),
                         "page_size": pages[0]["pageSize"],
+                        # #395 T5b — la mesure explicite au viewport de référence :
+                        # ce que la coque mesurée porte (fit / pas / hauteur
+                        # contrainte / gouttière) et ce que la page peint.
+                        "fit_count": pages[0]["fitCount"],
+                        "row_pitch": pages[0]["rowPitch"],
+                        "list_client_height": pages[0]["listClientHeight"],
+                        "list_row_gap": pages[0]["listRowGap"],
                         "page_1": pages[0]["ids"],
                     }
                     # Coming back to the first page is what the next assertion
@@ -522,6 +613,7 @@ async def run() -> None:
                         "un changement de filtre doit repartir de la page 1", filtered
                     )
                     assert_bounded(filtered, f"filtre {result_state}")
+                    assert_page_size_target(filtered, f"filtre {result_state}")
                     wanted = expected_ids_for_result(specs, result_state)
                     assert filtered["total"] == len(wanted), (result_state, filtered, wanted)
                     assert sorted(filtered["ids"]) == wanted, (result_state, filtered["ids"])
@@ -687,9 +779,16 @@ async def run() -> None:
     print(json.dumps(audit, ensure_ascii=False, indent=2))
     assert not page_errors, f"erreurs de page: {page_errors}"
     assert not console_errors, f"erreurs console: {console_errors}"
+    reference = audit["page_size_reference"]
+    measured_page = (
+        f"page peinte mesurée {reference['page_size']} "
+        f"(cible {PAGE_SIZE_MIN}–{PAGE_SIZE_MAX}, capacité mesurée {reference['fit_count']} "
+        f"au pas {reference['row_pitch']:.1f}px)"
+    )
     print(
         "review inbox large list smoke: PASS "
         f"({HAND_TOTAL} mains · rendu borné ≤{PAGE_SIZE_MAX}/page sans scroll de liste · "
+        f"{measured_page} · "
         "pagination précédent/suivant · ordre temporel/gain/perte/EV par page · "
         "filtre résultat · sélection stable · deep link main · prefs restaurées après reload)"
     )

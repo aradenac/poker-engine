@@ -38,6 +38,14 @@ bytes* and to the *served contract*:
    and never the reversed `not first_page["prevDisabled"]`, and `_walk_pages`
    really walks back while `prevDisabled` is false. A mutation reinstating the
    inverted assertion in an in-memory copy of the smoke must fail the check.
+7. the *measured lower bound* of the painted page is pinned (T5b): the smoke
+   reads the served `reviewInboxFitCount()` / `reviewInboxRowPitch()` / the
+   constrained height back, consigns them in its audit per sort
+   (`page_size_reference` for page 1) and fails when a paginated list paints
+   fewer than `REVIEW_INBOX_PAGE_SIZE_MIN` rows although the measured height
+   holds them. Under the target it demands the measured capacity *and* the
+   overflow of a target-sized page. Three in-memory mutations (a removed call,
+   a weakened capacity bound, a widened served target) must all be rejected.
 
 Static + node only: no browser, no server, no network, and no file of the
 repository is written (mutations live in memory or in a temporary directory).
@@ -68,6 +76,8 @@ PROBE = FIXTURE_DIR / "review_inbox_large_list_probe.js"
 SMOKE_NAME = SMOKE.name
 MIN_HANDS = 30
 PAGE_SIZE_MAX = 15
+# #395 T5b — la cible basse épinglée par le smoke et par la coque servie.
+PAGE_SIZE_MIN = 10
 SORT_CODES = ("recent_desc", "recent_asc", "ev_loss_desc", "gain_desc", "loss_desc")
 # `reviewActualResult` (the row's secondary column) for each authored real result.
 RESULT_TEXT = {"WIN": "win", "LOSS": "loss", "EVEN": "even", "UNKNOWN": "unavailable"}
@@ -111,6 +121,33 @@ PREV_DISABLED_MESSAGE = "Précédent désactivé sur la première page"
 NEXT_ENABLED_MESSAGE = "Suivant actif sur la première page"
 WALK_PREV_WINDOW = 'while not pages[0]["prevDisabled"]:'
 WALK_NEXT_WINDOW = 'while not pages[-1]["nextDisabled"]:'
+# #395 T5b — le smoke lit la mesure de la coque (`reviewInboxFitCount` /
+# `reviewInboxRowPitch`, écrites par `site/index.html`) et l'épingle : la page
+# peinte ne peut pas descendre sous la cible portée par la hauteur mesurée. Ces
+# jetons sont ceux de l'instrument mesuré ; les deux déclarations qui portent la
+# borne basse sont rejouées à l'envers (non-vacuité) plus bas.
+SERVED_PAGE_SIZE_MIN_DECLARATION = "const REVIEW_INBOX_PAGE_SIZE_MIN=10;"
+SERVED_FIT_SOURCES = ("function reviewInboxFitCount(){", "function reviewInboxRowPitch(){")
+SMOKE_PAGE_SIZE_MIN_DECLARATION = "PAGE_SIZE_MIN = 10"
+SMOKE_TARGET_HELPER = "def assert_page_size_target("
+SMOKE_TARGET_CALLS = (
+    'assert_page_size_target(first_page, "page 1")',
+    "assert_page_size_target(\n                            painted_page,",
+)
+SMOKE_MEASUREMENT_CALLS = (
+    'fitCount:(typeof reviewInboxFitCount===\'function\')?reviewInboxFitCount():-1,',
+    "rowPitch:(typeof reviewInboxRowPitch==='function')?reviewInboxRowPitch():-1,",
+    'audit["page_size_reference"]',
+    '"fit_count": pages[0]["fitCount"],',
+    '"row_pitch": pages[0]["rowPitch"],',
+    '"list_client_height": pages[0]["listClientHeight"],',
+    '"list_row_gap": pages[0]["listRowGap"],',
+)
+# The two load-bearing declarations of the lower bound: the page may not be
+# smaller than the measured capacity, and a page below the target is only
+# admitted when the measured heights prove the target would overflow.
+SMOKE_CAPACITY_BOUND = "assert size >= min(total, PAGE_SIZE_MIN, fit), ("
+SMOKE_TARGET_JUSTIFICATION = "assert PAGE_SIZE_MIN * pitch - gap > client + 1, ("
 
 
 def load_module(path: Path, name: str):
@@ -333,12 +370,144 @@ def check_pagination_polarity_non_vacuity() -> None:
     assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
 
 
+def _check_page_size_target_instrument(smoke_source: str, served_index: str) -> None:
+    """#395 T5b — le smoke épingle la borne basse **mesurée** de la page peinte.
+
+    Le smoke peut peindre moins de `REVIEW_INBOX_PAGE_SIZE_MIN` lignes seulement
+    quand les hauteurs qu'il a mesurées prouvent que la cible déborderait ;
+    sinon, il échoue. Les deux côtés sont relus dans les octets livrés : la
+    déclaration servie de la cible, les deux fonctions de mesure servies que le
+    smoke rappelle, la mesure consignée dans son audit et les deux assertions
+    portantes du helper.
+    """
+    assert SERVED_PAGE_SIZE_MIN_DECLARATION in served_index, SERVED_PAGE_SIZE_MIN_DECLARATION
+    for source in SERVED_FIT_SOURCES:
+        assert source in served_index, (
+            f"la mesure de la coque doit rester lue sur les octets servis: {source}",
+        )
+    for token in (
+        SMOKE_PAGE_SIZE_MIN_DECLARATION,
+        SMOKE_TARGET_HELPER,
+        SMOKE_CAPACITY_BOUND,
+        SMOKE_TARGET_JUSTIFICATION,
+    ):
+        assert token in smoke_source, token
+    for token in SMOKE_TARGET_CALLS + SMOKE_MEASUREMENT_CALLS:
+        assert token in smoke_source, token
+    helper = smoke_source[smoke_source.index(SMOKE_TARGET_HELPER):]
+    helper = helper[: helper.index("\n\ndef ")]
+    # The helper measures, it never assumes: the capacity comes from the served
+    # functions, and the justification branch is the only way below the target.
+    for token in ('page_state["fitCount"]', 'page_state["rowPitch"]', 'page_state["total"]'):
+        assert token in helper, token
+    assert "assert fit >= 1 and pitch > 0" in helper, helper
+    assert helper.index("assert size >= min(total, PAGE_SIZE_MIN, fit)") < helper.index(
+        "if total > size and size < PAGE_SIZE_MIN:"
+    ), helper
+
+
+def _assert_page_size_target_rejects(mutated_smoke: str, label: str, served_index: str) -> None:
+    try:
+        _check_page_size_target_instrument(mutated_smoke, served_index)
+    except AssertionError:
+        return
+    raise AssertionError(f"le contrat de borne basse doit rejeter: {label}")
+
+
+def check_page_size_target_logic(smoke) -> None:
+    """The lower-bound helper really discriminates, replayed offline.
+
+    The smoke only runs in the frozen `browser-smoke` job, so its arithmetic is
+    replayed here on *measured page states*: the reference measurement of
+    `tests/trainer/test_review_inbox_pagination_contract.py` at 1500x1000
+    (`fitCount` 11, page 11, pitch 56), the same shell unable to hold the target
+    (`fitCount` 8, page 8, pitch 68 — the 1500x1000 measurement recorded before
+    #395 T5b), and three cases that must be refused: a page below the target
+    while the measured height holds it, a page below the target without the
+    overflow that would justify it, and a widened served target.
+    """
+    reference = {
+        "pageSizeMin": PAGE_SIZE_MIN,
+        "pageSizeMax": PAGE_SIZE_MAX,
+        "fitCount": 11,
+        "rowPitch": 56.0,
+        "listClientHeight": 627.55,
+        "listRowGap": 6.0,
+        "total": 32,
+        "pageSize": PAGE_SIZE_MIN + 1,
+    }
+    smoke.assert_page_size_target(dict(reference), "replay référence")
+    constrained = {
+        **reference,
+        "fitCount": 8,
+        "pageSize": 8,
+        "rowPitch": 68.0,
+        "listClientHeight": 586.45,
+    }
+    smoke.assert_page_size_target(dict(constrained), "replay hauteur contrainte")
+    for label, broken in (
+        ("page sous la cible portée par la hauteur", {**reference, "fitCount": 11, "pageSize": 9}),
+        (
+            "page sous la cible sans débordement",
+            {**constrained, "fitCount": PAGE_SIZE_MIN, "pageSize": PAGE_SIZE_MIN - 2},
+        ),
+        ("cible servie élargie", {**reference, "pageSizeMin": 9}),
+    ):
+        try:
+            smoke.assert_page_size_target(dict(broken), label)
+        except AssertionError:
+            continue
+        raise AssertionError(f"la borne basse mesurée doit refuser: {label}")
+
+
+def check_page_size_target_non_vacuity() -> None:
+    """#395 T5b — trois mutations en mémoire doivent être refusées.
+
+    (a) retirer l'appel de la borne basse sur la première page ; (b) affaiblir
+    l'assertion de capacité en `assert size >= 0` ; (c) élargir la cible servie
+    (`REVIEW_INBOX_PAGE_SIZE_MIN=9`) pour que le smoke puisse peindre moins de
+    lignes sans être vu. Aucune mutation n'est écrite sur disque.
+    """
+    mutations = (
+        (
+            "appel de la borne basse retiré",
+            SMOKE_SOURCE.replace(SMOKE_TARGET_CALLS[0] + "\n                ", "", 1),
+            SERVED_INDEX,
+        ),
+        (
+            "assertion de capacité affaiblie",
+            SMOKE_SOURCE.replace(SMOKE_CAPACITY_BOUND, "assert size >= 0, (", 1),
+            SERVED_INDEX,
+        ),
+        (
+            "cible servie élargie",
+            SMOKE_SOURCE,
+            SERVED_INDEX.replace(
+                SERVED_PAGE_SIZE_MIN_DECLARATION,
+                "const REVIEW_INBOX_PAGE_SIZE_MIN=9;",
+                1,
+            ),
+        ),
+    )
+    for label, mutated_smoke, mutated_served in mutations:
+        assert mutated_smoke != SMOKE_SOURCE or mutated_served != SERVED_INDEX, label
+        _assert_page_size_target_rejects(mutated_smoke, label, mutated_served)
+    # The delivered smoke and the served bytes still carry the pinned pair.
+    assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
+    assert (ROOT / "site" / "index.html").read_text(encoding="utf-8") == SERVED_INDEX
+
+
 def check_smoke_shape(smoke) -> None:
     assert smoke.HAND_TOTAL >= MIN_HANDS, smoke.HAND_TOTAL
     assert smoke.PAGE_SIZE_MAX == PAGE_SIZE_MAX, smoke.PAGE_SIZE_MAX
+    assert smoke.PAGE_SIZE_MIN == PAGE_SIZE_MIN, smoke.PAGE_SIZE_MIN
     assert smoke.SORT_CODES == SORT_CODES, smoke.SORT_CODES
     assert smoke.VIEWPORT == (1500, 1000), smoke.VIEWPORT
     assert smoke.FIXTURE.is_file(), smoke.FIXTURE
+    # #395 T5b — la borne basse mesurée : la cible servie, les deux fonctions
+    # servies que le smoke relit, la mesure consignée dans l'audit et l'assertion
+    # qui échoue si la page repasse sous la cible sans que la hauteur le justifie.
+    _check_page_size_target_instrument(SMOKE_SOURCE, SERVED_INDEX)
     # The smoke drives the served nodes, never a JS shortcut: every id it reaches
     # for exists in the served bytes.
     for selector in SERVED_TARGETS:
@@ -478,12 +647,16 @@ def main() -> None:
     check_non_vacuity(smoke, builder, specs)
     check_pagination_polarity(SMOKE_SOURCE)
     check_pagination_polarity_non_vacuity()
+    check_page_size_target_logic(smoke)
+    check_page_size_target_non_vacuity()
     check_smoke_shape(smoke)
     check_ci_registration()
     print(
         "review inbox large list smoke contract checks: OK "
         f"({len(specs)} mains · {len(SORT_CODES)} tris rejoués par le contrat servi · "
         f"taille de page bornée ≤{PAGE_SIZE_MAX} · "
+        f"borne basse mesurée épinglée ({PAGE_SIZE_MIN}, justification par les hauteurs "
+        "mesurées rejouée) · "
         "pagination Précédent/Suivant épinglée au pager servi "
         "(page 1: Précédent désactivé, Suivant actif · assertion inverse rejouée) · "
         f"fixture={contract['probe']['fixture']})"
