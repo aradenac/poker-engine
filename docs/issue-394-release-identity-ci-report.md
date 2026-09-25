@@ -1,11 +1,11 @@
 ---
 schema: poker-issue-394-release-identity-report/v1
 issue: 394
-task: task-backlog-czu
+task: task-backlog-7r3
 report_date: 2026-09-25
 status: PASS
-head_sha: d331137c626ea5875c36f32af7a9209d891b2ef1
-branch: n8n/issue-394/task-backlog-czu
+head_sha: f1059273f8fd5b3b429706161e477e37da5d33e3
+branch: n8n/issue-394/task-backlog-7r3
 merged: false
 pushed: false
 ci_green: NOT_OBSERVED
@@ -19,16 +19,16 @@ browser_smoke_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_SANDBOX
 browser_smoke_evidence: "docs/desktop-modes-fit-evidence.md"
 browser_smoke_authority: "le job gelé browser-smoke de .github/workflows/trainer-smoke.yml dans la PR reste l'autorité pour le smoke lui-même"
 red_workflows: []
-report_self_delta: "le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, d331137c626ea5875c36f32af7a9209d891b2ef1, relevé juste avant l'écriture de ce fichier ; le delta versionné de cette tâche est ce rapport (docs/issue-394-release-identity-ci-report.md), réconcilié au HEAD final après le dernier écrivain de site/** (6e18d8a, task backlog-7pb) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
+report_self_delta: "le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, f1059273f8fd5b3b429706161e477e37da5d33e3, relevé juste avant l'écriture de ce fichier ; le delta versionné de cette tâche est ce rapport (docs/issue-394-release-identity-ci-report.md), réconcilié au HEAD final après le dernier écrivain de site/** (6e18d8a, task backlog-7pb) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
 ---
 
-# Rapport PASS/FAIL — Identité release, idempotence du patch et contrats statiques (#394, task-backlog-czu)
+# Rapport PASS/FAIL — Identité release, idempotence du patch et contrats statiques (#394, task-backlog-7r3)
 
-Ce rapport matérialise la preuve demandée par `task-backlog-czu` : **réconciliation
-du rapport d'identité release au HEAD final** (après le dernier écrivain de
-`site/**`, T1) puis **régénération de l'ancre** `site/RELEASE.json`, avec
-idempotence de `tools/patches/apply_trainer_mvp.py`, intégrité des marqueurs du
-patch, exécution intégrale des contrats statiques (boucle
+Ce rapport matérialise la preuve demandée par `task-backlog-7r3` (T4) :
+**réconciliation du rapport d'identité release au HEAD final** (après le dernier
+écrivain de `site/**`, T1) puis **régénération de l'ancre** `site/RELEASE.json`,
+avec idempotence de `tools/patches/apply_trainer_mvp.py`, intégrité des marqueurs
+du patch, exécution intégrale des contrats statiques (boucle
 `for t in tests/trainer/test_*.py` comme le job `static-contract`) et
 `node --check site/trainer.js`. **Aucun merge**, **aucun push**, **aucun rebase**,
 **aucun commit**, **aucun `git add`** : le worker ne commit ni ne pousse,
@@ -41,8 +41,9 @@ navigateur).
 | Champ | Valeur |
 | --- | --- |
 | Statut global | **PASS** |
-| HEAD réel du worktree | `d331137c626ea5875c36f32af7a9209d891b2ef1` (`chore(n8n): task backlog-z0a for issue #394`) |
-| Branche de travail | `n8n/issue-394/task-backlog-czu` |
+| HEAD réel du worktree | `f1059273f8fd5b3b429706161e477e37da5d33e3` |
+| Sujet du HEAD | `chore(n8n): task backlog-mrj for issue #394` |
+| Branche de travail | `n8n/issue-394/task-backlog-7r3` |
 | Dernier écrivain de `site/**` | `6e18d8a` (task backlog-7pb, T1) — **aucun commit postérieur ne touche `site/**`** |
 | Merge effectué | **non** |
 | Push effectué | **non** |
@@ -57,18 +58,21 @@ navigateur).
 | Smoke navigateur des modes | **NON REJOUABLE LOCALEMENT** — les deux commandes exigées ont été lancées au HEAD final et ont échoué (`EXIT=1`, `playwright` indisponible) ; la preuve de fit est `docs/desktop-modes-fit-evidence.md` ; **le job gelé `browser-smoke` de la PR reste l'autorité** |
 | Delta Git de la tâche | **non vide** : ce rapport (`docs/issue-394-release-identity-ci-report.md`) |
 | `site/RELEASE.json` / `site/packs/catalog.json` | régénérés **byte-neutres** (aucun octet changé) |
-| `.github/workflows/**` / `.github/actions/**` | **inchangé** |
+| `.github/workflows/**` / `.github/actions/**` | **inchangé** (`git diff --stat HEAD -- .github/` vide) |
 | Modèle / science / équité | **inchangé** (aucun fichier de ces familles dans le diff) |
 
 ### Self-delta (explicite)
 
 - Le HEAD réel du worktree **au moment de l'écriture de ce rapport** est
-  **`d331137c626ea5875c36f32af7a9209d891b2ef1`** (`chore(n8n): task backlog-z0a
-  for issue #394`), tête de la branche `n8n/issue-394/task-backlog-czu`.
+  **`f1059273f8fd5b3b429706161e477e37da5d33e3`**
+  (`chore(n8n): task backlog-mrj for issue #394`), tête de la branche
+  `n8n/issue-394/task-backlog-7r3`. Il a été relevé juste avant l'écriture de ce
+  fichier (`git rev-parse HEAD`), et c'est **la valeur qui figure dans
+  l'en-tête `head_sha` ci-dessus**.
 - Le worktree était **propre** (`git status --porcelain` vide) au début de cette
-  tâche : T1 (écriture `site/**`), la tâche de preuve de fit et celles de contrats
-  ont déjà déposé leurs changements, et l'ancre release est déjà alignée sur le
-  blob du HEAD.
+  tâche : T1 (écriture `site/**`), la preuve de fit, les contrats et la
+  réconciliation antérieure du rapport ont déjà déposé leurs changements, et
+  l'ancre release est déjà alignée sur le blob du HEAD.
 - **Le delta de cette tâche est ce document**, et lui seul : la réconciliation du
   rapport au HEAD final. Il est donc **impossible de citer le SHA de son propre
   commit** (auto-référence) ; le worker ne commit pas, l'orchestrateur gère le
@@ -80,21 +84,22 @@ navigateur).
 - Ce rapport **n'affirme ni merge, ni push, ni état vert de CI** ; il n'affirme
   rien sur le run CI distant, qui n'a pas été observé.
 
-### Reconciliation par rapport à la version précédente de ce rapport
+### Réconciliation par rapport à la version précédente de ce rapport
 
-Cette réécriture remplace la version déposée par la tâche amont de rédaction du
-rapport, laquelle était **périmée par rapport au HEAD final** : elle épinglait un
-`head_sha` et une branche **antérieurs à T1** (tâches amont `task-backlog-9i2`
-puis `task-backlog-4s0`). Ces versions **précèdent T1**, le dernier écrivain de
-`site/**`, qui a modifié `site/index.html` et `site/RELEASE.json` :
+Cette réécriture remplace la version déposée par la tâche amont de
+**rédaction/réconciliation** du rapport, laquelle était **périmée par rapport au
+HEAD final** : elle épinglait un `head_sha` (et une branche de tâche) **antérieurs
+au dernier écrivain de `site/**`**, et sa table de vérification citait une valeur
+d'ancre qui ne correspondait plus au HEAD. Ces versions **précèdent T1**, le
+dernier écrivain de `site/**`, qui a modifié `site/index.html` et
+`site/RELEASE.json` :
 
 1. `head_sha` porte désormais le **HEAD réel du worktree** au moment de
-   l'écriture (`d331137…`), postérieur au dernier écrivain de `site/**`
+   l'écriture (`f1059273…`), postérieur au dernier écrivain de `site/**`
    (`6e18d8a`), et non plus un SHA antérieur à T1 ;
-2. la **ligne smoke navigateur** ne porte plus un libellé générique
-   (`NOT_RUN_LOCALLY` / `FAILED_EXIT_1_NOT_RUNNABLE_IN_SANDBOX`) : elle consigne
-   le **résultat réellement observé** (deux commandes lancées au HEAD final,
-   `EXIT=1`, `playwright` absent) et **renvoie à
+2. la **ligne smoke navigateur** ne porte plus un libellé générique : elle
+   consigne le **résultat réellement observé** (deux commandes lancées au HEAD
+   final, `EXIT=1`, `playwright` absent) et **renvoie à
    `docs/desktop-modes-fit-evidence.md`** pour la preuve de fit, en réaffirmant
    que le **job gelé `browser-smoke` de la PR reste l'autorité** ;
 3. les valeurs d'ancre, de blob et de hachages sont celles du **HEAD final** :
@@ -108,7 +113,7 @@ puis `task-backlog-4s0`). Ces versions **précèdent T1**, le dernier écrivain 
 
 | Vérification | Verdict | Preuve principale |
 | --- | --- | --- |
-| (1) Idempotence du patch MVP | **PASS** | `sha256sum` avant/après identiques pour `site/index.html` (`9ab760a8…`) et `site/trainer.js` (`cfd91bbf…`) ; `diff -u /tmp/czu/before.sha /tmp/czu/after.sha` → `EXIT=0` |
+| (1) Idempotence du patch MVP | **PASS** | `sha256sum` avant/après identiques pour `site/index.html` (`9ab760a8…`) et `site/trainer.js` (`cfd91bbf…`) ; `diff -u /tmp/t7r3/before.sha /tmp/t7r3/after.sha` → `EXIT=0` |
 | (1) Marqueurs du patch, exactement une fois | **PASS** | `id="trainerOpenBtn"` → `1` occurrence ; `id="trainerNavLink"` → `1` occurrence |
 | (2) Ancre régénérée au HEAD final | **PASS** | `python3 tools/write_site_release.py` → `wrote site/RELEASE.json`, puis `git status --porcelain` **vide** : les octets régénérés sont identiques à l'ancre versionnée |
 | (2) Blob de l'index aligné sur le HEAD | **PASS** | `git rev-parse HEAD:site/index.html` = `377234370363b2149c93d73e3f901b8c3f890512` = `identity.assembled_site.functional_files["site/index.html"].git_blob_sha` |
@@ -124,14 +129,14 @@ puis `task-backlog-4s0`). Ces versions **précèdent T1**, le dernier écrivain 
 Forme exacte du job `static-contract` (patch → compare) :
 
 ```
-$ sha256sum site/index.html site/trainer.js > /tmp/czu/before.sha
+$ sha256sum site/index.html site/trainer.js > /tmp/t7r3/before.sha
 $ python3 tools/patches/apply_trainer_mvp.py
 trainer MVP integration patch applied
 EXIT=0
-$ sha256sum site/index.html site/trainer.js > /tmp/czu/after.sha
-$ diff -u /tmp/czu/before.sha /tmp/czu/after.sha
+$ sha256sum site/index.html site/trainer.js > /tmp/t7r3/after.sha
+$ diff -u /tmp/t7r3/before.sha /tmp/t7r3/after.sha
 EXIT=0
-$ cat /tmp/czu/after.sha
+$ cat /tmp/t7r3/after.sha
 9ab760a834bea5d3c5baef22ad09ac72b5939f324653396e98c139b1b897ebb1  site/index.html
 cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
 ```
@@ -139,7 +144,7 @@ cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.j
 Les deux lignes de hachage sont **identiques avant et après** le patch : aucun
 octet de `site/index.html` ni de `site/trainer.js` n'a changé, et
 `git status --porcelain` reste vide après le patch. Le patch est donc
-**idempotent au HEAD final** (`d331137…`).
+**idempotent au HEAD final** (`f1059273…`).
 
 Intégrité des marqueurs (`site/index.html` au HEAD final) :
 
@@ -152,8 +157,6 @@ $ grep -o 'id="trainerOpenBtn"[^>]*' site/index.html
 id="trainerOpenBtn" type="button" class="primary"
 $ grep -o 'id="trainerNavLink"[^>]*' site/index.html
 id="trainerNavLink" href="#trainerPage" data-product-domain="training"
-$ grep -c 'replayerSection">Replayer' site/index.html
-0
 ```
 
 Chaque marqueur est présent **exactement une fois**, comme exigé. Le marqueur
@@ -188,7 +191,7 @@ reste vide, donc l'ancre versionnée **est déjà** l'identité assemblée exact
 HEAD final. Aucun fichier fonctionnel n'était manquant dans `FUNCTIONAL_FILES`.
 
 Vérification de l'ancre, au HEAD final
-(`d331137c626ea5875c36f32af7a9209d891b2ef1`) :
+(`f1059273f8fd5b3b429706161e477e37da5d33e3`) :
 
 | Élément | Valeur |
 | --- | --- |
@@ -204,6 +207,7 @@ Vérification de l'ancre, au HEAD final
 | `sha256(site/trainer.js)` (octets worktree) | `cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7` |
 | `sha256(site/RELEASE.json)` | `a27b45afc192eff3d0dcdf767da5ea0d70ae4fc08d78ff0956e2566458240518` |
 | `git hash-object site/RELEASE.json` | `d2924df72f78f4c17d7e27bae2fcfb5a47ded11e` |
+| `git hash-object site/packs/catalog.json` | `9ce17debfd672614050104aa8e1ca8dd88e19fc2` (**égal** à l'entrée `site/packs/catalog.json` de `functional_files`) |
 
 L'index est vérifié **après le patch de navigation idempotent** du build
 (`patched_index_bytes()`), conformément au contrat de `tools/write_site_release.py` :
@@ -318,9 +322,8 @@ v24.21.0
 ## Smoke navigateur des modes — résultat réellement observé
 
 **Référence de preuve : [`docs/desktop-modes-fit-evidence.md`](./desktop-modes-fit-evidence.md)**
-(preuve de fit, en-tête `schema: poker-issue-394-desktop-modes-fit-evidence/v4`,
-tâche `task-backlog-z0a`, `status:
-FROZEN_SMOKE_NOT_RUNNABLE_LOCALLY__FIT_REMEASURED_AT_FINAL_HEAD_VIA_DECLARED_DEGRADED_REPLAY`).
+(preuve de fit, schéma `poker-issue-394-desktop-modes-fit-evidence`, statut
+`FROZEN_SMOKE_NOT_RUNNABLE_LOCALLY__FIT_MEASURED_AT_FINAL_HEAD_VIA_DECLARED_DEGRADED_REPLAY`).
 **Autorité pour le smoke lui-même : le job gelé `browser-smoke` de
 `.github/workflows/trainer-smoke.yml` dans la PR**, qui dispose du réseau, de
 l'action `./.github/actions/repro-browser` et d'un Chromium chargeable, sert
@@ -329,7 +332,7 @@ l'action `./.github/actions/repro-browser` et d'un Chromium chargeable, sert
 tâche, et sa CI n'a **pas** été observée depuis ce sandbox : **aucun état vert de
 CI et aucun `PASS` du smoke gelé n'est affirmé ici.**
 
-Les deux commandes exigées ont été **lancées au HEAD final `d331137…`** ; le
+Les deux commandes exigées ont été **lancées au HEAD final `f1059273…`** ; le
 résultat observé est un **échec fail-closed d'origine environnementale**, jamais
 un `PASS` :
 
@@ -352,14 +355,14 @@ EXIT=1
 l'orchestrateur n'est pas atteint localement. Cause constatée dans ce sandbox,
 environnementale : `python3 -c "import playwright"` →
 `ModuleNotFoundError: No module named 'playwright'`. Le binaire Chromium épinglé
-(`~/.cache/ms-playwright/chromium_headless_shell-1187/…`) est présent mais le
-paquet Python `playwright` ne l'est pas, donc le smoke navigateur n'est pas
-rejouable dans ce sandbox.
+est présent dans le cache local mais le paquet Python `playwright` ne l'est pas,
+donc le smoke navigateur n'est pas rejouable dans ce sandbox.
 
 **Preuve de fit (référence, non rejouée ici)** :
 `docs/desktop-modes-fit-evidence.md` porte la mesure de fit des modes desktop aux
-deux viewports (1500x1000 et 1366x768), re-mesurée **au HEAD final** par le
-harnais dégradé que cette preuve déclare (§ 2 : Playwright épinglé chargé hors
+deux viewports (1500x1000 et 1366x768), re-mesurée **après le dernier écrivain de
+`site/**`** (le document de preuve déclare lui-même son propre HEAD de mesure),
+par le harnais dégradé que cette preuve déclare (Playwright épinglé chargé hors
 dépôt, transport par interception de requêtes puisque la création de socket
 loopback est refusée, navigation par clic JS, import par le vrai `#hhFileInput`),
 avec une détection de clipping calibrée sur un panneau tronqué synthétique. Cette
@@ -377,35 +380,38 @@ modifié, donc la preuve de fit porte bien sur les octets du HEAD final.
 
 | Contrainte | Statut |
 | --- | --- |
-| Worktree isolé `n8n/issue-394/task-backlog-czu` | respecté |
+| Worktree isolé `n8n/issue-394/task-backlog-7r3` | respecté |
 | Aucun commit / push / rebase / `git add` | respecté (opérations jamais exécutées) |
 | Aucun merge | respecté |
 | Aucune modification de `.github/workflows/**` ni `.github/actions/**` | respecté (`git diff --stat HEAD -- .github/` vide) |
 | Aucune modification modèle / science / équité | respecté |
 | Diff Git non vide | respecté : ce rapport (`docs/issue-394-release-identity-ci-report.md`) |
-| Aucune écriture `site/**` qui survive à cette tâche | respecté : `site/RELEASE.json` et `site/packs/catalog.json` régénérés **sans delta** ; `backlog-czu` est le dernier écrivain déclaré de `site/**` et n'écrit aucun octet |
+| Aucune écriture `site/**` qui survive à cette tâche | respecté : `site/RELEASE.json` et `site/packs/catalog.json` régénérés **sans delta** ; T4 est le dernier écrivain déclaré de `site/**` et n'écrit aucun octet |
 | Aucun skip ni assertion affaiblie | respecté (48/48 contrats, aucun test modifié) |
 
 ## Annexe — commandes exactes et sorties
 
 ```
 $ git rev-parse HEAD
-d331137c626ea5875c36f32af7a9209d891b2ef1
+f1059273f8fd5b3b429706161e477e37da5d33e3
 
 $ git rev-parse --abbrev-ref HEAD
-n8n/issue-394/task-backlog-czu
+n8n/issue-394/task-backlog-7r3
 
 $ git log -1 --pretty=%s
-chore(n8n): task backlog-z0a for issue #394
+chore(n8n): task backlog-mrj for issue #394
+
+$ git log -1 --oneline -- site
+6e18d8a chore(n8n): task backlog-7pb for issue #394
 
 $ git status --porcelain          # avant l'écriture de ce rapport
 (aucune sortie)
 
-$ sha256sum site/index.html site/trainer.js > /tmp/czu/before.sha
+$ sha256sum site/index.html site/trainer.js > /tmp/t7r3/before.sha
 $ python3 tools/patches/apply_trainer_mvp.py
 trainer MVP integration patch applied
-$ sha256sum site/index.html site/trainer.js > /tmp/czu/after.sha
-$ diff -u /tmp/czu/before.sha /tmp/czu/after.sha
+$ sha256sum site/index.html site/trainer.js > /tmp/t7r3/after.sha
+$ diff -u /tmp/t7r3/before.sha /tmp/t7r3/after.sha
 EXIT=0
 
 $ python3 tools/write_site_release.py
