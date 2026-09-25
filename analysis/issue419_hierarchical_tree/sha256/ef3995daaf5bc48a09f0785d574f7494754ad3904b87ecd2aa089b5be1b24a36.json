@@ -1,0 +1,4557 @@
+{
+  "baseline_matrix_sha256": {
+    "audit_exact": "60151ed4b18fb8e6b7f6786ffb3eef2dc4ced2861e70bfd454b7d1300c0c6dde",
+    "runtime_support_context": "3b264d75d283fe444d11277f1cf20195f5c06229670c36292b0cb10f9126dd32"
+  },
+  "canonical_cells": {
+    "bb_facing_sb_iso5": {
+      "audit_exact_distinct_hands": 6,
+      "audit_exact_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+      "audit_exact_observations": 6,
+      "audit_exact_qualifies": false,
+      "issue388_runtime_observations": 45,
+      "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+      "path": [
+        "SB:ISO@5"
+      ],
+      "reconciled": true,
+      "runtime_distinct_hands": 45,
+      "runtime_observations": 45,
+      "runtime_qualifies": true,
+      "runtime_support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+    },
+    "co_after_bb_fold": {
+      "audit_exact_distinct_hands": 4,
+      "audit_exact_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+      "audit_exact_observations": 4,
+      "audit_exact_qualifies": false,
+      "issue388_runtime_observations": 14,
+      "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD"
+      ],
+      "reconciled": true,
+      "runtime_distinct_hands": 14,
+      "runtime_observations": 14,
+      "runtime_qualifies": false,
+      "runtime_support_context_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+    }
+  },
+  "fixture_sha256": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+  "granularities": {
+    "audit_exact_key": {
+      "builder": "exact_key",
+      "consumer": "diagnostic-only faithful partition",
+      "key_matrix_sha256": "abd001f441f8781732dc28251526226f27a159bf597febde263a2f0cf452a22b",
+      "role": "strictly finer than the runtime key; not a provider lookup contract",
+      "support_matrix_sha256": "60151ed4b18fb8e6b7f6786ffb3eef2dc4ced2861e70bfd454b7d1300c0c6dde"
+    },
+    "runtime_support_context_key": {
+      "builder": "support_context_key",
+      "consumer": "resolve_support_likelihood",
+      "key_matrix_sha256": "b4797c9ae63a6432ae3ffec885490d1f647b40a6b0aa37cc845c7f0bcc2343b3",
+      "role": "exact #367 feasibility and response-likelihood resolution granularity",
+      "support_matrix_sha256": "3b264d75d283fe444d11277f1cf20195f5c06229670c36292b0cb10f9126dd32"
+    }
+  },
+  "issue": 419,
+  "issue352_digest_gap": {
+    "artifact": "analysis/model_a_preflop_sizing_v2_fit.json",
+    "artifact_sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e",
+    "baseline_candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+    "baseline_candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+    "historical_digest_recomputed_match": false,
+    "historical_reported_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+    "persisted_payload_without_digest_sha256": "ec96d6da20aca0ecb12717ed864ab2df8322a2e28bcb565b8cce9d94a106f367",
+    "use": "recorded separately; the persisted bytes are pinned and no admission is inferred or repaired"
+  },
+  "issue388_bindings": {
+    "audit_tool_sha256": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
+    "decision": "UNRESOLVED_EXACT_TREE_GAP",
+    "decision_artifact_sha256": "7eb50d70b6a0af70e18895183303795d94951d44d5fd1971ab7d28b909c52472",
+    "decision_sha256": "87cf59a2bc258f0d86ef085232b8db6bc422413ee4086dc6c203459560abc374",
+    "enumeration_complete": false,
+    "issue319_runtime_diagnostic_key_count": 30,
+    "required_node_count": 38,
+    "required_tree_artifact_sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+    "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "status": "BLOCKED_SCIENTIFIC",
+    "train_hands_parsed": 19016,
+    "train_support_artifact_sha256": "9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053",
+    "train_support_sha256": "dc6590ae04a9fa3714e3a739d7c850a83fbde33466e2fc31ac56e16864eea1e2",
+    "unresolved_sizing_frontier_count": 7
+  },
+  "kind": "TRAIN_ONLY_REPRODUCTION_BASELINE",
+  "nodes": [
+    {
+      "audit_exact_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 5,
+            "JAM": 1,
+            "RAISE": 0
+          },
+          "denominator": 6,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.0,
+            "FOLD": 0.8333333333333334,
+            "JAM": 0.16666666666666666,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 6,
+        "hand_classes": {
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 0,
+                "FOLD": 0,
+                "JAM": 1,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 1.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "fc437790f83b6e9f6f6ea576eb224881699a3df2879e3ded3a3071821317a355",
+        "observations": 6,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 6,
+          "non_revealed_fraction": 0.8333333333333334,
+          "reveal_fraction": 0.16666666666666666,
+          "revealed_decisions": 1,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.0,
+            "FOLD": -0.8333333333333334,
+            "JAM": 0.8333333333333334,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 5
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+      "path": [
+        "SB:ISO@5"
+      ],
+      "runtime_support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 7,
+            "FOLD": 37,
+            "JAM": 1,
+            "RAISE": 0
+          },
+          "denominator": 45,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.15555555555555556,
+            "FOLD": 0.8222222222222222,
+            "JAM": 0.022222222222222223,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 45,
+        "hand_classes": {
+          "A3o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AA": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AKo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 0,
+                "FOLD": 0,
+                "JAM": 1,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 1.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "8013c5767ab52cc96a5ab4c37867de26a9691789abe3f18a4d26909b8e81fe0c",
+        "observations": 45,
+        "qualifies": true,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 45,
+          "non_revealed_fraction": 0.9111111111111111,
+          "reveal_fraction": 0.08888888888888889,
+          "revealed_decisions": 4,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.5944444444444444,
+            "FOLD": -0.8222222222222222,
+            "JAM": 0.22777777777777777,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 41
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 4,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 4,
+          "other_count": 0,
+          "rates": {
+            "CALL": 1.0,
+            "FOLD": 0.0,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 4,
+        "hand_classes": {
+          "KTs": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q8s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "70289fa2a0497924c20878757dfd7c28388b2bd0b52777f17f27ae45400603ff",
+        "observations": 4,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 4,
+          "non_revealed_fraction": 0.5,
+          "reveal_fraction": 0.5,
+          "revealed_decisions": 2,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.0,
+            "FOLD": 0.0,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 2
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 12,
+            "FOLD": 2,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 14,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.8571428571428571,
+            "FOLD": 0.14285714285714285,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 14,
+        "hand_classes": {
+          "95s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A9s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AQo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "K7o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "KTs": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q8s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "74494030cf93c6b7465706b2b2282815a3eeb793d19388ef82aa9e90978c1bbe",
+        "observations": 14,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 14,
+          "non_revealed_fraction": 0.5714285714285714,
+          "reveal_fraction": 0.42857142857142855,
+          "revealed_decisions": 6,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.1428571428571429,
+            "FOLD": -0.14285714285714285,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 8
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=bdad5deb937783aa8476196ec2e1c4c464d7221f1d6294d969906b68e0097b1f",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 1,
+          "other_count": 0,
+          "rates": {
+            "CALL": 1.0,
+            "FOLD": 0.0,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 1,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "edc706bbe752a765b8f773b07a1bf7a84ff561ad010b13dc4bd122fb6b0f831f",
+        "observations": 1,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 1,
+          "non_revealed_fraction": 1.0,
+          "reveal_fraction": 0.0,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 1
+        },
+        "support_state": "EXACT_MARGINAL_ONLY"
+      },
+      "node_id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 4,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 9,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.5555555555555556,
+            "FOLD": 0.4444444444444444,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 9,
+        "hand_classes": {
+          "88": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A3o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "TT": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "9f9936c18847f4fa407bac0f4d7afb5344a7ac9221960a0dab0cbac174e53641",
+        "observations": 9,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 9,
+          "non_revealed_fraction": 0.6666666666666666,
+          "reveal_fraction": 0.3333333333333333,
+          "revealed_decisions": 3,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.4444444444444444,
+            "FOLD": -0.4444444444444444,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 6
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95|public=f1713216c63d825dd796dbb37d839cf7ccf50a9f78d004e79f1ff27d2e5a033d",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "3fd9ad542318313526bcc60e68ea07e536c20bc633598acdd0f61658fb0858b0",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:FOLD",
+        "BTN:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=2b7c76eb49290b98d296d593a3f6c948c89a6bc71c93fdf55a62e7e25e54f69a",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 3,
+            "FOLD": 1,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 4,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.75,
+            "FOLD": 0.25,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 4,
+        "hand_classes": {
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "2a7f487e81d115ca9187ba39cc78475840b930d8f5dd34c8e1679f02cc107cef",
+        "observations": 4,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 4,
+          "non_revealed_fraction": 0.75,
+          "reveal_fraction": 0.25,
+          "revealed_decisions": 1,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.25,
+            "FOLD": -0.25,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 3
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 6,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 21,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.7142857142857143,
+            "FOLD": 0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 21,
+        "hand_classes": {
+          "75o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "96s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A3o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A8s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AJo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q9o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "126dd77e6501f4686607d7eeefc582b292974c2f76e4996042276851280dad28",
+        "observations": 21,
+        "qualifies": true,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 21,
+          "non_revealed_fraction": 0.6666666666666666,
+          "reveal_fraction": 0.3333333333333333,
+          "revealed_decisions": 7,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.2857142857142857,
+            "FOLD": -0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 14
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=a98f4400811e36d77d9805677f205460d2a02b6219d51f1fc286ec346330005e",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "4910b50cf1cdd1b97cfa26c1240e77aca8533ab773cd3926c09c60eb161cdece",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL",
+        "BTN:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=ea05ac20d26ec53baa6330de73738c753610023f6891f514da6fcb1df8e8d305",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "2b0b325852d542d87bcbe7ba9304db02db08bde65a7fab8bcf9db01cac63e6ad",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=2e60666acae349984b67131e988825c257ce6bfa7675eb442186db9083644ec9",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "c11e7e28432fc6ddc45b8d5943af30c6c0929dc288479e59601c77f26af02e19",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99|public=7d020171231b8dd37b5e37a7d66c4581fdef49e3e853294fe6eac52c4535bd2a",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "af292e858c4e3ab89c1faaa4265fd220ef5bad5343eb5d473f88a20f8176ed49",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95|public=c8b96c9cd625da7f93490ca5753e4a7558666a3e5155609a11489686c2ee2d68",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "8abcc6ed6d665213f0ca942c803d149072bcf8571ea6ae85139284df9f70d8c1",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:JAM@100",
+        "BTN:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=484959c3f47532580632859efa53057a02d0b518212f023b07fc82166e3b478e",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "7d26ac51d011e3fa724de90c68e063a7445eed1cd89fb2dfe91a469cc3897a00",
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:JAM@100",
+        "BTN:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=ebdd6e0b41a62e1bc9f7dbb07345b3ec888c99efc29bed92515160fc99ab8fc2",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 10,
+            "FOLD": 4,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 14,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.7142857142857143,
+            "FOLD": 0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 14,
+        "hand_classes": {
+          "96o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A9o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AQo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "K3o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "K4s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "K5o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "abdfd4bcf8e06ea8ae108496c6665dac850407a4199cf545461f077b0d5b6421",
+        "observations": 14,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 14,
+          "non_revealed_fraction": 0.5714285714285714,
+          "reveal_fraction": 0.42857142857142855,
+          "revealed_decisions": 6,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.2857142857142857,
+            "FOLD": -0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 8
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=298241d5d97f8eacaaf46ecf11e688982d9c9ddbd343559db86d1635727a8225",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 6,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 21,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.7142857142857143,
+            "FOLD": 0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 21,
+        "hand_classes": {
+          "75o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "96s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A3o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A8s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AJo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q9o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "126dd77e6501f4686607d7eeefc582b292974c2f76e4996042276851280dad28",
+        "observations": 21,
+        "qualifies": true,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 21,
+          "non_revealed_fraction": 0.6666666666666666,
+          "reveal_fraction": 0.3333333333333333,
+          "revealed_decisions": 7,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.2857142857142857,
+            "FOLD": -0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 14
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=223692443a9fa62fb78a818e80c9b20fb7f9f7e14f434e3f3d402d68e80a3b73",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "df10c340efa286e36dcd5a6be2f07940a49ac786eae0c13c9b1c986dd29752a8",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD",
+        "BTN:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=12386f31933668bfda35be438f6b3f29e3cedef9f6e084863cd8296bf515e078",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "7ae0579a66304ad900f044afd7bfa04029cd7c4899875367a8721a62cf053a05",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD",
+        "BTN:JAM@100",
+        "SB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=e936fc7e3647208d474ae69dfdf53c154b04c5a1bed941038ba198de7b946990",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "6a7a98c82478e0cc739c9c9a50751b892b087e3902c2e5085f2a9adb5dc596d6",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD",
+        "BTN:JAM@100",
+        "SB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4|public=a7e233cbb17db340a8f39361b08ba90c5e3422cfdfd0224dd6aca033bee5254a",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 1,
+            "FOLD": 1,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 2,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.5,
+            "FOLD": 0.5,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 2,
+        "hand_classes": {
+          "K6s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "04a6328a0ac952b498f0d4cd2996e8e7877d2639870de419e64ed653ffee64aa",
+        "observations": 2,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 2,
+          "non_revealed_fraction": 0.5,
+          "reveal_fraction": 0.5,
+          "revealed_decisions": 1,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.5,
+            "FOLD": -0.5,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 1
+        },
+        "support_state": "EXACT_OBSERVED"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2bd5e9af76e08890db692868f41e4cc4330677c546de73e52f0ef71cdc2247f",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "f205810c4839cc1008610bb1ad87a6a296cf513cc8b8b3592c44249b3ab33ea4",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2ece05f288c624dc10bf0dd60878fef7e0bf8c4acbe3ec7e7f4f253bd7d3b60",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "c7030a04aebdd344027d7546c431aa7a13cc6f66247daea6e2b43ce3120b5703",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=bcff9e5463ad7428c54f3f13e3895d3509128346d71bef7d3f7fa1342f18f031",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "bb7e6df64e700d39a8d49b34f84b2766d0af617b8e64c33ae4db54d26a9f3e02",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD",
+        "BB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=c9550cf9d780bda980875292c067d269921b6de0de12497d84478996274874eb",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "2d12402d24411ccd4e6027ab70a84cd579441467211acf5fd1d1f5866f6ccd87",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:FOLD",
+        "BB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=1c047e14f02bd05ff2f6ec45f2adc0b07db0576449ea4a7537dcd22e50c9067c",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "b01046512efee292a217dde5bd3dc5549b5f1d1a22f4de6c6e3baa6c10bec67a",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=0020904a47247270b12c055022c3700a94559316f8317e5a935d1072495356c4",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "4087f0c8efc91c1b2a3f445302cc8bdba8b8a6e69324ff017ada2f43fb95508b",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL",
+        "BB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95|public=178a05fcc6bffba15bc408d0eb5ca9755663717c7578921f9b2e860e38a95d8b",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "6911c7cb48a6a2fb8bb9778f39cf29bad91b7abaefae911f383514932dd2b598",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL",
+        "BTN:JAM@100",
+        "SB:CALL",
+        "BB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99|public=3483fabfd76ec1b2386dc74d1f3741a503c1e872ecd817810a069002c01317af",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "734eeb07d849a9c5b3f111465fa13af71d78cd6ec6384ac10c1d0c9545776653",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=c8e5b82391c0a00facb4e469459b737fa7ce410f8a91276cbccafd7a7ed6cc7f",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "4d28d3cc7b63d5c7f74c42db1d4ae640a6ffc7cd7d042459cf3e5c519fc49b97",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=ad63c474fb8050b62a313bc4e8d4a9420174e2506b5bb8415d922a24e9d3a2c6",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "3bba27143b49488f94c1a844c6dcf8d87a7a57bf8569be05fae0921fea9ed624",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:FOLD",
+        "SB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=2516f2969a5e1c12ae53b3bbec37e1aa7178dcf78954c1462d68302e62745745",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "47bdce68db1066fa54b2b40cd515bbf90662d9b50920f860541f56d1ea79da03",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:FOLD",
+        "SB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=b1905749ed944a88c739ab90e09120b835a15b1e979061406506e849aace5ce5",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "629727be5d7f746dd5dbb941effd9e16823cb93e1c2e19d55c0d4b77f56310bd",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=53e3ae16c00237f50f3d70dc4d8b7267d89f56c3802c36c46617ebe8f56749af",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "66ed6f9352caf94fa236005162437dd4e9976f61a0c7f7de9f0ced1378be47c5",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:CALL",
+        "SB:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95|public=5496e4c6be2c9d0750c25614da33b00b0a31ccbb3b9781f730731b29f57eb56d",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "ae9030283b711afc8b60df92ea7bdd735b9c22d8d1967c57d70e7c9c4309f3f8",
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:JAM@100",
+        "BTN:CALL",
+        "SB:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=33fabc7346d1e70256efde230154c21080d40b206f76c0d8f0c4c1c9ecc17d64",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "d7d6ca98a026242055e196699a2bbe77d9be48beb229c2d5d9b34e0255248ada",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100"
+      ],
+      "runtime_support_context_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 1,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 1,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.0,
+            "FOLD": 1.0,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 1,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "1d54ff94402ead7ccbcd55ed4000fdb5a5378d89b1ce1326e3078bd3a14262c7",
+        "observations": 1,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 1,
+          "non_revealed_fraction": 1.0,
+          "reveal_fraction": 0.0,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 1
+        },
+        "support_state": "EXACT_MARGINAL_ONLY"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=a00499e81ff19cbc7dcaf4e3755fbc446ea59108cea73b7ec44346236270e3e5",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "e3bdbcf92a3e45dc48dec6de365cda2d365a85ef238b0ce2f2974bba98739bae",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95|public=fdb55cdac03e5208165b695f305bc5d92011341ee29b4f94bda2fff94057771c",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "ab9a36e3aca3b45bb9b84678d9802336393cd0e4d4f01efd54106aefcbddd61f",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:FOLD",
+        "BTN:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=ea2ecf1bc79c21f91e303caa79cd33c585855b8cef19c954a1d65b977841d672",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "8b3ba0ac09e6229be6b4e8dd044a4f1484cbe8f56d46de6dc783d87de699d1a9",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:FOLD",
+        "BTN:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99|public=d062b9d8f0c739e7a2da63ab6f97d03135fa65e524a1e452473898b588bfd617",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "857419f1860beb31906c980849a219bab6d2feab9604fc8545bbaa8efe343aab",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=7db167a29a0566237d4cd914609c5dfd49335a54929ac09355fa1ead58dcac1e",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "4d0a924f8d2997df417e6cb66d16486bf8e07180915376f014c06607bea123f4",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:CALL",
+        "BTN:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    },
+    {
+      "audit_exact_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95|public=683092a612139c237e14e7515450f95cdf49d38068a0f7b2632af5b996055a66",
+      "audit_exact_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "node_id": "b1dc19c37214e8abfd75784132d1f6f519ef6934c008dbcffd7fa302541cdcf6",
+      "path": [
+        "SB:ISO@5",
+        "BB:JAM@100",
+        "CO:CALL",
+        "BTN:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95",
+      "runtime_support_context_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      }
+    }
+  ],
+  "protected_files_before_after_sha256": {
+    "after": {
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "before": {
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "unchanged": true
+  },
+  "provenance": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "unique_hands": 27164
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+        "unique_hands": 11896
+      }
+    ],
+    "certification_path": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "certified_hands": 23789,
+    "certified_split_counts": {
+      "TEST": 2449,
+      "TRAIN": 19016,
+      "VALIDATION": 2324
+    },
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c"
+  },
+  "reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+  "reproduction": {
+    "independent_count_train_rows_parsed": 101848,
+    "matrix_parity_with_issue388": {
+      "cells_match": true,
+      "mismatches": [],
+      "node_order_identical": true
+    },
+    "rederived_support_hash_matches_issue388": true,
+    "rederived_train_support_sha256": "dc6590ae04a9fa3714e3a739d7c850a83fbde33466e2fc31ac56e16864eea1e2",
+    "train_hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+    "train_hands_parsed": 19016,
+    "tree_rederived_equal_issue388": true
+  },
+  "runtime_resolution_risks": [
+    {
+      "audit_disposition": "Report the risk and classify current feasibility at the key #367 actually resolves; this TRAIN-only audit does not change the runtime provider contract.",
+      "consumer": "resolve_support_likelihood",
+      "description": "The runtime likelihood key omits history, pot_before_bb, effective_stack_bucket, live/all-in positions, table size and raise level, so one fitted likelihood node can be reused across audit-distinct public states.",
+      "not_a_nearest_lookup": true,
+      "risk_id": "RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE",
+      "scientific_risk": "Although lookup equality is exact at the implemented runtime key, the declared nearest-context prohibition may require a finer provider contract before #367.",
+      "status": "OPEN_FOR_367",
+      "tree_collision_group_count": 8,
+      "tree_collision_groups": [
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "6a7a98c82478e0cc739c9c9a50751b892b087e3902c2e5085f2a9adb5dc596d6",
+            "c7030a04aebdd344027d7546c431aa7a13cc6f66247daea6e2b43ce3120b5703"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:FOLD",
+              "BTN:JAM@100",
+              "SB:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:CALL",
+              "BTN:JAM@100",
+              "SB:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "8b3ba0ac09e6229be6b4e8dd044a4f1484cbe8f56d46de6dc783d87de699d1a9",
+            "4d0a924f8d2997df417e6cb66d16486bf8e07180915376f014c06607bea123f4"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:JAM@100",
+              "CO:FOLD",
+              "BTN:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:JAM@100",
+              "CO:CALL",
+              "BTN:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "2d12402d24411ccd4e6027ab70a84cd579441467211acf5fd1d1f5866f6ccd87",
+            "4087f0c8efc91c1b2a3f445302cc8bdba8b8a6e69324ff017ada2f43fb95508b"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:CALL",
+              "BTN:JAM@100",
+              "SB:FOLD",
+              "BB:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:CALL",
+              "BTN:JAM@100",
+              "SB:CALL",
+              "BB:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "47bdce68db1066fa54b2b40cd515bbf90662d9b50920f860541f56d1ea79da03",
+            "66ed6f9352caf94fa236005162437dd4e9976f61a0c7f7de9f0ced1378be47c5"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:JAM@100",
+              "BTN:FOLD",
+              "SB:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:JAM@100",
+              "BTN:CALL",
+              "SB:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "4910b50cf1cdd1b97cfa26c1240e77aca8533ab773cd3926c09c60eb161cdece",
+            "df10c340efa286e36dcd5a6be2f07940a49ac786eae0c13c9b1c986dd29752a8"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:FOLD",
+              "CO:CALL",
+              "BTN:JAM@100"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:FOLD",
+              "BTN:JAM@100"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "c11e7e28432fc6ddc45b8d5943af30c6c0929dc288479e59601c77f26af02e19",
+            "bb7e6df64e700d39a8d49b34f84b2766d0af617b8e64c33ae4db54d26a9f3e02"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:FOLD",
+              "CO:CALL",
+              "BTN:JAM@100",
+              "SB:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:CALL",
+              "BTN:JAM@100",
+              "SB:FOLD",
+              "BB:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "7d26ac51d011e3fa724de90c68e063a7445eed1cd89fb2dfe91a469cc3897a00",
+            "4d28d3cc7b63d5c7f74c42db1d4ae640a6ffc7cd7d042459cf3e5c519fc49b97"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:FOLD",
+              "CO:JAM@100",
+              "BTN:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:JAM@100",
+              "BTN:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95"
+        },
+        {
+          "distinct_audit_exact_keys": 2,
+          "node_ids": [
+            "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+            "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059"
+          ],
+          "paths": [
+            [
+              "SB:ISO@5",
+              "BB:FOLD",
+              "CO:CALL"
+            ],
+            [
+              "SB:ISO@5",
+              "BB:CALL",
+              "CO:FOLD"
+            ]
+          ],
+          "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+        }
+      ]
+    }
+  ],
+  "runtime_support_context_qualified_nodes": [
+    {
+      "distinct_hands": 45,
+      "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+      "observations": 45,
+      "path": [
+        "SB:ISO@5"
+      ],
+      "runtime_support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+    },
+    {
+      "distinct_hands": 21,
+      "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "observations": 21,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL"
+      ],
+      "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+    },
+    {
+      "distinct_hands": 21,
+      "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "observations": 21,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD"
+      ],
+      "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+    }
+  ],
+  "scenario_issue": 321,
+  "schema": "poker-hierarchical-tree-sparsity-baseline/v1",
+  "source_files_sha256": {
+    "analysis/model_a_preflop_sizing_v2_fit.json": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e",
+    "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+    "tools/preflop/model_a_sizing_likelihood.py": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a",
+    "tools/preflop/policy_context.py": "3377462b58f20ece74782c9f13a21f7b9de9b79b507ec441e4676c001d7f4ebe",
+    "tools/repro_preflop_fixture.py": "1f07d468ab6c34c6232b37d10118ad277b229723357690d2a19a854c01ffe7da",
+    "tools/training/audit_hero_preflop_coverage.py": "2544732d39776a9b8d75bba4bddca29462a1b9c8d26e607693a59e25e0cf7184",
+    "tools/training/audit_hierarchical_tree_sparsity.py": "8fd510c24611bc1879871a4b0ba2b4978e5fead28e8d94979963b7b3c765ec11",
+    "tools/training/audit_model_a_exact_tree.py": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
+    "tools/training/audit_preflop_sizing_support.py": "3dd236108c1c0788d59b12801634f01e39d815532a5263663e2744cf99654b74",
+    "tools/training/increment_decisions.py": "2074f28eac4b2c844bd4eb27bfc6afba2c07c1636112e4d1fe328a9a7efea3e5",
+    "training/datasets/NLHE_100-200/population_certification.json": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+  },
+  "source_issue": 388,
+  "split_consumed": "TRAIN",
+  "summary": {
+    "audit_exact_qualified_nodes": 0,
+    "distinct_audit_exact_keys": 38,
+    "distinct_runtime_support_context_keys": 30,
+    "nodes_total": 38,
+    "runtime_blocked_nodes": 35,
+    "runtime_keys_merging_audit_states": 8,
+    "runtime_qualified_nodes": 3
+  },
+  "test_consumed": false,
+  "thresholds": {
+    "feasibility_resolution_key": "support_context_key (resolve_support_likelihood runtime contract)",
+    "minimum_distinct_hands": 20,
+    "minimum_marginal_observations": 20
+  },
+  "validation_consumed": false
+}

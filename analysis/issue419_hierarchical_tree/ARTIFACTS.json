@@ -1,0 +1,11 @@
+{
+  "HIERARCHICAL_TREE_SPARSITY_BASELINE.json": {
+    "canonical_payload_sha256": "2d3fccc0a84e130ba483b8766ff96bc6467ad8260cfa64ae8c36e9cf662b6e2f",
+    "object": "sha256/ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36.json",
+    "sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8.md",
+    "sha256": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8"
+  }
+}
