@@ -42,6 +42,7 @@ from tools.preflop.model_a_sizing_hierarchical import (  # noqa: E402
     canonical_candidate_sha256,
     canonical_response_sha256,
     hierarchical_exact_key,
+    hierarchical_exact_key_from_whitelist,
     hierarchical_public_whitelist,
     level_key,
     level_keys,
@@ -92,6 +93,37 @@ def _price_variant(price, pot, min_raise):
         pot_before_bb=pot,
         min_raise_to_bb=min_raise,
     )
+
+
+def _aggressor_variant(position):
+    """The same BB spot facing a raise from a different position."""
+    history = [dict(row) for row in BASE_INPUT["history"]]
+    history[-1] = {"position": position, "action": "RAISE"}
+    contributions = dict(BASE_INPUT["contribution_bb_by_position"])
+    contributions["SB"] = 1.0
+    contributions[position] = 4.0
+    return _context(
+        history=history,
+        contribution_bb_by_position=contributions,
+        current_price_bb=4.0,
+        pot_before_bb=7.0,
+        min_raise_to_bb=7.0,
+    )
+
+
+def _limper_variant():
+    """The same BB spot with one limper instead of two."""
+    history = [dict(BASE_INPUT["history"][0]), dict(BASE_INPUT["history"][2])]
+    contributions = dict(BASE_INPUT["contribution_bb_by_position"])
+    contributions["HJ"] = 0.0
+    return _context(history=history, contribution_bb_by_position=contributions)
+
+
+def _caller_variant():
+    """The same BB spot with a caller behind the aggressor."""
+    history = [dict(row) for row in BASE_INPUT["history"]]
+    history.append({"position": "BTN", "action": "CALL"})
+    return _context(history=history)
 
 
 def _rows(context, hand_prefix, count, target):
@@ -241,6 +273,67 @@ def test_exact_key_is_byte_identical_to_the_issue_388_audit_key():
     assert len(key.rsplit("|public=", 1)[1]) == 64
     assert key != support_context_key(hierarchical_public_whitelist(_context()))
     assert sizing_context_key(hierarchical_public_whitelist(_context())).startswith("MAPSIZ_")
+
+
+def test_actor_aggressor_limper_caller_and_price_mismatches_are_distinct_keys():
+    base = _context()
+    whitelist = hierarchical_public_whitelist(base)
+    variants = {
+        "actor_position": "BTN",
+        "aggressor_position": "BTN",
+        "limper_count": 1,
+        "caller_count": 1,
+        "target_total_bb": 6.0,
+        "to_call_bb": 2.0,
+    }
+    for axis, value in variants.items():
+        probe = dict(whitelist, **{axis: value})
+        # the exact key (L0) is never blind to a public axis
+        assert hierarchical_exact_key_from_whitelist(probe) != hierarchical_exact_key(base), axis
+        assert level_key("L0_EXACT_KEY", probe) != level_key("L0_EXACT_KEY", whitelist), axis
+        for spec in LEVEL_SPECS:
+            # a level key splits on exactly the axes it retains; the frozen
+            # never-mutualizable axes are retained on every level
+            if axis not in spec["key_axes"]:
+                assert axis in spec["drops"], (axis, spec["level"])
+                continue
+            assert level_key(spec["level"], probe) != level_key(spec["level"], whitelist), (
+                axis,
+                spec["level"],
+            )
+    # the same mismatches through live public contexts, not just whitelists
+    live = [base, _aggressor_variant("BTN"), _limper_variant(), _caller_variant(),
+            _price_variant(6.0, 9.0, 11.0)]
+    keys = [hierarchical_exact_key(context) for context in live]
+    assert len(set(keys)) == len(live)
+    for spec in LEVEL_SPECS:
+        assert "requested_key_identity" in spec["retains"]
+        assert "requested_key_identity" not in spec["drops"]
+        assert "requested_key_identity" not in spec["key_axes"]
+
+
+def test_no_nearest_context_substitution_between_distinct_exact_keys():
+    base = _context()
+    other = _aggressor_variant("BTN")
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(base, "base", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    assert resolve_exact_context(candidate=candidate, context=base)["status"] == (
+        STATUS_EXACT_EMPIRICAL_STRONG
+    )
+    response = resolve_exact_context(candidate=candidate, context=other, legal_actions=LEGAL)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_UNRESOLVED
+    assert response["support"]["observations"] == 0
+    assert response["support"]["source_key"] == response["requested_key"]
+    assert response["posterior"] is None
+    assert response["pooling"] is None
+    assert response["granularity"]["nearest_context_lookup"] is False
+    assert all(band["source_observations"] == 0 for band in response["pooling_diagnostics"])
+    # the two contexts are distinct at every level, so not even a parent can answer
+    for level in POOLING_LEVELS:
+        assert level_key(level, base) != level_key(level, other), level
 
 
 def test_level_keys_freeze_the_never_mutualizable_axes_and_L3_is_the_runtime_key():
