@@ -59,6 +59,7 @@ b5h_hero_range_editor_run: "run #442 — https://github.com/aradenac/poker-engin
 b5h_failing_target: "#matrix (Spot Lab, panneau « Range adverse ») à 1366x768 — champ mesuré reachable=false, lu dans l'inventaire du job 107925214120 ; les champs inViewport/inShell/hit du même relevé sont ceux du § 9.2, pour ce même job"
 b5h_tokens_preserved: "ci_green: NOT_OBSERVED, frozen_job_rerun_required: true et contract_job_rerun_required: true sont CONSERVÉS ; aucun jeton verrouillé n'est basculé ; voir § 11.5"
 b5h_self_delta: "révision task-backlog-b5h : AJOUTE le § 11, qui consigne l'observation réelle des deux workflows gelés au tip poussé 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 (runs 36088338545 et 36088338439, jobs 107925080169 / 107925214120 / 107925079710 / 107925161832, conclusions et cible mesurée) et conserve les jetons verrouillés ; l'observation détaillée est au § 12 de docs/issue-394-release-identity-ci-report.md ; aucun octet de site/**, de .github/**, de tests/ ni d'outils n'est écrit"
+ws7_scope_reconciliation_renvoi: "§ 13 de docs/issue-394-release-identity-ci-report.md — réconciliation de périmètre demandée par le point 4 de la revue humaine (task backlog-ws7) : commande de périmètre et sa sortie, liste exacte des fichiers livrés avec issue d'origine, provenance des deux workflows gelés (présents dans origin/main, blobs identiques) et réconciliation du chiffre 99 ; ce renvoi n'altère aucun jeton de ce document (ci_green: NOT_OBSERVED, frozen_job_rerun_required: true, contract_job_rerun_required: true)"
 ---
 
 # Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
@@ -1271,3 +1272,21 @@ job gelé `browser-smoke` sur un SHA **poussé** — aux deux viewports, pour le
 modes, l'étape d'idempotence du job `contract` restant verte — fera passer
 `ci_green` de `NOT_OBSERVED` à `OBSERVED`. Ni cette section, ni le pré-vol hors
 navigateur du § 12.7 du rapport ne remplacent ce run.
+
+### 11.6 Renvoi — réconciliation de périmètre demandée par la revue humaine
+
+Le **point 4 de la revue humaine** demande trois choses qui ne sont pas des
+mesures de fit : la **commande de périmètre** exécutée avec sa sortie, la
+**liste exacte des fichiers livrés** avec leur issue d'origine, et la
+**provenance des deux workflows gelés** ainsi que la **réconciliation du
+chiffre 99**. Cette réconciliation est consignée, sans réécrire aucune mesure
+de ce document, au **§ 13 de
+`docs/issue-394-release-identity-ci-report.md`** (task `backlog-ws7`).
+
+Ce renvoi est **additif** : il ne modifie ni `site/**`, ni `.github/**`, ni
+aucun tableau de ce document. Les jetons de garde restent **inchangés** —
+`ci_green` reste `NOT_OBSERVED`, `frozen_job_rerun_required` et
+`contract_job_rerun_required` restent `true` — et le job gelé `browser-smoke`
+reste la **seule autorité** de la règle « aucun scroll global » aux deux
+viewports. En particulier, le § 13 **ne remplace aucun run** : ni cette section,
+ni le § 12.7 du rapport ne font passer `ci_green` à `OBSERVED`.

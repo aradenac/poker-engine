@@ -94,6 +94,21 @@ b5h_correction_triggered: "NO — l'échec observé s'arrête sur #matrix à 136
 b5h_frozen_workflows_observed: 2
 b5h_frozen_jobs_observed: 4
 b5h_self_delta: "révision task-backlog-b5h (observation CI des jobs gelés au SHA poussé) : AJOUTE le § 12 de ce rapport et le § 11 de docs/desktop-modes-fit-evidence.md, qui consignent l'observation RÉELLE relevée par le connecteur GitHub le 2026-09-25T04:07Z au tip poussé de la branche épique 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 — run 36088338545 (#566, static-contract job 107925080169 success / browser-smoke job 107925214120 failure à l'étape « Exercise Training view ») et run 36088338439 (#442, contract job 107925079710 success dont l'étape d'idempotence, browser-smoke job 107925161832 success) — avec la cible mesurée (#matrix, reachable=false à 1366x768) et l'inventaire de ce qui n'a pas été observé ; elle CONSERVE ci_green: NOT_OBSERVED, frozen_job_rerun_required: true et contract_job_rerun_required: true, et n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (le pré-vol du § 12.7 a laissé l'arbre intact, sha256 de site/index.html et site/trainer.js identiques aux blobs HEAD avant et après) ; elle AJOUTE l'entrée d'observation courante à red_workflows et marque l'entrée historique de 8ff970b comme SUPERSEDED sans réécrire le § 8 ; l'orchestrateur gère le commit et la PR"
+ws7_scope_reconciliation_section: "§ 13 — réponse explicite au point 4 de la revue humaine (task backlog-ws7) : commande de périmètre exécutée avec sa sortie, liste exacte des fichiers livrés avec issue d'origine, provenance des deux workflows gelés, réconciliation du chiffre 99 et décision de conserver la PR épique #416"
+ws7_reviewed_revision: 029074b5fbe363b54984bfad3d83f3a29149ffdd
+ws7_reviewed_revision_subject: "chore(n8n): task backlog-lh8 for issue #394"
+ws7_measured_head: ff143940e180cbd1b5a5f250112cb19fad1fd2f5
+ws7_measured_head_subject: "chore(n8n): task backlog-b5h for issue #394"
+ws7_delivered_files: "29 au HEAD mesuré (ff14394) ; 28 à la révision revue 029074b — la différence est le seul fichier tests/trainer/test_desktop_panels_fit_contract.py ajouté par la task backlog-ed7 ; voir § 13.1.1"
+ws7_commits_ahead_of_origin_main: "51 au HEAD mesuré ; 49 à la révision revue 029074b (git rev-list --count origin/main..HEAD)"
+ws7_commits_ahead_of_remote_epic_tip: "6 au HEAD mesuré ; 4 à la révision revue 029074b (git rev-list --count origin/n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe..HEAD)"
+ws7_review_figure_99: "REPRODUIT par une commande nommée : git diff --no-renames --name-status main...029074b | wc -l = 99 — comptage du même périmètre que la revue (029074b) mais contre la réf locale main, en retard de 51 commits sur origin/main ; l'attribution de ce comptage à la commande de la revue reste une hypothèse, non vérifiable ici ; aucune commande rejouée sur le périmètre livré ne produit 99 ; voir § 13.4"
+ws7_frozen_workflows_provenance: ".github/workflows/trainer-smoke.yml — blob 5e168acf6474c5351a46af8da2f85b58bdb581ce, introduit dans origin/main par dd81b49 (issue #20), 7 commits dans origin/main (dernier : 72fb83f, #384) ; .github/workflows/hero-range-editor.yml — blob 7fce8dcb0b579bc90f2a138156a9c5c86a4ad3bd, introduit par db693b5 (issue #97), 3 commits dans origin/main (dernier : 72fb83f, #384) ; les deux blobs sont identiques entre origin/main et HEAD et aucun chemin .github/** n'apparaît dans le diff de la branche ; voir § 13.3"
+ws7_prerequisites_integrated: "#390 b07f911, #391 319673f, #392 8ea785e, #393 54fc374 sont tous ancêtres de HEAD (git merge-base --is-ancestor <sha> HEAD, EXIT=0) et ont été intégrés dans origin/main (base a0cb8e8 de la branche épique), donc dans la même branche ; voir § 13.5"
+ws7_delivered_perimeter_authorship: "10 fichiers créés par la branche (#394) et 19 fichiers préexistants dans origin/main repris par la branche ; périmètre porté par 51 commits tous étiquetés for issue #394 ; voir § 13.2"
+ws7_decision: "KEEP_BRANCH_AS_EPIC_PR_416 — la branche est conservée comme PR épique #416, non restreinte aux seuls fichiers #394, parce que #390-#393 sont des prérequis déclarés intégrés dans la même branche et qu'aucun livrable existant n'est retiré ni réécrit"
+ws7_tokens_preserved: "ci_green: NOT_OBSERVED, contract_job_rerun_required: true et frozen_job_rerun_required: true sont CONSERVÉS ; aucun jeton verrouillé n'est basculé ; voir § 13.6"
+ws7_self_delta: "révision task-backlog-ws7 : AJOUTE le § 13 de ce rapport (réponse au point 4 de la revue humaine : commande de périmètre git diff --no-renames --name-status origin/main...HEAD et sa sortie, liste exacte des 29 fichiers livrés avec issue d'origine, provenance des deux workflows gelés, réconciliation du chiffre 99, décision de conserver la PR épique #416) et le renvoi § 11.6 de docs/desktop-modes-fit-evidence.md ; révision STRICTEMENT additive : aucun jeton existant n'est altéré (ci_green, contract_job_rerun_required, frozen_job_rerun_required conservés) et aucun octet de site/**, de .github/**, de tests/ ni d'outils n'est écrit ; l'orchestrateur gère le commit et la PR"
 ---
 
 # Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, révisé par task-backlog-lzl)
@@ -1101,6 +1116,386 @@ tests/trainer/test_trainer_rng_determinism.py                           EXIT=0
 tests/trainer/test_trainer_smoke_determinism_contract.py                EXIT=0
 tests/trainer/test_trainer_static.py                                    EXIT=0
 ```
+
+## (13) Réconciliation de périmètre demandée par la revue humaine — fichiers livrés, provenance des workflows gelés, chiffre 99 (task `backlog-ws7`)
+
+Cette section répond **explicitement au point 4 de la revue humaine**. Elle
+exécute la **commande demandée** et consigne sa sortie, donne la **liste exacte
+des fichiers livrés** avec leur **issue d'origine**, établit la **provenance des
+deux workflows gelés**, **réconcilie le chiffre 99** cité par la revue, et
+conclut sur la **décision de garder la branche comme PR épique #416** plutôt que
+de la restreindre aux seuls fichiers #394.
+
+Elle est **strictement additive** : elle n'altère **aucun** jeton existant de ce
+rapport (`ci_green: NOT_OBSERVED`, `contract_job_rerun_required: true`,
+`frozen_job_rerun_required: true` restent tels quels) et n'écrit **aucun octet**
+de `site/**`, de `.github/**`, de `tests/**` ni d'outil. Tous les chemins cités
+sont des chemins du dépôt.
+
+Les sorties ci-dessous sont **observées** dans ce worktree ; aucune n'est
+extrapolée. Les SHA de commits sont abrégés, les SHA de blobs sont complets. La
+sortie de la commande de périmètre est reproduite avec le **séparateur
+tabulation** que `git` émet entre le statut et le chemin.
+
+### 13.1 La commande demandée, et sa sortie observée
+
+```
+$ git rev-parse HEAD
+ff143940e180cbd1b5a5f250112cb19fad1fd2f5
+$ git rev-parse --abbrev-ref HEAD
+n8n/issue-394/task-backlog-ws7
+$ git rev-parse 029074b
+029074b5fbe363b54984bfad3d83f3a29149ffdd
+$ git rev-parse origin/main
+a0cb8e8df8d148aa63cb933d83ba7b81189cb1eb
+$ git rev-parse origin/n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe
+2c46f81cb77ef1645283a1dc249f9d53894c1aa7
+$ git merge-base origin/main HEAD
+a0cb8e8df8d148aa63cb933d83ba7b81189cb1eb
+$ git diff --no-renames --name-status origin/main...HEAD
+A	docs/desktop-modes-fit-evidence.md
+M	docs/hero-strategy-population-binding-ci-report.md
+A	docs/issue-394-release-identity-ci-report.md
+M	docs/opponent-range-display-contract.md
+A	docs/spotlab-view.md
+A	docs/ux-desktop-view-shell.md
+M	site/RELEASE.json
+M	site/hero-ranges-app.js
+M	site/hero-ranges.html
+M	site/index.html
+M	site/trainer.css
+M	site/trainer.js
+M	tests/hero_ranges/test_hero_range_repository.mjs
+A	tests/trainer/smoke_modes_desktop.py
+M	tests/trainer/smoke_trainer.py
+A	tests/trainer/test_appview_no_recompute_contract.py
+M	tests/trainer/test_desktop_accessibility_contract.py
+A	tests/trainer/test_desktop_panels_fit_contract.py
+M	tests/trainer/test_hh_import_ux_contract.py
+M	tests/trainer/test_product_architecture_contract.py
+M	tests/trainer/test_review_dashboard_ui_contract.py
+M	tests/trainer/test_review_inbox_ui_contract.py
+M	tests/trainer/test_smoke_orchestration_contract.py
+A	tests/trainer/test_spotlab_range_fit_contract.py
+A	tests/trainer/test_spotlab_subviews_contract.py
+M	tests/trainer/test_trainer_hero_ranges.py
+M	tests/trainer/test_trainer_static.py
+A	tools/check_issue394_stale_claims.py
+M	tools/patches/apply_hero_range_editor.py
+$ git diff --no-renames --name-only origin/main...HEAD | wc -l
+29
+$ git diff --no-renames --name-status origin/main...HEAD | wc -l
+29
+$ git diff --no-renames --shortstat origin/main...HEAD
+ 29 files changed, 12400 insertions(+), 311 deletions(-)
+$ git rev-list --count origin/main..HEAD
+51
+$ git rev-list --count origin/n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe..HEAD
+6
+```
+
+Le périmètre livré est donc, au HEAD de cette task : **29 fichiers** (`10`
+ajoutés `A`, `19` modifiés `M`), **51 commits** d'avance sur `origin/main` et
+**6** d'avance sur le tip distant de la branche épique. Aucun chemin
+`.github/**` n'apparaît : les deux workflows gelés ne sont pas des fichiers
+livrés (§ 13.3).
+
+### 13.1.1 Pourquoi **29** fichiers ici et **28** dans la revue
+
+Les chiffres reproductibles cités par la revue — **28 fichiers**, **49 commits**
+d'avance sur `origin/main`, **4** sur le tip distant — sont exactement ceux de
+la révision qu'elle a lue, `029074b5fbe363b54984bfad3d83f3a29149ffdd`
+(`chore(n8n): task backlog-lh8 for issue #394`) :
+
+```
+$ git diff --no-renames --name-status origin/main...029074b | wc -l
+28
+$ git rev-list --count origin/main..029074b
+49
+$ git rev-list --count origin/n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe..029074b
+4
+$ git diff --no-renames --name-status 029074b...HEAD
+M	docs/desktop-modes-fit-evidence.md
+M	docs/issue-394-release-identity-ci-report.md
+A	tests/trainer/test_desktop_panels_fit_contract.py
+```
+
+L'écart **28 → 29** n'est donc pas une divergence de mesure : entre la révision
+revue `029074b` et le HEAD de cette task, **une seule** entrée `A` s'ajoute au
+périmètre — `tests/trainer/test_desktop_panels_fit_contract.py`, apporté par la
+task `backlog-ed7` (`9577dce`) — et les deux autres entrées sont des
+modifications de documents. Les autres écarts (49 → 51, 4 → 6) suivent les deux
+commits de task ajoutés (`9577dce` `backlog-ed7`, `ff14394` `backlog-b5h`).
+
+### 13.2 La liste exacte des fichiers livrés, avec leur issue d'origine
+
+Attribution mesurée, fichier par fichier, avec les trois commandes qui la
+produisent :
+
+```
+$ git log --diff-filter=A --format='%h %s' origin/main -- <fichier> | tail -1   # commit d'introduction
+$ git log -1 --format='%h %s' origin/main -- <fichier>                          # dernier commit d'origin/main sur le fichier
+$ git log --format='%h' origin/main..HEAD -- <fichier>                          # commits de la branche qui touchent le fichier
+```
+
+« Introduction » = commit qui crée le fichier ; « dernier `origin/main` » =
+dernier commit de `origin/main` qui le touche avant la branche (c'est
+l'étiquette d'issue qui porte son contenu d'origine) ; « branche » = nombre de
+commits de `origin/main..HEAD` qui le touchent, tous étiquetés
+`chore(n8n): task <id> for issue #394`.
+
+| Statut | Fichier livré | Introduction | Dernier `origin/main` (issue d'origine) | Commits branche |
+| --- | --- | --- | --- | --- |
+| `A` | `docs/desktop-modes-fit-evidence.md` | `cdbad28` (branche, #394 / `backlog-a7w`) | — | 13 |
+| `A` | `docs/issue-394-release-identity-ci-report.md` | `fcba0c3` (branche, #394 / `backlog-4s0`) | — | 11 |
+| `A` | `docs/spotlab-view.md` | `f792090` (branche, #394 / `backlog-pxc`) | — | 3 |
+| `A` | `docs/ux-desktop-view-shell.md` | `e0242f2` (branche, #394 / `backlog-l2p`) | — | 11 |
+| `A` | `tests/trainer/smoke_modes_desktop.py` | `a0611be` (branche, #394 / `backlog-0qz`) | — | 8 |
+| `A` | `tests/trainer/test_appview_no_recompute_contract.py` | `589ce8f` (branche, #394 / `backlog-n16`) | — | 4 |
+| `A` | `tests/trainer/test_desktop_panels_fit_contract.py` | `9577dce` (branche, #394 / `backlog-ed7`) | — | 1 |
+| `A` | `tests/trainer/test_spotlab_range_fit_contract.py` | `eb1d117` (branche, #394 / `backlog-wix`) | — | 1 |
+| `A` | `tests/trainer/test_spotlab_subviews_contract.py` | `f792090` (branche, #394 / `backlog-pxc`) | — | 3 |
+| `A` | `tools/check_issue394_stale_claims.py` | `d43136e` (branche, #394 / `backlog-hm5`) | — | 3 |
+| `M` | `docs/hero-strategy-population-binding-ci-report.md` | `8ea785e` | `8ea785e` — **#392** | 1 |
+| `M` | `docs/opponent-range-display-contract.md` | `319673f` | `319673f` — **#391** | 2 |
+| `M` | `site/RELEASE.json` | `5fc09d6` | `2777a11` — **#409** | 16 |
+| `M` | `site/hero-ranges-app.js` | `2b63bb8` (#97) | `8ea785e` — **#392** | 1 |
+| `M` | `site/hero-ranges.html` | `fed3980` (#97) | `8ea785e` — **#392** | 1 |
+| `M` | `site/index.html` | `11c8208` | `6aa6aa5` — **#393** | 15 |
+| `M` | `site/trainer.css` | `dd81b49` (#20) | `c4ca43a` (#60) | 5 |
+| `M` | `site/trainer.js` | `dd81b49` (#20) | `2777a11` — **#409** | 2 |
+| `M` | `tests/hero_ranges/test_hero_range_repository.mjs` | `cdbd9e4` (#97) | `8ea785e` — **#392** | 1 |
+| `M` | `tests/trainer/smoke_trainer.py` | `dd81b49` (#20) | `2777a11` — **#409** | 4 |
+| `M` | `tests/trainer/test_desktop_accessibility_contract.py` | `b20096c` | `b20096c` | 6 |
+| `M` | `tests/trainer/test_hh_import_ux_contract.py` | `7356e23` | `27d52b6` | 1 |
+| `M` | `tests/trainer/test_product_architecture_contract.py` | `dafa983` | `dafa983` | 7 |
+| `M` | `tests/trainer/test_review_dashboard_ui_contract.py` | `0c255b6` (#209) | `a68c0ea` — **#393** | 2 |
+| `M` | `tests/trainer/test_review_inbox_ui_contract.py` | `cd5a26e` (#210) | `c453ae7` — **#393** | 2 |
+| `M` | `tests/trainer/test_smoke_orchestration_contract.py` | `319673f` | `319673f` — **#391** | 10 |
+| `M` | `tests/trainer/test_trainer_hero_ranges.py` | `d3b74d0` (#33) | `8ea785e` — **#392** | 2 |
+| `M` | `tests/trainer/test_trainer_static.py` | `dd81b49` (#20) | `e74630f` — **#393** | 1 |
+| `M` | `tools/patches/apply_hero_range_editor.py` | `9e4a660` (#97) | `e40f535` | 1 |
+
+#### 13.2.1 Synthèse par issue d'origine
+
+| Issue d'origine | Fichiers | Détail |
+| --- | --- | --- |
+| **#394** — coque UX / vues desktop (cette branche) | **29/29** | les 29 fichiers sont portés par des commits étiquetés `for issue #394` (**51** commits) : **10** créés par la branche, **19** repris de `origin/main` |
+| **#392** — population / stratégie Hero | 5 | `docs/hero-strategy-population-binding-ci-report.md`, `site/hero-ranges.html`, `site/hero-ranges-app.js`, `tests/hero_ranges/test_hero_range_repository.mjs`, `tests/trainer/test_trainer_hero_ranges.py` |
+| **#391** — sémantique et affichage de la range adverse | 2 | `docs/opponent-range-display-contract.md`, `tests/trainer/test_smoke_orchestration_contract.py` |
+| **#393** — taxonomie d'état d'analyse, surfaces Review | 4 | `site/index.html`, `tests/trainer/test_review_dashboard_ui_contract.py`, `tests/trainer/test_review_inbox_ui_contract.py`, `tests/trainer/test_trainer_static.py` |
+| **#409** — identité de release CI | 3 | `site/RELEASE.json`, `site/trainer.js`, `tests/trainer/smoke_trainer.py` |
+| **#20 / #33 / #97 / #209 / #210** et commits sans étiquette d'issue | 5 | `site/trainer.css` (#20, dernier `#60`), `tools/patches/apply_hero_range_editor.py` (#97), `tests/trainer/test_desktop_accessibility_contract.py`, `tests/trainer/test_hh_import_ux_contract.py`, `tests/trainer/test_product_architecture_contract.py` |
+
+**Réconciliation des étiquettes du point 4.** Les libellés de la revue
+(« #392 population/stratégie Hero », « #393 affichage de range adverse et
+éditeur de ranges ») sont une **nomenclature de fenêtre de prérequis** ; mesuré,
+la surface « affichage de range adverse / éditeur de ranges » porte les
+étiquettes **#391** (`319673f`, « Fix opponent range display semantics ») et
+**#97** (`fed3980`, `2b63bb8`, `cdbd9e4`, `9e4a660`), reprises ensuite par
+**#392** (`8ea785e`), tandis que l'étiquette **#393** porte la taxonomie d'état
+d'analyse et les surfaces Review (`6aa6aa5`, `a68c0ea`, `c453ae7`, `e74630f`).
+Les deux lectures sont consignées ici : l'attribution **par commit** ci-dessus
+et la **fenêtre #390-#393** rappelée au § 13.5. Aucune n'est substituée à
+l'autre, et aucune ligne des tableaux d'origine n'est réécrite.
+
+### 13.3 Provenance des deux workflows gelés — présents dans `origin/main`, revus dans leurs propres issues
+
+```
+$ git diff --no-renames --name-status origin/main...HEAD -- .github | wc -l
+0
+$ git log --diff-filter=A --format='%h %s' origin/main -- .github/workflows/trainer-smoke.yml
+dd81b49 Add interactive 6-max player training view (#20)
+$ git log --diff-filter=A --format='%h %s' origin/main -- .github/workflows/hero-range-editor.yml
+db693b5 Issue #97: add permanent Hero range editor CI
+$ git log --format='%h %ad %s' --date=short origin/main -- .github/workflows/trainer-smoke.yml
+72fb83f 2026-09-20 [N8N][#384] Factorize REPRO bootstrap into composite actions
+b2fa125 2026-09-19 [C][#361] Migrate first browser workflow batch to REPRO helpers
+5f8ff97 2026-09-15 Issue #93: reconcile handoff and site release identity (#115)
+c4ca43a 2026-09-13 Expose deployed revision metadata (#60)
+c4555d3 2026-09-13 Add executable pathological engine regression (#52)
+f013a39 2026-09-13 Run all existing trainer regression contracts in CI
+dd81b49 2026-09-12 Add interactive 6-max player training view (#20)
+$ git log --format='%h %ad %s' --date=short origin/main -- .github/workflows/hero-range-editor.yml
+72fb83f 2026-09-20 [N8N][#384] Factorize REPRO bootstrap into composite actions
+b2fa125 2026-09-19 [C][#361] Migrate first browser workflow batch to REPRO helpers
+db693b5 2026-09-15 Issue #97: add permanent Hero range editor CI
+$ git rev-parse HEAD:.github/workflows/trainer-smoke.yml HEAD:.github/workflows/hero-range-editor.yml origin/main:.github/workflows/trainer-smoke.yml origin/main:.github/workflows/hero-range-editor.yml
+5e168acf6474c5351a46af8da2f85b58bdb581ce
+7fce8dcb0b579bc90f2a138156a9c5c86a4ad3bd
+5e168acf6474c5351a46af8da2f85b58bdb581ce
+7fce8dcb0b579bc90f2a138156a9c5c86a4ad3bd
+```
+
+Conséquence, en clair : les deux workflows gelés **préexistent dans
+`origin/main`**, y ont été introduits par leurs propres issues
+(`.github/workflows/trainer-smoke.yml` par `dd81b49`, #20 ; puis revu par #52,
+#60, #93/#115, #361 et #384 — dernier commit `72fb83f` ;
+`.github/workflows/hero-range-editor.yml` par `db693b5`, #97 ; puis revu par
+#361 et #384 — dernier commit `72fb83f`), et leurs **blobs sont identiques**
+entre `origin/main` et le HEAD de cette branche
+(`5e168acf6474c5351a46af8da2f85b58bdb581ce` et
+`7fce8dcb0b579bc90f2a138156a9c5c86a4ad3bd`) : **aucun** chemin `.github/**`
+n'apparaît dans le diff de la branche (comptage `0`). Ces deux fichiers ne sont
+donc **pas** des livrables de #394, et les laisser hors des fichiers livrés
+n'enlève rien au périmètre de la PR : ils restent l'**autorité d'exécution**
+citée par les § 6 à § 12 (jobs `static-contract`, `browser-smoke`, `contract`).
+
+### 13.4 Le chiffre 99 : reproduit par une commande nommée
+
+La revue cite **99**. Aucune commande rejouée sur le **périmètre livré** ne
+produit ce nombre :
+
+| Commande rejouée (au HEAD mesuré) | Sortie observée |
+| --- | --- |
+| `git diff --no-renames --name-status origin/main...HEAD \| wc -l` | `29` |
+| `git diff --no-renames --name-only origin/main...HEAD \| wc -l` | `29` |
+| `git diff --no-renames --shortstat origin/main...HEAD` | `29 files changed, 12400 insertions(+), 311 deletions(-)` |
+| `git diff --no-renames --numstat origin/main...HEAD \| wc -l` | `29` |
+| `git rev-list --count origin/main..HEAD` | `51` |
+| `git log --pretty=format: --name-only origin/main..HEAD \| sort -u \| grep -c .` | `29` |
+| `git log --oneline origin/main..HEAD --name-only --pretty=format: \| grep -c .` | `138` |
+| `git ls-files \| wc -l` | `1109` |
+
+Le chiffre **99** est en revanche **reproduit par une commande nommée**, sur la
+**même révision** que celle lue par la revue (`029074b`), mais comptée contre la
+**réf locale `main`** au lieu de `origin/main` :
+
+```
+$ git merge-base --is-ancestor main origin/main && echo "ancetre EXIT=0"
+ancetre EXIT=0
+$ git rev-list --count main..origin/main
+51
+$ git diff --no-renames --name-status main...029074b | wc -l
+99
+$ git diff --no-renames --name-only main...029074b | wc -l
+99
+$ git diff --no-renames --shortstat main...029074b
+ 99 files changed, 25641 insertions(+), 625 deletions(-)
+$ git diff --no-renames --name-status main...HEAD | wc -l
+100
+```
+
+`main` est ici une **réf locale en retard de 51 commits** sur `origin/main`
+(vérifié : `git merge-base --is-ancestor main origin/main` sort en `EXIT=0`),
+donc le comptage `main...029074b` ajoute au périmètre livré tous les fichiers
+des lignes de prérequis déjà intégrées dans `origin/main` entre-temps.
+
+Ce qui est **mesuré** est donc : `main...029074b` = **99** fichiers, contre
+**28** pour `origin/main...029074b` à la même révision. Ce qui reste une
+**hypothèse** — et est consigné comme telle, jamais comme une mesure — est
+l'idée que la revue ait compté avec cette base : le fil de revue et la commande
+exacte qu'il a utilisée ne sont pas accessibles depuis ce worktree, le canal
+réseau étant coupé ici, mesuré dans cette task :
+
+```
+$ getent hosts api.github.com; echo "GETENT_EXIT=$?"
+GETENT_EXIT=2
+$ curl -sS -m 5 https://api.github.com
+curl: (6) Could not resolve host: api.github.com
+```
+
+Les chiffres **reproductibles du périmètre livré** restent ceux du § 13.1 et du
+§ 13.1.1 : **29 fichiers / 51 commits / 6 commits d'avance** au HEAD de cette
+task, et **28 fichiers / 49 commits / 4 commits d'avance** à la révision revue
+`029074b`.
+
+### 13.5 Décision : la branche reste la PR épique #416
+
+**Décision : `KEEP_BRANCH_AS_EPIC_PR_416`.** La branche est conservée comme PR
+épique #416, **non restreinte aux seuls fichiers #394**. Les raisons sont
+vérifiables ci-dessous, et aucune ne repose sur une affirmation non observée :
+
+1. **Les prérequis #390-#393 sont intégrés dans la même branche.** Mesuré :
+
+   ```
+   $ for c in b07f911 319673f 8ea785e 54fc374; do
+   >   git merge-base --is-ancestor "$c" HEAD && echo "$c ancetre de HEAD EXIT=0"
+   > done
+   b07f911 ancetre de HEAD EXIT=0
+   319673f ancetre de HEAD EXIT=0
+   8ea785e ancetre de HEAD EXIT=0
+   54fc374 ancetre de HEAD EXIT=0
+   $ for c in b07f911 319673f 8ea785e 54fc374; do
+   >   git log --merges --reverse --oneline --ancestry-path "$c"..origin/main | head -1
+   > done
+   a06cce5 Merge pull request #397 from aradenac/chore/gitignore-pycache-cleanup
+   ea47bf6 Merge pull request #401 from aradenac/n8n/v8-canary-01
+   ea47bf6 Merge pull request #401 from aradenac/n8n/v8-canary-01
+   0d2ab78 Merge pull request #408 from aradenac/n8n/issue-393-analysis-state-taxonomy
+   ```
+
+   Les quatre commits de prérequis — `b07f911` (#390, « Global compute
+   scheduler and responsive runtime »), `319673f` (#391, « Fix opponent range
+   display semantics »), `8ea785e` (#392, « Bind Hero strategy to active
+   population ») et `54fc374` (#393, task `backlog-iwg`) — sont donc atteignables
+   depuis le HEAD de la branche, et le **premier merge de leur chemin** vers
+   `origin/main` est nommé ci-dessus. Ils sont dans la branche **par sa base** :
+   `git merge-base origin/main HEAD` = `a0cb8e8`, tip de `origin/main` (merge de
+   la PR #410).
+2. **Le périmètre est cohérent, pas hétérogène.** Les 29 fichiers sont `10`
+   livrables créés par la coque UX (#394) et `19` fichiers préexistants dont le
+   contenu d'origine est **#391/#392/#393** (11 fichiers) ou des surfaces
+   historiques de l'application (#20, #33, #97, #209, #210, #409 — 8 fichiers),
+   que la branche **étend additivement** (§ 13.2). Les **51** commits du
+   périmètre portent tous l'étiquette `chore(n8n): task <id> for issue #394`
+   (vérifié : `git log --format='%h %s' origin/main..HEAD`, aucun sujet d'une
+   autre issue) : aucune modification de ces fichiers n'est portée par un commit
+   d'une autre issue.
+3. **Restreindre la branche reviendrait à retirer ou réécrire des livrables.**
+   Les 19 fichiers modifiés portent, mesuré, **0** fichier retiré (`D`) et
+   **0** renommage : le diff ne contient que des `A` et des `M`. Réduire la PR
+   aux seuls `A` supprimerait les annotations et contrats additifs qui rendent
+   les § 8 à § 12 vérifiables — c'est précisément ce que l'acceptation
+   interdit.
+4. **Les workflows gelés restent hors du périmètre livré** (§ 13.3) : la
+   question « la PR touche-t-elle les workflows gelés ? » est tranchée par un
+   comptage `0` sur `.github/**`, pas par une réduction de la PR.
+
+### 13.6 Jetons inchangés, et ce que cette section ne fait pas
+
+| Jeton | Valeur | Effet de cette section |
+| --- | --- | --- |
+| `ci_green` | **`NOT_OBSERVED`** | **inchangé** — aucun run CI n'a été observé par cette task |
+| `contract_job_rerun_required` | **`true`** | **inchangé** |
+| `frozen_job_rerun_required` | **`true`** | **inchangé** |
+| `merged` / `pushed` | **`false`** / **`false`** | **inchangés** — aucun merge, aucun push, aucun commit, aucun `git add` par ce worker |
+| `site/**` / `.github/**` / `tests/**` / `tools/**` | — | **aucun octet écrit** par cette révision |
+
+La seule condition de clôture reste celle du § 9.5 et du § 11.5 : un run **vert**
+du job gelé `browser-smoke` sur un SHA **poussé**. Cette section ne la remplace
+pas, ne la contourne pas et n'ajoute aucune observation CI.
+
+#### 13.6.1 Vérifications rejouées **après** l'écriture de cette section
+
+Ces commandes sont rejouées **après** l'ajout du § 13, parce que la garde scanne
+ce rapport lui-même :
+
+```
+$ python3 tools/check_issue394_stale_claims.py
+issue-394 stale claims guard: PASS (1053 versioned text files scanned, 4 claims)
+$ python3 tests/trainer/test_smoke_orchestration_contract.py
+smoke orchestration contract checks: OK
+$ python3 tests/trainer/test_product_architecture_contract.py
+issue-394 stale claims guard: PASS
+product architecture contract checks: OK
+ux desktop view shell doc contract checks: OK
+$ git diff --numstat
+19	0	docs/desktop-modes-fit-evidence.md
+395	0	docs/issue-394-release-identity-ci-report.md
+$ git status --porcelain
+ M docs/desktop-modes-fit-evidence.md
+ M docs/issue-394-release-identity-ci-report.md
+```
+
+Les trois commandes sortent en `EXIT=0`, et le `git diff` de la révision est
+**strictement additif** : **2** fichiers touchés, **0** suppression. Les deux
+comptages de `git diff --numstat` ci-dessus sont ceux relevés **avant** la
+dernière retouche de ce bloc de vérification, qui fait lui-même partie du
+fichier compté : le total final diffère donc de quelques lignes, la seule part
+qui reste vérifiable sur pièce étant l'absence de suppression et l'absence de
+tout autre fichier touché. Aucun fichier de `site/**`, de `.github/**`, de
+`tests/**` ni d'outils n'apparaît dans `git status --porcelain`.
 
 ## (12) Observation CI réelle des deux workflows gelés au tip poussé `2c46f81` — `hero-range-editor` vert, `trainer-smoke`/`browser-smoke` rouge sur `#matrix` (task `backlog-b5h`)
 
