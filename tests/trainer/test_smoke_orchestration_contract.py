@@ -43,15 +43,36 @@ that carries those measurements (``panel_surfaces``) and the per-viewport
 inventory printed for a green and a red run alike. The block is strictly
 additive: a selector, its ``_assert_panel_surface_hit_testable`` call, the bucket
 or the inventory that disappears fails this guard.
+
+Since #394 T2 (``backlog-eit``) the same guard also links those hit-test targets
+to the *served bytes*: the selector tuples are read back from the smoke as
+literal constants (``ast``) and each id/class is resolved against
+``site/index.html`` itself — inline JS templates included, so the Replayer
+columns ``.replayer-col-left`` / ``.replayer-col-center``, painted by
+``hhVisualReplay.innerHTML``, count as served nodes while a CSS-only occurrence
+does not. The measurement cannot decay into a bare boolean either: the fields
+the import/panel assertion helpers read off an entry must stay exposed by
+``SURFACE_HIT_TEST_JS`` (``present``, ``visible``, ``inViewport``, ``inShell``,
+``hit``, ``reachable``, ``point``, ``viewport``, ``box``, ``at``, plus the
+``atTag`` / ``shellBox`` fields the verdict sentence prints), and both reference
+viewports (``1500x1000``, ``1366x768``) stay in ``VIEWPORTS`` with every panel
+surface measured inside the per-viewport ``run_viewport`` journey.
 """
 from __future__ import annotations
 
+import ast
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = (ROOT / ".github/workflows/trainer-smoke.yml").read_text(encoding="utf-8")
 SMOKE_TRAINER = (ROOT / "tests/trainer/smoke_trainer.py").read_text(encoding="utf-8")
 MODES_SMOKE = (ROOT / "tests/trainer/smoke_modes_desktop.py").read_text(encoding="utf-8")
+# #394 T2 — the served bytes of the desktop shell. The desktop hit-tests only
+# ever run in the frozen browser job, so the selectors they reach for are proved
+# to exist in the bytes the app serves *here*: `site/index.html`, inline JS
+# templates included (the served file carries them verbatim).
+SERVED_INDEX = (ROOT / "site/index.html").read_text(encoding="utf-8")
 # The only other `wait_for_url` call site of the repo (audited below): it already
 # uses the query-tolerant glob the desktop journey now shares.
 HERO_COMPLIANCE_SMOKE = (
@@ -77,6 +98,69 @@ ORCHESTRATED_SMOKE_NAMES = tuple(Path(script).name for script in ORCHESTRATED_SM
 def flat(text: str) -> str:
     """Collapse line wrapping so phrase assertions are stable."""
     return " ".join(text.split())
+
+
+def literal_assignment(source: str, name: str):
+    """Literal value of the top-level ``NAME = <literal>`` of ``source``.
+
+    The selector tuples, `VIEWPORTS` and `IMPORT_ADVANCED_SELECTOR` are the
+    contract *data* of the smoke. Reading them back through `ast` proves they are
+    still literal constants this guard can resolve against the served bytes,
+    instead of a reassigned or computed name that would quietly escape it.
+    """
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target = node.targets[0]
+            if isinstance(target, ast.Name) and target.id == name:
+                return ast.literal_eval(node.value)
+    raise AssertionError(f"assignation littérale introuvable: {name}")
+
+
+# The class tokens actually carried by a `class="…"` attribute of the served
+# bytes (inline JS templates included). A class selector satisfied here renders a
+# real node; a class that only appears in a CSS rule does not contribute, so the
+# guard cannot pass on styling alone.
+SERVED_CLASS_ATTRIBUTE_TOKENS = frozenset(
+    token
+    for classes in re.findall(r"class\s*=\s*[\"'`]([^\"'`]*)[\"'`]", SERVED_INDEX)
+    for token in classes.split()
+)
+
+
+def assert_served_selector(selector: str) -> str:
+    """Assert one smoke selector resolves to the bytes of `site/index.html`.
+
+    `#id` needs its real `id="…"` attribute, `label[for="…"]` its real
+    `for="…"`, and `.class` / `.class > tag` needs the class token of a served
+    `class="…"` attribute — a class that only appears in a CSS rule is *not*
+    enough, so a template-rendered node (`.replayer-col-left` /
+    `.replayer-col-center`, painted by `hhVisualReplay.innerHTML`) proves that a
+    real node is created. Returns the proof token for the failing caller.
+    """
+    id_match = re.fullmatch(r"#([A-Za-z][\w-]*)", selector)
+    if id_match:
+        token = f'id="{id_match.group(1)}"'
+        assert token in SERVED_INDEX, f"{selector}: {token} absent de site/index.html"
+        return token
+    for_match = re.fullmatch(r'label\[for="([^"]+)"\]', selector)
+    if for_match:
+        token = f'for="{for_match.group(1)}"'
+        assert token in SERVED_INDEX, f"{selector}: {token} absent de site/index.html"
+        return token
+    class_match = re.fullmatch(
+        r"\.([A-Za-z][\w-]*)(?:\s*>\s*([A-Za-z][\w-]*))?", selector
+    )
+    if class_match:
+        class_name, child_tag = class_match.groups()
+        assert class_name in SERVED_CLASS_ATTRIBUTE_TOKENS, (
+            f"{selector}: classe absente des attributs class= servis par site/index.html"
+        )
+        if child_tag:
+            assert f"<{child_tag}" in SERVED_INDEX, (
+                f"{selector}: élément <{child_tag}> absent de site/index.html"
+            )
+        return class_name
+    raise AssertionError(f"sélecteur non couvert par le garde statique: {selector}")
 
 
 def main() -> None:
@@ -498,6 +582,99 @@ def main() -> None:
     assert head_value != "386f9d91e9fb229b042bd90588e19b806ce2324e", (
         "le front-matter ne peut pas reconduire le HEAD de la révision précédente"
     )
+
+    # #394 T2 — the desktop hit-tests are never executed outside the frozen
+    # browser job, so this guard links their targets to the *bytes served* by the
+    # app: the selector tuples are read back from the smoke as literal constants
+    # (`ast`) and every id/class is resolved against `site/index.html` itself —
+    # inline JS templates included, so `hhVisualReplay.innerHTML`'s
+    # `.replayer-col-left` / `.replayer-col-center` count as served nodes while a
+    # CSS-only occurrence does not. Strictly additive: no token above is removed
+    # or relaxed, and a renamed/removed node now fails here instead of only in CI.
+    import_surface_selectors = literal_assignment(MODES_SMOKE, "IMPORT_SURFACE_SELECTORS")
+    import_advanced_selector = literal_assignment(MODES_SMOKE, "IMPORT_ADVANCED_SELECTOR")
+    spotlab_range_selectors = literal_assignment(MODES_SMOKE, "SPOTLAB_RANGE_SURFACE_SELECTORS")
+    replayer_column_selectors = literal_assignment(MODES_SMOKE, "REPLAYER_COLUMN_SELECTORS")
+    replayer_tab_surfaces = literal_assignment(MODES_SMOKE, "REPLAYER_TAB_SURFACES")
+    trainer_rail_surfaces = literal_assignment(MODES_SMOKE, "TRAINER_RAIL_SURFACES")
+    # Non-vacuity of the parse itself: a truncated tuple would make the loop below
+    # pass for free, so the expected shapes are pinned here (counts only — the
+    # selector tokens themselves stay owned by the blocks above, never re-spelled).
+    assert len(import_surface_selectors) >= 4, import_surface_selectors
+    assert isinstance(import_advanced_selector, str) and import_advanced_selector
+    assert len(spotlab_range_selectors) >= 3, spotlab_range_selectors
+    assert len(replayer_column_selectors) >= 3, replayer_column_selectors
+    assert len(replayer_tab_surfaces) >= 3, replayer_tab_surfaces
+    assert len(trainer_rail_surfaces) >= 4, trainer_rail_surfaces
+    assert all(len(pair) >= 2 for pair in replayer_tab_surfaces + trainer_rail_surfaces), (
+        "chaque couple (onglet, panneau) doit porter ses deux sélecteurs"
+    )
+    served_import_targets = tuple(import_surface_selectors) + (import_advanced_selector,)
+    served_panel_targets = (
+        tuple(spotlab_range_selectors)
+        + tuple(replayer_column_selectors)
+        + tuple(sel for pair in replayer_tab_surfaces for sel in pair[:2])
+        + tuple(sel for pair in trainer_rail_surfaces for sel in pair[:2])
+    )
+    assert len(served_panel_targets) >= 20, len(served_panel_targets)
+    # (a) Every import and panel target of the desktop hit-tests exists in the
+    # served bytes. A selector that disappears from site/index.html fails here.
+    for selector in served_import_targets + served_panel_targets:
+        assert_served_selector(selector)
+
+    # (b) The measured verdict must stay non-vacuous: the fields the Python
+    # assertions read off a hit-test entry (`_assert_import_surface_hit_testable`,
+    # `_assert_panel_surface_hit_testable` and their shared `_surface_verdict`)
+    # have to be the fields `SURFACE_HIT_TEST_JS` actually exposes. Removing a
+    # field from the snippet, or letting a helper stop reading one, fails here.
+    surf_hit_test_js = MODES_SMOKE.split('SURFACE_HIT_TEST_JS = """', 1)[1].split('"""', 1)[0]
+    exposed_fields = set(re.findall(r"(?<![\w$.])([A-Za-z_]\w*)\s*[:,]", surf_hit_test_js))
+    read_fields: set[str] = set()
+    for quote in ('"', "'"):
+        read_fields.update(re.findall(rf"entry\[{quote}(\w+){quote}\]", MODES_SMOKE))
+        read_fields.update(re.findall(rf"entry\.get\({quote}(\w+){quote}\)", MODES_SMOKE))
+    required_fields = (
+        "present",
+        "visible",
+        "inViewport",
+        "inShell",
+        "hit",
+        "reachable",
+        "point",
+        "viewport",
+        "box",
+        "at",
+    )
+    assert set(required_fields) <= read_fields, sorted(set(required_fields) - read_fields)
+    missing_exposed = sorted(read_fields - exposed_fields)
+    assert not missing_exposed, (
+        f"champs lus par les assertions mais absents de SURFACE_HIT_TEST_JS: {missing_exposed}"
+    )
+    for field in required_fields:
+        assert re.search(rf"(?<![\w$.]){re.escape(field)}\s*[:,]", surf_hit_test_js), (
+            f"SURFACE_HIT_TEST_JS n'expose plus le champ {field}"
+        )
+
+    # (c) Both reference viewports stay explicit — the audit loops on the literal
+    # `VIEWPORTS` — and every panel surface is measured inside `run_viewport()`,
+    # the journey `run()` drives once per viewport: the Spot Lab / Replayer-columns
+    # tuples are passed to the hit-test call, and the Replayer-tabs / Trainer-rail
+    # loops measure each tab/pane pair. The `panel_surfaces` bucket and its
+    # per-viewport inventory are already pinned above; this block only ties them to
+    # the per-viewport journey.
+    assert literal_assignment(MODES_SMOKE, "VIEWPORTS") == ((1500, 1000), (1366, 768))
+    t2_journey = MODES_SMOKE.split("async def run_viewport(", 1)[1].split(
+        "async def run_review_race_viewport(", 1
+    )[0]
+    for tuple_name in ("SPOTLAB_RANGE_SURFACE_SELECTORS", "REPLAYER_COLUMN_SELECTORS"):
+        assert re.search(rf"^\s*{tuple_name},\s*$", t2_journey, re.M), (
+            f"{tuple_name} n'est pas mesuré dans le parcours par viewport"
+        )
+    for loop_owner in ("REPLAYER_TAB_SURFACES", "TRAINER_RAIL_SURFACES"):
+        assert f"for tab_selector, panel_selector, subview in {loop_owner}:" in t2_journey, (
+            f"la boucle {loop_owner} doit vivre dans le parcours par viewport"
+        )
+    assert "(tab_selector, panel_selector)," in t2_journey
 
     print("smoke orchestration contract checks: OK")
 
