@@ -308,3 +308,63 @@ PYTHONPATH=. python3 tests/test_repro_ci_helpers.py
 python3 tools/repro_ci_environment.py plan --python-deps --node-deps
 python3 tools/repro_ci_browser.py plan
 ```
+
+## Adoption des composite actions REPRO (issue #204 / backlog-887)
+
+Cette section est **additive** : elle documente la preuve écrite dans `analysis/workflow_audit/repro_composite_adoption_v1.json` (schéma `poker-repro-composite-adoption/v1`). Le fichier de transition `analysis/workflow_audit/repro_composite_factorization_v1.json` (SHA-256 `c06120b8b7d45dd3a4201a2e94fa3e6e3c7f29a335546651a867a2ba009f4ccf`) n'est pas réécrit ; son identité est vérifiée à chaque exécution.
+
+### Consommateurs de composite au HEAD
+
+- **16 workflows** appellent `./.github/actions/repro-runtime` : les 15 workflows de #384 plus `hero-population-strategy.yml`, écrit après la transition avec la composite déjà en place.
+- **3 d'entre eux** appellent aussi `./.github/actions/repro-browser` : `trainer-smoke.yml`, `hero-range-editor.yml`, `hero-range-compliance.yml`.
+- Ces 16 workflows portent **21 jobs** : **20 appellent une composite action** (0 primitive bootstrap inline dans ces 20 jobs), **1 seul** conserve un bloc bootstrap inline (reporté ci-dessous).
+- Preuve par consommateur : l'appel composite est présent, le job ne contient plus aucune primitive bootstrap inline, l'entrée `require-node` correspond à l'usage Node réel du job, et les filtres `paths` incluent `.github/actions/repro-runtime/action.yml` (les 3 consommateurs navigateur incluent en plus l'action navigateur).
+- Vérifications **fail-closed** : l'ensemble des consommateurs est figé (un consommateur non enregistré échoue), toute primitive inline réintroduite à côté de la composite échoue, toute exception devenue périmée échoue, et les jobs navigateur enregistrés par la matrice v1 doivent appeler l'action navigateur.
+
+### Duplicats techniques résiduels mesurés
+
+Compteurs mesurés par scan textuel au HEAD, sans valeur supposée : « consommateurs » = les 16 workflows ci-dessus, « composite » = les deux actions `.github/actions/repro-*`, « dépôt » = les 69 workflows du checkout.
+
+| Primitive | Consommateurs | Composite actions | Dépôt |
+|---|---|---|---|
+| `actions/checkout@` | 21 | 0 | 115 |
+| `actions/setup-python@` | 1 | 1 | 70 |
+| `actions/setup-node@` | 0 | 1 | 8 |
+| `pip install` | 0 | 0 | 8 |
+| `npm ci` / `npm install` | 0 | 0 | 0 |
+| `playwright install` | 0 | 0 | 8 |
+| `actions/upload-artifact@` | 4 | 0 | 53 |
+| `actions/download-artifact@` / `gh run download` | 1 | 0 | 43 |
+| `python3 tools/repro_ci_environment.py` inline | 1 | 1 | 27 |
+| `python3 tools/repro_ci_browser.py` inline | 1 | 1 | 1 |
+
+- Chaque primitive de bootstrap a **exactement une résidence** dans la chaîne REPRO : la composite action. Côté consommateurs, seule l'exception reportée plus bas subsiste ; les compteurs « dépôt » incluent en plus les workflows hors périmètre #384, qui ne sont pas migrés ici.
+- Les totaux « dépôt » coïncident avec les compteurs de `tools/audit_github_workflows.py` pour les primitives partagées (checkout, setups, installs, artefacts) ; l'outil d'adoption réutilise les mêmes expressions régulières pour rester comparable avec `analysis/workflow_audit/workflows.json`.
+- Les 27 appels inline restants à `tools/repro_ci_environment.py` sont hors du périmètre de la transition #384 (workflows historiques ou non-REPRO) : ils ne sont **pas** migrés dans cette tranche, seul le compte est mesuré.
+
+### Fan-in / fan-out d'artefacts (statique)
+
+- **53 uploads**, **43 téléchargements** (dont `gh run download`) et **29 arêtes** nom→producteur/consommateur statiquement appariables au HEAD.
+- Côté consommateurs REPRO : **4 uploads** (`full-hand-arena.yml`, `hero-calculated-range-export.yml`, `model-b-reveal-aware.yml`, `postflop-response-refit.yml`) et **1 `gh run download`** (`full-hand-arena.yml`, artefact d'un autre run).
+- **33 noms produits sans consommateur interne**, **10 noms consommés sans producteur interne** : les noms dynamiques `${{ … }}` sont normalisés en `*`, donc les arêtes au niveau nom sont partielles. **1 téléchargement** n'est pas parsable : `recover-issue-107-pfpc.yml` / `safety-contract` mentionne `actions/download-artifact@v4` dans une liste de tokens attendus, sans étape d'action.
+
+### UNKNOWN explicites
+
+Mesures volontairement non affirmées, reportées telles quelles dans la preuve JSON : observation CI (`ci_observation`, aucune exécution observée à ce SHA), rétention/exécution réelle des artefacts (`artifact_retention_after_run`), disponibilité des artefacts d'autres runs (`cross_run_artifact_availability`), arêtes exactes des noms d'artefacts dynamiques (`dynamic_artifact_names`), minutes facturées GitHub (`github_billed_minutes`, les scores de coût restent des proxys structurels).
+
+### Report de migration
+
+- `population-pack-catalog.yml` / `browser-smoke` conserve son bloc inline (setup Python + bootstrap + installation navigateur) : la matrice v1 le classe `BLOCKED` parce que l'assemblage statique du site s'exécute entre le setup Python et l'installation verrouillée. Insérer la composite changerait cet ordre et exigerait de re-baseliner une preuve immuable ; le duplicat est donc **reporté** (`migratable: false`, raison et pointeur de preuve dans le JSON).
+- Aucun autre duplicat consommateur n'est prouvé migrable et fail-closed sans élargir la surface `write`/science : `workflow_files_modified: []`, `write_surface_expanded: false`.
+
+### Reproduire la preuve
+
+```bash
+python3 tools/audit_repro_composite_factorization.py --check-adoption
+python3 tools/audit_repro_composite_factorization.py --write-adoption
+python3 tests/ci/test_repro_composite_factorization.py
+```
+
+`--write-adoption` régénère uniquement `analysis/workflow_audit/repro_composite_adoption_v1.json`. Le mode transition `--check` conserve sa sémantique d'origine : il compare le diff Git à `BASE_SHA` (`571d91b0…`) et signale donc le drift de `main` accumulé depuis la transition. Les gardes de scope « diff vs `BASE_SHA` » des tranches sœurs (#366/#373/#384) sont dans le même état : ils restent rouges sur `main` **indépendamment de cette preuve**. Compteurs de chemins hors allowlist mesurés à ce SHA : `tools/audit_repro_composite_factorization.py --check` → 161, `tools/audit_residual_repro_dag.py --check` → 158, `tools/audit_repro_current_mixed_batch.py --check` → 158 (union 163). Ces compteurs incluent des artefacts `__pycache__/*.pyc` suivis par Git dont le contenu a changé depuis la transition, donc ils dépendent de l'état du checkout et ne sont pas une constante ; ils sont rapportés ici comme mesures, pas comme invariant. C'est une condition préexistante, distincte de la preuve d'adoption ; ces gardes n'ont volontairement pas été édités car ils sont hash-bound par `tools/audit_repro_composite_factorization.py`.
+
+Aucun workflow n'exécute encore ce test : la commande `python3 tests/ci/test_repro_composite_factorization.py` (14 tests) est lancée localement par le worker à ce SHA, et aucun fichier `.github/workflows/**` n'est modifié par la tranche.

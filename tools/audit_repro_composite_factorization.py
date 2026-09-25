@@ -28,6 +28,11 @@ WORKFLOWS = tuple(f'.github/workflows/{n}.yml' for n in NAMES)
 RUNTIME = '.github/actions/repro-runtime/action.yml'
 BROWSER = '.github/actions/repro-browser/action.yml'
 EVIDENCE = 'analysis/workflow_audit/repro_composite_factorization_v1.json'
+# Additive proof for issue #204 / backlog-887. The v1 transition evidence above is
+# immutable and is never rewritten by this file.
+ADOPTION_EVIDENCE = 'analysis/workflow_audit/repro_composite_adoption_v1.json'
+ADOPTION_SCHEMA = 'poker-repro-composite-adoption/v1'
+EVIDENCE_SHA256 = 'c06120b8b7d45dd3a4201a2e94fa3e6e3c7f29a335546651a867a2ba009f4ccf'
 HISTORY = tuple('analysis/workflow_audit/' + n for n in (
     'repro_batch1_before_after.json', 'repro_batch2_before_after.json',
     'repro_population_pack_catalog_before_after.json',
@@ -40,6 +45,65 @@ ALLOWLIST = frozenset((*WORKFLOWS, RUNTIME, BROWSER, EVIDENCE, *GUARDS,
     'tools/audit_repro_composite_factorization.py', 'tests/ci/test_repro_composite_factorization.py',
     'analysis/workflow_audit/active_workflow_dag_v2.json', 'docs/ci-workflow-dag.md',
     'tools/audit_active_workflow_dag.py'))
+# ---------------------------------------------------------------------------
+# Issue #204 / backlog-887: composite adoption of every REPRO consumer.
+# ---------------------------------------------------------------------------
+# Every workflow that calls a REPRO composite action at this SHA. The v1
+# transition covers the first 15; hero-population-strategy was authored after the
+# transition with the composite already applied, so it only has this proof.
+CONSUMER_NAMES = (*NAMES, 'hero-population-strategy')
+CONSUMER_WORKFLOWS = tuple(f'.github/workflows/{n}.yml' for n in CONSUMER_NAMES)
+CONSUMER_EXTRA_WORKFLOWS = tuple(p for p in CONSUMER_WORKFLOWS if p not in WORKFLOWS)
+ALLOWLIST = frozenset((*ALLOWLIST, ADOPTION_EVIDENCE, *CONSUMER_EXTRA_WORKFLOWS))
+RUNTIME_CALL = 'uses: ./.github/actions/repro-runtime'
+BROWSER_CALL = 'uses: ./.github/actions/repro-browser'
+# Inline REPRO bootstrap primitives. Their single home is the composite action;
+# any occurrence inside a consumer job is a residual duplicate or a recorded
+# exception.
+INLINE_BOOTSTRAP_PATTERNS = (
+    ('setup_python', 'uses: actions/setup-python@'),
+    ('setup_node', 'uses: actions/setup-node@'),
+    ('inline_environment', 'python3 tools/repro_ci_environment.py'),
+    ('inline_browser', 'python3 tools/repro_ci_browser.py'),
+)
+# Same regular expressions as tools/audit_github_workflows.py so residual
+# counters stay comparable with analysis/workflow_audit/workflows.json.
+DUPLICATE_PATTERNS = {
+    'checkout': r'actions/checkout@',
+    'setup_python': r'actions/setup-python@',
+    'setup_node': r'actions/setup-node@',
+    'pip_install': r'(?:\bpip(?:3)?\s+install\b|python3?\s+-m\s+pip\s+install)',
+    'playwright_install': r'playwright\s+install',
+    'npm_install': r'\bnpm\s+(?:ci|install)\b',
+    'upload_artifact': r'actions/upload-artifact@',
+    'download_artifact': r'(?:actions/download-artifact@|\bgh\s+run\s+download\b)',
+    'inline_environment': r'python3 tools/repro_ci_environment\.py',
+    'inline_browser': r'python3 tools/repro_ci_browser\.py',
+}
+NODE_COMMAND = re.compile(r'\bnode\s+(?:--[\w-]+|[\w./-]+\.(?:m?js|cjs))')
+PYTHON_COMMAND = re.compile(r'\bpython3(?:\.\d+)?\s')
+REQUIRE_NODE_INPUT = re.compile(r"require-node:\s*'(\w+)'")
+# Frozen, non-migratable residual: the v1 planning matrix records this job
+# BLOCKED because static site assembly runs between Python setup and the locked
+# dependency install. Inserting the composite would reorder the assembly and
+# re-baseline immutable v1 evidence, which is outside backlog-887.
+INLINE_BOOTSTRAP_EXCEPTIONS = {
+    ('.github/workflows/population-pack-catalog.yml', 'browser-smoke'): dict(
+        primitives={'setup_python': 1, 'inline_environment': 1, 'inline_browser': 1},
+        migratable=False,
+        blocked_status='BLOCKED',
+        reason=('static site assembly runs between Python setup and the locked '
+                'dependency install; the composite cannot be inserted without '
+                'reordering the assembly and re-baselining immutable v1 evidence'),
+        evidence=EVIDENCE),
+}
+UNKNOWN_MEASUREMENTS = (
+    dict(id='ci_observation', detail='no run was observed at this SHA; adoption is proven statically only'),
+    dict(id='artifact_retention_after_run', detail='retention-days are declared in YAML; actual retention and expiry are runtime state and are not measurable from a checkout'),
+    dict(id='cross_run_artifact_availability', detail='gh run download targets artifacts of other runs; their existence is not verifiable locally'),
+    dict(id='dynamic_artifact_names', detail='artifact names containing ${{ ... }} are matched as shapes, so name-level fan-in/fan-out edges are partial'),
+    dict(id='github_billed_minutes', detail='cost proxies are structural; no billed minutes were measured'),
+)
 # Independent reviewed content identities, not values trusted from editable evidence.
 ACTION_HASHES = {'.github/actions/repro-runtime/action.yml': '1b90982bdb93f7332a1dd9353afbe8028bcd1e655a9d2ca175e60b1a55e22d42', '.github/actions/repro-browser/action.yml': '50c70f925dc8cb6eaab5c7b0e9a7f647f5eb8d92df22659781ac0f8fa6a64dda'}
 GUARD_HASHES = {'tools/audit_repro_workflow_batch1.py': 'a4a01be7c3b52038bf2211163fd6e55a9035bb05d7cb62982322906e668a16a7', 'tests/ci/test_repro_workflow_batch1.py': '648604cdcd1326680e93df63d7295b5cf04cbe42dc5f02c58b04c2a0395ae7db', 'tests/ci/test_repro_workflow_batch2.py': '8d529bff8497130989461df46153757853896174a21e4f8be2bac61ddfff3e5b', 'tests/ci/test_repro_population_pack_catalog.py': '4fac6d7f33f21c5c6f8745f8dba18fdda560f24029399d12797a346438bfe1d6', 'tools/audit_repro_current_mixed_batch.py': 'a08b85f7c2664bcc0ac96aadf3d15e8113456b6198d749b47cbc3a5175e90487', 'tests/ci/test_repro_current_mixed_batch.py': 'ff7324e98417091debb46ae51c6247bb9661e5cb77fa9afb6e15ae29798562d5', 'tools/audit_residual_repro_dag.py': 'd41a0e56b44a17955d6f4616bb4aff81c7f25942f0a313c930762eb13618470f', 'tests/ci/test_residual_repro_dag.py': 'b682f70939f6b7b9a84c9c586f971f7639721b33feaf504ac220bc6df6f5111a'}
@@ -234,6 +298,309 @@ def historical_links():
     return links
 
 
+def file_sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def transition_evidence(root=ROOT):
+    """Expose the immutable v1 matrix, refusing a rewritten transition payload."""
+    path = Path(root) / EVIDENCE
+    if not path.exists():
+        raise AuditError(f'{EVIDENCE}: transition evidence missing')
+    digest = file_sha256(path)
+    if digest != EVIDENCE_SHA256:
+        raise AuditError(f'{EVIDENCE}: immutable transition evidence rewritten ({digest})')
+    return json.loads(path.read_text())
+
+
+def check_transition_evidence(root=ROOT):
+    """Backlog-887 proof that the v1 factorization payload stayed byte-identical."""
+    transition_evidence(root)
+
+
+def workflow_texts(root=ROOT):
+    directory = Path(root) / '.github/workflows'
+    if not directory.is_dir():
+        raise AuditError(f'{root}: no .github/workflows directory to enumerate consumers')
+    return {f'.github/workflows/{p.name}': p.read_text() for p in sorted(directory.glob('*.yml'))}
+
+
+def nonzero(counts):
+    return {name: value for name, value in counts.items() if value}
+
+
+def inline_bootstrap_counts(body):
+    return {name: body.count(pattern) for name, pattern in INLINE_BOOTSTRAP_PATTERNS}
+
+
+def composite_calls(body):
+    return {'runtime': body.count(RUNTIME_CALL), 'browser': body.count(BROWSER_CALL)}
+
+
+def is_repro_relevant(body):
+    """True when a job performs REPRO-visible work and therefore needs the composite."""
+    if any(pattern in body for _, pattern in INLINE_BOOTSTRAP_PATTERNS):
+        return True
+    return bool(PYTHON_COMMAND.search(body) or NODE_COMMAND.search(body) or
+                re.search(r'\bnpm\s+(?:ci|install)\b', body))
+
+
+def composite_consumers(text):
+    """Jobs that call a REPRO composite action, keyed by job id."""
+    if '\njobs:\n' not in text:
+        raise AuditError('workflow has no jobs block to scan for composite consumers')
+    rows = {}
+    for jid, body in jobs(text).items():
+        calls = composite_calls(body)
+        if calls['runtime'] or calls['browser']:
+            rows[jid] = calls
+    return rows
+
+
+def check_composite_adoption(root=ROOT):
+    """Fail closed unless every REPRO consumer uses the composite actions.
+
+    Proves, per consumer job: (a) the composite action is called instead of an
+    inline REPRO bootstrap block, (b) no inline bootstrap block was reintroduced,
+    (c) the `require-node` input matches the job's real Node usage, (d) browser
+    jobs recorded by the v1 matrix call the browser composite, and (e) trigger
+    path filters still include the composite action they depend on.
+    """
+    evidence = transition_evidence(root)
+    texts = workflow_texts(root)
+    observed = {path: composite_consumers(text) for path, text in texts.items()}
+    observed = {path: rows for path, rows in observed.items() if rows}
+    if set(observed) != set(CONSUMER_WORKFLOWS):
+        raise AuditError('composite consumer set changed: missing=%s unregistered=%s' % (
+            sorted(set(CONSUMER_WORKFLOWS) - set(observed)),
+            sorted(set(observed) - set(CONSUMER_WORKFLOWS))))
+    matrix = {(row['workflow'], row['job']): row for row in evidence['planning_matrix']}
+    summary = dict(consumer_count=len(CONSUMER_WORKFLOWS), runtime_consumer_count=0,
+                   browser_consumer_count=0, runtime_call_total=0, browser_call_total=0,
+                   jobs_total=0, jobs_with_composite=0, jobs_recorded_exception=0,
+                   jobs_without_repro_signal=0, inline_bootstrap_jobs=0,
+                   inline_bootstrap_primitives=0, inline_bootstrap_in_composite_jobs=0,
+                   runtime_delegated_via_browser=[],
+                   consumers=[], recorded_exceptions=[])
+    for path in CONSUMER_WORKFLOWS:
+        bodies = jobs(texts[path])
+        calls = observed[path]
+        runtime_calls = sum(1 for row in calls.values() if row['runtime'])
+        browser_calls = sum(1 for row in calls.values() if row['browser'])
+        summary['runtime_consumer_count'] += int(runtime_calls > 0)
+        summary['browser_consumer_count'] += int(browser_calls > 0)
+        summary['runtime_call_total'] += sum(row['runtime'] for row in calls.values())
+        summary['browser_call_total'] += sum(row['browser'] for row in calls.values())
+        if runtime_calls == 0:
+            if browser_calls == 0:
+                raise AuditError(f'{path}: consumer without a REPRO composite call')
+            summary['runtime_delegated_via_browser'].append(path)
+        summary['jobs_total'] += len(bodies)
+        summary['consumers'].append(dict(path=path, jobs=sorted(bodies),
+            composite_jobs=sorted(calls), runtime_calls=runtime_calls,
+            browser_calls=browser_calls, references_runtime=runtime_calls > 0,
+            references_browser=browser_calls > 0,
+            sha256=sha(texts[path]), blob_sha1=blob(texts[path])))
+        for jid, body in bodies.items():
+            key = (path, jid)
+            call = calls.get(jid)
+            primitives = nonzero(inline_bootstrap_counts(body))
+            exception = INLINE_BOOTSTRAP_EXCEPTIONS.get(key)
+            if call:
+                summary['jobs_with_composite'] += 1
+                summary['inline_bootstrap_in_composite_jobs'] += int(bool(primitives))
+                if primitives:
+                    raise AuditError(f'{path}:{jid}: inline REPRO bootstrap reintroduced next to the composite action: {primitives}')
+                if exception is not None:
+                    raise AuditError(f'{path}:{jid}: stale inline exception; the job now uses the composite action')
+                require = REQUIRE_NODE_INPUT.findall(body)
+                expected = 'true' if NODE_COMMAND.search(body) else 'false'
+                if require != [expected]:
+                    raise AuditError(f'{path}:{jid}: composite require-node={require} does not match observed Node usage ({expected})')
+                continue
+            if exception is None:
+                if primitives or is_repro_relevant(body):
+                    raise AuditError(f'{path}:{jid}: REPRO work without the composite action and without a recorded exception: {primitives}')
+                summary['jobs_without_repro_signal'] += 1
+                continue
+            if primitives != exception['primitives']:
+                raise AuditError(f'{path}:{jid}: recorded inline exception primitives changed: {primitives}')
+            if exception['migratable']:
+                raise AuditError(f'{path}:{jid}: migratable exception must be migrated, not documented')
+            row = matrix.get(key)
+            if row is None or row['status'] != exception['blocked_status']:
+                raise AuditError(f'{path}:{jid}: inline exception is not the v1 {exception["blocked_status"]} row')
+            summary['jobs_recorded_exception'] += 1
+            summary['inline_bootstrap_jobs'] += 1
+            summary['inline_bootstrap_primitives'] += sum(primitives.values())
+            summary['recorded_exceptions'].append(dict(path=path, job=jid,
+                primitives=primitives, migratable=False, reason=exception['reason'],
+                evidence=exception['evidence']))
+    if summary['jobs_with_composite'] + summary['jobs_recorded_exception'] + summary['jobs_without_repro_signal'] != summary['jobs_total']:
+        raise AuditError('composite adoption job accounting does not close')
+    for row in evidence['planning_matrix']:
+        if not row['browser']:
+            continue
+        key = (row['workflow'], row['job'])
+        body = jobs(texts[row['workflow']]).get(row['job'])
+        if body is None:
+            raise AuditError(f'{row["workflow"]}:{row["job"]}: browser job from the v1 matrix disappeared')
+        if row['status'] == 'MIGRATE':
+            if BROWSER_CALL not in body:
+                raise AuditError(f'{row["workflow"]}:{row["job"]}: browser job does not call {BROWSER}')
+        elif key not in INLINE_BOOTSTRAP_EXCEPTIONS:
+            raise AuditError(f'{row["workflow"]}:{row["job"]}: unresolved browser bootstrap without a recorded exception')
+    from tools.audit_github_workflows import parse_triggers
+    for path in CONSUMER_WORKFLOWS:
+        triggers = parse_triggers(texts[path].splitlines())
+        needs = [RUNTIME] + ([BROWSER] if BROWSER_CALL in texts[path] else [])
+        for event, config in sorted(triggers.items()):
+            filters = config.get('paths') or []
+            for action in needs:
+                if filters and action not in filters:
+                    raise AuditError(f'{path}:{event}: path filter no longer includes {action}')
+    return summary
+
+
+def duplicate_counters(text):
+    return {name: len(re.findall(pattern, text)) for name, pattern in DUPLICATE_PATTERNS.items()}
+
+
+def residual_duplicates(root=ROOT):
+    """Measure the duplication that is still real at this SHA; no value is assumed."""
+    texts = workflow_texts(root)
+    consumer_rows = [dict(workflow=path, **duplicate_counters(texts[path])) for path in CONSUMER_WORKFLOWS]
+    actions = {path: duplicate_counters((Path(root) / path).read_text()) for path in (RUNTIME, BROWSER)}
+    repository_rows = [dict(workflow=path, **duplicate_counters(text)) for path, text in sorted(texts.items())]
+    def totals(rows):
+        return {name: sum(row[name] for row in rows) for name in DUPLICATE_PATTERNS}
+    shared = {name: pattern for name, pattern in DUPLICATE_PATTERNS.items()
+              if name not in ('inline_environment', 'inline_browser')}
+    shared_totals = {name: sum(len(re.findall(pattern, (Path(root) / path).read_text()))
+                              for path in sorted(texts)) for name, pattern in shared.items()}
+    return dict(consumers=consumer_rows, consumer_totals=totals(consumer_rows),
+        composite_actions=actions, composite_totals=totals([actions[RUNTIME], actions[BROWSER]]),
+        repository_totals=totals(repository_rows), repository_rows=repository_rows,
+        workflow_inventory_pattern_totals=shared_totals,
+        measurement_note=('counters are measured by textual scan of each workflow at this SHA; '
+                          'setup-python/setup-node/verify/bootstrap now live once per composite action'))
+
+
+def _step_field(step, field):
+    for match in re.finditer(r'(?m)^(\s+)' + re.escape(field) + r':\s*(.+?)\s*$', step):
+        if len(match.group(1)) >= 10:
+            value = match.group(2)
+            return value[1:-1] if len(value) >= 2 and value[0] == value[-1] and value[0] in '\'"' else value
+    return None
+
+
+def _artifact_shape(name):
+    if name is None:
+        return None
+    shaped = re.sub(r'\$\{\{[^}]*\}\}', '*', name)
+    return re.sub(r'\*+', '*', shaped).strip()
+
+
+def artifact_flow(root=ROOT):
+    """Static fan-out/fan-in of GitHub artifacts; runtime retention stays UNKNOWN."""
+    producers, consumers, unparsed = [], [], []
+    for path, text in sorted(workflow_texts(root).items()):
+        for jid, body in jobs(text).items():
+            for step in steps(body):
+                if 'actions/upload-artifact@' in step:
+                    name = _step_field(step, 'name')
+                    if name is None:
+                        unparsed.append(dict(workflow=path, job=jid, kind='upload-artifact'))
+                    producers.append(dict(workflow=path, job=jid, name=name, shape=_artifact_shape(name),
+                                          dynamic=bool(name and '${{' in name)))
+                elif 'actions/download-artifact@' in step:
+                    name, pattern = _step_field(step, 'name'), _step_field(step, 'pattern')
+                    if name is None and pattern is None:
+                        unparsed.append(dict(workflow=path, job=jid, kind='download-artifact'))
+                    consumers.append(dict(workflow=path, job=jid, kind='download-artifact', name=name,
+                                          pattern=pattern, shape=_artifact_shape(name or pattern),
+                                          dynamic=bool('${{' in (name or pattern or '')),
+                                          scope='same-run' if 'run-id:' not in step else 'cross-run'))
+                elif re.search(r'\bgh\s+run\s+download\b', step):
+                    match = re.search(r'--name\s+(\S+)', step)
+                    name = match.group(1).strip('\'"') if match else None
+                    if name is None:
+                        unparsed.append(dict(workflow=path, job=jid, kind='gh-run-download'))
+                    consumers.append(dict(workflow=path, job=jid, kind='gh-run-download', name=name,
+                                          pattern=None, shape=_artifact_shape(name),
+                                          dynamic=bool(name and '${{' in name), scope='cross-run'))
+    edges = []
+    for consumer in consumers:
+        for producer in producers:
+            if producer['shape'] is None or consumer['shape'] is None:
+                continue
+            if consumer['kind'] == 'download-artifact' and consumer['pattern']:
+                matched = re.fullmatch(re.escape(consumer['shape']).replace(r'\*', '.*'), producer['shape']) is not None
+            else:
+                matched = consumer['shape'] == producer['shape']
+            if matched:
+                edges.append(dict(artifact=producer['shape'], producer=producer['workflow'],
+                                  producer_job=producer['job'], consumer=consumer['workflow'],
+                                  consumer_job=consumer['job'], kind=consumer['kind'], scope=consumer['scope']))
+    producer_shapes = {row['shape'] for row in producers if row['shape']}
+    consumer_shapes = {row['shape'] for row in consumers if row['shape']}
+    edge_artifacts = {edge['artifact'] for edge in edges}
+    return dict(producers=producers, consumers=consumers, unparsed=unparsed, edges=edges,
+        fan_out_total=len(producers), fan_in_total=len(consumers),
+        fan_out_by_workflow={path: sum(1 for row in producers if row['workflow'] == path) for path in sorted({row['workflow'] for row in producers})},
+        fan_in_by_workflow={path: sum(1 for row in consumers if row['workflow'] == path) for path in sorted({row['workflow'] for row in consumers})},
+        producers_without_consumer=sorted(producer_shapes - edge_artifacts),
+        consumers_without_producer=sorted(consumer_shapes - edge_artifacts),
+        measurement_note=('fan-in/fan-out are static counts of upload/download steps and of artifact-name '
+                          'shape matches at this SHA; runtime retention and cross-run availability stay UNKNOWN'))
+
+
+def adoption_report(root=ROOT):
+    """Recompute the additive adoption proof for the current checkout."""
+    summary = check_composite_adoption(root)
+    texts = workflow_texts(root)
+    matches = {}
+    for path in CONSUMER_WORKFLOWS:
+        for jid, body in jobs(texts[path]).items():
+            primitives = nonzero(inline_bootstrap_counts(body))
+            if primitives:
+                matches.setdefault(path, {})[jid] = primitives
+    verified = {path: dict(row) for path, row in
+                ((row['path'], row) for row in summary['consumers'])}
+    return dict(schema=ADOPTION_SCHEMA, issue=204, task='backlog-887', additive=True,
+        rewrites_v1_evidence=False,
+        source_evidence=dict(path=EVIDENCE, sha256=EVIDENCE_SHA256, rewritten=False),
+        composite_actions={path: dict(sha256=file_sha256(Path(root) / path),
+            blob_sha1=blob((Path(root) / path).read_text())) for path in (RUNTIME, BROWSER)},
+        consumers=[verified[path] for path in CONSUMER_WORKFLOWS],
+        adoption={k: v for k, v in summary.items() if k not in ('consumers',)},
+        inline_bootstrap=dict(patterns=dict(INLINE_BOOTSTRAP_PATTERNS),
+            matches=matches,
+            consumer_matches=sum(sum(counts.values()) for count_rows in matches.values() for counts in count_rows.values()),
+            recorded_exceptions=summary['recorded_exceptions']),
+        residual_duplicates=residual_duplicates(root),
+        artifact_flow=artifact_flow(root),
+        deferred_migrations=[dict(workflow=row['path'], job=row['job'], migratable=False,
+            reason=row['reason'], recorded_by=row['evidence'],
+            primitives=row['primitives']) for row in summary['recorded_exceptions']],
+        unknowns=list(UNKNOWN_MEASUREMENTS),
+        workflow_files_modified=[], write_surface_expanded=False, scientific_commands_changed=False,
+        ci=dict(observed=False, reason='Local worker: no push/PR authorized at this SHA'),
+        local_test_commands=['python3 tests/ci/test_repro_composite_factorization.py',
+                             'python3 tools/audit_repro_composite_factorization.py --check-adoption'])
+
+
+def check_adoption_evidence(root=ROOT):
+    path = Path(root) / ADOPTION_EVIDENCE
+    if not path.exists():
+        raise AuditError(f'{ADOPTION_EVIDENCE}: additive adoption evidence missing')
+    stored = json.loads(path.read_text())
+    actual = adoption_report(root)
+    if stored != actual:
+        raise AuditError(f'{ADOPTION_EVIDENCE}: stored adoption evidence differs from the recomputed report; '
+                         'regenerate with --write-adoption')
+
+
 def validate(root=ROOT, changed=None):
     violations = []
     def check(fn, *args):
@@ -242,6 +609,9 @@ def validate(root=ROOT, changed=None):
         except (ValueError, OSError) as exc:
             violations.append(str(exc))
     check(check_actions, root)
+    check(check_transition_evidence, root)
+    check(check_composite_adoption, root)
+    check(check_adoption_evidence, root)
     check(historical_links)
     for path in WORKFLOWS:
         check(check_workflow, path, baseline(path), (root / path).read_text())
@@ -311,8 +681,26 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check',action='store_true')
     parser.add_argument('--write',action='store_true')
+    parser.add_argument('--check-adoption',action='store_true',dest='check_adoption',
+                        help='verify composite adoption plus the additive evidence file')
+    parser.add_argument('--write-adoption',action='store_true',dest='write_adoption',
+                        help=f'regenerate {ADOPTION_EVIDENCE} from the current checkout')
     args=parser.parse_args()
     try:
+        if args.write_adoption:
+            (ROOT/ADOPTION_EVIDENCE).write_text(json.dumps(adoption_report(),indent=2,sort_keys=True)+'\n')
+            print(f'REPRO composite adoption: wrote {ADOPTION_EVIDENCE}')
+        if args.check_adoption:
+            check_transition_evidence()
+            summary=check_composite_adoption()
+            check_adoption_evidence()
+            print('REPRO composite adoption: PASS '
+                  f'({summary["consumer_count"]} consumers, '
+                  f'{summary["jobs_with_composite"]}/{summary["jobs_total"]} jobs on the composite, '
+                  f'{summary["jobs_recorded_exception"]} recorded exception)')
+            return 0
+        if args.write_adoption and not (args.check or args.write):
+            return 0
         actual=report()
         if args.write:
             (ROOT/EVIDENCE).write_text(json.dumps(actual,indent=2,sort_keys=True)+'\n')

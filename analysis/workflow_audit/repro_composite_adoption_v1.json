@@ -1,0 +1,2741 @@
+{
+  "additive": true,
+  "adoption": {
+    "browser_call_total": 3,
+    "browser_consumer_count": 3,
+    "consumer_count": 16,
+    "inline_bootstrap_in_composite_jobs": 0,
+    "inline_bootstrap_jobs": 1,
+    "inline_bootstrap_primitives": 3,
+    "jobs_recorded_exception": 1,
+    "jobs_total": 21,
+    "jobs_with_composite": 20,
+    "jobs_without_repro_signal": 0,
+    "recorded_exceptions": [
+      {
+        "evidence": "analysis/workflow_audit/repro_composite_factorization_v1.json",
+        "job": "browser-smoke",
+        "migratable": false,
+        "path": ".github/workflows/population-pack-catalog.yml",
+        "primitives": {
+          "inline_browser": 1,
+          "inline_environment": 1,
+          "setup_python": 1
+        },
+        "reason": "static site assembly runs between Python setup and the locked dependency install; the composite cannot be inserted without reordering the assembly and re-baselining immutable v1 evidence"
+      }
+    ],
+    "runtime_call_total": 17,
+    "runtime_consumer_count": 16,
+    "runtime_delegated_via_browser": []
+  },
+  "artifact_flow": {
+    "consumers": [
+      {
+        "dynamic": false,
+        "job": "retained-model-b-smoke",
+        "kind": "gh-run-download",
+        "name": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "workflow": ".github/workflows/full-hand-arena.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "merge-full-169",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-107-shard-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-107-shard-*-*",
+        "workflow": ".github/workflows/hero-full-169-evidence.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "smoke-lj-aa",
+        "kind": "download-artifact",
+        "name": "issue-107-certified-train-sizing-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-107-certified-train-sizing-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "generate-shards",
+        "kind": "download-artifact",
+        "name": "issue-107-certified-train-sizing-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-107-certified-train-sizing-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "merge-position",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-107-${{ matrix.position }}-shard-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-107-*-shard-*-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "merge-pfpc-candidate",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-107-source-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-107-source-*-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "generate",
+        "kind": "download-artifact",
+        "name": "issue358-inputs",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue358-inputs",
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "assemble",
+        "kind": "download-artifact",
+        "name": "issue358-inputs",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue358-inputs",
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "assemble",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue358-part-*",
+        "scope": "same-run",
+        "shape": "issue358-part-*",
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "persist-generated-evidence",
+        "kind": "download-artifact",
+        "name": "issue-107-unopened-5pos-pfpc-${{ env.SOURCE_SHA }}",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "issue-107-unopened-5pos-pfpc-*",
+        "workflow": ".github/workflows/persist-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "persist-generated-evidence",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-107-source-*-${{ env.SOURCE_SHA }}",
+        "scope": "cross-run",
+        "shape": "issue-107-source-*-*",
+        "workflow": ".github/workflows/persist-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "mark-holdout-consumed",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-test-frozen-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-test-frozen-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "environment",
+        "kind": "gh-run-download",
+        "name": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "confirm",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-test-frozen-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "confirm",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-108-pfpc-test-environment-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-test-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "persist-final-result",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-test-result-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-test-result-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "environment",
+        "kind": "gh-run-download",
+        "name": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-108-pfpc-environment-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "persist-result-branch",
+        "kind": "download-artifact",
+        "name": "issue-108-pfpc-validation-result-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-pfpc-validation-result-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "kind": "download-artifact",
+        "name": "issue-108-support-closed-validation-scenarios-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-support-closed-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "environment",
+        "kind": "gh-run-download",
+        "name": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "kind": "download-artifact",
+        "name": "issue-108-support-closed-validation-scenarios-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-support-closed-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-108-support-closed-environment-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-108-support-closed-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "kind": "download-artifact",
+        "name": "issue-108-validation-scenarios-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "environment",
+        "kind": "gh-run-download",
+        "name": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "kind": "download-artifact",
+        "name": "issue-108-validation-scenarios-${{ github.sha }}",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue-108-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-108-validation-environment-*-${{ github.sha }}",
+        "scope": "same-run",
+        "shape": "issue-108-validation-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "safety-contract",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": null,
+        "scope": "same-run",
+        "shape": null,
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "recover-and-persist",
+        "kind": "download-artifact",
+        "name": null,
+        "pattern": "issue-107-*-shard-*-${{ env.SOURCE_SHA }}",
+        "scope": "cross-run",
+        "shape": "issue-107-*-shard-*-*",
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "recover-and-persist",
+        "kind": "download-artifact",
+        "name": "issue-107-LJ-shard-13-${{ env.SOURCE_SHA }}",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "issue-107-LJ-shard-13-*",
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "recover-and-persist",
+        "kind": "download-artifact",
+        "name": "issue-107-LJ-shard-8-${{ env.SOURCE_SHA }}",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "issue-107-LJ-shard-8-*",
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "recover-and-persist",
+        "kind": "download-artifact",
+        "name": "issue-107-LJ-shard-10-${{ env.SOURCE_SHA }}",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "issue-107-LJ-shard-10-*",
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "recover-and-persist",
+        "kind": "download-artifact",
+        "name": "issue-107-LJ-shard-19-${{ env.SOURCE_SHA }}",
+        "pattern": null,
+        "scope": "cross-run",
+        "shape": "issue-107-LJ-shard-19-*",
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "arena",
+        "kind": "download-artifact",
+        "name": "issue39-scenarios",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue39-scenarios",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "compare-and-persist",
+        "kind": "download-artifact",
+        "name": "issue39-validation-v2",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue39-validation-v2",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "compare-and-persist",
+        "kind": "download-artifact",
+        "name": "issue39-validation-v3",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue39-validation-v3",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "compare-and-persist",
+        "kind": "download-artifact",
+        "name": "issue39-test-v2",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue39-test-v2",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "compare-and-persist",
+        "kind": "download-artifact",
+        "name": "issue39-test-v3",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "issue39-test-v3",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "persist",
+        "kind": "download-artifact",
+        "name": "v84-validation",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "v84-validation",
+        "workflow": ".github/workflows/v84-strategy-candidate.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "persist",
+        "kind": "download-artifact",
+        "name": "v84-test",
+        "pattern": null,
+        "scope": "same-run",
+        "shape": "v84-test",
+        "workflow": ".github/workflows/v84-strategy-candidate.yml"
+      }
+    ],
+    "consumers_without_producer": [
+      "issue-107-LJ-shard-10-*",
+      "issue-107-LJ-shard-13-*",
+      "issue-107-LJ-shard-19-*",
+      "issue-107-LJ-shard-8-*",
+      "issue358-part-*",
+      "issue39-test-v2",
+      "issue39-test-v3",
+      "issue39-validation-v2",
+      "issue39-validation-v3",
+      "model-b-card-aware-v1-b71c3bc6dca7875b333eb9fbfa72eb6e4cd7d2a4"
+    ],
+    "edges": [
+      {
+        "artifact": "issue-107-shard-*-*",
+        "consumer": ".github/workflows/hero-full-169-evidence.yml",
+        "consumer_job": "merge-full-169",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-full-169-evidence.yml",
+        "producer_job": "generate-shards",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-107-certified-train-sizing-*",
+        "consumer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "consumer_job": "smoke-lj-aa",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "prepare-sizing-corpus",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-107-certified-train-sizing-*",
+        "consumer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "consumer_job": "generate-shards",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "prepare-sizing-corpus",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-107-*-shard-*-*",
+        "consumer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "consumer_job": "merge-position",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "generate-shards",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-107-source-*-*",
+        "consumer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "consumer_job": "merge-pfpc-candidate",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "merge-position",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue358-inputs",
+        "consumer": ".github/workflows/issue-358-hero-preflop-generation.yml",
+        "consumer_job": "generate",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/issue-358-hero-preflop-generation.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue358-inputs",
+        "consumer": ".github/workflows/issue-358-hero-preflop-generation.yml",
+        "consumer_job": "assemble",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/issue-358-hero-preflop-generation.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue358-part-*-*",
+        "consumer": ".github/workflows/issue-358-hero-preflop-generation.yml",
+        "consumer_job": "assemble",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/issue-358-hero-preflop-generation.yml",
+        "producer_job": "generate",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-107-unopened-5pos-pfpc-*",
+        "consumer": ".github/workflows/persist-issue-107-pfpc.yml",
+        "consumer_job": "persist-generated-evidence",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "merge-pfpc-candidate",
+        "scope": "cross-run"
+      },
+      {
+        "artifact": "issue-107-source-*-*",
+        "consumer": ".github/workflows/persist-issue-107-pfpc.yml",
+        "consumer_job": "persist-generated-evidence",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "merge-position",
+        "scope": "cross-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-test-frozen-*",
+        "consumer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "consumer_job": "mark-holdout-consumed",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "producer_job": "prepare-test",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-test-frozen-*",
+        "consumer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "consumer_job": "environment",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "producer_job": "prepare-test",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-test-frozen-*",
+        "consumer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "consumer_job": "confirm",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "producer_job": "prepare-test",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-test-environment-*-*",
+        "consumer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "consumer_job": "confirm",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "producer_job": "environment",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-test-result-*",
+        "consumer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "consumer_job": "persist-final-result",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-test-pfpc.yml",
+        "producer_job": "confirm",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-validation-scenarios-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "consumer_job": "environment",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-validation-scenarios-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "consumer_job": "select",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-environment-*-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "consumer_job": "select",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "producer_job": "environment",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-pfpc-validation-result-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "consumer_job": "persist-result-branch",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+        "producer_job": "select",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-support-closed-validation-scenarios-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "consumer_job": "environment",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-support-closed-validation-scenarios-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "consumer_job": "select",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-support-closed-environment-*-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "consumer_job": "select",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+        "producer_job": "environment",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-validation-scenarios-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "consumer_job": "environment",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-validation-scenarios-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "consumer_job": "select",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "producer_job": "prepare",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-108-validation-environment-*-*",
+        "consumer": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "consumer_job": "select",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/preflop-strategy-validation-v2.yml",
+        "producer_job": "environment",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "issue-107-*-shard-*-*",
+        "consumer": ".github/workflows/recover-issue-107-pfpc.yml",
+        "consumer_job": "recover-and-persist",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/hero-unopened-multiposition-generation.yml",
+        "producer_job": "generate-shards",
+        "scope": "cross-run"
+      },
+      {
+        "artifact": "issue39-scenarios",
+        "consumer": ".github/workflows/strategic-benchmark-v3.yml",
+        "consumer_job": "arena",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/strategic-benchmark-v3.yml",
+        "producer_job": "scenarios",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "v84-validation",
+        "consumer": ".github/workflows/v84-strategy-candidate.yml",
+        "consumer_job": "persist",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/v84-strategy-candidate.yml",
+        "producer_job": "validation",
+        "scope": "same-run"
+      },
+      {
+        "artifact": "v84-test",
+        "consumer": ".github/workflows/v84-strategy-candidate.yml",
+        "consumer_job": "persist",
+        "kind": "download-artifact",
+        "producer": ".github/workflows/v84-strategy-candidate.yml",
+        "producer_job": "test",
+        "scope": "same-run"
+      }
+    ],
+    "fan_in_by_workflow": {
+      ".github/workflows/full-hand-arena.yml": 1,
+      ".github/workflows/hero-full-169-evidence.yml": 1,
+      ".github/workflows/hero-unopened-multiposition-generation.yml": 4,
+      ".github/workflows/issue-358-hero-preflop-generation.yml": 3,
+      ".github/workflows/persist-issue-107-pfpc.yml": 2,
+      ".github/workflows/preflop-strategy-test-pfpc.yml": 6,
+      ".github/workflows/preflop-strategy-validation-pfpc.yml": 5,
+      ".github/workflows/preflop-strategy-validation-support-closed.yml": 4,
+      ".github/workflows/preflop-strategy-validation-v2.yml": 4,
+      ".github/workflows/recover-issue-107-pfpc.yml": 6,
+      ".github/workflows/strategic-benchmark-v3.yml": 5,
+      ".github/workflows/v84-strategy-candidate.yml": 2
+    },
+    "fan_in_total": 43,
+    "fan_out_by_workflow": {
+      ".github/workflows/continuous-training-cycle.yml": 1,
+      ".github/workflows/full-hand-arena.yml": 1,
+      ".github/workflows/hero-calculated-range-export.yml": 1,
+      ".github/workflows/hero-full-169-evidence.yml": 2,
+      ".github/workflows/hero-unopened-multiposition-generation.yml": 5,
+      ".github/workflows/issue-358-hero-preflop-generation.yml": 3,
+      ".github/workflows/issue-367-real-iso-ev-observable.yml": 1,
+      ".github/workflows/issue-367-real-iso-ev.yml": 1,
+      ".github/workflows/model-b-aggressive-tail.yml": 1,
+      ".github/workflows/model-b-build.yml": 1,
+      ".github/workflows/model-b-card-aware-fit.yml": 1,
+      ".github/workflows/model-b-observed-vs-simulated-calibration.yml": 1,
+      ".github/workflows/model-b-preflop-response-price-2a.yml": 1,
+      ".github/workflows/model-b-preflop-response-price-scaffold.yml": 1,
+      ".github/workflows/model-b-preflop-sensitivity-harness.yml": 1,
+      ".github/workflows/model-b-response-to-price-evaluation.yml": 1,
+      ".github/workflows/model-b-reveal-aware.yml": 1,
+      ".github/workflows/model-b-support-aware-backoff.yml": 1,
+      ".github/workflows/population-certification.yml": 1,
+      ".github/workflows/population-pack-real-admission-audit.yml": 1,
+      ".github/workflows/population-pack.yml": 1,
+      ".github/workflows/postflop-response-refit.yml": 1,
+      ".github/workflows/preflop-strategy-test-pfpc.yml": 3,
+      ".github/workflows/preflop-strategy-validation-pfpc.yml": 3,
+      ".github/workflows/preflop-strategy-validation-support-closed.yml": 3,
+      ".github/workflows/preflop-strategy-validation-v2.yml": 3,
+      ".github/workflows/repro-scientific-environment.yml": 1,
+      ".github/workflows/sequential-arena.yml": 3,
+      ".github/workflows/strategic-benchmark-v3.yml": 3,
+      ".github/workflows/strategy-candidate-v84.yml": 1,
+      ".github/workflows/unseen-preflop-context-audit.yml": 1,
+      ".github/workflows/user-artifact-bundle.yml": 1,
+      ".github/workflows/v84-strategy-candidate.yml": 2
+    },
+    "fan_out_total": 53,
+    "measurement_note": "fan-in/fan-out are static counts of upload/download steps and of artifact-name shape matches at this SHA; runtime retention and cross-run availability stay UNKNOWN",
+    "producers": [
+      {
+        "dynamic": true,
+        "job": "run-committed-cycle",
+        "name": "continuous-cycle-execution-${{ github.run_id }}",
+        "shape": "continuous-cycle-execution-*",
+        "workflow": ".github/workflows/continuous-training-cycle.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "retained-model-b-smoke",
+        "name": "issue-105-retained-model-b-smoke-${{ github.sha }}",
+        "shape": "issue-105-retained-model-b-smoke-*",
+        "workflow": ".github/workflows/full-hand-arena.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "calculated-range-contract",
+        "name": "issue-107-real-generation-smoke-${{ github.sha }}",
+        "shape": "issue-107-real-generation-smoke-*",
+        "workflow": ".github/workflows/hero-calculated-range-export.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "generate-shards",
+        "name": "issue-107-shard-${{ matrix.shard }}-${{ github.sha }}",
+        "shape": "issue-107-shard-*-*",
+        "workflow": ".github/workflows/hero-full-169-evidence.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "merge-full-169",
+        "name": "issue-107-full-169-${{ github.sha }}",
+        "shape": "issue-107-full-169-*",
+        "workflow": ".github/workflows/hero-full-169-evidence.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "prepare-sizing-corpus",
+        "name": "issue-107-certified-train-sizing-${{ github.sha }}",
+        "shape": "issue-107-certified-train-sizing-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "smoke-lj-aa",
+        "name": "issue-107-lj-aa-support-closure-smoke-${{ github.sha }}",
+        "shape": "issue-107-lj-aa-support-closure-smoke-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "generate-shards",
+        "name": "issue-107-${{ matrix.position }}-shard-${{ matrix.shard }}-${{ github.sha }}",
+        "shape": "issue-107-*-shard-*-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "merge-position",
+        "name": "issue-107-source-${{ matrix.position }}-${{ github.sha }}",
+        "shape": "issue-107-source-*-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "merge-pfpc-candidate",
+        "name": "issue-107-unopened-5pos-pfpc-${{ github.sha }}",
+        "shape": "issue-107-unopened-5pos-pfpc-*",
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "prepare",
+        "name": "issue358-inputs",
+        "shape": "issue358-inputs",
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "generate",
+        "name": "issue358-part-${{ matrix.context_index }}-${{ matrix.hand_shard_index }}",
+        "shape": "issue358-part-*-*",
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "assemble",
+        "name": "issue358-final-generation",
+        "shape": "issue358-final-generation",
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "execute",
+        "name": "issue-367-real-iso-ev-observable-${{ github.sha }}",
+        "shape": "issue-367-real-iso-ev-observable-*",
+        "workflow": ".github/workflows/issue-367-real-iso-ev-observable.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "execute",
+        "name": "issue-367-real-iso-ev-${{ github.sha }}",
+        "shape": "issue-367-real-iso-ev-*",
+        "workflow": ".github/workflows/issue-367-real-iso-ev.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "validation",
+        "name": "issue-298-model-b-aggressive-tail",
+        "shape": "issue-298-model-b-aggressive-tail",
+        "workflow": ".github/workflows/model-b-aggressive-tail.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "build-model-b",
+        "name": "independent-model-b-k3-candidate",
+        "shape": "independent-model-b-k3-candidate",
+        "workflow": ".github/workflows/model-b-build.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "fit-validate",
+        "name": "model-b-card-aware-v1-${{ github.sha }}",
+        "shape": "model-b-card-aware-v1-*",
+        "workflow": ".github/workflows/model-b-card-aware-fit.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "calibration",
+        "name": "issue-272-model-b-calibration",
+        "shape": "issue-272-model-b-calibration",
+        "workflow": ".github/workflows/model-b-observed-vs-simulated-calibration.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "train-validation",
+        "name": "issue-340-model-b-preflop-response-price-2a",
+        "shape": "issue-340-model-b-preflop-response-price-2a",
+        "workflow": ".github/workflows/model-b-preflop-response-price-2a.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "synthetic-scaffold",
+        "name": "issue-315-preflop-response-price-scaffold",
+        "shape": "issue-315-preflop-response-price-scaffold",
+        "workflow": ".github/workflows/model-b-preflop-response-price-scaffold.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "synthetic-harness",
+        "name": "issue-344-model-b-preflop-sensitivity-harness",
+        "shape": "issue-344-model-b-preflop-sensitivity-harness",
+        "workflow": ".github/workflows/model-b-preflop-sensitivity-harness.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "scientific-evaluation",
+        "name": "issue-197-response-to-price-raw",
+        "shape": "issue-197-response-to-price-raw",
+        "workflow": ".github/workflows/model-b-response-to-price-evaluation.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "validation",
+        "name": "model-b-reveal-aware-v3-validation",
+        "shape": "model-b-reveal-aware-v3-validation",
+        "workflow": ".github/workflows/model-b-reveal-aware.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "validation",
+        "name": "issue-286-model-b-support-aware-backoff",
+        "shape": "issue-286-model-b-support-aware-backoff",
+        "workflow": ".github/workflows/model-b-support-aware-backoff.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "certify",
+        "name": "population-certification-${{ github.sha }}",
+        "shape": "population-certification-*",
+        "workflow": ".github/workflows/population-certification.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "audit",
+        "name": "issue-350-real-pack-admission-audit",
+        "shape": "issue-350-real-pack-admission-audit",
+        "workflow": ".github/workflows/population-pack-real-admission-audit.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "validate",
+        "name": "population-pack-${{ github.sha }}",
+        "shape": "population-pack-*",
+        "workflow": ".github/workflows/population-pack.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "refit",
+        "name": "model-a-postflop-stage-b-evidence",
+        "shape": "model-a-postflop-stage-b-evidence",
+        "workflow": ".github/workflows/postflop-response-refit.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "prepare-test",
+        "name": "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "shape": "issue-108-pfpc-test-frozen-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "name": "issue-108-pfpc-test-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "shape": "issue-108-pfpc-test-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "confirm",
+        "name": "issue-108-pfpc-test-result-${{ github.sha }}",
+        "shape": "issue-108-pfpc-test-result-*",
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "prepare",
+        "name": "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        "shape": "issue-108-pfpc-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "name": "issue-108-pfpc-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "shape": "issue-108-pfpc-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "name": "issue-108-pfpc-validation-result-${{ github.sha }}",
+        "shape": "issue-108-pfpc-validation-result-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "prepare",
+        "name": "issue-108-support-closed-validation-scenarios-${{ github.sha }}",
+        "shape": "issue-108-support-closed-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "name": "issue-108-support-closed-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "shape": "issue-108-support-closed-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "name": "issue-108-support-closed-validation-result-${{ github.sha }}",
+        "shape": "issue-108-support-closed-validation-result-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "prepare",
+        "name": "issue-108-validation-scenarios-${{ github.sha }}",
+        "shape": "issue-108-validation-scenarios-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "environment",
+        "name": "issue-108-validation-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "shape": "issue-108-validation-environment-*-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "select",
+        "name": "issue-108-validation-result-${{ github.sha }}",
+        "shape": "issue-108-validation-result-*",
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "guard",
+        "name": "repro-environment-${{ github.sha }}",
+        "shape": "repro-environment-*",
+        "workflow": ".github/workflows/repro-scientific-environment.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "browser-smoke",
+        "name": "sequential-arena-reproducibility",
+        "shape": "sequential-arena-reproducibility",
+        "workflow": ".github/workflows/sequential-arena.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "v83-baseline-validation",
+        "name": "v83-model-b-v2-baseline-validation",
+        "shape": "v83-model-b-v2-baseline-validation",
+        "workflow": ".github/workflows/sequential-arena.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "v83-baseline-test",
+        "name": "v83-model-b-v2-baseline-test",
+        "shape": "v83-model-b-v2-baseline-test",
+        "workflow": ".github/workflows/sequential-arena.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "scenarios",
+        "name": "issue39-scenarios",
+        "shape": "issue39-scenarios",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "arena",
+        "name": "issue39-${{ matrix.name }}",
+        "shape": "issue39-*",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "compare-and-persist",
+        "name": "issue39-environment-drift",
+        "shape": "issue39-environment-drift",
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "select-and-confirm",
+        "name": "issue40-strategy-candidate-arena",
+        "shape": "issue40-strategy-candidate-arena",
+        "workflow": ".github/workflows/strategy-candidate-v84.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "audit",
+        "name": "unseen-preflop-context-audit",
+        "shape": "unseen-preflop-context-audit",
+        "workflow": ".github/workflows/unseen-preflop-context-audit.yml"
+      },
+      {
+        "dynamic": true,
+        "job": "build-and-verify",
+        "name": "nlhe-100-200-user-artifacts-${{ github.sha }}",
+        "shape": "nlhe-100-200-user-artifacts-*",
+        "workflow": ".github/workflows/user-artifact-bundle.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "validation",
+        "name": "v84-validation",
+        "shape": "v84-validation",
+        "workflow": ".github/workflows/v84-strategy-candidate.yml"
+      },
+      {
+        "dynamic": false,
+        "job": "test",
+        "name": "v84-test",
+        "shape": "v84-test",
+        "workflow": ".github/workflows/v84-strategy-candidate.yml"
+      }
+    ],
+    "producers_without_consumer": [
+      "continuous-cycle-execution-*",
+      "independent-model-b-k3-candidate",
+      "issue-105-retained-model-b-smoke-*",
+      "issue-107-full-169-*",
+      "issue-107-lj-aa-support-closure-smoke-*",
+      "issue-107-real-generation-smoke-*",
+      "issue-108-support-closed-validation-result-*",
+      "issue-108-validation-result-*",
+      "issue-197-response-to-price-raw",
+      "issue-272-model-b-calibration",
+      "issue-286-model-b-support-aware-backoff",
+      "issue-298-model-b-aggressive-tail",
+      "issue-315-preflop-response-price-scaffold",
+      "issue-340-model-b-preflop-response-price-2a",
+      "issue-344-model-b-preflop-sensitivity-harness",
+      "issue-350-real-pack-admission-audit",
+      "issue-367-real-iso-ev-*",
+      "issue-367-real-iso-ev-observable-*",
+      "issue358-final-generation",
+      "issue39-*",
+      "issue39-environment-drift",
+      "issue40-strategy-candidate-arena",
+      "model-a-postflop-stage-b-evidence",
+      "model-b-card-aware-v1-*",
+      "model-b-reveal-aware-v3-validation",
+      "nlhe-100-200-user-artifacts-*",
+      "population-certification-*",
+      "population-pack-*",
+      "repro-environment-*",
+      "sequential-arena-reproducibility",
+      "unseen-preflop-context-audit",
+      "v83-model-b-v2-baseline-test",
+      "v83-model-b-v2-baseline-validation"
+    ],
+    "unparsed": [
+      {
+        "job": "safety-contract",
+        "kind": "download-artifact",
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      }
+    ]
+  },
+  "ci": {
+    "observed": false,
+    "reason": "Local worker: no push/PR authorized at this SHA"
+  },
+  "composite_actions": {
+    ".github/actions/repro-browser/action.yml": {
+      "blob_sha1": "d704e33ab8944062bf6626b1427554f976b440e3",
+      "sha256": "50c70f925dc8cb6eaab5c7b0e9a7f647f5eb8d92df22659781ac0f8fa6a64dda"
+    },
+    ".github/actions/repro-runtime/action.yml": {
+      "blob_sha1": "61fa47af7f646c775fcd0637a908cc4c25dc1264",
+      "sha256": "1b90982bdb93f7332a1dd9353afbe8028bcd1e655a9d2ca175e60b1a55e22d42"
+    }
+  },
+  "consumers": [
+    {
+      "blob_sha1": "5e168acf6474c5351a46af8da2f85b58bdb581ce",
+      "browser_calls": 1,
+      "composite_jobs": [
+        "browser-smoke",
+        "static-contract"
+      ],
+      "jobs": [
+        "browser-smoke",
+        "static-contract"
+      ],
+      "path": ".github/workflows/trainer-smoke.yml",
+      "references_browser": true,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "eddde67e633b99148647a32c6813ebff44df9ecda590aa7602883a938e17a5b0"
+    },
+    {
+      "blob_sha1": "7fce8dcb0b579bc90f2a138156a9c5c86a4ad3bd",
+      "browser_calls": 1,
+      "composite_jobs": [
+        "browser-smoke",
+        "contract"
+      ],
+      "jobs": [
+        "browser-smoke",
+        "contract"
+      ],
+      "path": ".github/workflows/hero-range-editor.yml",
+      "references_browser": true,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "9f25309b4186d4b4601998138ff8ea0e4c8af0814c2064f6897b5df56939fdd2"
+    },
+    {
+      "blob_sha1": "880f68ce9af28fa4093fee6abd0bc645463b37aa",
+      "browser_calls": 1,
+      "composite_jobs": [
+        "browser-smoke",
+        "contract"
+      ],
+      "jobs": [
+        "browser-smoke",
+        "contract"
+      ],
+      "path": ".github/workflows/hero-range-compliance.yml",
+      "references_browser": true,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "160c397cde596a4d73794edf5dca9d39a36b731260fe501c71d8e21cb8a4d7a3"
+    },
+    {
+      "blob_sha1": "1c873f4b47089c2463d9073325ccecbb3fda276b",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "contract"
+      ],
+      "jobs": [
+        "browser-smoke",
+        "contract"
+      ],
+      "path": ".github/workflows/population-pack-catalog.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "36413ce4eb762ed472926a09a2e9e7b4ade463c4e47bbf376a012194c3b0aafc"
+    },
+    {
+      "blob_sha1": "078c915fb6c55324b192dbb5863fdc55ea69eaf5",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "integrity"
+      ],
+      "jobs": [
+        "integrity"
+      ],
+      "path": ".github/workflows/dataset-integrity.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "2c2abd842aa207760314adbea4c3eb5559094ebe5ee0b43eb347043f8825384a"
+    },
+    {
+      "blob_sha1": "4f57227ebefe52fecb0369ada334ad0b5e2c0466",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "full-hand-arena",
+        "retained-model-b-smoke"
+      ],
+      "jobs": [
+        "full-hand-arena",
+        "retained-model-b-smoke"
+      ],
+      "path": ".github/workflows/full-hand-arena.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 2,
+      "sha256": "8004230252fc1f1671a8a1f7f9f0348b977afd2c5d4f997bfc402824ef8c1312"
+    },
+    {
+      "blob_sha1": "587202c60b2b14f1b654710a20427d701dfd55e7",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "validate"
+      ],
+      "jobs": [
+        "validate"
+      ],
+      "path": ".github/workflows/full-hand-protocol.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "284d804e657db0eeb85ee45555b660436261d020dcaf80d65f4eeb5eaa9c2631"
+    },
+    {
+      "blob_sha1": "58f17b458ed3ca1912eba7cf8f12469f2fab6adf",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "calculated-range-contract"
+      ],
+      "jobs": [
+        "calculated-range-contract"
+      ],
+      "path": ".github/workflows/hero-calculated-range-export.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "630322a669e4a87b7898e562424296f4036d9e7e814282aaca7b6280f20b7f0c"
+    },
+    {
+      "blob_sha1": "925962e847ad98c81a3509c1c495ceb1dc7e5b9b",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "runtime-contract"
+      ],
+      "jobs": [
+        "runtime-contract"
+      ],
+      "path": ".github/workflows/model-b-card-aware-runtime.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "a9acda0b560e39786529f48c6afb0890c137eafaa7ba19c094624c661e5566eb"
+    },
+    {
+      "blob_sha1": "317b7053bf255958ee995dab7873789a359a960f",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "validation"
+      ],
+      "jobs": [
+        "validation"
+      ],
+      "path": ".github/workflows/model-b-reveal-aware.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "180f3c02d87be37ec8c0b86f4205b35b7bb3576f58845064f562c4dbe11ccd2d"
+    },
+    {
+      "blob_sha1": "d39d35a1188115bf559cba303cee1610d1ebbfdd",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "refit"
+      ],
+      "jobs": [
+        "refit"
+      ],
+      "path": ".github/workflows/postflop-response-refit.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "2a57596fe797ac014d9046cdc8ce376a1c4899faac212ff3a13e1953cbb05399"
+    },
+    {
+      "blob_sha1": "f037598e5d3d0163e7e42d64ce1ffd347d45927e",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "preflop-grid"
+      ],
+      "jobs": [
+        "preflop-grid"
+      ],
+      "path": ".github/workflows/preflop-grid-evaluator.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "74bb235bbdc346876bc2601fc1deaf13ce944d85aa17f856ed413124e4fa1b85"
+    },
+    {
+      "blob_sha1": "c595638ed5b380223d3c17f5d61d6570cff0e715",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "contract"
+      ],
+      "jobs": [
+        "contract"
+      ],
+      "path": ".github/workflows/preflop-policy169.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "31f41be2c7fe83ba32cc3a2e006886308d577df5dfa31ffab797efa4c7a4fa3a"
+    },
+    {
+      "blob_sha1": "687396af463cfff1b37680d0ded0c06fa7e07cf2",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "contract"
+      ],
+      "jobs": [
+        "contract"
+      ],
+      "path": ".github/workflows/preflop-search.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "97d989fd12e8e7e7bb62ed0be8692dd0d42d2ebc1d1c6291b7b9eb6c6def4cb1"
+    },
+    {
+      "blob_sha1": "6d12ba5895e06179cdbdacff70097c1b2c94fdd8",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "contract"
+      ],
+      "jobs": [
+        "contract"
+      ],
+      "path": ".github/workflows/release-handoff-contract.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "3287371f23cf7546f12e22b0f5183dce16a28375474f1a2dc3d292d8d394c65f"
+    },
+    {
+      "blob_sha1": "c9425ee96ffb7f1870e0dbfb5561796873db8c2f",
+      "browser_calls": 0,
+      "composite_jobs": [
+        "contract"
+      ],
+      "jobs": [
+        "contract"
+      ],
+      "path": ".github/workflows/hero-population-strategy.yml",
+      "references_browser": false,
+      "references_runtime": true,
+      "runtime_calls": 1,
+      "sha256": "f633d6a2f2701833305eee9d7b99dcdfa9b798471c698dcb25ded21c1bde53c9"
+    }
+  ],
+  "deferred_migrations": [
+    {
+      "job": "browser-smoke",
+      "migratable": false,
+      "primitives": {
+        "inline_browser": 1,
+        "inline_environment": 1,
+        "setup_python": 1
+      },
+      "reason": "static site assembly runs between Python setup and the locked dependency install; the composite cannot be inserted without reordering the assembly and re-baselining immutable v1 evidence",
+      "recorded_by": "analysis/workflow_audit/repro_composite_factorization_v1.json",
+      "workflow": ".github/workflows/population-pack-catalog.yml"
+    }
+  ],
+  "inline_bootstrap": {
+    "consumer_matches": 3,
+    "matches": {
+      ".github/workflows/population-pack-catalog.yml": {
+        "browser-smoke": {
+          "inline_browser": 1,
+          "inline_environment": 1,
+          "setup_python": 1
+        }
+      }
+    },
+    "patterns": {
+      "inline_browser": "python3 tools/repro_ci_browser.py",
+      "inline_environment": "python3 tools/repro_ci_environment.py",
+      "setup_node": "uses: actions/setup-node@",
+      "setup_python": "uses: actions/setup-python@"
+    },
+    "recorded_exceptions": [
+      {
+        "evidence": "analysis/workflow_audit/repro_composite_factorization_v1.json",
+        "job": "browser-smoke",
+        "migratable": false,
+        "path": ".github/workflows/population-pack-catalog.yml",
+        "primitives": {
+          "inline_browser": 1,
+          "inline_environment": 1,
+          "setup_python": 1
+        },
+        "reason": "static site assembly runs between Python setup and the locked dependency install; the composite cannot be inserted without reordering the assembly and re-baselining immutable v1 evidence"
+      }
+    ]
+  },
+  "issue": 204,
+  "local_test_commands": [
+    "python3 tests/ci/test_repro_composite_factorization.py",
+    "python3 tools/audit_repro_composite_factorization.py --check-adoption"
+  ],
+  "residual_duplicates": {
+    "composite_actions": {
+      ".github/actions/repro-browser/action.yml": {
+        "checkout": 0,
+        "download_artifact": 0,
+        "inline_browser": 1,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0
+      },
+      ".github/actions/repro-runtime/action.yml": {
+        "checkout": 0,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 1,
+        "upload_artifact": 0
+      }
+    },
+    "composite_totals": {
+      "checkout": 0,
+      "download_artifact": 0,
+      "inline_browser": 1,
+      "inline_environment": 1,
+      "npm_install": 0,
+      "pip_install": 0,
+      "playwright_install": 0,
+      "setup_node": 1,
+      "setup_python": 1,
+      "upload_artifact": 0
+    },
+    "consumer_totals": {
+      "checkout": 21,
+      "download_artifact": 1,
+      "inline_browser": 1,
+      "inline_environment": 1,
+      "npm_install": 0,
+      "pip_install": 0,
+      "playwright_install": 0,
+      "setup_node": 0,
+      "setup_python": 1,
+      "upload_artifact": 4
+    },
+    "consumers": [
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/trainer-smoke.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-range-editor.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-range-compliance.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 1,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/population-pack-catalog.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/dataset-integrity.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 1,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/full-hand-arena.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/full-hand-protocol.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/hero-calculated-range-export.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-card-aware-runtime.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-reveal-aware.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/postflop-response-refit.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-grid-evaluator.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-policy169.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-search.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/release-handoff-contract.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-population-strategy.yml"
+      }
+    ],
+    "measurement_note": "counters are measured by textual scan of each workflow at this SHA; setup-python/setup-node/verify/bootstrap now live once per composite action",
+    "repository_rows": [
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/analysis-state-contract.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/continuous-training-cycle.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/dataset-integrity.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/finalize-training-cycle.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 1,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/full-hand-arena.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/full-hand-protocol.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/game-core.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/hero-calculated-range-export.yml"
+      },
+      {
+        "checkout": 4,
+        "download_artifact": 1,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 2,
+        "setup_python": 3,
+        "upload_artifact": 2,
+        "workflow": ".github/workflows/hero-full-169-evidence.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-pfpc-evidence-validation.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-population-strategy.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-range-compliance.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-range-editor.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/hero-range-pfc-context.yml"
+      },
+      {
+        "checkout": 5,
+        "download_artifact": 4,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 5,
+        "upload_artifact": 5,
+        "workflow": ".github/workflows/hero-unopened-multiposition-generation.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/ingest-artifacts.yml"
+      },
+      {
+        "checkout": 4,
+        "download_artifact": 3,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 4,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/issue-358-hero-preflop-generation.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/issue-367-real-iso-ev-observable.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 2,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/issue-367-real-iso-ev.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 2,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/materialize-certified-population.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-a-continuation.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-aggressive-tail.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-build.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-card-aware-fit.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-card-aware-runtime.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-conditioned-runtime.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-evaluation.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-features.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-observed-vs-simulated-calibration.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-preflop-response-price-2a.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-preflop-response-price-scaffold.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-preflop-sensitivity-harness.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-profile-selection.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-response-audit.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 1,
+        "playwright_install": 1,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-response-to-price-evaluation.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/model-b-response-v3.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-reveal-aware.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/model-b-support-aware-backoff.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 2,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/persist-issue-107-pfpc.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/plan-ingested-cycle.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/population-certification.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 1,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/population-pack-catalog.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/population-pack-real-admission-audit.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 4,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 2,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/population-pack.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/postflop-response-refit.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-contract.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-grid-evaluator.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-policy169.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-search.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-strategy-benchmark-v2.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-strategy-support-closed.yml"
+      },
+      {
+        "checkout": 6,
+        "download_artifact": 6,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 4,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/preflop-strategy-test-pfpc.yml"
+      },
+      {
+        "checkout": 5,
+        "download_artifact": 5,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 4,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/preflop-strategy-validation-pfpc.yml"
+      },
+      {
+        "checkout": 3,
+        "download_artifact": 4,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 3,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/preflop-strategy-validation-support-closed.yml"
+      },
+      {
+        "checkout": 3,
+        "download_artifact": 4,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 3,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/preflop-strategy-validation-v2.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 1,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/preflop-topology-contract.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/project-state-consistency.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/promotion-gate-final.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 6,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 1,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/recover-issue-107-pfpc.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/release-handoff-contract.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 2,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/release-no-pending-snapshot-proof.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 1,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/repro-scientific-environment.yml"
+      },
+      {
+        "checkout": 4,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 3,
+        "playwright_install": 3,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/sequential-arena.yml"
+      },
+      {
+        "checkout": 4,
+        "download_artifact": 5,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 1,
+        "playwright_install": 1,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 3,
+        "workflow": ".github/workflows/strategic-benchmark-v3.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 1,
+        "playwright_install": 1,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/strategy-candidate-v84.yml"
+      },
+      {
+        "checkout": 2,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 0,
+        "workflow": ".github/workflows/trainer-smoke.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/unseen-preflop-context-audit.yml"
+      },
+      {
+        "checkout": 1,
+        "download_artifact": 0,
+        "inline_browser": 0,
+        "inline_environment": 2,
+        "npm_install": 0,
+        "pip_install": 0,
+        "playwright_install": 0,
+        "setup_node": 0,
+        "setup_python": 1,
+        "upload_artifact": 1,
+        "workflow": ".github/workflows/user-artifact-bundle.yml"
+      },
+      {
+        "checkout": 4,
+        "download_artifact": 2,
+        "inline_browser": 0,
+        "inline_environment": 0,
+        "npm_install": 0,
+        "pip_install": 2,
+        "playwright_install": 2,
+        "setup_node": 0,
+        "setup_python": 0,
+        "upload_artifact": 2,
+        "workflow": ".github/workflows/v84-strategy-candidate.yml"
+      }
+    ],
+    "repository_totals": {
+      "checkout": 115,
+      "download_artifact": 43,
+      "inline_browser": 1,
+      "inline_environment": 27,
+      "npm_install": 0,
+      "pip_install": 8,
+      "playwright_install": 8,
+      "setup_node": 8,
+      "setup_python": 70,
+      "upload_artifact": 53
+    },
+    "workflow_inventory_pattern_totals": {
+      "checkout": 115,
+      "download_artifact": 43,
+      "npm_install": 0,
+      "pip_install": 8,
+      "playwright_install": 8,
+      "setup_node": 8,
+      "setup_python": 70,
+      "upload_artifact": 53
+    }
+  },
+  "rewrites_v1_evidence": false,
+  "schema": "poker-repro-composite-adoption/v1",
+  "scientific_commands_changed": false,
+  "source_evidence": {
+    "path": "analysis/workflow_audit/repro_composite_factorization_v1.json",
+    "rewritten": false,
+    "sha256": "c06120b8b7d45dd3a4201a2e94fa3e6e3c7f29a335546651a867a2ba009f4ccf"
+  },
+  "task": "backlog-887",
+  "unknowns": [
+    {
+      "detail": "no run was observed at this SHA; adoption is proven statically only",
+      "id": "ci_observation"
+    },
+    {
+      "detail": "retention-days are declared in YAML; actual retention and expiry are runtime state and are not measurable from a checkout",
+      "id": "artifact_retention_after_run"
+    },
+    {
+      "detail": "gh run download targets artifacts of other runs; their existence is not verifiable locally",
+      "id": "cross_run_artifact_availability"
+    },
+    {
+      "detail": "artifact names containing ${{ ... }} are matched as shapes, so name-level fan-in/fan-out edges are partial",
+      "id": "dynamic_artifact_names"
+    },
+    {
+      "detail": "cost proxies are structural; no billed minutes were measured",
+      "id": "github_billed_minutes"
+    }
+  ],
+  "workflow_files_modified": [],
+  "write_surface_expanded": false
+}
