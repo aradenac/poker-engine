@@ -58,6 +58,21 @@ Review inbox **in a browser**:
    The restored list is read page by page, so a restored filter that overflows
    one measured page is still compared whole instead of from page 1 alone.
 
+Why the waits are causal (and not timed)
+----------------------------------------
+No paint and no persistence is carried by a fixed budget any more. The inbox
+tab click (`activateAppSubview("inbox")`) calls `renderHistoryHands()` inside
+the click itself: the smoke proves that synchronous paint with a DOM count taken
+the moment `page.click` returns, then measures the page with the same atomic
+inject+repaint read the rest of the file uses. The prefs step waits for what the
+reload really re-reads (`localDbGet("prefs")` → `hhSort` / `result`
+`reviewInboxFilters.result`, the two fields `restoreLocalState` applies), plus
+the served saved chip, instead of matching a status *message* against the
+status *chip* — the exact mismatch that made the old 20 s wait unsatisfiable
+(`persistenceStatus` writes « Sauvegardé localement » into
+`#localPersistenceStatus` and the message into `#localPersistenceDetail`,
+`site/index.html:2546-2548`).
+
 Why the review scores are injected
 ----------------------------------
 The inbox ordering of the EV dimension is a pure function of `state.reviewScores`
@@ -91,6 +106,7 @@ import json
 import re
 import sys
 import threading
+import time
 from datetime import datetime, timezone
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -137,6 +153,18 @@ HAND_TOTAL = fixture_builder.HAND_TOTAL
 # measured mismatches instead of drifting into a flaky assertion later.
 REVIEW_SCORE_SETTLE_ATTEMPTS = 4
 REVIEW_SCORE_SETTLE_MS = 400
+# #395 T1 (rework) — la préférence (tri + filtre résultat) est désormais
+# attendue sur son *effet persistant*, jamais sur un texte de la pastille de
+# statut. `persistenceStatus` (site/index.html:2544-2549) écrit le libellé
+# « Sauvegardé localement » dans `#localPersistenceStatus` et le message
+# « Sauvegarde locale automatique active · … » dans `#localPersistenceDetail` :
+# attendre ce message dans la pastille ne peut *jamais* aboutir, d'où le
+# `TimeoutError: Timeout 20000ms exceeded` reproductible du job browser-smoke.
+# Le libellé épinglé ici est celui du contrat servi, déjà asserté par
+# tests/trainer/smoke_trainer.py (`local_persistence["saved"]`).
+PERSISTENCE_SAVED_LABEL = "Sauvegardé localement"
+PREFS_PERSIST_POLL_MS = 100
+PREFS_PERSIST_TIMEOUT_MS = 20_000
 
 
 def _parse_timestamp(value: str) -> datetime:
@@ -303,6 +331,27 @@ OPEN_DEEP_LINK_JS = """() => ({
   status:(document.querySelector('#replayerExportStatus')||{}).textContent||'',
   statusClass:(document.querySelector('#replayerExportStatus')||{}).className||''
 })"""
+
+# #395 T1 (rework) — la lecture causale de la persistance des préférences. Elle
+# relit exactement ce que `restoreLocalState` relira au prochain chargement
+# (`localDbGet("prefs")`, site/index.html:9953 puis l'application des codes en
+# 9970-10000) et, à titre de contrôle de surface, le libellé de la pastille
+# servie. Un texte attendu dans le mauvais élément — la panne corrigée ici — ne
+# peut plus faire expirer une attente à 20 s : c'est la *valeur persistée* qui
+# décide.
+PERSISTED_PREFS_FN = """async () => {
+  const prefs=await localDbGet('prefs').catch(()=>null);
+  const filters=prefs&&prefs.reviewInboxFilters&&typeof prefs.reviewInboxFilters==='object'
+    ?prefs.reviewInboxFilters:null;
+  return {
+    stored:!!prefs,
+    busy:!!state.persistPrefsTimer,
+    sort:prefs?String(prefs.hhSort||''):'',
+    result:filters?String(filters.result||''):'',
+    chip:(document.querySelector('#localPersistenceStatus')||{}).textContent||'',
+    detail:(document.querySelector('#localPersistenceDetail')||{}).textContent||''
+  };
+}"""
 
 # The in-page helpers are installed once per document. Selecting a hand lets the
 # app rewrite that hand's review score from its own asynchronous replayer work
@@ -524,6 +573,37 @@ async def _stabilise_review_scores(page, payload: dict) -> dict:
     )
 
 
+async def _wait_persisted_prefs(page, *, sort: str, result: str) -> dict:
+    """#395 T1 (rework) — attendre l'*effet persistant* des préférences.
+
+    Le smoke écrit `loss_desc` + `LOSS` puis force le writer débouncé
+    (`schedulePersistPrefs(0)`) avant de recharger la page. La garantie qui
+    compte n'est pas un libellé d'interface mais ce que `restoreLocalState`
+    relira : les préférences réellement écrites sous la clé `prefs` du store
+    local. Cette boucle lit cette valeur (jamais un délai fixe) et échoue avec
+    l'état mesuré — pastille et détail servis inclus — si elle n'y arrive pas.
+    """
+    deadline = time.monotonic() + PREFS_PERSIST_TIMEOUT_MS / 1000
+    last: dict = {}
+    while True:
+        last = await page.evaluate(PERSISTED_PREFS_FN)
+        if (
+            last["stored"]
+            and not last["busy"]
+            and last["sort"] == sort
+            and last["result"] == result
+            and last["chip"].strip() == PERSISTENCE_SAVED_LABEL
+        ):
+            return last
+        if time.monotonic() >= deadline:
+            raise AssertionError(
+                "les préférences (tri/filtre) n'ont pas atteint leur état persistant "
+                f"avant le reload (attendu {sort}/{result}): "
+                f"{json.dumps(last, ensure_ascii=False)}"
+            )
+        await page.wait_for_timeout(PREFS_PERSIST_POLL_MS)
+
+
 async def run() -> None:
     assert FIXTURE.is_file(), f"fixture de grande liste introuvable: {FIXTURE}"
     specs = fixture_builder.hand_specs()
@@ -595,11 +675,28 @@ async def run() -> None:
 
                 # --- The inbox paints one bounded page -------------------------
                 await page.click("#reviewInboxTab")
-                await page.wait_for_function(
-                    "() => document.querySelectorAll('#hhHands .hh-hand').length > 0",
-                    timeout=20_000,
+                assert await page.locator("#handSelectionSection").is_visible()
+                # #395 T1 (rework) — la peinture n'est plus portée par un budget
+                # fixe. `activateAppSubview("inbox")` (site/index.html:7029)
+                # rappelle `renderHistoryHands()` *dans le clic* : l'appli a donc
+                # déjà peint sa première page quand `page.click` rend la main, et
+                # le décompte ci-dessous le prouve sans aucun délai. La mesure
+                # ensuite relit la même page par l'évaluation atomique
+                # inject+repaint (`window.__reviewInboxSmoke.inject` →
+                # `renderHistoryHands` → lecture DOM) : aucune attente de temps
+                # ne garantit plus la peinture, celle-ci est un état mesuré.
+                painted_by_click = await page.evaluate(
+                    "() => document.querySelectorAll('#hhHands .hh-hand').length"
                 )
-                first_page = await _read(page)
+                assert painted_by_click > 0, (
+                    "le clic sur l'onglet Inbox doit peindre la première page "
+                    f"(lignes peintes: {painted_by_click})"
+                )
+                audit["tab_click_paints"] = {"first_visit": painted_by_click}
+                first_page = await _inject_and_read(page, payload)
+                assert first_page["ids"], (
+                    "la page mesurée doit peindre au moins une main", first_page
+                )
                 assert_bounded(first_page, "page 1")
                 assert_page_size_target(first_page, "page 1")
                 assert first_page["page"] == 0 and len(first_page["ids"]) < HAND_TOTAL, first_page
@@ -742,14 +839,19 @@ async def run() -> None:
                 )
                 # The two changes are persisted by a debounced writer
                 # (`schedulePersistPrefs`, 80 ms): force it and wait for the real
-                # "saved" status before reloading, so the restore always reads
+                # persisted prefs before reloading, so the restore always reads
                 # the preferences this smoke just wrote.
                 await page.evaluate("() => { schedulePersistPrefs(0); return true; }")
-                await page.wait_for_function(
-                    "() => { const el=document.getElementById('localPersistenceStatus');"
-                    " return !state.persistPrefsTimer && !!el"
-                    " && /Sauvegarde locale automatique active/.test(el.textContent); }",
-                    timeout=20_000,
+                # #395 T1 (rework) — l'ancienne attente testait
+                # `/Sauvegarde locale automatique active/` sur
+                # `#localPersistenceStatus.textContent`, un texte que la coque
+                # servie n'écrit *jamais* dans cette pastille (elle y écrit
+                # « Sauvegardé localement », le message partant dans
+                # `#localPersistenceDetail`) : l'attente ne pouvait pas aboutir
+                # et mourait en `Timeout 20000ms exceeded`. On attend maintenant
+                # la valeur relue par le reload (`localDbGet("prefs")`).
+                audit["prefs_persisted"] = await _wait_persisted_prefs(
+                    page, sort="loss_desc", result="LOSS"
                 )
                 await page.reload(wait_until="domcontentloaded", timeout=45_000)
                 await page.wait_for_function("() => state.persistenceReady===true", timeout=45_000)
@@ -761,11 +863,22 @@ async def run() -> None:
                 )
                 await _stabilise_review_scores(page, payload)
                 await page.click("#reviewInboxTab")
-                await page.wait_for_function(
-                    "() => document.querySelectorAll('#hhHands .hh-hand').length > 0",
-                    timeout=20_000,
+                assert await page.locator("#handSelectionSection").is_visible()
+                # Même peinture causale qu'à la première visite : le clic
+                # d'onglet peint, puis la relecture inject+repaint mesure la page
+                # restaurée, sans budget de temps.
+                restored_painted_by_click = await page.evaluate(
+                    "() => document.querySelectorAll('#hhHands .hh-hand').length"
                 )
-                restored = await _read(page)
+                assert restored_painted_by_click > 0, (
+                    "le clic sur l'onglet Inbox doit repeindre la liste restaurée "
+                    f"(lignes peintes: {restored_painted_by_click})"
+                )
+                audit["tab_click_paints"]["after_reload"] = restored_painted_by_click
+                restored = await _inject_and_read(page, payload)
+                assert restored["ids"], (
+                    "la liste restaurée doit peindre au moins une main", restored
+                )
                 assert restored["sort"] == "loss_desc" and restored["sortValue"] == "loss_desc", restored
                 assert restored["result"] == "LOSS" and restored["resultValue"] == "LOSS", restored
                 # The restore re-applies `reviewInboxPage:0` (both change
