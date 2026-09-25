@@ -1,0 +1,908 @@
+{
+  "aggregate": {
+    "allowlist_size": 15,
+    "artifact_identity_changed": false,
+    "automatic_triggers_present": {
+      "pull_request": 0,
+      "push": 0,
+      "schedule": 0,
+      "workflow_run": 0
+    },
+    "automatic_triggers_removed_vs_pre_migration": {
+      "pull_request": 1,
+      "push": 15
+    },
+    "bytes_identical_to_quarantine_reference": 15,
+    "current_or_frozen_workflows_modified": 0,
+    "dispatch_configuration_preserved": 15,
+    "evidence_v1_unchanged": true,
+    "historical_candidates_confirmed": 15,
+    "non_trigger_bytes_identical_to_pre_migration": 15,
+    "non_trigger_bytes_identical_to_quarantine_reference": 15,
+    "scientific_commands_changed": false,
+    "source_inventory_matches_regenerated": true,
+    "trigger_only_delta_reproduces_current": 15,
+    "workflows_confirmed_manual_only": 15,
+    "workflows_with_automatic_triggers": 0
+  },
+  "allowlist": [
+    ".github/workflows/finalize-training-cycle.yml",
+    ".github/workflows/model-b-build.yml",
+    ".github/workflows/model-b-conditioned-runtime.yml",
+    ".github/workflows/model-b-evaluation.yml",
+    ".github/workflows/model-b-features.yml",
+    ".github/workflows/model-b-profile-selection.yml",
+    ".github/workflows/model-b-response-v3.yml",
+    ".github/workflows/preflop-strategy-support-closed.yml",
+    ".github/workflows/preflop-strategy-validation-support-closed.yml",
+    ".github/workflows/preflop-strategy-validation-v2.yml",
+    ".github/workflows/promotion-gate-final.yml",
+    ".github/workflows/strategic-benchmark-v3.yml",
+    ".github/workflows/strategy-candidate-v84.yml",
+    ".github/workflows/unseen-preflop-context-audit.yml",
+    ".github/workflows/v84-strategy-candidate.yml"
+  ],
+  "base_sha": "0a2bb1182d695ea9ba479806c770e7dc7bffd1dc",
+  "base_sha_role": "current main SHA this proof is re-bound to; the only paths changed since it are this issue's allowlisted scope",
+  "evidence_v1": {
+    "expected_sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8",
+    "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+    "rebind": "edition-1 per-workflow fingerprints recomputed from Git objects and the current checkout",
+    "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8",
+    "unchanged": true
+  },
+  "issue": 373,
+  "references": {
+    "pre_migration_reference_sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+    "pre_migration_reference_sha_role": "pre-#373 bytes recorded as edition 1's base SHA; only the trigger block may differ",
+    "quarantine_reference_sha": "938c4af948f3246b04c8b211f834c26e16ea6fef",
+    "quarantine_reference_sha_role": "post-#373 manual-only reference; every allowlisted historical workflow must stay byte-identical to it"
+  },
+  "schema": "poker-engine-historical-workflow-quarantine/v2",
+  "scope": {
+    "allowed_paths": [
+      ".github/workflows/finalize-training-cycle.yml",
+      ".github/workflows/model-b-build.yml",
+      ".github/workflows/model-b-conditioned-runtime.yml",
+      ".github/workflows/model-b-evaluation.yml",
+      ".github/workflows/model-b-features.yml",
+      ".github/workflows/model-b-profile-selection.yml",
+      ".github/workflows/model-b-response-v3.yml",
+      ".github/workflows/preflop-strategy-support-closed.yml",
+      ".github/workflows/preflop-strategy-validation-support-closed.yml",
+      ".github/workflows/preflop-strategy-validation-v2.yml",
+      ".github/workflows/promotion-gate-final.yml",
+      ".github/workflows/strategic-benchmark-v3.yml",
+      ".github/workflows/strategy-candidate-v84.yml",
+      ".github/workflows/unseen-preflop-context-audit.yml",
+      ".github/workflows/v84-strategy-candidate.yml",
+      "analysis/workflow_audit/baseline_metrics.json",
+      "analysis/workflow_audit/consolidation_decision_v1.json",
+      "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+      "analysis/workflow_audit/historical_workflow_quarantine_v2.json",
+      "analysis/workflow_audit/repro_composite_adoption_v1.json",
+      "analysis/workflow_audit/workflows.json",
+      "docs/ci-workflow-audit-closure.md",
+      "docs/ci-workflow-audit.md",
+      "docs/ci-workflow-dag.md",
+      "tests/ci/test_consolidation_decision.py",
+      "tests/ci/test_historical_workflow_quarantine.py",
+      "tests/ci/test_repro_composite_factorization.py",
+      "tools/audit_active_workflow_dag.py",
+      "tools/audit_historical_workflow_quarantine.py",
+      "tools/audit_repro_composite_factorization.py"
+    ],
+    "changed_since_base": [
+      "analysis/workflow_audit/consolidation_decision_v1.json",
+      "analysis/workflow_audit/repro_composite_adoption_v1.json",
+      "docs/ci-workflow-audit-closure.md",
+      "docs/ci-workflow-audit.md",
+      "docs/ci-workflow-dag.md",
+      "tests/ci/test_consolidation_decision.py",
+      "tests/ci/test_historical_workflow_quarantine.py",
+      "tests/ci/test_repro_composite_factorization.py",
+      "tools/audit_active_workflow_dag.py",
+      "tools/audit_historical_workflow_quarantine.py",
+      "tools/audit_repro_composite_factorization.py"
+    ],
+    "outside_scope": []
+  },
+  "source_inventory": {
+    "matches_regenerated": true,
+    "path": "analysis/workflow_audit/workflows.json",
+    "regenerated_sha256": "5ca3beda7e4486bf9cf9871454fe00610ed2d9c860e23ff4412807e1fa1f3d9f",
+    "sha256": "5ca3beda7e4486bf9cf9871454fe00610ed2d9c860e23ff4412807e1fa1f3d9f"
+  },
+  "trigger_guard": {
+    "enforced_by": "tools/audit_historical_workflow_quarantine.py:require_manual_only",
+    "forbidden_events": [
+      "push",
+      "pull_request",
+      "schedule",
+      "workflow_run"
+    ],
+    "manual_only_event": "workflow_dispatch",
+    "rule": "every allowlisted historical workflow must declare workflow_dispatch and no other event; any listed or unlisted automatic event fails the audit"
+  },
+  "workflows": [
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "ba33a4d6f5c188721146245580797bfd1b8f264e",
+      "concurrency_fingerprint": "b757ddd8ad0bfb1c05ee8d226f888a189a1d8766c45e18817e61c694f8c584d7",
+      "content_sha256": "b10e1a4de59c930c3e9f905ea54809936a48a49d9e8458195f48ecf233797081",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "ba33a4d6f5c188721146245580797bfd1b8f264e",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "65575653afff78acb918aa56a50a3a665adb2282affef5ab239fa5d7d7448a9b",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/finalize-training-cycle.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "1975bd1ab7cf36a0eedbeb6819a98d12fa362370f8a07223b18a5fca6236dd63",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "b10e1a4de59c930c3e9f905ea54809936a48a49d9e8458195f48ecf233797081",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "dc62964556f2420c1458bcc1e696bf9e03e568f35f86fa3117b689011418477b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "b573d052ee80cb85fffdb6f854c66c1dc99175f2f59c1bfcc92919070daa8bf2",
+      "automatic_triggers": [],
+      "blob_sha": "69f995e98f6f27927a5e2af507fbe44a99b0d43d",
+      "concurrency_fingerprint": "61a5d45d1db564be148508c8134eddd90e0d3c1efcc08a40f4ea022a6446e0b8",
+      "content_sha256": "88eb165a2b46286f18c3ce5bd6e7d4de547179704699542a17b1ded09bbdb0b2",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "69f995e98f6f27927a5e2af507fbe44a99b0d43d",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "7d4c75549a627e4641b80286c82984e5beefd16485501c5df497a447f77b9899",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/model-b-build.yml",
+      "permissions_fingerprint": "e8f2263b0413f25128aa11d16dd3ae0ef6b0c660fb5b1dc08fe71e0a7daabb4b",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "b805bc3e081a1a12cb92946001d8f379fa8fba4be4376a670404ba628d42473b",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "88eb165a2b46286f18c3ce5bd6e7d4de547179704699542a17b1ded09bbdb0b2",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "c4c925dd95bf970ee8c97785f5192e7255f334ab058b4b4c2419e18cae609e1d",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "5ffecff6c4f2082b8cbc4fe86e00f2a37cea59e9",
+      "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "content_sha256": "8add4fb9d980a6f97eccd82c1561663e9f7cb59272874b2e6cbf64e8b39d9e07",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "5ffecff6c4f2082b8cbc4fe86e00f2a37cea59e9",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "6e01b671af5fd90908ae20280934d915b423f4a79f41b75ed44e5ca1584d0b52",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/model-b-conditioned-runtime.yml",
+      "permissions_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "383fa06da6efe0562947e41ed7a21fe412fdc38ab4ea1a40bae808371a82d954",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "8add4fb9d980a6f97eccd82c1561663e9f7cb59272874b2e6cbf64e8b39d9e07",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "d1a86b2d88f735cacd2b8805676cd799b1054f30575be1a16fad2c17ca7cf438",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "8c37ae7f0265349faa9b21089724e168e17729a8",
+      "concurrency_fingerprint": "d2001d81d450b132195d7fe81e29a9bc977ba95b6c0a52e1f22e7a7057905433",
+      "content_sha256": "564dfecabf9026da736782d82a4f34bc680075f224ad30e05a3c2b30ad124032",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "8c37ae7f0265349faa9b21089724e168e17729a8",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "48d9f68b0f6f02430ebd6b54b1c11db98538babf1dfbfe61c2d598f6c2f12acf",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/model-b-evaluation.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "92f2806b5c12c378526cdb06ec1c31c6dde0c7fcdefbecdd384159682352314d",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "564dfecabf9026da736782d82a4f34bc680075f224ad30e05a3c2b30ad124032",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "99656ca09d3052cdd8449dced8900543a77036b0bda720498dda6abd0652a603",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "ca32f56066a2b0077da9d53578f3a3a3f911bf13",
+      "concurrency_fingerprint": "dd6b0ab03923398232b0501532cb0aea01c29f4939d6c11079268c9490d1e67b",
+      "content_sha256": "2b08f6ca7448eb48ffce53f88f246fd590fe901a947db6c825b8b92b133687ba",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "ca32f56066a2b0077da9d53578f3a3a3f911bf13",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "a15d16afccbecbe9cc59f89405f59fb8ec74de4ffee43295e374ccf331b0e874",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/model-b-features.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "be890ce422ce842c63295cee8234b63d80d295194b2f7ce9a6f9caeee9666333",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "2b08f6ca7448eb48ffce53f88f246fd590fe901a947db6c825b8b92b133687ba",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "1fda1e69e4d932d571840f5172c57f61aad40f1f4146d5fe6c539ca9719e3931",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "258fd71e4db64141852ba550a29d1f4177d45bfa",
+      "concurrency_fingerprint": "358cf7c0dda51a20508c6bda0fbf34b40e5c714f0eb06ed7c9dd8c84d18a65d7",
+      "content_sha256": "526e2867f825c0a943ffc6026832c0fa5957a53a845c7a695653753e15649c3f",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "258fd71e4db64141852ba550a29d1f4177d45bfa",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "1d2c8d2b63d73f2115198e4bb1061917782b5f085e6bee8db279eea010a7242c",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/model-b-profile-selection.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "1ca291de1d1598fe2dc66f8ba109bc652149121abc102998fdbb53ca882bfcab",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "526e2867f825c0a943ffc6026832c0fa5957a53a845c7a695653753e15649c3f",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "e9a412d1aadb91fffea9f03a3efe954d2b4aa2b4cc703691b29499daa7b77a9f",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "0d6f73f0c7d9e6e5ae520f1db694889fcac08d5a",
+      "concurrency_fingerprint": "f30ab355d2258aa3eaf6f21e1fc723892be5c3e725a8a3caec97ab3bea7a1f37",
+      "content_sha256": "a6730456c3b3d04c63461e99a4a29c3bb8bc35f9e56097a5b2672083aa528bfb",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "0d6f73f0c7d9e6e5ae520f1db694889fcac08d5a",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "763ae5e670d285ed51e275529a41e0d681977d1866bfe719b813dc6d7ab5f131",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/model-b-response-v3.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "6ce2e891cd5e6431d80fb73097288a109cdfc2afdad842a57ef92e916c82a5da",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "a6730456c3b3d04c63461e99a4a29c3bb8bc35f9e56097a5b2672083aa528bfb",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "0b434f6f2bf815aca0bd9fbefa5498e4da73b4786c434bcf038ba3e2c514d7cc",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "6dbf0c9e82c8921d0140ea8d3d995f2839002390",
+      "concurrency_fingerprint": "a7213a829e00acc2e2833b5161e7152226a0fcc9ba97c72f9628a73c6a4b1f0e",
+      "content_sha256": "731b1f12e489e2b759dd799b43dea321db52eafb514341b7aefd1ed22ff1616f",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "6dbf0c9e82c8921d0140ea8d3d995f2839002390",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "4ff055f19a01e6132dc2c68ec2a8b5d17327e32fe9aad42165778026c76e024e",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/preflop-strategy-support-closed.yml",
+      "permissions_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "pull_request",
+          "push"
+        ],
+        "content_sha256": "4eeee4d75fe59530f4044288e9a2053558570e51d2abcfe3feb6719d507d9572",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "pull_request",
+          "push"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "731b1f12e489e2b759dd799b43dea321db52eafb514341b7aefd1ed22ff1616f",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "e3530cfe22e1df27285afc8a2f3509f968da8b7fdfc60d9ef287421154f5dbb5",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "dbc6d830e946bc2da3ff197842e215e9149178b2816d756be259e5caf662dad7",
+      "automatic_triggers": [],
+      "blob_sha": "83cf03b66befb5c289c359741a034cec0efbd6dd",
+      "concurrency_fingerprint": "116f080118c6b4aacb3fc89d197e1c635a0c901f302941e4244c2ffbeb5b0aaa",
+      "content_sha256": "e8be55688a880e9581a4dd6bd709d5da503729447eef1d6a3c8024ba93c4f8f1",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "83cf03b66befb5c289c359741a034cec0efbd6dd",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "50fad96492e73c5e2bf9d2e6ee0f423984a2c177d0bee7cfe0b924101781921d",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+      "permissions_fingerprint": "10475fb7d0b43c3392ebc0bb214295b8b60f8c9fb9ec418b6d935d61a99c0d54",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "458c3bb7130894d9220591b9e391d01a0c0d0943168acc2dd84bbc8f30318631",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "e8be55688a880e9581a4dd6bd709d5da503729447eef1d6a3c8024ba93c4f8f1",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "e4eda3ff204bf0d4db5480384a3bd511b26b0e0e3ff363879cd5574fe6d7c7f1",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "f60583e6e4b77690c3c183cd9c0927aab86db87a3959cf4719c42171d5c29c2b",
+      "automatic_triggers": [],
+      "blob_sha": "c50923ce563fecdf1357cea68937cfdf983611ee",
+      "concurrency_fingerprint": "2d97b12815eaf8feb0589cd48b0282bcd3de0dd7c1bdcc21f118334165f64999",
+      "content_sha256": "733f01909fe7ac97856325ef666f39bdbf8864c483fd1e85f84519b9a4d23632",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "c50923ce563fecdf1357cea68937cfdf983611ee",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "1af855a4529057b1c45e98622b811bdbfedf46592ec403057521014e05568340",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/preflop-strategy-validation-v2.yml",
+      "permissions_fingerprint": "10475fb7d0b43c3392ebc0bb214295b8b60f8c9fb9ec418b6d935d61a99c0d54",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "709166dcedbd6fc8dbf88853254389620451b9125bf9b1e79af601ac69818448",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "733f01909fe7ac97856325ef666f39bdbf8864c483fd1e85f84519b9a4d23632",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "d3e6b4c336037a92340adbdbf0041bbcdc44df426ba334d99ad57f9eb4168003",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "979cbc3aa872135a3d22c0127ada767551cf5b74c2f814ea0f3ab7c114ff1cdd",
+      "automatic_triggers": [],
+      "blob_sha": "07dc2092806bf86ba41515f5d31bcb2d191da4a4",
+      "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "content_sha256": "8ae2678356ed1dfa8e1421b5909c78c8d38d4009197ad276d93103448b931130",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "07dc2092806bf86ba41515f5d31bcb2d191da4a4",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "a5f95b917ef7323aa0998969f8facff9a7f539a23ad183615197b2a57c7b287c",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/promotion-gate-final.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "a138eee9eeee11e9b24af5844f6ed543d62e99cdcf3aea6bdc691085090a4e60",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "8ae2678356ed1dfa8e1421b5909c78c8d38d4009197ad276d93103448b931130",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "29aa663bf539984961c0b4b0ebfc16f1c79aeb816d2c33c0da41a0356dfdcfff",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "782016eae0c6b7ba77a4f21dee55ae7b962821d89542530ab4391f637437fb8c",
+      "automatic_triggers": [],
+      "blob_sha": "cf683d53fcaed1d4cc685b25f038e1366e441901",
+      "concurrency_fingerprint": "f08b7a58b043c7ef86a65de97925744af44ede4e3c764cd01770d58c1e0c09fc",
+      "content_sha256": "9fb8d574672a76d404bf19f32ac995acdd6cb7d4f577905361e39063121a2c5f",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "cf683d53fcaed1d4cc685b25f038e1366e441901",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "c1fd5915e54a3393cb8558babda2e09ed808c44ed6ac10519383fd8b4979bd8a",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/strategic-benchmark-v3.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "5a7e92f6646f100e94163a5ad463254c27b28d5c0d98b6b47d53743c8dba447f",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "9fb8d574672a76d404bf19f32ac995acdd6cb7d4f577905361e39063121a2c5f",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "3ae07b3bc97ed564012d6dbfd1988b1f8ec6732a9e54d061032fca8deb0cf367",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "9a0e9a8907299c383d15176885c5f2ca5b83edcf77d2ff9e5d0f7ea3bc957c60",
+      "automatic_triggers": [],
+      "blob_sha": "39f6d63a0f6d3955749a1f24b1d37cd342529809",
+      "concurrency_fingerprint": "25c086abe7a0e4b2cbb885113482c0d1739521b23ee51e862df502f4a49dc972",
+      "content_sha256": "7857e3c5b2ca8a0fc34fd250e9e36ce2bb0cfde5c2fdf6c17196d3618314cddb",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "39f6d63a0f6d3955749a1f24b1d37cd342529809",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "6a7e6465fd5965ca160a35b438793415887ef9103e0aee58f48dea6e610e9a52",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/strategy-candidate-v84.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "da44b2e635fce9f4ff20bdb7be25c862787549dae224bedb8d550208ccd9adb4",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "7857e3c5b2ca8a0fc34fd250e9e36ce2bb0cfde5c2fdf6c17196d3618314cddb",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "95657383e6c86139e39e72704a0394b1c18e729000570eb11178181611c50337",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "651e3b53d7aca0add58f61845299d86ae80175f83a260a1ec84792ab70183974",
+      "automatic_triggers": [],
+      "blob_sha": "c1a78f1dd2cda7a3acf3059a907509395b8f5f73",
+      "concurrency_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "content_sha256": "34d38f5ffaf5132b4160b8665f4cd38b31f6bd2829dc9f42f854a00030d4fa7f",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "c1a78f1dd2cda7a3acf3059a907509395b8f5f73",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "83499b0ce81f7e5a10bdf1642bc17d13603fd4d3c1eb7ba4762213f70d9f87cf",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/unseen-preflop-context-audit.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "e3aae76445863fde164ca84c8b44c48886b557f2183f0401d180c036bab4e042",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "34d38f5ffaf5132b4160b8665f4cd38b31f6bd2829dc9f42f854a00030d4fa7f",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "76f66250b11c4f556c06528e696c6aec4614838784a3ccf37577fa4d8478a257",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifacts_fingerprint": "cc972165c76b9d8de8194cd9f56b5127a794c540f7de804d9f9e64138e69e348",
+      "automatic_triggers": [],
+      "blob_sha": "4dd7182a30a7b1056456714ee59f9e6217b822ea",
+      "concurrency_fingerprint": "67decc14fecbfbb6c011d099849028cd1a50e8e737242208945f135f314a3968",
+      "content_sha256": "0af903dbe8a0df66313ad5936c1449f9169009d917b2646e263836c334f4be9b",
+      "disposition": "CONFIRMED_MANUAL_ONLY",
+      "evidence_v1": {
+        "after_blob_sha": "4dd7182a30a7b1056456714ee59f9e6217b822ea",
+        "after_fingerprints_match": true,
+        "path": "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+        "sha256": "8bd8477533fa07bd30ccf16a62baa7c83a1ed5ba20afcf0b7dff1eb94f481ac8"
+      },
+      "forbidden_triggers_present": {
+        "pull_request": false,
+        "push": false,
+        "schedule": false,
+        "workflow_run": false
+      },
+      "jobs_fingerprint": "bf873c5d04319943352fb311434483901de728dafcc54f94cfcf42eb4a21202e",
+      "lifecycle": "historical_candidate",
+      "path": ".github/workflows/v84-strategy-candidate.yml",
+      "permissions_fingerprint": "15496fe691ea11aaede654b8d8e8f8410cf112f63381571f4926b11de55cd2cd",
+      "pre_migration": {
+        "automatic_triggers_removed": [
+          "push"
+        ],
+        "content_sha256": "f51b6e198ffda6f057e82c39e384b15a4fdbe408bcd8544039954f4cbd22759b",
+        "dispatch_configuration_identical": true,
+        "non_trigger_bytes_identical": true,
+        "requarantine_reproduces_current": true,
+        "sha": "f8ec90b2ae293a22a65db9dd6874168eec0745d3",
+        "triggers": [
+          "push",
+          "workflow_dispatch"
+        ]
+      },
+      "quarantine_reference": {
+        "bytes_identical": true,
+        "content_sha256": "0af903dbe8a0df66313ad5936c1449f9169009d917b2646e263836c334f4be9b",
+        "non_trigger_bytes_identical": true,
+        "sha": "938c4af948f3246b04c8b211f834c26e16ea6fef"
+      },
+      "trigger_configuration": {
+        "workflow_dispatch": {}
+      },
+      "trigger_insensitive_sha": "1bc97a6b63eb224c6e82bbfbd170932a04da776c1bade8cc8a661846db6707c3",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_dispatch_inputs_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

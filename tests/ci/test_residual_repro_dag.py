@@ -112,29 +112,45 @@ class ResidualReproDagTests(unittest.TestCase):
 
     def test_dag_is_complete_and_unknown_is_never_safe(self) -> None:
         data = dag.build()
-        inventory = json.loads(audit.baseline(audit.INVENTORY))
-        current = {row["path"] for row in inventory["workflows"] if row["lifecycle"] == "current"}
-        dag.validate_data(data, current)
+        inventory = json.loads((ROOT / dag.INVENTORY).read_text())
+        rows = {row["path"]: row for row in inventory["workflows"]}
+        active, manual_only = dag.split_active(rows)
+        dag.validate_data(data, set(active))
         omitted = copy.deepcopy(data)
         omitted["workflows"].pop()
         with self.assertRaises(dag.AuditError):
-            dag.validate_data(omitted, current)
+            dag.validate_data(omitted, set(active))
+        self.assertEqual(set(manual_only), set(data["excluded_manual_only_workflows"]))
+        self.assertEqual(15, len(manual_only))
+        # The active DAG is exactly the automatic-trigger workflows; manual-only is never active.
+        self.assertEqual({row["path"] for row in data["workflows"]}, set(active))
+        self.assertFalse(set(active) & set(manual_only))
         unknown = next(row for row in data["workflows"] if row["side_effect_class"] == "UNKNOWN")
         unknown["concurrency_recommendation"]["safe_candidate_for_future_cancellation_change"] = True
         with self.assertRaises(dag.AuditError):
-            dag.validate_data(data, current)
+            dag.validate_data(data, set(active))
 
     def test_twelve_before_after_scenarios_and_repro_trigger_delta(self) -> None:
         data = dag.build()
         self.assertEqual(data["representative_scenario_count"], 14)
         self.assertTrue(all("before" in row and "after" in row
                             for row in data["representative_scenarios"]))
+        active = {row["path"] for row in data["workflows"]}
+        manual_only = set(data["excluded_manual_only_workflows"])
+        for row in data["representative_scenarios"]:
+            for state in ("before", "after"):
+                matched = set(row[state]["matched_workflows"])
+                self.assertTrue(matched <= active, row["scenario"])
+                self.assertFalse(matched & manual_only, row["scenario"])
         helper = next(row for row in data["representative_scenarios"]
                       if row["scenario"] == "repro_helper")
-        self.assertGreater(helper["after"]["workflow_count"], helper["before"]["workflow_count"])
+        # The tranche changes no workflow, so the pinned base equals HEAD for the simulation.
+        self.assertGreaterEqual(helper["after"]["workflow_count"], helper["before"]["workflow_count"])
         historical = next(row for row in data["representative_scenarios"]
                           if row["scenario"] == "historical_manual_workflow")
-        self.assertEqual(historical["after"]["workflow_count"], 0)
+        self.assertNotIn(".github/workflows/finalize-training-cycle.yml",
+                         historical["after"]["matched_workflows"])
+        self.assertEqual(historical["after"]["workflow_count"], historical["before"]["workflow_count"])
 
 
 if __name__ == "__main__":

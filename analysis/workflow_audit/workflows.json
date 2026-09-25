@@ -1,1706 +1,194 @@
 {
-  "schema": "poker-engine-workflow-inventory/v1",
-  "snapshot_base_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
-  "workflow_count": 54,
   "active_definition": "workflow file present in the audited default-branch snapshot",
-  "path_detail": "path_scopes are normalized top-level scopes for overlap review; tools/audit_github_workflows.py emits exact event path filters from a checkout",
-  "workflows": [
-    {
-      "path": ".github/workflows/continuous-training-cycle.yml",
-      "name": "Continuous training cycle",
-      "role": "training_orchestration",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "continuous-training-cycle-${{ github.ref }}",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "safety-contract",
-        "run-committed-cycle"
-      ],
-      "artifacts": [
-        "continuous-cycle-execution-${{ github.run_id }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 10,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/dataset-integrity.yml",
-      "name": "Persisted dataset integrity",
-      "role": "dataset_population",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "integrity"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/finalize-training-cycle.yml",
-      "name": "Finalize 2026-09-12 training cycle",
-      "role": "training_orchestration",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "finalize-training-cycle-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "finalize"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/full-hand-arena.yml",
-      "name": "Validate full-hand multiway arena",
-      "role": "simulation_benchmark",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "docs",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "full-hand-arena",
-        "retained-model-b-smoke"
-      ],
-      "artifacts": [
-        "issue-105-retained-model-b-smoke-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 16,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/full-hand-protocol.yml",
-      "name": "Full-hand evaluation protocol",
-      "role": "simulation_benchmark",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "push",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "validate"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/game-core.yml",
-      "name": "Validate full-hand game core",
-      "role": "simulation_benchmark",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "docs",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "game-core"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-calculated-range-export.yml",
-      "name": "Validate calculated Hero range export",
-      "role": "hero_preflop",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "src",
-        "site",
-        "tools",
-        "tests",
-        "training",
-        "docs",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "calculated-range-contract"
-      ],
-      "artifacts": [
-        "issue-107-real-generation-smoke-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 9,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-full-169-evidence.yml",
-      "name": "Generate full 169 Hero candidate evidence",
-      "role": "hero_preflop",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "hero-full-169-${{ github.event.pull_request.number || github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "detect-persisted",
-        "verify-persisted",
-        "generate-shards",
-        "merge-full-169"
-      ],
-      "artifacts": [
-        "issue-107-shard-${{ matrix.shard }}-${{ github.sha }}",
-        "issue-107-full-169-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 30,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-pfpc-evidence-validation.yml",
-      "name": "Validate persisted Hero PFPC evidence",
-      "role": "hero_preflop",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "validate"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-range-compliance.yml",
-      "name": "Validate Hero range compliance",
-      "role": "product_browser_validation",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "site",
-        "tests",
-        "tools",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "hero-range-compliance-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract",
-        "browser-smoke"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 15,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-range-editor.yml",
-      "name": "Validate Hero range repository and editor",
-      "role": "product_browser_validation",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "site",
-        "tests",
-        "tools",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "hero-range-editor-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract",
-        "browser-smoke"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 13,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-range-pfc-context.yml",
-      "name": "Validate Hero range PFC/PFPC context binding",
-      "role": "hero_preflop",
-      "lifecycle": "current",
-      "triggers": [
-        "workflow_dispatch",
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "site",
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "hero-range-pfc-context-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/hero-unopened-multiposition-generation.yml",
-      "name": "Generate multi-position Hero unopened PFPC candidate",
-      "role": "hero_preflop",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [],
-      "concurrency": {
-        "group": "hero-unopened-multiposition-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "prepare-sizing-corpus",
-        "smoke-lj-aa",
-        "generate-shards",
-        "merge-position",
-        "merge-pfpc-candidate"
-      ],
-      "artifacts": [
-        "issue-107-certified-train-sizing-${{ github.sha }}",
-        "issue-107-lj-aa-support-closure-smoke-${{ github.sha }}",
-        "issue-107-${{ matrix.position }}-shard-${{ matrix.shard }}-${{ github.sha }}",
-        "issue-107-source-${{ matrix.position }}-${{ github.sha }}",
-        "issue-107-unopened-5pos-pfpc-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 47,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/ingest-artifacts.yml",
-      "name": "Ingest staged artifacts",
-      "role": "dataset_population",
-      "lifecycle": "current",
-      "triggers": [
-        "push"
-      ],
-      "path_scopes": [
-        "artifacts",
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "artifact-ingest-${{ github.ref }}",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "ingest"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/materialize-certified-population.yml",
-      "name": "Materialize certified population baseline",
-      "role": "dataset_population",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "materialize-certified-population-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract",
-        "materialize-zoom-baseline"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 10,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-a-continuation.yml",
-      "name": "Validate Model A multiway continuation",
-      "role": "validation_or_utility",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "push",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "contracts"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-build.yml",
-      "name": "Build independent Model B candidate",
-      "role": "model_b",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "model-b-build-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "build-model-b"
-      ],
-      "artifacts": [
-        "independent-model-b-k3-candidate"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-card-aware-fit.yml",
-      "name": "Model B card-aware fit",
-      "role": "model_b",
-      "lifecycle": "current",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "model-b-card-aware-fit-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "fit-validate"
-      ],
-      "artifacts": [
-        "model-b-card-aware-v1-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 9,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-card-aware-runtime.yml",
-      "name": "Card-aware Model B runtime",
-      "role": "model_b",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "runtime-contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-conditioned-runtime.yml",
-      "name": "Model B conditioned runtime",
-      "role": "model_b",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "test"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-evaluation.yml",
-      "name": "Evaluate independent Model B holdout",
-      "role": "model_b",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "model-b-evaluation-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "evaluate",
-        "compare-cycle-refresh"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 8,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-features.yml",
-      "name": "Build independent Model B features",
-      "role": "model_b",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "model-b-features-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "build-features"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-profile-selection.yml",
-      "name": "Select independent Model B profile count",
-      "role": "model_b",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "model-b-profile-selection-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "select"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-response-audit.yml",
-      "name": "Model B response-conditioning audit",
-      "role": "model_b",
-      "lifecycle": "current",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "audit"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-response-v3.yml",
-      "name": "Model B response-conditioned v3",
-      "role": "model_b",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "model-b-response-v3-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "evaluate"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/model-b-reveal-aware.yml",
-      "name": "Model B reveal-aware ranges",
-      "role": "model_b",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "validation"
-      ],
-      "artifacts": [
-        "model-b-reveal-aware-v3-validation"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/persist-issue-107-pfpc.yml",
-      "name": "Persist issue 107 generated PFPC evidence",
-      "role": "validation_or_utility",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "workflow_run",
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        ".github/workflows",
-        ".github/triggers"
-      ],
-      "concurrency": {
-        "group": "persist-issue-107-pfpc-d7ec5e532dc5",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "safety-contract",
-        "persist-generated-evidence"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [
-        "Generate multi-position Hero unopened PFPC candidate"
-      ],
-      "cost_proxy": {
-        "score": 10,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/plan-ingested-cycle.yml",
-      "name": "Plan ingested training cycle",
-      "role": "dataset_population",
-      "lifecycle": "current",
-      "triggers": [
-        "workflow_run",
-        "push",
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "planner-contract",
-        "plan-and-materialize"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [
-        "Ingest staged artifacts"
-      ],
-      "cost_proxy": {
-        "score": 8,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/population-certification.yml",
-      "name": "Certify NLHE 100-200 population",
-      "role": "dataset_population",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "certify"
-      ],
-      "artifacts": [
-        "population-certification-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/population-pack-catalog.yml",
-      "name": "Validate population pack catalogue",
-      "role": "product_browser_validation",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "site",
-        "tools",
-        "tests",
-        "user",
-        "wrangler.jsonc",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "population-pack-catalog-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract",
-        "browser-smoke"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 17,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/population-pack.yml",
-      "name": "Validate and publish population pack",
-      "role": "validation_or_utility",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "push",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "user",
-        "training",
-        "site",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "validate",
-        "publish"
-      ],
-      "artifacts": [
-        "population-pack-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 12,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/postflop-response-refit.yml",
-      "name": "Validate Model A postflop continuation refit",
-      "role": "validation_or_utility",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "postflop-continuation-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "refit"
-      ],
-      "artifacts": [
-        "model-a-postflop-stage-b-evidence"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-contract.yml",
-      "name": "Validate preflop context contract",
-      "role": "preflop_strategy",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "src",
-        "tools",
-        "site",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-grid-evaluator.yml",
-      "name": "Validate preflop grid evaluator",
-      "role": "preflop_strategy",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "src",
-        "tests",
-        "docs",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "preflop-grid"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-policy169.yml",
-      "name": "Validate preflop policy169 refit",
-      "role": "preflop_strategy",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "training",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "preflop-policy169-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-search.yml",
-      "name": "Validate preflop action sizing search",
-      "role": "preflop_strategy",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "src",
-        "tests",
-        "docs",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "preflop-search-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-strategy-benchmark-v2.yml",
-      "name": "Validate preflop strategy benchmark v2",
-      "role": "preflop_strategy",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "workflow_dispatch",
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "preflop-strategy-benchmark-v2-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contracts"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-strategy-support-closed.yml",
-      "name": "Validate preflop strategy support-closed replacement",
-      "role": "preflop_strategy",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "preflop-strategy-support-closed-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-strategy-test-pfpc.yml",
-      "name": "Execute preflop strategy PFPC TEST confirmation",
-      "role": "preflop_strategy",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        ".github/workflows",
-        ".github/triggers"
-      ],
-      "concurrency": {
-        "group": "preflop-strategy-pfpc-test-20260918",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "contract",
-        "prepare-test",
-        "mark-holdout-consumed",
-        "environment",
-        "confirm",
-        "persist-final-result"
-      ],
-      "artifacts": [
-        "issue-108-pfpc-test-frozen-${{ github.sha }}",
-        "issue-108-pfpc-test-environment-${{ matrix.environment_id }}-${{ github.sha }}",
-        "issue-108-pfpc-test-result-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 46,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-strategy-validation-pfpc.yml",
-      "name": "Execute preflop strategy PFPC VALIDATION",
-      "role": "preflop_strategy",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        ".github/workflows",
-        ".github/triggers"
-      ],
-      "concurrency": {
-        "group": "preflop-strategy-pfpc-validation-20260918",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "contract",
-        "prepare",
-        "environment",
-        "select",
-        "persist-result-branch"
-      ],
-      "artifacts": [
-        "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
-        "issue-108-pfpc-environment-${{ matrix.environment_id }}-${{ github.sha }}",
-        "issue-108-pfpc-validation-result-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 41,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-strategy-validation-support-closed.yml",
-      "name": "Execute preflop strategy support-closed VALIDATION",
-      "role": "preflop_strategy",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [],
-      "concurrency": {
-        "group": "preflop-strategy-validation-support-closed-${{ github.ref }}",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "prepare",
-        "environment",
-        "select"
-      ],
-      "artifacts": [
-        "issue-108-support-closed-validation-scenarios-${{ github.sha }}",
-        "issue-108-support-closed-environment-${{ matrix.environment_id }}-${{ github.sha }}",
-        "issue-108-support-closed-validation-result-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 31,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-strategy-validation-v2.yml",
-      "name": "Execute preflop strategy VALIDATION v2",
-      "role": "preflop_strategy",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [],
-      "concurrency": {
-        "group": "preflop-strategy-validation-v2-${{ github.ref }}",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "prepare",
-        "environment",
-        "select"
-      ],
-      "artifacts": [
-        "issue-108-validation-scenarios-${{ github.sha }}",
-        "issue-108-validation-environment-${{ matrix.environment_id }}-${{ github.sha }}",
-        "issue-108-validation-result-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 31,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/preflop-topology-contract.yml",
-      "name": "Preflop topology contract",
-      "role": "preflop_strategy",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 3,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/promotion-gate-final.yml",
-      "name": "Final unified promotion gate",
-      "role": "release_promotion",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "gate"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/recover-issue-107-pfpc.yml",
-      "name": "Recover issue 107 PFPC from immutable shards",
-      "role": "hero_preflop",
-      "lifecycle": "frozen_current",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        ".github/triggers",
-        ".github/workflows",
-        "trigger"
-      ],
-      "concurrency": {
-        "group": "recover-issue-107-pfpc-d7ec5e532dc5",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "safety-contract",
-        "recover-and-persist"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 24,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/release-handoff-contract.yml",
-      "name": "Validate release handoff contract",
-      "role": "release_promotion",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "release-handoff-contract-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contract"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 5,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/release-no-pending-snapshot-proof.yml",
-      "name": "Prove no-pending-snapshot release handoff",
-      "role": "release_promotion",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "push"
-      ],
-      "path_scopes": [
-        ".github/workflows",
-        ".github/triggers"
-      ],
-      "concurrency": {
-        "group": "release-no-pending-snapshot-proof-20260918",
-        "cancel_in_progress": false
-      },
-      "jobs": [
-        "contract",
-        "prove-no-publication"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 10,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/sequential-arena.yml",
-      "name": "Validate sequential independent arena",
-      "role": "simulation_benchmark",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        "site",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "sequential-arena-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "deterministic-core",
-        "browser-smoke",
-        "v83-baseline-validation",
-        "v83-baseline-test"
-      ],
-      "artifacts": [
-        "sequential-arena-reproducibility",
-        "v83-model-b-v2-baseline-validation",
-        "v83-model-b-v2-baseline-test"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 41,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/strategic-benchmark-v3.yml",
-      "name": "Paired v83 strategic benchmark v2 vs v3",
-      "role": "simulation_benchmark",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "strategic-benchmark-v3-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contracts",
-        "scenarios",
-        "arena",
-        "compare-and-persist"
-      ],
-      "artifacts": [
-        "issue39-scenarios",
-        "issue39-${{ matrix.name }}",
-        "issue39-environment-drift"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 39,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/strategy-candidate-v84.yml",
-      "name": "Protected v84 strategy candidate selection",
-      "role": "preflop_strategy",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "training",
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "strategy-candidate-v84-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "select-and-confirm"
-      ],
-      "artifacts": [
-        "issue40-strategy-candidate-arena"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 16,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/trainer-smoke.yml",
-      "name": "Validate interactive trainer",
-      "role": "product_browser_validation",
-      "lifecycle": "current",
-      "triggers": [
-        "push",
-        "pull_request"
-      ],
-      "path_scopes": [
-        "site",
-        "tests",
-        "tools",
-        "wrangler.jsonc",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "trainer-smoke-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "static-contract",
-        "browser-smoke"
-      ],
-      "artifacts": [],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 15,
-        "band": "medium",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/unseen-preflop-context-audit.yml",
-      "name": "Audit unseen preflop exact contexts",
-      "role": "preflop_strategy",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "audit"
-      ],
-      "artifacts": [
-        "unseen-preflop-context-audit"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/user-artifact-bundle.yml",
-      "name": "NLHE 100-200 user artifact bundle",
-      "role": "validation_or_utility",
-      "lifecycle": "current",
-      "triggers": [
-        "pull_request",
-        "push",
-        "workflow_dispatch"
-      ],
-      "path_scopes": [
-        "user",
-        "tools",
-        "training",
-        ".github/workflows"
-      ],
-      "concurrency": {},
-      "jobs": [
-        "build-and-verify"
-      ],
-      "artifacts": [
-        "nlhe-100-200-user-artifacts-${{ github.sha }}"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 7,
-        "band": "low",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    },
-    {
-      "path": ".github/workflows/v84-strategy-candidate.yml",
-      "name": "Evaluate v84 strategy candidate",
-      "role": "preflop_strategy",
-      "lifecycle": "historical_candidate",
-      "triggers": [
-        "workflow_dispatch",
-        "push"
-      ],
-      "path_scopes": [
-        "tools",
-        "tests",
-        ".github/workflows"
-      ],
-      "concurrency": {
-        "group": "v84-strategy-${{ github.ref }}",
-        "cancel_in_progress": true
-      },
-      "jobs": [
-        "contracts",
-        "validation",
-        "test",
-        "persist"
-      ],
-      "artifacts": [
-        "v84-validation",
-        "v84-test"
-      ],
-      "workflow_run_dependencies": [],
-      "cost_proxy": {
-        "score": 36,
-        "band": "high",
-        "method": "static structural proxy; not GitHub-billed minutes"
-      }
-    }
-  ],
   "aggregate": {
-    "duplication_primitives": {
-      "checkout": 96,
-      "setup_python": 55,
-      "setup_node": 8,
-      "pip_install": 11,
-      "playwright_install": 11,
-      "npm_install": 0,
-      "upload_artifact": 39,
-      "download_artifact": 40
-    },
+    "automatic_trigger_workflows": 54,
     "concurrency": {
-      "cancel_true_count": 26,
-      "cancel_false_count": 10,
-      "no_concurrency_count": 18
+      "cancel_false_count": 12,
+      "cancel_true_count": 38,
+      "groups": {
+        "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}": [
+          ".github/workflows/dataset-integrity.yml"
+        ],
+        "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}": [
+          ".github/workflows/model-b-preflop-response-price-2a.yml",
+          ".github/workflows/model-b-preflop-sensitivity-harness.yml",
+          ".github/workflows/population-pack-real-admission-audit.yml"
+        ],
+        "analysis-state-contract-${{ github.ref }}": [
+          ".github/workflows/analysis-state-contract.yml"
+        ],
+        "artifact-ingest-${{ github.ref }}": [
+          ".github/workflows/ingest-artifacts.yml"
+        ],
+        "continuous-training-cycle-${{ github.ref }}": [
+          ".github/workflows/continuous-training-cycle.yml"
+        ],
+        "finalize-training-cycle-${{ github.ref }}": [
+          ".github/workflows/finalize-training-cycle.yml"
+        ],
+        "hero-full-169-${{ github.event.pull_request.number || github.ref }}": [
+          ".github/workflows/hero-full-169-evidence.yml"
+        ],
+        "hero-population-strategy-${{ github.ref }}": [
+          ".github/workflows/hero-population-strategy.yml"
+        ],
+        "hero-range-compliance-${{ github.ref }}": [
+          ".github/workflows/hero-range-compliance.yml"
+        ],
+        "hero-range-editor-${{ github.ref }}": [
+          ".github/workflows/hero-range-editor.yml"
+        ],
+        "hero-range-pfc-context-${{ github.ref }}": [
+          ".github/workflows/hero-range-pfc-context.yml"
+        ],
+        "hero-unopened-multiposition-${{ github.ref }}": [
+          ".github/workflows/hero-unopened-multiposition-generation.yml"
+        ],
+        "issue-358-hero-preflop-generation": [
+          ".github/workflows/issue-358-hero-preflop-generation.yml"
+        ],
+        "issue-367-real-iso-ev-${{ github.event_name }}-${{ github.ref }}": [
+          ".github/workflows/issue-367-real-iso-ev.yml"
+        ],
+        "issue-367-real-iso-ev-observable-${{ github.sha }}": [
+          ".github/workflows/issue-367-real-iso-ev-observable.yml"
+        ],
+        "materialize-certified-population-${{ github.ref }}": [
+          ".github/workflows/materialize-certified-population.yml"
+        ],
+        "model-b-aggressive-tail-issue-298": [
+          ".github/workflows/model-b-aggressive-tail.yml"
+        ],
+        "model-b-build-${{ github.ref }}": [
+          ".github/workflows/model-b-build.yml"
+        ],
+        "model-b-card-aware-fit-${{ github.ref }}": [
+          ".github/workflows/model-b-card-aware-fit.yml"
+        ],
+        "model-b-evaluation-${{ github.ref }}": [
+          ".github/workflows/model-b-evaluation.yml"
+        ],
+        "model-b-features-${{ github.ref }}": [
+          ".github/workflows/model-b-features.yml"
+        ],
+        "model-b-observed-vs-simulated-calibration-issue-272": [
+          ".github/workflows/model-b-observed-vs-simulated-calibration.yml"
+        ],
+        "model-b-preflop-response-price-scaffold-315": [
+          ".github/workflows/model-b-preflop-response-price-scaffold.yml"
+        ],
+        "model-b-profile-selection-${{ github.ref }}": [
+          ".github/workflows/model-b-profile-selection.yml"
+        ],
+        "model-b-response-to-price-issue-197": [
+          ".github/workflows/model-b-response-to-price-evaluation.yml"
+        ],
+        "model-b-response-v3-${{ github.ref }}": [
+          ".github/workflows/model-b-response-v3.yml"
+        ],
+        "model-b-support-aware-backoff-issue-286": [
+          ".github/workflows/model-b-support-aware-backoff.yml"
+        ],
+        "persist-issue-107-pfpc-d7ec5e532dc5": [
+          ".github/workflows/persist-issue-107-pfpc.yml"
+        ],
+        "plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}": [
+          ".github/workflows/plan-ingested-cycle.yml"
+        ],
+        "population-pack-catalog-${{ github.ref }}": [
+          ".github/workflows/population-pack-catalog.yml"
+        ],
+        "postflop-continuation-${{ github.ref }}": [
+          ".github/workflows/postflop-response-refit.yml"
+        ],
+        "preflop-policy169-${{ github.ref }}": [
+          ".github/workflows/preflop-policy169.yml"
+        ],
+        "preflop-search-${{ github.ref }}": [
+          ".github/workflows/preflop-search.yml"
+        ],
+        "preflop-strategy-benchmark-v2-${{ github.ref }}": [
+          ".github/workflows/preflop-strategy-benchmark-v2.yml"
+        ],
+        "preflop-strategy-pfpc-test-20260918": [
+          ".github/workflows/preflop-strategy-test-pfpc.yml"
+        ],
+        "preflop-strategy-pfpc-validation-20260918": [
+          ".github/workflows/preflop-strategy-validation-pfpc.yml"
+        ],
+        "preflop-strategy-support-closed-${{ github.ref }}": [
+          ".github/workflows/preflop-strategy-support-closed.yml"
+        ],
+        "preflop-strategy-validation-support-closed-${{ github.ref }}": [
+          ".github/workflows/preflop-strategy-validation-support-closed.yml"
+        ],
+        "preflop-strategy-validation-v2-${{ github.ref }}": [
+          ".github/workflows/preflop-strategy-validation-v2.yml"
+        ],
+        "recover-issue-107-pfpc-d7ec5e532dc5": [
+          ".github/workflows/recover-issue-107-pfpc.yml"
+        ],
+        "release-handoff-contract-${{ github.ref }}": [
+          ".github/workflows/release-handoff-contract.yml"
+        ],
+        "release-no-pending-snapshot-proof-20260918": [
+          ".github/workflows/release-no-pending-snapshot-proof.yml"
+        ],
+        "repro-scientific-environment-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}": [
+          ".github/workflows/repro-scientific-environment.yml"
+        ],
+        "sequential-arena-${{ github.ref }}": [
+          ".github/workflows/sequential-arena.yml"
+        ],
+        "strategic-benchmark-v3-${{ github.ref }}": [
+          ".github/workflows/strategic-benchmark-v3.yml"
+        ],
+        "strategy-candidate-v84-${{ github.ref }}": [
+          ".github/workflows/strategy-candidate-v84.yml"
+        ],
+        "trainer-smoke-${{ github.ref }}": [
+          ".github/workflows/trainer-smoke.yml"
+        ],
+        "v84-strategy-${{ github.ref }}": [
+          ".github/workflows/v84-strategy-candidate.yml"
+        ]
+      },
+      "no_concurrency_count": 19
+    },
+    "cost_band_counts": {
+      "high": 11,
+      "low": 40,
+      "medium": 18
+    },
+    "duplication_primitives": {
+      "checkout": 115,
+      "download_artifact": 43,
+      "npm_install": 0,
+      "pip_install": 8,
+      "playwright_install": 8,
+      "setup_node": 8,
+      "setup_python": 70,
+      "upload_artifact": 53
     },
     "explicit_workflow_run_edges": [
       {
-        "from": "Ingest staged artifacts",
-        "to": "Plan ingested training cycle"
-      },
-      {
         "from": "Generate multi-position Hero unopened PFPC candidate",
         "to": "Persist issue 107 generated PFPC evidence"
+      },
+      {
+        "from": "Ingest staged artifacts",
+        "to": "Plan ingested training cycle"
       }
+    ],
+    "frozen_current": [
+      ".github/workflows/hero-full-169-evidence.yml",
+      ".github/workflows/hero-pfpc-evidence-validation.yml",
+      ".github/workflows/hero-unopened-multiposition-generation.yml",
+      ".github/workflows/persist-issue-107-pfpc.yml",
+      ".github/workflows/preflop-strategy-benchmark-v2.yml",
+      ".github/workflows/preflop-strategy-test-pfpc.yml",
+      ".github/workflows/preflop-strategy-validation-pfpc.yml",
+      ".github/workflows/recover-issue-107-pfpc.yml"
     ],
     "historical_candidates": [
       ".github/workflows/finalize-training-cycle.yml",
@@ -1719,25 +207,2283 @@
       ".github/workflows/unseen-preflop-context-audit.yml",
       ".github/workflows/v84-strategy-candidate.yml"
     ],
-    "frozen_current": [
-      ".github/workflows/hero-full-169-evidence.yml",
-      ".github/workflows/hero-pfpc-evidence-validation.yml",
-      ".github/workflows/hero-unopened-multiposition-generation.yml",
-      ".github/workflows/persist-issue-107-pfpc.yml",
-      ".github/workflows/preflop-strategy-benchmark-v2.yml",
-      ".github/workflows/preflop-strategy-test-pfpc.yml",
-      ".github/workflows/preflop-strategy-validation-pfpc.yml",
-      ".github/workflows/recover-issue-107-pfpc.yml"
-    ]
+    "lifecycle_counts": {
+      "current": 46,
+      "frozen_current": 8,
+      "historical_candidate": 15
+    },
+    "manual_only_workflows": 15,
+    "role_counts": {
+      "dataset_population": 5,
+      "hero_preflop": 7,
+      "model_b": 17,
+      "preflop_strategy": 14,
+      "product_browser_validation": 4,
+      "release_promotion": 3,
+      "simulation_benchmark": 5,
+      "training_orchestration": 2,
+      "validation_or_utility": 12
+    },
+    "trigger_event_counts": {
+      "pull_request": 44,
+      "push": 44,
+      "workflow_call": 1,
+      "workflow_dispatch": 46,
+      "workflow_run": 2
+    }
   },
+  "path_detail": "path_scopes are normalized top-level scopes for overlap review; tools/audit_github_workflows.py emits exact event path filters from a checkout",
   "refresh_note": {
-    "previous_snapshot_base_sha": "82c5af939d5ff37531036aeecc59dc8128bc93cd",
-    "changed_workflows": [
-      ".github/workflows/recover-issue-107-pfpc.yml"
-    ],
-    "current_definition_blob_sha": "bec1901959e11ea11425a889c254e0d17ba7d9c3",
-    "unchanged_workflow_definitions": 53,
-    "current_main_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
-    "workflow_content_changed_since_aff974c": false
-  }
+    "automatic_trigger_workflows": 54,
+    "current_main_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
+    "generator": "tools/audit_github_workflows.py --inventory analysis/workflow_audit/workflows.json",
+    "manual_only_workflows": 15,
+    "previous_snapshot_base_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
+    "workflow_count_current": 69,
+    "workflow_count_previous": 54
+  },
+  "schema": "poker-engine-workflow-inventory/v1",
+  "snapshot_base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
+  "workflow_count": 69,
+  "workflows": [
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "analysis-state-contract-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate analysis-state taxonomy contract",
+      "path": ".github/workflows/analysis-state-contract.yml",
+      "path_scopes": [
+        ".github",
+        "contracts",
+        "docs",
+        "site",
+        "src",
+        "tests"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "continuous-cycle-execution-${{ github.run_id }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "continuous-training-cycle-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 13
+      },
+      "jobs": [
+        "repro-environment",
+        "safety-contract",
+        "run-committed-cycle"
+      ],
+      "lifecycle": "current",
+      "name": "Continuous training cycle",
+      "path": ".github/workflows/continuous-training-cycle.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "training_orchestration",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "integrity"
+      ],
+      "lifecycle": "current",
+      "name": "Persisted dataset integrity",
+      "path": ".github/workflows/dataset-integrity.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "dataset_population",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "finalize-training-cycle-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "finalize"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Finalize 2026-09-12 training cycle",
+      "path": ".github/workflows/finalize-training-cycle.yml",
+      "path_scopes": [],
+      "role": "training_orchestration",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-105-retained-model-b-smoke-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 12
+      },
+      "jobs": [
+        "full-hand-arena",
+        "retained-model-b-smoke"
+      ],
+      "lifecycle": "current",
+      "name": "Validate full-hand multiway arena",
+      "path": ".github/workflows/full-hand-arena.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "docs",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "simulation_benchmark",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "validate"
+      ],
+      "lifecycle": "current",
+      "name": "Full-hand evaluation protocol",
+      "path": ".github/workflows/full-hand-protocol.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "simulation_benchmark",
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "game-core"
+      ],
+      "lifecycle": "current",
+      "name": "Validate full-hand game core",
+      "path": ".github/workflows/game-core.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "analysis",
+        "docs",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools"
+      ],
+      "role": "simulation_benchmark",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-107-real-generation-smoke-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "calculated-range-contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate calculated Hero range export",
+      "path": ".github/workflows/hero-calculated-range-export.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "docs",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "site",
+        "src",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "hero_preflop",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-107-shard-${{ matrix.shard }}-${{ github.sha }}",
+        "issue-107-full-169-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "hero-full-169-${{ github.event.pull_request.number || github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 30
+      },
+      "jobs": [
+        "detect-persisted",
+        "verify-persisted",
+        "generate-shards",
+        "merge-full-169"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Generate full 169 Hero candidate evidence",
+      "path": ".github/workflows/hero-full-169-evidence.yml",
+      "path_scopes": [
+        ".github",
+        "tools",
+        "training"
+      ],
+      "role": "hero_preflop",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "validate"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Validate persisted Hero PFPC evidence",
+      "path": ".github/workflows/hero-pfpc-evidence-validation.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "hero_preflop",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "hero-population-strategy-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate population-bound Hero strategy",
+      "path": ".github/workflows/hero-population-strategy.yml",
+      "path_scopes": [
+        ".github",
+        "site",
+        "src",
+        "tests",
+        "tools"
+      ],
+      "role": "hero_preflop",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "hero-range-compliance-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 6
+      },
+      "jobs": [
+        "contract",
+        "browser-smoke"
+      ],
+      "lifecycle": "current",
+      "name": "Validate Hero range compliance",
+      "path": ".github/workflows/hero-range-compliance.yml",
+      "path_scopes": [
+        ".github",
+        "site",
+        "tests",
+        "tools"
+      ],
+      "role": "product_browser_validation",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "hero-range-editor-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 6
+      },
+      "jobs": [
+        "contract",
+        "browser-smoke"
+      ],
+      "lifecycle": "current",
+      "name": "Validate Hero range repository and editor",
+      "path": ".github/workflows/hero-range-editor.yml",
+      "path_scopes": [
+        ".github",
+        "site",
+        "tests",
+        "tools"
+      ],
+      "role": "product_browser_validation",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "hero-range-pfc-context-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate Hero range PFC/PFPC context binding",
+      "path": ".github/workflows/hero-range-pfc-context.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "site",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "hero_preflop",
+      "triggers": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-107-certified-train-sizing-${{ github.sha }}",
+        "issue-107-lj-aa-support-closure-smoke-${{ github.sha }}",
+        "issue-107-${{ matrix.position }}-shard-${{ matrix.shard }}-${{ github.sha }}",
+        "issue-107-source-${{ matrix.position }}-${{ github.sha }}",
+        "issue-107-unopened-5pos-pfpc-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "hero-unopened-multiposition-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 47
+      },
+      "jobs": [
+        "prepare-sizing-corpus",
+        "smoke-lj-aa",
+        "generate-shards",
+        "merge-position",
+        "merge-pfpc-candidate"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Generate multi-position Hero unopened PFPC candidate",
+      "path": ".github/workflows/hero-unopened-multiposition-generation.yml",
+      "path_scopes": [],
+      "role": "hero_preflop",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "artifact-ingest-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "ingest"
+      ],
+      "lifecycle": "current",
+      "name": "Ingest staged artifacts",
+      "path": ".github/workflows/ingest-artifacts.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "artifacts",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "dataset_population",
+      "triggers": [
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue358-inputs",
+        "issue358-part-${{ matrix.context_index }}-${{ matrix.hand_shard_index }}",
+        "issue358-final-generation"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "issue-358-hero-preflop-generation"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 34
+      },
+      "jobs": [
+        "preflight",
+        "prepare",
+        "generate",
+        "assemble"
+      ],
+      "lifecycle": "current",
+      "name": "Generate issue 358 Hero preflop non-ISO candidate",
+      "path": ".github/workflows/issue-358-hero-preflop-generation.yml",
+      "path_scopes": [
+        ".github"
+      ],
+      "role": "hero_preflop",
+      "triggers": [
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-367-real-iso-ev-observable-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "issue-367-real-iso-ev-observable-${{ github.sha }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "execute"
+      ],
+      "lifecycle": "current",
+      "name": "Execute issue 367 real ISO EV observable",
+      "path": ".github/workflows/issue-367-real-iso-ev-observable.yml",
+      "path_scopes": [
+        ".github"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-367-real-iso-ev-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "issue-367-real-iso-ev-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 12
+      },
+      "jobs": [
+        "contract",
+        "execute"
+      ],
+      "lifecycle": "current",
+      "name": "Execute issue 367 real ISO EV",
+      "path": ".github/workflows/issue-367-real-iso-ev.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "materialize-certified-population-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 11
+      },
+      "jobs": [
+        "repro-environment",
+        "contract",
+        "materialize-zoom-baseline"
+      ],
+      "lifecycle": "current",
+      "name": "Materialize certified population baseline",
+      "path": ".github/workflows/materialize-certified-population.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "dataset_population",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "contracts"
+      ],
+      "lifecycle": "current",
+      "name": "Validate Model A multiway continuation",
+      "path": ".github/workflows/model-a-continuation.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "analysis",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-298-model-b-aggressive-tail"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-aggressive-tail-issue-298"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "validation"
+      ],
+      "lifecycle": "current",
+      "name": "Model B aggressive-tail calibration",
+      "path": ".github/workflows/model-b-aggressive-tail.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "independent-model-b-k3-candidate"
+      ],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-build-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "build-model-b"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Build independent Model B candidate",
+      "path": ".github/workflows/model-b-build.yml",
+      "path_scopes": [],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "model-b-card-aware-v1-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-card-aware-fit-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 9
+      },
+      "jobs": [
+        "fit-validate"
+      ],
+      "lifecycle": "current",
+      "name": "Model B card-aware fit",
+      "path": ".github/workflows/model-b-card-aware-fit.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "runtime-contract"
+      ],
+      "lifecycle": "current",
+      "name": "Card-aware Model B runtime",
+      "path": ".github/workflows/model-b-card-aware-runtime.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "test"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Model B conditioned runtime",
+      "path": ".github/workflows/model-b-conditioned-runtime.yml",
+      "path_scopes": [],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-evaluation-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 8
+      },
+      "jobs": [
+        "evaluate",
+        "compare-cycle-refresh"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Evaluate independent Model B holdout",
+      "path": ".github/workflows/model-b-evaluation.yml",
+      "path_scopes": [],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-features-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "build-features"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Build independent Model B features",
+      "path": ".github/workflows/model-b-features.yml",
+      "path_scopes": [],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-272-model-b-calibration"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-observed-vs-simulated-calibration-issue-272"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "calibration"
+      ],
+      "lifecycle": "current",
+      "name": "Model B observed vs simulated calibration",
+      "path": ".github/workflows/model-b-observed-vs-simulated-calibration.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-340-model-b-preflop-response-price-2a"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "train-validation"
+      ],
+      "lifecycle": "current",
+      "name": "Model B preflop response-to-price tranche 2A",
+      "path": ".github/workflows/model-b-preflop-response-price-2a.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-315-preflop-response-price-scaffold"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-preflop-response-price-scaffold-315"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "synthetic-scaffold"
+      ],
+      "lifecycle": "current",
+      "name": "Model B preflop response-to-price scaffold",
+      "path": ".github/workflows/model-b-preflop-response-price-scaffold.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-344-model-b-preflop-sensitivity-harness"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "synthetic-harness"
+      ],
+      "lifecycle": "current",
+      "name": "Model B preflop sensitivity synthetic harness",
+      "path": ".github/workflows/model-b-preflop-sensitivity-harness.yml",
+      "path_scopes": [
+        ".github",
+        "contracts",
+        "docs",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-profile-selection-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "select"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Select independent Model B profile count",
+      "path": ".github/workflows/model-b-profile-selection.yml",
+      "path_scopes": [],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "audit"
+      ],
+      "lifecycle": "current",
+      "name": "Model B response-conditioning audit",
+      "path": ".github/workflows/model-b-response-audit.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-197-response-to-price-raw"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-response-to-price-issue-197"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 16
+      },
+      "jobs": [
+        "scientific-evaluation"
+      ],
+      "lifecycle": "current",
+      "name": "Model B response-to-price scientific evaluation",
+      "path": ".github/workflows/model-b-response-to-price-evaluation.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-response-v3-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "evaluate"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Model B response-conditioned v3",
+      "path": ".github/workflows/model-b-response-v3.yml",
+      "path_scopes": [],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "model-b-reveal-aware-v3-validation"
+      ],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "validation"
+      ],
+      "lifecycle": "current",
+      "name": "Model B reveal-aware ranges",
+      "path": ".github/workflows/model-b-reveal-aware.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-286-model-b-support-aware-backoff"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "model-b-support-aware-backoff-issue-286"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "validation"
+      ],
+      "lifecycle": "current",
+      "name": "Model B support-aware hierarchical backoff",
+      "path": ".github/workflows/model-b-support-aware-backoff.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "model_b",
+      "triggers": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "persist-issue-107-pfpc-d7ec5e532dc5"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 10
+      },
+      "jobs": [
+        "safety-contract",
+        "persist-generated-evidence"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Persist issue 107 generated PFPC evidence",
+      "path": ".github/workflows/persist-issue-107-pfpc.yml",
+      "path_scopes": [
+        ".github"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "workflow_run",
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": [
+        "Generate multi-position Hero unopened PFPC candidate"
+      ]
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "plan-ingested-cycle-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 11
+      },
+      "jobs": [
+        "repro-environment",
+        "planner-contract",
+        "plan-and-materialize"
+      ],
+      "lifecycle": "current",
+      "name": "Plan ingested training cycle",
+      "path": ".github/workflows/plan-ingested-cycle.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "dataset_population",
+      "triggers": [
+        "workflow_run",
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": [
+        "Ingest staged artifacts"
+      ]
+    },
+    {
+      "artifacts": [
+        "population-certification-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 8
+      },
+      "jobs": [
+        "repro-environment",
+        "certify"
+      ],
+      "lifecycle": "current",
+      "name": "Certify NLHE 100-200 population",
+      "path": ".github/workflows/population-certification.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "dataset_population",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "population-pack-catalog-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 8
+      },
+      "jobs": [
+        "contract",
+        "browser-smoke"
+      ],
+      "lifecycle": "current",
+      "name": "Validate population pack catalogue",
+      "path": ".github/workflows/population-pack-catalog.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "analysis",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "site",
+        "tests",
+        "tools",
+        "user",
+        "wrangler.jsonc"
+      ],
+      "role": "product_browser_validation",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-350-real-pack-admission-audit"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 8
+      },
+      "jobs": [
+        "repro-environment",
+        "audit"
+      ],
+      "lifecycle": "current",
+      "name": "Audit real Zoom pack admission",
+      "path": ".github/workflows/population-pack-real-admission-audit.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "population-pack-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 13
+      },
+      "jobs": [
+        "repro-environment",
+        "validate",
+        "publish"
+      ],
+      "lifecycle": "current",
+      "name": "Validate and publish population pack",
+      "path": ".github/workflows/population-pack.yml",
+      "path_scopes": [
+        ".github",
+        "site",
+        "tests",
+        "tools",
+        "training",
+        "user"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "model-a-postflop-stage-b-evidence"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "postflop-continuation-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "refit"
+      ],
+      "lifecycle": "current",
+      "name": "Validate Model A postflop continuation refit",
+      "path": ".github/workflows/postflop-response-refit.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate preflop context contract",
+      "path": ".github/workflows/preflop-contract.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "analysis",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "site",
+        "src",
+        "tests",
+        "tools"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "preflop-grid"
+      ],
+      "lifecycle": "current",
+      "name": "Validate preflop grid evaluator",
+      "path": ".github/workflows/preflop-grid-evaluator.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "docs",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "src",
+        "tests",
+        "tools"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "preflop-policy169-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate preflop policy169 refit",
+      "path": ".github/workflows/preflop-policy169.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "preflop-search-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate preflop action sizing search",
+      "path": ".github/workflows/preflop-search.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "docs",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "src",
+        "tests",
+        "tools"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "preflop-strategy-benchmark-v2-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "contracts"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Validate preflop strategy benchmark v2",
+      "path": ".github/workflows/preflop-strategy-benchmark-v2.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "preflop-strategy-support-closed-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Validate preflop strategy support-closed replacement",
+      "path": ".github/workflows/preflop-strategy-support-closed.yml",
+      "path_scopes": [],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-108-pfpc-test-frozen-${{ github.sha }}",
+        "issue-108-pfpc-test-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "issue-108-pfpc-test-result-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "preflop-strategy-pfpc-test-20260918"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 46
+      },
+      "jobs": [
+        "contract",
+        "prepare-test",
+        "mark-holdout-consumed",
+        "environment",
+        "confirm",
+        "persist-final-result"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Execute preflop strategy PFPC TEST confirmation",
+      "path": ".github/workflows/preflop-strategy-test-pfpc.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-108-pfpc-validation-scenarios-${{ github.sha }}",
+        "issue-108-pfpc-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "issue-108-pfpc-validation-result-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "preflop-strategy-pfpc-validation-20260918"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 41
+      },
+      "jobs": [
+        "contract",
+        "prepare",
+        "environment",
+        "select",
+        "persist-result-branch"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Execute preflop strategy PFPC VALIDATION",
+      "path": ".github/workflows/preflop-strategy-validation-pfpc.yml",
+      "path_scopes": [
+        ".github",
+        "tests",
+        "tools"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-108-support-closed-validation-scenarios-${{ github.sha }}",
+        "issue-108-support-closed-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "issue-108-support-closed-validation-result-${{ github.sha }}"
+      ],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "preflop-strategy-validation-support-closed-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 31
+      },
+      "jobs": [
+        "prepare",
+        "environment",
+        "select"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Execute preflop strategy support-closed VALIDATION",
+      "path": ".github/workflows/preflop-strategy-validation-support-closed.yml",
+      "path_scopes": [],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue-108-validation-scenarios-${{ github.sha }}",
+        "issue-108-validation-environment-${{ matrix.environment_id }}-${{ github.sha }}",
+        "issue-108-validation-result-${{ github.sha }}"
+      ],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "preflop-strategy-validation-v2-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 31
+      },
+      "jobs": [
+        "prepare",
+        "environment",
+        "select"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Execute preflop strategy VALIDATION v2",
+      "path": ".github/workflows/preflop-strategy-validation-v2.yml",
+      "path_scopes": [],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Preflop topology contract",
+      "path": ".github/workflows/preflop-topology-contract.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "analysis",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "preflop_strategy",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "project-state-consistency"
+      ],
+      "lifecycle": "current",
+      "name": "Project state consistency",
+      "path": ".github/workflows/project-state-consistency.yml",
+      "path_scopes": [],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": false,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "gate"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Final unified promotion gate",
+      "path": ".github/workflows/promotion-gate-final.yml",
+      "path_scopes": [],
+      "role": "release_promotion",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "recover-issue-107-pfpc-d7ec5e532dc5"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 22
+      },
+      "jobs": [
+        "safety-contract",
+        "recover-and-persist"
+      ],
+      "lifecycle": "frozen_current",
+      "name": "Recover issue 107 PFPC from immutable shards",
+      "path": ".github/workflows/recover-issue-107-pfpc.yml",
+      "path_scopes": [
+        ".github"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "release-handoff-contract-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 3
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Validate release handoff contract",
+      "path": ".github/workflows/release-handoff-contract.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "release_promotion",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "release-no-pending-snapshot-proof-20260918"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 10
+      },
+      "jobs": [
+        "contract",
+        "prove-no-publication"
+      ],
+      "lifecycle": "current",
+      "name": "Prove no-pending-snapshot release handoff",
+      "path": ".github/workflows/release-no-pending-snapshot-proof.yml",
+      "path_scopes": [
+        ".github",
+        ".python-version",
+        "package-lock.json",
+        "reproducibility",
+        "requirements.lock.txt",
+        "tools"
+      ],
+      "role": "release_promotion",
+      "triggers": [
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "repro-environment-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "repro-scientific-environment-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 9
+      },
+      "jobs": [
+        "guard"
+      ],
+      "lifecycle": "current",
+      "name": "REPRO scientific environment guard",
+      "path": ".github/workflows/repro-scientific-environment.yml",
+      "path_scopes": [
+        ".github",
+        ".node-version",
+        ".python-version",
+        "package-lock.json",
+        "package.json",
+        "reproducibility",
+        "requirements.in",
+        "requirements.lock.txt",
+        "tests",
+        "tools"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "workflow_call",
+        "pull_request",
+        "push"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "sequential-arena-reproducibility",
+        "v83-model-b-v2-baseline-validation",
+        "v83-model-b-v2-baseline-test"
+      ],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "sequential-arena-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 41
+      },
+      "jobs": [
+        "deterministic-core",
+        "browser-smoke",
+        "v83-baseline-validation",
+        "v83-baseline-test"
+      ],
+      "lifecycle": "current",
+      "name": "Validate sequential independent arena",
+      "path": ".github/workflows/sequential-arena.yml",
+      "path_scopes": [
+        ".github",
+        "site",
+        "tests",
+        "tools",
+        "training"
+      ],
+      "role": "simulation_benchmark",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue39-scenarios",
+        "issue39-${{ matrix.name }}",
+        "issue39-environment-drift"
+      ],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "strategic-benchmark-v3-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 39
+      },
+      "jobs": [
+        "contracts",
+        "scenarios",
+        "arena",
+        "compare-and-persist"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Paired v83 strategic benchmark v2 vs v3",
+      "path": ".github/workflows/strategic-benchmark-v3.yml",
+      "path_scopes": [],
+      "role": "simulation_benchmark",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "issue40-strategy-candidate-arena"
+      ],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "strategy-candidate-v84-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 16
+      },
+      "jobs": [
+        "select-and-confirm"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Protected v84 strategy candidate selection",
+      "path": ".github/workflows/strategy-candidate-v84.yml",
+      "path_scopes": [],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "trainer-smoke-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 8
+      },
+      "jobs": [
+        "static-contract",
+        "browser-smoke"
+      ],
+      "lifecycle": "current",
+      "name": "Validate interactive trainer",
+      "path": ".github/workflows/trainer-smoke.yml",
+      "path_scopes": [
+        ".github",
+        "site",
+        "tests",
+        "tools",
+        "wrangler.jsonc"
+      ],
+      "role": "product_browser_validation",
+      "triggers": [
+        "push",
+        "pull_request"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "unseen-preflop-context-audit"
+      ],
+      "automatic": false,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 7
+      },
+      "jobs": [
+        "audit"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Audit unseen preflop exact contexts",
+      "path": ".github/workflows/unseen-preflop-context-audit.yml",
+      "path_scopes": [],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "nlhe-100-200-user-artifacts-${{ github.sha }}"
+      ],
+      "automatic": true,
+      "concurrency": {},
+      "cost_proxy": {
+        "band": "medium",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 8
+      },
+      "jobs": [
+        "repro-environment",
+        "build-and-verify"
+      ],
+      "lifecycle": "current",
+      "name": "NLHE 100-200 user artifact bundle",
+      "path": ".github/workflows/user-artifact-bundle.yml",
+      "path_scopes": [
+        ".github",
+        "tools",
+        "training",
+        "user"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [
+        "v84-validation",
+        "v84-test"
+      ],
+      "automatic": false,
+      "concurrency": {
+        "cancel_in_progress": true,
+        "group": "v84-strategy-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "high",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 36
+      },
+      "jobs": [
+        "contracts",
+        "validation",
+        "test",
+        "persist"
+      ],
+      "lifecycle": "historical_candidate",
+      "name": "Evaluate v84 strategy candidate",
+      "path": ".github/workflows/v84-strategy-candidate.yml",
+      "path_scopes": [],
+      "role": "preflop_strategy",
+      "triggers": [
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    }
+  ]
 }

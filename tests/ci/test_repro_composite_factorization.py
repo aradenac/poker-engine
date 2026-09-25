@@ -16,6 +16,17 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools import audit_repro_composite_factorization as audit
 
+INSTALL_BROWSER_STEP = re.compile(
+    r'      - name: Install locked browser runtime\n        run: \|\n(?:          .*\n)+')
+
+
+def install_step_of(text):
+    """Exact inline browser bootstrap step of a workflow, for mutation fixtures."""
+    match = INSTALL_BROWSER_STEP.search(text)
+    if not match:
+        raise AssertionError('inline browser bootstrap step not found')
+    return match.group(0)
+
 
 class CompositeTests(unittest.TestCase):
     def tearDown(self):
@@ -199,12 +210,10 @@ class CompositeTests(unittest.TestCase):
         # A fixture isolates mutations from pre-existing checkout scope blockers.
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
-            paths=(*audit.WORKFLOWS,*audit.ACTION_HASHES,*audit.HISTORY,*audit.GUARD_HASHES)
-            for path in paths:
-                target=root/path;target.parent.mkdir(parents=True,exist_ok=True)
-                target.write_text(audit.baseline(path) if path in audit.HISTORY else (ROOT/path).read_text())
+            self.adoption_fixture(root)
             self.assertEqual(audit.validate(root,changed=[]),[])
-            for path in (*audit.HISTORY,*audit.GUARD_HASHES):
+            for path in (*audit.HISTORY,*audit.GUARD_HASHES,audit.EVIDENCE,audit.ADOPTION_EVIDENCE,
+                         '.github/workflows/hero-population-strategy.yml'):
                 with self.subTest(path=path):
                     original=(root/path).read_text()
                     (root/path).write_text(original+'\n# neutralized or rewritten\n')
@@ -224,6 +233,217 @@ class CompositeTests(unittest.TestCase):
             data=json.loads(audit.baseline(path))
             for row in data['workflows']:
                 self.assertEqual(row['after']['blob_sha'],audit.blob(audit.baseline(row['path'])))
+
+    # --- backlog-887: composite adoption of every REPRO consumer at HEAD ------
+    def adoption_fixture(self, root):
+        """Copy the adoption surface into a mutation fixture and bind its evidence.
+
+        The fixture is complete enough for audit.validate(): every consumer
+        workflow, both composite actions, the immutable historical proofs, the
+        guarded tools/tests, the v1 transition evidence and the additive
+        adoption evidence.
+        """
+        for path in (*audit.CONSUMER_WORKFLOWS, *audit.ACTION_HASHES, *audit.HISTORY,
+                     *audit.GUARD_HASHES, audit.EVIDENCE):
+            target = root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(audit.baseline(path) if path in audit.HISTORY else (ROOT / path).read_text())
+        (root / audit.ADOPTION_EVIDENCE).write_text(
+            json.dumps(audit.adoption_report(root), indent=2, sort_keys=True) + '\n')
+
+    def test_composite_adoption_covers_every_consumer_at_head(self):
+        summary = audit.check_composite_adoption()
+        self.assertEqual(set(audit.CONSUMER_WORKFLOWS), {
+            '.github/workflows/dataset-integrity.yml', '.github/workflows/full-hand-arena.yml',
+            '.github/workflows/full-hand-protocol.yml', '.github/workflows/hero-calculated-range-export.yml',
+            '.github/workflows/hero-population-strategy.yml', '.github/workflows/hero-range-compliance.yml',
+            '.github/workflows/hero-range-editor.yml', '.github/workflows/model-b-card-aware-runtime.yml',
+            '.github/workflows/model-b-reveal-aware.yml', '.github/workflows/population-pack-catalog.yml',
+            '.github/workflows/postflop-response-refit.yml', '.github/workflows/preflop-grid-evaluator.yml',
+            '.github/workflows/preflop-policy169.yml', '.github/workflows/preflop-search.yml',
+            '.github/workflows/release-handoff-contract.yml', '.github/workflows/trainer-smoke.yml'})
+        self.assertTrue(set(audit.WORKFLOWS).issubset(set(audit.CONSUMER_WORKFLOWS)))
+        self.assertEqual(1, len(audit.CONSUMER_EXTRA_WORKFLOWS))
+        self.assertEqual(summary['consumer_count'], len(audit.CONSUMER_WORKFLOWS))
+        self.assertEqual(16, summary['runtime_consumer_count'])
+        self.assertEqual(3, summary['browser_consumer_count'])
+        self.assertEqual(summary['jobs_total'],
+                         summary['jobs_with_composite'] + summary['jobs_recorded_exception'])
+        self.assertEqual(0, summary['jobs_without_repro_signal'])
+        self.assertEqual(0, summary['inline_bootstrap_in_composite_jobs'])
+        self.assertEqual([r['job'] for r in summary['recorded_exceptions']], ['browser-smoke'])
+        for row in summary['consumers']:
+            with self.subTest(path=row['path']):
+                text = (ROOT / row['path']).read_text()
+                self.assertIn(audit.RUNTIME_CALL, text)
+                self.assertTrue(row['references_runtime'])
+                self.assertGreaterEqual(row['runtime_calls'], 1)
+                self.assertEqual(row['references_browser'], audit.BROWSER_CALL in text)
+                if audit.BROWSER_CALL in text:
+                    self.assertGreaterEqual(row['browser_calls'], 1)
+                self.assertTrue(row['composite_jobs'])
+                self.assertEqual(audit.sha(text), row['sha256'])
+        self.assertEqual(sum(row['runtime_calls'] for row in summary['consumers']),
+                         summary['runtime_call_total'])
+        self.assertEqual(sum(row['browser_calls'] for row in summary['consumers']),
+                         summary['browser_call_total'])
+        self.assertEqual(sum(1 for row in summary['consumers'] if row['references_browser']),
+                         summary['browser_consumer_count'])
+        browser_jobs = {(row['workflow'], row['job']) for row in
+                        json.loads((ROOT / audit.EVIDENCE).read_text())['planning_matrix'] if row['browser']}
+        self.assertEqual(4, len(browser_jobs))
+        for path, job in browser_jobs:
+            body = audit.jobs((ROOT / path).read_text())[job]
+            if (path, job) in audit.INLINE_BOOTSTRAP_EXCEPTIONS:
+                self.assertNotIn(audit.BROWSER_CALL, body)
+            else:
+                self.assertIn(audit.BROWSER_CALL, body, f'{path}:{job}')
+
+    def test_adoption_check_is_fail_closed_on_regressions(self):
+        regressions = (
+            ('.github/workflows/trainer-smoke.yml', '      - name: JavaScript syntax\n',
+             '      - uses: actions/setup-python@v5\n      - name: JavaScript syntax\n'),
+            ('.github/workflows/trainer-smoke.yml',
+             "      - uses: ./.github/actions/repro-runtime\n        with:\n          require-node: 'true'\n", ''),
+            ('.github/workflows/preflop-search.yml', "require-node: 'true'", "require-node: 'false'"),
+            ('.github/workflows/hero-population-strategy.yml',
+             "      - '.github/actions/repro-runtime/action.yml'\n", ''),
+            ('.github/workflows/population-pack-catalog.yml', '      - name: Assemble static site\n',
+             '      - uses: actions/setup-node@v4\n      - name: Assemble static site\n'),
+            ('.github/workflows/population-pack-catalog.yml',
+             '          python3 tools/repro_ci_browser.py install > /tmp/repro-ci-browser.json\n', ''),
+        )
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.adoption_fixture(root)
+            self.assertEqual(audit.validate(root, changed=[]), [])
+            self.assertEqual(audit.check_composite_adoption(root), audit.check_composite_adoption(root))
+            for path, old, new in regressions:
+                with self.subTest(path=path, mutation=new):
+                    target = root / path
+                    original = target.read_text()
+                    self.assertIn(old, original)
+                    try:
+                        target.write_text(original.replace(old, new, 1))
+                        with self.assertRaises(audit.AuditError):
+                            audit.check_composite_adoption(root)
+                    finally:
+                        target.write_text(original)
+            self.assertEqual(audit.validate(root, changed=[]), [])
+
+    def test_adoption_check_rejects_unregistered_consumer_and_migrated_exception(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.adoption_fixture(root)
+            rogue = root / '.github/workflows/rogue-consumer.yml'
+            rogue.write_text('name: Rogue\n\non:\n  workflow_dispatch:\n\njobs:\n  contract:\n'
+                             '    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n'
+                             f'      {audit.RUNTIME_CALL}\n')
+            with self.assertRaises(audit.AuditError):
+                audit.check_composite_adoption(root)
+            rogue.unlink()
+            exception = root / '.github/workflows/population-pack-catalog.yml'
+            text = exception.read_text()
+            head = ("      - uses: actions/setup-python@v5\n"
+                    "        with:\n          python-version-file: '.python-version'\n")
+            self.assertIn(head, text)
+            self.assertIn(install_step_of(text), text)
+            migrated = text.replace(head, f"      {audit.RUNTIME_CALL}\n        with:\n          require-node: 'false'\n", 1)
+            migrated = migrated.replace(install_step_of(migrated), '', 1)
+            try:
+                exception.write_text(migrated)
+                with self.assertRaises(audit.AuditError):
+                    audit.check_composite_adoption(root)
+            finally:
+                exception.write_text(text)
+            self.assertEqual(audit.validate(root, changed=[]), [])
+
+    def test_adoption_evidence_is_measured_and_additive(self):
+        stored = json.loads((ROOT / audit.ADOPTION_EVIDENCE).read_text())
+        self.assertEqual(audit.adoption_report(), stored)
+        self.assertEqual('poker-repro-composite-adoption/v1', stored['schema'])
+        self.assertTrue(stored['additive'])
+        self.assertFalse(stored['rewrites_v1_evidence'])
+        self.assertEqual([], stored['workflow_files_modified'])
+        self.assertFalse(stored['write_surface_expanded'])
+        self.assertFalse(stored['scientific_commands_changed'])
+        self.assertEqual(audit.EVIDENCE_SHA256, stored['source_evidence']['sha256'])
+        self.assertNotEqual(audit.EVIDENCE_SHA256,
+                            audit.file_sha256(ROOT / audit.ADOPTION_EVIDENCE))
+        self.assertEqual(204, stored['issue'])
+        # Residual duplication is measured, never assumed: the counters are
+        # recomputed from the workflows and cross-checked against the workflow
+        # inventory patterns used by tools/audit_github_workflows.py.
+        counters = stored['residual_duplicates']
+        for name, pattern in audit.DUPLICATE_PATTERNS.items():
+            expected = sum(len(re.findall(pattern, (ROOT / path).read_text()))
+                           for path in audit.CONSUMER_WORKFLOWS)
+            self.assertEqual(expected, counters['consumer_totals'][name], name)
+        self.assertEqual(counters['workflow_inventory_pattern_totals'],
+                         {k: v for k, v in counters['repository_totals'].items()
+                          if k in counters['workflow_inventory_pattern_totals']})
+        # The composite action is the single home of each bootstrap primitive.
+        for primitive in ('setup_python', 'setup_node', 'inline_environment', 'inline_browser'):
+            self.assertEqual(1, counters['composite_totals'][primitive], primitive)
+        # Inside the consumers only the recorded exception still holds a
+        # bootstrap primitive; Node/pip/npm/playwright duplicates are gone.
+        exceptions = stored['adoption']['recorded_exceptions']
+        self.assertEqual(1, len(exceptions))
+        for primitive, count in exceptions[0]['primitives'].items():
+            self.assertEqual(count, counters['consumer_totals'][primitive], primitive)
+        self.assertEqual(counters['consumer_totals']['checkout'], stored['adoption']['jobs_total'])
+        self.assertEqual(counters['consumer_totals']['setup_node'], 0)
+        self.assertEqual(counters['consumer_totals']['playwright_install'], 0)
+        self.assertEqual(counters['consumer_totals']['pip_install'], 0)
+        self.assertEqual(counters['consumer_totals']['npm_install'], 0)
+        self.assertEqual(set(exceptions[0]['primitives']),
+                         {name for name in ('setup_python', 'setup_node', 'inline_environment', 'inline_browser')
+                          if counters['consumer_totals'][name]})
+        self.assertEqual(stored['inline_bootstrap']['consumer_matches'],
+                         stored['adoption']['inline_bootstrap_primitives'])
+        self.assertEqual([], stored['adoption']['runtime_delegated_via_browser'])
+        # Artifact fan-in/fan-out are static measurements with explicit unknowns.
+        flow = stored['artifact_flow']
+        self.assertEqual(len(flow['producers']), flow['fan_out_total'])
+        self.assertEqual(len(flow['consumers']), flow['fan_in_total'])
+        self.assertTrue(flow['edges'])
+        self.assertEqual(len(flow['edges']), len({(e['artifact'], e['producer'], e['producer_job'],
+                                                   e['consumer'], e['consumer_job'], e['kind'])
+                                                  for e in flow['edges']}))
+        self.assertTrue(any(row['kind'] == 'gh-run-download' for row in flow['consumers']))
+        self.assertEqual({'ci_observation', 'artifact_retention_after_run',
+                          'cross_run_artifact_availability', 'dynamic_artifact_names',
+                          'github_billed_minutes'},
+                         {row['id'] for row in stored['unknowns']})
+        self.assertEqual(
+            [dict(workflow=row['path'], job=row['job'], migratable=row['migratable'],
+                  reason=row['reason'], recorded_by=row['evidence'], primitives=row['primitives'])
+             for row in stored['adoption']['recorded_exceptions']],
+            stored['deferred_migrations'])
+        self.assertFalse(stored['adoption']['recorded_exceptions'][0]['migratable'])
+
+    def test_adoption_evidence_and_transition_evidence_are_hash_bound(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.adoption_fixture(root)
+            self.assertEqual(audit.validate(root, changed=[]), [])
+            forged = json.loads((root / audit.ADOPTION_EVIDENCE).read_text())
+            original = json.dumps(forged, indent=2, sort_keys=True) + '\n'
+            for mutation in (lambda row: row['residual_duplicates']['consumer_totals'].update({'checkout': 99}),
+                             lambda row: row['consumers'].pop(),
+                             lambda row: row.update({'workflow_files_modified': ['.github/workflows/trainer-smoke.yml']})):
+                with self.subTest(mutation=mutation):
+                    forged = json.loads(original)
+                    mutation(forged)
+                    (root / audit.ADOPTION_EVIDENCE).write_text(json.dumps(forged, indent=2, sort_keys=True) + '\n')
+                    with self.assertRaises(audit.AuditError):
+                        audit.check_adoption_evidence(root)
+                    self.assertTrue(audit.validate(root, changed=[]))
+            (root / audit.ADOPTION_EVIDENCE).write_text(original)
+            transition = root / audit.EVIDENCE
+            transition.write_text(transition.read_text() + '\n')
+            with self.assertRaises(audit.AuditError):
+                audit.check_transition_evidence(root)
 
 if __name__=='__main__':
     unittest.main()

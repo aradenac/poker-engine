@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from pathlib import Path
-import sys, tempfile, unittest
+import hashlib, json, shutil, sys, tempfile, unittest
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from tools import audit_github_workflows as audit
+
+HISTORICAL_EVIDENCE=(
+    "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
+    "analysis/workflow_audit/repro_composite_factorization_v1.json",
+    "analysis/workflow_audit/repro_batch1_before_after.json",
+    "analysis/workflow_audit/repro_batch2_before_after.json",
+    "analysis/workflow_audit/repro_population_pack_catalog_before_after.json",
+    "analysis/workflow_audit/repro_current_mixed_batch_before_after.json",
+    "analysis/workflow_audit/repro_current_core_batch_before_after.json",
+    "analysis/workflow_audit/residual_repro_dag_before_after.json",
+    "analysis/workflow_audit/baseline_metrics.json",
+)
 
 SAMPLE="""name: Sample browser workflow
 on:
@@ -74,4 +86,41 @@ jobs:
     def test_lifecycle_classification(self):
         self.assertEqual("historical_candidate","historical_candidate" if "preflop-strategy-validation-v2.yml" in audit.HISTORICAL_CANDIDATES else "")
         self.assertEqual("frozen_current","frozen_current" if "preflop-strategy-validation-pfpc.yml" in audit.FROZEN_CURRENT else "")
+
+    def test_inventory_covers_every_workflow_at_head(self):
+        data=audit.inventory(ROOT)
+        files={p.relative_to(ROOT).as_posix() for p in audit.workflow_paths(ROOT)}
+        self.assertEqual(audit.INVENTORY_SCHEMA,data["schema"])
+        self.assertEqual(audit.SNAPSHOT_BASE_SHA,data["snapshot_base_sha"])
+        self.assertEqual(len(files),data["workflow_count"])
+        self.assertEqual(files,{row["path"] for row in data["workflows"]})
+        for row in data["workflows"]:
+            for key in ("role","triggers","jobs","concurrency","artifacts","cost_proxy"):
+                self.assertIn(key,row,row["path"])
+            self.assertEqual(row["automatic"],audit.automatic(dict.fromkeys(row["triggers"])))
+        automatic=[row for row in data["workflows"] if row["automatic"]]
+        manual=[row for row in data["workflows"] if not row["automatic"]]
+        self.assertEqual(len(automatic),data["aggregate"]["automatic_trigger_workflows"])
+        self.assertEqual(len(manual),data["aggregate"]["manual_only_workflows"])
+        self.assertEqual({row["path"] for row in manual},set(data["aggregate"]["historical_candidates"]))
+        for row in manual:
+            self.assertEqual(["workflow_dispatch"],row["triggers"])
+
+    def test_historical_evidence_sha256_is_invariant(self):
+        recorded={path:hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in HISTORICAL_EVIDENCE}
+        self.assertEqual(audit.HISTORICAL_EVIDENCE_SHA256,recorded)
+        self.assertEqual(audit.HISTORICAL_EVIDENCE_SHA256,audit.verify_historical_evidence(ROOT))
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for path in HISTORICAL_EVIDENCE:
+                target=root/path; target.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copyfile(ROOT/path,target)
+            (root/HISTORICAL_EVIDENCE[0]).write_text("{}\n")
+            with self.assertRaises(ValueError):
+                audit.verify_historical_evidence(root)
+
+    def test_committed_inventory_is_regenerable(self):
+        committed=json.loads((ROOT/"analysis/workflow_audit/workflows.json").read_text())
+        regenerated=audit.inventory(ROOT)
+        self.assertEqual(committed,regenerated)
 if __name__=="__main__": unittest.main()
