@@ -1,11 +1,11 @@
 ---
-schema: poker-issue-394-desktop-modes-fit-evidence/v4
+schema: poker-issue-394-desktop-modes-fit-evidence/v5
 issue: 394
-task: task-backlog-z0a
+task: task-backlog-mrj
 report_date: 2026-09-25
-head_sha: 43fa73bd17a50cbbab13f6b66d337f399dbaa02c
-branch: n8n/issue-394/task-backlog-z0a
-status: FROZEN_SMOKE_NOT_RUNNABLE_LOCALLY__FIT_REMEASURED_AT_FINAL_HEAD_VIA_DECLARED_DEGRADED_REPLAY
+head_sha: a6cefc78eaac55ba395acd73d00bb055626b3cad
+branch: n8n/issue-394/task-backlog-mrj
+status: FROZEN_SMOKE_NOT_RUNNABLE_LOCALLY__FIT_MEASURED_AT_FINAL_HEAD_VIA_DECLARED_DEGRADED_REPLAY
 merged: false
 pushed: false
 smoke_modes_desktop_local: FAILED_EXIT_1_LOOPBACK_SOCKET_DENIED_BY_SANDBOX
@@ -19,33 +19,33 @@ ci_green: NOT_OBSERVED
 site_index_html_modified_in_this_task: false
 ---
 
-# Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-z0a)
+# Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-mrj)
 
-Réécriture de `docs/desktop-modes-fit-evidence.md` demandée par `task-backlog-z0a`,
-**réécrite et re-mesurée au HEAD réel du worktree `43fa73b`**, le 2026-09-25
-(Europe/Paris).
+Réécriture de `docs/desktop-modes-fit-evidence.md` demandée par `task-backlog-mrj`.
+Ce fichier a été réécrit et **re-mesuré au HEAD réel du worktree `a6cefc78`**, le
+2026-09-25 (Europe/Paris).
 
-Ce que ce document remplace, et pourquoi. La version précédente du fichier
-(`task-backlog-3nx`, publiée à un HEAD interne `d1a84d1` depuis superseded) et la
-version antérieure à celle-ci (`task-backlog-a7w`, HEAD interne `e8c2a71` depuis
-superseded) portaient un verdict de fit obtenu par un harnais hors contrat dont la
-métrique d'« évasion » — *un élément sort-il de la boîte de la coque ?* — **ne
-peut pas voir un descendant clippé par un `overflow:hidden` interne** : un enfant
-tronqué reste à l'intérieur de la boîte de la coque, la métrique rapportait donc
-`0` sur exactement la forme de défaut que le job gelé `browser-smoke` a signalée
-sur le HEAD `cdbad28` (clic refusé sur `.hh-import-advanced > summary`). Une telle
-conclusion n'est **pas** reconduite ici sans mesure : elle est remplacée par une
-mesure **sensible au clipping**, calibrée, et bornée par les limites déclarées au
-§ 3.2.
+## 0. Ce que ce document remplace, et ce qu'il affirme
+
+Les révisions antérieures de ce fichier portaient un verdict de fit obtenu par un
+harnais hors contrat dont la métrique d'« évasion » — *un élément sort-il de la
+boîte de la coque ?* — **ne peut pas voir un descendant clippé par un
+`overflow:hidden` interne** : un enfant tronqué reste à l'intérieur de la boîte de
+la coque, la métrique rapportait donc `0` sur exactement la forme de défaut que le
+job gelé `browser-smoke` est censé attraper (un panneau d'import rendu mais
+inatteignable). Cette conclusion n'est **pas** reconduite ici sans mesure : elle
+est remplacée par une mesure **sensible au clipping**, calibrée (§ 4), et bornée
+par les limites déclarées au § 3.2.
 
 Ce que ce document affirme, et ce qu'il n'affirme pas :
 
 1. le **smoke gelé n'est pas exécutable dans ce sandbox** ; les deux commandes
-   exigées ont été lancées et leurs sorties + codes retour exacts sont consignés
-   au § 1. **Aucune ligne `PASS` n'est écrite pour elles, ni pour le smoke gelé** ;
-2. le fit a été **mesuré pour de vrai** à `43fa73b`, dans un Chromium réel épinglé,
-   par un **harnais dégradé explicitement déclaré hors contrat** (§ 3) qui
-   **réutilise le code de mesure du smoke lui-même** (`MEASURE_JS`,
+   exigées ont été lancées au HEAD `a6cefc78` et leurs sorties + codes retour
+   exacts sont consignés au § 1. **Aucune ligne `PASS` n'est écrite pour elles,
+   ni pour le smoke gelé** ;
+2. le fit a été **mesuré pour de vrai** à `a6cefc78`, dans un Chromium réel
+   épinglé, par un **harnais dégradé explicitement déclaré hors contrat** (§ 3)
+   qui **réutilise le code de mesure du smoke lui-même** (`MEASURE_JS`,
    `IMPORT_HIT_TEST_JS`, `RACE_PROBE_JS`, `REVIEW_SELECTED_SUBTABS_JS`,
    `importable_fixture_bytes`, le barrage `state.persistenceReady`) ;
 3. la métrique d'atteignabilité est **sensible au clipping** (intersection des
@@ -64,39 +64,50 @@ explicitement qualifiée (réserves nommées aux § 8 et § 9).
 
 Toutes les commandes de cette section ont été lancées **depuis la racine du
 worktree**
-`/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-z0a`,
+`/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-mrj`,
 le **2026-09-25** (Europe/Paris), **avant** l'écriture de ce fichier.
 Interpréteur : `python3 -V` → `Python 3.14.4`.
 
 ```
 $ git rev-parse HEAD
-43fa73bd17a50cbbab13f6b66d337f399dbaa02c
+a6cefc78eaac55ba395acd73d00bb055626b3cad
 EXIT=0
 ```
 
-### 1.1 `smoke_modes_desktop.py` — lancé, échec, `EXIT=1`
+### 1.1 `smoke_modes_desktop.py` — lancée, échec, `EXIT=1`
+
+Exactement la commande gelée de la task :
 
 ```
 $ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs python3 tests/trainer/smoke_modes_desktop.py
 Traceback (most recent call last):
-  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-z0a/tests/trainer/smoke_modes_desktop.py", line 892, in <module>
+  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-mrj/tests/trainer/smoke_modes_desktop.py", line 1167, in <module>
     main()
-  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-z0a/tests/trainer/smoke_modes_desktop.py", line 888, in main
+    ~~~~^^
+  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-mrj/tests/trainer/smoke_modes_desktop.py", line 1163, in main
     asyncio.run(run())
+    ~~~~~~~~~~~^^^^^^^
   File "/usr/lib/python3.14/asyncio/runners.py", line 204, in run
     return runner.run(main)
+           ~~~~~~~~~~^^^^^^
   File "/usr/lib/python3.14/asyncio/runners.py", line 127, in run
     return self._loop.run_until_complete(task)
   File "/usr/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
     return future.result()
-  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-z0a/tests/trainer/smoke_modes_desktop.py", line 812, in run
+           ~~~~~~~~~~~~~^^
+  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-mrj/tests/trainer/smoke_modes_desktop.py", line 1073, in run
     httpd, url = _serve_site()
-  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-z0a/tests/trainer/smoke_modes_desktop.py", line 341, in _serve_site
+                 ~~~~~~~~~~~^^
+  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-mrj/tests/trainer/smoke_modes_desktop.py", line 406, in _serve_site
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
   File "/usr/lib/python3.14/socketserver.py", line 453, in __init__
     self.socket = socket.socket(self.address_family,
+                  ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+                                self.socket_type)
+                                ^^^^^^^^^^^^^^^^^
   File "/usr/lib/python3.14/socket.py", line 236, in __init__
     _socket.socket.__init__(self, family, type, proto, fileno)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 PermissionError: [Errno 1] Operation not permitted
 EXIT=1
 ```
@@ -109,61 +120,52 @@ au § 1.3.
 **avant** de lancer Chromium, et **avant** toute mesure. `EXIT=1` constaté, pas de
 `PASS`.
 
-### 1.2 `smoke_trainer.py` — lancé, échec, `EXIT=1`
+Contrairement à l'hypothèse d'un `EROFS` sur `mkdtemp`, la création de répertoire
+temporaire **fonctionne** ici : `tempfile.mkdtemp()` → `/tmp/tmp95knddnd` —
+mesuré au § 1.3. Le blocage n'est donc pas le système de fichiers, mais bien la
+création de socket.
 
-Exactement la commande de la task, sans variable d'environnement :
+### 1.2 `smoke_trainer.py` — lancée, échec, `EXIT=1`
+
+Exactement la commande gelée de la task, sans variable d'environnement :
 
 ```
 $ python3 tests/trainer/smoke_trainer.py
 Traceback (most recent call last):
-  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-z0a/tests/trainer/smoke_trainer.py", line 10, in <module>
+  File "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-394/tasks/task-backlog-mrj/tests/trainer/smoke_trainer.py", line 10, in <module>
     from playwright.async_api import async_playwright
 ModuleNotFoundError: No module named 'playwright'
 EXIT=1
 ```
 
 Le runtime Playwright épinglé existe localement (`/tmp/pylibs`, Playwright 1.55.0),
-donc la commande a été relancée avec le même préfixe que le § 1.1 ; elle échoue
+donc la commande a été relancée avec le même préfixe d'environnement ; elle échoue
 alors **un cran plus loin**, au lancement du navigateur. Les lignes ci-dessous
-sont recopiées telles quelles, `...` marquant les élisions (trames intermédiaires,
-longue sortie `Browser logs:` de Playwright, préfixe absolu des chemins) :
+sont recopiées telles quelles, `...` marquant les élisions (longue sortie
+`Browser logs:` de Playwright, préfixe absolu des chemins) :
 
 ```
 $ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs python3 tests/trainer/smoke_trainer.py
 trainer smoke failed: BrowserType.launch: Target page, context or browser has been closed
 ...
-  File ".../tests/trainer/smoke_trainer.py", line 62, in main
-    browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
+<launching> /home/abel/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell ... --no-sandbox --no-sandbox --disable-dev-shm-usage ...
+<launched> pid=16
+[pid=16][err] /home/abel/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
 ...
-  - [pid=16][err] /home/abel/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell:
-    error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
+  - [pid=16] <process did exit: exitCode=127, signal=null>
 EXIT=1
 ```
 
 En fournissant les bibliothèques du navigateur (hors dépôt) pour franchir cette
-marche, l'échec se déplace encore, à la création de la page : les drapeaux de
-lancement du smoke (`--no-sandbox --disable-dev-shm-usage`) ne permettent pas de
-démarrer un processus de rendu dans ce noyau. Et même si une page était créée,
-l'adresse `http://127.0.0.1:8765/index.html` — que le job CI sert par
-`python3 -m http.server 8765 --directory site` — n'est servie par personne ici
-(socket loopback refusé, § 1.1) :
+marche, l'échec se déplace encore : les drapeaux de lancement du smoke
+(`--no-sandbox --disable-dev-shm-usage`) ne permettent pas ici de créer une page.
+Et même si une page existait, l'adresse `http://127.0.0.1:8765/index.html` — que le
+job CI sert par `python3 -m http.server 8765 --directory site` — n'est servie par
+personne ici (socket loopback refusé, § 1.1).
 
-```
-$ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs LD_PRELOAD=/tmp/fitpilot/fitshim.so \
-  LD_LIBRARY_PATH=/tmp/opencode/browserlibs/sysroot/usr/lib/x86_64-linux-gnu \
-  python3 tests/trainer/smoke_trainer.py
-trainer smoke failed: Browser.new_page: Target page, context or browser has been closed
-...
-  File ".../tests/trainer/smoke_trainer.py", line 63, in main
-    page = await browser.new_page(viewport={"width": 1500, "height": 1000})
-playwright._impl._errors.TargetClosedError: Browser.new_page: Target page, context or browser has been closed
-EXIT=1
-```
-
-`smoke_trainer.py` échoue donc dans `main()` (ligne 62/63) **avant
-`run_driver_smokes()`** (ligne 1562) : l'orchestrateur n'est jamais atteint, et
-`smoke_modes_desktop.py` n'est jamais déclenché depuis lui localement. **Aucun
-`PASS` n'est écrit pour ces commandes.**
+`smoke_trainer.py` échoue donc dans `main()` **avant `run_driver_smokes()`** :
+l'orchestrateur n'est jamais atteint, et `smoke_modes_desktop.py` n'est jamais
+déclenché depuis lui localement. **Aucun `PASS` n'est écrit pour ces commandes.**
 
 ### 1.3 Second blocage, indépendant du premier : aucune saisie fiable
 
@@ -188,31 +190,13 @@ EXIT=0
 ```
 
 La même limite est atteinte **en contournant Playwright**, directement par le
-protocole de débogage, et pour la souris comme pour le clavier. Aucun de ces
-événements n'atteint la page (`hits: []`) :
-
-```
-$ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs LD_PRELOAD=/tmp/fitpilot/fitshim.so \
-  LD_LIBRARY_PATH=/tmp/opencode/browserlibs/sysroot/usr/lib/x86_64-linux-gnu \
-  python3 -u /tmp/z0a/cdp_probe.py
-CDP input dispatch FAIL TimeoutError
-hits: []
-file chooser OK: JSHandle@<input id="f" type="file">
-EXIT=0
-
-$ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs LD_PRELOAD=/tmp/fitpilot/fitshim.so \
-  LD_LIBRARY_PATH=/tmp/opencode/browserlibs/sysroot/usr/lib/x86_64-linux-gnu \
-  python3 -u /tmp/z0a/key_probe.py
-playwright keyboard FAIL TimeoutError
-CDP keyboard FAIL TimeoutError
-EXIT=0
-```
-
-Note : la troisième ligne montre qu'une évaluation CDP avec `userGesture: true`
-peut, elle, ouvrir un sélecteur de fichier — c'est ce qui rend
-`set_input_files(...)` sur le vrai `#hhFileInput` praticable pour le harnais,
-alors que le clic Playwright et le `click(trial=True)` du smoke, qui passent par
-la livraison d'événements, ne le sont pas.
+protocole de débogage (sondes `/tmp/z0a/cdp_probe.py` et `/tmp/z0a/key_probe.py`),
+et pour la souris comme pour le clavier : aucun de ces événements n'atteint la
+page (`hits: []`). En revanche une évaluation CDP avec `userGesture: true` peut,
+elle, ouvrir un sélecteur de fichier — c'est ce qui rend `set_input_files(...)` sur
+le vrai `#hhFileInput` praticable pour le harnais, alors que le clic Playwright et
+le `click(trial=True)` du smoke, qui passent par la livraison d'événements, ne le
+sont pas.
 
 C'est la raison pour laquelle les étapes du smoke qui exigent un **clic réel**
 (`page.click`, `page.mouse.click`, `locator.click(trial=True)`) et le **parcours
@@ -220,9 +204,9 @@ clavier du Replayer** (`Tab` / `ArrowRight` / `ArrowLeft` / `Enter`) ne sont pas
 rejouables ici ; elles restent couvertes par le job gelé (§ 11) et sont déclarées
 comme limites au § 3.2.
 
-Réseau : le sandbox est également coupé (`CODEX_SANDBOX_NETWORK_DISABLED=1`),
-donc le run CI du job gelé n'a **pas** pu être reconsulté ni rejoué depuis ce
-worktree. Il est cité en § 11 comme contexte autoritaire, pas comme observation.
+Réseau : le sandbox est également coupé (`CODEX_SANDBOX_NETWORK_DISABLED=1`), donc
+un run CI du job gelé n'a **pas** pu être reconsulté depuis ce worktree. Il est
+cité en § 11 comme contexte autoritaire, pas comme observation.
 
 ## 2. Ce qui marche malgré tout : le navigateur épinglé
 
@@ -249,8 +233,9 @@ transport décrits au § 3.1.
 ### 3.1 Ce qui a été fait
 
 Faute de pouvoir exécuter le smoke (§ 1), les parcours ont été **rejoués** par un
-harnais local **hors contrat** (`/tmp/z0a/harness.py`, **non versionné**) qui
-**importe le module du smoke** et réutilise son code de mesure tel quel :
+harnais local **hors contrat** (`/tmp/mrj/harness.py`, **non versionné**, dérivé du
+harnais de la révision précédente) qui **importe le module du smoke** et réutilise
+son code de mesure tel quel :
 
 | Élément | Source |
 | --- | --- |
@@ -259,12 +244,13 @@ harnais local **hors contrat** (`/tmp/z0a/harness.py`, **non versionné**) qui
 | atterrissage Review | `smoke_modes_desktop.REVIEW_SELECTED_SUBTABS_JS` |
 | scénario de course | `smoke_modes_desktop.RACE_PROBE_JS` + barrage `state.persistenceReady===true` (`READINESS_TIMEOUT_MS`) |
 | import de la main repro | `smoke_modes_desktop.importable_fixture_bytes()` via le **vrai** `#hhFileInput` (`set_input_files`) |
+| entrée de la coque Stratégie Hero | deep link `#strategyPage` (le point d'entrée réel du smoke, `appViewForHashTarget()` / `routeFromHash()`) — **pas** l'entrée `#quickNav` |
 
 Déviations imposées par le sandbox, toutes déclarées :
 
 1. **transport** : `site/` est servi par **interception de requêtes Playwright**
-   (`context.route("**/*", …)`, origine locale factice) parce que toute création
-   de socket loopback est refusée (§ 1.1) ;
+   (`context.route("**/*", …)`, origine locale factice) parce que toute création de
+   socket loopback est refusée (§ 1.1) ;
 2. **drapeaux de lancement** : `--no-sandbox --disable-dev-shm-usage
    --disable-crash-reporter --disable-gpu --disable-software-rasterizer
    --disable-features=Vulkan,SkiaGraphite,VizDisplayCompositor --single-process
@@ -272,19 +258,21 @@ Déviations imposées par le sandbox, toutes déclarées :
    smoke ne suffisent pas ici, § 1.2) ; bibliothèques du navigateur fournies par
    `LD_LIBRARY_PATH`, deux appels `shutdown`/`setsockopt` neutralisés par un
    `LD_PRELOAD` (`/tmp/fitpilot/fitshim.so`) — ce shim ne touche pas aux mesures ;
-3. **actions** : chaque navigation passe par `element.click()` en JavaScript
-   (donc par les gestionnaires réels de l'application) au lieu d'un clic souris
-   Playwright, faute de saisie fiable (§ 1.3) ;
+3. **actions** : chaque navigation passe par `element.click()` en JavaScript (donc
+   par les gestionnaires réels de l'application) au lieu d'un clic souris
+   Playwright, faute de saisie fiable (§ 1.3) ; le clic Playwright
+   `locator.click(trial=True)` confirmant T2 et le parcours clavier du Replayer ne
+   sont donc pas rejoués ;
 4. **mesures stabilisées** : l'audit attend la fin des animations CSS
    (`document.getAnimations()` sans `running`) puis 400 ms avant de mesurer.
 
-Commande du harnais et sortie exacte (sortie complète : `/tmp/z0a/harness_run9.log`,
-JSON : `/tmp/z0a/out9.json`, hors dépôt et non versionnés) :
+Commande du harnais et sortie exacte (sortie complète : `/tmp/mrj_harness_v2.log`,
+JSON : `/tmp/mrj_out_v2.json`, hors dépôt et non versionnés) :
 
 ```
 $ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs LD_PRELOAD=/tmp/fitpilot/fitshim.so \
   LD_LIBRARY_PATH=/tmp/opencode/browserlibs/sysroot/usr/lib/x86_64-linux-gnu \
-  python3 -u /tmp/z0a/harness.py "$PWD" /tmp/z0a/out9.json
+  python3 -u /tmp/mrj/harness.py "$PWD" /tmp/mrj_out_v2.json
 == viewport 1500x1000 ==
   mode=home      viewport=1500x1000  scrollHeight=1000 <= clientHeight=1000 shell=1000/1000 clipped=0 allowedZones=0 unreachable_controls=0/11
   mode=spotlab   viewport=1500x1000  scrollHeight=1000 <= clientHeight=1000 shell=1000/1000 clipped=0 allowedZones=0 unreachable_controls=0/17
@@ -314,79 +302,47 @@ $ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs LD_PRELOAD=/tmp/fitpilot/fits
   mode=review    viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=768/768 clipped=0 allowedZones=0 unreachable_controls=0/13
   mode=review    viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=768/768 clipped=0 allowedZones=0 unreachable_controls=0/6
 [1366x768] imported=['3210001']
-  mode=replayer  viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=768/768 clipped=0 allowedZones=43 unreachable_controls=0/19
+  mode=replayer  viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=768/768 clipped=0 allowedZones=46 unreachable_controls=0/19
   mode=review    viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=768/768 clipped=0 allowedZones=0 unreachable_controls=0/11
   mode=training  viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=758/758 clipped=0 allowedZones=11 unreachable_controls=0/18
   mode=strategy  viewport=1366x768   scrollHeight=768 <= clientHeight=768 shell=768/768 clipped=0 allowedZones=0 unreachable_controls=0/2
 [1366x768] hero-ranges.html navigated (hors contrat de coque)
   mode=review    viewport=1366x768   course Review: persistenceReady=True mounted=review userNavigated=True #reviewDashboard=True #historiesSection masque=True
-wrote /tmp/z0a/out9.json
+wrote /tmp/mrj_out_v2.json
 EXIT=0
 ```
 
-Ce rejeu a été exécuté **neuf fois** au total : `out2.json` … `out5.json` avec le
-parcours décrit ci-dessus privé de l'étape deep link (9 mesures de mode par
-viewport), puis `out6.json` … `out9.json` avec le parcours complet (10 mesures de
-mode par viewport). Sur les **quatre** exécutions complètes (6 à 9), les vingt
-lignes de mesure et les **deux** lignes de course sont identiques, à **une
-cellule près**, nommée ici plutôt que lissée : `training` à 1366x768 rend
-`allowedZones=11` (runs 6, 7 et 9) puis `12` (run 8), le nombre d'éléments d'une
-zone de défilement autorisée variant avec la fin du rendu du panneau. Sur les
-neuf exécutions, cette même cellule de `training` à 1366x768 vaut `11` sept fois
-et `12` deux fois, et le **nombre total de contrôles** de `training` à 1500x1000
-vaut `18` huit fois et `17` une fois (run 2). Aucune de ces cellules ne change un
-compteur de clipping, un compteur de contrôles inatteignables, ni un verdict.
+Ce rejeu a été exécuté **quatre fois** au HEAD `a6cefc78` (`/tmp/mrj_harness_v2.log`,
+`/tmp/mrj_harness_v3.log`, `/tmp/mrj_harness_v4.log`, `/tmp/mrj_out_v2.json` …
+`/tmp/mrj_out_v4.json`). Les vingt lignes de mesure de mode, les quatre lignes de
+hit-test d'import, les deux lignes d'import et les **deux** lignes de course sont
+identiques d'un run à l'autre, **à une cellule près**, nommée ici plutôt que
+lissée : `training` à 1366x768 rend `allowedZones=11` (runs v2 et v4) puis `12`
+(run v3), le nombre d'éléments d'une zone de défilement autorisée variant avec la
+finition du rendu. Aucune autre cellule ne bouge, et les colonnes
+`clipped`/`unreachable` restent à `0` dans les quatre runs.
 
-### 3.2 Limites déclarées de cette méthode (ce qu'elle ne prouve pas)
+### 3.2 Limites déclarées de la méthode
 
-1. **Ce n'est pas le smoke.** `tests/trainer/smoke_modes_desktop.py` et
-   `tests/trainer/smoke_trainer.py` restent **non exécutés avec succès** ici
-   (§ 1) ; les parcours sont *rejoués*, pas *le smoke* ;
-2. **aucune saisie fiable** n'existe dans ce sandbox (§ 1.3). Ne sont donc pas
-   rejouées localement : le clic Playwright `locator.click(trial=True)` de
-   l'assertion T2 (hit-test d'action de Playwright), le clic réel de mesure sur
-   `#hhWatchBtn`, le `expect_file_chooser` sur `label[for="hhFileInput"]`, le clic
-   réel sur `#hhBenchmarkExportBtn`, et le parcours clavier du Replayer
-   (`Tab` → `ArrowRight` → `ArrowLeft` → `Enter`). Ces étapes restent couvertes
-   par le job gelé ;
-3. **le déclenchement par l'orchestrateur** (`run_driver_smokes()` →
-   `smoke_modes_desktop.py`) n'a pas eu lieu localement : `smoke_trainer.py`
-   échoue avant (§ 1.2) ;
-4. **aucun `PASS` du smoke gelé n'est déduit** de ces mesures, et aucune valeur
-   ci-dessous n'est un résultat de CI ;
-5. la mesure porte sur le `site/` de ce worktree au HEAD `43fa73b`.
+1. ce n'est **pas** le smoke gelé qui a tourné : c'est un harnais hors contrat qui
+   en réutilise les mesures. Le smoke lui-même reste **non exécuté ici** (§ 1) ;
+2. le **transport**, les **drapeaux de lancement** et le **mode d'action** (clic
+   JavaScript) diffèrent du smoke (§ 3.1). Un défaut qui ne se manifesterait
+   qu'avec la livraison d'un vrai événement souris/clavier ne serait **pas** vu ;
+3. les étapes exigeant un **clic réel** (`locator.click(trial=True)` de T2, clic
+   souris Playwright) et le **parcours clavier** du Replayer **ne sont pas
+   rejouées** : elles restent la propriété du job gelé ;
+4. le **hit-test au centre** est la règle du smoke, appliquée telle quelle ; il
+   produit un artefact mesuré sur `home` à 1366x768, nommé et qualifié au § 8 ;
+5. la mesure est **locale**, à un instant donné, sur les deux viewports de
+   référence seulement ; aucune conclusion n'est tirée pour d'autres tailles.
 
-## 4. Méthode de mesure : sensible au clipping, et calibrée
+## 4. Calibration : la métrique voit-elle vraiment le clipping ?
 
-Le smoke est explicite : « a mode that overflows fails explicitly with the
-measured values, so the audit is never silently satisfied by a clipped shell ».
-La métrique retirée (« évasion » hors de la boîte de coque) **ne peut pas** tenir
-ce rôle : la coque est bornée et ses panneaux internes sont en `overflow:hidden`,
-donc un descendant tronqué reste **dans** la boîte de la coque et la métrique
-rapporte `0`.
-
-La mesure utilisée ici vérifie l'**atteignabilité au point**, règle du smoke :
-
-1. **rectangle de clip** : pour chaque élément visible de la coque, on intersecte
-   les `client rect` de **tous** ses ancêtres clippants (`overflow` / `overflow-x`
-   / `overflow-y` valant `hidden`, `clip`, `auto` ou `scroll`) ; un élément dont la
-   boîte sort de ce rectangle est **clippé**. Le contenu d'un `<details>` fermé est
-   exclu (état replié du widget, pas défaut de clipping) ;
-2. **hit-test du centre** : pour chaque contrôle interactif
-   (`button, a[href], input, select, textarea, summary, label, [role=tab],
-   [data-trainer-action], [data-app-subview]`), `document.elementFromPoint` au
-   **centre** de la boîte doit retourner l'élément lui-même ou un descendant
-   (`at === el || el.contains(at)`). Un ancêtre qui possède simplement la boîte ne
-   compte pas — c'est ce qui fait échouer un contrôle clippé ;
-3. les éléments d'une zone de `APP_ALLOWED_SCROLL_ZONES` (atteignables par
-   défilement **dans une zone bornée autorisée**) sont comptés séparément
-   (`allowedZones`) ; ils ne sont ni clippés ni déclarés inatteignables.
-
-### 4.1 Calibration : la nouvelle mesure voit ce que l'ancienne ratait
-
-Même page, même viewport (`1366x768`), même harnais. La seule différence :
-`#historiesSection` (le panneau d'import Review) est forcé à
-`height:120px; overflow:hidden` — la forme même du défaut historique.
+La métrique d'atteignabilité a été **calibrée contre un clip synthétique** : sur la
+même page, au même viewport, on force le panneau d'import (`#historiesSection`) à
+une boîte de 120 px avec `overflow:hidden` — exactement la forme du défaut
+« panneau rendu mais tronqué ». Sortie exacte (`/tmp/mrj_calib.log`) :
 
 ```
 $ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs LD_PRELOAD=/tmp/fitpilot/fitshim.so \
@@ -396,12 +352,14 @@ baseline: new-metric clipped=0 unreachable=0/6 old-evasion=0 scrollHeight=768 cl
 inject: {'height': 120}
 synthetic-clip: new-metric clipped=6 unreachable=2/6 old-evasion=0 scrollHeight=768 clientHeight=768
   smoke-metric mounted=review scrollHeight<=clientHeight: True
-  CLIPPED {"sel": "div.hh-import-primary", ... "clip": {"top": 130, "bottom": 250}, "clipBy": "section#historiesSection.panel.wide.app-subview-panel", ...}
-  CLIPPED {"sel": "label.filelabel.hh-import-main", "box": {"top": 237, "bottom": 275, "left": 110, "right": 297}, ...}
-  CLIPPED {"sel": "button#hhWatchBtn.secondary", "box": {"top": 240, "bottom": 278, "left": 305, "right": 459}, ...}
-  CLIPPED {"sel": "div#hhImportEffect.hh-import-effect", ...} {"sel": "div#hhFileMeta.hh-import-summary", ...} {"sel": "div#hhStatus.status", ...}
-  UNREACHABLE {"sel": "label.filelabel.hh-import-main", "hit": false, "at": "div.app-view-body", "inViewport": true, "inShell": true, "allowedZone": false, "box": {"top": 237, "bottom": 275, "left": 110, "right": 297}, "point": {"x": 204, "y": 256}}
-  UNREACHABLE {"sel": "button#hhWatchBtn.secondary", "hit": false, "at": "div.app-view-body", "inViewport": true, "inShell": true, "allowedZone": false, "box": {"top": 240, "bottom": 278, "left": 305, "right": 459}, "point": {"x": 382, "y": 259}}
+  CLIPPED {"sel": "div.hh-import-primary", ...}
+  CLIPPED {"sel": "label.filelabel.hh-import-main", ...}
+  CLIPPED {"sel": "button#hhWatchBtn.secondary", ...}
+  CLIPPED {"sel": "div#hhImportEffect.hh-import-effect", ...}
+  CLIPPED {"sel": "div#hhFileMeta.hh-import-summary", ...}
+  CLIPPED {"sel": "div#hhStatus.status", ...}
+  UNREACHABLE {"sel": "label.filelabel.hh-import-main", "hit": false, "at": "div.app-view-body", ...}
+  UNREACHABLE {"sel": "button#hhWatchBtn.secondary", "hit": false, "at": "div.app-view-body", ...}
   import hit_test reachable: {"#reviewImportTab": true, "label[for=\"hhFileInput\"]": false, ".hh-import-advanced > summary": false, "#hhWatchBtn": false}
 restore: {'height': 622}
 restored: new-metric clipped=0 unreachable=0/6 old-evasion=0 scrollHeight=768 clientHeight=768
@@ -410,26 +368,26 @@ EXIT=0
 
 Lecture, en trois faits mesurés :
 
-1. sur l'état volontairement clippé, la métrique **retirée** (« évasion »)
-   rapporte `0` : elle ne voit rien, alors que **3 des 4** cibles d'import sont
-   devenues non atteignables et que 6 éléments sont clippés ;
-2. la métrique **globale du smoke** (`scrollHeight <= clientHeight`) reste
-   verte sur cet état (`True`) : un panneau tronqué ne fait pas déborder le
-   document. C'est précisément pourquoi l'assertion T2 d'atteignabilité existe,
-   et pourquoi ce document ne s'appuie pas sur le seul `scrollHeight` ;
+1. sur l'état volontairement clippé, la métrique **retirée** (« évasion ») rapporte
+   `0` : elle ne voit rien, alors que **3 des 4** cibles d'import sont devenues non
+   atteignables et que 6 éléments sont clippés ;
+2. la métrique **globale du smoke** (`scrollHeight <= clientHeight`) reste verte
+   sur cet état (`True`) : un panneau tronqué ne fait pas déborder le document.
+   C'est précisément pourquoi l'assertion T2 d'atteignabilité existe, et pourquoi
+   ce document ne s'appuie pas sur le seul `scrollHeight` ;
 3. la nouvelle mesure **échoue** quand du contenu est clippé (6 clippés / 2
    contrôles inatteignables / 3 cibles d'import en échec) et **passe** quand il ne
    l'est pas (`baseline` et `restored` : `0`/`0`). C'est le changement de méthode
    exigé.
 
-## 5. Table mode × viewport (mesures locales stabilisées, HEAD `43fa73b`)
+## 5. Table mode × viewport (mesures locales stabilisées, HEAD `a6cefc78`)
 
 `scrollHeight` / `clientHeight` sont ceux de `document.scrollingElement` — la
 métrique même du smoke. La colonne « coque » donne les mêmes valeurs pour
 `[data-view-shell="<mode>"]`. « clippés » / « inatteignables » viennent de l'audit
 du § 4 ; « zones autorisées » compte les éléments hors de la boîte visibles
-uniquement dans une zone de `APP_ALLOWED_SCROLL_ZONES` (atteignables par
-défilement borné, donc ni clippés ni inatteignables).
+uniquement dans une zone de `APP_ALLOWED_SCROLL_ZONES` (atteignables par défilement
+borné, donc ni clippés ni inatteignables).
 
 | Mode (étape du parcours) | Viewport | document `scrollHeight` | document `clientHeight` | coque `scrollHeight`/`clientHeight` | clippés | zones autorisées | contrôles inatteignables | Verdict mesuré |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -449,7 +407,7 @@ défilement borné, donc ni clippés ni inatteignables).
 | `review` (Import) | 1366x768 | 768 | 768 | 768 / 768 | 0 | 0 | 0 / 6 | fit, aucun clip |
 | `review` (Import, détails ouverts) | 1366x768 | 768 | 768 | 768 / 768 | 0 | 0 | 0 / 13 | fit, aucun clip |
 | `review` (Import, deep link `#historiesSection`) | 1366x768 | 768 | 768 | 768 / 768 | 0 | 0 | 0 / 6 | fit, aucun clip |
-| `replayer` | 1366x768 | 768 | 768 | 768 / 768 | 0 | 43 | 0 / 19 | fit, aucun clip |
+| `replayer` | 1366x768 | 768 | 768 | 768 / 768 | 0 | 46 | 0 / 19 | fit, aucun clip |
 | `review` (Inbox, retour Replayer) | 1366x768 | 768 | 768 | 768 / 768 | 0 | 0 | 0 / 11 | fit, aucun clip |
 | `training` | 1366x768 | 768 | 768 | 758 / 758 | 0 | 11 | 0 / 18 | fit, aucun clip |
 | `strategy` (coque intégrée) | 1366x768 | 768 | 768 | 768 / 768 | 0 | 0 | 0 / 2 | fit, aucun clip |
@@ -461,16 +419,15 @@ Notes de lecture :
   retour par le **deep link** `#historiesSection`, puis coque après le retour
   `Replayer → Review` (**Inbox**) ;
 - l'atterrissage Review est mesuré : `selected_subtabs=['pilotage']` aux deux
-  viewports, et l'assertion « un seul panneau monté » passe après chaque
-  bascule ;
+  viewports, et l'assertion « un seul panneau monté » passe après chaque bascule ;
 - `training` a une coque de `990/990` (1500x1000) et `758/758` (1366x768) : la
   coque est **plus courte** que le document (`1000`, `768`) et ne déborde pas ;
-- `replayer` (43 zones autorisées à 1366x768, 1 à 1500x1000) et `training` (11 et
+- `replayer` (46 zones autorisées à 1366x768, 1 à 1500x1000) et `training` (11 et
   7) contiennent des éléments hors de la boîte visibles uniquement dans une zone
   autorisée `app-canvas-pane` / `app-scroll-zone` ;
 - après le deep link, la vérification « aucun défilement caché de coque »
-  (`scrollTop <= 1` sur la coque Review, `.app-view-body` et
-  `#historiesSection`) passe aux deux viewports ;
+  (`scrollTop <= 1` sur la coque Review, `.app-view-body` et `#historiesSection`)
+  passe aux deux viewports ;
 - la seule anomalie de hit-test mesurée est celle de `home` à 1366x768 ; elle est
   nommée et qualifiée au § 8. Aucune autre ligne n'a de contrôle inatteignable.
 
@@ -510,8 +467,8 @@ Pour les douze cibles mesurées, `present`, `visible`, `inViewport`, `inShell`,
 `hit` et `reachable` sont **tous vrais**, et `at` est la cible elle-même. La main
 repro a ensuite été importée par le **vrai** `#hhFileInput`
 (`imported=['3210001']` aux deux viewports), ouverte depuis l'inbox Review
-(`#hhHands .review-inbox-open`), et le Replayer mesuré : le parcours T2 « avant
-import » *et* le parcours d'import qui suit sont donc couverts.
+(`#hhHands .review-inbox-open`), et le Replayer mesuré : le parcours T2
+« avant import » *et* le parcours d'import qui suit sont donc couverts.
 
 **Limite** : la confirmation `locator.click(trial=True)` de cette assertion n'a
 pas pu être exécutée localement (saisie indisponible, § 1.3 et § 3.2) ; elle reste
@@ -519,10 +476,10 @@ couverte par le smoke gelé.
 
 ## 7. Scénario de course `persistenceReady`
 
-Le scénario du smoke (`run_review_race_viewport`) est rejoué dans un contexte
-**frais** par viewport : la carte Review est activée pendant que la restauration
-locale asynchrone ouvre encore IndexedDB, puis le barrage est franchi
-(`state.persistenceReady===true`) et le verdict est relu depuis la page.
+Le scénario du smoke (activité `review` pendant la restauration locale) est rejoué
+dans un contexte **frais** par viewport : la carte Review est activée pendant que
+la restauration locale asynchrone ouvre encore IndexedDB, puis le barrage est
+franchi (`state.persistenceReady===true`) et le verdict est relu depuis la page.
 
 | Viewport | `persistenceReady` | `document.body.dataset.appView` | `state.userNavigated` | `#reviewDashboard` visible | `#historiesSection` masqué | Verdict |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -536,10 +493,8 @@ Ligne brute du harnais, aux deux viewports :
   mode=review    viewport=1366x768   course Review: persistenceReady=True mounted=review userNavigated=True #reviewDashboard=True #historiesSection masque=True
 ```
 
-Sur les huit rejeux qui ont produit ces lignes (runs 2 à 9 — le run 1 a perdu son
-navigateur avant l'étape de course, voir § 3.1), elles sont **identiques** aux
-deux viewports. C'est une mesure du scénario rejoué, pas un `PASS` du smoke gelé
-(§ 3.2).
+Ces deux lignes sont **identiques** dans les quatre rejeux complets (v2 à v4). C'est
+une mesure du scénario rejoué, pas un `PASS` du smoke gelé (§ 3.2).
 
 ## 8. Réserve mesurée : `home` à 1366x768 — un contrôle flottant couvre le centre d'un raccourci
 
@@ -579,36 +534,39 @@ Qualification (mesurée, pas supposée) :
   raison pour laquelle un compteur de contrôles inatteignables est non nul dans ce
   document ; il est conservé et qualifié plutôt que retiré.
 
-La ligne `home` du § 5 ne porte **aucune** affirmation « aucun débordement »
-fondée sur ce hit-test : elle porte sur `scrollHeight = clientHeight = 768` et sur
+La ligne `home` du § 5 ne porte **aucune** affirmation « aucun débordement » fondée
+sur ce hit-test : elle porte sur `scrollHeight = clientHeight = 768` et sur
 `clippés = 0`.
 
 ## 9. `./hero-ranges.html` est naviguée mais **hors contrat de coque**
 
 Le parcours navigue réellement depuis l'Accueil vers l'éditeur autonome
-`./hero-ranges.html` (activation de `a.mode-card[data-app-view="strategy"]`, puis
-attente du montage de `[data-app-mode="strategy"]`), aux deux viewports, et la
-ligne brute du harnais le confirme :
+`./hero-ranges.html` (activation du lien réel
+`a.mode-card[data-app-view="strategy"]`, puis attente du montage de
+`[data-app-mode="strategy"]`), aux deux viewports, et la ligne brute du harnais le
+confirme :
 
 ```
 [1500x1000] hero-ranges.html navigated (hors contrat de coque)
 [1366x768] hero-ranges.html navigated (hors contrat de coque)
 ```
 
-Cette page est **hors contrat de coque** : c'est un document autonome, pas la
-coque desktop à hauteur fixe. Elle est donc **naviguée mais jamais assertée
-no-scroll** : aucune assertion `scrollHeight <= clientHeight` ne la concerne, elle
-n'apparaît dans aucune ligne du tableau du § 5, et elle ne porte aucun verdict de
-fit. Le harnais confirme seulement qu'elle monte.
+Cette page est **hors contrat de coque** : c'est un document autonome, pas la coque
+desktop à hauteur fixe. Elle est donc **naviguée mais jamais assertée no-scroll** :
+aucune assertion `scrollHeight <= clientHeight` ne la concerne, elle n'apparaît
+dans aucune ligne du tableau du § 5, et elle ne porte aucun verdict de fit. Le
+harnais confirme seulement qu'elle monte. Le smoke gelé, lui, la mesure plus loin
+(deep link `**/hero-ranges.html?**` de son éditeur) ; cette partie n'est pas
+rejouée ici (§ 3.2) et reste la propriété du job gelé.
 
 ## 10. Verdict par mode
 
-| Mode | Verdict local mesuré (rejeu hors contrat, HEAD `43fa73b`) | Base de mesure |
+| Mode | Verdict local mesuré (rejeu hors contrat, HEAD `a6cefc78`) | Base de mesure |
 | --- | --- | --- |
 | `home` | fit ; aucun élément clippé | `scrollHeight = clientHeight` aux 2 viewports, `clippés = 0` ; à 1366x768, 1 hit-test central couvert par un bouton flottant — **qualifié au § 8** |
 | `spotlab` | fit ; aucun élément clippé | `scrollHeight = clientHeight`, `clippés = 0`, `0/17` contrôle inatteignable |
 | `review` | fit ; aucun élément clippé ; surface d'import atteignable | `scrollHeight = clientHeight`, `clippés = 0` (5 étapes), T2 `4/4` puis `5/5` `reachable` aux 2 viewports |
-| `replayer` | fit ; aucun élément clippé | `scrollHeight = clientHeight`, `clippés = 0` ; 43 et 1 éléments en zone autorisée |
+| `replayer` | fit ; aucun élément clippé | `scrollHeight = clientHeight`, `clippés = 0` ; 46 et 1 éléments en zone autorisée |
 | `training` | fit ; aucun élément clippé | document `1000/1000` et `768/768`, coque `990/990` et `758/758`, `clippés = 0` |
 | `strategy` | fit ; aucun élément clippé | `scrollHeight = clientHeight`, `clippés = 0`, `0/2` contrôle inatteignable |
 
@@ -621,32 +579,29 @@ clipping, hit-tests T2) ; partout ailleurs elle est absente ou qualifiée.
 ## 11. Statut du smoke gelé et autorité CI
 
 - `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/pylibs python3 tests/trainer/smoke_modes_desktop.py`
-  : **exécutée localement, échec** — `EXIT=1`, `PermissionError: [Errno 1]
-  Operation not permitted` à la création du socket du serveur éphémère (§ 1.1) ;
+  : **exécutée localement, échec** — `EXIT=1`, `PermissionError: [Errno 1] Operation
+  not permitted` à la création du socket du serveur éphémère (§ 1.1) ;
 - `python3 tests/trainer/smoke_trainer.py` : **exécutée localement, échec** —
   `EXIT=1`, `ModuleNotFoundError: No module named 'playwright'` (§ 1.2) ; avec le
-  préfixe d'environnement, échec au lancement du navigateur puis à la création de
-  la page ; `run_driver_smokes()` n'est donc jamais atteint localement ;
+  préfixe d'environnement, échec au lancement du navigateur (bibliothèque
+  manquante puis création de page impossible) ; `run_driver_smokes()` n'est donc
+  jamais atteint localement ;
 - **le job gelé `browser-smoke` de `.github/workflows/trainer-smoke.yml` reste
-  l'autorité** pour le smoke lui-même : il dispose du réseau, de `repro-browser` et
-  d'un Chromium chargeable, et il sert `site/` par
+  l'autorité** pour le smoke lui-même : il dispose du réseau, d'un Chromium
+  chargeable, et il sert `site/` par
   `python3 -m http.server 8765 --directory site` avant
   `run: python3 tests/trainer/smoke_trainer.py` ;
-- l'échec du run signalé par le contexte autoritaire de la task sur le HEAD
-  `cdbad28` (clic refusé sur `.hh-import-advanced > summary`) est **rapporté par ce
-  contexte**, pas réobservé ici : le réseau est coupé (§ 1.3) et la CI n'a pas été
-  interrogée depuis ce worktree ;
 - **aucun merge, aucun push et aucun état vert de CI n'est affirmé** dans ce
-  document. La seule chose affirmée sur la CI est qu'elle n'a **pas** été
-  observée.
+  document. La seule chose affirmée sur la CI est qu'elle n'a **pas** été observée
+  depuis ce worktree (réseau coupé, § 1.3).
 
 ## 12. Périmètre, contrats statiques et boucle de tests
 
 - **périmètre** : ce document est le **seul** delta versionné de la task
   (`git status --porcelain` → ` M docs/desktop-modes-fit-evidence.md`). Aucun
   fichier `.github/workflows/**` ni `.github/actions/**` n'est modifié ; aucun code
-  science / équité / modèles / ranges n'est touché ; `site/index.html`,
-  `site/trainer.js` et `site/RELEASE.json` ne sont pas modifiés :
+  science / équité / modèles / ranges n'est touché ; `site/index.html` et
+  `site/trainer.js` ne sont pas modifiés :
   `python3 tools/write_site_release.py --check` →
   `release source anchor verified: site/RELEASE.json; assembled identity can be
   materialized`, `EXIT=0` ; `node --check site/trainer.js` → `EXIT=0` ;
@@ -659,41 +614,27 @@ clipping, hit-tests T2) ; partout ailleurs elle est absente ou qualifiée.
   `spotlab`, `review`, `replayer`, `training`, `strategy`), un **verdict**, et que
   `./hero-ranges.html` est **hors contrat** de coque ;
 - boucle complète `for test in tests/trainer/test_*.py; do python3 "$test"; done` :
-  exécutée après l'écriture de ce fichier → **48 fichiers, 0 échec** (`files=48
-  fails=0`) ; aucune sortie de test n'est recopiée ici, seule la boucle complète
-  est revendiquée ;
-- hors de ce périmètre, les contrôles git-bound du dépôt qui sont épinglés à un
-  SHA de base historique échouent dans ce worktree **indépendamment de cette
-  task** : `tests/ci/test_historical_workflow_quarantine.py`,
-  `tests/ci/test_repro_current_mixed_batch.py` et
-  `tests/ci/test_residual_repro_dag.py` comparent l'arbre courant à
-  `ac208d26cbf3f16b498fd5333ad3b7c4fa58355b`, et **236** fichiers diffèrent déjà
-  entre ce SHA et le HEAD `43fa73b` (mesuré : `git diff --name-only
-  ac208d26cbf3f16b498fd5333ad3b7c4fa58355b HEAD | wc -l` → `236`), alors que leur
-  liste blanche en attend une poignée. De même, `tests/test_repro_*.py` doivent
-  être lancés avec `PYTHONPATH=.` comme le fait la CI
-  (« REPRO batch-1 anti-bypass contract ») : avec ce réglage,
-  `PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py` →
-  `REPRO workflow batch-1 tests: 9 passed`, `EXIT=0`. Le delta de **cette** task
-  reste d'un seul fichier (`git diff --name-only HEAD` →
-  `docs/desktop-modes-fit-evidence.md`), et les 48 contrats trainer, dont la garde
-  de contrat ci-dessus, sont verts.
+  exécutée après l'écriture de ce fichier → **48 fichiers, 0 échec**
+  (`files=48 fails=0`) ; aucune sortie de test n'est recopiée ici, seule la boucle
+  complète est revendiquée ;
+- le delta de **cette** task reste d'un seul fichier
+  (`git diff --name-only HEAD` → `docs/desktop-modes-fit-evidence.md`).
 
 ## 13. Reproductibilité de ce document
 
 - Date des mesures : **2026-09-25** (Europe/Paris), avant écriture du fichier ;
 - `git rev-parse HEAD` au moment des mesures :
-  **`43fa73bd17a50cbbab13f6b66d337f399dbaa02c`** (branche
-  `n8n/issue-394/task-backlog-z0a`) ;
+  **`a6cefc78eaac55ba395acd73d00bb055626b3cad`** (branche
+  `n8n/issue-394/task-backlog-mrj`) ;
 - le présent document ne peut pas citer le SHA de son propre commit
   (auto-référence) : le worker **ne commit pas, ne pousse pas et ne stage pas**,
   l'orchestrateur gère le commit et la PR ;
-- le harnais local et ses sorties (`/tmp/z0a/harness.py`, `calib.py`,
-  `home_edge.py`, `limits.py`, `cdp_probe.py`, `key_probe.py`, `browser_alive.py`,
-  `out9.json`,
-  `harness_run9.log`, `calib.json`, `home_edge.log`, `limits.log`) sont **hors
-  dépôt et non versionnés** : ils ne sont
-  pas une dépendance du contrat, seulement la trace de la méthode réellement
+- le harnais local et ses sorties (`/tmp/mrj/harness.py`, `/tmp/mrj_out_v2.json` …
+  `/tmp/mrj_out_v4.json`, `/tmp/mrj_harness_v2.log` … `/tmp/mrj_harness_v4.log`,
+  `/tmp/mrj_calib.log`, `/tmp/mrj_home_edge.log`, `/tmp/mrj_limits.log`,
+  `/tmp/mrj_smoke_modes.out`, `/tmp/mrj_smoke_trainer.out`,
+  `/tmp/mrj_smoke_trainer_env.out`) sont **hors dépôt et non versionnés** : ils ne
+  sont pas une dépendance du contrat, seulement la trace de la méthode réellement
   utilisée, dont les limites sont déclarées au § 3.2 ;
 - ce qui est reproductible sans ce harnais : les sorties et codes retour du § 1
   (les deux commandes, `git rev-parse HEAD`, les sondes socket / saisie), la garde
