@@ -1,13 +1,13 @@
 ---
 schema: poker-issue-394-release-identity-report/v1
 issue: 394
-task: task-backlog-kd4
+task: task-backlog-lzl
 planner_key: T4
 report_date: 2026-09-25
-status: PASS_STATIC_CONTRACTS__FROZEN_BROWSER_JOB_NOT_OBSERVABLE_FROM_THIS_WORKER
-head_sha: 7e0280ff554caf7c9b3b94218d729f0283acc623
-head_subject: "chore(n8n): task backlog-cg8 for issue #394"
-branch: n8n/issue-394/task-backlog-kd4
+status: PASS_STATIC_CONTRACTS__CONTRACT_JOB_FAILURE_RECORDED__FROZEN_BROWSER_JOB_NOT_OBSERVABLE_FROM_THIS_WORKER
+head_sha: 1e17f90f05811b3dba4e6c830180578f42c391e1
+head_subject: "chore(n8n): task backlog-3p7 for issue #394"
+branch: n8n/issue-394/task-backlog-lzl
 merged: false
 pushed: false
 ci_green: NOT_OBSERVED
@@ -23,19 +23,25 @@ stale_claims_guard_positive_control: PASS_EXIT_1_ON_PROBE
 last_site_writer: "8ed9ef0 — chore(n8n): task backlog-0q6 for issue #394 (R1)"
 site_bytes_written_by_this_task: NONE
 patch_idempotence: PASS
+patch_idempotence_hero_range_editor: "CORRECTED_T1_T2_T3 — tools/patches/apply_hero_range_editor.py idempotent depuis 3ff4f45"
+contract_job_failure_recorded: "PASS — échec CI réel du job gelé contract de .github/workflows/hero-range-editor.yml, étape « Main application integration is idempotent », consigné au § 8"
+contract_job_rerun_required: true
 static_contracts: PASS_48_OF_48
 javascript_syntax: PASS
 browser_smoke_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_SANDBOX
 browser_smoke_evidence: "docs/desktop-modes-fit-evidence.md"
 browser_smoke_authority: "job gelé browser-smoke de .github/workflows/trainer-smoke.yml — seule autorité de la règle « aucun scroll global » à 1500x1000 et 1366x768 et du clic réel du raccourci Accueil"
 red_workflows: []
-report_self_delta: "le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, 7e0280ff554caf7c9b3b94218d729f0283acc623, relevé juste avant l'écriture de ce fichier (git rev-parse HEAD) ; cette task n'écrit AUCUN octet de site/** (la régénération de l'ancre est byte-identique, git diff vide), donc le rapport est postérieur au dernier écrivain commité de site/** (8ed9ef0, R1) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
+report_self_delta: "révision task-backlog-lzl (T4) : le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, 1e17f90f05811b3dba4e6c830180578f42c391e1 (chore(n8n): task backlog-3p7 for issue #394), relevé juste avant l'écriture de ce fichier (git rev-parse HEAD) ; cette révision AJOUTE le § 8 (échec CI réel du job gelé contract de .github/workflows/hero-range-editor.yml à l'étape « Main application integration is idempotent », cause markup, correction T1/T2/T3) et deux sous-sections documentaires (§ 8.5 de docs/desktop-modes-fit-evidence.md, annotation additive de docs/hero-strategy-population-binding-ci-report.md) ; elle n'écrit AUCUN octet de site/** ni de .github/** (git status --porcelain vide sur ces familles), donc le rapport reste postérieur au dernier écrivain commité de site/** (8ed9ef0, R1) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
 ---
 
-# Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, task-backlog-kd4)
+# Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, révisé par task-backlog-lzl)
 
-Ce rapport matérialise la clôture demandée par `task-backlog-kd4` (T4), **après**
-la correction du recouvrement Home/rail livrée par **R1**
+Ce rapport matérialise la clôture demandée par `task-backlog-kd4` (T4), **révisée
+par `task-backlog-lzl` (T4)** pour consigner l'**échec CI réel du job gelé
+`contract`** de `.github/workflows/hero-range-editor.yml` et la correction du
+patch d'idempotence qu'il a révélée (§ 8), **après** la correction du
+recouvrement Home/rail livrée par **R1**
 (`site/index.html`, task `backlog-0q6`, commit `8ed9ef0`) et le constat d'échec CI
 livré par **R2** (`docs/desktop-modes-fit-evidence.md` § 8, task `backlog-cg8`,
 commit `7e0280f`) :
@@ -48,7 +54,10 @@ commit `7e0280f`) :
 3. **garde anti-claims périmés** étendue au **quatrième** claim rejeté en review
    (la requalification de l'échec Home), en plus des trois claims déjà couverts ;
 4. **réécriture de ce rapport au HEAD réel**, avec l'exigence CI explicitement
-   portée et **aucun `PASS` inventé**.
+   portée et **aucun `PASS` inventé** ;
+5. **échec CI réel du job gelé `contract`** (étape « Main application integration
+   is idempotent »), sa cause markup et la correction livrée, avec les empreintes
+   avant/après reproduites depuis le dépôt (§ 8) — sans aucun `PASS` de CI.
 
 **Aucun merge**, **aucun push**, **aucun rebase**, **aucun commit**, **aucun
 `git add`** : le worker ne commit ni ne pousse, l'orchestrateur prend le relais
@@ -60,9 +69,9 @@ observable depuis ce sandbox (§ 6 et § 7).
 | Champ | Valeur |
 | --- | --- |
 | Statut global | **PASS** des contrats statiques ; **CI non observée** ; **smoke navigateur non rejouable localement** |
-| HEAD réel du worktree | `7e0280ff554caf7c9b3b94218d729f0283acc623` |
-| Sujet du HEAD | `chore(n8n): task backlog-cg8 for issue #394` |
-| Branche de travail | `n8n/issue-394/task-backlog-kd4` |
+| HEAD réel du worktree | `1e17f90f05811b3dba4e6c830180578f42c391e1` (relevé juste avant l'écriture de cette révision) |
+| Sujet du HEAD | `chore(n8n): task backlog-3p7 for issue #394` |
+| Branche de travail | `n8n/issue-394/task-backlog-lzl` |
 | Dernier écrivain **commité** de `site/**` | `8ed9ef0` (task `backlog-0q6`, R1) |
 | Changement d'octets dans `site/**` par cette task | **aucun** (régénération byte-identique de l'ancre et du catalogue, `git diff` vide sur `site/**`) |
 | Merge effectué | **non** |
@@ -76,24 +85,29 @@ observable depuis ce sandbox (§ 6 et § 7).
 | Garde — self-test de non-vacuité | **PASS** (détecteurs rejoués sur les révisions historiques) |
 | Garde — contrôle positif | **PASS** (`EXIT=1` sur une sonde temporaire, sonde retirée, diff final inchangé) |
 | `tools/patches/apply_trainer_mvp.py` | **PASS** (idempotent, `sha256` inchangés) |
+| `tools/patches/apply_hero_range_editor.py` (job gelé `contract`) | **PASS** locale, sur copie **byte-identique** au HEAD réel (idempotent, `sha256` inchangé, `diff -u` `EXIT=0`) — échec CI réel de l'étape et sa correction : § 8 |
+| Job gelé `contract` de `.github/workflows/hero-range-editor.yml` (après correction) | **NON OBSERVABLE** depuis ce sandbox — relance exigée (§ 8) ; aucun `PASS` de CI affirmé |
 | Marqueurs `id="trainerOpenBtn"` / `id="trainerNavLink"` | **PASS** (chacun présent exactement une fois) |
 | Boucle `for test in tests/trainer/test_*.py` | **PASS** (`48/48`, `0` échec) |
 | `node --check site/trainer.js` | **PASS** (`EXIT=0`, Node `v24.21.0`) |
 | Anti-bypass REPRO (`tests/ci/test_repro_workflow_batch1.py`) | **PASS** (9 passed) |
-| Smoke navigateur des modes | **NON REJOUABLE LOCALEMENT** — les deux commandes exigées ont été lancées au HEAD final et ont échoué (`EXIT=1`, `playwright` indisponible) ; **le job gelé `browser-smoke` reste l'autorité** |
+| Smoke navigateur des modes | **NON REJOUABLE LOCALEMENT** — les deux commandes exigées ont été lancées au HEAD réel de cette révision et ont échoué (`EXIT=1`, `playwright` indisponible) ; **le job gelé `browser-smoke` reste l'autorité** |
 | Workflow « Validate interactive trainer » | **NON OBSERVABLE** depuis ce sandbox (§ 7) — arrêt pour vérification humaine, aucun `PASS` affirmé |
 | Delta Git de la task | **non vide** : ce rapport + la garde étendue + son branchement documentaire |
+| Delta Git de cette révision | **non vide** : ce rapport (§ 8), `docs/desktop-modes-fit-evidence.md` (§ 8.5) et `docs/hero-strategy-population-binding-ci-report.md` (annotation additive) — aucun autre fichier |
 | `.github/workflows/**` / `.github/actions/**` | **inchangé** (`git diff --stat HEAD -- .github` vide) |
 | Modèle / science / équité | **inchangé** (aucun fichier de ces familles dans le diff) |
 
 ### Self-delta (explicite)
 
 - Le HEAD réel du worktree **au moment de l'écriture de ce rapport** est
-  **`7e0280ff554caf7c9b3b94218d729f0283acc623`**
-  (`chore(n8n): task backlog-cg8 for issue #394`), tête de la branche
-  `n8n/issue-394/task-backlog-kd4`. Il a été relevé juste avant l'écriture de ce
+  **`1e17f90f05811b3dba4e6c830180578f42c391e1`**
+  (`chore(n8n): task backlog-3p7 for issue #394`), tête de la branche
+  `n8n/issue-394/task-backlog-lzl`. Il a été relevé juste avant l'écriture de ce
   fichier (`git rev-parse HEAD`), et c'est **la valeur qui figure dans l'en-tête
-  `head_sha` ci-dessus**.
+  `head_sha` ci-dessus**. La révision précédente de ce rapport était ancrée sur
+  `7e0280ff554caf7c9b3b94218d729f0283acc623` (task `backlog-kd4`) ; elle est
+  remplacée, jamais réécrite dans son contenu de preuve.
 - **Cette task ne change aucun octet fonctionnel** : `site/index.html`,
   `site/trainer.js`, `site/trainer.css` et `site/RELEASE.json` sont **inchangés**
   (§ 2 : la régénération de l'ancre — et du catalogue de packs qu'elle
@@ -106,6 +120,12 @@ observable depuis ce sandbox (§ 6 et § 7).
   (le module qui exécute la garde dans la boucle gelée). La somme de contrôle de
   ce fichier ne peut pas être citée par lui-même (auto-référence) ; le worker ne
   commit pas, l'orchestrateur gère le commit et la PR.
+- **Le delta versionné de cette révision** (`task-backlog-lzl`, T4) est
+  strictement documentaire : ce rapport (§ 8),
+  `docs/desktop-modes-fit-evidence.md` (§ 8.5) et
+  `docs/hero-strategy-population-binding-ci-report.md` (annotation additive
+  marquant la ligne d'idempotence périmée). Aucun octet de `site/**`, de
+  `.github/**`, de test ou d'outil n'est touché par cette révision.
 - Ce rapport **n'affirme ni merge, ni push, ni état vert de CI** ; il n'affirme
   rien sur le run CI distant, qui n'a pas été observable depuis ce sandbox.
 
@@ -132,6 +152,15 @@ portée du pattern sous-vue + `APP_ALLOWED_SCROLL_ZONES`, propriété in-repo de
 mesure de fit, clic réel du smoke + gouttière nommée de la colonne Home). Le
 garde-fou n'est donc pas vacueux : il échoue **aussi** si la contradiction
 disparaît de l'implémentation.
+
+Depuis **T3** (`backlog-3p7`, commit `1e17f90`), ce bloc structurel couvre en
+outre la régression de l'échec `contract` consigné au § 8 : la garde exige que
+`tools/patches/apply_hero_range_editor.py` n'ancre plus d'insertion sur un
+identifiant de `#quickNav` et n'émette aucune entrée `data-product-domain`
+pointant vers `./hero-ranges.html`. Ses deux contrôles de non-vacuité (entrée
+in-app retirée, puis copie temporaire du patch mutée) ajoutent deux lignes au
+`--self-test` ci-dessous ; le patch versionné lui-même reste byte-identique après
+le contrôle.
 
 Comme en `backlog-hm5`, les formulations exactes rejetées ne sont **pas
 recopiées dans ce rapport** : elles constituent l'entrée de détection de la
@@ -160,6 +189,8 @@ self-test narrow-rendering-out-of-scope: 1 detector(s) matched c3da3fe:site/trai
 self-test fit-measured-by-out-of-repo-harness: 4 detector(s) matched c83c72f:docs/desktop-modes-fit-evidence.md
 self-test home-failure-requalified-as-artefact: 3 detector(s) matched f105927:docs/desktop-modes-fit-evidence.md
 self-test home-failure-requalified-as-artefact: 2 detector(s) matched d331137:docs/desktop-modes-fit-evidence.md
+self-test nav-entry-points-to-standalone-editor: fails without the in-app #strategyPage entry
+self-test nav-entry-points-to-standalone-editor: fails on a mutated copy of the patch script
 issue-394 stale claims guard: PASS (1051 versioned text files scanned, 4 claims)
 EXIT=0
 ```
@@ -246,7 +277,9 @@ n'y a **aucun delta d'ancre** à committer, et `engine_release` reste
 **inchangée**.
 
 Vérifications d'identité au HEAD réel
-(`7e0280ff554caf7c9b3b94218d729f0283acc623`) :
+(`1e17f90f05811b3dba4e6c830180578f42c391e1`, identique à celui de la révision
+`backlog-kd4` pour tout `site/**` : aucun octet fonctionnel n'a bougé depuis
+`8ed9ef0`) :
 
 | Élément | Valeur |
 | --- | --- |
@@ -366,8 +399,10 @@ l'action `./.github/actions/repro-browser` et d'un Chromium chargeable, sert
 task et sa CI n'a **pas** été observée depuis ce sandbox : **aucun état vert de
 CI et aucun `PASS` du smoke gelé n'est affirmé ici.**
 
-Les deux commandes exigées ont été **lancées au HEAD final**
-(`7e0280ff554caf7c9b3b94218d729f0283acc623`) ; le résultat observé est un
+Les deux commandes exigées ont été **lancées au HEAD de la révision
+`backlog-kd4`** (`7e0280ff554caf7c9b3b94218d729f0283acc623`) **puis de nouveau
+au HEAD réel de cette révision**
+(`1e17f90f05811b3dba4e6c830180578f42c391e1`) : le résultat observé est le même
 **échec fail-closed d'origine environnementale**, jamais un `PASS` :
 
 ```
@@ -406,7 +441,7 @@ Condition exigée **avant** de considérer la PR prête :
   (48/48, `node --check`, `--check` de l'ancre, idempotence du patch).
 
 **Cette exécution CI n'est pas observable depuis l'environnement de ce worker.**
-Tentatives réelles, au HEAD final :
+Tentatives réelles, au HEAD réel de cette révision :
 
 ```
 $ curl -sS https://api.github.com/rate_limit
@@ -430,20 +465,112 @@ explicitement et la clôture **s'arrête pour vérification humaine** :
   `browser-smoke` rouge au nouveau HEAD invaliderait la clôture de #394.
 
 Les seuls verdicts `PASS` de ce document sont ceux des commandes exécutées **dans
-ce worktree** (§ 1 à § 5), plus l'échec fail-closed explicitement consigné du
-smoke local (§ 6).
+ce worktree** (§ 1 à § 5 et § 8), plus l'échec fail-closed explicitement consigné
+du smoke local (§ 6).
+
+## (8) Échec CI réel du job gelé `contract` — idempotence du patch de l'éditeur
+
+Ce document consigne, en plus de l'échec du job gelé `browser-smoke` relevé par
+R2 (`docs/desktop-modes-fit-evidence.md` § 8.1), un **second échec CI réel** :
+celui du job gelé `contract` de `.github/workflows/hero-range-editor.yml`, à son
+étape « Main application integration is idempotent », dont la forme exacte est
+
+```
+$ sha256sum site/index.html > /tmp/index-before.sha
+$ python3 tools/patches/apply_hero_range_editor.py
+$ sha256sum site/index.html > /tmp/index-after.sha
+$ diff -u /tmp/index-before.sha /tmp/index-after.sha
+```
+
+Le `diff` a retourné **1** : la révision alors versionnée de
+`tools/patches/apply_hero_range_editor.py` modifiait `site/index.html` à chaque
+exécution, donc le step échouait. Ce n'est pas le patch de § 5
+(`apply_trainer_mvp.py`, resté idempotent) : c'est celui de l'éditeur autonome.
+
+### Cause réelle, en markup
+
+Le `patch_text()` d'alors réinsérait l'entrée de rail autonome
+
+```
+  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>
+```
+
+juste après la ligne du rail
+`<a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>`
+(l'entrée `#trainerNavLink` de `#quickNav`).
+Depuis R1 (`site/index.html`, commit `8ed9ef0`, task `backlog-0q6`), `#quickNav`
+ne porte plus ce lien : son entrée Strategy est une navigation **in-app**
+(`href="#strategyPage"`). Le garde d'idempotence du patch (« l'entrée est déjà
+présente, ne rien écrire ») ne se déclenchait donc plus jamais : chaque run
+ajoutait une **seconde** entrée Strategy au rail, changeait le `sha256` de
+`site/index.html` et faisait échouer le `diff`.
+
+Reproduction depuis le dépôt, sur une copie **byte-identique** de
+`site/index.html` (aucun octet de `site/**` écrit par cette révision) :
+
+```
+$ mkdir -p /tmp/hero-editor-before/tools/patches /tmp/hero-editor-before/site
+$ cp site/index.html /tmp/hero-editor-before/site/index.html
+$ git show 8ff970b:tools/patches/apply_hero_range_editor.py \
+    > /tmp/hero-editor-before/tools/patches/apply_hero_range_editor.py
+$ sha256sum /tmp/hero-editor-before/site/index.html
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  /tmp/hero-editor-before/site/index.html
+$ python3 /tmp/hero-editor-before/tools/patches/apply_hero_range_editor.py
+Hero range editor links integrated
+$ sha256sum /tmp/hero-editor-before/site/index.html
+c5ac487a66360fa5b7cf05742aba79011ae631d5806d9ffa630ea3f1c8ccffa2  /tmp/hero-editor-before/site/index.html
+$ diff -u <empreinte avant> <empreinte après>          # empreintes encadrant le patch
+EXIT=1
+```
+
+| Empreinte de `site/index.html` | Valeur |
+| --- | --- |
+| avant le patch (octets R1 livrés) | `4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b` |
+| après le patch (révision antérieure) | `c5ac487a66360fa5b7cf05742aba79011ae631d5806d9ffa630ea3f1c8ccffa2` |
+| `diff -u` des deux empreintes | `EXIT=1` (échec du step) |
+
+Sur la même copie byte-identique, la révision **corrigée** du patch laisse le
+`sha256` **inchangé** et `diff -u` retourne `EXIT=0` — mesuré dans ce worktree au
+HEAD réel du front-matter, jamais contre `site/index.html` lui-même.
+
+### Correction livrée (#394, T1/T2/T3)
+
+| Tâche | Livrable | Effet |
+| --- | --- | --- |
+| **T1** (`backlog-jiv`, commit `3ff4f45`) | `tools/patches/apply_hero_range_editor.py` | la réinsertion dans `#quickNav` est **supprimée** ; le patch ne garde qu'une insertion strictement conditionnée par le marqueur hors navigation `id="heroRangesOpenBtn"` de l'Accueil et n'ancre plus rien sur un identifiant de `#quickNav` |
+| **T2** (`backlog-y03`, commit `9d5efcc`) | `tests/hero_ranges/test_hero_range_repository.mjs` | le contrat de dépôt de l'éditeur est étendu sur cette même surface |
+| **T3** (`backlog-3p7`, commit `1e17f90`) | `tools/check_issue394_stale_claims.py` | la garde anti-claims échoue si le patch ré-ancre sur un identifiant de `#quickNav` ou s'il émet une entrée `data-product-domain` pointant vers `./hero-ranges.html` : la régression ne peut pas revenir silencieusement |
+
+La ligne historique `apply_hero_range_editor.py` (idempotence `site/index.html`)
+de `docs/hero-strategy-population-binding-ci-report.md` est **périmée /
+superseded** : elle est annotée sur place (l'historique n'est pas réécrit) avec
+renvoi vers cet échec #394 et sa correction. Le récit complet, viewport par
+viewport, est consigné en **§ 8.5 de `docs/desktop-modes-fit-evidence.md`**.
+
+### Statut de non-observation
+
+Le job gelé `contract` **après correction** et son job dépendant `browser-smoke`
+de `.github/workflows/hero-range-editor.yml` ne sont **pas observables** depuis ce
+sandbox (réseau coupé, § 7) : **aucun `PASS` de CI n'est affirmé** ici, ni pour
+la correction du patch, ni pour le fit. Ce qui est consigné est l'échec CI réel,
+sa cause et la correction livrée ; leur relance au HEAD réel reste une exigence
+de clôture. La **seule autorité** de la règle « aucun scroll global » reste le
+job gelé `browser-smoke` de `.github/workflows/trainer-smoke.yml` ; l'étape
+d'idempotence ci-dessus ne porte aucun verdict de fit. Cette révision n'écrit
+**aucun octet** de `site/**` ni de `.github/**`.
 
 ## Conformité aux contraintes globales
 
 | Contrainte | Statut |
 | --- | --- |
-| Worktree isolé `n8n/issue-394/task-backlog-kd4` | respecté |
+| Worktree isolé `n8n/issue-394/task-backlog-lzl` | respecté |
 | Aucun commit / push / rebase / `git add` | respecté (opérations jamais exécutées) |
 | Aucun merge | respecté |
 | Aucune modification de `.github/workflows/**` ni `.github/actions/**` | respecté (`git diff --stat HEAD -- .github` vide) |
 | Aucune modification modèle / science / équité | respecté (aucun fichier de ces familles dans le diff) |
 | Aucun fichier de R1 (`site/index.html`, `tests/trainer/test_desktop_accessibility_contract.py`, `docs/ux-desktop-view-shell.md`) ni de R2 (`docs/desktop-modes-fit-evidence.md`, `tests/trainer/test_smoke_orchestration_contract.py`) modifié | respecté |
-| Diff Git non vide, limité au rapport d'identité, à la garde et à son branchement | respecté : `docs/issue-394-release-identity-ci-report.md`, `tools/check_issue394_stale_claims.py`, `tests/trainer/test_product_architecture_contract.py` |
+| Diff Git non vide, limité au rapport d'identité, à la garde et à son branchement (révision `backlog-kd4`) | respecté : `docs/issue-394-release-identity-ci-report.md`, `tools/check_issue394_stale_claims.py`, `tests/trainer/test_product_architecture_contract.py` |
+| Diff Git de cette révision documentaire, limité aux trois documents consignés | respecté : `docs/issue-394-release-identity-ci-report.md` (§ 8), `docs/desktop-modes-fit-evidence.md` (§ 8.5), `docs/hero-strategy-population-binding-ci-report.md` (annotation additive) |
 | Aucun octet de `site/**` écrit par cette task | respecté (régénération byte-identique, `git diff` vide sur `site/**`) |
 | Boucle `tests/trainer/test_*.py` toujours à 48 modules | respecté (la garde est étendue dans le module existant) |
 | Ancre release cohérente avec les octets de `site/index.html` au HEAD réel | respecté (`--check` `EXIT=0`, blob de l'index égal à `HEAD:site/index.html`) |
@@ -457,13 +584,13 @@ smoke local (§ 6).
 
 ```
 $ git rev-parse HEAD
-7e0280ff554caf7c9b3b94218d729f0283acc623
+1e17f90f05811b3dba4e6c830180578f42c391e1
 
 $ git rev-parse --abbrev-ref HEAD
-n8n/issue-394/task-backlog-kd4
+n8n/issue-394/task-backlog-lzl
 
 $ git log -1 --pretty=%s
-chore(n8n): task backlog-cg8 for issue #394
+chore(n8n): task backlog-3p7 for issue #394
 
 $ git log -1 --oneline -- site
 8ed9ef0 chore(n8n): task backlog-0q6 for issue #394
@@ -473,7 +600,8 @@ issue-394 stale claims guard: PASS (1051 versioned text files scanned, 4 claims)
 EXIT=0
 
 $ python3 tools/check_issue394_stale_claims.py --self-test
-… 6 self-test lines, dont 3+2 pour home-failure-requalified-as-artefact
+… 8 self-test lines : 6 rejeux historiques (nav-entry, narrow ×2, fit, home ×2)
+  + 2 contrôles de non-vacuité nav-entry-points-to-standalone-editor
 EXIT=0
 
 $ python3 tools/write_site_release.py
@@ -489,6 +617,36 @@ trainer MVP integration patch applied
 $ sha256sum site/index.html site/trainer.js > /tmp/after.sha
 $ diff -u /tmp/before.sha /tmp/after.sha
 EXIT=0
+
+$ sha256sum site/index.html          # empreinte « avant » commune aux deux essais (§ 8)
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html
+
+# (a) révision CORRIGÉE du patch, sur une copie byte-identique hors du dépôt
+$ mkdir -p /tmp/hero-editor-fixed/tools/patches /tmp/hero-editor-fixed/site
+$ cp site/index.html /tmp/hero-editor-fixed/site/index.html
+$ cp tools/patches/apply_hero_range_editor.py /tmp/hero-editor-fixed/tools/patches/
+$ python3 /tmp/hero-editor-fixed/tools/patches/apply_hero_range_editor.py
+/tmp/hero-editor-fixed/site/index.html
+$ sha256sum /tmp/hero-editor-fixed/site/index.html
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  /tmp/hero-editor-fixed/site/index.html
+$ diff -u <empreinte avant> <empreinte après>
+EXIT=0            # patch corrigé : idempotent, aucun octet écrit (§ 8)
+
+# (b) révision ANTÉRIEURE du patch, sur la même copie byte-identique
+$ mkdir -p /tmp/hero-editor-before/tools/patches /tmp/hero-editor-before/site
+$ cp site/index.html /tmp/hero-editor-before/site/index.html
+$ git show 8ff970b:tools/patches/apply_hero_range_editor.py \
+    > /tmp/hero-editor-before/tools/patches/apply_hero_range_editor.py
+$ python3 /tmp/hero-editor-before/tools/patches/apply_hero_range_editor.py
+Hero range editor links integrated
+$ sha256sum /tmp/hero-editor-before/site/index.html
+c5ac487a66360fa5b7cf05742aba79011ae631d5806d9ffa630ea3f1c8ccffa2  /tmp/hero-editor-before/site/index.html
+$ diff -u <empreinte avant> <empreinte après>
+EXIT=1            # échec réel du step « Main application integration is idempotent » (§ 8)
+
+$ git status --porcelain site/       # (aucune sortie : site/** jamais touché par ces essais)
+$ sha256sum site/index.html
+4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b  site/index.html
 
 $ node --check site/trainer.js
 EXIT=0

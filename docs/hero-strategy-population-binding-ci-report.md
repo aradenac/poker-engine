@@ -14,6 +14,7 @@ contextual_override: PASS
 release_anchor_check: PASS
 red_workflows: []
 report_self_delta: "le head_sha consigné ici est le HEAD FONCTIONNEL 523e614f9c870d2a7b61190cbb4b84a48f767871 sur lequel la CI GitHub a réellement tourné ; au-dessus de ce SHA se trouvent uniquement des commits documentation-only (task-28g puis ce correctif) qui ne modifient aucun octet fonctionnel ni site/RELEASE.json et n'invalident donc pas cette preuve ; ce rapport ne pré-affirme ni ne cite le push de son propre commit (auto-référence), qui se constate par git ls-remote origin"
+superseded_lines: "apply_hero_range_editor.py (idempotence site/index.html) | PASS — PÉRIMÉ / SUPERSEDED : l'échec CI réel du job gelé contract de .github/workflows/hero-range-editor.yml (étape « Main application integration is idempotent ») puis la correction livrée par #394 T1/T2/T3 sont consignés au § 8 de docs/issue-394-release-identity-ci-report.md et au § 8.5 de docs/desktop-modes-fit-evidence.md ; voir la note (1) ; l'historique de ce rapport n'est pas réécrit"
 ---
 
 # Rapport CI — Stratégie Hero population-bound (#392, task-28g)
@@ -175,10 +176,35 @@ dont `test_product_identity_ux_contract.py`, `test_range_vocabulary_contract.py`
 | `tests/ci/test_repro_workflow_batch2.py` | PASS |
 | `tests/ci/test_repro_current_core_batch.py` | PASS |
 | `tests/ci/test_repro_composite_factorization.py` | PASS |
-| `apply_hero_range_editor.py` (idempotence `site/index.html`) | PASS |
+| `apply_hero_range_editor.py` (idempotence `site/index.html`) | ~~PASS~~ **périmé / superseded** — voir la note (1) |
 | `apply_trainer_mvp.py` (idempotence `site/index.html`, `site/trainer.js`) | PASS |
 | `patch_hero_compliance_replayer_v1.py --check` | PASS (`current`) |
 | `patch_hero_compliance_release_v1.py --check` | PASS (`current`) |
+
+> **Note (1) — annotation additive (#394, T4 `task-backlog-lzl`).** Les deux
+> lignes de ce rapport qui portent l'idempotence de
+> `apply_hero_range_editor.py` — celle ci-dessus et la ligne
+> `hero-range-editor.yml` du tableau suivant — étaient exactes **au HEAD
+> fonctionnel `523e614f9c870d2a7b61190cbb4b84a48f767871`** de #392. Elles sont
+> depuis **périmées / superseded** et ne décrivent plus l'état de `HEAD`. Le job gelé `contract` de `.github/workflows/hero-range-editor.yml` a ensuite échoué
+> **en CI**, à son étape « Main application integration is idempotent » : le
+> patch d'alors réinsérait l'entrée de rail autonome
+> `<a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>`
+> juste après la ligne `#trainerNavLink` de `#quickNav`, donc ajoutait une
+> **seconde** entrée Strategy à `site/index.html` à chaque exécution — `sha256`
+> modifié, `diff` en **1**, step rouge. La correction est livrée par #394 :
+> **T1** (`tools/patches/apply_hero_range_editor.py`, commit `3ff4f45`) supprime
+> cette réinsertion et ne garde qu'une insertion strictement gardée par le
+> marqueur hors navigation `id="heroRangesOpenBtn"` de l'Accueil ; **T2**
+> (`tests/hero_ranges/test_hero_range_repository.mjs`, commit `9d5efcc`) et
+> **T3** (`tools/check_issue394_stale_claims.py`, commit `1e17f90`) étendent le
+> contrat de dépôt et la garde anti-claims à cette même surface. Les empreintes
+> avant/après et le récit complet sont consignés au **§ 8 de
+> `docs/issue-394-release-identity-ci-report.md`** et au **§ 8.5 de
+> `docs/desktop-modes-fit-evidence.md`**. Aucun `PASS` de CI postérieur à cette
+> correction n'est affirmé ici : le job gelé n'est pas observable depuis ce
+> sandbox, et l'historique de ces tableaux n'est pas réécrit — seule la
+> qualification `PASS` y est marquée comme périmée.
 
 ### Workflows déclenchés par les fichiers modifiés — contrats rejoués
 
@@ -190,7 +216,7 @@ localement :
 | Workflow | Contrats rejoués | Verdict |
 | --- | --- | --- |
 | `hero-population-strategy.yml` | syntaxe, resolver, migration, E2E population-bound (10 scénarios), scope identity, score adapter, `write_site_release --check` | **PASS** |
-| `hero-range-editor.yml` | batch-1 anti-bypass, syntaxe, `test_hero_range_repository.mjs`, idempotence `apply_hero_range_editor.py`, release identity, smoke statique | **PASS** (job `contract` ; étape navigateur = CI distante) |
+| `hero-range-editor.yml` | batch-1 anti-bypass, syntaxe, `test_hero_range_repository.mjs`, idempotence `apply_hero_range_editor.py`, release identity, smoke statique | **PASS** (job `contract` ; étape navigateur = CI distante) — **périmé / superseded** pour l'étape d'idempotence : voir la note (1) |
 | `hero-range-compliance.yml` | batch-1, syntaxe, `test_hero_compliance.mjs`, patches `--check`, smoke statique, release identity, repository | **PASS** (job `contract`) |
 | `hero-calculated-range-export.yml` | syntaxe, `test_decision_contract.js`, `test_hero_range_repository.mjs`, `test_calculated_range_export.mjs`, `test_squeeze_range_export.mjs`, `test_generate_hero_range_decisions.py`, `test_certified_preflop_sizing_evidence.py`, `test_bridge_paired_ev_to_hero_generation.py`, `test_issue358_generation_contract.py` | **PASS** |
 | `preflop-search.yml` | `test_search.js`, `test_decision_contract.js`, `test_calculated_range_export.mjs` | **PASS** |

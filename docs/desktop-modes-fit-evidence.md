@@ -23,6 +23,8 @@ ci_failure_recorded: "browser-smoke à 1366x768 : le clic réel #homePage a[href
 fix_recorded: "R1 — site/index.html (gouttière nommée --home-nav-gutter) + tests/trainer/test_desktop_accessibility_contract.py"
 frozen_job_rerun_required: true
 hero_ranges_editor: navigué mais hors contrat de coque (aucune assertion de no-scroll)
+hero_range_editor_contract_failure: "RECORDED__JOB_CONTRACT_STEP_MAIN_APPLICATION_INTEGRATION_IS_IDEMPOTENT__PATCH_REINSERTING_THE_STANDALONE_STRATEGY_NAV_LINK"
+hero_range_editor_patch_correction: "DELIVERED_T1_T2_T3__CI_NOT_OBSERVED__RERUN_REQUIRED"
 ---
 
 # Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
@@ -327,3 +329,83 @@ conservé** (`#homePage a[href="#historiesSection"]`, sans `dispatch_event`, san
 `force=True`, sans retry et sans skip), et que sa lecture reste factuelle :
 l'échec y est un échec CI **observé**, nommé par son clic réel, sa cause et sa
 correction — pas une requalification de l'échec en effet de bord inoffensif.
+
+### 8.5 Le second échec CI réel : l'étape d'idempotence du job gelé `contract`
+
+Le § 8.1 consigne l'échec du job gelé `browser-smoke`. Un **second** échec CI
+réel, distinct, est consigné ici : le job gelé `contract` de `.github/workflows/hero-range-editor.yml` a échoué à son étape
+« Main application integration is idempotent ». Cette étape encadre le patch de
+navigation par deux empreintes du même fichier, puis compare ces empreintes :
+
+```
+$ sha256sum site/index.html                 # empreinte « avant »
+$ python3 tools/patches/apply_hero_range_editor.py
+$ sha256sum site/index.html                 # empreinte « après »
+$ diff -u <empreinte avant> <empreinte après>
+```
+
+Le `diff` a retourné **1** : la révision alors versionnée du patch modifiait
+bien `site/index.html`, donc le step échouait. Ce que la CI signale ici n'est
+pas une mesure de fit, mais un patch qui n'était plus idempotent.
+
+**Cause réelle, en markup.** Dans sa révision antérieure à la correction #394,
+`patch_text()` de `tools/patches/apply_hero_range_editor.py` réinsérait à chaque
+exécution l'entrée de rail autonome
+
+```
+  <a href="./hero-ranges.html" data-product-domain="strategy">Strategy</a>
+```
+
+juste après la ligne du rail
+`<a id="trainerNavLink" href="#trainerPage" data-product-domain="training">Training</a>`
+(l'entrée `#trainerNavLink` de `#quickNav`).
+Depuis R1 (`site/index.html`, commit `8ed9ef0`, task `backlog-0q6`), `#quickNav`
+ne porte plus ce lien : son entrée Strategy est une navigation **in-app**
+(`href="#strategyPage"`, § 6). Le marqueur d'idempotence du patch — « l'entrée
+est déjà là, ne rien écrire » — ne pouvait donc plus se déclencher : chaque run
+ajoutait une **seconde** entrée Strategy au rail, changeait le `sha256` de
+`site/index.html`, et faisait échouer le `diff`.
+
+Mesuré sur une copie **byte-identique** de `site/index.html` (aucun octet de
+`site/**` écrit par cette task), avec la révision antérieure du patch
+(`git show 8ff970b:tools/patches/apply_hero_range_editor.py`) :
+
+| Empreinte de `site/index.html` | Valeur |
+| --- | --- |
+| avant le patch (octets R1 livrés) | `4bcfbcf50af63b29d0b6dbf7007b1b7081b9e2e0e1363d280b39e3bb756b2a2b` |
+| après le patch (révision antérieure) | `c5ac487a66360fa5b7cf05742aba79011ae631d5806d9ffa630ea3f1c8ccffa2` |
+| `diff -u` des deux empreintes | `EXIT=1` (échec du step) |
+
+**Correction livrée (#394).** Trois tâches, toutes internes au dépôt :
+
+- **T1** — `tools/patches/apply_hero_range_editor.py` (commit `3ff4f45`, task
+  `backlog-jiv`) : la réinsertion dans `#quickNav` est **supprimée**. Le patch ne
+  garde qu'une insertion strictement conditionnée par le marqueur hors
+  navigation `id="heroRangesOpenBtn"` de l'Accueil (`patch_text()` renvoie le
+  texte inchangé dès que ce marqueur est présent) et n'ancre plus rien sur un
+  identifiant de `#quickNav` ;
+- **T2** — `tests/hero_ranges/test_hero_range_repository.mjs` (commit `9d5efcc`,
+  task `backlog-y03`) : le contrat de dépôt de l'éditeur, étendu sur cette même
+  surface ;
+- **T3** — `tools/check_issue394_stale_claims.py` (commit `1e17f90`, task
+  `backlog-3p7`) : la garde anti-claims échoue si le patch ré-ancre sur un
+  identifiant de `#quickNav` ou s'il émet une entrée `data-product-domain`
+  pointant vers `./hero-ranges.html`, donc la régression ne peut pas revenir
+  silencieusement.
+
+Sur la même copie byte-identique, la révision corrigée du patch laisse le
+`sha256` **inchangé** et `diff -u` retourne `EXIT=0` : le step redevient
+idempotent. C'est une mesure locale, reproductible depuis le dépôt, et elle
+n'écrit aucun octet de `site/**`.
+
+**Statut de non-observation.** Le job gelé `contract` et son job dépendant
+`browser-smoke` ne sont pas observables depuis ce sandbox (réseau coupé) : aucun
+`PASS` de CI n'est revendiqué ici, ni pour la correction du patch, ni pour le
+fit. Ce document consigne l'échec CI **réel**, sa cause et la correction
+livrée ; la relance des jobs gelés reste une exigence de clôture. Le job gelé
+`browser-smoke` de `.github/workflows/trainer-smoke.yml` demeure la **seule
+autorité** pour la règle « aucun scroll global » (`scrollHeight` /
+`clientHeight` à `1500x1000` et `1366x768`, pour les six modes `home`,
+`spotlab`, `review`, `replayer`, `training`, `strategy`) ; l'étape
+d'idempotence de § 8.5 ne porte aucun verdict de fit, et aucun octet de
+`.github/workflows/**` n'est modifié par cette task.
