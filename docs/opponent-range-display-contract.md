@@ -398,7 +398,14 @@ therefore:
   1500x1000 and 1366x768 (the standalone `hero-ranges.html` editor is navigated
   to, never asserted no-scroll).
 - The browser smokes above (`smoke_opponent_range_numeric.py`,
-  `smoke_equity_scale_invariance.py`, `smoke_modes_desktop.py`) are orchestrated
-  by `python3 tests/trainer/smoke_trainer.py` (via `run_driver_smokes`), not by
-  dedicated steps in `.github/workflows/trainer-smoke.yml`; the workflow stays
-  frozen and exercises them through its single Training-view step.
+  `smoke_equity_scale_invariance.py`, `smoke_modes_desktop.py`, plus the #395 T7
+  Review-inbox large-list smoke
+  `tests/trainer/smoke_review_inbox_large_list.py`) are orchestrated by
+  `python3 tests/trainer/smoke_trainer.py` (via `run_driver_smokes`), not by
+  dedicated steps in
+  `.github/workflows/trainer-smoke.yml`; the workflow stays frozen and exercises
+  them through its single Training-view step. That is also what keeps the CI
+  trigger honest: the frozen workflow watches `tests/trainer/**` (and its exact
+  bytes are pinned by `tests/ci/test_repro_workflow_batch2.py`), so the fixture,
+  its builder and its node probe of `tests/trainer/fixtures/` re-run the very job
+  that executes them.

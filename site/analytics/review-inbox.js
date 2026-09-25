@@ -46,6 +46,16 @@
   const WORKER_ERROR_TYPES=new Set(['WORKER_ERROR','ANALYSIS_ERROR','WORKER_TIMEOUT','CALCULATION_FAILED','TIMEOUT','ERROR']);
   const STREET_ORDER={PREFLOP:0,FLOP:1,TURN:2,RIVER:3,UNKNOWN:9};
   const STATUS_ORDER={[STATUS.INCOMPLETE_ANALYSIS]:0,[STATUS.TO_REVIEW]:1,[STATUS.REVIEWED]:2,[STATUS.CORRECT]:3};
+  // Real hero settlement vocabulary (#395). UNKNOWN is the fail-safe state:
+  // an absent, unparsable or non-finite net result is never promoted to a
+  // neutral result, and a settled hand is WIN/LOSS/EVEN against the shared
+  // 1e-9 tolerance below.
+  const RESULT={WIN:'WIN',LOSS:'LOSS',EVEN:'EVEN',UNKNOWN:'UNKNOWN'};
+  const RESULT_STATES=[RESULT.WIN,RESULT.LOSS,RESULT.EVEN,RESULT.UNKNOWN];
+  const SORT_MODES=[
+    'EV_LOSS_DESC','TIMESTAMP_DESC','TIMESTAMP_ASC','RESULT_GAIN_DESC','RESULT_LOSS_DESC',
+    'STATUS_ASC','STREET_ASC','POSITION_ASC','SPOT_FAMILY_ASC','PLAYED_ACTION_ASC','RECOMMENDED_ACTION_ASC','HAND_ID_ASC'
+  ];
   const EPS=1e-9;
 
   function text(v){return v==null?'':String(v).trim();}
@@ -54,6 +64,54 @@
   function unique(values){return Array.from(new Set(values.filter(v=>v!=null&&String(v)!==''))).sort();}
   function boolFilter(v){if(v==null||v==='')return null;if(v===true||v==='true')return true;if(v===false||v==='false')return false;throw new Error('boolean filter must be true or false');}
   function asSet(v,normalizer=text){if(v==null||v==='')return null;const rows=Array.isArray(v)?v:[v];return new Set(rows.map(normalizer).filter(Boolean));}
+  // Real hero result input (#395). `hand_results` maps a hand id to the hero
+  // net result in big blinds, or to null when the settlement is unknown. Only
+  // genuine numeric metadata is admissible: `Number()` would coerce a boolean
+  // `true` into 1, an array into its single element and a blank string into 0,
+  // letting malformed or missing metadata masquerade as a real (even positive)
+  // settlement. A hand without admissible evidence therefore stays UNKNOWN
+  // instead of being reported as EVEN.
+  function handNetBB(value){
+    if(value==null)return null;
+    if(typeof value==='boolean'||typeof value==='object'||typeof value==='function'||typeof value==='symbol')return null;
+    if(typeof value==='string'&&!value.trim())return null;
+    const n=Number(value);
+    return Number.isFinite(n)?n:null;
+  }
+  function normalizeHandResults(input){
+    const raw=input&&typeof input==='object'?input:{};
+    const out={};
+    for(const [handId,value] of Object.entries(raw)){
+      if(handId==='schema')continue;
+      const id=text(handId);if(!id)continue;
+      out[id]=handNetBB(value);
+    }
+    return out;
+  }
+  function resultStateFor(netBB){
+    const net=handNetBB(netBB);
+    if(net==null)return RESULT.UNKNOWN;
+    if(net>EPS)return RESULT.WIN;
+    if(net<-EPS)return RESULT.LOSS;
+    return RESULT.EVEN;
+  }
+  function resultFor(value){
+    const net=handNetBB(value);
+    return {state:resultStateFor(net),net_bb:net};
+  }
+  // Derive the net result of an already built item. `hero_net_bb` is the
+  // authoritative field and `result.net_bb` is accepted as its mirror so the
+  // filter/sort helpers stay usable on hand-built items.
+  function itemNetBB(item){
+    const direct=handNetBB(item&&item.hero_net_bb);
+    if(direct!=null)return direct;
+    return handNetBB(item&&item.result&&item.result.net_bb);
+  }
+  function itemResultState(item){
+    const state=upper(item&&item.result&&item.result.state);
+    if(RESULT_STATES.includes(state))return state;
+    return resultStateFor(itemNetBB(item));
+  }
   function stepIndex(decisionId){
     const m=String(decisionId||'').match(/:(\d+)$/);return m?Number(m[1]):null;
   }
@@ -215,7 +273,7 @@
     if(comparableCount>0&&totalLoss<=EPS)return STATUS.CORRECT;
     return STATUS.TO_REVIEW;
   }
-  function buildItem(handId,summary,events,adapted,userMetadata,scope){
+  function buildItem(handId,summary,events,adapted,userMetadata,scope,handResults){
     const rows=(events||[]).map(e=>Leak.normalizeEvent(e)).sort(eventOrder);
     const eligible=rows.filter(e=>e.support.covered&&e.comparability.comparable);
     const totalLoss=round(eligible.reduce((s,e)=>s+Number(e.ev.attributed_loss_bb||0),0));
@@ -231,6 +289,7 @@
     const status=deriveStatus(analysisState,userReview,totalLoss,eligible.length);
     const position=(primary&&primary.context.position)||(hand&&hand.heroPosition)||'UNKNOWN';
     const timestamp=(hand&&hand.timestamp)||(rows[0]&&rows[0].timestamp)||null;
+    const heroNetBB=handResults?handNetBB(handResults[String(handId)]):null;
     const facets={
       streets:unique(rows.map(e=>e.context.street)),
       positions:unique(rows.map(e=>e.context.position)),
@@ -245,6 +304,7 @@
     return {
       schema:ITEM_SCHEMA,hand_id:String(handId),timestamp,scope:{...sc},
       total_loss_bb:totalLoss,nominal_loss_bb:nominalLoss,
+      hero_net_bb:heroNetBB,result:{state:resultStateFor(heroNetBB),net_bb:heroNetBB},
       costliest_decision:compactDecision(costly),primary_decision:compactDecision(primary),
       main_street:primary?primary.context.street:'UNKNOWN',position,
       spot_family:primary?primary.context.spot_family:'UNKNOWN',
@@ -260,6 +320,7 @@
     if(!Leak||!Adapter)throw new Error('PokerLeakAnalyzer and PokerReviewLeakAdapter are required');
     const reviewScores=input.reviewScores&&typeof input.reviewScores==='object'?input.reviewScores:{};
     const metadata=normalizeUserMetadata(input.user_metadata);
+    const handResults=normalizeHandResults(input.hand_results);
     const adapted=Adapter.adaptPersistedReviewData({reviewScores,hhSources:input.hhSources||[],scope:input.scope});
     const eventsByScope=new Map(),eventsByHand=new Map();
     for(const event of adapted.events){
@@ -278,7 +339,7 @@
     const inboxes=[];
     for(const [key,bucket] of eventsByScope){
       const handIds=Object.keys(reviewScores).filter(h=>handScope.get(String(h))&&handScope.get(String(h)).key===key).sort();
-      const items=handIds.map(handId=>buildItem(handId,reviewScores[handId],eventsByHand.get(String(handId))||[],adapted,metadata,bucket.scope,input.scope));
+      const items=handIds.map(handId=>buildItem(handId,reviewScores[handId],eventsByHand.get(String(handId))||[],adapted,metadata,bucket.scope,handResults));
       inboxes.push({
         schema:INBOX_SCHEMA,event_schema:Leak.EVENT_SCHEMA,adapter_schema:Adapter.ADAPTER_SCHEMA,
         scope:{...bucket.scope},scope_key:key,items:sortInboxItems(items,'EV_LOSS_DESC'),
@@ -303,7 +364,7 @@
   function filterInboxItems(items,filters={}){
     const streets=asSet(filters.street,upper),positions=asSet(filters.position,upper),spots=asSet(filters.spot_family,upper),
       played=asSet(filters.action_played,upper),recommended=asSet(filters.action_recommended,upper),statuses=asSet(filters.status,upper),
-      coverage=asSet(filters.coverage,upper),analysisStates=asSet(filters.analysis_state,upper);
+      coverage=asSet(filters.coverage,upper),analysisStates=asSet(filters.analysis_state,upper),results=asSet(filters.result,upper);
     const sizing=boolFilter(filters.sizing_error),jam=boolFilter(filters.jam),overbet=boolFilter(filters.overbet);
     const minLoss=filters.min_loss_bb==null||filters.min_loss_bb===''?null:Number(filters.min_loss_bb);
     if(minLoss!=null&&(!Number.isFinite(minLoss)||minLoss<0))throw new Error('min_loss_bb must be a non-negative number');
@@ -314,6 +375,7 @@
       if(statuses&&!statuses.has(item.status))return false;
       if(coverage&&!coverage.has(item.coverage.state))return false;
       if(analysisStates&&!(item.analysis_state&&analysisStates.has(item.analysis_state.state)))return false;
+      if(results&&!results.has(itemResultState(item)))return false;
       if(sizing!=null&&item.facets.sizing_error!==sizing)return false;
       if(jam!=null&&item.facets.jam!==jam)return false;
       if(overbet!=null&&item.facets.overbet!==overbet)return false;
@@ -321,11 +383,40 @@
     });
   }
   function cmpText(a,b){return String(a||'').localeCompare(String(b||''));}
+  // Timestamps are compared on their real parsed instant, never on their
+  // textual form: the ISO spellings produced by the adapter would sort wrongly
+  // as strings once offsets or single-digit fields appear. Items without a
+  // parseable timestamp are carried after the dated ones in both directions,
+  // and every comparison falls back to the deterministic hand_id tie-break.
+  function cmpTimestamp(a,b,direction){
+    const at=a?Date.parse(a.timestamp):NaN,bt=b?Date.parse(b.timestamp):NaN;
+    const av=Number.isFinite(at)?at:null,bv=Number.isFinite(bt)?bt:null;
+    if(av==null&&bv==null)return 0;
+    if(av==null)return 1;
+    if(bv==null)return -1;
+    if(av===bv)return 0;
+    return (av<bv?-1:1)*direction;
+  }
+  // Real-result sorts: GAIN puts the biggest gains first, LOSS puts the
+  // biggest losses first. Hands without a settled net result are UNKNOWN, are
+  // never treated as EVEN/0, and are carried after the settled ones.
+  function cmpNetBB(a,b,direction){
+    const an=itemNetBB(a),bn=itemNetBB(b);
+    if(an==null&&bn==null)return 0;
+    if(an==null)return 1;
+    if(bn==null)return -1;
+    if(an===bn)return 0;
+    return direction==='GAIN'?bn-an:an-bn;
+  }
   function sortInboxItems(items,sort='EV_LOSS_DESC'){
     const rows=[...(Array.isArray(items)?items:[])],mode=upper(sort)||'EV_LOSS_DESC';
     const finalTie=(a,b)=>cmpText(a.hand_id,b.hand_id);
     const cmp={
       EV_LOSS_DESC:(a,b)=>b.total_loss_bb-a.total_loss_bb||finalTie(a,b),
+      TIMESTAMP_DESC:(a,b)=>cmpTimestamp(a,b,-1)||finalTie(a,b),
+      TIMESTAMP_ASC:(a,b)=>cmpTimestamp(a,b,1)||finalTie(a,b),
+      RESULT_GAIN_DESC:(a,b)=>cmpNetBB(a,b,'GAIN')||finalTie(a,b),
+      RESULT_LOSS_DESC:(a,b)=>cmpNetBB(a,b,'LOSS')||finalTie(a,b),
       STREET_ASC:(a,b)=>(STREET_ORDER[a.main_street]??9)-(STREET_ORDER[b.main_street]??9)||finalTie(a,b),
       POSITION_ASC:(a,b)=>cmpText(a.position,b.position)||finalTie(a,b),
       SPOT_FAMILY_ASC:(a,b)=>cmpText(a.spot_family,b.spot_family)||finalTie(a,b),
@@ -345,7 +436,9 @@
   return {
     INBOX_SCHEMA,ITEM_SCHEMA,USER_METADATA_SCHEMA,DEEP_LINK_SCHEMA,ANALYSIS_STATE_SCHEMA,STATUS,STATUS_LABELS,
     ANALYSIS_STATE_LABELS,ANALYSIS_DISPONIBLE,COVERAGE_COMPLETE,COVERAGE_INCOMPLETE,
+    RESULT,RESULT_STATES,SORT_MODES,
     normalizeUserMetadata,setReviewed,buildReviewInboxes,buildReviewInbox,filterInboxItems,sortInboxItems,queryInbox,
-    analysisStateFor,analysisStateLabel,stepIndex
+    analysisStateFor,analysisStateLabel,stepIndex,
+    normalizeHandResults,handNetBB,resultStateFor,resultFor
   };
 });

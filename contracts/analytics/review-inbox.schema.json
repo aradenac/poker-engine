@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://poker-engine.local/contracts/analytics/review-inbox.schema.json",
   "title": "Poker Review Inbox",
+  "description": "Enveloppe du Review Inbox (poker-review-inbox/v1). Chaque item expose, en plus des champs EV historiques conservés (total_loss_bb, nominal_loss_bb, coverage, analysis_state, deep_link), le résultat réel du hero : hero_net_bb (number|null) et sa projection result {state enum WIN/LOSS/EVEN/UNKNOWN, net_bb number|null}. Côté requête, les codes de tri valides pour sortInboxItems/queryInbox incluent EV_LOSS_DESC (défaut), TIMESTAMP_DESC, TIMESTAMP_ASC, RESULT_GAIN_DESC, RESULT_LOSS_DESC, STATUS_ASC, STREET_ASC, POSITION_ASC et HAND_ID_ASC ; l'enum $defs.review_sort (référencée par le champ sort) liste l'ensemble des codes supportés et tout code hors enum est refusé.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "event_schema", "adapter_schema", "scope", "scope_key", "items", "warnings", "user_metadata_schema"],
@@ -13,9 +14,30 @@
     "scope_key": {"type": "string", "minLength": 1},
     "scope": {"$ref": "#/$defs/scope"},
     "warnings": {"type": "array", "items": {"type": "string"}},
-    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}}
+    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}},
+    "sort": {
+      "description": "Code de tri côté requête, écho de l'entrée `sort` de sortInboxItems/queryInbox (défaut EV_LOSS_DESC). Les valeurs valides sont l'énumération $defs.review_sort ; tout code hors énumération est refusé par sortInboxItems (`unsupported sort`).",
+      "$ref": "#/$defs/review_sort"
+    }
   },
   "$defs": {
+    "review_sort": {
+      "description": "Codes de tri valides côté requête (paramètre `sort` de sortInboxItems/queryInbox). Ensemble exhaustif supporté par l'implémentation : EV_LOSS_DESC (défaut), TIMESTAMP_DESC, TIMESTAMP_ASC, RESULT_GAIN_DESC, RESULT_LOSS_DESC, STATUS_ASC, STREET_ASC, POSITION_ASC, SPOT_FAMILY_ASC, PLAYED_ACTION_ASC, RECOMMENDED_ACTION_ASC, HAND_ID_ASC. Au minimum, les codes documentés côté requête incluent EV_LOSS_DESC, TIMESTAMP_DESC, TIMESTAMP_ASC, RESULT_GAIN_DESC, RESULT_LOSS_DESC, STATUS_ASC, STREET_ASC, POSITION_ASC et HAND_ID_ASC ; tout code hors de cette énumération est refusé.",
+      "enum": [
+        "EV_LOSS_DESC",
+        "TIMESTAMP_DESC",
+        "TIMESTAMP_ASC",
+        "RESULT_GAIN_DESC",
+        "RESULT_LOSS_DESC",
+        "STATUS_ASC",
+        "STREET_ASC",
+        "POSITION_ASC",
+        "SPOT_FAMILY_ASC",
+        "PLAYED_ACTION_ASC",
+        "RECOMMENDED_ACTION_ASC",
+        "HAND_ID_ASC"
+      ]
+    },
     "scope": {
       "type": "object",
       "additionalProperties": false,
@@ -139,7 +161,7 @@
     "item": {
       "type": "object",
       "required": [
-        "schema", "hand_id", "timestamp", "scope", "total_loss_bb", "nominal_loss_bb",
+        "schema", "hand_id", "timestamp", "scope", "total_loss_bb", "nominal_loss_bb", "hero_net_bb", "result",
         "costliest_decision", "primary_decision", "main_street", "position", "spot_family",
         "action_played", "action_recommended", "sizing_error", "jam", "overbet",
         "coverage", "analysis_state", "user_review", "status", "status_label", "deep_link", "facets"
@@ -151,6 +173,19 @@
         "scope": {"$ref": "#/$defs/scope"},
         "total_loss_bb": {"type": "number", "minimum": 0},
         "nominal_loss_bb": {"type": "number", "minimum": 0},
+        "hero_net_bb": {
+          "description": "Real hero settlement of the hand in big blinds, from the optional `hand_results` input of buildReviewInboxes/buildReviewInbox. `null` means no admissible settlement evidence: the value is never coerced from malformed metadata (boolean/container/blank string) and is never invented from the EV fields.",
+          "type": ["number", "null"]
+        },
+        "result": {
+          "description": "Real-result projection of hero_net_bb. Its state is derived only from the settlement: WIN above the 1e-9 tolerance, LOSS below it, EVEN inside it and UNKNOWN when hero_net_bb is null. A missing settlement is therefore UNKNOWN, never a fabricated EVEN/0.",
+          "type": "object",
+          "required": ["state", "net_bb"],
+          "properties": {
+            "state": {"enum": ["WIN", "LOSS", "EVEN", "UNKNOWN"]},
+            "net_bb": {"type": ["number", "null"]}
+          }
+        },
         "costliest_decision": {"$ref": "#/$defs/decision"},
         "primary_decision": {"$ref": "#/$defs/decision"},
         "main_street": {"type": "string"},

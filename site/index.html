@@ -202,7 +202,7 @@
   .street-btn:hover{background:#17223a;color:var(--text);border-color:transparent}
   .street-btn.active{background:#263452;color:#fff;box-shadow:0 1px 5px rgba(0,0,0,.25)}
   .street-btn:disabled{opacity:.3;cursor:not-allowed;background:transparent;color:var(--muted)}
-  .hh-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+  .hh-list{margin-top:4px;display:flex;flex-direction:column;gap:6px;padding-right:2px}
   .hh-hand{width:100%;display:grid;grid-template-columns:118px minmax(0,1fr) auto 116px 92px;gap:9px;align-items:center;
     text-align:left;padding:9px 10px;background:#0f1729;border:1px solid var(--border);border-radius:10px}
   .hh-hand:hover{background:#151f35}
@@ -224,20 +224,28 @@
   .hh-review.complete .amount{color:#f1c66d}
   .hh-review.unknown{opacity:.62}
   .review-inbox-summary{margin:2px 0 12px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627;color:var(--muted);font-size:10px;line-height:1.45}
-  .review-inbox-primary-tools{display:flex;align-items:end;gap:9px;flex-wrap:wrap;margin:10px 0 8px}
-  .review-inbox-primary-tools .field{min-width:170px}
-  .review-inbox-filters{margin:6px 0 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627}
+  /* #395 T5b — la rangée de contrôles de premier niveau est compactée (libellé
+     porté à côté de son contrôle, marges réduites) : c'est la part de budget
+     vertical que la liste reprend pour peindre la cible de 10–15 lignes à
+     1500x1000 sans jamais passer derrière `overflow:hidden`. */
+  .review-inbox-primary-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:4px 0 4px}
+  .review-inbox-primary-tools .field{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;min-width:210px}
+  .review-inbox-primary-tools label{margin:0;white-space:nowrap}
+  .review-inbox-filters{margin:2px 0 4px;border:1px solid var(--border);border-radius:9px;background:#0d1627}
   .review-inbox-filters>summary{cursor:pointer;padding:8px 10px;color:var(--muted);font-size:9px;font-weight:800}
   .review-inbox-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:0 10px 10px}
   .review-inbox-filter-grid .field{min-width:0}
   .review-inbox-reasons{padding:0 10px 10px;color:var(--muted);font-size:9px;line-height:1.5;word-break:break-word}
-  .review-inbox-notice{min-height:16px;margin:4px 0 7px;color:var(--muted);font-size:9px}
+  .review-inbox-notice{min-height:14px;margin:2px 0 4px;color:var(--muted);font-size:9px}
   .review-inbox-notice.warn{color:#f1c66d}
   .review-inbox-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;width:100%;text-align:left}
-  .review-inbox-open{display:grid;grid-template-columns:136px 104px minmax(150px,1.05fr) minmax(190px,1.35fr);gap:10px;align-items:center;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+  .review-inbox-open{display:grid;grid-template-columns:minmax(120px,0.9fr) 150px minmax(150px,1.05fr) minmax(190px,1.35fr);gap:10px;align-items:center;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left}
   .review-inbox-open:hover,.review-inbox-open:focus{background:transparent;border-color:transparent;outline:2px solid rgba(92,225,185,.28);outline-offset:4px}
   .review-inbox-loss{font-size:10px;color:var(--muted)}
-  .review-inbox-loss b{display:block;font-size:15px;color:#f1c66d;margin-top:2px}
+  /* La perte EV tient sur deux lignes déclarées (« Perte EV 3,00 BB » puis
+     « Décision max … ») : la cellule cesse d'être la plus haute de la rangée,
+     qui mesure alors le pas déclaré de la cellule résultat (deux lignes). */
+  .review-inbox-loss b{font-size:13px;color:#f1c66d;margin-left:4px}
   .review-inbox-hand-result{min-width:0}
   .review-inbox-hand-result strong{display:block;font-size:12px;color:var(--text);white-space:nowrap}
   .review-inbox-hand-result small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.35}
@@ -351,7 +359,7 @@
     margin-top:14px;padding-top:12px;border-top:1px solid var(--border);
     scroll-margin-top:18px
   }
-  .hh-selection-title{margin:0 0 8px;font-size:12px;font-weight:900;color:var(--text)}
+  .hh-selection-title{margin:0 0 4px;font-size:12px;font-weight:900;color:var(--text)}
   .hh-list-tools{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:8px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1729}
   .hh-list-tools .field{min-width:210px;flex:0 1 280px}
   .hh-filter-check{display:flex;align-items:center;gap:7px;min-height:36px;font-size:11px;font-weight:750;color:var(--text);cursor:pointer}
@@ -1195,9 +1203,9 @@
   .app-subview-tab[aria-selected="true"]{background:#263452;color:#fff}
   .app-subview-panel{min-height:0}
   .app-subview-panel[hidden]{display:none!important}
-  .app-list-pager{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:10px;margin:10px 0 0}
+  .app-list-pager{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:10px;margin:4px 0 0}
   .app-list-pager[hidden]{display:none!important}
-  .app-list-pager button{width:auto;min-width:104px;padding:7px 12px}
+  .app-list-pager button{width:auto;min-width:104px;padding:6px 12px}
   .app-list-pager-info{font-size:11px;color:var(--muted);white-space:nowrap}
   /* Zones défilantes bornées : classes réservées aux entrées de
      APP_ALLOWED_SCROLL_ZONES. Elles ne remplacent jamais une coque de vue. */
@@ -1624,32 +1632,56 @@
         <div class="hh-selection-title">Inbox de review</div>
         <div class="review-inbox-primary-tools">
           <div class="field">
-            <label for="reviewStatusFilter">Statut</label>
-            <select id="reviewStatusFilter">
-              <option value="">Tous</option>
-              <option value="TO_REVIEW">À revoir</option>
-              <option value="REVIEWED">Revue</option>
-              <option value="CORRECT">Correcte</option>
-              <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
+            <label for="reviewResultFilter">Résultat réel</label>
+            <select id="reviewResultFilter">
+              <option value="">Toutes</option>
+              <option value="WIN">Gagnées</option>
+              <option value="LOSS">Perdues</option>
+              <option value="EVEN">Neutres</option>
+              <option value="UNKNOWN">Inconnu</option>
             </select>
           </div>
           <div class="field">
-            <label for="reviewAnalysisStateFilter">État d’analyse</label>
-            <select id="reviewAnalysisStateFilter">
-              <option value="">Tous</option>
-              <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
-              <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
-              <option value="CALCUL_EN_COURS">Calcul en cours</option>
-              <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
-              <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
-              <option value="ERREUR_CALCUL">Erreur de calcul</option>
+            <label for="hhSortSelect">Tri</label>
+            <select id="hhSortSelect">
+              <option value="recent_desc">Plus récentes</option>
+              <option value="recent_asc">Plus anciennes</option>
+              <option value="ev_loss_desc">Perte EV — décroissante</option>
+              <option value="gain_desc">Gain réel — décroissant</option>
+              <option value="loss_desc">Perte réelle — décroissante</option>
+              <option value="status_asc">Statut</option>
+              <option value="street_asc">Street</option>
+              <option value="position_asc">Position</option>
+              <option value="hand_asc">ID de main</option>
             </select>
           </div>
           <div id="hhListCount" class="hh-list-count">0 main affichée</div>
         </div>
         <details class="review-inbox-filters">
-          <summary>Filtres secondaires et raisons techniques</summary>
+          <summary>Statut, analyse et filtres secondaires</summary>
           <div class="review-inbox-filter-grid">
+            <div class="field">
+              <label for="reviewStatusFilter">Statut</label>
+              <select id="reviewStatusFilter">
+                <option value="">Tous</option>
+                <option value="TO_REVIEW">À revoir</option>
+                <option value="REVIEWED">Revue</option>
+                <option value="CORRECT">Correcte</option>
+                <option value="INCOMPLETE_ANALYSIS">Analyse incomplète</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="reviewAnalysisStateFilter">État d’analyse</label>
+              <select id="reviewAnalysisStateFilter">
+                <option value="">Tous</option>
+                <option value="ANALYSE_DISPONIBLE">Analyse disponible</option>
+                <option value="ANALYSE_PARTIELLE">Analyse partielle</option>
+                <option value="CALCUL_EN_COURS">Calcul en cours</option>
+                <option value="DONNEES_INSUFFISANTES">Données insuffisantes</option>
+                <option value="SPOT_NON_SUPPORTE">Spot non supporté</option>
+                <option value="ERREUR_CALCUL">Erreur de calcul</option>
+              </select>
+            </div>
             <div class="field"><label for="reviewCoverageFilter">Couverture (technique)</label><select id="reviewCoverageFilter"><option value="">Toutes</option><option value="COMPLETE">Complète</option><option value="INCOMPLETE">Incomplète</option></select></div>
             <div class="field"><label for="reviewStreetFilter">Street</label><select id="reviewStreetFilter"><option value="">Toutes</option></select></div>
             <div class="field"><label for="reviewPositionFilter">Position</label><select id="reviewPositionFilter"><option value="">Toutes</option></select></div>
@@ -1659,16 +1691,6 @@
             <div class="field"><label for="reviewSizingFilter">Sizing error</label><select id="reviewSizingFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
             <div class="field"><label for="reviewJamFilter">Jam</label><select id="reviewJamFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
             <div class="field"><label for="reviewOverbetFilter">Overbet</label><select id="reviewOverbetFilter"><option value="">Tous</option><option value="true">Oui</option><option value="false">Non</option></select></div>
-            <div class="field">
-              <label for="hhSortSelect">Ordre</label>
-              <select id="hhSortSelect">
-                <option value="review_desc">Perte EV — décroissante</option>
-                <option value="status_asc">Statut</option>
-                <option value="street_asc">Street</option>
-                <option value="position_asc">Position</option>
-                <option value="hand_asc">ID de main</option>
-              </select>
-            </div>
             <label class="hh-filter-check"><input id="hhKnownFilter" type="checkbox"> Cartes adversaires connues &gt; 0</label>
           </div>
           <div id="reviewInboxReasons" class="review-inbox-reasons">Aucune raison technique.</div>
@@ -1915,18 +1937,20 @@ const state = {
   rangeEdition:false,
   rangeEdits:Object.create(null),
   hhHands:[],
-  hhSort:"review_desc",
+  hhSort:"recent_desc",
   hhKnownOnly:false,
   reviewScores:Object.create(null),
   modelBRobustnessByDecision:Object.create(null),
   manualOverrideContract:null,
   reviewInboxUserMetadataByScope:Object.create(null),
-  reviewInboxFilters:{status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
+  reviewInboxFilters:{result:"",status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
   reviewInboxView:null,
-  // #394: the inbox is a bounded paginated list; the page size is measured on
-  // the constrained shell so no row is ever clipped behind `overflow:hidden`.
+  // #394/#395 T5: the inbox is a bounded paginated list; the page size is
+  // measured on the constrained shell (10–15 rows when the height allows) so no
+  // row is ever clipped behind `overflow:hidden`. The numeric default mirrors
+  // REVIEW_INBOX_PAGE_SIZE_MIN, the fallback used while the pane is not laid out.
   reviewInboxPage:0,
-  reviewInboxPageSize:8,
+  reviewInboxPageSize:10,
   reviewDashboardView:null,
   reviewDashboardLastError:"",
   reviewInboxPersistTimer:null,
@@ -2006,6 +2030,7 @@ const fileInput = $("fileInput"), streetSelect = $("streetSelect"), methodSelect
       hhSortSelect=$("hhSortSelect"), hhKnownFilter=$("hhKnownFilter"), hhListCount=$("hhListCount"), hhHandsEl=$("hhHands"),
       hhListPager=$("hhListPager"), hhPageInfo=$("hhPageInfo"), hhPagePrev=$("hhPagePrev"), hhPageNext=$("hhPageNext"),
       reviewInboxSummary=$("reviewInboxSummary"), reviewInboxNotice=$("reviewInboxNotice"),
+      reviewResultFilter=$("reviewResultFilter"),
       reviewStatusFilter=$("reviewStatusFilter"), reviewCoverageFilter=$("reviewCoverageFilter"),
       reviewAnalysisStateFilter=$("reviewAnalysisStateFilter"), reviewInboxReasons=$("reviewInboxReasons"),
       reviewStreetFilter=$("reviewStreetFilter"), reviewPositionFilter=$("reviewPositionFilter"), reviewSpotFilter=$("reviewSpotFilter"),
@@ -2581,6 +2606,7 @@ function currentLocalPrefs(){
     hhMode:!!(state.appView==="replayer"&&state.selectedHand),
     appView:state.appView,
     hhSort:state.hhSort,
+    reviewInboxFilters:{...state.reviewInboxFilters},
     hhKnownOnly:!!state.hhKnownOnly,
     hhImportMode:state.hhImportMode,
     quickNavCollapsed:!!state.quickNavCollapsed
@@ -3994,6 +4020,36 @@ function reviewInboxSourceScores(){
   }
   return out;
 }
+/* #395 T4 — premier niveau de l'inbox : résultat réel + tri. Les codes de tri
+   sont des identifiants de préférence (persistés tels quels), traduits vers les
+   modes du contrat poker-review-inbox/v1 par reviewInboxSortMode(). L'ancien
+   code `review_desc` reste accepté et vaut la même chose que `ev_loss_desc`,
+   pour ne jamais casser une préférence déjà enregistrée. */
+const REVIEW_INBOX_SORT_CODES=["recent_desc","recent_asc","ev_loss_desc","gain_desc","loss_desc","status_asc","street_asc","position_asc","hand_asc"];
+const REVIEW_INBOX_LEGACY_SORT_CODES={review_desc:"ev_loss_desc"};
+const REVIEW_INBOX_SORT_MODES={
+  recent_desc:"TIMESTAMP_DESC",recent_asc:"TIMESTAMP_ASC",ev_loss_desc:"EV_LOSS_DESC",
+  gain_desc:"RESULT_GAIN_DESC",loss_desc:"RESULT_LOSS_DESC",
+  status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"
+};
+const REVIEW_INBOX_DEFAULT_SORT="recent_desc";
+function normalizeReviewInboxSortCode(value){
+  const raw=String(value||"");
+  const code=REVIEW_INBOX_LEGACY_SORT_CODES[raw]||raw;
+  return REVIEW_INBOX_SORT_CODES.includes(code)?code:REVIEW_INBOX_DEFAULT_SORT;
+}
+/* Le résultat réel Hero (net en jetons converti en BB par handNetBB) alimente
+   `hand_results` : un net indisponible reste UNKNOWN côté inbox, il n'est
+   jamais promu en EVEN fabriqué. */
+function reviewInboxHandResults(){
+  const out=Object.create(null);
+  for(const hand of state.hhHands||[]){
+    const id=String(hand?.id??"");if(!id)continue;
+    const netBB=handNetBB(hand);
+    out[id]=Number.isFinite(netBB)?netBB:null;
+  }
+  return out;
+}
 function reviewInboxHHSources(){
   return (state.hhHands||[]).map((hand,index)=>({
     name:hand.sourceName||`review-inbox-${index+1}.txt`,
@@ -4004,7 +4060,7 @@ function reviewInboxBuild(){
   const Inbox=window.PokerReviewInbox;
   if(!Inbox?.buildReviewInbox){state.reviewInboxLastError="Contrat poker-review-inbox/v1 indisponible.";return null;}
   try{
-    const input={reviewScores:reviewInboxSourceScores(),hhSources:reviewInboxHHSources(),scope:reviewInboxScopeInput()};
+    const input={reviewScores:reviewInboxSourceScores(),hhSources:reviewInboxHHSources(),scope:reviewInboxScopeInput(),hand_results:reviewInboxHandResults()};
     const preview=Inbox.buildReviewInbox(input);
     const metadata=state.reviewInboxUserMetadataByScope?.[preview.scope_key]||Inbox.normalizeUserMetadata({});
     const inbox=Inbox.buildReviewInbox({...input,user_metadata:metadata});
@@ -4116,7 +4172,10 @@ function openReviewDashboardLeak(){
   if(!cta?.enabled||!target)return {opened:false,reason:"NO_LEAK_TARGET"};
   if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
   if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
-  state.reviewInboxFilters={status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
+  state.reviewInboxFilters={result:"",status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
+  // #395 T5 — un changement de filtre repart de la page 1, jamais de la page
+  // courante : la sélection de main reste portée par `state.selectedHand`.
+  state.reviewInboxPage=0;
   // #394 T3: the Review shell selects the Inbox pane; it never scrolls the
   // document, so the filtered list is reached without moving the viewport.
   activateAppSubview("inbox");
@@ -4134,14 +4193,14 @@ function openReviewDashboardTraining(){
 function reviewInboxFiltersInput(){
   const f=state.reviewInboxFilters||{};
   return {
-    status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
+    result:f.result||"",status:f.status||"",street:f.street||"",position:f.position||"",spot_family:f.spot_family||"",
     action_played:f.action_played||"",action_recommended:f.action_recommended||"",
     sizing_error:f.sizing_error||"",jam:f.jam||"",overbet:f.overbet||"",coverage:f.coverage||"",
     analysis_state:f.analysis_state||""
   };
 }
 function reviewInboxSortMode(){
-  return ({review_desc:"EV_LOSS_DESC",status_asc:"STATUS_ASC",street_asc:"STREET_ASC",position_asc:"POSITION_ASC",hand_asc:"HAND_ID_ASC"})[state.hhSort]||"EV_LOSS_DESC";
+  return REVIEW_INBOX_SORT_MODES[normalizeReviewInboxSortCode(state.hhSort)]||REVIEW_INBOX_SORT_MODES[REVIEW_INBOX_DEFAULT_SORT];
 }
 function reviewInboxQuery(inbox=reviewInboxBuild()){
   const Inbox=window.PokerReviewInbox;
@@ -7142,26 +7201,55 @@ function visibleHistoryHands(){
 }
 /* #394 — bornage de l'inbox (liste bornée paginée).
    La coque desktop ne défile pas : on ne rend que les lignes qui tiennent dans
-   la hauteur contrainte, et la pagination rend le reste atteignable. La taille
-   de page est mesurée puis réduite tant que la liste déborderait. */
-const REVIEW_INBOX_PAGE_SIZE_DEFAULT=8;
+   la hauteur contrainte, et la pagination rend le reste atteignable.
+   #395 T5 — la cible est de 10 à 15 mains par page selon la hauteur mesurée du
+   viewport : `REVIEW_INBOX_PAGE_SIZE_MAX` plafonne la page haute, la cible
+   minimale ne force jamais une ligne hors du cadre, et la taille est réduite
+   tant que la liste déborderait, donc aucune ligne ne passe derrière
+   `overflow:hidden`.
+   #395 T5b — la cible est *mesurée* au viewport de référence (1500x1000,
+   fixture 32 mains) : la géométrie de la coque servie y laisse 596,05 à
+   627,55px à `.hh-list`, pour un pas servi de 56 à 59,15px, soit 10 à 11 lignes
+   peintes. La rangée de contrôles de premier niveau, la cellule « perte EV »,
+   la marge de `.hh-list` et la réserve du pagineur sont compactées pour ça ;
+   `tests/trainer/test_review_inbox_pagination_contract.py` dérive et épingle ce
+   chiffre, le smoke navigateur le relit et l'exige. */
+const REVIEW_INBOX_PAGE_SIZE_MIN=10;
+const REVIEW_INBOX_PAGE_SIZE_MAX=15;
+const REVIEW_INBOX_PAGE_SIZE_DEFAULT=REVIEW_INBOX_PAGE_SIZE_MIN;
 const REVIEW_INBOX_ROW_PITCH_MIN=56;
+const REVIEW_INBOX_ROW_PITCH_FALLBACK=64;
+const REVIEW_INBOX_PAGE_FIT_ATTEMPTS=REVIEW_INBOX_PAGE_SIZE_MAX;
 function reviewInboxIsHeightBound(){
   return typeof window.matchMedia==="function"&&window.matchMedia("(min-width:901px)").matches;
 }
 function reviewInboxRowPitch(){
   const row=hhHandsEl?.querySelector(".hh-hand");
-  const measured=row?.getBoundingClientRect().height;
-  const gap=Number.parseFloat(getComputedStyle(hhHandsEl).rowGap||"0")||0;
+  const measured=row?.getBoundingClientRect?.().height;
+  const gap=hhHandsEl?(Number.parseFloat(getComputedStyle(hhHandsEl).rowGap||"0")||0):0;
   if(Number.isFinite(measured)&&measured>0)return Math.max(REVIEW_INBOX_ROW_PITCH_MIN,measured+gap);
-  return 64;
+  return REVIEW_INBOX_ROW_PITCH_FALLBACK;
+}
+/* Mains que la hauteur contrainte peut réellement peindre : mesuré sur une
+   ligne déjà rendue dès qu'il en existe une, sinon majoré par le pas de repli. */
+function reviewInboxFitCount(){
+  const available=Number(hhHandsEl?.clientHeight)||0;
+  if(available<=0)return 0;
+  return Math.max(1,Math.floor((available+2)/reviewInboxRowPitch()));
+}
+function reviewInboxBoundedSize(total,size){
+  const capped=Math.min(REVIEW_INBOX_PAGE_SIZE_MAX,Math.max(1,Math.floor(Number(size)||0)));
+  return Math.max(1,Math.min(total,capped));
 }
 function reviewInboxPageSizeGuess(total){
   if(!reviewInboxIsHeightBound())return total;
   const available=Number(hhHandsEl?.clientHeight)||0;
-  if(available<=0)return Math.min(total,state.reviewInboxPageSize||REVIEW_INBOX_PAGE_SIZE_DEFAULT);
-  const fits=Math.floor((available+2)/reviewInboxRowPitch());
-  return Math.max(1,Math.min(total,fits));
+  if(available<=0)return reviewInboxBoundedSize(total,state.reviewInboxPageSize||REVIEW_INBOX_PAGE_SIZE_DEFAULT);
+  // Cible 10–15 : la hauteur mesurée fixe la cible, le plafond la borne ; la
+  // boucle de réduction de `renderReviewInboxPage` corrige une estimation trop
+  // optimiste (premier rendu sans ligne mesurable, largeur qui replie une ligne).
+  const fits=reviewInboxFitCount();
+  return reviewInboxBoundedSize(total,Math.min(REVIEW_INBOX_PAGE_SIZE_MAX,Math.max(REVIEW_INBOX_PAGE_SIZE_MIN,fits)));
 }
 function updateReviewInboxPager({page=0,pages=1,total=0,first=0,last=0}={}){
   if(!hhListPager)return;
@@ -7181,8 +7269,9 @@ function reviewInboxPageWindow(total,size){
 }
 function renderHistoryHands(){
   renderReviewDashboard();
-  if(hhSortSelect)hhSortSelect.value=state.hhSort;
+  if(hhSortSelect)hhSortSelect.value=normalizeReviewInboxSortCode(state.hhSort);
   if(hhKnownFilter)hhKnownFilter.checked=state.hhKnownOnly;
+  if(reviewResultFilter)reviewResultFilter.value=state.reviewInboxFilters.result||"";
   if(reviewStatusFilter)reviewStatusFilter.value=state.reviewInboxFilters.status||"";
   if(reviewCoverageFilter)reviewCoverageFilter.value=state.reviewInboxFilters.coverage||"";
   if(reviewAnalysisStateFilter)reviewAnalysisStateFilter.value=state.reviewInboxFilters.analysis_state||"";
@@ -7228,20 +7317,61 @@ function renderHistoryHands(){
 
   renderReviewInboxPage(hands,byId);
 }
-/* Peint une page bornée de l'inbox. La taille de page est réduite jusqu'à ce que
-   la liste tienne dans la hauteur contrainte de la coque (desktop) : aucune
-   ligne n'est perdue derrière `overflow:hidden`, les suivantes sont paginées. */
+/* Peint une page bornée de l'inbox. La barre de pagination est rendue *avant* la
+   mesure (elle fait partie de la hauteur contrainte) : sinon la place rendue à
+   la liste change au moment où la barre apparaît et la dernière ligne déborde.
+   Ensuite la taille de page est réduite — ou remontée vers la cible 10–15 quand
+   la hauteur mesurée le permet encore — jusqu'à ce que la liste tienne dans la
+   coque : aucune ligne n'est perdue derrière `overflow:hidden`, les suivantes
+   sont paginées. */
 function renderReviewInboxPage(hands,byId){
+  if(!reviewInboxIsHeightBound()){
+    // <901px : flux documentaire, pas de coque bornée ni de pagination.
+    paintReviewInboxRows(hands,byId);
+    state.reviewInboxPageSize=Math.max(1,hands.length);
+    updateReviewInboxPager({page:0,pages:1,total:hands.length,first:0,last:hands.length});
+    return;
+  }
   let size=reviewInboxPageSizeGuess(hands.length);
   let pageWindow=reviewInboxPageWindow(hands.length,size);
-  for(let attempt=0;attempt<6;attempt++){
+  for(let attempt=0;attempt<REVIEW_INBOX_PAGE_FIT_ATTEMPTS;attempt++){
+    // Le pager est visible avant la mesure : la liste reçoit tout de suite la
+    // hauteur qu'elle gardera une fois la pagination affichée.
+    if(hhListPager)hhListPager.hidden=pageWindow.pages<=1;
     paintReviewInboxRows(hands.slice(pageWindow.start,pageWindow.end),byId);
-    const heightBound=reviewInboxIsHeightBound()&&hhHandsEl.clientHeight>0;
+    const available=Number(hhHandsEl?.clientHeight)||0;
     const count=pageWindow.end-pageWindow.start;
-    if(!heightBound||count<=1||size<=1)break;
-    if(hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1)break;
-    size-=1;
-    pageWindow=reviewInboxPageWindow(hands.length,size);
+    if(available<=0||count<=1||size<=1)break;
+    if(!(hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1)){
+      // Débordement : on redescend d'un cran, ou directement à la capacité
+      // mesurée pour ne pas repeindre page par page.
+      const next=Math.max(1,Math.min(size-1,reviewInboxFitCount()));
+      if(next>=size)break;
+      size=next;
+      pageWindow=reviewInboxPageWindow(hands.length,size);
+      continue;
+    }
+    // La page tient : si la première page n'exploite pas encore la cible haute
+    // (pas de repli quand aucune ligne n'était mesurable), on remonte à la
+    // capacité réellement mesurée, plafonnée à 15.
+    if(pageWindow.page===0&&size<REVIEW_INBOX_PAGE_SIZE_MAX&&pageWindow.end<hands.length){
+      const grown=reviewInboxBoundedSize(hands.length,Math.min(REVIEW_INBOX_PAGE_SIZE_MAX,size+Math.max(0,reviewInboxFitCount()-count)));
+      if(grown>size){
+        const grownWindow=reviewInboxPageWindow(hands.length,grown);
+        if(hhListPager)hhListPager.hidden=grownWindow.pages<=1;
+        paintReviewInboxRows(hands.slice(grownWindow.start,grownWindow.end),byId);
+        if((Number(hhHandsEl?.clientHeight)||0)>0&&hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1){
+          size=grown;
+          pageWindow=grownWindow;
+        }else{
+          // La page agrandie débordait : on restaure la dernière page qui tient,
+          // avec la barre de pagination qui correspond à sa fenêtre.
+          if(hhListPager)hhListPager.hidden=pageWindow.pages<=1;
+          paintReviewInboxRows(hands.slice(pageWindow.start,pageWindow.end),byId);
+        }
+      }
+    }
+    break;
   }
   state.reviewInboxPageSize=Math.max(1,size);
   updateReviewInboxPager({page:pageWindow.page,pages:pageWindow.pages,total:hands.length,first:pageWindow.start,last:pageWindow.end});
@@ -7554,8 +7684,29 @@ hhWatchStopBtn.addEventListener("click",()=>stopHHWatch("Surveillance automatiqu
 hhPagePrev?.addEventListener("click",()=>{state.reviewInboxPage=Math.max(0,(Number(state.reviewInboxPage)||0)-1);renderHistoryHands();});
 hhPageNext?.addEventListener("click",()=>{state.reviewInboxPage=(Number(state.reviewInboxPage)||0)+1;renderHistoryHands();});
 
+/* #395 T5 — la page bornée suit la hauteur réellement mesurée : après un
+   redimensionnement de la coque, la page courante est re-mesurée sans changer
+   de page ni toucher à la sélection. Ce listener ne planifie aucun calcul
+   (contrat #394 T3 : seuls les changements d'entrée en planifient). */
+let reviewInboxRelayoutTimer=null;
+function relayoutReviewInbox(){
+  if(!state.hhHands?.length||!hhHandsEl)return;
+  const hands=visibleHistoryHands();
+  if(!hands.length)return;
+  const byId=new Map((state.reviewInboxView?.items||[]).map(item=>[String(item.hand_id),item]));
+  renderReviewInboxPage(hands,byId);
+}
+window.addEventListener("resize",()=>{
+  // Anti-rebond : une seule re-mesure après la fin du redimensionnement.
+  if(reviewInboxRelayoutTimer)clearTimeout(reviewInboxRelayoutTimer);
+  reviewInboxRelayoutTimer=setTimeout(()=>{
+    reviewInboxRelayoutTimer=null;
+    relayoutReviewInbox();
+  },120);
+});
+
 hhSortSelect?.addEventListener("change",()=>{
-  state.hhSort=hhSortSelect.value;
+  state.hhSort=normalizeReviewInboxSortCode(hhSortSelect.value);
   state.reviewInboxPage=0;
   schedulePersistPrefs();
   renderHistoryHands();
@@ -7566,12 +7717,18 @@ hhKnownFilter?.addEventListener("change",()=>{
   schedulePersistPrefs();
   renderHistoryHands();
 });
+reviewResultFilter?.addEventListener("change",()=>{
+  state.reviewInboxFilters.result=reviewResultFilter.value;
+  state.reviewInboxPage=0;
+  schedulePersistPrefs();
+  renderHistoryHands();
+});
 [
   [reviewStatusFilter,"status"],[reviewCoverageFilter,"coverage"],[reviewAnalysisStateFilter,"analysis_state"],[reviewStreetFilter,"street"],
   [reviewPositionFilter,"position"],[reviewSpotFilter,"spot_family"],[reviewPlayedFilter,"action_played"],
   [reviewRecommendedFilter,"action_recommended"],[reviewSizingFilter,"sizing_error"],
   [reviewJamFilter,"jam"],[reviewOverbetFilter,"overbet"]
-].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;state.reviewInboxPage=0;renderHistoryHands();}));
+].forEach(([el,key])=>el?.addEventListener("change",()=>{state.reviewInboxFilters[key]=el.value;state.reviewInboxPage=0;schedulePersistPrefs();renderHistoryHands();}));
 
 knownHandsBtn.addEventListener("click",()=>{
   if(knownHandsBtn.disabled) return;
@@ -9805,7 +9962,32 @@ async function restoreLocalState(){
     if(reviewInboxUserMetadataByScope&&typeof reviewInboxUserMetadataByScope==="object")state.reviewInboxUserMetadataByScope=reviewInboxUserMetadataByScope;
 
     if(prefs){
-      if(["review_desc","status_asc","street_asc","position_asc","hand_asc"].includes(prefs.hhSort)) state.hhSort=prefs.hhSort;
+      // #395 T4 — le tri et le filtre résultat sont restaurés depuis les mêmes
+      // codes que les contrôles premier niveau, sans casser une préférence
+      // antérieure : l'ancien code `review_desc` vaut `ev_loss_desc` et toute
+      // valeur inconnue est ignorée. Les whitelists restent locales à cette
+      // fonction, exécutée isolément par le contrat de non-recalcul (#394 T3).
+      const savedSort=String(prefs.hhSort??"");
+      if(savedSort==="review_desc") state.hhSort="ev_loss_desc";
+      else if(["recent_desc","recent_asc","ev_loss_desc","gain_desc","loss_desc","status_asc","street_asc","position_asc","hand_asc"].includes(savedSort)) state.hhSort=savedSort;
+      const savedFilters=prefs.reviewInboxFilters&&typeof prefs.reviewInboxFilters==="object"?prefs.reviewInboxFilters:null;
+      if(savedFilters){
+        if(!state.reviewInboxFilters||typeof state.reviewInboxFilters!=="object") state.reviewInboxFilters={};
+        const allowedValues={
+          result:["","WIN","LOSS","EVEN","UNKNOWN"],
+          status:["","TO_REVIEW","REVIEWED","CORRECT","INCOMPLETE_ANALYSIS"],
+          coverage:["","COMPLETE","INCOMPLETE"],
+          analysis_state:["","ANALYSE_DISPONIBLE","ANALYSE_PARTIELLE","CALCUL_EN_COURS","DONNEES_INSUFFISANTES","SPOT_NON_SUPPORTE","ERREUR_CALCUL"],
+          sizing_error:["","true","false"],jam:["","true","false"],overbet:["","true","false"]
+        };
+        for(const key of ["result","status","coverage","analysis_state","street","position","spot_family","action_played","action_recommended","sizing_error","jam","overbet"]){
+          const raw=savedFilters[key];
+          if(typeof raw!=="string")continue;
+          const allowed=allowedValues[key];
+          if(allowed&&!allowed.includes(raw))continue;
+          state.reviewInboxFilters[key]=raw;
+        }
+      }
       state.hhKnownOnly=!!prefs.hhKnownOnly;
       if(["replace","add"].includes(prefs.hhImportMode)) state.hhImportMode=prefs.hhImportMode;
       if(APP_VIEWS.includes(prefs.appView)) state.restoredAppView=prefs.appView;

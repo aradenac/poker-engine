@@ -484,6 +484,12 @@ assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
   assert.deepEqual(def.properties.state.enum,[
     'ANALYSE_DISPONIBLE','ANALYSE_PARTIELLE','CALCUL_EN_COURS','DONNEES_INSUFFISANTES','SPOT_NON_SUPPORTE','ERREUR_CALCUL'
   ]);
+  // #395 T1: the real result is part of the item contract.
+  assert.ok(item.required.includes('hero_net_bb'),'item.hero_net_bb must be required');
+  assert.ok(item.required.includes('result'),'item.result must be required');
+  assert.deepEqual(item.properties.hero_net_bb.type,['number','null'],'hero_net_bb is a number or null, never a coerced placeholder');
+  assert.deepEqual(item.properties.result.properties.state.enum,['WIN','LOSS','EVEN','UNKNOWN'],'result.state carries the settlement vocabulary');
+  assert.deepEqual(item.properties.result.properties.net_bb.type,['number','null']);
   for(const dimension of ['computational_status','model_support_status','statistical_support','ev_comparability','recommendation_admissibility','posterior_availability','error']){
     assert.ok(def.required.includes(dimension),'analysis_state dimension '+dimension+' must be required');
   }
@@ -526,6 +532,452 @@ assert.throws(()=>Inbox.queryInbox(inbox,{jam:'maybe'}),/boolean filter/);
   assert.equal(scoped.scope.strategy_id,Adapter.UNAVAILABLE_STRATEGY_ID);
   assert.equal(scoped.scope.strategy_version,'UNAVAILABLE@RETAIN_REFERENCE@sig-A');
   assert.notEqual(scoped.scope_key,Leak.scopeKey({...SCOPE,strategy_version:'runtime-r1@sig-A'}),'unavailable scope must stay distinct from an admissible scope');
+}
+
+// #395 T1: the real hero settlement is an optional, independent input. Without
+// `hand_results` no item may claim a settled result, and every pre-existing
+// field keeps its value.
+{
+  for(const item of inbox.items){
+    assert.equal(item.hero_net_bb,null,'a hand without settlement evidence carries a null hero_net_bb');
+    assert.deepEqual(item.result,{state:'UNKNOWN',net_bb:null},'an absent settlement is UNKNOWN, never a fabricated EVEN');
+  }
+  assert.equal(i1.total_loss_bb,2.5,'the EV fields stay untouched by the real result');
+  assert.equal(Inbox.RESULT.UNKNOWN,'UNKNOWN');
+  assert.deepEqual(Inbox.RESULT_STATES,['WIN','LOSS','EVEN','UNKNOWN']);
+  for(const mode of ['EV_LOSS_DESC','TIMESTAMP_DESC','TIMESTAMP_ASC','RESULT_GAIN_DESC','RESULT_LOSS_DESC','STATUS_ASC','STREET_ASC','POSITION_ASC','SPOT_FAMILY_ASC','PLAYED_ACTION_ASC','RECOMMENDED_ACTION_ASC','HAND_ID_ASC']){
+    assert.ok(Inbox.SORT_MODES.includes(mode),'sort mode '+mode+' must stay supported');
+  }
+}
+
+// #395 T1: an explicit settlement drives hero_net_bb + result.state without
+// touching any other field of the item.
+{
+  const settled=Inbox.buildReviewInbox({
+    reviewScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,
+    user_metadata:metadata2,
+    hand_results:{'100001':-3.5,'100002':0,'100003':4.25,'100004':null}
+  });
+  const rows=new Map(settled.items.map(x=>[x.hand_id,x]));
+  assert.equal(rows.get('100001').hero_net_bb,-3.5);
+  assert.deepEqual(rows.get('100001').result,{state:'LOSS',net_bb:-3.5},'a real loss is LOSS');
+  assert.equal(rows.get('100002').hero_net_bb,0);
+  assert.deepEqual(rows.get('100002').result,{state:'EVEN',net_bb:0},'a zero settlement is EVEN');
+  assert.equal(rows.get('100003').hero_net_bb,4.25);
+  assert.deepEqual(rows.get('100003').result,{state:'WIN',net_bb:4.25},'a real gain is WIN');
+  assert.equal(rows.get('100004').hero_net_bb,null);
+  assert.deepEqual(rows.get('100004').result,{state:'UNKNOWN',net_bb:null},'an explicit null settlement stays UNKNOWN');
+  for(const id of ['100001','100002','100003','100004']){
+    const before=byId.get(id),after=rows.get(id);
+    for(const field of ['total_loss_bb','nominal_loss_bb','main_street','position','spot_family','action_played','action_recommended','status','deep_link','coverage_state','timestamp']){
+      assert.deepEqual(after[field],before[field],'the real result must not alter item.'+field);
+    }
+    assert.deepEqual(after.analysis_state,before.analysis_state,'the real result must not alter the analysis state');
+  }
+  assert.equal(Inbox.resultFor(2.5).state,'WIN');
+  assert.equal(Inbox.resultFor(0).state,'EVEN');
+  assert.equal(Inbox.resultFor(-0.25).state,'LOSS');
+  assert.equal(Inbox.resultFor(1e-12).state,'EVEN','the EVEN band uses the shared 1e-9 tolerance');
+  assert.equal(Inbox.resultFor(-1e-12).state,'EVEN','the EVEN band uses the shared 1e-9 tolerance');
+  // Malformed settlements are never coerced into a fabricated (positive) net.
+  for(const value of [null,undefined,'','   ','n/a',true,false,[2.5],{},NaN,Infinity,-Infinity]){
+    const item=Inbox.buildReviewInbox({
+      reviewScores:{'100001':reviewScores['100001']},
+      hhSources:[{name:'all.txt',content:HH1}],scope:SCOPE,user_metadata:metadata0,
+      hand_results:{'100001':value}
+    }).items[0];
+    assert.equal(item.hero_net_bb,null,'malformed settlement '+JSON.stringify(value)+' must never become a number');
+    assert.equal(item.result.state,'UNKNOWN','malformed settlement '+JSON.stringify(value)+' stays UNKNOWN');
+  }
+  // A well-formed serialized number stays admissible evidence.
+  const serialized=Inbox.buildReviewInbox({
+    reviewScores:{'100001':reviewScores['100001']},
+    hhSources:[{name:'all.txt',content:HH1}],scope:SCOPE,user_metadata:metadata0,
+    hand_results:{'100001':'-1.5'}
+  }).items[0];
+  assert.equal(serialized.hero_net_bb,-1.5);
+  assert.equal(serialized.result.state,'LOSS');
+}
+
+// #395 T1: result filters (single + multi), including the explicit UNKNOWN.
+{
+  const settled=Inbox.buildReviewInbox({
+    reviewScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,user_metadata:metadata0,
+    hand_results:{'100001':-3.5,'100002':0,'100003':4.25}
+  });
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'WIN'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100003']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'LOSS'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100001']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'EVEN'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100002']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'UNKNOWN'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100004'],'UNKNOWN must be filterable by its own code');
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'unknown'},'HAND_ID_ASC').items.map(x=>x.hand_id),['100004'],'result filters are case-insensitive');
+  assert.deepEqual(Inbox.queryInbox(settled,{result:['WIN','LOSS']},'HAND_ID_ASC').items.map(x=>x.hand_id),['100001','100003']);
+  assert.deepEqual(Inbox.queryInbox(settled,{result:''},'HAND_ID_ASC').items.map(x=>x.hand_id),['100001','100002','100003','100004'],'an empty result filter matches everything');
+  assert.deepEqual(Inbox.queryInbox(settled,{result:'WIN',min_loss_bb:4},'HAND_ID_ASC').items,[],'result composes with the other filters');
+}
+
+// #395 T1: temporal and real-result sorts, always tie-broken by hand_id.
+{
+  const settled=Inbox.buildReviewInbox({
+    reviewScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,user_metadata:metadata0,
+    hand_results:{'100001':-3.5,'100002':0,'100003':4.25}
+  });
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'TIMESTAMP_ASC').map(x=>x.hand_id),['100001','100002','100003','100004'],'TIMESTAMP_ASC orders on the real timestamps');
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'TIMESTAMP_DESC').map(x=>x.hand_id),['100004','100003','100002','100001'],'TIMESTAMP_DESC reverses the real timestamps');
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'RESULT_GAIN_DESC').map(x=>x.hand_id),['100003','100002','100001','100004'],'RESULT_GAIN_DESC puts the biggest gains first and UNKNOWN last');
+  assert.deepEqual(Inbox.sortInboxItems(settled.items,'RESULT_LOSS_DESC').map(x=>x.hand_id),['100001','100002','100003','100004'],'RESULT_LOSS_DESC puts the biggest losses first and UNKNOWN last');
+
+  const base=settled.items[0];
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'b',hero_net_bb:1,result:{state:'WIN',net_bb:1}},
+    {...base,hand_id:'a',hero_net_bb:1,result:{state:'WIN',net_bb:1}},
+    {...base,hand_id:'c',hero_net_bb:3,result:{state:'WIN',net_bb:3}}
+  ],'RESULT_GAIN_DESC').map(x=>x.hand_id),['c','a','b'],'RESULT_GAIN_DESC ties are deterministic by hand_id');
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'b',hero_net_bb:-1,result:{state:'LOSS',net_bb:-1}},
+    {...base,hand_id:'a',hero_net_bb:-1,result:{state:'LOSS',net_bb:-1}},
+    {...base,hand_id:'c',hero_net_bb:-3,result:{state:'LOSS',net_bb:-3}}
+  ],'RESULT_LOSS_DESC').map(x=>x.hand_id),['c','a','b'],'RESULT_LOSS_DESC ties are deterministic by hand_id');
+  assert.throws(()=>Inbox.sortInboxItems(settled.items,'NOPE_DESC'),/unsupported sort/);
+
+  // The timestamp comparison uses the parsed instant: a lexicographic compare
+  // would put 'Z'-less/offset timestamps in the wrong place.
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'late',timestamp:'2026-09-18T23:00:00+02:00'},
+    {...base,hand_id:'early',timestamp:'2026-09-18T20:30:00Z'},
+    {...base,hand_id:'undated',timestamp:null}
+  ],'TIMESTAMP_ASC').map(x=>x.hand_id),['early','late','undated'],'TIMESTAMP_ASC compares instants and carries undated items last');
+  assert.deepEqual(Inbox.sortInboxItems([
+    {...base,hand_id:'late',timestamp:'2026-09-18T23:00:00+02:00'},
+    {...base,hand_id:'early',timestamp:'2026-09-18T20:30:00Z'},
+    {...base,hand_id:'undated',timestamp:'not-a-date'}
+  ],'TIMESTAMP_DESC').map(x=>x.hand_id),['late','early','undated'],'TIMESTAMP_DESC compares instants (23:00+02:00 = 21:00Z after 20:30Z) and carries undated items last');
+}
+
+// #395 T3: real play timestamps that deliberately disagree with the numeric
+// hand_id order, plus a settlement map covering gain / loss / neutral / absent.
+// The earlier fixtures (#100001..#100004) are monotonic in both id and time, so
+// they cannot tell whether a temporal or settlement sort reads the parsed
+// instant and the real BB net, or leaks the id / insertion order. Here:
+//   200002 2026-09-18T19:45:00Z  WIN    +6.5   earliest, but not the smallest id
+//   200005 2026-09-18T20:30:00Z  UNKNOWN        absent from hand_results
+//   200003 2026-09-18T21:10:00Z  LOSS   -4
+//   200004 2026-09-18T21:10:00Z  WIN    +6.5   shares the instant with 200003
+//   200001 2026-09-18T23:20:00Z  EVEN    0     latest, but the smallest id
+const T3HH_EARLIEST=`PokerStars Zoom Hand #200002: Hold'em No Limit (100/200) - 2026/09/18 19:45:00 CET
+Table 'T3-Earliest' 6-max Seat #6 is the button
+Seat 1: SB2 (20000 in chips)
+Seat 2: BB2 (20000 in chips)
+Seat 3: LJ2 (20000 in chips)
+Seat 4: HJ2 (20000 in chips)
+Seat 5: CO2 (20000 in chips)
+Seat 6: Hero (20000 in chips)
+SB2: posts small blind 100
+BB2: posts big blind 200
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ2: folds
+HJ2: folds
+CO2: folds
+Hero: raises 400 to 600
+SB2: folds
+BB2: calls 400
+*** FLOP *** [Ah 7c 2d]
+BB2: checks
+Hero: bets 800
+BB2: calls 800
+*** SUMMARY ***
+Total pot 2900 | Rake 0
+`;
+
+const T3HH_UNKNOWN=`PokerStars Zoom Hand #200005: Hold'em No Limit (100/200) - 2026/09/18 20:30:00 CET
+Table 'T3-Unknown' 6-max Seat #6 is the button
+Seat 1: SB5 (20000 in chips)
+Seat 2: BB5 (20000 in chips)
+Seat 3: LJ5 (20000 in chips)
+Seat 4: HJ5 (20000 in chips)
+Seat 5: CO5 (20000 in chips)
+Seat 6: Hero (20000 in chips)
+SB5: posts small blind 100
+BB5: posts big blind 200
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ5: folds
+HJ5: folds
+CO5: folds
+Hero: raises 400 to 600
+SB5: folds
+BB5: folds
+*** SUMMARY ***
+Total pot 900 | Rake 0
+`;
+
+const T3HH_TIE_A=`PokerStars Zoom Hand #200003: Hold'em No Limit (100/200) - 2026/09/18 21:10:00 CET
+Table 'T3-TieA' 6-max Seat #6 is the button
+Seat 1: SB3 (20000 in chips)
+Seat 2: BB3 (20000 in chips)
+Seat 3: LJ3x (20000 in chips)
+Seat 4: HJ3x (20000 in chips)
+Seat 5: CO3x (20000 in chips)
+Seat 6: Hero (20000 in chips)
+SB3: posts small blind 100
+BB3: posts big blind 200
+*** HOLE CARDS ***
+Dealt to Hero [9s 9d]
+LJ3x: folds
+HJ3x: folds
+CO3x: folds
+Hero: raises 400 to 600
+SB3: folds
+BB3: calls 400
+*** FLOP *** [7h 5d 2s]
+BB3: checks
+Hero: bets 800
+BB3: calls 800
+*** SUMMARY ***
+Total pot 2900 | Rake 0
+`;
+
+const T3HH_TIE_B=`PokerStars Zoom Hand #200004: Hold'em No Limit (100/200) - 2026/09/18 21:10:00 CET
+Table 'T3-TieB' 6-max Seat #6 is the button
+Seat 1: SB4 (20000 in chips)
+Seat 2: BB4 (20000 in chips)
+Seat 3: LJ4 (20000 in chips)
+Seat 4: HJ4 (20000 in chips)
+Seat 5: CO4 (20000 in chips)
+Seat 6: Hero (20000 in chips)
+SB4: posts small blind 100
+BB4: posts big blind 200
+*** HOLE CARDS ***
+Dealt to Hero [Qc Jc]
+LJ4: folds
+HJ4: folds
+CO4: raises 200 to 400
+Hero: calls 400
+SB4: folds
+BB4: folds
+*** SUMMARY ***
+Total pot 1100 | Rake 0
+`;
+
+const T3HH_LATEST=`PokerStars Zoom Hand #200001: Hold'em No Limit (100/200) - 2026/09/18 23:20:00 CET
+Table 'T3-Latest' 6-max Seat #6 is the button
+Seat 1: SB1 (20000 in chips)
+Seat 2: BB1 (20000 in chips)
+Seat 3: LJ1 (20000 in chips)
+Seat 4: HJ1 (20000 in chips)
+Seat 5: CO1 (20000 in chips)
+Seat 6: Hero (20000 in chips)
+SB1: posts small blind 100
+BB1: posts big blind 200
+*** HOLE CARDS ***
+Dealt to Hero [Ad Td]
+LJ1: folds
+HJ1: folds
+CO1: folds
+Hero: raises 400 to 600
+SB1: folds
+BB1: folds
+*** SUMMARY ***
+Total pot 900 | Rake 0
+`;
+
+const t3Earliest=heroSteps(T3HH_EARLIEST),t3Unknown=heroSteps(T3HH_UNKNOWN),t3TieA=heroSteps(T3HH_TIE_A),t3TieB=heroSteps(T3HH_TIE_B),t3Latest=heroSteps(T3HH_LATEST);
+const t3EarliestRaise=t3Earliest.steps.find(s=>s.street==='PREFLOP'&&s.actionType==='raise');
+const t3EarliestBet=t3Earliest.steps.find(s=>s.street==='FLOP'&&s.actionType==='bet');
+const t3UnknownRaise=t3Unknown.steps.find(s=>s.street==='PREFLOP'&&s.actionType==='raise');
+const t3TieARaise=t3TieA.steps.find(s=>s.street==='PREFLOP'&&s.actionType==='raise');
+const t3TieABet=t3TieA.steps.find(s=>s.street==='FLOP'&&s.actionType==='bet');
+const t3TieBCall=t3TieB.steps.find(s=>s.street==='PREFLOP'&&s.actionType==='call');
+const t3LatestRaise=t3Latest.steps.find(s=>s.street==='PREFLOP'&&s.actionType==='raise');
+for(const step of [t3EarliestRaise,t3EarliestBet,t3UnknownRaise,t3TieARaise,t3TieABet,t3TieBCall,t3LatestRaise])assert.ok(step,'every T3 fixture must expose the reviewed Hero decisions');
+
+const t3ReviewScores={
+  '200002':{
+    handId:'200002',signature:'sig-A',complete:true,analyzableDecisions:2,finishedDecisions:2,details:[
+      {stepIndex:t3EarliestRaise.stepIndex,lossBB:2,rawLossBB:2,chosenEV:-1,bestEV:1,bestLabel:'CALL',withinNoise:false,comparable:true,
+       simContext:{potType:'UNOPENED',preflopRole:'RFI',relativePosition:'IP'}},
+      {stepIndex:t3EarliestBet.stepIndex,lossBB:1,rawLossBB:1,chosenEV:0,bestEV:1,bestLabel:'CHECK',withinNoise:false,comparable:true,
+       simContext:{potType:'SRP',preflopRole:'PFR',relativePosition:'IP'}}
+    ]
+  },
+  '200005':{
+    handId:'200005',signature:'sig-A',complete:true,analyzableDecisions:1,finishedDecisions:1,details:[
+      {stepIndex:t3UnknownRaise.stepIndex,lossBB:.5,rawLossBB:.5,chosenEV:.5,bestEV:1,bestLabel:'RAISE',withinNoise:false,comparable:true,
+       simContext:{potType:'UNOPENED',preflopRole:'RFI',relativePosition:'IP'}}
+    ]
+  },
+  '200003':{
+    handId:'200003',signature:'sig-A',complete:true,analyzableDecisions:2,finishedDecisions:2,details:[
+      {stepIndex:t3TieARaise.stepIndex,lossBB:0,rawLossBB:0,chosenEV:.6,bestEV:.6,bestLabel:'RAISE',withinNoise:false,comparable:true,
+       simContext:{potType:'UNOPENED',preflopRole:'RFI',relativePosition:'IP'}},
+      {stepIndex:t3TieABet.stepIndex,lossBB:1,rawLossBB:1,chosenEV:0,bestEV:1,bestLabel:'CHECK',withinNoise:false,comparable:true,
+       simContext:{potType:'SRP',preflopRole:'PFR',relativePosition:'IP'}}
+    ]
+  },
+  '200004':{
+    handId:'200004',signature:'sig-A',complete:true,analyzableDecisions:1,finishedDecisions:1,details:[
+      {stepIndex:t3TieBCall.stepIndex,lossBB:2,rawLossBB:2,chosenEV:-1,bestEV:1,bestLabel:'FOLD',withinNoise:false,comparable:true,
+       simContext:{potType:'SRP',preflopRole:'CALLER',relativePosition:'IP'}}
+    ]
+  },
+  '200001':{
+    handId:'200001',signature:'sig-A',complete:true,analyzableDecisions:1,finishedDecisions:1,details:[
+      {stepIndex:t3LatestRaise.stepIndex,lossBB:0,rawLossBB:0,chosenEV:.6,bestEV:.6,bestLabel:'RAISE',withinNoise:false,comparable:true,
+       simContext:{potType:'UNOPENED',preflopRole:'RFI',relativePosition:'IP'}}
+    ]
+  }
+};
+const t3Source=[T3HH_EARLIEST,T3HH_UNKNOWN,T3HH_TIE_A,T3HH_TIE_B,T3HH_LATEST].join('\n');
+const t3Inbox=Inbox.buildReviewInbox({
+  reviewScores:t3ReviewScores,
+  hhSources:[{name:'t3.txt',content:t3Source}],
+  scope:SCOPE,
+  user_metadata:{},
+  // No entry for 200005: the absent settlement must stay UNKNOWN.
+  hand_results:{'200001':0,'200002':6.5,'200003':-4,'200004':6.5}
+});
+
+// #395 T3: settlement mapping, real timestamps and the anti-correlated fixture.
+{
+  const t3Items=t3Inbox.items,t3=new Map(t3Items.map(x=>[x.hand_id,x]));
+  assert.equal(t3Items.length,5,'the T3 fixture must expose all five hands');
+  assert.match(t3Inbox.scope.strategy_version,/runtime-r1@sig-A$/);
+  for(const id of ['200001','200002','200003','200004','200005'])assert.ok(t3.get(id),'T3 hand '+id+' must be present');
+
+  // The instants are the parsed header timestamps, and the numeric ids are
+  // anti-correlated on purpose: the smallest id (200001) is the latest hand,
+  // the largest id (200005) is the second earliest, and the instant tie pairs
+  // hand 200003 with the larger id 200004.
+  assert.equal(t3.get('200002').timestamp,'2026-09-18T19:45:00Z');
+  assert.equal(t3.get('200005').timestamp,'2026-09-18T20:30:00Z');
+  assert.equal(t3.get('200003').timestamp,'2026-09-18T21:10:00Z');
+  assert.equal(t3.get('200004').timestamp,'2026-09-18T21:10:00Z');
+  assert.equal(t3.get('200001').timestamp,'2026-09-18T23:20:00Z');
+  assert.equal(t3.get('200003').timestamp,t3.get('200004').timestamp,'the tie pair shares one instant on purpose');
+  assert.equal(new Set(t3Items.map(x=>x.timestamp)).size,4,'four distinct instants must back the five hands');
+
+  const handResults={'200001':0,'200002':6.5,'200003':-4,'200004':6.5};
+  for(const [id,net] of Object.entries(handResults)){
+    const item=t3.get(id);
+    assert.equal(item.hero_net_bb,net,'hand '+id+' must carry the real settlement in BB');
+    assert.equal(item.result.net_bb,net,'hand '+id+' result.net_bb mirrors hero_net_bb');
+    assert.equal(item.result.state,Inbox.resultStateFor(net),'hand '+id+' must map its settlement to the right state');
+  }
+  // The real result is an independent input: the EV loss keeps its own value
+  // (+6.5 BB won is not a 6.5 BB EV loss) and is never derived from it.
+  assert.notEqual(t3.get('200002').total_loss_bb,t3.get('200002').hero_net_bb,'the real result must never become the EV loss');
+  assert.equal(t3.get('200002').total_loss_bb,3,'the T3 EV losses stay computed from the decision events');
+  assert.equal(t3.get('200004').total_loss_bb,2);
+  assert.equal(t3.get('200003').total_loss_bb,1);
+  assert.equal(t3.get('200005').total_loss_bb,.5);
+  assert.equal(t3.get('200001').total_loss_bb,0);
+
+  // The absent settlement is UNKNOWN and is never invented as EVEN/0.
+  assert.equal(t3.get('200005').hero_net_bb,null,'a hand absent from hand_results never invents a net');
+  assert.deepEqual(t3.get('200005').result,{state:'UNKNOWN',net_bb:null});
+  assert.deepEqual(['200002','200004','200003','200001','200005'].map(id=>t3.get(id).result.state),['WIN','WIN','LOSS','EVEN','UNKNOWN'],'the fixture must cover gain, loss, neutral and unknown');
+}
+
+// #395 T3: TIMESTAMP_DESC/ASC follow the parsed instants, not the hand_id.
+{
+  const timestampAsc=['200002','200005','200003','200004','200001'];
+  const timestampDesc=['200001','200003','200004','200005','200002'];
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'TIMESTAMP_ASC').map(x=>x.hand_id),timestampAsc,'TIMESTAMP_ASC must order on the real timestamps');
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'TIMESTAMP_DESC').map(x=>x.hand_id),timestampDesc,'TIMESTAMP_DESC must reverse the real timestamps');
+  assert.notDeepEqual(timestampAsc,[...t3Inbox.items.map(x=>x.hand_id)].sort(),'the fixture must not be id-ordered, otherwise the assertion above proves nothing');
+  assert.notDeepEqual(timestampDesc,timestampAsc.slice().reverse(),'the descending order keeps the hand_id ascending inside the instant tie instead of mirroring the ascending list');
+  assert.deepEqual(timestampAsc.slice(2,4),['200003','200004'],'the two hands sharing 2026-09-18T21:10:00Z are tie-broken by hand_id');
+}
+
+// #395 T3: gain/loss sorts rank the real BB net; UNKNOWN is never a 0.
+{
+  const gainDesc=['200002','200004','200001','200003','200005'];
+  const lossDesc=['200003','200001','200002','200004','200005'];
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'RESULT_GAIN_DESC').map(x=>x.hand_id),gainDesc,'RESULT_GAIN_DESC must rank the biggest gains first');
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'RESULT_LOSS_DESC').map(x=>x.hand_id),lossDesc,'RESULT_LOSS_DESC must rank the biggest losses first');
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'RESULT_GAIN_DESC').map(x=>x.hero_net_bb),[6.5,6.5,0,-4,null],'the gain ranking reads the BB net and carries UNKNOWN last');
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'RESULT_LOSS_DESC').map(x=>x.hero_net_bb),[-4,0,6.5,6.5,null],'the loss ranking reads the BB net and carries UNKNOWN last');
+  // Two hands share +6.5 BB and two instants coincide: equal keys are always
+  // settled by hand_id, so the input order can never change the output.
+  for(const [mode,expected] of [
+    ['TIMESTAMP_ASC',['200002','200005','200003','200004','200001']],
+    ['TIMESTAMP_DESC',['200001','200003','200004','200005','200002']],
+    ['RESULT_GAIN_DESC',gainDesc],
+    ['RESULT_LOSS_DESC',lossDesc],
+    ['EV_LOSS_DESC',['200002','200004','200003','200005','200001']]
+  ]){
+    assert.deepEqual(Inbox.sortInboxItems([...t3Inbox.items].reverse(),mode).map(x=>x.hand_id),expected,'sort '+mode+' must be deterministic and independent from the input order');
+  }
+}
+
+// #395 T3: the result filter, alone and combined with the existing filters.
+{
+  const ids=(filters,sort)=>Inbox.queryInbox(t3Inbox,filters,sort||'HAND_ID_ASC').items.map(x=>x.hand_id);
+  assert.deepEqual(ids({result:'WIN'}),['200002','200004'],'WIN keeps only the positive nets');
+  assert.deepEqual(ids({result:'LOSS'}),['200003'],'LOSS keeps only the negative nets');
+  assert.deepEqual(ids({result:'EVEN'}),['200001'],'EVEN keeps only the neutral nets');
+  assert.deepEqual(ids({result:'unknown'}),['200005'],'the result filter is case-insensitive');
+  assert.deepEqual(ids({result:['WIN','LOSS']}),['200002','200003','200004']);
+  assert.deepEqual(ids({result:''}),['200001','200002','200003','200004','200005'],'an empty result filter matches everything');
+  assert.deepEqual(ids({}),['200001','200002','200003','200004','200005'],'the unknown result stays present in « Toutes »');
+
+  const unknown=Inbox.queryInbox(t3Inbox,{result:'UNKNOWN'},'HAND_ID_ASC').items;
+  assert.deepEqual(unknown.map(x=>x.hand_id),['200005']);
+  assert.equal(unknown[0].hero_net_bb,null,'an unknown result is never invented as a number');
+  assert.deepEqual(unknown[0].result,{state:'UNKNOWN',net_bb:null});
+  for(const state of ['WIN','LOSS','EVEN']){
+    assert.ok(!ids({result:state}).includes('200005'),'an UNKNOWN settlement must never be reported as '+state);
+  }
+  assert.deepEqual(ids({result:['WIN','LOSS','EVEN']}),['200001','200002','200003','200004'],'the settled filters exclude the unknown hand');
+
+  // result + the pre-existing filters, on a hand_id-independent sort.
+  assert.deepEqual(ids({result:'WIN',min_loss_bb:2.5}),['200002'],'result composes with min_loss_bb');
+  assert.deepEqual(ids({result:['WIN','LOSS'],min_loss_bb:2}),['200002','200004']);
+  assert.deepEqual(ids({result:'WIN',action_played:'CALL'}),['200004'],'result composes with the played-action facet');
+  assert.deepEqual(ids({result:'LOSS',street:'FLOP',action_played:'BET'}),['200003'],'result composes with street + facet filters');
+  assert.deepEqual(ids({result:'EVEN',status:'CORRECT'}),['200001'],'result composes with the status filter');
+  assert.deepEqual(ids({result:'UNKNOWN',min_loss_bb:1}),[],'an UNKNOWN hand still obeys the other filters');
+  assert.deepEqual(Inbox.queryInbox(t3Inbox,{result:['WIN','LOSS']},'RESULT_GAIN_DESC').items.map(x=>x.hand_id),['200002','200004','200003'],'filtered result sorts stay deterministic');
+}
+
+// #395 T3: EV_LOSS_DESC stays available and is unchanged by the settlement.
+{
+  const evLossDesc=['200002','200004','200003','200005','200001'];
+  assert.ok(Inbox.SORT_MODES.includes('EV_LOSS_DESC'));
+  assert.deepEqual(Inbox.sortInboxItems(t3Inbox.items,'EV_LOSS_DESC').map(x=>x.hand_id),evLossDesc,'EV_LOSS_DESC must keep ranking on the EV loss');
+  assert.deepEqual(t3Inbox.items.map(x=>x.hand_id),evLossDesc,'the default inbox order must stay EV_LOSS_DESC');
+  assert.equal(Inbox.queryInbox(t3Inbox,{}).sort,'EV_LOSS_DESC','the default query sort must stay EV_LOSS_DESC');
+  assert.notDeepEqual(evLossDesc,['200002','200004','200001','200003','200005'],'EV_LOSS_DESC must not be the settlement order');
+
+  const t3Unsettled=Inbox.buildReviewInbox({
+    reviewScores:t3ReviewScores,
+    hhSources:[{name:'t3.txt',content:t3Source}],
+    scope:SCOPE,user_metadata:{}
+  });
+  const unsettled=new Map(t3Unsettled.items.map(x=>[x.hand_id,x]));
+  assert.equal(t3Unsettled.items.length,5);
+  for(const item of t3Unsettled.items)assert.deepEqual(item.result,{state:'UNKNOWN',net_bb:null},'without hand_results every hand stays UNKNOWN');
+  assert.deepEqual(Inbox.sortInboxItems(t3Unsettled.items,'EV_LOSS_DESC').map(x=>x.hand_id),evLossDesc,'EV_LOSS_DESC must be byte-identical with and without the settlement input');
+  assert.deepEqual(t3Unsettled.items.map(x=>x.hand_id),evLossDesc);
+  for(const [id,item] of unsettled){
+    const settled=t3Inbox.items.find(x=>x.hand_id===id);
+    for(const field of ['total_loss_bb','nominal_loss_bb','main_street','position','spot_family','action_played','action_recommended','status','timestamp','coverage_state','deep_link','analysis_state']){
+      assert.deepEqual(settled[field],item[field],'the real result must not alter item.'+field+' for hand '+id);
+    }
+  }
+}
+
+// #395 T1: the runtime mirror served by the site stays byte-identical.
+{
+  const src=fs.readFileSync(path.join(__dirname,'../../src/analytics/review-inbox.js'),'utf8');
+  const runtime=fs.readFileSync(path.join(__dirname,'../../site/analytics/review-inbox.js'),'utf8');
+  assert.equal(runtime,src,'site/analytics/review-inbox.js must stay byte-identical to src/analytics/review-inbox.js');
 }
 
 console.log(JSON.stringify({

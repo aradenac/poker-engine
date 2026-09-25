@@ -144,10 +144,80 @@ pane (`APP_HASH_SUBVIEWS` maps `#replayerSection` / `#replayerPage` to
 
 A list that cannot fit the constrained shell is **paginated, not scrolled**: the
 Review inbox is painted one bounded page at a time by `renderReviewInboxPage`,
-which shrinks its page size until
-`hhHandsEl.scrollHeight <= hhHandsEl.clientHeight + 1`, with `#hhListPager`
-(`.app-list-pager`, `#hhPagePrev` / `#hhPageNext`) driving the pages. No row is
-ever lost behind `overflow:hidden`.
+which targets 10–15 rows (`REVIEW_INBOX_PAGE_SIZE_MIN` /
+`REVIEW_INBOX_PAGE_SIZE_MAX`, #395 T5) measured on the constrained list, then
+shrinks that page size until
+`hhHandsEl.scrollHeight <= hhHandsEl.clientHeight + 1`. The pager bar is shown
+*before* that measurement because it is itself part of the constrained height,
+so its appearance cannot hide the last row. `#hhListPager` (`.app-list-pager`,
+`#hhPagePrev` / `#hhPageNext`, caption `Page x / y · mains a–b sur N`) drives the
+pages, a filter or sort change restarts on page 1, and the selected hand stays
+highlighted whenever its row belongs to the current page. No row is ever lost
+behind `overflow:hidden`.
+
+#### La taille de page peinte au viewport de référence (1500x1000, #395 T5b)
+
+La cible 10–15 n'est pas une intention : elle est **mesurée** au viewport de
+référence, sur la coque servie, avec la fixture de 32 mains du smoke
+(`tests/trainer/fixtures/review_inbox_large_list.hand.txt`). La mesure est
+reproductible depuis le dépôt, sans navigateur :
+
+    $ python3 tests/trainer/test_review_inbox_pagination_contract.py
+
+Ce contrat dérive la géométrie verticale de la coque servie des déclarations de
+`site/index.html` / `site/trainer.css` — jamais d'un pixel choisi — puis la donne
+au **vrai** `renderReviewInboxPage`, exécuté sur les **vrais** identifiants de la
+fixture. Au 1500x1000 (`SHELL_VIEWPORT`) :
+
+```
+pièce consommée autour de .hh-list                          majorant   typo
+  coque ([data-view-shell], paddings)                          30.00   30.00
+  bandeau de build (body::before, absorbé)                     24.45   24.45
+  en-tête de vue (.app-view-head)                              78.00   64.80
+  onglets de sous-vue (.app-subviews)                          52.00   48.40
+  panneau inbox (marge + bordure + paddings)                   46.00   46.00
+  titre de panneau (.hh-selection-title)                       22.00   18.40
+  rangée de contrôles de premier niveau                        51.00   46.80
+  filtres secondaires (repliés)                                37.50   34.80
+  avis (#reviewInboxNotice)                                    20.00   20.00
+  marge de .hh-list                                             4.00    4.00
+  barre de pagination (#hhListPager)                           39.00   34.80
+  total consommé                                              403.95  372.45
+  hauteur laissée à .hh-list                                  596.05  627.55
+  hauteur peinte d'une rangée (.hh-hand)                       53.15   49.55
+  pas servi (max(REVIEW_INBOX_ROW_PITCH_MIN, rangée+gouttière)) 59.15   56.00
+  taille de page peinte                                        10      11
+```
+
+La borne basse **pinnée** est le chiffre du modèle conservateur (facteur de ligne
+1.5, celui des contrats frères) : **10 lignes**, c'est-à-dire
+`REVIEW_INBOX_PAGE_SIZE_MIN` (`SHELL_MAJORANT_PAGE_SIZE`). Le modèle
+typographique (1.2) donne **11** (`SHELL_TYPOGRAPHIC_PAGE_SIZE`) ; les deux sont
+dans la fenêtre 10–15, sous `REVIEW_INBOX_PAGE_SIZE_MAX`.
+
+Le modèle est **calibré** : rejoué sur les octets d'avant #395 T5b (une mutation
+en mémoire, `octets-d-avant-la-task`), il retrouve **8 lignes** — exactement la
+taille de page peinte à 1500x1000 constatée dans un vrai navigateur. La
+réconciliation tient à trois leviers, chacun rejoué à l'envers par le contrat
+(sans lui, le modèle conservateur ne tient plus la cible) :
+
+- la cellule « perte EV » d'une rangée tient sur deux lignes déclarées
+  (« Perte EV 3,00 BB » puis « Décision max … ») : la rangée cesse d'être réglée
+  par cette cellule (pas 78 → 59.15 dans le modèle conservateur) ;
+- la rangée de contrôles de premier niveau porte son libellé **à côté** de son
+  contrôle (`display:grid`) au lieu de l'empiler ;
+- les marges de cette rangée, des filtres repliés, de l'avis, de la marge de
+  liste et de la barre de pagination sont resserrées.
+
+L'autorité mesurée reste le job gelé `browser-smoke` : le smoke relit
+`reviewInboxFitCount()` / `reviewInboxRowPitch()` / la hauteur contrainte et
+consigne `page_size`, `fit_count`, `row_pitch`, `list_client_height` et
+`list_row_gap` par tri dans son audit (`page_size_reference` pour la première
+page). Une liste paginée qui peint moins de `REVIEW_INBOX_PAGE_SIZE_MIN` lignes
+alors que la hauteur mesurée les porte **échoue** ; sous la cible, le smoke exige
+que la page soit exactement la capacité mesurée **et** qu'une page de la cible
+déborderait (`MIN * pas - gouttière > hauteur contrainte + 1`). Aucune ligne
+n'est donc jamais forcée hors du cadre : la page est mesurée, puis bornée.
 
 ### 2.1 Rendering below `901px`: the sub-view pattern is global
 
