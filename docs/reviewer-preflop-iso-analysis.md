@@ -126,3 +126,25 @@ Le Reviewer doit me permettre de répondre simplement à trois questions :
 3. **Pourquoi les adversaires ont-ils continué, et avec quelles ranges sont-ils estimés l'avoir fait ?**
 
 L'analyse doit m'aider à améliorer ma décision future, pas seulement à constater le résultat de la main.
+
+## Contrat exact-context côté Reviewer
+
+Les besoins ci-dessus supposent une réponse par contexte exact. Le contrat
+normatif est `docs/hierarchical-exact-context-runtime-contract.md` (issue #419),
+et il s'applique à l'affichage :
+
+- le support et le niveau de pooling réellement utilisés sont visibles partout où
+  une estimation est montrée, pour distinguer une preuve empirique exacte
+  (`EXACT_EMPIRICAL_STRONG`) d'une estimation rétrécie vers un parent
+  (`EXACT_HIERARCHICAL_ESTIMATE`) ;
+- aucun EV et aucune recommandation Hero ne sont exposés sur un nœud
+  `EXACT_UNRESOLVED` : l'abstention (`NO_ADMISSIBLE_POOLING_LEVEL` ou
+  `RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE`) est un état fail-closed, jamais un
+  FOLD ni une grille des 169 mains maintenue à `100 %` ;
+- le risque `RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE` reste ouvert : la clé fine
+  reste l'identité et la source de support
+  (`SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT`), un contexte non résolu
+  n'emprunte jamais le support d'un autre contexte.
+
+Ce contrat documente la sémantique : il n'admet aucun candidat et ne câble
+aucun provider tant que l'arbre #367 n'est pas clos selon ses conditions.
