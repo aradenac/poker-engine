@@ -34,8 +34,13 @@ Review inbox **in a browser**:
    through the served analytics modules and fails if the expectation and the
    contract disagree, so this smoke never asserts against itself;
 4. result filter — `#reviewResultFilter` selects the four real-result states
-   (WIN / LOSS / EVEN / UNKNOWN) on the ids the fixture authors, restarts on
-   page 1, and a filtered list that fits one page hides the pager;
+   (WIN / LOSS / EVEN / UNKNOWN) on the ids the fixture authors and restarts on
+   page 1; each filtered list is then walked **page by page** (the same
+   `Précédent` / `Suivant` march as the sorts) and the concatenated ids must be
+   the `recent_desc` order restricted to the filtered ids. A filtered list that
+   fits one measured page hides the pager (`hhListPager.hidden = !multipage`)
+   and the walk returns that single page; a filtered list that overflows it
+   (EVEN here) is walked across every page;
 5. selection — a hand selected from the inbox stays selected when it is painted
    again after a page round-trip;
 6. deep link — opening a row goes to the Replayer on the *decision* the inbox
@@ -405,12 +410,18 @@ def assert_page_size_target(page_state: dict, label: str) -> None:
 
 
 async def _walk_pages(page) -> list[dict]:
-    """Every painted page of the current query, from the first to the last."""
+    """Every painted page of the current query, from the first to the last.
+
+    A query that fits one measured page hides the pager
+    (`hhListPager.hidden = !multipage`): the painted page *is* then the whole
+    list, so the walk returns it without clicking. That is the shape of a
+    filtered list that does not overflow the served page size (the WIN / LOSS /
+    UNKNOWN result filters below). A multi-page query is walked with the same
+    `Précédent` / `Suivant` polarity the served pager exposes.
+    """
     current = await _read(page)
-    assert not current["pagerHidden"], (
-        "la liste doit être paginée par `#hhListPager` (rendu borné), or le pager est masqué "
-        f"pour {current['total']} éléments (taille de page {current['pageSize']})"
-    )
+    if current["pagerHidden"]:
+        return [current]
     pages = [current]
     while not pages[0]["prevDisabled"]:
         await page.click("#hhPagePrev")
@@ -574,6 +585,14 @@ async def run() -> None:
                         "(code) => state.hhSort===code", arg=code, timeout=10_000
                     )
                     pages = await _walk_pages(page)
+                    # The whole 32-hand list must stay paginated by
+                    # `#hhListPager` (bounded rendering): unlike a filtered list
+                    # that fits one page, it may not hide its pager.
+                    assert not pages[0]["pagerHidden"], (
+                        "la liste complète doit être paginée par `#hhListPager` "
+                        "(rendu borné), or le pager est masqué pour "
+                        f"{pages[0]['total']} éléments (taille de page {pages[0]['pageSize']})"
+                    )
                     for painted_page in pages:
                         assert_bounded(painted_page, f"{code} page {painted_page['page'] + 1}")
                         assert_page_size_target(
@@ -612,22 +631,49 @@ async def run() -> None:
                     assert filtered["page"] == 0, (
                         "un changement de filtre doit repartir de la page 1", filtered
                     )
-                    assert_bounded(filtered, f"filtre {result_state}")
-                    assert_page_size_target(filtered, f"filtre {result_state}")
                     wanted = expected_ids_for_result(specs, result_state)
                     assert filtered["total"] == len(wanted), (result_state, filtered, wanted)
-                    assert sorted(filtered["ids"]) == wanted, (result_state, filtered["ids"])
                     # The pager follows the filtered total: it is hidden exactly
-                    # when the filtered list fits one measured page.
+                    # when the filtered list fits one measured page. A hidden
+                    # pager is not a shortcut: the walk below still reads that
+                    # single painted page and checks it page by page.
                     assert filtered["pagerHidden"] == (len(wanted) <= filtered["pageSize"]), (
                         result_state, filtered
                     )
-                    # The filter keeps the selected sort (most recent first here).
-                    assert filtered["ids"] == [
+                    # Walk *every* painted page of the filtered query (the same
+                    # `Précédent` / `Suivant` march the sorts use) and concatenate
+                    # the ids each page really painted. On a single-page query the
+                    # walk returns that page alone; on a multi-page one it visits
+                    # them all.
+                    pages = await _walk_pages(page)
+                    # `pages = ceil(total / pageSize)` is the served contract
+                    # (`reviewInboxPageWindow`); pinning it here proves the walk
+                    # really visited every page instead of stopping on page 1.
+                    expected_pages = -(-len(wanted) // max(1, filtered["pageSize"]))
+                    assert len(pages) == expected_pages, (
+                        result_state, len(pages), expected_pages, filtered
+                    )
+                    painted: list[str] = []
+                    for painted_page in pages:
+                        assert_bounded(
+                            painted_page, f"filtre {result_state} page {painted_page['page'] + 1}"
+                        )
+                        assert_page_size_target(
+                            painted_page, f"filtre {result_state} page {painted_page['page'] + 1}"
+                        )
+                        painted.extend(painted_page["ids"])
+                    # The filter keeps the selected sort (most recent first
+                    # here): the *concatenation* of the painted pages is exactly
+                    # the `recent_desc` order restricted to the wanted ids — an
+                    # order check over the whole filtered list, not a page-1
+                    # snapshot compared to the full set.
+                    assert painted == [
                         hand_id for hand_id in expected["recent_desc"] if hand_id in set(wanted)
-                    ], (result_state, filtered["ids"])
+                    ], (result_state, painted)
                     audit[f"filter_{result_state}"] = {
-                        "ids": filtered["ids"], "pager_hidden": filtered["pagerHidden"],
+                        "pages": len(pages),
+                        "ids": painted,
+                        "pager_hidden": filtered["pagerHidden"],
                     }
                 await page.select_option(RESULT_FILTER_SELECTOR, "")
                 await page.wait_for_function(
