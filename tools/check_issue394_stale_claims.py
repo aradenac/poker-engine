@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Anti-claims guard for issue #394 — `poker-issue-394-stale-claims-guard/v1`.
 
-The #394 review rejected three affirmations that were still versioned while the
+The #394 review rejected four affirmations that were still versioned while the
 delivered code said the opposite. The documents and the comments were corrected;
 this module is the static contract that keeps them corrected. It scans **every
 versioned text file** and fails on the first file that re-introduces one of the
-three stale claims:
+four stale claims:
 
 1. ``nav-entry-points-to-standalone-editor`` — the `#quickNav` Strategy entry
    keeps a *real* link to the standalone editor ``./hero-ranges.html``.
@@ -27,6 +27,18 @@ three stale claims:
    ``--report`` materialises the JSON report, the frozen ``browser-smoke`` job of
    ``.github/workflows/trainer-smoke.yml`` is the only authority for the verdict,
    and ``docs/desktop-modes-fit-evidence.md`` cites no path outside the checkout.
+
+4. ``home-failure-requalified-as-artefact`` — the frozen CI failure at 1366x768
+   (the real click on the Accueil « Review » shortcut) was a mere artefact of the
+   smoke's centre hit-test rule, so the reservation it revealed needed no fix.
+   The repository contradicts it: the run died on a **real** click,
+   ``#homePage a[href="#historiesSection"]``, whose box centre received
+   ``button#quickNavToggle`` — a geometric interception caused by the rail
+   overhang, not a measurement artefact. ``site/index.html`` removes it with the
+   named ``--home-nav-gutter`` separation, the smoke keeps that real click (no
+   ``force=True``, no ``dispatch_event``, no retry, no skip), and
+   ``docs/desktop-modes-fit-evidence.md`` names the interception instead of
+   requalifying the failure.
 
 Each claim is carried as a set of *affermative* patterns (the rejected phrasings
 themselves, whitespace-normalised) plus a structural block that proves the code
@@ -106,6 +118,22 @@ STALE_CLAIMS: tuple[StaleClaim, ...] = (
             r"/tmp/nx3",
         ),
         historical=(("c83c72f", "docs/desktop-modes-fit-evidence.md"),),
+    ),
+    StaleClaim(
+        claim_id="home-failure-requalified-as-artefact",
+        title="the Home failure is a benign by-product of the centre hit-test rule",
+        patterns=(
+            r"artefact mesuré sur `?home",
+            r"artefact de la règle\s*[«\"'(]?\s*au centre",
+            r"artefact de la règle du (smoke|hit-?test)",
+            r"artefact (de la|du|d'un|d'une) (règle|mesure|harnais|centrage|colonne centrée)",
+            r"n'est qu'un artefact",
+            r"un simple artefact",
+        ),
+        historical=(
+            ("f105927", "docs/desktop-modes-fit-evidence.md"),
+            ("d331137", "docs/desktop-modes-fit-evidence.md"),
+        ),
     ),
 )
 
@@ -207,10 +235,37 @@ def check_fit_measurement_claim_is_contradicted() -> None:
     assert "seule autorité" in flat(evidence)
 
 
+def check_home_failure_claim_is_contradicted() -> None:
+    """#394 (R1/R2) — the Home failure stays a real interception, never a by-product."""
+    evidence = flat(read("docs/desktop-modes-fit-evidence.md"))
+    assert "artefact" not in evidence.casefold(), (
+        "the frozen-job failure has to stay the observed CI failure, named by its "
+        "real click and its real interception; it may not be requalified as a "
+        "measurement by-product"
+    )
+    assert "#quickNavToggle" in evidence
+    assert '#homePage a[href="#historiesSection"]' in evidence
+    assert "intercept" in evidence.casefold()
+    assert "30 s" in evidence
+
+    smoke = read("tests/trainer/smoke_modes_desktop.py")
+    assert 'await page.click(\'#homePage a[href="#historiesSection"]\')' in smoke
+    for bypass in ("force=True", "dispatch_event"):
+        assert bypass not in smoke, bypass
+
+    index = flat(read("site/index.html"))
+    assert "--home-nav-gutter" in index
+    assert "padding-left:calc(24px + var(--home-nav-gutter))" in index, (
+        "the Home column must keep reserving the named rail gutter: the "
+        "interception is removed by geometry, not explained away"
+    )
+
+
 CONTRADICTION_CHECKS = (
     check_nav_entry_claim_is_contradicted,
     check_narrow_rendering_claim_is_contradicted,
     check_fit_measurement_claim_is_contradicted,
+    check_home_failure_claim_is_contradicted,
 )
 
 

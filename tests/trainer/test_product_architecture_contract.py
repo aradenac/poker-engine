@@ -13,11 +13,13 @@ no-recalculation-on-a-view-change rule and the browser-smoke orchestration
 shape must all stay coherent with the delivered implementation.
 
 It finally runs the #394 anti-claims guard
-`tools/check_issue394_stale_claims.py`: no versioned file may re-affirm the three
+`tools/check_issue394_stale_claims.py`: no versioned file may re-affirm the four
 claims the review rejected (the `#quickNav` Strategy entry reaching the
 standalone editor, the narrow rendering being outside the shell rule's scope,
-and the fit measurement leaning on a harness outside the checkout). The guard
-also proves the implementation still contradicts each of them.
+the fit measurement leaning on a harness outside the checkout, and the frozen
+job's Home failure being a benign by-product of the centre hit-test rule
+instead of the real `#quickNavToggle` interception). The guard also proves the
+implementation still contradicts each of them.
 """
 import re
 import subprocess
