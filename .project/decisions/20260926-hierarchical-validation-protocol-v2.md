@@ -46,10 +46,30 @@ as exact support only at `L0_EXACT_KEY` with both thresholds met; a hierarchical
 estimate is consumable only as an estimate with its pooling level, effective
 sample size and uncertainty shown, never as exact support; an
 `EXACT_UNRESOLVED` node is consumable as nothing and is never replaced by FOLD,
-zero mass, a pruned branch or a nearest/representative price. Consuming an
-estimate does not close the node: `required_tree_complete` still requires an
-admissible exact answer at `L0_EXACT_KEY` for every required node, and
+zero mass, a pruned branch or a nearest/representative price. A required node
+closes if and only if every frozen layer-B admissibility gate passes
+(`NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS`); `required_tree_complete` still
+requires every required node to close with no unresolved raise-sizing frontier,
+and
 `ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE` is unchanged.
+
+### Amendment 1 — conditional node closure (2026-09-26)
+
+The first authored v2 payload declared
+`layers.layer_b_exact_context_estimate_admissibility.counts_as_a_closed_exact_tree_node = false`,
+i.e. an exact-context estimate "does not close the node". Amendment
+`V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE` replaces that flat rule with
+`NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS`: a required node closes **if and
+only if** every frozen layer-B admissibility gate passes, and stays open
+otherwise with the failing gate reason code (`REFUSED_EXACT_KEY_IDENTITY`,
+`REFUSED_POOLING_PROVENANCE`, `REFUSED_POOLING_LEVEL`,
+`REFUSED_EFFECTIVE_SAMPLE_SIZE`, `REFUSED_UNCERTAINTY`, `REFUSED_CALIBRATION`,
+`REFUSED_RAISE_SIZING_FRONTIER`). No threshold and no gate value moved; every
+gate is equal to or stricter than its v1 homologue. The superseded payload
+`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320` (canonical
+`a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`) is kept
+byte-for-byte content-addressed under `validation_protocol_v2/history/` and is
+cited by the payload's `amendments` / `revision_history` blocks.
 
 ## Boundaries
 

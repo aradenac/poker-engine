@@ -53,7 +53,7 @@ a silent downgrade to FOLD, to a zero vector, or to another key's support.
 | `reason_code` | Normative condition | What it permits | What it forbids |
 | --- | --- | --- | --- |
 | `EXACT_EMPIRICAL_STRONG` | the requested fine key `hierarchical_exact_key` (`L0_EXACT_KEY`) itself meets **both** frozen thresholds — at least 20 marginal observations **and** at least 20 distinct hands — and the reported estimate uses `pooling.level == L0_EXACT_KEY` | an exact empirical support claim for this exact context | emitting it when the reported estimate consumed any parent level `L1..L4`; borrowing support from a coarse key |
-| `EXACT_HIERARCHICAL_ESTIMATE` | the requested fine key is **below** threshold but a declared parent level meets both thresholds; `pooling.level` and `pooling.source_key` are reported | an estimate for the exact requested context whose parameters were shrunk toward that declared parent | calling it exact support; counting it as a closed tree node; omitting the pooling provenance; attributing the parent's counts to the requested key |
+| `EXACT_HIERARCHICAL_ESTIMATE` | the requested fine key is **below** threshold but a declared parent level meets both thresholds; `pooling.level` and `pooling.source_key` are reported | an estimate for the exact requested context whose parameters were shrunk toward that declared parent; it closes a required node **if and only if** every frozen layer-B admissibility gate passes | calling it exact support; closing a node while any layer-B gate fails; omitting the pooling provenance; attributing the parent's counts to the requested key |
 | `EXACT_UNRESOLVED` | no level meets both thresholds, **or** the raise sizing of the branch is unresolved, **or** the requested key would violate the support-isolation rule | nothing: no action, no probability vector and no raise target is emitted | replacing the abstention with FOLD, with zero probability mass, with a pruned branch, or with a nearest/representative price |
 
 Thresholds are frozen at **20 marginal observations and 20 distinct hands**,
@@ -80,9 +80,16 @@ separately versioned, content-addressed revision:
 
 `analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json`
 (`poker-hierarchical-frozen-validation-protocol/v2`, byte digest
-`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`, canonical
-payload `a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`),
-written by `tools/training/write_frozen_validation_protocol_v2.py`. It revises
+`74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350`, canonical
+payload `cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de`),
+written by `tools/training/write_frozen_validation_protocol_v2.py`. This is the
+amended v2 payload: the earlier v2 revision
+`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`
+(canonical `a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`)
+is superseded by amendment `V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE` and kept
+byte-for-byte content-addressed under
+`validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json`
+(+ `.sha256`), which the `amendments` / `revision_history` blocks cite. It revises
 `poker-hierarchical-frozen-validation-protocol/v1`
 (`69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3`, canonical
 `f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5`) additively:
@@ -111,11 +118,19 @@ The rule for consuming a node's answer is
 | `EXACT_HIERARCHICAL_ESTIMATE` | yes | an estimate with its declared pooling level, never as exact support |
 | `EXACT_UNRESOLVED` | no | nothing; the blocker is reported and never repaired |
 
-A node answering `EXACT_HIERARCHICAL_ESTIMATE` is consumable as an estimate but
-does not close the node: `required_tree_complete` still requires an admissible
-exact answer at `L0_EXACT_KEY` for every required node. The #367 rule is
-unchanged by the revision (`ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`), and
-no single admissible node authorizes a #367 consumption.
+A node answering `EXACT_HIERARCHICAL_ESTIMATE` is consumable as an estimate and
+closes the node **if and only if** every frozen layer-B admissibility gate
+passes (`NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS`); if any gate fails the
+node stays open and the failing gate's reason code is reported. The seven
+machine-readable gates carry the refusal reason codes
+`REFUSED_EXACT_KEY_IDENTITY`, `REFUSED_POOLING_PROVENANCE`,
+`REFUSED_POOLING_LEVEL`, `REFUSED_EFFECTIVE_SAMPLE_SIZE`, `REFUSED_UNCERTAINTY`,
+`REFUSED_CALIBRATION` and `REFUSED_RAISE_SIZING_FRONTIER`. No threshold and no
+gate value moved: each gate is equal to or stricter than its v1 homologue
+(`non_loosening_vs_v1`), and `required_tree_complete` still requires every
+required node to close with no unresolved raise-sizing frontier. The #367 rule
+is unchanged by the revision (`ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`),
+and no single admissible node authorizes a #367 consumption.
 
 ## 2. Strict identity / pooling separation
 
@@ -206,6 +221,21 @@ tree open. The normative rule is the T8 preflight, whose
 | `required_tree_fully_enumerated` | the #388 enumeration is complete, not only its node list | **not satisfied** |
 | `no_nearest_or_borrowed_substitution_applied` | no nearest-price, nearest-context, representative, interpolated, legal-minimum or borrowed-support substitution | satisfied |
 | `no_hero_ev_or_recommendation_computed` | the #367 real ISO EV runner is neither imported nor executed | satisfied |
+
+Amendment `V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE` makes the per-node closure
+conjunction explicit in the v2 protocol:
+`NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS` — a required node closes if and
+only if every frozen layer-B gate passes, so `EXACT_EMPIRICAL_STRONG` (which
+meets them at `L0_EXACT_KEY`) and an `EXACT_HIERARCHICAL_ESTIMATE` that meets
+them both close a node, while any failing gate keeps it open with a
+`REFUSED_*` reason code. The T8 preflight above remains a byte-identical frozen
+v1 artifact and is **not** re-evaluated here: its
+`every_required_node_has_an_admissible_exact_answer` condition is the v1 wording,
+its `required_tree_complete = false` state is unchanged, and the amendment
+changes no threshold and no gate value. Where the pre-registered v1 gloss and
+the amended v2 protocol differ on the *interpretation* of node closure, the
+amended v2 protocol governs; the frozen v1 bytes stay the source of record for
+every threshold, gate value and comparator.
 
 Beyond the preflight, a #367 consumption of the candidate is governed by
 `ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`. It becomes **authorized** only

@@ -138,9 +138,17 @@ The single frozen protocol above is split into two explicitly named layers by a
 `analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json`
 (`poker-hierarchical-frozen-validation-protocol/v2` at
 `analysis/issue419_hierarchical_tree/validation_protocol_v2/`, digest
-`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`, canonical
-payload `a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`).
-Its schema name, artifact name and file name are all distinct from v1.
+`74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350`, canonical
+payload `cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de`).
+Its schema name, artifact name and file name are all distinct from v1. This is
+the **amended** v2 payload: the earlier v2 revision
+`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`
+(canonical `a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`)
+is superseded by amendment `V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE` and kept
+byte-for-byte content-addressed under
+`validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json`
+(+ `.sha256`); the `amendments` / `revision_history` blocks of the payload cite
+that digest.
 
 The revision is **additive and interpretive**, not a re-freeze. It records the v1
 byte digest
@@ -194,10 +202,21 @@ exact support only at `L0_EXACT_KEY` with both thresholds met; a hierarchical
 estimate may be consumed only as an estimate with its pooling level, effective
 sample size and uncertainty shown, and is never counted as exact support; an
 `EXACT_UNRESOLVED` node is consumable as nothing and is never replaced by FOLD,
-zero mass, a pruned branch or a nearest/representative price. Consuming an
-estimate does not close the node: `required_tree_complete` still requires an
-admissible exact answer at `L0_EXACT_KEY` for every required node, and the #367
-rule (`ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`) is unchanged.
+zero mass, a pruned branch or a nearest/representative price.
+
+Node closure is now explicit and **conditional**. The superseded revision said a
+node answering `EXACT_HIERARCHICAL_ESTIMATE` "does not close the node"; the
+amendment replaces that flat rule with `NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS`:
+a required node closes **if and only if** every frozen layer-B admissibility gate
+passes, and stays open otherwise with the failing gate reported. The seven
+machine-readable gates and their refusal reason codes are
+`REFUSED_EXACT_KEY_IDENTITY`, `REFUSED_POOLING_PROVENANCE`,
+`REFUSED_POOLING_LEVEL`, `REFUSED_EFFECTIVE_SAMPLE_SIZE`, `REFUSED_UNCERTAINTY`,
+`REFUSED_CALIBRATION` and `REFUSED_RAISE_SIZING_FRONTIER`. No threshold and no
+gate value moved: every gate value is equal to or stricter than its v1
+homologue (`non_loosening_vs_v1`). Closing the tree still requires **every**
+required node to close and no raise-sizing frontier to stay unresolved, and the
+#367 rule (`ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`) is unchanged.
 
 Reproduce the revision with
 `python3 tools/training/write_frozen_validation_protocol_v2.py`; verify with

@@ -150,9 +150,16 @@ The three statuses and the rule for consuming a node's answer are stated once in
 the revision and repeated normatively in
 [docs/hierarchical-exact-context-runtime-contract.md](hierarchical-exact-context-runtime-contract.md):
 an `EXACT_HIERARCHICAL_ESTIMATE` is consumable as an estimate and never as exact
-support, an `EXACT_UNRESOLVED` node is consumable as nothing, and closing the
-tree still requires an admissible exact answer at `L0_EXACT_KEY` for every
-required node.
+support, an `EXACT_UNRESOLVED` node is consumable as nothing, and a required
+node closes **if and only if** every frozen layer-B admissibility gate passes
+(`NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS`), with a failing gate keeping
+the node open and reported by its `REFUSED_*` reason code. Amendment
+`V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE` replaced the earlier flat "an estimate
+does not close the node" gloss with that conditional conjunction; no threshold
+and no gate value moved, and the superseded v2 payload
+`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320` is kept
+content-addressed under
+`analysis/issue419_hierarchical_tree/validation_protocol_v2/history/`.
 
 ## Granularity decision against `RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE`
 
