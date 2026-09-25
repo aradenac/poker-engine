@@ -144,10 +144,16 @@ pane (`APP_HASH_SUBVIEWS` maps `#replayerSection` / `#replayerPage` to
 
 A list that cannot fit the constrained shell is **paginated, not scrolled**: the
 Review inbox is painted one bounded page at a time by `renderReviewInboxPage`,
-which shrinks its page size until
-`hhHandsEl.scrollHeight <= hhHandsEl.clientHeight + 1`, with `#hhListPager`
-(`.app-list-pager`, `#hhPagePrev` / `#hhPageNext`) driving the pages. No row is
-ever lost behind `overflow:hidden`.
+which targets 10–15 rows (`REVIEW_INBOX_PAGE_SIZE_MIN` /
+`REVIEW_INBOX_PAGE_SIZE_MAX`, #395 T5) measured on the constrained list, then
+shrinks that page size until
+`hhHandsEl.scrollHeight <= hhHandsEl.clientHeight + 1`. The pager bar is shown
+*before* that measurement because it is itself part of the constrained height,
+so its appearance cannot hide the last row. `#hhListPager` (`.app-list-pager`,
+`#hhPagePrev` / `#hhPageNext`, caption `Page x / y · mains a–b sur N`) drives the
+pages, a filter or sort change restarts on page 1, and the selected hand stays
+highlighted whenever its row belongs to the current page. No row is ever lost
+behind `overflow:hidden`.
 
 ### 2.1 Rendering below `901px`: the sub-view pattern is global
 

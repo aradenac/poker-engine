@@ -1937,10 +1937,12 @@ const state = {
   reviewInboxUserMetadataByScope:Object.create(null),
   reviewInboxFilters:{result:"",status:"",street:"",position:"",spot_family:"",action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""},
   reviewInboxView:null,
-  // #394: the inbox is a bounded paginated list; the page size is measured on
-  // the constrained shell so no row is ever clipped behind `overflow:hidden`.
+  // #394/#395 T5: the inbox is a bounded paginated list; the page size is
+  // measured on the constrained shell (10–15 rows when the height allows) so no
+  // row is ever clipped behind `overflow:hidden`. The numeric default mirrors
+  // REVIEW_INBOX_PAGE_SIZE_MIN, the fallback used while the pane is not laid out.
   reviewInboxPage:0,
-  reviewInboxPageSize:8,
+  reviewInboxPageSize:10,
   reviewDashboardView:null,
   reviewDashboardLastError:"",
   reviewInboxPersistTimer:null,
@@ -4163,6 +4165,9 @@ function openReviewDashboardLeak(){
   if(String(target.scope_key)!==String(model.scope_key))return {opened:false,reason:"SCOPE_MISMATCH"};
   if(target.dimension!=="spot_family")return {opened:false,reason:"UNSUPPORTED_LEAK_DIMENSION"};
   state.reviewInboxFilters={result:"",status:"",street:"",position:"",spot_family:String(target.key),action_played:"",action_recommended:"",sizing_error:"",jam:"",overbet:"",coverage:"",analysis_state:""};
+  // #395 T5 — un changement de filtre repart de la page 1, jamais de la page
+  // courante : la sélection de main reste portée par `state.selectedHand`.
+  state.reviewInboxPage=0;
   // #394 T3: the Review shell selects the Inbox pane; it never scrolls the
   // document, so the filtered list is reached without moving the viewport.
   activateAppSubview("inbox");
@@ -7188,26 +7193,48 @@ function visibleHistoryHands(){
 }
 /* #394 — bornage de l'inbox (liste bornée paginée).
    La coque desktop ne défile pas : on ne rend que les lignes qui tiennent dans
-   la hauteur contrainte, et la pagination rend le reste atteignable. La taille
-   de page est mesurée puis réduite tant que la liste déborderait. */
-const REVIEW_INBOX_PAGE_SIZE_DEFAULT=8;
+   la hauteur contrainte, et la pagination rend le reste atteignable.
+   #395 T5 — la cible est de 10 à 15 mains par page selon la hauteur mesurée du
+   viewport : `REVIEW_INBOX_PAGE_SIZE_MAX` plafonne la page haute, la cible
+   minimale ne force jamais une ligne hors du cadre, et la taille est réduite
+   tant que la liste déborderait, donc aucune ligne ne passe derrière
+   `overflow:hidden`. */
+const REVIEW_INBOX_PAGE_SIZE_MIN=10;
+const REVIEW_INBOX_PAGE_SIZE_MAX=15;
+const REVIEW_INBOX_PAGE_SIZE_DEFAULT=REVIEW_INBOX_PAGE_SIZE_MIN;
 const REVIEW_INBOX_ROW_PITCH_MIN=56;
+const REVIEW_INBOX_ROW_PITCH_FALLBACK=64;
+const REVIEW_INBOX_PAGE_FIT_ATTEMPTS=REVIEW_INBOX_PAGE_SIZE_MAX;
 function reviewInboxIsHeightBound(){
   return typeof window.matchMedia==="function"&&window.matchMedia("(min-width:901px)").matches;
 }
 function reviewInboxRowPitch(){
   const row=hhHandsEl?.querySelector(".hh-hand");
-  const measured=row?.getBoundingClientRect().height;
-  const gap=Number.parseFloat(getComputedStyle(hhHandsEl).rowGap||"0")||0;
+  const measured=row?.getBoundingClientRect?.().height;
+  const gap=hhHandsEl?(Number.parseFloat(getComputedStyle(hhHandsEl).rowGap||"0")||0):0;
   if(Number.isFinite(measured)&&measured>0)return Math.max(REVIEW_INBOX_ROW_PITCH_MIN,measured+gap);
-  return 64;
+  return REVIEW_INBOX_ROW_PITCH_FALLBACK;
+}
+/* Mains que la hauteur contrainte peut réellement peindre : mesuré sur une
+   ligne déjà rendue dès qu'il en existe une, sinon majoré par le pas de repli. */
+function reviewInboxFitCount(){
+  const available=Number(hhHandsEl?.clientHeight)||0;
+  if(available<=0)return 0;
+  return Math.max(1,Math.floor((available+2)/reviewInboxRowPitch()));
+}
+function reviewInboxBoundedSize(total,size){
+  const capped=Math.min(REVIEW_INBOX_PAGE_SIZE_MAX,Math.max(1,Math.floor(Number(size)||0)));
+  return Math.max(1,Math.min(total,capped));
 }
 function reviewInboxPageSizeGuess(total){
   if(!reviewInboxIsHeightBound())return total;
   const available=Number(hhHandsEl?.clientHeight)||0;
-  if(available<=0)return Math.min(total,state.reviewInboxPageSize||REVIEW_INBOX_PAGE_SIZE_DEFAULT);
-  const fits=Math.floor((available+2)/reviewInboxRowPitch());
-  return Math.max(1,Math.min(total,fits));
+  if(available<=0)return reviewInboxBoundedSize(total,state.reviewInboxPageSize||REVIEW_INBOX_PAGE_SIZE_DEFAULT);
+  // Cible 10–15 : la hauteur mesurée fixe la cible, le plafond la borne ; la
+  // boucle de réduction de `renderReviewInboxPage` corrige une estimation trop
+  // optimiste (premier rendu sans ligne mesurable, largeur qui replie une ligne).
+  const fits=reviewInboxFitCount();
+  return reviewInboxBoundedSize(total,Math.min(REVIEW_INBOX_PAGE_SIZE_MAX,Math.max(REVIEW_INBOX_PAGE_SIZE_MIN,fits)));
 }
 function updateReviewInboxPager({page=0,pages=1,total=0,first=0,last=0}={}){
   if(!hhListPager)return;
@@ -7275,20 +7302,61 @@ function renderHistoryHands(){
 
   renderReviewInboxPage(hands,byId);
 }
-/* Peint une page bornée de l'inbox. La taille de page est réduite jusqu'à ce que
-   la liste tienne dans la hauteur contrainte de la coque (desktop) : aucune
-   ligne n'est perdue derrière `overflow:hidden`, les suivantes sont paginées. */
+/* Peint une page bornée de l'inbox. La barre de pagination est rendue *avant* la
+   mesure (elle fait partie de la hauteur contrainte) : sinon la place rendue à
+   la liste change au moment où la barre apparaît et la dernière ligne déborde.
+   Ensuite la taille de page est réduite — ou remontée vers la cible 10–15 quand
+   la hauteur mesurée le permet encore — jusqu'à ce que la liste tienne dans la
+   coque : aucune ligne n'est perdue derrière `overflow:hidden`, les suivantes
+   sont paginées. */
 function renderReviewInboxPage(hands,byId){
+  if(!reviewInboxIsHeightBound()){
+    // <901px : flux documentaire, pas de coque bornée ni de pagination.
+    paintReviewInboxRows(hands,byId);
+    state.reviewInboxPageSize=Math.max(1,hands.length);
+    updateReviewInboxPager({page:0,pages:1,total:hands.length,first:0,last:hands.length});
+    return;
+  }
   let size=reviewInboxPageSizeGuess(hands.length);
   let pageWindow=reviewInboxPageWindow(hands.length,size);
-  for(let attempt=0;attempt<6;attempt++){
+  for(let attempt=0;attempt<REVIEW_INBOX_PAGE_FIT_ATTEMPTS;attempt++){
+    // Le pager est visible avant la mesure : la liste reçoit tout de suite la
+    // hauteur qu'elle gardera une fois la pagination affichée.
+    if(hhListPager)hhListPager.hidden=pageWindow.pages<=1;
     paintReviewInboxRows(hands.slice(pageWindow.start,pageWindow.end),byId);
-    const heightBound=reviewInboxIsHeightBound()&&hhHandsEl.clientHeight>0;
+    const available=Number(hhHandsEl?.clientHeight)||0;
     const count=pageWindow.end-pageWindow.start;
-    if(!heightBound||count<=1||size<=1)break;
-    if(hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1)break;
-    size-=1;
-    pageWindow=reviewInboxPageWindow(hands.length,size);
+    if(available<=0||count<=1||size<=1)break;
+    if(!(hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1)){
+      // Débordement : on redescend d'un cran, ou directement à la capacité
+      // mesurée pour ne pas repeindre page par page.
+      const next=Math.max(1,Math.min(size-1,reviewInboxFitCount()));
+      if(next>=size)break;
+      size=next;
+      pageWindow=reviewInboxPageWindow(hands.length,size);
+      continue;
+    }
+    // La page tient : si la première page n'exploite pas encore la cible haute
+    // (pas de repli quand aucune ligne n'était mesurable), on remonte à la
+    // capacité réellement mesurée, plafonnée à 15.
+    if(pageWindow.page===0&&size<REVIEW_INBOX_PAGE_SIZE_MAX&&pageWindow.end<hands.length){
+      const grown=reviewInboxBoundedSize(hands.length,Math.min(REVIEW_INBOX_PAGE_SIZE_MAX,size+Math.max(0,reviewInboxFitCount()-count)));
+      if(grown>size){
+        const grownWindow=reviewInboxPageWindow(hands.length,grown);
+        if(hhListPager)hhListPager.hidden=grownWindow.pages<=1;
+        paintReviewInboxRows(hands.slice(grownWindow.start,grownWindow.end),byId);
+        if((Number(hhHandsEl?.clientHeight)||0)>0&&hhHandsEl.scrollHeight<=hhHandsEl.clientHeight+1){
+          size=grown;
+          pageWindow=grownWindow;
+        }else{
+          // La page agrandie débordait : on restaure la dernière page qui tient,
+          // avec la barre de pagination qui correspond à sa fenêtre.
+          if(hhListPager)hhListPager.hidden=pageWindow.pages<=1;
+          paintReviewInboxRows(hands.slice(pageWindow.start,pageWindow.end),byId);
+        }
+      }
+    }
+    break;
   }
   state.reviewInboxPageSize=Math.max(1,size);
   updateReviewInboxPager({page:pageWindow.page,pages:pageWindow.pages,total:hands.length,first:pageWindow.start,last:pageWindow.end});
@@ -7600,6 +7668,27 @@ hhWatchBtn.addEventListener("click",startHHWatch);
 hhWatchStopBtn.addEventListener("click",()=>stopHHWatch("Surveillance automatique arrêtée · les mains déjà chargées restent disponibles."));
 hhPagePrev?.addEventListener("click",()=>{state.reviewInboxPage=Math.max(0,(Number(state.reviewInboxPage)||0)-1);renderHistoryHands();});
 hhPageNext?.addEventListener("click",()=>{state.reviewInboxPage=(Number(state.reviewInboxPage)||0)+1;renderHistoryHands();});
+
+/* #395 T5 — la page bornée suit la hauteur réellement mesurée : après un
+   redimensionnement de la coque, la page courante est re-mesurée sans changer
+   de page ni toucher à la sélection. Ce listener ne planifie aucun calcul
+   (contrat #394 T3 : seuls les changements d'entrée en planifient). */
+let reviewInboxRelayoutTimer=null;
+function relayoutReviewInbox(){
+  if(!state.hhHands?.length||!hhHandsEl)return;
+  const hands=visibleHistoryHands();
+  if(!hands.length)return;
+  const byId=new Map((state.reviewInboxView?.items||[]).map(item=>[String(item.hand_id),item]));
+  renderReviewInboxPage(hands,byId);
+}
+window.addEventListener("resize",()=>{
+  // Anti-rebond : une seule re-mesure après la fin du redimensionnement.
+  if(reviewInboxRelayoutTimer)clearTimeout(reviewInboxRelayoutTimer);
+  reviewInboxRelayoutTimer=setTimeout(()=>{
+    reviewInboxRelayoutTimer=null;
+    relayoutReviewInbox();
+  },120);
+});
 
 hhSortSelect?.addEventListener("change",()=>{
   state.hhSort=normalizeReviewInboxSortCode(hhSortSelect.value);
