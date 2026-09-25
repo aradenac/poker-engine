@@ -30,6 +30,14 @@ bytes* and to the *served contract*:
    the single `python3 tests/trainer/smoke_trainer.py` entrypoint without a
    dedicated step (its digest is protected by
    `tests/ci/test_repro_workflow_batch2.py`).
+6. the pager *polarity* is locked against the regression T1 fixed: the two
+   served declarations decide the sign
+   (`if(hhPagePrev)hhPagePrev.disabled=page<=0;` /
+   `if(hhPageNext)hhPageNext.disabled=page>=pages-1;`), the smoke asserts the
+   same sign (« Précédent désactivé sur la première page », « Suivant actif »)
+   and never the reversed `not first_page["prevDisabled"]`, and `_walk_pages`
+   really walks back while `prevDisabled` is false. A mutation reinstating the
+   inverted assertion in an in-memory copy of the smoke must fail the check.
 
 Static + node only: no browser, no server, no network, and no file of the
 repository is written (mutations live in memory or in a temporary directory).
@@ -89,6 +97,20 @@ SERVED_TARGETS = (
     "#replayerExportStatus",
     "#localPersistenceStatus",
 )
+# #395 T2 — the two served declarations that decide the prev/next sign, plus the
+# smoke assertions (and their labels) that must carry the same sign. The reverse
+# form is the exact defect T1 fixed, so it is forbidden here.
+SERVED_PAGER_DISABLED_TOKENS = (
+    "if(hhPagePrev)hhPagePrev.disabled=page<=0;",
+    "if(hhPageNext)hhPageNext.disabled=page>=pages-1;",
+)
+PREV_DISABLED_ASSERTION = 'assert first_page["prevDisabled"]'
+NEXT_ENABLED_ASSERTION = 'assert not first_page["nextDisabled"]'
+INVERTED_PREV_ASSERTION = 'assert not first_page["prevDisabled"]'
+PREV_DISABLED_MESSAGE = "Précédent désactivé sur la première page"
+NEXT_ENABLED_MESSAGE = "Suivant actif sur la première page"
+WALK_PREV_WINDOW = 'while not pages[0]["prevDisabled"]:'
+WALK_NEXT_WINDOW = 'while not pages[-1]["nextDisabled"]:'
 
 
 def load_module(path: Path, name: str):
@@ -244,6 +266,73 @@ def check_non_vacuity(smoke, builder, specs: list[dict]) -> None:
     ).hexdigest()
 
 
+def check_pagination_polarity(smoke_source: str, served_index: str = SERVED_INDEX) -> None:
+    """#395 T2 — the smoke and the served pager agree on the prev/next sign.
+
+    T1 fixed a smoke whose first-page assertion was *reversed*: it required
+    `prevDisabled` to be false on page 1 while the served shell disables
+    « Précédent » (`page<=0`) and leaves « Suivant » enabled (`page<pages-1`).
+    Pinning both signs together is what keeps the fix from being undone.
+    """
+    # (1) the two served declarations that decide the sign of the pager.
+    for token in SERVED_PAGER_DISABLED_TOKENS:
+        assert token in served_index, token
+    # (2) the smoke asserts the positive « Précédent » sign and the negative
+    # « Suivant » sign (labels included), and never the reversed form T1 fixed.
+    assert PREV_DISABLED_ASSERTION in smoke_source, PREV_DISABLED_ASSERTION
+    assert PREV_DISABLED_MESSAGE in smoke_source, PREV_DISABLED_MESSAGE
+    assert NEXT_ENABLED_ASSERTION in smoke_source, NEXT_ENABLED_ASSERTION
+    assert NEXT_ENABLED_MESSAGE in smoke_source, NEXT_ENABLED_MESSAGE
+    assert INVERTED_PREV_ASSERTION not in smoke_source, (
+        "l'assertion inversée de page 1 (défaut corrigé en T1) ne doit jamais "
+        f"revenir: {INVERTED_PREV_ASSERTION}"
+    )
+    # (3) `_walk_pages` really walks back while `prevDisabled` is false (it
+    # reaches page 0 by clicking `#hhPagePrev`), and forward while `nextDisabled`
+    # is false — the walk itself encodes the polarity the smoke asserts.
+    assert WALK_PREV_WINDOW in smoke_source, WALK_PREV_WINDOW
+    assert WALK_NEXT_WINDOW in smoke_source, WALK_NEXT_WINDOW
+
+
+def _assert_polarity_contract_rejects(mutated_smoke: str, label: str, served_index: str) -> None:
+    """The non-vacuity harness: a mutated source must fail the polarity check."""
+    try:
+        check_pagination_polarity(mutated_smoke, served_index)
+    except AssertionError:
+        return
+    raise AssertionError(f"le contrat de polarité doit rejeter: {label}")
+
+
+def check_pagination_polarity_non_vacuity() -> None:
+    """Two in-memory mutations must fail the polarity contract.
+
+    (a) Reinstating the inverted first-page assertion in a copy of the smoke
+    bytes — the exact regression T1 repaired — must be rejected; (b) dropping
+    the served `page<=0` declaration must be rejected too, so the check really
+    reads `site/index.html` and is not a constant that always passes. Neither
+    mutation is written to disk.
+    """
+    mutated_smoke = SMOKE_SOURCE.replace(
+        PREV_DISABLED_ASSERTION, INVERTED_PREV_ASSERTION, 1
+    )
+    assert mutated_smoke != SMOKE_SOURCE, (
+        "la mutation doit modifier la copie en mémoire du smoke "
+        f"(assertion introuvable: {PREV_DISABLED_ASSERTION})"
+    )
+    _assert_polarity_contract_rejects(
+        mutated_smoke, "assertion de page 1 ré-inversée", SERVED_INDEX
+    )
+    mutated_served = SERVED_INDEX.replace(
+        SERVED_PAGER_DISABLED_TOKENS[0], "if(hhPagePrev)hhPagePrev.disabled=page<0;", 1
+    )
+    assert mutated_served != SERVED_INDEX, "la mutation du pager servi doit modifier la copie"
+    _assert_polarity_contract_rejects(
+        SMOKE_SOURCE, "déclaration servie `page<=0` remplacée", mutated_served
+    )
+    # The delivered smoke really carries the positive form: nothing was written.
+    assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
+
+
 def check_smoke_shape(smoke) -> None:
     assert smoke.HAND_TOTAL >= MIN_HANDS, smoke.HAND_TOTAL
     assert smoke.PAGE_SIZE_MAX == PAGE_SIZE_MAX, smoke.PAGE_SIZE_MAX
@@ -387,12 +476,17 @@ def main() -> None:
     specs = check_fixture(builder)
     contract = check_expectations_against_contract(smoke, specs)
     check_non_vacuity(smoke, builder, specs)
+    check_pagination_polarity(SMOKE_SOURCE)
+    check_pagination_polarity_non_vacuity()
     check_smoke_shape(smoke)
     check_ci_registration()
     print(
         "review inbox large list smoke contract checks: OK "
         f"({len(specs)} mains · {len(SORT_CODES)} tris rejoués par le contrat servi · "
-        f"taille de page bornée ≤{PAGE_SIZE_MAX} · fixture={contract['probe']['fixture']})"
+        f"taille de page bornée ≤{PAGE_SIZE_MAX} · "
+        "pagination Précédent/Suivant épinglée au pager servi "
+        "(page 1: Précédent désactivé, Suivant actif · assertion inverse rejouée) · "
+        f"fixture={contract['probe']['fixture']})"
     )
 
 

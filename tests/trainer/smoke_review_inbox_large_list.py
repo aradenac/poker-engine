@@ -474,8 +474,16 @@ async def run() -> None:
                 first_page = await _read(page)
                 assert_bounded(first_page, "page 1")
                 assert first_page["page"] == 0 and len(first_page["ids"]) < HAND_TOTAL, first_page
-                assert first_page["prevDisabled"], first_page
-                assert not first_page["nextDisabled"], first_page
+                # #395 T1/T2 — le pager servi désactive « Précédent » sur la
+                # première page (`if(hhPagePrev)hhPagePrev.disabled=page<=0;`) et
+                # laisse « Suivant » actif: le smoke porte le même signe, jamais
+                # l'inverse.
+                assert first_page["prevDisabled"], (
+                    "Précédent désactivé sur la première page"
+                )
+                assert not first_page["nextDisabled"], (
+                    "Suivant actif sur la première page"
+                )
                 assert len(first_page["ids"]) == first_page["pageSize"], first_page
 
                 # --- Ordering, page by page, for the five first-level sorts ----
