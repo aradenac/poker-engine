@@ -4,12 +4,12 @@ issue: 394
 task: task-backlog-lh8 (R2)
 planner_key: R2
 report_date: 2026-09-25
-head_sha: acc7d3f17a78b435e1a616083ac67eba61dd4323
-head_sha_previous_revision: 2d0856024a1859cf778dd889b3911035c1d10378
-branch: n8n/issue-394/task-backlog-lh8
-status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__CI_FAIL_AT_1366X768_RECORDED__R1_FIX_IN_TREE__FROZEN_JOB_RERUN_REQUIRED__LOCAL_RUNS_FAILED_EXIT_1__DELIVERED_BYTES_RUN_566_BROWSER_SMOKE_RED_ON_MATRIX__T1_ROW_BUDGET_FIX_DELIVERED
+head_sha: 40b8f31e750ca5f7d68eefa8c6ef2f90955a6989
+head_sha_previous_revision: acc7d3f17a78b435e1a616083ac67eba61dd4323
+branch: n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe
+status: FROZEN_BROWSER_SMOKE_JOB_IS_THE_ONLY_AUTHORITY__CI_GREEN_OBSERVED_AT_PUSHED_HEAD_40B8F31__SEE_SECTION_14
 merged: false
-pushed: false
+pushed: true
 authority: .github/workflows/trainer-smoke.yml — job browser-smoke (non modifié par cette task)
 rule: aucun scroll global — document.scrollingElement.scrollHeight <= clientHeight
 reference_viewports: 1500x1000, 1366x768
@@ -19,10 +19,11 @@ report_committed: false
 smoke_modes_desktop_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_THIS_SANDBOX
 smoke_trainer_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_THIS_SANDBOX
 local_pass_claimed: false
-ci_green: NOT_OBSERVED
-ci_failure_recorded: "browser-smoke à 1366x768 : le clic réel #homePage a[href=#historiesSection] est intercepté par button#quickNavToggle (timeout 30 s) ; voir § 8"
+ci_green: OBSERVED
+ci_green_observed_at: "§ 14 — head_sha 40b8f31e750ca5f7d68eefa8c6ef2f90955a6989, run 36094524753 (job 107944003421)"
+ci_failure_recorded: "browser-smoke à 1366x768 : le clic réel #homePage a[href=#historiesSection] est intercepté par button#quickNavToggle (timeout 30 s) ; voir § 8 — corrigé, voir § 14"
 fix_recorded: "R1 — site/index.html (gouttière nommée --home-nav-gutter) + tests/trainer/test_desktop_accessibility_contract.py"
-frozen_job_rerun_required: true
+frozen_job_rerun_required: false
 hero_ranges_editor: navigué mais hors contrat de coque (aucune assertion de no-scroll)
 hero_range_editor_contract_failure: "RECORDED__JOB_CONTRACT_STEP_MAIN_APPLICATION_INTEGRATION_IS_IDEMPOTENT__PATCH_REINSERTING_THE_STANDALONE_STRATEGY_NAV_LINK"
 hero_range_editor_patch_correction: "DELIVERED_T1_T2_T3__CI_NOT_OBSERVED__RERUN_REQUIRED"
@@ -60,6 +61,16 @@ b5h_failing_target: "#matrix (Spot Lab, panneau « Range adverse ») à 1366x768
 b5h_tokens_preserved: "ci_green: NOT_OBSERVED, frozen_job_rerun_required: true et contract_job_rerun_required: true sont CONSERVÉS ; aucun jeton verrouillé n'est basculé ; voir § 11.5"
 b5h_self_delta: "révision task-backlog-b5h : AJOUTE le § 11, qui consigne l'observation réelle des deux workflows gelés au tip poussé 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 (runs 36088338545 et 36088338439, jobs 107925080169 / 107925214120 / 107925079710 / 107925161832, conclusions et cible mesurée) et conserve les jetons verrouillés ; l'observation détaillée est au § 12 de docs/issue-394-release-identity-ci-report.md ; aucun octet de site/**, de .github/**, de tests/ ni d'outils n'est écrit"
 ws7_scope_reconciliation_renvoi: "§ 13 de docs/issue-394-release-identity-ci-report.md — réconciliation de périmètre demandée par le point 4 de la revue humaine (task backlog-ws7) : commande de périmètre et sa sortie, liste exacte des fichiers livrés avec issue d'origine, provenance des deux workflows gelés (présents dans origin/main, blobs identiques) et réconciliation du chiffre 99 ; ce renvoi n'altère aucun jeton de ce document (ci_green: NOT_OBSERVED, frozen_job_rerun_required: true, contract_job_rerun_required: true)"
+final_review_observer: "revue humaine finale (Abel Radenac, via Claude Code) — accès direct à l'API GitHub (gh CLI), pas de sandbox DNS-coupé"
+final_review_timestamp_utc: "2026-09-25T04:35Z"
+final_review_pushed_head: 40b8f31e750ca5f7d68eefa8c6ef2f90955a6989
+final_review_pr: "#416 (branche n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe)"
+final_review_trainer_smoke_runs: "run 36094524753 (job browser-smoke 107944003421 = success) et run 36094528366 (job browser-smoke 107944017378 = success) — workflow « Validate interactive trainer », static-contract jobs 107943848620 et 107943860463 = success, les deux au head_sha 40b8f31e750ca5f7d68eefa8c6ef2f90955a6989"
+final_review_panel_inventory: "job 107944003421, étape « Exercise Training view » : inventaire panneaux viewport=1500x1000 mesures=9 cibles=20 atteignables=20/20 ; inventaire panneaux viewport=1366x768 mesures=9 cibles=20 atteignables=20/20 — #matrix=ok aux deux viewports, run complet jusqu'à la dernière cible (plus d'arrêt à la première assertion)"
+final_review_import_surface: "job 107944003421 : mode=review, aux deux viewports (1500x1000 et 1366x768), états closed et advanced-open : #reviewImportTab=ok, label[for=hhFileInput]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok, #hhBenchmarkExportBtn=ok"
+final_review_hero_range_editor_runs: "run 36094524723 (job contract 107943848310 = success, étape « Main application integration is idempotent » verte, diff avant/après vide) et run 36094528465 (job contract 107943860646 = success), job browser-smoke correspondant = success (107943938963 et 107943946746)"
+final_review_all_required_checks: "gh pr checks 416 : 8/8 browser-smoke = pass, 9/9 contract = pass, calculated-range-contract = pass, 2/2 static-contract = pass, 2/2 deterministic-core = pass, repro-environment/guard = pass, validate = pass, Project state consistency = pass, Workers Builds (Cloudflare) = pass ; mergeStateStatus = CLEAN, mergeable = MERGEABLE ; zéro check pending ou failing"
+final_review_verdict: "ci_green bascule à OBSERVED sur la base de ces runs réels, au head_sha poussé 40b8f31e750ca5f7d68eefa8c6ef2f90955a6989 — ni dérivé, ni supposé, ni reproduit localement"
 ---
 
 # Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
@@ -1290,3 +1301,104 @@ aucun tableau de ce document. Les jetons de garde restent **inchangés** —
 reste la **seule autorité** de la règle « aucun scroll global » aux deux
 viewports. En particulier, le § 13 **ne remplace aucun run** : ni cette section,
 ni le § 12.7 du rapport ne font passer `ci_green` à `OBSERVED`.
+
+## 14. Clôture — `ci_green` bascule à `OBSERVED` au head_sha poussé final
+
+Cette section est écrite par la **revue humaine finale** (pas par un worker
+sandboxé), avec accès direct à l'API GitHub réelle (`gh` CLI) — le canal
+d'observation le plus direct utilisé dans ce document. Elle consigne le
+**premier** run vert du job gelé sur des octets réellement poussés, ce qui
+satisfait la condition de clôture du § 9.5 et du § 11.5.
+
+### 14.1 Le head_sha observé
+
+```
+$ git rev-parse HEAD
+40b8f31e750ca5f7d68eefa8c6ef2f90955a6989
+```
+
+C'est le `head.sha` réel de la PR #416 au moment de cette observation (branche
+`n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe`), poussé sur
+`origin`. Ce SHA inclut, entre autres, l'édition `70dc732` (gouttière
+`#matrix`, § 11.1) qui n'était, au § 11, livrée que dans un worktree local non
+poussé.
+
+### 14.2 Les deux jobs gelés, verts sur ce head_sha
+
+| Workflow (gelé) | Job | Run | Conclusion |
+| --- | --- | --- | --- |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `static-contract` | run `36094524753`, job `107943848620` | **`success`** |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `browser-smoke` | run `36094524753`, job `107944003421` | **`success`** |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `static-contract` | run `36094528366`, job `107943860463` | **`success`** |
+| `trainer-smoke.yml` (« Validate interactive trainer ») | `browser-smoke` | run `36094528366`, job `107944017378` | **`success`** |
+| `hero-range-editor.yml` (« Validate Hero range repository and editor ») | `contract` | run `36094524723`, job `107943848310` | **`success`** (étape « Main application integration is idempotent » verte, `diff` avant/après vide) |
+| `hero-range-editor.yml` (« Validate Hero range repository and editor ») | `browser-smoke` | run `36094524723`, job `107943938963` | **`success`** |
+| `hero-range-editor.yml` (« Validate Hero range repository and editor ») | `contract` | run `36094528465`, job `107943860646` | **`success`** |
+| `hero-range-editor.yml` (« Validate Hero range repository and editor ») | `browser-smoke` | run `36094528465`, job `107943946746` | **`success`** |
+
+Chaque workflow gelé a tourné **deux fois** sur ce head_sha (déclenchement
+double, sans incidence sur la mesure) ; les deux occurrences sont vertes.
+
+### 14.3 L'inventaire de panneaux, cette fois complet aux deux viewports
+
+Lu directement dans le journal du job `107944003421`, étape « Exercise
+Training view » :
+
+```
+inventaire panneaux viewport=1500x1000 mesures=9 cibles=20 atteignables=20/20 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=ok] · replayer-columns=[.replayer-col-left=ok, .replayer-col-center=ok, #replayerContextPanel=ok] · replayer-decision=[#replayerDecisionTab=ok, #replayerDecisionPanel=ok] · replayer-ranges=[#replayerRangesTab=ok, #replayerRangesPanel=ok] · replayer-details=[#replayerDetailsTab=ok, #hhReplayDetail=ok] · trainer-coaching=[#trainerCoachingTab=ok, #trainerCoachPanel=ok] · trainer-session=[#trainerSessionTab=ok, #trainerSessionPanel=ok] · trainer-profiles=[#trainerProfilesTab=ok, #trainerProfilesPanel=ok] · trainer-test=[#trainerTestTab=ok, #trainerTestPanel=ok]
+inventaire panneaux viewport=1366x768 mesures=9 cibles=20 atteignables=20/20 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=ok] · replayer-columns=[.replayer-col-left=ok, .replayer-col-center=ok, #replayerContextPanel=ok] · replayer-decision=[#replayerDecisionTab=ok, #replayerDecisionPanel=ok] · replayer-ranges=[#replayerRangesTab=ok, #replayerRangesPanel=ok] · replayer-details=[#replayerDetailsTab=ok, #hhReplayDetail=ok] · trainer-coaching=[#trainerCoachingTab=ok, #trainerCoachPanel=ok] · trainer-session=[#trainerSessionTab=ok, #trainerSessionPanel=ok] · trainer-profiles=[#trainerProfilesTab=ok, #trainerProfilesPanel=ok] · trainer-test=[#trainerTestTab=ok, #trainerTestPanel=ok]
+```
+
+À la différence du § 11 (1 mesure / 3 cibles à 1366x768, arrêt à la première
+assertion en échec), ce run va **jusqu'au bout** : **20/20** cibles
+atteignables aux **deux** viewports, `#matrix=ok` inclus. `§ 11.4` (« ce que ce
+run n'a pas observé ») est donc close : le Replayer, le rail Trainer et la
+surface d'import Review sont désormais observés à `1366x768`.
+
+### 14.4 La surface d'import Review (point 1 de la revue humaine)
+
+Toujours dans le même job, aux **deux** viewports et dans les **deux** états
+(fermé et `advanced-open`) :
+
+```
+mode=review    viewport=1500x1000  import surface[closed] reachability: #reviewImportTab=ok, label[for="hhFileInput"]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok
+mode=review    viewport=1500x1000  import surface[advanced-open] reachability: #reviewImportTab=ok, label[for="hhFileInput"]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok, #hhBenchmarkExportBtn=ok
+mode=review    viewport=1366x768   import surface[closed] reachability: #reviewImportTab=ok, label[for="hhFileInput"]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok
+mode=review    viewport=1366x768   import surface[advanced-open] reachability: #reviewImportTab=ok, label[for="hhFileInput"]=ok, .hh-import-advanced > summary=ok, #hhWatchBtn=ok, #hhBenchmarkExportBtn=ok
+```
+
+`.hh-import-advanced > summary` — la cible bloquante originale de la revue
+humaine (`NEEDS_FIXES` du 2026-09-24) — est **atteignable** aux deux
+viewports, contrôles avancés inclus (`#hhBenchmarkExportBtn`), sans
+réintroduction de scroll global ni de clic JS forcé : ni le smoke ni le DOM
+n'ont été affaiblis pour l'obtenir (§ 11.1, patch CSS pur, aucune modification
+de `smoke_modes_desktop.py` ni de `smoke_trainer.py` visible dans le diff de
+cette édition).
+
+### 14.5 Tous les checks requis de la PR
+
+```
+$ gh pr checks 416
+```
+
+8/8 `browser-smoke` = `pass`, 9/9 `contract` = `pass`, `calculated-range-contract`
+= `pass`, 2/2 `static-contract` = `pass`, 2/2 `deterministic-core` = `pass`,
+`repro-environment / guard` = `pass`, `validate` = `pass`, `Project state
+consistency` = `pass`, `Workers Builds: poker-engine` (déploiement Cloudflare)
+= `pass`. Zéro check `pending`, zéro `failure`. `gh pr view 416` rapporte
+`mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`.
+
+### 14.6 Jetons de garde — bascule finale
+
+| Jeton | Valeur | Base |
+| --- | --- | --- |
+| `ci_green` | **`OBSERVED`** (bascule depuis `NOT_OBSERVED`) | § 14.2 — les deux jobs gelés sont verts sur des octets **poussés** (`40b8f31`) |
+| `frozen_job_rerun_required` | **`false`** (bascule depuis `true`) | le rerun exigé au § 9.5/§ 11.5 a eu lieu et est vert |
+| `contract_job_rerun_required` | **`false`** (bascule depuis `true`) | l'étape d'idempotence est verte au head poussé (§ 14.2, ligne `hero-range-editor.yml` / `contract`) |
+
+Ces trois jetons n'avaient été basculés par **aucune** section précédente de ce
+document (§ 8 à § 13 les documentent tous comme `inchangés`) : c'est cette
+section, sur la base d'un run réel au head_sha poussé, qui les fait passer.
+Aucune mesure locale, aucune dérivation statique et aucun pré-vol hors
+navigateur ne s'y substitue — conformément à la règle rappelée au § 9.5, § 11.5
+et § 13.
