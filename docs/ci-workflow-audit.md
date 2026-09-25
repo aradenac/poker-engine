@@ -373,3 +373,13 @@ python3 tests/ci/test_repro_composite_factorization.py
 `--write-adoption` régénère uniquement `analysis/workflow_audit/repro_composite_adoption_v1.json`. Le mode transition `--check` conserve sa sémantique d'origine : il compare le diff Git à `BASE_SHA` (`571d91b0…`) et signale donc le drift de `main` accumulé depuis la transition. Les gardes de scope « diff vs `BASE_SHA` » des tranches sœurs (#366/#373/#384) sont dans le même état : ils restent rouges sur `main` **indépendamment de cette preuve**. Compteurs de chemins hors allowlist mesurés à ce SHA : `tools/audit_repro_composite_factorization.py --check` → 161, `tools/audit_residual_repro_dag.py --check` → 158, `tools/audit_repro_current_mixed_batch.py --check` → 158 (union 163). Ces compteurs incluent des artefacts `__pycache__/*.pyc` suivis par Git dont le contenu a changé depuis la transition, donc ils dépendent de l'état du checkout et ne sont pas une constante ; ils sont rapportés ici comme mesures, pas comme invariant. C'est une condition préexistante, distincte de la preuve d'adoption ; ces gardes n'ont volontairement pas été édités car ils sont hash-bound par `tools/audit_repro_composite_factorization.py`.
 
 Aucun workflow n'exécute encore ce test : la commande `python3 tests/ci/test_repro_composite_factorization.py` (14 tests) est lancée localement par le worker à ce SHA, et aucun fichier `.github/workflows/**` n'est modifié par la tranche.
+
+## Clôture #204
+
+Le rapport de clôture (mapping des 6 critères d'acceptation et des 10 items « Remaining N8N work »
+vers un chemin de preuve et une commande exécutée, plus le journal d'exécution des guards) est
+[`docs/ci-workflow-audit-closure.md`](ci-workflow-audit-closure.md).
+
+Les compteurs de chemins hors allowlist des guards de scope cités ci-dessus sont re-mesurés au HEAD de
+clôture dans ce rapport (`167` / `164` / `164`, dont `157` / `153` / `153` déjà expliqués par la dérive
+`main` seule) ; ils restent des mesures dépendantes du checkout, pas un invariant.

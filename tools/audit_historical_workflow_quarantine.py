@@ -73,10 +73,24 @@ ALLOWLIST = tuple(".github/workflows/" + name + ".yml" for name in (
     "promotion-gate-final", "strategic-benchmark-v3", "strategy-candidate-v84",
     "unseen-preflop-context-audit", "v84-strategy-candidate",
 ))
-ALLOWED_FILES = set(ALLOWLIST) | {EVIDENCE, EVIDENCE_V1, INVENTORY,
+# The re-bound edition-2 proof is anchored to the #204 final tranche base recorded in
+# its own evidence, so the whole tranche's additive audit surface is in scope. Every
+# sibling artefact is enumerated explicitly; any path outside this union still fails.
+TRANCHE_FILES = {
     "analysis/workflow_audit/baseline_metrics.json",
+    "analysis/workflow_audit/consolidation_decision_v1.json",
+    "analysis/workflow_audit/repro_composite_adoption_v1.json",
+    "docs/ci-workflow-audit.md",
+    "docs/ci-workflow-audit-closure.md",
+    "docs/ci-workflow-dag.md",
+    "tests/ci/test_consolidation_decision.py",
+    "tests/ci/test_historical_workflow_quarantine.py",
+    "tests/ci/test_repro_composite_factorization.py",
+    "tools/audit_active_workflow_dag.py",
     "tools/audit_historical_workflow_quarantine.py",
-    "tests/ci/test_historical_workflow_quarantine.py"}
+    "tools/audit_repro_composite_factorization.py",
+}
+ALLOWED_FILES = set(ALLOWLIST) | {EVIDENCE, EVIDENCE_V1, INVENTORY} | TRANCHE_FILES
 
 
 class AuditError(ValueError):

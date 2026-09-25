@@ -77,15 +77,33 @@
       ".github/workflows/unseen-preflop-context-audit.yml",
       ".github/workflows/v84-strategy-candidate.yml",
       "analysis/workflow_audit/baseline_metrics.json",
+      "analysis/workflow_audit/consolidation_decision_v1.json",
       "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
       "analysis/workflow_audit/historical_workflow_quarantine_v2.json",
+      "analysis/workflow_audit/repro_composite_adoption_v1.json",
       "analysis/workflow_audit/workflows.json",
+      "docs/ci-workflow-audit-closure.md",
+      "docs/ci-workflow-audit.md",
+      "docs/ci-workflow-dag.md",
+      "tests/ci/test_consolidation_decision.py",
       "tests/ci/test_historical_workflow_quarantine.py",
-      "tools/audit_historical_workflow_quarantine.py"
+      "tests/ci/test_repro_composite_factorization.py",
+      "tools/audit_active_workflow_dag.py",
+      "tools/audit_historical_workflow_quarantine.py",
+      "tools/audit_repro_composite_factorization.py"
     ],
     "changed_since_base": [
+      "analysis/workflow_audit/consolidation_decision_v1.json",
+      "analysis/workflow_audit/repro_composite_adoption_v1.json",
+      "docs/ci-workflow-audit-closure.md",
+      "docs/ci-workflow-audit.md",
+      "docs/ci-workflow-dag.md",
+      "tests/ci/test_consolidation_decision.py",
       "tests/ci/test_historical_workflow_quarantine.py",
-      "tools/audit_historical_workflow_quarantine.py"
+      "tests/ci/test_repro_composite_factorization.py",
+      "tools/audit_active_workflow_dag.py",
+      "tools/audit_historical_workflow_quarantine.py",
+      "tools/audit_repro_composite_factorization.py"
     ],
     "outside_scope": []
   },
