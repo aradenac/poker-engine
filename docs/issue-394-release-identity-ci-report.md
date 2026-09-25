@@ -41,7 +41,7 @@ javascript_syntax: PASS
 browser_smoke_local: FAILED_EXIT_1_PLAYWRIGHT_UNAVAILABLE_IN_SANDBOX
 browser_smoke_evidence: "docs/desktop-modes-fit-evidence.md"
 browser_smoke_authority: "job gelé browser-smoke de .github/workflows/trainer-smoke.yml — seule autorité de la règle « aucun scroll global » à 1500x1000 et 1366x768 et du clic réel du raccourci Accueil"
-red_workflows: [".github/workflows/hero-range-editor.yml — job contract rouge au HEAD poussé 8ff970b (run 36081969061, étape « Main application integration is idempotent »), correction T1/T2/T3 non poussée"]
+red_workflows: [".github/workflows/trainer-smoke.yml — job browser-smoke rouge au tip poussé courant 2c46f81 (run 36088338545, job 107925214120, étape « Exercise Training view », cible #matrix à 1366x768) ; voir § 12", "8ff970b (historique, § 8) — .github/workflows/hero-range-editor.yml, job contract, étape « Main application integration is idempotent » (run 36081969061) : SUPERSEDED — le même job est observé success à 2c46f81 (run 36088338439, job 107925079710, étape 7) ; voir § 12"]
 report_self_delta: "révision task-backlog-lzl (T4) : le head_sha consigné est le HEAD RÉEL du worktree au moment de l'écriture, 1e17f90f05811b3dba4e6c830180578f42c391e1 (chore(n8n): task backlog-3p7 for issue #394), relevé juste avant l'écriture de ce fichier (git rev-parse HEAD) ; cette révision AJOUTE le § 8 (échec CI réel du job gelé contract de .github/workflows/hero-range-editor.yml à l'étape « Main application integration is idempotent », cause markup, correction T1/T2/T3) et deux sous-sections documentaires (§ 8.5 de docs/desktop-modes-fit-evidence.md, annotation additive de docs/hero-strategy-population-binding-ci-report.md) ; elle n'écrit AUCUN octet de site/** ni de .github/** (git status --porcelain vide sur ces familles), donc le rapport reste postérieur au dernier écrivain commité de site/** (8ed9ef0, R1) ; il ne peut pas citer le SHA de son propre commit (auto-référence) et n'affirme aucun merge, aucun push et aucun état vert de CI non observé ; l'orchestrateur gère le commit et la PR"
 g0t_self_delta: "révision task-backlog-g0t (T3, observation CI) : AJOUTE le § 9 de ce rapport et le § 8.6 de docs/desktop-modes-fit-evidence.md, qui consignent l'observation CI RÉELLE des jobs gelés relevée par le connecteur GitHub le 2026-09-25T02:23Z au HEAD poussé 8ff970bde9726852ffd77537499e4b7161698c2c (runs 36081969038 et 36081969061, URLs de runs et de jobs, conclusions et extraits de journaux) ; les jetons ci_green (NOT_OBSERVED), contract_job_rerun_required (true) et frozen_job_rerun_required (true) restent INCHANGÉS parce que le job gelé contract est rouge au HEAD poussé et que les octets livrés (2d0856024a1859cf778dd889b3911035c1d10378, non poussé) n'ont aucun run ; red_workflows passe de [] au workflow réellement rouge observé ; cette révision n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (git status --porcelain limité aux deux documents de preuve)"
 frozen_job_rerun_required: true
@@ -73,6 +73,27 @@ boq_preflight_frozen_job_verdict: NOT_OBSERVED_FROM_THIS_WORKER
 boq_preflight_browser_coverage: NOT_PROVEN_BY_THIS_WORKER
 boq_preflight_browser_unavailable: "Module Python playwright absent ET Chromium pinné 1187 (chrome + headless_shell) non démarrable faute de libnspr4/libnss3 (chargement EXIT=127) ET réseau/DNS coupé (aucune installation possible) — repli navigateur local irréalisable sur cet hôte"
 boq_self_delta: "révision task-backlog-boq (pré-vol hors navigateur sur les octets édités) : AJOUTE le § 11 de ce rapport, qui consigne l'exécution RÉELLE, commande par commande et sans rien pousser, des étapes non-navigateur des deux workflows gelés au HEAD du worktree eb1d117a7a1070b53bc034109c57ecae987501f5, qui porte l'édition CSS 70dc732 (task backlog-qyb) — codes de sortie observés, sha256 avant/après, jamais extrapolés — la preuve d'idempotence byte-identique des deux patches sur ces octets, la présence statique de la cible CSS dans les octets servis, et la moitié NON couverte (browser-smoke aux deux viewports, atteignabilité des panneaux, absence de défilement global, clic réel du raccourci Accueil) avec l'impossibilité locale du repli navigateur ; elle n'altère AUCUN jeton existant (ci_green: NOT_OBSERVED, contract_job_rerun_required: true, frozen_job_rerun_required: true et red_workflows restent inchangés) ; elle n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (les octets de site/index.html et site/trainer.js ont été sauvés avant les deux essais d'idempotence, puis vérifiés identiques aux blobs HEAD — aucune restauration n'a été nécessaire, les patches n'ayant rien écrit) ; l'orchestrateur gère le commit et la PR"
+b5h_observation_head: 2c46f81cb77ef1645283a1dc249f9d53894c1aa7
+b5h_observation_branch: n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe
+b5h_observation_pr: "#416 (head 2c46f81cb77ef1645283a1dc249f9d53894c1aa7, commit de fusion 369bf056f5830dbec3ebe461763e989767b59eb2)"
+b5h_observation_timestamp_utc: "2026-09-25T04:07Z"
+b5h_observation_channel: "connecteur GitHub (lecture seule) — le DNS du shell de ce worker reste coupé, vérifié dans cette task (getent hosts api.github.com EXIT=2, curl: (6) Could not resolve host: api.github.com)"
+b5h_local_head: 9577dceba3360caa503aa68ff788e0ea4508ab78
+b5h_local_branch: n8n/issue-394/task-backlog-b5h
+b5h_commits_ahead_of_remote_tip: 5
+b5h_remote_tip: 2c46f81cb77ef1645283a1dc249f9d53894c1aa7
+b5h_delivered_bytes_have_ci_run: NO
+b5h_trainer_smoke_run: "run #566 — https://github.com/aradenac/poker-engine/actions/runs/36088338545 — head_sha 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 — static-contract=success, browser-smoke=failure"
+b5h_trainer_smoke_jobs: "static-contract job 107925080169 = success (étapes « REPRO batch-1 anti-bypass contract », « JavaScript syntax », « Release identity », « All trainer regression contracts », « Patch idempotence » toutes success) ; browser-smoke job 107925214120 = failure à l'étape 5 « Exercise Training view », étape 6 « Exercise pathological engine regressions » = skipped"
+b5h_hero_range_editor_run: "run #442 — https://github.com/aradenac/poker-engine/actions/runs/36088338439 — head_sha 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 — contract=success, browser-smoke=success"
+b5h_hero_range_editor_jobs: "contract job 107925079710 = success (étape 7 « Main application integration is idempotent » = success) ; browser-smoke job 107925161832 = success"
+b5h_contract_job_idempotence_step: "OBSERVED_SUCCESS — run 36088338439, job 107925079710, étape 7 « Main application integration is idempotent »"
+b5h_failing_target: "#matrix (Spot Lab, panneau « Range adverse ») à 1366x768 — champ mesuré reachable=false ; les champs inViewport/inShell/hit du même relevé sont portés par le § 9.2 pour ce même job 107925214120"
+b5h_red_workflow: ".github/workflows/trainer-smoke.yml — job browser-smoke (run 36088338545, job 107925214120), échec à l'étape « Exercise Training view »"
+b5h_correction_triggered: "NO — l'échec observé s'arrête sur #matrix à 1366x768 (jamais au-delà) ; aucune correction nouvelle n'est déclenchée par cette observation, et aucun octet de site/** n'est écrit"
+b5h_frozen_workflows_observed: 2
+b5h_frozen_jobs_observed: 4
+b5h_self_delta: "révision task-backlog-b5h (observation CI des jobs gelés au SHA poussé) : AJOUTE le § 12 de ce rapport et le § 11 de docs/desktop-modes-fit-evidence.md, qui consignent l'observation RÉELLE relevée par le connecteur GitHub le 2026-09-25T04:07Z au tip poussé de la branche épique 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 — run 36088338545 (#566, static-contract job 107925080169 success / browser-smoke job 107925214120 failure à l'étape « Exercise Training view ») et run 36088338439 (#442, contract job 107925079710 success dont l'étape d'idempotence, browser-smoke job 107925161832 success) — avec la cible mesurée (#matrix, reachable=false à 1366x768) et l'inventaire de ce qui n'a pas été observé ; elle CONSERVE ci_green: NOT_OBSERVED, frozen_job_rerun_required: true et contract_job_rerun_required: true, et n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (le pré-vol du § 12.7 a laissé l'arbre intact, sha256 de site/index.html et site/trainer.js identiques aux blobs HEAD avant et après) ; elle AJOUTE l'entrée d'observation courante à red_workflows et marque l'entrée historique de 8ff970b comme SUPERSEDED sans réécrire le § 8 ; l'orchestrateur gère le commit et la PR"
 ---
 
 # Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, révisé par task-backlog-lzl)
@@ -1080,6 +1101,225 @@ tests/trainer/test_trainer_rng_determinism.py                           EXIT=0
 tests/trainer/test_trainer_smoke_determinism_contract.py                EXIT=0
 tests/trainer/test_trainer_static.py                                    EXIT=0
 ```
+
+## (12) Observation CI réelle des deux workflows gelés au tip poussé `2c46f81` — `hero-range-editor` vert, `trainer-smoke`/`browser-smoke` rouge sur `#matrix` (task `backlog-b5h`)
+
+Cette section est **strictement additive**. Elle consigne l'observation **réelle**,
+faite par le connecteur GitHub en lecture seule, des runs des **deux workflows
+gelés** au **SHA réellement poussé** de la branche épique, la conclusion de
+**chaque job**, la **cible mesurée** de l'échec observé, et l'inventaire honnête de
+ce que ce run n'a **pas** observé. Elle n'écrit **aucun octet** de `site/**`, de
+`.github/**`, de `tests/` ni d'outils, et ne réécrit aucune section antérieure :
+le relevé de `8ff970b` du § 8 et celui de `2c46f81` / run `#566` du § 9 restent
+inchangés.
+
+### (12.1) Canal, instant, SHA observé
+
+Le canal reste le **connecteur GitHub** en **lecture seule**. Le DNS du shell de
+ce worker est toujours **coupé**, vérifié dans cette task :
+
+```
+$ date -u +%Y-%m-%dT%H:%M:%SZ
+2026-09-25T04:07:43Z
+$ getent hosts api.github.com ; echo "getent exit=$?"
+getent exit=2
+$ timeout 8 curl -sSI https://api.github.com/repos/aradenac/poker-engine 2>&1 | head -3
+curl: (6) Could not resolve host: api.github.com
+```
+
+Le **tip poussé** de la branche épique, lu par le connecteur, est
+`2c46f81cb77ef1645283a1dc249f9d53894c1aa7` (`chore(n8n): task backlog-imj for
+issue #394`) sur `n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe`
+— c'est le `head.sha` de la **PR #416** (ouverte, `mergeable_state: unstable`,
+commit de fusion `369bf056f5830dbec3ebe461763e989767b59eb2`). Le worktree de cette
+task est **5 commits d'avance** sur ce tip :
+
+```
+$ git rev-parse HEAD
+9577dceba3360caa503aa68ff788e0ea4508ab78
+$ git rev-parse --abbrev-ref HEAD
+n8n/issue-394/task-backlog-b5h
+$ git merge-base --is-ancestor 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 HEAD && echo ancestor
+ancestor
+$ git rev-list --count 2c46f81cb77ef1645283a1dc249f9d53894c1aa7..HEAD
+5
+```
+
+Les octets `site/index.html` du tip poussé sont ceux **d'avant** l'édition CSS
+gatée : le connecteur lit à `2c46f81` le blob
+`033e6517619c162f9033a226d2a5a8e05247401b`, avec `.matrix{gap:3px}` et
+`.cell{height:34px}`, alors que le worktree livré porte le blob
+`75b26fb163960b06df00372c1f8be5598a968750`, avec la règle responsive gatée
+`@media(min-width:901px) and (max-height:900px)`.
+
+### (12.2) Les quatre jobs des deux workflows gelés, au SHA poussé
+
+| Workflow (gelé) | Job | Run | Étapes observées | Conclusion |
+| --- | --- | --- | --- | --- |
+| `trainer-smoke.yml` | `static-contract` | `#566` — [run `36088338545`](https://github.com/aradenac/poker-engine/actions/runs/36088338545) | « REPRO batch-1 anti-bypass contract », « JavaScript syntax », « Release identity », « All trainer regression contracts », « Patch idempotence » : toutes `success` | **`success`** — [job `107925080169`](https://github.com/aradenac/poker-engine/actions/runs/36088338545/job/107925080169) |
+| `trainer-smoke.yml` | `browser-smoke` | `#566` — run `36088338545` | étape 5 « Exercise Training view » = **`failure`** ; étape 6 « Exercise pathological engine regressions » = `skipped` | **`failure`** — [job `107925214120`](https://github.com/aradenac/poker-engine/actions/runs/36088338545/job/107925214120) |
+| `hero-range-editor.yml` | `contract` | `#442` — [run `36088338439`](https://github.com/aradenac/poker-engine/actions/runs/36088338439) | étape 7 « Main application integration is idempotent » = **`success`**, ainsi que « REPRO batch-1 anti-bypass contract », les deux `node --check`, « Lossless repository contract » et « Release identity » | **`success`** — [job `107925079710`](https://github.com/aradenac/poker-engine/actions/runs/36088338439/job/107925079710) |
+| `hero-range-editor.yml` | `browser-smoke` | `#442` — run `36088338439` | « Exercise Hero range editor » = `success` | **`success`** — [job `107925161832`](https://github.com/aradenac/poker-engine/actions/runs/36088338439/job/107925161832) |
+
+Les **quatre** jobs portent `head_sha = 2c46f81cb77ef1645283a1dc249f9d53894c1aa7`
+et `run_attempt = 1` ; la CI `pull_request` a extrait ces octets sous le commit de
+fusion `369bf056…` (le journal du job `browser-smoke` montre le `checkout` de
+`refs/remotes/pull/416/merge`). Le connecteur, interrogé sur ce SHA — filtre de sa
+réponse : les runs déclenchés par la **pull request** — rend **11 runs** associés,
+un par workflow déclenché par la PR #416, **tous** conclus `success` sauf
+« Validate interactive trainer » (`#566`, `failure`) ; d'éventuels runs
+déclenchés par le `push` de la branche ne font pas partie de cette réponse et ne
+sont donc **pas** affirmés ici.
+
+**Conséquence directe, mesurée et non déduite** : l'**étape d'idempotence du job
+`contract`** — celle qui portait le rouge réel à `8ff970b` (§ 8) — est **verte**
+au SHA poussé. La correction T1/T2/T3 du patch
+`tools/patches/apply_hero_range_editor.py` est donc **dans la branche épique**, et
+l'échec rouge qui subsiste au tip poussé est **exclusivement** celui du job
+`browser-smoke` de `trainer-smoke.yml`.
+
+### (12.3) L'échec observé, et la cible mesurée
+
+Le journal du job `107925214120` est rendu **tronqué en sa partie médiane** par le
+connecteur dans cette session : la sortie de l'étape « Exercise Training view »
+(entre `02:58:34Z` et `02:58:47Z`) est élidée. Ce qui est **lu directement** dans
+ce journal est reproduit ci-dessous (horodatages du *runner* retirés ; les chemins
+hors du dépôt sont élidés par `[…]`) :
+
+```
+  inventaire panneaux viewport=1500x1000 mesures=9 cibles=20 atteignables=20/20 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=ok] · replayer-columns=[.replayer-col-left=ok, .replayer-col-center=ok, #replayerContextPanel=ok] · replayer-decision=[#replayerDecisionTab=ok, #replayerDecisionPanel=ok] · replayer-ranges=[#replayerRangesTab=ok, #replayerRangesPanel=ok] · replayer-details=[#replayerDetailsTab=ok, #hhReplayDetail=ok] · trainer-coaching=[#trainerCoachingTab=ok, #trainerCoachPanel=ok] · trainer-session=[#trainerSessionTab=ok, #trainerSessionPanel=ok] · trainer-profiles=[#trainerProfilesTab=ok, #trainerProfilesPanel=ok] · trainer-test=[#trainerTestTab=ok, #trainerTestPanel=ok]
+  inventaire panneaux viewport=1366x768 mesures=1 cibles=3 atteignables=2/3 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=MISS]
+trainer smoke failed: Command '[…]' returned non-zero exit status 1.
+  File "[…]/tests/trainer/smoke_trainer.py", line 49, in run_driver_smokes
+    subprocess.run([sys.executable, str(script)], check=True)
+subprocess.CalledProcessError: Command '[… tests/trainer/smoke_modes_desktop.py]' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+```
+
+Le sous-processus qui échoue est donc bien `tests/trainer/smoke_modes_desktop.py`,
+lancé par `run_driver_smokes()` de `tests/trainer/smoke_trainer.py` — c'est-à-dire
+l'entrée exacte du job gelé `browser-smoke`.
+
+La cible mesurée est la grille `#matrix` du panneau « Range adverse » du Spot Lab,
+à `1366x768` :
+
+| Cible mesurée | Viewport | Champ mesuré | Source du champ |
+| --- | --- | --- | --- |
+| `#matrix` | `1366x768` | **`reachable = false`** (`#matrix=MISS`) | **lu directement ici**, dans l'inventaire du job `107925214120` |
+| `#spotlabRangeTab` | `1366x768` | `reachable = true` (`ok`) | idem |
+| `#rangeDisplaySection` | `1366x768` | `reachable = true` (`ok`) | idem |
+| `#matrix` | `1500x1000` | `reachable = true` (`ok`) | idem (inventaire `20/20`) |
+
+`MISS` **est** la mesure `reachable=false` : `panel_inventory_lines()` de
+`tests/trainer/smoke_modes_desktop.py` imprime `ok` exactement quand
+`entry.get("reachable")` est vrai, et `MISS` sinon ; aucun verdict n'est recomposé
+ici. Les trois autres champs du **même relevé** (`inViewport`, `inShell`, `hit`)
+sont portés par le message d'assertion de `_surface_verdict()` du même module, qui
+appartient à la partie élidée du journal par le connecteur : ils sont **déjà
+consignés, pour ce même job `107925214120`**, par le § 9.2 de
+`docs/desktop-modes-fit-evidence.md` (`#matrix` à `1366x768` : `inViewport=false`,
+`inShell=false`, `hit=false`) et cette section les **cite par renvoi**.
+
+### (12.4) Ce que ce run n'a pas observé
+
+Le smoke **s'arrête à la première assertion en échec**, et cette assertion est la
+**première** jauge de panneau du parcours `1366x768` : le relevé à `1366x768`
+compte donc **1 mesure / 3 cibles** contre **9 mesures / 20 cibles** à
+`1500x1000` — les deux lignes verbatim du § 12.3 en sont la preuve. Au tip poussé,
+`1366x768` n'a donc **pas** observé : les trois colonnes du Replayer
+(`.replayer-col-left`, `.replayer-col-center`, `#replayerContextPanel`), les trois
+couples onglet/panneau du panneau contextuel du Replayer
+(`#replayerDecisionTab`/`#replayerDecisionPanel`,
+`#replayerRangesTab`/`#replayerRangesPanel`,
+`#replayerDetailsTab`/`#hhReplayDetail`), les quatre couples du rail Trainer
+(`#trainerCoachingTab`/`#trainerCoachPanel`,
+`#trainerSessionTab`/`#trainerSessionPanel`,
+`#trainerProfilesTab`/`#trainerProfilesPanel`,
+`#trainerTestTab`/`#trainerTestPanel`), la surface d'import Review et ses
+hit-tests, la course Review, le deep link `#strategyPage` de la coque embarquée,
+et le deep link de l'éditeur autonome. Cette réserve est **quantifiée et bornée**
+par la dérivation statique du § 10 de `docs/desktop-modes-fit-evidence.md`, qui ne
+remplace jamais la mesure.
+
+### (12.5) Les octets livrés n'ont aucun run : `NOT_OBSERVED`, et 5 commits d'avance
+
+Aucun run n'existe sur les **octets livrés** par cette branche
+(`9577dceba3360caa503aa68ff788e0ea4508ab78`, 5 commits d'avance sur le tip) : la
+branche n'est **pas poussée**, et les deux workflows gelés ne se déclenchent que
+sur leurs filtres de chemins (`site/**`, `tests/trainer/**`, `tests/hero_ranges/**`,
+`tools/patches/**`, `.github/workflows/**`). Le constat est consigné **tel quel** :
+
+- **tip distant observé** : `2c46f81cb77ef1645283a1dc249f9d53894c1aa7` ;
+- **nombre de commits d'avance** : **5** ;
+- **runs sur les octets livrés** : **aucun** (`b5h_delivered_bytes_have_ci_run: NO`) ;
+- **aucun `PASS`** de job gelé n'est affirmé pour les octets livrés.
+
+### (12.6) Jetons : ce qui est positionné, et sur quelle observation
+
+| Jeton | Valeur | Base |
+| --- | --- | --- |
+| `ci_green` | **`NOT_OBSERVED`** (inchangé) | le job gelé `browser-smoke` est **rouge** au SHA poussé (`#matrix` à `1366x768`) et aucun run n'existe sur les octets livrés : la condition d'un `PASS` — `browser-smoke` vert aux deux viewports pour les six modes **et** étape d'idempotence du job `contract` verte — n'est **pas** remplie |
+| `frozen_job_rerun_required` | **`true`** (inchangé) | `browser-smoke` doit tourner **vert** sur un HEAD **poussé** portant l'édition CSS gatée `70dc732` |
+| `contract_job_rerun_required` | **`true`** (inchangé) | jeton de relance **conservé** : la relance porte sur les **octets livrés**, qui n'ont aucun run — l'observation du § 12.2 montre que le même job est `success` à `2c46f81`, étape d'idempotence incluse |
+| `red_workflows` | entrée courante **ajoutée** : `.github/workflows/trainer-smoke.yml` (job `browser-smoke`, run `36088338545`, job `107925214120`) ; l'entrée historique `8ff970b` de `.github/workflows/hero-range-editor.yml` est **marquée SUPERSEDED**, jamais supprimée | § 12.2 |
+
+**Aucun de ces jetons n'est basculé par un pré-vol ni par une lecture de
+document** : seul un run **vert** des jobs gelés sur un SHA **poussé** fera passer
+`ci_green` de `NOT_OBSERVED` à `OBSERVED`.
+
+### (12.7) Pré-vol hors navigateur rejoué au HEAD de cette task
+
+Les commandes gelées ont été rejouées **réellement** au HEAD de cette task
+(`9577dceba3360caa503aa68ff788e0ea4508ab78`), sans rien pousser. Ce pré-vol
+**n'est pas** un run CI et ne remplace aucun verdict de job.
+
+```
+$ git rev-parse HEAD
+9577dceba3360caa503aa68ff788e0ea4508ab78
+$ sha256sum site/index.html site/trainer.js
+3ebf502135a52171ce3d63644d4966ebe765d4ad178edc2bd162848e6af35b3e  site/index.html
+cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
+```
+
+| Commande gelée | Sortie observée | `EXIT` |
+| --- | --- | --- |
+| (a) `PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py` | `REPRO workflow batch-1 tests: 9 passed` | `0` |
+| (b) `node --version && node --check site/trainer.js` | `v24.21.0`, aucune sortie d'erreur | `0` |
+| (c) `python3 tools/write_site_release.py --check` | ancre vérifiée, identité matérialisable | `0` |
+| (d) `for test in tests/trainer/test_*.py ; do python3 "$test" ; done` | `MODULES=50 FAILS=0` | tous `0` |
+| (e) `tools/patches/apply_trainer_mvp.py` puis `sha256sum` avant/après et `diff -u` | `trainer MVP integration patch applied`, `diff -u` `EXIT=0` | `0` |
+| (f) `tools/patches/apply_hero_range_editor.py` puis `sha256sum` avant/après et `diff -u` | patch appliqué, `diff -u` `EXIT=0` | `0` |
+| étapes non-navigateur du job `contract` : `node --check site/hero-ranges.js`, `node --check site/hero-ranges-app.js`, `node tests/hero_ranges/test_hero_range_repository.mjs` | `Hero range repository contract: PASS (2 legacy ranges, 3 contexts, hero range editor patch idempotent)` | `0`, `0`, `0` |
+
+**Idempotence byte-identique** : les `sha256` encadrant (e) et (f) sont **égaux**
+et le `diff -u` exact du workflow retourne `EXIT=0` — les deux patches n'ont écrit
+**aucun octet**, donc l'arbre n'a eu besoin d'**aucune** restauration. Le nombre de
+modules de la boucle passe de **49** (§ 11) à **50** : le module
+`tests/trainer/test_desktop_panels_fit_contract.py` (task `backlog-ed7`, HEAD
+`9577dce`) y est inclus et sort `EXIT=0`.
+
+### (12.8) Aucune correction déclenchée, et arbre intact
+
+L'observation du § 12.3 s'arrête **sur** `#matrix` à `1366x768` : elle ne montre
+**aucun** échec **au-delà** de `#matrix` (Replayer / Trainer). La règle de cette
+task — « rouge **au-delà** de `#matrix` ⇒ corriger par la méthode dérivable du
+budget vertical » — **n'est donc pas déclenchée** : aucun octet de `site/**` n'est
+écrit, `site/RELEASE.json` n'est **pas** régénéré (il porte déjà l'ancre des octets
+corrigés par `70dc732`), et aucun test, aucune constante `APP_ALLOWED_SCROLL_ZONES`
+et aucun `tests/trainer/smoke_modes_desktop.py` n'est touché. Aucune assertion
+n'est affaiblie, aucun `force`, aucun `dispatch_event`, aucune relance et aucun
+`skip` n'est ajouté.
+
+```
+$ git status --porcelain
+ M docs/issue-394-release-identity-ci-report.md
+$ python3 tools/write_site_release.py --check
+release source anchor verified: site/RELEASE.json; assembled identity can be materialized
+EXIT=0
+```
+
+Cette section ne peut pas citer le `sha256` de son propre blob (auto-référence) ;
+le worker ne commit ni ne pousse, l'orchestrateur gère le commit et la PR.
 
 ## (11) Pré-vol hors navigateur au HEAD édité `eb1d117` — l'édition CSS de la coque sous contrôle d'idempotence
 

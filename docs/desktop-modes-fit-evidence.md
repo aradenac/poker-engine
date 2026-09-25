@@ -44,6 +44,21 @@ matrix_fix_recorded: "site/index.html — @media(min-width:901px) and (max-heigh
 unobserved_at_1366x768: "jamais observées vertes depuis l'instrument T1 : jambes 1366x768 du Replayer (3 colonnes + 3 couples onglet/panneau) et du rail Trainer (4 onglets) — le run s'arrête à la première assertion ; voir § 9.3"
 panels_fit_derivation: "task-backlog-ed7 — § 10 : les 20 cibles de panneaux mesurées par le smoke sont dérivées depuis les constantes CSS déclarées à 1366x768 (et contrôlées à 1500x1000) par tests/trainer/test_desktop_panels_fit_contract.py, avec 16 contrôles de mutation CSS et 7 contrôles d'instrument refusés (non-vacuité) ; aucun dépassement dérivé, donc aucun octet de site/** modifié et site/RELEASE.json non régénéré"
 ci_observation_section_delivered: "§ 9"
+b5h_observation_head: 2c46f81cb77ef1645283a1dc249f9d53894c1aa7
+b5h_observation_branch: n8n/issue-394-creer-l-accueil-par-modes-et-des-vues-desktop-fixe
+b5h_observation_pr: "#416 (head 2c46f81cb77ef1645283a1dc249f9d53894c1aa7, commit de fusion 369bf056f5830dbec3ebe461763e989767b59eb2)"
+b5h_observation_timestamp_utc: "2026-09-25T04:07Z"
+b5h_observation_channel: "connecteur GitHub (lecture seule) — le DNS du shell de ce worker reste coupé, vérifié dans cette task (getent hosts api.github.com EXIT=2, curl: (6) Could not resolve host: api.github.com)"
+b5h_local_head: 9577dceba3360caa503aa68ff788e0ea4508ab78
+b5h_local_branch: n8n/issue-394/task-backlog-b5h
+b5h_commits_ahead_of_remote_tip: 5
+b5h_remote_tip: 2c46f81cb77ef1645283a1dc249f9d53894c1aa7
+b5h_delivered_bytes_have_ci_run: NO
+b5h_trainer_smoke_run: "run #566 — https://github.com/aradenac/poker-engine/actions/runs/36088338545 — static-contract job 107925080169 = success, browser-smoke job 107925214120 = failure à l'étape 5 « Exercise Training view »"
+b5h_hero_range_editor_run: "run #442 — https://github.com/aradenac/poker-engine/actions/runs/36088338439 — contract job 107925079710 = success (étape 7 « Main application integration is idempotent » = success), browser-smoke job 107925161832 = success"
+b5h_failing_target: "#matrix (Spot Lab, panneau « Range adverse ») à 1366x768 — champ mesuré reachable=false, lu dans l'inventaire du job 107925214120 ; les champs inViewport/inShell/hit du même relevé sont ceux du § 9.2, pour ce même job"
+b5h_tokens_preserved: "ci_green: NOT_OBSERVED, frozen_job_rerun_required: true et contract_job_rerun_required: true sont CONSERVÉS ; aucun jeton verrouillé n'est basculé ; voir § 11.5"
+b5h_self_delta: "révision task-backlog-b5h : AJOUTE le § 11, qui consigne l'observation réelle des deux workflows gelés au tip poussé 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 (runs 36088338545 et 36088338439, jobs 107925080169 / 107925214120 / 107925079710 / 107925161832, conclusions et cible mesurée) et conserve les jetons verrouillés ; l'observation détaillée est au § 12 de docs/issue-394-release-identity-ci-report.md ; aucun octet de site/**, de .github/**, de tests/ ni d'outils n'est écrit"
 ---
 
 # Preuve navigateur — fit des modes desktop (1500x1000 et 1366x768) (#394, task-backlog-31r puis task R2)
@@ -1138,3 +1153,121 @@ rejouables suffisent à refaire ce document depuis le dépôt, sans navigateur :
 $ python3 tests/trainer/test_desktop_panels_fit_contract.py             # table + EXIT=0
 $ python3 tests/trainer/test_desktop_panels_fit_contract.py --self-test  # + 16 mutations CSS et 7 contrôles d'instrument refusés
 ```
+
+## 11. Observation CI au tip poussé `2c46f81` : `browser-smoke` rouge sur `#matrix`, `hero-range-editor` vert (task `backlog-b5h`)
+
+Cette section est **strictement additive** : elle consigne l'observation **réelle**,
+faite par le connecteur GitHub en lecture seule, des runs des **deux workflows
+gelés** au **SHA réellement poussé** de la branche épique, et les jetons de garde
+qu'elle laisse **inchangés**. Elle n'écrit aucun octet de `site/**`, de
+`.github/**`, de `tests/` ni de `tools/`, et ne réécrit aucune section antérieure.
+L'observation détaillée, avec les tableaux complets de runs, de jobs et de champs
+mesurés, est consignée au **§ 12 de
+`docs/issue-394-release-identity-ci-report.md`** ; cette section en porte la
+lecture propre au fit des modes.
+
+### 11.1 Canal, instant, SHA observé
+
+Le canal est le **connecteur GitHub** en **lecture seule** ; le DNS du shell de ce
+worker reste **coupé**, vérifié dans cette task :
+
+```
+$ date -u +%Y-%m-%dT%H:%M:%SZ
+2026-09-25T04:07:43Z
+$ getent hosts api.github.com ; echo "getent exit=$?"
+getent exit=2
+$ timeout 8 curl -sSI https://api.github.com/repos/aradenac/poker-engine 2>&1 | head -3
+curl: (6) Could not resolve host: api.github.com
+```
+
+Le **tip poussé** de la branche épique est
+`2c46f81cb77ef1645283a1dc249f9d53894c1aa7`, le `head.sha` de la **PR #416**. Le
+worktree livré est **5 commits d'avance** sur ce tip :
+
+```
+$ git rev-parse HEAD
+9577dceba3360caa503aa68ff788e0ea4508ab78
+$ git merge-base --is-ancestor 2c46f81cb77ef1645283a1dc249f9d53894c1aa7 HEAD && echo ancestor
+ancestor
+$ git rev-list --count 2c46f81cb77ef1645283a1dc249f9d53894c1aa7..HEAD
+5
+```
+
+À `2c46f81`, les octets servis portent encore `.matrix{gap:3px}` et
+`.cell{height:34px}` (blob `site/index.html` `033e6517…`) : l'édition CSS gatée
+`70dc732` (blob `75b26fb1…`, `13*26 + 12*2 = 362px` au lieu de
+`13*34 + 12*3 = 478px`) est **livrée dans le worktree**, pas encore poussée.
+
+### 11.2 Ce qui est observé, job par job
+
+| Workflow (gelé) | Job | Run | Conclusion |
+| --- | --- | --- | --- |
+| `trainer-smoke.yml` | `static-contract` | `#566` — run `36088338545` | **`success`** — job `107925080169` (dont « Patch idempotence ») |
+| `trainer-smoke.yml` | `browser-smoke` | `#566` — run `36088338545` | **`failure`** — job `107925214120`, étape 5 « Exercise Training view » ; l'étape suivante est `skipped` |
+| `hero-range-editor.yml` | `contract` | `#442` — run `36088338439` | **`success`** — job `107925079710`, étape 7 « Main application integration is idempotent » incluse |
+| `hero-range-editor.yml` | `browser-smoke` | `#442` — run `36088338439` | **`success`** — job `107925161832` |
+
+Le job gelé qui porte encore le rouge au tip poussé est donc **une seule** chose :
+le `browser-smoke` de `trainer-smoke.yml`, sur **cette** lentille de fit. Le job
+`static-contract` et l'étape d'idempotence du job `contract` sont, eux, **verts au
+SHA poussé**.
+
+### 11.3 L'échec observé, et la cible mesurée (`#matrix` à `1366x768`)
+
+Le journal du job `107925214120` est rendu **tronqué en sa partie médiane** par le
+connecteur dans cette session : la sortie de l'étape « Exercise Training view »
+est élidée, et c'est **là** que se trouve le message d'assertion. Ce qui est **lu
+directement** dans ce journal, et qui porte la mesure, est l'inventaire imprimé par
+`panel_inventory_lines()` (horodatages du *runner* retirés) :
+
+```
+  inventaire panneaux viewport=1500x1000 mesures=9 cibles=20 atteignables=20/20 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=ok] · replayer-columns=[.replayer-col-left=ok, .replayer-col-center=ok, #replayerContextPanel=ok] · replayer-decision=[#replayerDecisionTab=ok, #replayerDecisionPanel=ok] · replayer-ranges=[#replayerRangesTab=ok, #replayerRangesPanel=ok] · replayer-details=[#replayerDetailsTab=ok, #hhReplayDetail=ok] · trainer-coaching=[#trainerCoachingTab=ok, #trainerCoachPanel=ok] · trainer-session=[#trainerSessionTab=ok, #trainerSessionPanel=ok] · trainer-profiles=[#trainerProfilesTab=ok, #trainerProfilesPanel=ok] · trainer-test=[#trainerTestTab=ok, #trainerTestPanel=ok]
+  inventaire panneaux viewport=1366x768 mesures=1 cibles=3 atteignables=2/3 — spotlab-range=[#spotlabRangeTab=ok, #rangeDisplaySection=ok, #matrix=MISS]
+trainer smoke failed: Command '[…]' returned non-zero exit status 1.
+  File "[…]/tests/trainer/smoke_trainer.py", line 49, in run_driver_smokes
+    subprocess.run([sys.executable, str(script)], check=True)
+subprocess.CalledProcessError: Command '[… tests/trainer/smoke_modes_desktop.py]' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+```
+
+| Cible mesurée | Viewport | Champ mesuré | Source du champ |
+| --- | --- | --- | --- |
+| `#matrix` | `1366x768` | **`reachable = false`** (`#matrix=MISS`) | **lu directement ici** dans l'inventaire du job `107925214120` |
+| `#spotlabRangeTab` | `1366x768` | `reachable = true` (`ok`) | idem |
+| `#rangeDisplaySection` | `1366x768` | `reachable = true` (`ok`) | idem |
+| `#matrix` | `1500x1000` | `reachable = true` (`ok`) | idem (inventaire `20/20`) |
+
+`MISS` **est** la mesure `reachable=false` : `panel_inventory_lines()` imprime
+`ok` exactement quand `entry.get("reachable")` est vrai, et `MISS` sinon. Les
+trois autres champs du même relevé (`inViewport`, `inShell`, `hit`) sont ceux du
+**§ 9.2 de ce document**, pour ce **même** job `107925214120` (`#matrix` à
+`1366x768` : `inViewport=false`, `inShell=false`, `hit=false`) ; ils sont **cités
+par renvoi**, jamais recomposés. Les deux autres cibles du relevé
+(`#spotlabRangeTab`, `#rangeDisplaySection`) sont atteignables : le panneau est
+bien monté par un clic réel, c'est la grille qu'il contient qui est coupée à ce
+viewport — la géométrie déclarée du § 9.4.
+
+### 11.4 Ce que ce run n'a pas observé
+
+Le smoke **s'arrête à la première assertion en échec** : le relevé à `1366x768`
+compte **1 mesure / 3 cibles** contre **9 mesures / 20 cibles** à `1500x1000`. Au
+tip poussé, `1366x768` n'a donc **pas** observé les trois colonnes du Replayer,
+les trois couples onglet/panneau du panneau contextuel du Replayer, les quatre
+couples du rail Trainer, la surface d'import Review et ses hit-tests, la course
+Review, ni les deux deep links d'éditeur. Rien n'est conclu pour ces cibles : la
+**seule** chose qui les concerne reste la dérivation statique du § 10, bornée et
+non-vacuitaire.
+
+### 11.5 Jetons de garde : inchangés, et la condition de clôture
+
+| Jeton | Valeur | Base |
+| --- | --- | --- |
+| `ci_green` | **`NOT_OBSERVED`** (inchangé) | `browser-smoke` est **rouge** au SHA poussé (`#matrix` à `1366x768`) et **aucun run** n'existe sur les octets livrés (5 commits d'avance, branche non poussée) |
+| `frozen_job_rerun_required` | **`true`** (inchangé) | `browser-smoke` doit tourner **vert** sur un HEAD **poussé** portant l'édition CSS gatée `70dc732` |
+| `contract_job_rerun_required` | **`true`** (inchangé) | jeton de relance **conservé** : la relance porte sur les octets livrés, qui n'ont aucun run — le même job est observé `success` à `2c46f81`, étape d'idempotence incluse (§ 11.2) |
+
+La condition de clôture du § 9.5 est donc **inchangée** : seul un run **vert** du
+job gelé `browser-smoke` sur un SHA **poussé** — aux deux viewports, pour les six
+modes, l'étape d'idempotence du job `contract` restant verte — fera passer
+`ci_green` de `NOT_OBSERVED` à `OBSERVED`. Ni cette section, ni le pré-vol hors
+navigateur du § 12.7 du rapport ne remplacent ce run.
