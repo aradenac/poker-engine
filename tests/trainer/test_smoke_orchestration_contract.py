@@ -102,6 +102,24 @@ def main() -> None:
     assert 'result["scrollHeight"] <= result["clientHeight"]' in MODES_SMOKE
     assert "mode={mode} viewport={width}x{height}" in MODES_SMOKE
     assert "smoke_modes_desktop: Playwright is unavailable" in MODES_SMOKE
+
+    # #394 (backlog-31r) — the "no global scroll" measurement must be auditable
+    # from the repository: the smoke serialises the audit it already built, and
+    # the evidence document has to name the option that regenerates it. This
+    # block is additive and asserts the real call sites, so the report cannot
+    # decay into a documented-but-absent flag.
+    assert '"--report"' in MODES_SMOKE
+    assert 'REPORT_ENV_VAR = "SMOKE_MODES_DESKTOP_REPORT"' in MODES_SMOKE
+    assert 'DEFAULT_REPORT_PATH = ROOT / "artifacts/desktop-modes-fit/measurements.json"' in MODES_SMOKE
+    assert "def resolve_report_path() -> Path:" in MODES_SMOKE
+    assert "def build_report(audit: list[dict], *, head: str) -> dict:" in MODES_SMOKE
+    assert "def write_report(report: dict, path: Path) -> Path:" in MODES_SMOKE
+    assert "def head_sha() -> str:" in MODES_SMOKE
+    # `run()` writes the report it just measured — after every assertion, so a
+    # red run leaves no file behind — and only from the audit it built.
+    assert "write_report(build_report(audit, head=head_sha()), resolve_report_path())" in MODES_SMOKE
+    assert "build_report(audit" in MODES_SMOKE.split("async def run() -> None:", 1)[1]
+    assert "json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True)" in MODES_SMOKE
     for marker in (
         "#hhFileInput",  # the repro fixture goes through the real HH import
         "#hhHands .review-inbox-open",  # the hand is opened from the Review inbox
@@ -284,7 +302,8 @@ def main() -> None:
     # note that ./hero-ranges.html is navigated but out of the shell contract
     # (no no-scroll assertion there).
     assert FIT_EVIDENCE.is_file(), FIT_EVIDENCE
-    evidence_flat = flat(FIT_EVIDENCE.read_text(encoding="utf-8"))
+    evidence_raw = FIT_EVIDENCE.read_text(encoding="utf-8")
+    evidence_flat = flat(evidence_raw)
     assert "python3 tests/trainer/smoke_modes_desktop.py" in evidence_flat
     assert "python3 tests/trainer/smoke_trainer.py" in evidence_flat
     assert "git rev-parse HEAD" in evidence_flat
@@ -295,6 +314,21 @@ def main() -> None:
     assert "verdict" in evidence_flat.casefold()
     assert "hero-ranges.html" in evidence_flat
     assert "hors contrat" in evidence_flat.casefold()
+
+    # #394 (backlog-31r) — the evidence must be auditable *from the repository*:
+    # it cannot lean on an out-of-repo harness, so no path outside the checkout
+    # may appear in it, and the option that regenerates the smoke's JSON report
+    # has to be documented. The frozen `browser-smoke` job stays the authority
+    # for the 1500x1000 / 1366x768 no-global-scroll rule.
+    assert "/tmp/" not in evidence_raw, (
+        "the fit evidence must not cite a path outside the repository"
+    )
+    assert "browser-smoke" in evidence_flat
+    assert "seule autorité" in evidence_flat
+    assert "--report" in evidence_flat
+    assert "artifacts/desktop-modes-fit/measurements.json" in evidence_flat
+    assert "SMOKE_MODES_DESKTOP_REPORT" in evidence_flat
+    assert "--report artifacts/desktop-modes-fit/measurements.json" in evidence_flat
 
     print("smoke orchestration contract checks: OK")
 

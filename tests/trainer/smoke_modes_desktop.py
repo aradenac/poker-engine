@@ -95,11 +95,23 @@ It is a representation/application-shell smoke only: no model/fit, no equity
 kernel and no immutable repro evidence is touched. It starts its own ephemeral
 static server over `site/` (like `smoke_equity_scale_invariance.py`) and it fails
 with a clear message when Playwright is unavailable instead of skipping.
+
+The run also serialises the audit it already built as JSON (``--report``, or
+``SMOKE_MODES_DESKTOP_REPORT``, default
+``artifacts/desktop-modes-fit/measurements.json``), so the measurement behind the
+"aucun scroll global" rule is auditable from the repository instead of living in
+a throwaway local harness. The report is strictly additive: it carries the
+measured records verbatim, is written at the end of a successful run only, and no
+value is invented, re-derived or hard-coded anywhere in it.
 """
 from __future__ import annotations
 
+import argparse
 import asyncio
+import json
+import os
 import re
+import subprocess
 import sys
 import threading
 from functools import partial
@@ -138,6 +150,97 @@ FIXTURE_HAND_ID = _fixture_hand_id()
 # Reference viewports of the desktop shell contract.
 VIEWPORTS = ((1500, 1000), (1366, 768))
 MODES = ("home", "spotlab", "review", "replayer", "training", "strategy")
+
+# Auditability of the "no global scroll" measurement: `run()` builds the audit
+# anyway, and `--report` only serialises it. The CLI option wins over the
+# environment variable, which wins over this versioned default path.
+REPORT_ENV_VAR = "SMOKE_MODES_DESKTOP_REPORT"
+DEFAULT_REPORT_PATH = ROOT / "artifacts/desktop-modes-fit/measurements.json"
+REPORT_SCHEMA = "poker-issue-394-desktop-modes-measurements/v1"
+
+
+def resolve_report_path() -> Path:
+    """Report destination: `--report` (stored in the env var by `main`), else default."""
+    value = os.environ.get(REPORT_ENV_VAR, "").strip()
+    return Path(value) if value else DEFAULT_REPORT_PATH
+
+
+def head_sha() -> str:
+    """HEAD of the checkout the measurements come from (`""` when unknown)."""
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except Exception:  # pragma: no cover - git absent or not a checkout
+        return ""
+    return completed.stdout.strip()
+
+
+def _record_kind(record: dict) -> str:
+    """Bucket of one audit record, read from the record itself."""
+    if record.get("race"):
+        return "review_races"
+    if "hit_test" in record:
+        return "import_hit_tests"
+    if record.get("editor_deep_link"):
+        return "editor_deep_links"
+    return "records"
+
+
+def _verdict(report: dict) -> str:
+    """`PASS` only when every record of the audit carries its own green verdict."""
+    fits = all(
+        record["scrollHeight"] <= record["clientHeight"] for record in report["records"]
+    )
+    reachable = all(
+        entry.get("reachable")
+        for record in report["import_hit_tests"]
+        for entry in record["hit_test"].values()
+    )
+    deep_linked = all(
+        bool(record.get("query")) for record in report["editor_deep_links"]
+    )
+    raced = all(record.get("mounted") == "review" for record in report["review_races"])
+    return "PASS" if fits and reachable and deep_linked and raced else "FAIL"
+
+
+def build_report(audit: list[dict], *, head: str) -> dict:
+    """Serialise the audit `run()` already built — no measured value is invented.
+
+    Every record keeps the fields it was measured with; this only groups them by
+    kind (per-mode measurements, Review import hit-tests, editor deep links,
+    Review race) and derives the global verdict from those same records.
+    """
+    report: dict = {
+        "schema": REPORT_SCHEMA,
+        "head_sha": head,
+        "viewports": [f"{width}x{height}" for width, height in VIEWPORTS],
+        "modes": list(MODES),
+        "records": [],
+        "import_hit_tests": [],
+        "editor_deep_links": [],
+        "review_races": [],
+    }
+    for record in audit:
+        report[_record_kind(record)].append(record)
+    report["verdict"] = _verdict(report)
+    return report
+
+
+def write_report(report: dict, path: Path) -> Path:
+    """Write the audit as deterministic JSON (sorted keys, two-space indent)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
 REPLAYER_SUBVIEWS = ("replayer-decision", "replayer-ranges", "replayer-details")
 # Upper bound of the Tab walk that must reach the Replayer right-panel tabs. The
 # tabs sit after the head buttons and the left column controls in the tab order.
@@ -1145,6 +1248,19 @@ async def run() -> None:
                 **record
             )
         )
+
+    # #394 (backlog-31r) — auditability: the very audit printed above is
+    # serialised as JSON before the final verdict. It happens *after* every
+    # assertion of the run, so a red run (an overflow, an unreachable import
+    # target, a lost race) leaves no report behind, and the file only ever
+    # carries measured values.
+    report_path = write_report(build_report(audit, head=head_sha()), resolve_report_path())
+    try:
+        shown_path = report_path.resolve().relative_to(ROOT)
+    except ValueError:  # pragma: no cover - report written outside the checkout
+        shown_path = report_path
+    print(f"desktop modes measurements written: {shown_path}")
+
     print(
         "modes desktop smoke: PASS "
         f"({len(VIEWPORTS)} viewports · {', '.join(MODES)} · transitions + Replayer keyboard "
@@ -1155,7 +1271,32 @@ async def run() -> None:
     )
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Desktop modes smoke + overflow audit (#394): measures "
+            "document.scrollingElement.scrollHeight <= clientHeight for the six "
+            "modes at both reference viewports and serialises that audit as JSON "
+            "(per-mode measurements, Review import hit-tests, editor deep links, "
+            "Review race, global verdict) so the measurement is auditable from "
+            "the repository. The report is written by a real run only."
+        )
+    )
+    parser.add_argument(
+        "--report",
+        metavar="CHEMIN",
+        default=None,
+        help=(
+            "chemin du rapport JSON (défaut : "
+            f"{DEFAULT_REPORT_PATH.relative_to(ROOT)}, ou {REPORT_ENV_VAR} si la "
+            "variable est définie ; cette option est prioritaire)"
+        ),
+    )
+    args = parser.parse_args(argv)
+    if args.report:
+        # Documented precedence: `--report` overrides the environment variable,
+        # which overrides the repository default of `resolve_report_path()`.
+        os.environ[REPORT_ENV_VAR] = args.report
     if async_playwright is None:
         raise SystemExit(
             "smoke_modes_desktop: Playwright is unavailable "
