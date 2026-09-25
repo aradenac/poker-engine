@@ -32,9 +32,11 @@
       ],
       "properties": {
         "candidate_id": {
+          "description": "Candidate identity. The exact-price candidates v1/v2 are declared here; the hierarchical exact-context candidate v1 has its own schema (model-a-preflop-sizing-hierarchical-likelihood.schema.json) and is only registered here so a single identity list covers every Model-A preflop sizing candidate.",
           "enum": [
             "model-a-preflop-sizing-aware-candidate-v1",
-            "model-a-preflop-sizing-aware-candidate-v2"
+            "model-a-preflop-sizing-aware-candidate-v2",
+            "model-a-preflop-sizing-hierarchical-candidate-v1"
           ]
         },
         "model_family": {

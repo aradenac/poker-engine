@@ -1,0 +1,701 @@
+#!/usr/bin/env python3
+"""#419 hierarchical exact-context sizing likelihood contract regressions.
+
+The contract is candidate-only and TRAIN/synthetic-only.  These tests never
+parse a hand history, never read a holdout split and never touch an active
+model.  They exercise the exact-key resolution API, the support isolation rule,
+the fail-closed behaviour and the machine-readable pooling/uncertainty
+provenance.
+"""
+from __future__ import annotations
+
+import copy
+import json
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from tools.preflop.context_contract import build_context  # noqa: E402
+from tools.preflop.model_a_sizing_hierarchical import (  # noqa: E402
+    ALPHA_PER_LEGAL_ACTION,
+    CANDIDATE_ID,
+    KAPPA0,
+    LEVEL_SPECS,
+    MIN_DISTINCT_HANDS,
+    MIN_MARGINAL_OBSERVATIONS,
+    NEVER_MUTUALIZABLE_AXES,
+    POOLING_LEVELS,
+    REASON_NO_ADMISSIBLE_POOLING,
+    REASON_NO_EXACT_SUPPORT_NO_CONTEXT,
+    REASON_RAISE_SIZING_UNRESOLVED,
+    STATUS_EXACT_EMPIRICAL_STRONG,
+    STATUS_EXACT_HIERARCHICAL_ESTIMATE,
+    STATUS_EXACT_UNRESOLVED,
+    SUPPORT_ISOLATION_RULE,
+    SUPPORT_LEVEL,
+    HierarchicalSizingError,
+    SupportIsolationError,
+    assert_support_isolation,
+    canonical_candidate_sha256,
+    canonical_response_sha256,
+    hierarchical_exact_key,
+    hierarchical_public_whitelist,
+    level_key,
+    level_keys,
+    make_synthetic_hierarchical_candidate,
+    resolve_exact_context,
+    runtime_exact_preflop_node_key,
+    validate_candidate,
+    validate_response,
+)
+from tools.preflop.model_a_sizing_likelihood import (  # noqa: E402
+    CANDIDATE_IDS as EXACT_PRICE_CANDIDATE_IDS,
+    sizing_context_key,
+    support_context_key,
+)
+from tools.training.audit_model_a_exact_tree import (  # noqa: E402
+    exact_key as audit_exact_key,
+    public_context as audit_public_context,
+    runtime_exact_preflop_node_key as audit_node_key,
+)
+
+FIXTURE = json.loads(
+    (ROOT / "tests/fixtures/model_a_preflop_sizing_cases.json").read_text(encoding="utf-8")
+)
+BASE_INPUT = FIXTURE["contexts"][0]["input"]
+POPULATION = FIXTURE["population_id"]
+LEGAL = ["FOLD", "CALL", "RAISE", "JAM"]
+
+
+def _context(**overrides):
+    payload = copy.deepcopy(BASE_INPUT)
+    for key, value in overrides.items():
+        payload[key] = value
+    return build_context(**payload)
+
+
+def _stack_variant(stack_bb):
+    stacks = dict(BASE_INPUT["stack_bb_by_position"])
+    stacks["BB"] = stack_bb
+    return _context(stack_bb_by_position=stacks)
+
+
+def _price_variant(price, pot, min_raise):
+    contributions = dict(BASE_INPUT["contribution_bb_by_position"])
+    contributions["SB"] = price
+    return _context(
+        contribution_bb_by_position=contributions,
+        current_price_bb=price,
+        pot_before_bb=pot,
+        min_raise_to_bb=min_raise,
+    )
+
+
+def _rows(context, hand_prefix, count, target):
+    actions = ["FOLD", "CALL", "RAISE", "JAM"]
+    rows = []
+    for index in range(count):
+        action = actions[index % len(actions)]
+        rows.append(
+            {
+                "context": context,
+                "hand_id": f"{hand_prefix}-{index}",
+                "action": action,
+                "target_total_bb": target if action in ("RAISE", "JAM") else None,
+            }
+        )
+    return rows
+
+
+def _audit_row(context):
+    """The #388 audit row shape for the same public state."""
+    return {
+        "family": context["family"],
+        "actor_position": context["actor_position"],
+        "history": context["history"],
+        "current_price_bb": context["current_price_bb"],
+        "to_call_bb": context["to_call_bb"],
+        "table_size": context["table_size"],
+        "raise_level": context["raise_level"],
+        "live_positions": context["live_positions"],
+        "all_in_positions": context["all_in_positions"],
+        "pot_before_bb": context["pot_before_bb"],
+        "effective_stack_bb": context["effective_stack_bb"],
+    }
+
+
+def _is_type(value, name):
+    if name == "object":
+        return isinstance(value, dict)
+    if name == "array":
+        return isinstance(value, list)
+    if name == "string":
+        return isinstance(value, str)
+    if name == "boolean":
+        return isinstance(value, bool)
+    if name == "null":
+        return value is None
+    if name == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if name == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    raise AssertionError(f"unsupported contract type: {name}")
+
+
+def _contract_errors(node, value, root, path="$"):
+    """A tiny stdlib checker for the JSON-Schema subset this contract uses."""
+    if "$ref" in node:
+        target = root
+        for part in node["$ref"].lstrip("#/").split("/"):
+            target = target[part]
+        return _contract_errors(target, value, root, path)
+    errors = []
+    expected = node.get("type")
+    if expected is not None:
+        allowed = expected if isinstance(expected, list) else [expected]
+        if not any(_is_type(value, name) for name in allowed):
+            errors.append(f"{path}: expected {allowed}, got {type(value).__name__}")
+            return errors
+    if "const" in node and value != node["const"]:
+        errors.append(f"{path}: const {node['const']!r} != {value!r}")
+    if "enum" in node and value not in node["enum"]:
+        errors.append(f"{path}: {value!r} not in enum")
+    if isinstance(value, dict):
+        for key in node.get("required", []):
+            if key not in value:
+                errors.append(f"{path}: missing required {key}")
+        properties = node.get("properties", {})
+        extra = sorted(set(value) - set(properties))
+        if extra and node.get("additionalProperties") is False:
+            errors.append(f"{path}: unexpected keys {extra}")
+        for key, sub in properties.items():
+            if key in value:
+                errors.extend(_contract_errors(sub, value[key], root, f"{path}.{key}"))
+        additional = node.get("additionalProperties")
+        if isinstance(additional, dict):
+            for key, child in value.items():
+                if key not in properties:
+                    errors.extend(_contract_errors(additional, child, root, f"{path}.{key}"))
+        if "minProperties" in node and len(value) < node["minProperties"]:
+            errors.append(f"{path}: too few properties")
+    if isinstance(value, list):
+        if "minItems" in node and len(value) < node["minItems"]:
+            errors.append(f"{path}: too few items")
+        if "maxItems" in node and len(value) > node["maxItems"]:
+            errors.append(f"{path}: too many items")
+        for index, child in enumerate(value):
+            if "items" in node:
+                errors.extend(_contract_errors(node["items"], child, root, f"{path}[{index}]"))
+    if isinstance(value, str) and "pattern" in node and not re.search(node["pattern"], value):
+        errors.append(f"{path}: pattern mismatch")
+    if _is_type(value, "number") or _is_type(value, "integer"):
+        if "minimum" in node and value < node["minimum"]:
+            errors.append(f"{path}: below minimum")
+        if "maximum" in node and value > node["maximum"]:
+            errors.append(f"{path}: above maximum")
+        if "exclusiveMinimum" in node and value <= node["exclusiveMinimum"]:
+            errors.append(f"{path}: not above exclusiveMinimum")
+        if "exclusiveMaximum" in node and value >= node["exclusiveMaximum"]:
+            errors.append(f"{path}: not below exclusiveMaximum")
+    return errors
+
+
+def test_candidate_identity_is_distinct_candidate_only_and_not_active():
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(_context(), "id", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    validate_candidate(candidate)
+    identity = candidate["identity"]
+    assert identity["candidate_id"] == CANDIDATE_ID
+    assert identity["candidate_id"] not in EXACT_PRICE_CANDIDATE_IDS
+    assert identity["model_family"] == "MODEL_A_PREFLOP"
+    assert identity["status"] == "CANDIDATE_ONLY_NOT_ACTIVE"
+    assert identity["active_model_replaced"] is False
+    assert identity["identity_granularity"] == "hierarchical_exact_key"
+    assert identity["support_isolation_rule"] == SUPPORT_ISOLATION_RULE
+    assert candidate["nearest_price_fallback"] is False
+    assert candidate["nearest_context_fallback"] is False
+    assert candidate["representative_price_fallback"] is False
+    assert candidate["exact_context_granularity"] == "hierarchical_exact_key"
+    assert candidate["shrinkage"]["kappa0"] == KAPPA0
+    assert candidate["shrinkage"]["alpha_per_legal_marginal_action"] == ALPHA_PER_LEGAL_ACTION
+    assert candidate["thresholds"]["minimum_marginal_observations"] == MIN_MARGINAL_OBSERVATIONS
+    assert candidate["thresholds"]["minimum_distinct_hands"] == MIN_DISTINCT_HANDS
+    assert candidate["pooling_levels"][0]["support_source_allowed"] is True
+    for level in candidate["pooling_levels"][1:]:
+        assert level["support_source_allowed"] is False
+
+
+def test_exact_key_is_byte_identical_to_the_issue_388_audit_key():
+    for context in (_context(), _stack_variant(60.0), _price_variant(6.0, 9.0, 11.0)):
+        whitelist = hierarchical_public_whitelist(context)
+        assert whitelist == audit_public_context(_audit_row(context))
+        assert hierarchical_exact_key(context) == audit_exact_key(whitelist)
+        assert runtime_exact_preflop_node_key(context) == audit_node_key(whitelist)
+    key = hierarchical_exact_key(_context())
+    assert key.startswith("MAPSUP_") and "|public=" in key
+    assert len(key.rsplit("|public=", 1)[1]) == 64
+    assert key != support_context_key(hierarchical_public_whitelist(_context()))
+    assert sizing_context_key(hierarchical_public_whitelist(_context())).startswith("MAPSIZ_")
+
+
+def test_level_keys_freeze_the_never_mutualizable_axes_and_L3_is_the_runtime_key():
+    context = _context()
+    whitelist = hierarchical_public_whitelist(context)
+    keys = level_keys(context)
+    assert tuple(keys) == POOLING_LEVELS
+    assert keys["L0_EXACT_KEY"] == hierarchical_exact_key(context)
+    assert keys["L3_RUNTIME_SUPPORT_CONTEXT"] == support_context_key(whitelist)
+    # requested_key_identity is the answered question, retained on every level
+    # but never a level-key composition dimension; the four positional/price
+    # axes are frozen into every level key.
+    frozen_key_axes = (
+        "actor_position",
+        "aggressor_position",
+        "target_total_bb",
+        "to_call_bb",
+    )
+    for spec in LEVEL_SPECS:
+        assert set(NEVER_MUTUALIZABLE_AXES).issubset(set(spec["retains"]))
+        assert set(frozen_key_axes).issubset(set(spec["key_axes"]))
+        assert "requested_key_identity" in spec["retains"]
+        assert "requested_key_identity" not in spec["key_axes"]
+        assert not (set(NEVER_MUTUALIZABLE_AXES) & set(spec["drops"]))
+    sibling = _stack_variant(60.0)
+    sibling_keys = level_keys(sibling)
+    assert keys["L0_EXACT_KEY"] != sibling_keys["L0_EXACT_KEY"]
+    assert keys["L1_STACK_POOL"] == sibling_keys["L1_STACK_POOL"]
+    other_price = level_keys(_price_variant(6.0, 9.0, 11.0))
+    for level in POOLING_LEVELS:
+        assert keys[level] != other_price[level]
+    assert level_key("L2_POT_POOL", _context(pot_before_bb=13.0)) == keys["L2_POT_POOL"]
+    assert level_key("L1_STACK_POOL", _context(pot_before_bb=13.0)) != keys["L1_STACK_POOL"]
+
+
+def test_exact_strong_requires_both_thresholds_at_l0_with_exact_support_only():
+    context = _context()
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "strong", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_EMPIRICAL_STRONG
+    assert response["reason_code"] == STATUS_EXACT_EMPIRICAL_STRONG
+    assert response["posterior"] is not None
+    assert response["support"]["observations"] == MIN_MARGINAL_OBSERVATIONS
+    assert response["support"]["distinct_hands"] == MIN_DISTINCT_HANDS
+    assert response["support"]["effective_sample_size"] == float(MIN_DISTINCT_HANDS)
+    assert response["support"]["action_counts"] == {"FOLD": 5, "CALL": 5, "RAISE": 5, "JAM": 5}
+    assert response["support"]["source_key"] == response["requested_key"]
+    assert response["support"]["borrowed_from_other_keys"] is False
+    assert response["pooling"]["level"] == SUPPORT_LEVEL
+    assert response["pooling"]["weight_exact"] == 1.0
+    assert response["pooling"]["source_key"] == response["requested_key"]
+    assert response["uncertainty"]["level_used"] == SUPPORT_LEVEL
+    assert abs(sum(response["posterior"].values()) - 1.0) < 1e-9
+    short = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "short", MIN_MARGINAL_OBSERVATIONS - 1, 7.0),
+    )
+    unresolved = resolve_exact_context(candidate=short, context=context)
+    assert unresolved["status"] == STATUS_EXACT_UNRESOLVED
+    assert unresolved["unresolved_reason"] == REASON_NO_ADMISSIBLE_POOLING
+    assert unresolved["posterior"] is None
+    assert unresolved["uncertainty"] is None
+
+
+def test_hierarchical_estimate_reports_pooling_provenance_and_mandatory_uncertainty():
+    context = _stack_variant(100.0)
+    sibling = _stack_variant(60.0)
+    exact_key = hierarchical_exact_key(context)
+    observations = [
+        {"context": context, "hand_id": "exact-1", "action": "RAISE", "target_total_bb": 7.0}
+    ]
+    observations += _rows(sibling, "sibling", 21, 9.0)
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION, observations=observations
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    assert response["reason_code"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    assert response["support"]["observations"] == 1
+    assert response["support"]["distinct_hands"] == 1
+    assert response["support"]["source_key"] == exact_key
+    pooling = response["pooling"]
+    assert pooling["level"] == "L1_STACK_POOL"
+    assert pooling["source_key"] != exact_key
+    assert pooling["source_observations"] == 22
+    assert pooling["source_distinct_hands"] == 22
+    assert pooling["pooled_axes"] == ["effective_stack_bucket"]
+    assert set(NEVER_MUTUALIZABLE_AXES).issubset(set(pooling["retained_axes"]))
+    assert pooling["weight_exact"] == round(1 / (1 + KAPPA0), 12)
+    assert pooling["parent_dominated"] is True
+    uncertainty = response["uncertainty"]
+    assert uncertainty is not None
+    assert uncertainty["level_used"] == pooling["level"]
+    assert uncertainty["effective_sample_size"] == 22.0
+    assert set(uncertainty["actions"]) == set(response["posterior"])
+    for action, band in uncertainty["actions"].items():
+        assert band["credible_interval"]["low"] <= band["mean"] <= band["credible_interval"]["high"]
+        assert band["mean"] == response["posterior"][action]
+        assert band["std_error"] >= 0.0
+    broken = copy.deepcopy(response)
+    broken["uncertainty"] = None
+    try:
+        validate_response(broken)
+    except HierarchicalSizingError as exc:
+        assert "uncertainty" in str(exc)
+    else:
+        raise AssertionError("a hierarchical estimate without uncertainty must be rejected")
+
+
+def test_no_admissible_pooling_fails_closed_with_a_reason_code():
+    context = _context()
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[
+            {"context": context, "hand_id": "only", "action": "RAISE", "target_total_bb": 7.0}
+        ],
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_UNRESOLVED
+    assert response["reason_code"] == STATUS_EXACT_UNRESOLVED
+    assert response["unresolved_reason"] == REASON_NO_ADMISSIBLE_POOLING
+    assert response["posterior"] is None
+    assert response["uncertainty"] is None
+    assert response["reason_detail"]
+    assert all(band["qualifies"] is False for band in response["pooling_diagnostics"])
+    assert [band["level"] for band in response["pooling_diagnostics"]] == list(POOLING_LEVELS)
+    keyless = resolve_exact_context(
+        candidate=candidate,
+        requested_key=hierarchical_exact_key(_price_variant(9.0, 12.0, 15.0)),
+        legal_actions=LEGAL,
+    )
+    assert keyless["status"] == STATUS_EXACT_UNRESOLVED
+    assert keyless["unresolved_reason"] == REASON_NO_EXACT_SUPPORT_NO_CONTEXT
+    assert keyless["pooling"] is None
+
+
+def test_no_nearest_price_substitution_between_4bb_and_6bb():
+    four = _context()
+    six = _price_variant(6.0, 9.0, 11.0)
+    five = _price_variant(5.0, 8.0, 9.0)
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(four, "four", MIN_MARGINAL_OBSERVATIONS, 7.0)
+        + _rows(six, "six", MIN_MARGINAL_OBSERVATIONS, 11.0),
+    )
+    assert resolve_exact_context(candidate=candidate, context=four)["status"] == (
+        STATUS_EXACT_EMPIRICAL_STRONG
+    )
+    assert resolve_exact_context(candidate=candidate, context=six)["status"] == (
+        STATUS_EXACT_EMPIRICAL_STRONG
+    )
+    between = resolve_exact_context(candidate=candidate, context=five)
+    validate_response(between)
+    assert between["status"] == STATUS_EXACT_UNRESOLVED
+    assert between["support"]["observations"] == 0
+    assert between["posterior"] is None
+    assert between["raise_sizing"]["supported_targets"] == []
+    assert between["raise_sizing"]["nearest_price_used"] is False
+    assert between["raise_sizing"]["representative_price_used"] is False
+    assert between["raise_sizing"]["interpolation_used"] is False
+    assert between["granularity"]["nearest_price_lookup"] is False
+    assert all(band["source_observations"] == 0 for band in between["pooling_diagnostics"])
+
+
+def test_zero_exact_support_never_borrows_from_a_pooled_parent():
+    context = _stack_variant(100.0)
+    sibling = _stack_variant(60.0)
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(sibling, "sib", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    assert response["support"]["observations"] == 0
+    assert response["support"]["effective_sample_size"] == 0.0
+    assert response["support"]["source_key"] == response["requested_key"]
+    assert response["pooling"]["source_observations"] == MIN_MARGINAL_OBSERVATIONS
+    assert response["pooling"]["source_key"] != response["requested_key"]
+    assert response["pooling"]["weight_exact"] == 0.0
+    assert response["pooling"]["parent_dominated"] is True
+    assert hierarchical_exact_key(context) != hierarchical_exact_key(sibling)
+    whitelist = hierarchical_public_whitelist(context)
+    assert level_key("L3_RUNTIME_SUPPORT_CONTEXT", whitelist) == level_key(
+        "L3_RUNTIME_SUPPORT_CONTEXT", hierarchical_public_whitelist(sibling)
+    )
+
+
+def test_support_isolation_violations_fail_closed():
+    try:
+        assert_support_isolation(requested_key="MAPSUP_a|public=x", source_key="MAPSUP_b|public=y")
+    except SupportIsolationError as exc:
+        assert exc.reason_code == "COARSE_KEY_SUPPORT_LAUNDERING"
+        assert "COARSE_KEY_SUPPORT_LAUNDERING" in str(exc)
+    else:
+        raise AssertionError("support from a different key must raise")
+    context = _context()
+    try:
+        make_synthetic_hierarchical_candidate(
+            population_id=POPULATION,
+            observations=[
+                {
+                    "context": context,
+                    "hand_id": "liar",
+                    "action": "CALL",
+                    "hierarchical_exact_key": "MAPSUP_deadbeef|public=" + "0" * 64,
+                }
+            ],
+        )
+    except HierarchicalSizingError:
+        pass
+    else:
+        raise AssertionError("a mismatched declared exact key must fail closed")
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "iso", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    tampered = copy.deepcopy(response)
+    tampered["support"]["source_key"] = "MAPSUP_other|public=" + "1" * 64
+    try:
+        validate_response(tampered)
+    except SupportIsolationError:
+        pass
+    else:
+        raise AssertionError("laundered support must be refused")
+
+
+def test_exact_claim_cannot_use_a_parent_pooling_level():
+    context = _context()
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "lvl", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    broken = copy.deepcopy(response)
+    broken["pooling"]["level"] = "L1_STACK_POOL"
+    try:
+        validate_response(broken)
+    except HierarchicalSizingError as exc:
+        assert "L0_EXACT_KEY" in str(exc)
+    else:
+        raise AssertionError("an exact claim must use L0_EXACT_KEY")
+
+
+def test_private_or_future_information_is_rejected():
+    contaminated = dict(_context())
+    contaminated["hole_cards"] = ["Ks", "Ts"]
+    try:
+        hierarchical_public_whitelist(contaminated)
+    except HierarchicalSizingError as exc:
+        assert "private" in str(exc).lower() or "card" in str(exc).lower()
+    else:
+        raise AssertionError("private cards must be rejected")
+    try:
+        make_synthetic_hierarchical_candidate(
+            population_id=POPULATION,
+            observations=[
+                {
+                    "context": _context(),
+                    "hand_id": "future",
+                    "action": "CALL",
+                    "future_cards": ["As"],
+                }
+            ],
+        )
+    except HierarchicalSizingError as exc:
+        assert "private" in str(exc).lower() or "card" in str(exc).lower()
+    else:
+        raise AssertionError("future cards must be rejected")
+
+
+def test_unresolved_raise_frontier_stays_explicitly_unresolved():
+    context = _context()
+    key = hierarchical_exact_key(context)
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "front", MIN_MARGINAL_OBSERVATIONS, 7.0),
+        unresolved_raise_frontiers=[key],
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_UNRESOLVED
+    assert response["unresolved_reason"] == REASON_RAISE_SIZING_UNRESOLVED
+    assert response["raise_sizing"]["state"] == "UNRESOLVED_SIZING_FRONTIER"
+    assert response["raise_sizing"]["unresolved"] is True
+    assert response["posterior"] is None
+    assert response["raise_sizing"]["exact_support_only"] is True
+    assert response["raise_sizing"]["nearest_price_used"] is False
+    # an observed target stays reported, but the branch is still unresolved and
+    # no representative/legal-minimum/nearest price may fill it
+    assert response["raise_sizing"]["supported_targets"] == [
+        {"target_total_bb": 7.0, "observations": 10}
+    ]
+
+
+def test_raise_targets_are_reported_per_exact_target_only():
+    context = _context()
+    observations = _rows(context, "price", 20, 7.0) + _rows(context, "price", 20, 9.0)
+    for index, row in enumerate(observations):
+        row["hand_id"] = f"price-{index}"
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION, observations=observations
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(response)
+    assert response["status"] == STATUS_EXACT_EMPIRICAL_STRONG
+    targets = {
+        row["target_total_bb"]: row["observations"]
+        for row in response["raise_sizing"]["supported_targets"]
+    }
+    assert targets == {7.0: 10, 9.0: 10}
+    assert response["raise_sizing"]["structural_node_key"].startswith("MAPNODE_")
+
+
+def test_resolution_is_deterministic_and_hash_bound():
+    context = _context()
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "det", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    first = resolve_exact_context(candidate=candidate, context=context)
+    second = resolve_exact_context(candidate=candidate, context=context)
+    assert first == second
+    assert canonical_response_sha256(first) == canonical_response_sha256(second)
+    assert canonical_candidate_sha256(candidate) == canonical_candidate_sha256(candidate)
+    by_key = resolve_exact_context(
+        candidate=candidate,
+        requested_key=hierarchical_exact_key(context),
+        legal_actions=LEGAL,
+    )
+    assert by_key == first
+
+
+def test_implementation_is_bound_to_the_frozen_issue_419_spec():
+    spec = json.loads(
+        (ROOT / "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert spec["schema"] == "poker-hierarchical-exact-context-model-spec/v1"
+    hierarchy = spec["hierarchy_prior_shrinkage"]
+    assert [level["level"] for level in hierarchy["levels"]] == list(POOLING_LEVELS)
+    assert hierarchy["hierarchical_strength_kappa0"] == KAPPA0
+    assert hierarchy["base_prior"]["alpha_per_legal_marginal_action"] == ALPHA_PER_LEGAL_ACTION
+    assert hierarchy["exact_weight"] == "w_exact = n0 / (n0 + kappa0), non-decreasing in n0"
+    for level in hierarchy["levels"]:
+        ours = next(row for row in LEVEL_SPECS if row["level"] == level["level"])
+        assert sorted(ours["drops"]) == sorted(level["drops"]), level["level"]
+        assert sorted(ours["retains"]) == sorted(level["retains"]), level["level"]
+        assert ours["support_source_allowed"] == level["support_source_allowed"], level["level"]
+        assert ours["equals_runtime_provider_key"] == level["equals_runtime_provider_key"]
+    axes = spec["parameter_pooling"]["axes"]
+    assert tuple(axes["never_mutualizable"]) == NEVER_MUTUALIZABLE_AXES
+    assert set(axes["mutualizable"]).isdisjoint(set(NEVER_MUTUALIZABLE_AXES))
+    thresholds = spec["decision_thresholds"]
+    assert thresholds["minimum_marginal_observations"] == MIN_MARGINAL_OBSERVATIONS
+    assert thresholds["minimum_distinct_hands"] == MIN_DISTINCT_HANDS
+    isolation = spec["support_isolation_rule"]
+    assert isolation["rule_id"] == SUPPORT_ISOLATION_RULE
+    assert isolation["runtime_invariant"] == "support.source_key == requested_key"
+    assert isolation["violation_reason_code"] == "COARSE_KEY_SUPPORT_LAUNDERING"
+    contract = spec["runtime_support_contract"]
+    assert sorted(contract["reason_codes"]) == sorted(
+        [STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE, STATUS_EXACT_UNRESOLVED]
+    )
+    assert contract["requested_key"] == "hierarchical_exact_key (L0_EXACT_KEY)"
+    forbidden = spec["raise_sizing_policy"]["forbidden"]
+    for item in (
+        "representative raise price",
+        "legal-minimum substitution",
+        "nearest-price or nearest-context substitution",
+        "target drift or interpolation between observed sizings",
+        "pruning an unresolved frontier as zero mass",
+    ):
+        assert item in forbidden
+    prohibitions = spec["prohibitions"]
+    assert prohibitions["nearest_price"] is False
+    assert prohibitions["nearest_context"] is False
+    assert prohibitions["representative_raise_price"] is False
+    assert prohibitions["admission"] == "NONE"
+    assert spec["status"] == "SPEC_ONLY_NOT_ADMITTED"
+
+
+def test_schema_locks_the_hierarchical_contract_and_validates_the_outputs():
+    schema_path = (
+        ROOT / "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    assert schema["properties"]["schema"]["const"] == (
+        "poker-model-a-preflop-sizing-hierarchical-likelihood/v1"
+    )
+    assert schema["properties"]["identity"]["$ref"] == "#/$defs/identity"
+    assert schema["$defs"]["identity"]["properties"]["candidate_id"]["const"] == CANDIDATE_ID
+    assert schema["$defs"]["identity"]["properties"]["active_model_replaced"]["const"] is False
+    assert schema["properties"]["nearest_price_fallback"]["const"] is False
+    assert schema["properties"]["nearest_context_fallback"]["const"] is False
+    assert schema["properties"]["support_isolation_rule"]["const"] == SUPPORT_ISOLATION_RULE
+    assert schema["properties"]["shrinkage"]["properties"]["kappa0"]["const"] == KAPPA0
+    assert schema["$defs"]["status"]["enum"] == [
+        STATUS_EXACT_EMPIRICAL_STRONG,
+        STATUS_EXACT_HIERARCHICAL_ESTIMATE,
+        STATUS_EXACT_UNRESOLVED,
+    ]
+    exact_schema = json.loads(
+        (ROOT / "contracts/training/model-a-preflop-sizing-likelihood.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    enum = exact_schema["properties"]["identity"]["properties"]["candidate_id"]["enum"]
+    assert enum == [
+        "model-a-preflop-sizing-aware-candidate-v1",
+        "model-a-preflop-sizing-aware-candidate-v2",
+        CANDIDATE_ID,
+    ]
+    context = _stack_variant(100.0)
+    sibling = _stack_variant(60.0)
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[
+            {"context": context, "hand_id": "exact", "action": "RAISE", "target_total_bb": 7.0}
+        ]
+        + _rows(sibling, "sib", MIN_MARGINAL_OBSERVATIONS, 9.0),
+    )
+    assert _contract_errors(schema, candidate, schema) == []
+    hierarchical = resolve_exact_context(candidate=candidate, context=context)
+    response_node = {"$ref": "#/$defs/response"}
+    assert _contract_errors(response_node, hierarchical, schema) == []
+    assert hierarchical["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    strong = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "sch", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    assert _contract_errors(
+        response_node, resolve_exact_context(candidate=strong, context=context), schema
+    ) == []
+    assert _contract_errors(
+        response_node,
+        resolve_exact_context(candidate=strong, context=_price_variant(5.0, 8.0, 9.0)),
+        schema,
+    ) == []
+
+
+if __name__ == "__main__":
+    tests = [
+        value
+        for name, value in sorted(globals().items())
+        if name.startswith("test_") and callable(value)
+    ]
+    for test in tests:
+        test()
+    print(f"preflop hierarchical sizing contract tests: {len(tests)} passed")
