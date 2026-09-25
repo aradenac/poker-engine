@@ -58,6 +58,21 @@ b3bh_preflight_frozen_job_verdict: NOT_OBSERVED_FROM_THIS_WORKER
 b3bh_preflight_browser_coverage: NOT_PROVEN_BY_THIS_WORKER
 b3bh_preflight_browser_unavailable: "Module Python playwright absent ET Chromium pinné 1187 non démarrable (libnspr4/libnss3 absents) ET DNS coupé — repli navigateur local irréalisable sur cet hôte"
 b3bh_self_delta: "révision task-backlog-3bh (pré-vol hors navigateur) : AJOUTE le § 10 de ce rapport, qui consigne l'exécution RÉELLE, commande par commande, des deux jobs gelés au HEAD du worktree b3baf65e8a263bad2cda8d06c734b55876b455e9 (7 commits d'avance sur le tip distant 8ff970b) — codes de sortie observés, jamais extrapolés — et l'indisponibilité navigateur de cet hôte ; elle AJOUTE la clé frozen_job_rerun_required: true et n'altère AUCUN jeton existant (ci_green: NOT_OBSERVED, contract_job_rerun_required: true et red_workflows restent inchangés) ; elle n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (les octets de site/index.html et site/trainer.js ont été sauvés avant les deux essais d'idempotence puis restaurés par copie, sha256 identiques aux blobs HEAD) ; l'orchestrateur gère le commit et la PR"
+boq_preflight_head: eb1d117a7a1070b53bc034109c57ecae987501f5
+boq_preflight_branch: n8n/issue-394/task-backlog-boq
+boq_preflight_head_subject: "chore(n8n): task backlog-wix for issue #394"
+boq_preflight_remote_tip: 8ff970bde9726852ffd77537499e4b7161698c2c
+boq_preflight_bytes_under_control: "édition CSS de la coque Spot Lab : commit 70dc732 (task backlog-qyb) — règle responsive @media(min-width:901px) and (max-height:900px){.matrix{gap:2px}.cell{height:26px}} ajoutée au bloc <style> de site/index.html et ancre site/RELEASE.json réassemblée (blob index.html 033e6517… -> 75b26fb1…)"
+boq_preflight_frozen_commands_executed: 6
+boq_preflight_frozen_commands_exit: "5 commandes de job (a–e) + l'étape d'idempotence du second job gelé (f), toutes EXIT=0 observées localement, plus 3 étapes non-navigateur supplémentaires du job contract de hero-range-editor.yml (2x node --check, contrat de dépôt .mjs) également EXIT=0 ; aucun PASS de job gelé revendiqué depuis ce pré-vol"
+boq_preflight_trainer_loop: "49 modules, 0 échec (les deux modules ajoutés depuis § 10, tests/trainer/test_smoke_orchestration_contract.py et tests/trainer/test_spotlab_range_fit_contract.py, inclus et EXIT=0)"
+boq_preflight_patch_idempotence: "PASS byte-identique sur les octets édités (apply_trainer_mvp.py : sha256 site/index.html et site/trainer.js avant = après, diff -u EXIT=0)"
+boq_preflight_hero_patch_idempotence: "PASS byte-identique sur les octets édités (apply_hero_range_editor.py : sha256 site/index.html avant = après, diff -u EXIT=0) — l'étape qui était rouge à 8ff970b"
+boq_preflight_css_target_present_in_served_bytes: "PASS (statique) — la règle responsive est dans les octets du fichier servi site/index.html (ligne 121), l'ancre de release est recalculée depuis ces octets (write_site_release.py --check EXIT=0) et tests/trainer/test_spotlab_range_fit_contract.py recalcule la géométrie depuis ces mêmes octets"
+boq_preflight_frozen_job_verdict: NOT_OBSERVED_FROM_THIS_WORKER
+boq_preflight_browser_coverage: NOT_PROVEN_BY_THIS_WORKER
+boq_preflight_browser_unavailable: "Module Python playwright absent ET Chromium pinné 1187 (chrome + headless_shell) non démarrable faute de libnspr4/libnss3 (chargement EXIT=127) ET réseau/DNS coupé (aucune installation possible) — repli navigateur local irréalisable sur cet hôte"
+boq_self_delta: "révision task-backlog-boq (pré-vol hors navigateur sur les octets édités) : AJOUTE le § 11 de ce rapport, qui consigne l'exécution RÉELLE, commande par commande et sans rien pousser, des étapes non-navigateur des deux workflows gelés au HEAD du worktree eb1d117a7a1070b53bc034109c57ecae987501f5, qui porte l'édition CSS 70dc732 (task backlog-qyb) — codes de sortie observés, sha256 avant/après, jamais extrapolés — la preuve d'idempotence byte-identique des deux patches sur ces octets, la présence statique de la cible CSS dans les octets servis, et la moitié NON couverte (browser-smoke aux deux viewports, atteignabilité des panneaux, absence de défilement global, clic réel du raccourci Accueil) avec l'impossibilité locale du repli navigateur ; elle n'altère AUCUN jeton existant (ci_green: NOT_OBSERVED, contract_job_rerun_required: true, frozen_job_rerun_required: true et red_workflows restent inchangés) ; elle n'écrit AUCUN octet de site/**, de .github/**, de tests/ ni d'outils (les octets de site/index.html et site/trainer.js ont été sauvés avant les deux essais d'idempotence, puis vérifiés identiques aux blobs HEAD — aucune restauration n'a été nécessaire, les patches n'ayant rien écrit) ; l'orchestrateur gère le commit et la PR"
 ---
 
 # Rapport PASS/FAIL — ancre release, boucle complète, garde anti-claims et rapport CI (#394, révisé par task-backlog-lzl)
@@ -1053,6 +1068,355 @@ tests/trainer/test_review_inbox_ui_contract.py                          EXIT=0
 tests/trainer/test_site_release_identity.py                             EXIT=0
 tests/trainer/test_smoke_orchestration_contract.py                      EXIT=0
 tests/trainer/test_source_prior_unconditioned_contract.py               EXIT=0
+tests/trainer/test_spotlab_subviews_contract.py                         EXIT=0
+tests/trainer/test_trainer_analysis_state_contract.py                   EXIT=0
+tests/trainer/test_trainer_d6_exposure_contract.py                      EXIT=0
+tests/trainer/test_trainer_hero_ranges.py                               EXIT=0
+tests/trainer/test_trainer_latency_contract.py                          EXIT=0
+tests/trainer/test_trainer_parallel_review_contract.py                  EXIT=0
+tests/trainer/test_trainer_preload_contract.py                          EXIT=0
+tests/trainer/test_trainer_result_cache_contract.py                     EXIT=0
+tests/trainer/test_trainer_rng_determinism.py                           EXIT=0
+tests/trainer/test_trainer_smoke_determinism_contract.py                EXIT=0
+tests/trainer/test_trainer_static.py                                    EXIT=0
+```
+
+## (11) Pré-vol hors navigateur au HEAD édité `eb1d117` — l'édition CSS de la coque sous contrôle d'idempotence
+
+Cette section est **strictement additive** : elle consigne l'exécution **réelle**,
+commande par commande et **sans rien pousser**, des étapes **non-navigateur** des
+**deux workflows gelés** au HEAD du worktree de cette task,
+**`eb1d117a7a1070b53bc034109c57ecae987501f5`**
+(`chore(n8n): task backlog-wix for issue #394`), qui porte l'**édition CSS**
+`70dc732` (task `backlog-qyb`) : la règle responsive
+`@media(min-width:901px) and (max-height:900px){ .matrix{gap:2px} .cell{height:26px} }`
+ajoutée au bloc `<style>` de `site/index.html` (compression du budget vertical du
+panneau « Range adverse » à 1366x768). C'est **cette édition** que le pré-vol met
+sous contrôle d'idempotence : un patch qui ré-ancre une insertion dans un octet
+modifié peut devenir non idempotent, et c'est exactement le mode d'échec qui avait
+rendu l'étape `contract` rouge à `8ff970b` (§ 8).
+
+Les deux workflows gelés concernés sont
+`.github/workflows/trainer-smoke.yml` (job `static-contract`, plus son job
+`browser-smoke` **non exécutable ici**) et
+`.github/workflows/hero-range-editor.yml` (job `contract`). Cette section
+**n'affirme aucun `PASS` de job gelé** : un pré-vol local n'est pas un run CI
+distinct des octets livrés.
+
+### (11.1) Octets sous contrôle au HEAD `eb1d117`
+
+```
+$ git rev-parse HEAD
+eb1d117a7a1070b53bc034109c57ecae987501f5
+$ sha256sum site/index.html site/trainer.js site/trainer.css site/RELEASE.json
+3ebf502135a52171ce3d63644d4966ebe765d4ad178edc2bd162848e6af35b3e  site/index.html
+cfd91bbf1c4054d5e1720866486db23a146ff1fcae306758dad2e3fb7687e1a7  site/trainer.js
+c99880520f6ee385ac3228a7a2fd239151874a05680975f97700bba9b8d8c07d  site/trainer.css
+cd938cea75c508931b310ec70d5895ff5cef2b49a73bcc90b0615f44b237dd1f  site/RELEASE.json
+$ git hash-object site/index.html site/trainer.js
+75b26fb163960b06df00372c1f8be5598a968750
+70490af692872b663a74ad1d2b180cefe9446568
+$ git rev-parse HEAD:site/index.html HEAD:site/trainer.js
+75b26fb163960b06df00372c1f8be5598a968750
+70490af692872b663a74ad1d2b180cefe9446568
+```
+
+| Objet | `sha256` | blob Git | Égalité blob HEAD |
+| --- | --- | --- | --- |
+| `site/index.html` | `3ebf5021…f35b3e` | `75b26fb1…968750` | **oui** |
+| `site/trainer.js` | `cfd91bbf…7687e1a7` | `70490af6…46568` | **oui** |
+| `site/trainer.css` | `c9988052…b8d8c07d` | — | inchangé |
+
+L'ancre `site/RELEASE.json` porte bien l'empreinte blob des octets édités :
+
+```
+$ python3 -c "import json;d=json.load(open('site/RELEASE.json'));print(d['identity']['assembled_site']['functional_files']['site/index.html']['git_blob_sha'])"
+75b26fb163960b06df00372c1f8be5598a968750
+```
+
+### (11.2) Les commandes gelées (a)–(e) du job `static-contract`
+
+Chaque commande est celle du workflow gelé, rejouée telle quelle depuis la racine
+du dépôt. **Aucune n'est extrapolée** : le code de sortie est celui rendu par le
+shell.
+
+```
+$ PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py
+REPRO workflow batch-1 tests: 9 passed
+EXIT=0
+```
+
+```
+$ node --version && node --check site/trainer.js
+v24.21.0
+EXIT=0
+```
+
+```
+$ python3 tools/write_site_release.py --check
+release source anchor verified: site/RELEASE.json; assembled identity can be materialized
+EXIT=0
+```
+
+```
+$ for test in tests/trainer/test_*.py ; do python3 "$test" ; done
+… 49 modules …
+MODULES=49 FAILS=0
+```
+
+La boucle compte désormais **49** modules (contre 48 en § 10) : les deux modules
+ajoutés depuis — `tests/trainer/test_smoke_orchestration_contract.py` (task
+`backlog-eit`, commit `57b86f2`) et
+`tests/trainer/test_spotlab_range_fit_contract.py` (task `backlog-wix`, commit
+`eb1d117`, le contrat qui recalcule la géométrie de la coque depuis les octets
+livrés) — sont **inclus dans la boucle** et sortent `EXIT=0`. Le détail
+module-par-module est en annexe (11.8).
+
+| Commande | Sortie observée | `EXIT` |
+| --- | --- | --- |
+| (a) `PYTHONPATH=. python3 tests/ci/test_repro_workflow_batch1.py` | `REPRO workflow batch-1 tests: 9 passed` | `0` |
+| (b) `node --check site/trainer.js` | `v24.21.0` — aucune sortie d'erreur | `0` |
+| (c) `python3 tools/write_site_release.py --check` | ancre vérifiée, identité matérialisable | `0` |
+| (d) `for test in tests/trainer/test_*.py ; do python3 "$test" ; done` | 49 modules, 0 échec | tous `0` |
+
+### (11.3) Étape d'idempotence des patches (e) et (f)
+
+**(e) `tools/patches/apply_trainer_mvp.py`** — l'étape « Patch idempotence » du
+job `static-contract` :
+
+```
+$ sha256sum site/index.html site/trainer.js > /tmp/before.sha
+$ python3 tools/patches/apply_trainer_mvp.py
+trainer MVP integration patch applied
+EXIT=0
+$ sha256sum site/index.html site/trainer.js > /tmp/after.sha
+$ diff -u /tmp/before.sha /tmp/after.sha
+EXIT=0
+```
+
+**(f) `tools/patches/apply_hero_range_editor.py`** — l'étape « Main application
+integration is idempotent » du job `contract` de
+`.github/workflows/hero-range-editor.yml`, **celle qui était rouge à `8ff970b`**
+(§ 8 et § 9) :
+
+```
+$ sha256sum site/index.html > /tmp/hero-before.sha
+$ python3 tools/patches/apply_hero_range_editor.py
+/home/…/site/index.html
+EXIT=0
+$ sha256sum site/index.html > /tmp/hero-after.sha
+$ diff -u /tmp/hero-before.sha /tmp/hero-after.sha
+EXIT=0
+```
+
+Le marqueur de garde `id="heroRangesOpenBtn"` est présent **exactement une fois**
+et `id="trainerOpenBtn"` également, donc `patch_text()` retourne le texte
+inchangé : **aucun octet n'est écrit**, les empreintes encadrantes sont égales et
+le `diff -u` — la comparaison exacte du workflow — retourne `EXIT=0`.
+
+### (11.4) Idempotence byte-identique sur les octets édités — synthèse
+
+| Fichier | `sha256` avant | `sha256` après | Byte-identique |
+| --- | --- | --- | --- |
+| `site/index.html` (patch trainer MVP) | `3ebf5021…f35b3e` | `3ebf5021…f35b3e` | **oui** |
+| `site/trainer.js` (patch trainer MVP) | `cfd91bbf…7687e1a7` | `cfd91bbf…7687e1a7` | **oui** |
+| `site/index.html` (patch Hero range editor) | `3ebf5021…f35b3e` | `3ebf5021…f35b3e` | **oui** |
+
+Les deux patches impriment leur message de succès et **n'écrivent aucun octet**
+sur ces sources : l'édition CSS `70dc732` **n'a pas introduit de régression
+d'idempotence**, et l'arbre n'a eu besoin d'**aucune** restauration.
+
+**Étapes non-navigateur supplémentaires** du job `contract` de
+`.github/workflows/hero-range-editor.yml` (pour mémoire, le workflow étant gelé et
+susceptible d'être relancé) :
+
+```
+$ node --check site/hero-ranges.js
+EXIT=0
+$ node --check site/hero-ranges-app.js
+EXIT=0
+$ node tests/hero_ranges/test_hero_range_repository.mjs
+Hero range repository contract: PASS (2 legacy ranges, 3 contexts, hero range editor patch idempotent)
+EXIT=0
+```
+
+### (11.5) La cible CSS est bien dans les octets servis (statique)
+
+`site/index.html` est l'asset exact que le serveur statique des jobs sert. La
+règle responsive de l'édition CSS y est présente **une fois** :
+
+```
+$ grep -n 'min-width:901px) and (max-height:900px)' site/index.html
+121:  @media(min-width:901px) and (max-height:900px){
+```
+
+Trois observations statiques, **sans navigateur**, corroborent que la cible est
+bien dans les octets servis et non absente :
+
+1. la règle est dans les **octets du fichier** `site/index.html`
+   (`sha256 3ebf5021…f35b3e`), donc dans ce que le serveur statique sert ;
+2. `python3 tools/write_site_release.py --check` **recalcule** l'identité depuis
+   ces octets et sort `EXIT=0` (blob `75b26fb1…` = celui de
+   `git rev-parse HEAD:site/index.html`) ;
+3. `tests/trainer/test_spotlab_range_fit_contract.py` **recalcule** la géométrie
+   de la coque depuis ces mêmes octets (13 rangées × hauteur de cellule + 12
+   gouttières) et **échoue si la règle disparaît** ou si le budget de la coque
+   est gonflé jusqu'à ne plus discriminer la grille non compressée.
+
+Un contrôle **de transport** (fetch HTTP en boucle locale) a été **tenté** et
+**bloqué** par le bac à sable de ce worker (`urlopen` →
+`URLError [Errno 1] Operation not permitted` ; `curl` → `EXIT=7`), et non par le
+dépôt : je le consigne **tel quel** et ne le présente pas comme une preuve
+négative. La cible est prouvée présente dans les **octets du fichier servi** ; sa
+présence **après transport HTTP** relève du job gelé et n'est pas revendiquée ici.
+
+### (11.6) Moitié NON couverte : `browser-smoke` aux deux viewports
+
+Ce pré-vol **ne couvre pas** — et ne prétend pas couvrir — la moitié navigateur
+de l'acceptation #394. Restent **non observés localement** :
+
+- l'**absence de défilement global** (`document.scrollingElement.scrollHeight <=
+  clientHeight`) pour les **six modes** `home`, `spotlab`, `review`, `replayer`,
+  `training`, `strategy`, **aux deux viewports de référence** `1500x1000` et
+  `1366x768` ;
+- l'**atteignabilité réelle** des panneaux Spot Lab, Replayer et Trainer (les
+  hit-tests de panneaux à `1366x768` nommés par la revue humaine) ;
+- le **clic réel** du raccourci Accueil `#homePage a[href="#historiesSection"]`,
+  **non intercepté** — `tests/trainer/smoke_modes_desktop.py` exécute
+  `await page.click('#homePage a[href="#historiesSection"]')`, sans `force=True`,
+  sans `dispatch_event`, sans retry et sans skip.
+
+Les commandes (a)–(f) et les étapes supplémentaires de (11.3) sont **statiques** :
+aucune n'exécute un navigateur. Le **seul** canal qui observe ces trois points est
+le job gelé `browser-smoke` de `.github/workflows/trainer-smoke.yml` (§ 7 et § 9),
+plus le job `browser-smoke` de `.github/workflows/hero-range-editor.yml` pour
+l'éditeur autonome. **Aucun `PASS` de ces jobs n'est écrit ici** : ils n'ont pas
+été observés depuis ce worker.
+
+### (11.7) Repli navigateur local : irréalisable sur cet hôte (constat observé)
+
+Le repli navigateur est **irréalisable sur cet hôte**, et les raisons ont été
+**vérifiées** ici, pas supposées :
+
+```
+$ python3 -c "import playwright"
+ModuleNotFoundError: No module named 'playwright'
+EXIT=1
+$ python3 tests/trainer/smoke_modes_desktop.py
+smoke_modes_desktop: Playwright is unavailable (ModuleNotFoundError("No module named 'playwright'")). …
+EXIT=1
+$ python3 tests/trainer/smoke_trainer.py
+    from playwright.async_api import async_playwright
+ModuleNotFoundError: No module named 'playwright'
+EXIT=1
+$ ~/.cache/ms-playwright/chromium-1187/chrome-linux/chrome --version
+…/chrome: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
+EXIT=127
+$ ~/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell --version
+…/headless_shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
+EXIT=127
+$ ldconfig -p | grep -Ei 'libnspr4|libnss3'
+NO libnspr4/libnss3 in ldconfig cache
+$ timeout 8 curl -sS https://pypi.org/simple/
+curl: (6) Could not resolve host: pypi.org
+EXIT=6
+```
+
+Chromium **pinné** (révision `1187`, `140.0.7339.16`, cf.
+`reproducibility/browser-identity.lock.json`) est **présent** dans le cache mais
+**ne démarre pas** : il manque `libnspr4.so` et `libnss3.so`, absents de l'hôte.
+Le module Python `playwright` est **absent**, et le **réseau/DNS** est **coupé**
+(`curl` `EXIT=6`), donc ces bibliothèques **ne peuvent pas être installées ici**.
+Le bac à sable refuse en outre la boucle locale (`EXIT=7`), ce qui exclut même un
+serveur statique de repli. Conclusion : aucun smoke navigateur n'est exécutable
+localement, et **la seule autorité reste le run des jobs gelés sur un HEAD
+poussé**.
+
+### (11.8) Conséquence sur les jetons, arbre intact, et clôture
+
+La condition de bascule de § 9 n'est **pas** remplie : ce pré-vol local ne
+remplace pas un run CI poussé. Donc, **inchangés** :
+
+- `ci_green` reste **`NOT_OBSERVED`** ;
+- `frozen_job_rerun_required` reste **`true`** : le job gelé `browser-smoke` doit
+  tourner sur les octets livrés ;
+- `contract_job_rerun_required` reste **`true`** : l'étape d'idempotence du job
+  `contract` est rouge au HEAD poussé `8ff970b`, sa correction n'y est pas — mais
+  elle est **verte localement** sur les octets édités (11.4) ;
+- `red_workflows` **nomme** toujours le workflow rouge réellement observé,
+  `.github/workflows/hero-range-editor.yml` (job `contract`, run `36081969061`,
+  étape « Main application integration is idempotent »).
+
+Après les deux essais d'idempotence, l'arbre est **intact** (les patches
+n'avaient rien écrit, aucune restauration n'a donc été nécessaire). Mesuré
+**avant** l'écriture de ce rapport :
+
+```
+$ git status --porcelain
+                 # vide — aucun fichier modifié par les patches
+$ diff <(git hash-object site/index.html site/trainer.js) <(git rev-parse HEAD:site/index.html HEAD:site/trainer.js)
+IDENTICAL        # EXIT=0
+```
+
+En **fin de cette task** (rapport écrit), l'unique entrée de `git status` est ce
+rapport, et la vérification finale d'ancre sort `EXIT=0` :
+
+```
+$ git status --porcelain
+ M docs/issue-394-release-identity-ci-report.md
+$ python3 tools/write_site_release.py --check
+release source anchor verified: site/RELEASE.json; assembled identity can be materialized
+EXIT=0
+$ python3 tools/check_issue394_stale_claims.py
+issue-394 stale claims guard: PASS (1052 versioned text files scanned, 4 claims)
+```
+
+Cette section n'écrit **aucun octet** de `site/**`, de `.github/**`, de `tests/`
+ni d'outils ; elle est strictement additive au rapport. Elle ne peut pas citer le
+`sha256` de son propre blob (auto-référence) ; le worker ne commit ni ne pousse,
+l'orchestrateur gère le commit et la PR.
+
+#### (11.8.1) Annexe — les 49 modules de la boucle gelée (tous `EXIT=0`)
+
+```
+tests/trainer/test_action_sizing_ev_presentation.py                     EXIT=0
+tests/trainer/test_advanced_import_central_ui_contract.py               EXIT=0
+tests/trainer/test_analysis_state_consistency_contract.py               EXIT=0
+tests/trainer/test_analysis_state_mirror_contract.py                    EXIT=0
+tests/trainer/test_appview_no_recompute_contract.py                     EXIT=0
+tests/trainer/test_auxiliary_scale_surfaces_contract.py                 EXIT=0
+tests/trainer/test_d6_render_matrix_contract.py                         EXIT=0
+tests/trainer/test_decision_summary_contract.py                         EXIT=0
+tests/trainer/test_delta_ev_primary_contract.py                         EXIT=0
+tests/trainer/test_deployment_metadata.py                               EXIT=0
+tests/trainer/test_desktop_accessibility_contract.py                    EXIT=0
+tests/trainer/test_hh_import_ux_contract.py                             EXIT=0
+tests/trainer/test_implicit_review_context.py                           EXIT=0
+tests/trainer/test_known_hand_override_contract.py                      EXIT=0
+tests/trainer/test_leak_training_ui_contract.py                         EXIT=0
+tests/trainer/test_local_persistence_ux_contract.py                     EXIT=0
+tests/trainer/test_model_b_robustness_ui_contract.py                    EXIT=0
+tests/trainer/test_opponent_analysis_state_contract.py                  EXIT=0
+tests/trainer/test_opponent_range_display_contract.py                   EXIT=0
+tests/trainer/test_opponent_range_semantics_rework_contract.py          EXIT=0
+tests/trainer/test_posterior_state_contract.py                          EXIT=0
+tests/trainer/test_preflop_runtime_contract.py                          EXIT=0
+tests/trainer/test_prior_posterior_ui_contract.py                       EXIT=0
+tests/trainer/test_product_architecture_contract.py                     EXIT=0
+tests/trainer/test_product_identity_ux_contract.py                      EXIT=0
+tests/trainer/test_range_display_docs_contract.py                       EXIT=0
+tests/trainer/test_range_vocabulary_contract.py                         EXIT=0
+tests/trainer/test_replayer_actor_comment_semantics.py                  EXIT=0
+tests/trainer/test_replayer_analysis_state_contract.py                  EXIT=0
+tests/trainer/test_replayer_hand_class.py                               EXIT=0
+tests/trainer/test_replayer_modal_prior_states.py                       EXIT=0
+tests/trainer/test_review_dashboard_ui_contract.py                      EXIT=0
+tests/trainer/test_review_hero_actual_result.py                         EXIT=0
+tests/trainer/test_review_inbox_ui_contract.py                          EXIT=0
+tests/trainer/test_site_release_identity.py                             EXIT=0
+tests/trainer/test_smoke_orchestration_contract.py                      EXIT=0   # nouveau depuis § 10
+tests/trainer/test_source_prior_unconditioned_contract.py               EXIT=0
+tests/trainer/test_spotlab_range_fit_contract.py                        EXIT=0   # nouveau depuis § 10
 tests/trainer/test_spotlab_subviews_contract.py                         EXIT=0
 tests/trainer/test_trainer_analysis_state_contract.py                   EXIT=0
 tests/trainer/test_trainer_d6_exposure_contract.py                      EXIT=0
