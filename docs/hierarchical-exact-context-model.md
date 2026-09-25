@@ -121,6 +121,39 @@ Reason codes:
   unresolved, or the support isolation rule would be violated. No action is
   emitted.
 
+## Protocol revision v2: exact support versus exact-context estimate admissibility
+
+The single v1 protocol is split, in an explicitly versioned and content-addressed
+revision, into two layers. The revision is
+`analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json`
+(`poker-hierarchical-frozen-validation-protocol/v2`), written by
+`tools/training/write_frozen_validation_protocol_v2.py`. It is **additive and
+interpretive**: the v1 bytes are not rewritten, they stay the source of record
+for the thresholds, gates and comparators, and no threshold moves.
+
+* **Layer A — exact empirical support.** `EXACT_EMPIRICAL_STRONG` is unchanged:
+  the label is the same, it is claimed only at `L0_EXACT_KEY`, both the 20
+  marginal-observation and the 20 distinct-hand thresholds must be met, and the
+  support is never borrowed from another key
+  (`SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT`, `support.source_key ==
+  requested_key`). A pooled estimate is never relabelled as exact support.
+* **Layer B — exact-context estimate admissibility.** `EXACT_HIERARCHICAL_
+  ESTIMATE` answers for the *same* exact requested key: the key identity is
+  preserved, the support counts stay that key's own rows (possibly zero), and
+  pooling is strictly parametric — a declared parent level `L1..L4` supplies
+  only the Dirichlet prior (`kappa0 = 16`, `alpha = 0.5` per legal marginal
+  action). The estimate is admissible only with its effective sample size, its
+  uncertainty band at the level actually used, its pooling provenance, and the
+  calibration, pooling and sizing obligations met.
+
+The three statuses and the rule for consuming a node's answer are stated once in
+the revision and repeated normatively in
+[docs/hierarchical-exact-context-runtime-contract.md](hierarchical-exact-context-runtime-contract.md):
+an `EXACT_HIERARCHICAL_ESTIMATE` is consumable as an estimate and never as exact
+support, an `EXACT_UNRESOLVED` node is consumable as nothing, and closing the
+tree still requires an admissible exact answer at `L0_EXACT_KEY` for every
+required node.
+
 ## Granularity decision against `RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE`
 
 The implemented likelihood key drops `history`, `pot_before_bb`,

@@ -19,6 +19,7 @@ change and no production effect. It records semantics, not an admission.
 | `analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json` | `poker-issue419-exact-tree-preflight/v1` | `required_tree_complete` and its admissibility conditions |
 | `analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json` | `poker-raise-sizing-frontier-resolution/v1` | unresolved RAISE sizing frontiers |
 | `analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json` | `poker-hierarchical-validation-result/v1` | frozen VALIDATION verdict |
+| `analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json` | `poker-hierarchical-frozen-validation-protocol/v2` | versioned revision splitting exact empirical support from exact-context estimate admissibility; references the v1 digests |
 | `analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json` | `poker-hierarchical-exact-tree-terminal-decision/v1` | terminal decision, blockers and admission rule |
 
 Frozen identities used by this contract:
@@ -71,6 +72,50 @@ Three derived rules follow and are normative:
 3. **The posterior never changes a support count.** Pooling may move a prior or
    a posterior; the observations, distinct hands and effective sample size
    reported for the requested key stay exactly what that key contains.
+
+### 1.1 Explicitly versioned protocol revision v2 (two layers, no threshold moved)
+
+The single frozen protocol is split into two explicitly named layers by a
+separately versioned, content-addressed revision:
+
+`analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json`
+(`poker-hierarchical-frozen-validation-protocol/v2`, byte digest
+`508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`, canonical
+payload `a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`),
+written by `tools/training/write_frozen_validation_protocol_v2.py`. It revises
+`poker-hierarchical-frozen-validation-protocol/v1`
+(`69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3`, canonical
+`f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5`) additively:
+the v1 bytes are byte-identical, v1 stays the source of record for every
+threshold, gate and comparator, and the revision admits nothing. Because the v1
+payload pins the digest of the v1 generator, the revision has its own generator
+— editing the v1 tool would break the pre-registration.
+
+* **Layer A, exact empirical support** (`EXACT_EMPIRICAL_SUPPORT`). The
+  `EXACT_EMPIRICAL_STRONG` label is unchanged, is claimed only at
+  `L0_EXACT_KEY`, requires both frozen thresholds (20 marginal observations and
+  20 distinct hands), and never borrows support.
+* **Layer B, exact-context estimate admissibility**
+  (`EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY`). `EXACT_HIERARCHICAL_ESTIMATE`
+  answers for the same exact requested key with its identity preserved, its own
+  support counts (possibly zero), strictly parametric pooling over `L1..L4`, and
+  mandatory effective sample size, uncertainty at the level actually used and
+  pooling provenance, gated on calibration, pooling and sizing.
+
+The rule for consuming a node's answer is
+`CONSUME_ONLY_AN_ADMISSIBLE_NODE_ANSWER`:
+
+| Node answer | Consumable | As |
+| --- | --- | --- |
+| `EXACT_EMPIRICAL_STRONG` | yes | exact empirical support (pooling level must be `L0_EXACT_KEY`) |
+| `EXACT_HIERARCHICAL_ESTIMATE` | yes | an estimate with its declared pooling level, never as exact support |
+| `EXACT_UNRESOLVED` | no | nothing; the blocker is reported and never repaired |
+
+A node answering `EXACT_HIERARCHICAL_ESTIMATE` is consumable as an estimate but
+does not close the node: `required_tree_complete` still requires an admissible
+exact answer at `L0_EXACT_KEY` for every required node. The #367 rule is
+unchanged by the revision (`ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`), and
+no single admissible node authorizes a #367 consumption.
 
 ## 2. Strict identity / pooling separation
 
@@ -243,11 +288,14 @@ revision. The current admitted model for #367 stays
 | `tests/simulation/test_issue419_exact_tree_preflight.py` | `required_tree_complete`, the refused substitutions and the absence of Hero EV |
 | `tests/training/test_hierarchical_terminal_decision.py` | the terminal decision, the blockers and the untouched frozen inputs |
 | `tests/training/test_hierarchical_exact_context_contract_doc.py` | this normative document, re-derived against the artifacts above |
+| `tests/training/test_frozen_validation_protocol_v2.py` | the versioned v2 revision, the two layers and the immutability of every frozen v1 surface |
 
 Reproduce the artifacts with
 `python3 tools/training/write_hierarchical_model_spec.py`,
 `python3 tools/training/fit_model_a_preflop_sizing_hierarchical.py`,
 `python3 tools/simulation/issue419_exact_tree_preflight.py`,
 `python3 tools/training/resolve_raise_sizing_frontiers.py` and
-`python3 tools/training/finalize_hierarchical_exact_tree_decision.py`; each
-supports `--check`.
+`python3 tools/training/finalize_hierarchical_exact_tree_decision.py`, and the
+protocol revision with
+`python3 tools/training/write_frozen_validation_protocol_v2.py`; each supports
+`--check`.
