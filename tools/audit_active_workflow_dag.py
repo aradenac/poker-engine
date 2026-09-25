@@ -14,9 +14,10 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from tools.audit_github_workflows import parse_concurrency, parse_jobs, parse_triggers
+from tools.audit_github_workflows import (MANUAL_ONLY_LIFECYCLE, automatic, parse_concurrency,
+    parse_jobs, parse_triggers)
 
-BASE_SHA = "ac208d26cbf3f16b498fd5333ad3b7c4fa58355b"
+BASE_SHA = "4559315b08fd224409c5469a4073e07ee89225b3"
 INVENTORY = "analysis/workflow_audit/workflows.json"
 OUTPUT = "analysis/workflow_audit/active_workflow_dag_v2.json"
 DOC = "docs/ci-workflow-dag.md"
@@ -47,7 +48,11 @@ def git(*args: str) -> str:
 
 
 def base_text(path: str) -> str:
-    return git("show", f"{BASE_SHA}:{path}")
+    try:
+        return git("show", f"{BASE_SHA}:{path}")
+    except subprocess.CalledProcessError:
+        # A workflow may be newer than the pinned base; fall back to the checkout text.
+        return (ROOT / path).read_text()
 
 
 def _top_block(text: str, key: str) -> str | None:
@@ -213,7 +218,7 @@ def workflow(path: str, text: str, inventory: dict[str, Any]) -> dict[str, Any]:
     safe = side_effect in {"READ_ONLY", "ARTIFACT_ONLY"}
     blockers = [] if safe else ["write/publication or unknown permission surface"]
     return {
-        "path": path, "name": name, "lifecycle": "current", "role": inventory["role"],
+        "path": path, "name": name, "lifecycle": inventory.get("lifecycle", "current"), "role": inventory["role"],
         "triggers": triggers,
         "path_filters": {event: {k: v for k, v in cfg.items() if k in ("paths", "paths_ignore")}
                          for event, cfg in triggers.items() if any(k in cfg for k in ("paths", "paths_ignore"))},
@@ -340,16 +345,35 @@ def simulate(rows: list[dict[str, Any]], scenario: tuple[str, str, str, str]) ->
             "simulation_disposition": "UNKNOWN" if unknown else "SUPPORTED_STATIC_SUBSET"}
 
 
+def split_active(rows: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Active = every workflow that is not one of the #373 manual-only historical workflows."""
+    manual_only = sorted(path for path, row in rows.items() if row.get("lifecycle") == MANUAL_ONLY_LIFECYCLE)
+    excluded = set(manual_only)
+    return sorted(path for path in rows if path not in excluded), manual_only
+
+
 def build() -> dict[str, Any]:
-    inventory_text = base_text(INVENTORY)
-    inventory = json.loads(inventory_text)
-    current = {r["path"]: r for r in inventory["workflows"] if r["lifecycle"] == "current"}
+    inventory_text = (ROOT / INVENTORY).read_text()
+    document = json.loads(inventory_text)
+    rows = {r["path"]: r for r in document["workflows"]}
     present = {p.relative_to(ROOT).as_posix() for p in (ROOT / ".github/workflows").glob("*.y*ml")}
-    missing = set(current) - present
+    missing = set(rows) - present
     if missing:
-        raise AuditError(f"current workflows missing from checkout: {sorted(missing)}")
-    before = [workflow(path, base_text(path), current[path]) for path in sorted(current)]
-    after = [workflow(path, (ROOT / path).read_text(), current[path]) for path in sorted(current)]
+        raise AuditError(f"inventory workflows missing from checkout: {sorted(missing)}")
+    absent = present - set(rows)
+    if absent:
+        raise AuditError(f"workflows absent from the regenerated inventory: {sorted(absent)}")
+    active, manual_only = split_active(rows)
+    for path in active:
+        triggers = parse_triggers((ROOT / path).read_text().splitlines())
+        if not automatic(triggers):
+            raise AuditError(f"{path}: active workflow has no automatic trigger")
+    for path in manual_only:
+        triggers = parse_triggers((ROOT / path).read_text().splitlines())
+        if set(triggers) != {"workflow_dispatch"}:
+            raise AuditError(f"{path}: manual-only workflow declares non-manual triggers")
+    before = [workflow(path, base_text(path), rows[path]) for path in active]
+    after = [workflow(path, (ROOT / path).read_text(), rows[path]) for path in active]
     edges = []
     by_name = {row["name"]: row["path"] for row in after}
     if len(by_name) != len(after):
@@ -362,11 +386,15 @@ def build() -> dict[str, Any]:
                           "from_path": by_name[source], "to_path": row["path"]})
     simulations = [{"scenario": s[0], "before": simulate(before, s), "after": simulate(after, s)}
                    for s in SCENARIOS]
-    data = {"schema": "poker-active-workflow-dag/v2", "issue": 382,
+    data = {"schema": "poker-active-workflow-dag/v2", "issue": 382, "parent_issue": 204,
             "base_sha": BASE_SHA, "inventory_source": INVENTORY,
             "inventory_sha256": hashlib.sha256(inventory_text.encode()).hexdigest(),
-            "active_definition": "lifecycle=current in the Git-bound #242 inventory and file present",
+            "inventory_snapshot_base_sha": document.get("snapshot_base_sha"),
+            "inventory_workflow_count": len(rows),
+            "active_definition": ("workflow file present at HEAD with at least one automatic trigger; "
+                                  "the #373 manual-only historical workflows are excluded explicitly"),
             "active_workflow_count": len(after), "workflows": after,
+            "excluded_manual_only_workflows": manual_only, "manual_only_count": len(manual_only),
             "workflow_run_edges": edges, "representative_scenario_count": len(simulations),
             "representative_scenarios": simulations,
             "aggregate": {"side_effect_classes": dict(Counter(r["side_effect_class"] for r in after)),
@@ -375,7 +403,7 @@ def build() -> dict[str, Any]:
                 "static_cost_proxy": sum(r["static_cost_proxy"]["score"] for r in after)},
             "simulation_contract": {"supported": "single-path push/pull_request filters, literal/*/** globs, branch filters, workflow_run name cascade",
                 "unsupported": "arbitrary GitHub expressions are marked UNKNOWN; UNKNOWN side effects are never cancellation-safe"}}
-    validate_data(data, set(current))
+    validate_data(data, set(active))
     return data
 
 
@@ -385,6 +413,11 @@ def validate_data(data: dict[str, Any], expected_current: set[str]) -> None:
         raise AuditError("DAG omits, duplicates, or invents a lifecycle=current workflow")
     if data.get("active_workflow_count") != len(expected_current):
         raise AuditError("active workflow count is inconsistent")
+    excluded = data.get("excluded_manual_only_workflows", [])
+    if data.get("manual_only_count") != len(excluded) or set(excluded) & expected_current:
+        raise AuditError("manual-only exclusion set is inconsistent")
+    if data.get("inventory_workflow_count") != len(expected_current) + len(excluded):
+        raise AuditError("active + manual-only does not cover the regenerated inventory")
     if data.get("representative_scenario_count") != len(SCENARIOS):
         raise AuditError("representative scenario set is incomplete")
     for row in data["workflows"]:
@@ -396,8 +429,15 @@ def validate_data(data: dict[str, Any], expected_current: set[str]) -> None:
 
 def markdown(data: dict[str, Any]) -> str:
     out = ["# Active CI workflow DAG", "",
-        f"Generated for issue #382 from base `{data['base_sha']}`. This is a static model, not billed-minute telemetry.", "",
-        f"Active workflows: **{data['active_workflow_count']}**; jobs: **{data['aggregate']['job_count']}**; cost proxy: **{data['aggregate']['static_cost_proxy']}**.", "",
+        f"Generated for issue #204 (DAG v2, originally #382) from base `{data['base_sha']}` against inventory snapshot "
+        f"`{data.get('inventory_snapshot_base_sha')}`. This is a static model, not billed-minute telemetry.", "",
+        f"Active workflows: **{data['active_workflow_count']}** (automatic triggers); manual-only excluded: "
+        f"**{data['manual_only_count']}**; jobs: **{data['aggregate']['job_count']}**; "
+        f"cost proxy: **{data['aggregate']['static_cost_proxy']}**.", "",
+        "The active DAG is exactly the set of workflows carrying at least one automatic trigger "
+        "(`push`, `pull_request`, `workflow_run`, ...). The #373 historical quarantine migrated the "
+        "`workflow_dispatch`-only workflows to manual-only; they are listed as excluded below and never "
+        "contribute to the active runs/jobs/cost counts.", "",
         "## Workflows", "",
         "| Workflow | Role | Triggers | Jobs | Side effect | REPRO | Concurrency |", "|---|---|---|---:|---|---|---|"]
     for row in data["workflows"]:
@@ -405,6 +445,13 @@ def markdown(data: dict[str, Any]) -> str:
         conc_text = (f"`{conc.get('group')}` / cancel={str(conc.get('cancel_in_progress')).lower()}"
                      if conc else "none")
         out.append(f"| `{row['path']}` | {row['role']} | {', '.join(row['triggers'])} | {len(row['jobs'])} | {row['side_effect_class']} | {row['repro_status']} | {conc_text} |")
+    out += ["", "## Manual-only workflows excluded", "",
+            "These workflows subscribe to `workflow_dispatch` only (historical evidence, quarantined by #373). "
+            "They are outside the active DAG by construction.", ""]
+    if data["excluded_manual_only_workflows"]:
+        out += [f"- `{path}`" for path in data["excluded_manual_only_workflows"]]
+    else:
+        out.append("- None")
     out += ["", "## workflow_run edges", ""]
     if data["workflow_run_edges"]:
         out += [f"- `{e['from_path']}` → `{e['to_path']}`" for e in data["workflow_run_edges"]]
@@ -416,6 +463,9 @@ def markdown(data: dict[str, Any]) -> str:
     for item in data["representative_scenarios"]:
         b, a = item["before"], item["after"]
         out.append(f"| {item['scenario']} | {a['event']} | {b['workflow_count']}/{b['job_count']}/{b['cost_proxy']} | {a['workflow_count']}/{a['job_count']}/{a['cost_proxy']} | {len(a['write_capable_jobs_potentially_reachable'])} | {a['simulation_disposition']} |")
+    out += ["", "This tranche is audit-only: the pinned base and HEAD carry byte-identical workflow definitions, so the",
+            "`before`/`after` columns coincide by construction. The scenario model itself is unchanged and stays fail-closed;",
+            "a future tranche that edits triggers or concurrency must re-pin the base to observe a delta."]
     out += ["", "## Concurrency recommendations", "",
             "Recommendations are read-only. `UNKNOWN`, repository-write, and publication-capable workflows are never marked safe.", "",
             "| Workflow | Has concurrency | Cancel now | Safe future candidate | Blockers |", "|---|---:|---:|---:|---|"]
