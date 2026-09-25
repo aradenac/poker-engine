@@ -596,3 +596,175 @@ vérité ».
 | `docs/issue-395-review-inbox-ci-report.md` consigne l'audit mesuré au HEAD exact, **ou** le blocage exact de la mesure locale (commande + erreur) et l'état des suites statiques | ✔ §11.1 (SHA), §11.3 (blocage : 4 commandes + erreurs brutes + repro minimal), §11.4 (audit rejoué sur les octets servis, labellisé) |
 | La smoke navigateur 1500x1000 est verte localement au HEAD **ou** le blocage local est documenté, et le run CI de T4 devient la source de vérité | ✔ blocage documenté (§11.3) ; aucune revendication de vert navigateur (§11.5 renvoie le vert à T4) |
 | Diff Git non vide au HEAD de la branche #395 (rapport versionné) | ✔ 1 fichier modifié, `docs/issue-395-review-inbox-ci-report.md` (section 11 ajoutée, diff non vide) |
+
+## 12. Verrou statique de la surface de persistance et de ses textes croisés
+
+Task : `backlog-a7j` (branche `n8n/issue-395/task-backlog-a7j`). Cette section
+ferme le suivi du §9 : le piège du défaut T1 — un smoke qui attend un texte que
+la coque servie n'écrit pas dans l'élément visé — n'était attrapé par **aucun**
+contrat statique (`grep PERSIST/localDbGet/Sauvegard/persistPrefs` : 0 résultat
+dans `tests/trainer/test_review_inbox_large_list_smoke_contract.py` avant cette
+tâche).
+
+### 12.1 HEAD mesuré
+
+```
+branche : n8n/issue-395/task-backlog-a7j
+HEAD    : 7363fc09aea97bb13f6d08233c0ca60c1a6b0379  (7363fc0)
+```
+
+Cette tâche ne modifie **ni** `site/index.html`, **ni**
+`tests/trainer/smoke_review_inbox_large_list.py` (lecture seule : aucune
+incohérence réelle n'a été révélée, le smoke et la coque concordent), **ni**
+`.github/workflows/trainer-smoke.yml`. Les octets écrits sont le contrat statique
+et ce rapport (diff git non vide, §12.5).
+
+### 12.2 Gardes ajoutées (`tests/trainer/test_review_inbox_large_list_smoke_contract.py`)
+
+Trois gardes, dans le style existant (constantes extraites des octets servis,
+helper de contrôle, mutations rejouées en mémoire, aucune écriture hors
+répertoire temporaire) :
+
+1. **Libellé de la pastille servi == libellé attendu par le smoke.**
+   `SERVED_PERSISTENCE_STATUS_RE` *extrait* des octets servis les trois branches
+   de `localPersistenceStatus.textContent=error?…:busy?…:"…";`
+   (`site/index.html:2546`, dans `persistenceStatus`, `site/index.html:2544-2549`)
+   et `check_persistence_surface()` exige
+   `smoke.PERSISTENCE_SAVED_LABEL == <3ᵉ branche>` (état ni-erreur ni-busy). Le
+   message « Sauvegarde locale automatique active · … » part dans le **frère**
+   `#localPersistenceDetail` (`site/index.html:1400`) : il ne peut plus être
+   attendu dans la pastille. Un libellé servi renommé fait aussi échouer le garde
+   (la déclaration disparue est une erreur explicite, jamais un succès vide).
+2. **L'attente des préférences lit la valeur persistée.** Le helper livré
+   `_wait_persisted_prefs()` doit appeler le lecteur
+   (`await page.evaluate(PERSISTED_PREFS_FN)`), le lecteur doit relire la clé
+   `localDbGet('prefs')` — la valeur que `restoreLocalState` relira au
+   chargement — et la décision doit porter la valeur persistée
+   (`last["stored"]`, `last["sort"] == sort`, `last["result"] == result`) ; la
+   pastille ne reste qu'un contrôle de surface
+   (`last["chip"].strip() == PERSISTENCE_SAVED_LABEL`). En complément, **aucun**
+   `wait_for_function` de la smoke ne peut porter sur le texte de
+   `#localPersistenceStatus` : le prédicat insatisfiable du défaut T1 est refusé
+   par construction.
+3. **Les trois textes croisés assertés par le smoke existent dans les octets
+   servis.** `CROSS_TEXTS` relie `(texte servi, fragment asserté, assertion
+   livrée)` :
+
+   | Assertion du smoke | Texte servi | Octet servi |
+   | --- | --- | --- |
+   | `assert f"étape {target['stepIndex'] + 1}" in opened["status"]` | `Décision prioritaire ouverte · étape ${resolved.stepIndex+1}` | `site/index.html:4276` |
+   | `assert "introuvable" not in opened["status"]` | `Décision ciblée introuvable dans cette version de la main` | `site/index.html:4277` |
+   | `assert "analyse incomplète" in incomplete["status"].casefold()` | `Analyse incomplète · aucune décision comparable à cibler.` | `site/index.html:4286` |
+
+   Le garde vérifie les trois côtés : l'assertion livrée existe dans la smoke, le
+   littéral servi existe dans `site/index.html`, et le fragment asserté
+   (comparé après `casefold`) est bien contenu dans ce littéral servi — les deux
+   textes sont donc *reliés*, pas seulement présents chacun de leur côté.
+
+Extraction servie rejouée (sortie brute) :
+
+```
+$ python3 - <<'PY'
+import re; from pathlib import Path
+index = Path('site/index.html').read_text(encoding='utf-8')
+pat = re.compile(r'localPersistenceStatus\.textContent\s*=\s*error\s*\?\s*"([^"]*)"\s*:\s*busy\s*\?\s*"([^"]*)"\s*:\s*"([^"]*)"\s*;')
+m = pat.search(index)
+print("declaration trouvee:", bool(m)); print("labels servis:", m.groups())
+print("ligne servie:", index.splitlines()[2545])
+for literal in ("Décision prioritaire ouverte · étape ${resolved.stepIndex+1}",
+                "Décision ciblée introuvable dans cette version de la main",
+                "Analyse incomplète · aucune décision comparable à cibler."):
+    print(f"texte croise servi present: {literal!r} ->", literal in index)
+PY
+declaration trouvee: True
+labels servis: ('Sauvegarde locale en erreur', 'Sauvegarde…', 'Sauvegardé localement')
+ligne servie:   localPersistenceStatus.textContent=error?"Sauvegarde locale en erreur":busy?"Sauvegarde…":"Sauvegardé localement";
+texte croise servi present: 'Décision prioritaire ouverte · étape ${resolved.stepIndex+1}' -> True
+texte croise servi present: 'Décision ciblée introuvable dans cette version de la main' -> True
+texte croise servi present: 'Analyse incomplète · aucune décision comparable à cibler.' -> True
+```
+
+### 12.3 Non-vacuité : neuf mutations rejouées en mémoire
+
+`check_persistence_surface_non_vacuity()` applique chaque mutation à une copie
+**en mémoire** de la smoke ou des octets servis (aucune écriture disque), puis
+rejoue `check_persistence_surface()` et exige un `AssertionError` ; la raison
+exacte du refus est imprimée par `main()` (préfixe `refusé (backlog-a7j):`).
+Aucune assertion de fond n'est neutralisée, aucune constante relâchée.
+
+| Mutation rejouée | Verdict du garde |
+| --- | --- |
+| libellé servi renommé (`"Sauvegardé localement"` → `"Enregistré localement"`) | refusée — `PERSISTENCE_SAVED_LABEL` ≠ littéral servi |
+| `PERSISTENCE_SAVED_LABEL` ramené au message T1 (`Sauvegarde locale automatique active`) | refusée — ce message n'est jamais écrit dans la pastille |
+| lecteur des préférences ne relisant plus la clé `prefs` (lecture de la pastille) | refusée — `localDbGet('prefs')` absent du lecteur |
+| attente remplacée par le prédicat T1 sur `#localPersistenceStatus` | refusée — plus de lecture de la valeur persistée |
+| prédicat de pastille *ajouté* devant la lecture persistée | refusée — aucune attente ne peut porter sur ce texte |
+| texte croisé servi retiré (`étape`) | refusée — littéral servi absent |
+| texte croisé servi retiré (`introuvable`) | refusée — littéral servi absent |
+| texte croisé servi retiré (`Analyse incomplète · aucune décision comparable à cibler.`) | refusée — littéral servi absent |
+| assertion croisée retirée de la smoke (`"introuvable" not in opened["status"]`) | refusée — le texte croisé n'est plus asserté |
+
+### 12.4 Sorties brutes au HEAD `7363fc0`
+
+`python3 tests/trainer/test_review_inbox_large_list_smoke_contract.py` (exit 0),
+extraits — les 9 refus `backlog-a7j` puis la ligne finale :
+
+```
+  refusé (backlog-a7j): libellé servi renommé → PERSISTENCE_SAVED_LABEL du smoke doit être le littéral que `persistenceStatus` écrit pour l'état ni-erreur ni-busy (smoke 'Sauvegardé localement' != s
+  refusé (backlog-a7j): PERSISTENCE_SAVED_LABEL ramené au message T1 (jamais écrit dans la pastille) → PERSISTENCE_SAVED_LABEL du smoke doit être le littéral que `persistenceStatus` écrit pour l'état ni-erreur ni-busy (smoke 'Sauvegarde locale automatiq
+  refusé (backlog-a7j): lecteur ne relisant plus `prefs` → le lecteur de préférences du smoke doit relire `localDbGet('prefs')` — la valeur que `restoreLocalState` relit au chargement ; un texte de `#localPers
+  refusé (backlog-a7j): attente remplacée par le prédicat T1 sur la pastille → l'attente des préférences doit lire la valeur persistée (`await page.evaluate(PERSISTED_PREFS_FN)`), pas un texte de pastille
+  refusé (backlog-a7j): prédicat de pastille ajouté devant la lecture persistée → ('aucune attente de la smoke ne peut porter sur le texte de `#localPersistenceStatus` (défaut T1 : prédicat insatisfiable)', 'wait_for_function(\n    
+  refusé (backlog-a7j): texte croisé servi retiré ('étape') → le texte croisé asserté par la smoke doit rester dans les octets servis: 'Décision prioritaire ouverte · étape ${resolved.stepIndex+1}'
+  refusé (backlog-a7j): texte croisé servi retiré ('introuvable') → le texte croisé asserté par la smoke doit rester dans les octets servis: 'Décision ciblée introuvable dans cette version de la main'
+  refusé (backlog-a7j): texte croisé servi retiré ('analyse incomplète') → le texte croisé asserté par la smoke doit rester dans les octets servis: 'Analyse incomplète · aucune décision comparable à cibler.'
+  refusé (backlog-a7j): assertion croisée retirée de la smoke → la smoke doit continuer d'asserter le texte croisé servi: 'assert "introuvable" not in opened["status"], (target, opened)'
+review inbox large list smoke contract checks: OK (… · budgets vue/peinture nommés 30000 / 30000 ms (plancher 30000, 20000 refusé · 7 mutations rejouées) · surface de persistance verrouillée (libellé servi 'Sauvegardé localement' == PERSISTENCE_SAVED_LABEL · préférences lues par localDbGet('prefs') · 3 textes croisés servis · 9 mutations rejouées) · fixture=tests/trainer/fixtures/review_inbox_large_list.hand.txt)
+```
+
+Les quatre autres commandes exigées (sorties brutes, exit 0) :
+
+```
+$ python3 tests/trainer/test_review_inbox_pagination_contract.py
+review inbox pagination contract checks: OK (page window 10–15 measured on the constrained shell, shrink without hidden overflow, bounded pager, filter/sort restart at page 1, selection preserved, pinned page size at 1500x1000 = 10–11 on the served shell with the 32-hand fixture — conservative budget: chrome 403.95px, list 596.05px, row 53.15px, pitch 59.15px; résultats {'WIN': 8, 'LOSS': 8, 'EVEN': 14, 'UNKNOWN': 2} — EVEN (14) multi-pages dans les deux modèles, garde « page 1 == liste filtrée » rejouée)
+$ python3 tests/trainer/test_review_inbox_ui_contract.py
+review inbox runtime mirror/UI contract checks: OK
+$ python3 tests/ci/test_repro_workflow_batch2.py
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.006s
+
+OK
+$ for t in tests/trainer/test_*.py; do python3 "$t"; done
+trainer sweep failures=0 over 52 files
+```
+
+Le balayage `tests/trainer/test_*.py` (52 fichiers) est vert : aucun contrat de
+la suite n'est invalidé par l'ajout des gardes.
+
+### 12.5 Ce qui reste NOT_OBSERVED côté CI
+
+Rien n'est revendiqué vert côté navigateur dans cette section. Le verrou ajouté
+est **statique** : il prouve que la smoke, la coque servie et l'attente de
+persistance ne peuvent plus diverger de texte, mais il ne remplace pas le run
+navigateur. Restent `NOT_OBSERVED` ici, portés par le job `browser-smoke`
+(`python3 tests/trainer/smoke_trainer.py`, qui exécute
+`smoke_review_inbox_large_list.py` via `DRIVER_SMOKES`) :
+
+```
+audit["prefs_persisted"]        # la boucle réelle localDbGet("prefs") + pastille « Sauvegardé localement » au runtime
+audit["reload"]                 # tri/filtre effectivement restaurés après page.reload()
+audit["deep_link"]              # statut replayer réellement ouvert sur « étape N », sans « introuvable »
+audit["no_decision"]            # « Analyse incomplète » réellement affichée pour la main sans décision
+audit["tab_click_paints"] etc.  # cf. §11.5
+```
+
+Autrement dit : le smoke navigateur 1500x1000 n'est **pas** exécuté ici (sandbox
+sans `AF_INET`, cf. §11.3), et cette tâche ne l'affirme pas. Ce qui est mesuré
+ici est le contrat statique ci-dessus, rejoué sur les octets committés du HEAD
+`7363fc0`, mutations en mémoire comprises.
+
+Diff git de la tâche : 2 fichiers (`tests/trainer/test_review_inbox_large_list_smoke_contract.py`,
+`docs/issue-395-review-inbox-ci-report.md`), `site/index.html`,
+`tests/trainer/smoke_review_inbox_large_list.py` et
+`.github/workflows/trainer-smoke.yml` inchangés.

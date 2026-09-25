@@ -57,6 +57,18 @@ bytes* and to the *served contract*:
    a split inject/read) must all be rejected, and the causal read helper itself
    is replayed against a stub page (`_wait_paint()` polled to the first non-zero
    painted count on the named budget, with no fixed delay in reach).
+9. the *persistence surface* and its cross texts are locked (backlog-a7j): the
+   label the smoke waits for (`PERSISTENCE_SAVED_LABEL`) must be the literal
+   `persistenceStatus` really writes into the served pill for the neither-error
+   nor-busy state, the preferences wait must read the *persisted* value
+   (`localDbGet('prefs')`, the key `restoreLocalState` re-reads) instead of a
+   pill text — the exact defect T1 repaired — and the three replayer cross texts
+   the smoke asserts (« étape », « introuvable », « Analyse incomplète · aucune
+   décision comparable à cibler. ») must exist in the served bytes. Nine
+   in-memory mutations (a changed served label, the T1 pill message restored in
+   the smoke, a reader that no longer reads `prefs`, the T1 pill predicate, an
+   added pill wait, the three served cross texts removed, and one smoke
+   assertion removed) must all be rejected.
 
 Static + node only: no browser, no server, no network, and no file of the
 repository is written (mutations live in memory or in a temporary directory).
@@ -198,6 +210,63 @@ PAINT_WAIT_BODY = (
 VIEW_SWITCH_TOKENS = (
     "document.body.dataset.appView==='review'",
     "document.body.dataset.appView==='replayer'",
+)
+# #395 (backlog-a7j) — la *surface de persistance* du smoke et ses textes
+# croisés. Le défaut corrigé en T1 était une attente sur un texte que la coque
+# servie n'écrit jamais dans la pastille visée (« Sauvegarde locale automatique
+# active » testé sur `#localPersistenceStatus`, alors que `persistenceStatus`
+# écrit « Sauvegardé localement ») ; le smoke lit désormais la *valeur persistée*
+# (`localDbGet('prefs')`). Cette classe de bug — un smoke et une coque qui ne
+# partagent plus le même texte — est verrouillée ici sur les octets servis : le
+# libellé réellement écrit par `persistenceStatus` pour l'état ni-erreur
+# ni-busy, la lecture persistée des préférences, et les trois textes croisés que
+# le smoke asserte côté replayer. Suivi §9 du rapport CI #395.
+SERVED_PERSISTENCE_STATUS_RE = re.compile(
+    r'localPersistenceStatus\.textContent\s*=\s*error\s*\?\s*"([^"]*)"'
+    r'\s*:\s*busy\s*\?\s*"([^"]*)"\s*:\s*"([^"]*)"\s*;'
+)
+SMOKE_PERSISTENCE_LABEL_DECLARATION = 'PERSISTENCE_SAVED_LABEL = "'
+SMOKE_PREFS_HELPER_DECLARATION = (
+    "async def _wait_persisted_prefs(page, *, sort: str, result: str) -> dict:"
+)
+SMOKE_PREFS_HELPER_END = "\n\n\nasync def run() -> None:"
+SMOKE_PREFS_READER_DECLARATION = 'PERSISTED_PREFS_FN = """'
+# Le lecteur livré relit la *valeur persistée* — la clé `prefs` du store local,
+# exactement ce que `restoreLocalState` relira au chargement suivant.
+SMOKE_PREFS_STORE_KEY_READ = "localDbGet('prefs')"
+SMOKE_PREFS_READ_CALL = "await page.evaluate(PERSISTED_PREFS_FN)"
+# La décision livrée porte la valeur persistée (clé `stored`, tri et filtre
+# attendus) ; la pastille servie n'est qu'un contrôle de surface. Un prédicat
+# qui ne déciderait que sur ce texte est refusé : c'est le défaut T1.
+SMOKE_PREFS_DECISION_TOKENS = (
+    'last["stored"]',
+    'last["sort"] == sort',
+    'last["result"] == result',
+)
+SMOKE_PREFS_CHIP_SURFACE_TOKEN = 'last["chip"].strip() == PERSISTENCE_SAVED_LABEL'
+# Aucune attente de la smoke ne peut porter sur le texte de la pastille servie.
+PILL_WAIT_FORBIDDEN_TOKEN = "localPersistenceStatus"
+# Les trois textes croisés assertés par le smoke côté replayer, chacun relié au
+# littéral servi dont il dérive : `(texte servi, fragment asserté, assertion
+# livrée)`. Le fragment est comparé *après casefold* (le smoke asserte
+# « analyse incomplète » en minuscules, la coque écrit « Analyse incomplète »).
+CROSS_TEXTS = (
+    (
+        "Décision prioritaire ouverte · étape ${resolved.stepIndex+1}",
+        "étape ",
+        'assert f"étape {target[\'stepIndex\'] + 1}" in opened["status"], (target, opened)',
+    ),
+    (
+        "Décision ciblée introuvable dans cette version de la main",
+        "introuvable",
+        'assert "introuvable" not in opened["status"], (target, opened)',
+    ),
+    (
+        "Analyse incomplète · aucune décision comparable à cibler.",
+        "analyse incomplète",
+        'assert "analyse incomplète" in incomplete["status"].casefold(), '
+        "(no_decision, incomplete)",
+    ),
 )
 # Les sections du corps de `run()` (`# --- ... ---`) : la causalité se vérifie
 # « dans la même section », jamais sur le fichier entier.
@@ -944,6 +1013,240 @@ def check_paint_read_helper(smoke) -> dict:
     return {"polls": page.polls, "painted": painted}
 
 
+def _served_persistence_status_labels(served_index: str) -> tuple[str, str, str]:
+    """#395 (backlog-a7j) — les trois libellés de la pastille servie.
+
+    Le littéral qui compte est le **dernier** de la déclaration servie : celui
+    que `persistenceStatus` écrit pour l'état ni-erreur ni-busy. Il est *extrait*
+    des octets servis (jamais recopié), donc un texte servi renommé ne peut plus
+    passer : la déclaration disparue est elle-même une erreur du garde.
+    """
+    match = SERVED_PERSISTENCE_STATUS_RE.search(served_index)
+    assert match is not None, (
+        "la coque servie doit garder la déclaration de la pastille de persistance "
+        '`localPersistenceStatus.textContent=error?"…":busy?"…":"…";` : sans elle, '
+        "le libellé attendu par le smoke ne peut plus être relié aux octets servis"
+    )
+    return match.group(1), match.group(2), match.group(3)
+
+
+def _named_str_constant(source: str, marker: str) -> str:
+    """The pinned `"..."` value of a module-level `NAME = "..."` declaration."""
+    assert marker in source, f"constante absente de la smoke: {marker}"
+    start = source.index(marker) + len(marker)
+    end = source.find('"', start)
+    assert start < end and "\n" not in source[start:end], (marker, source[start : start + 80])
+    return source[start:end]
+
+
+def check_persistence_surface(smoke_source: str, served_index: str) -> dict:
+    """#395 (backlog-a7j) — la surface de persistance et ses textes croisés.
+
+    Trois récidives sont interdites, statiquement, sur la source de la smoke et
+    sur les octets servis :
+
+    * le libellé attendu par la smoke (``PERSISTENCE_SAVED_LABEL``) doit être
+      *exactement* le littéral que ``persistenceStatus`` écrit dans
+      ``#localPersistenceStatus`` pour l'état ni-erreur ni-busy ; le message
+      « Sauvegarde locale automatique active · … » part dans le **frère**
+      ``#localPersistenceDetail``, jamais dans la pastille ;
+    * l'attente des préférences doit lire la **valeur persistée**
+      (``localDbGet('prefs')``, la clé que ``restoreLocalState`` relira) et
+      décider sur elle (``stored`` / ``sort`` / ``result``) : un texte de la
+      pastille ne peut plus être le prédicat — le défaut T1 ;
+    * les trois textes croisés que la smoke asserte côté replayer doivent
+      exister dans les octets servis, et le fragment asserté doit être contenu
+      dans le littéral servi correspondant.
+    """
+    error_label, busy_label, saved_label = _served_persistence_status_labels(served_index)
+    assert error_label and busy_label and saved_label, (error_label, busy_label, saved_label)
+    code = _mask_comments(smoke_source)
+
+    # (1) Le libellé attendu par le smoke *est* le littéral servi (état ni-erreur
+    # ni-busy). Un message attendu dans la mauvaise pastille — ou un libellé
+    # servi renommé sous les pieds du smoke — est refusé ici.
+    smoke_label = _named_str_constant(code, SMOKE_PERSISTENCE_LABEL_DECLARATION)
+    assert smoke_label == saved_label, (
+        "PERSISTENCE_SAVED_LABEL du smoke doit être le littéral que "
+        "`persistenceStatus` écrit pour l'état ni-erreur ni-busy "
+        f"(smoke {smoke_label!r} != servi {saved_label!r})"
+    )
+
+    # (2) L'attente des préférences lit la *valeur persistée*, jamais un texte de
+    # pastille : le helper appelle le lecteur, le lecteur relit la clé `prefs`,
+    # et la décision porte la valeur persistée (la pastille n'est qu'un contrôle
+    # de surface, jamais le critère).
+    assert SMOKE_PREFS_HELPER_DECLARATION in code, SMOKE_PREFS_HELPER_DECLARATION
+    helper_start = code.index(SMOKE_PREFS_HELPER_DECLARATION)
+    helper_end = code.index(SMOKE_PREFS_HELPER_END, helper_start)
+    helper = code[helper_start:helper_end]
+    assert SMOKE_PREFS_READ_CALL in helper, (
+        "l'attente des préférences doit lire la valeur persistée "
+        f"(`{SMOKE_PREFS_READ_CALL}`), pas un texte de pastille"
+    )
+    assert SMOKE_PREFS_READER_DECLARATION in code, SMOKE_PREFS_READER_DECLARATION
+    reader_start = code.index(SMOKE_PREFS_READER_DECLARATION)
+    reader_start += len(SMOKE_PREFS_READER_DECLARATION)
+    reader_end = code.index('"""', reader_start)
+    reader = code[reader_start:reader_end]
+    assert SMOKE_PREFS_STORE_KEY_READ in reader, (
+        "le lecteur de préférences du smoke doit relire "
+        f"`{SMOKE_PREFS_STORE_KEY_READ}` — la valeur que `restoreLocalState` "
+        "relit au chargement ; un texte de `#localPersistenceStatus` ne peut pas "
+        "décider de la persistance"
+    )
+    for token in SMOKE_PREFS_DECISION_TOKENS:
+        assert token in helper, (token, helper[-400:])
+    assert SMOKE_PREFS_CHIP_SURFACE_TOKEN in helper, SMOKE_PREFS_CHIP_SURFACE_TOKEN
+    for start, end, arguments in _iter_calls(code, "wait_for_function"):
+        assert PILL_WAIT_FORBIDDEN_TOKEN not in arguments, (
+            "aucune attente de la smoke ne peut porter sur le texte de "
+            "`#localPersistenceStatus` (défaut T1 : prédicat insatisfiable)",
+            code[start:end],
+        )
+
+    # (3) Les trois textes croisés servis : la smoke les asserte, les octets
+    # servis les portent, et le fragment asserté dérive bien du littéral servi.
+    for served_literal, fragment, assertion in CROSS_TEXTS:
+        assert assertion in code, (
+            "la smoke doit continuer d'asserter le texte croisé servi: "
+            f"{assertion!r}"
+        )
+        assert served_literal in served_index, (
+            "le texte croisé asserté par la smoke doit rester dans les octets "
+            f"servis: {served_literal!r}"
+        )
+        assert fragment in served_literal.casefold(), (fragment, served_literal)
+
+    return {
+        "saved_label": saved_label,
+        "busy_label": busy_label,
+        "error_label": error_label,
+        "store_key": SMOKE_PREFS_STORE_KEY_READ,
+        "cross_texts": [literal for literal, _, _ in CROSS_TEXTS],
+    }
+
+
+def _assert_persistence_surface_rejects(
+    smoke_source: str, served_index: str, label: str
+) -> str:
+    """The non-vacuity harness: a mutated source must fail the persistence check.
+
+    Returns the reason the mutated source was refused, so the executed
+    demonstration is consigned in the suite output instead of staying implicit.
+    """
+    assert smoke_source != SMOKE_SOURCE or served_index != SERVED_INDEX, (
+        f"la mutation doit modifier une copie en mémoire: {label}"
+    )
+    try:
+        check_persistence_surface(smoke_source, served_index)
+    except AssertionError as error:
+        return str(error).splitlines()[0]
+    raise AssertionError(f"le contrat de persistance doit rejeter: {label}")
+
+
+def check_persistence_surface_non_vacuity() -> list[tuple[str, str]]:
+    """#395 (backlog-a7j) — neuf mutations en mémoire doivent être refusées.
+
+    (a) le libellé servi renommé ; (b) `PERSISTENCE_SAVED_LABEL` du smoke ramené
+    au message jamais écrit dans la pastille (le défaut T1) ; (c) un lecteur qui
+    ne relit plus la clé `prefs` ; (d) l'attente remplacée par le prédicat T1 sur
+    le texte de `#localPersistenceStatus` ; (e) le même prédicat *ajouté* à côté
+    de la lecture persistée ; (f–h) chacun des trois textes croisés retiré des
+    octets servis ; (i) l'assertion croisée retirée de la smoke. Aucune mutation
+    n'est écrite sur disque.
+    """
+    served_saved_label = _served_persistence_status_labels(SERVED_INDEX)[2]
+    # (a) Le littéral servi change : le smoke garde l'ancien → divergence.
+    served_label_mutated = SERVED_INDEX.replace(
+        f'"{served_saved_label}";', '"Enregistré localement";', 1
+    )
+    # (b) Le smoke revient au message du défaut T1 (jamais écrit dans la pastille).
+    smoke_label_mutated = SMOKE_SOURCE.replace(
+        f"{SMOKE_PERSISTENCE_LABEL_DECLARATION}{served_saved_label}\"",
+        f'{SMOKE_PERSISTENCE_LABEL_DECLARATION}Sauvegarde locale automatique active"',
+        1,
+    )
+    # (c) Le lecteur ne relit plus la clé `prefs` (il lit la pastille).
+    reader_key_read = "const prefs=await localDbGet('prefs').catch(()=>null);"
+    reader_keyless = (
+        "const prefs=(document.querySelector('#localPersistenceStatus')||{}).textContent||null;"
+    )
+    smoke_reader_mutated = SMOKE_SOURCE.replace(reader_key_read, reader_keyless, 1)
+    # (d) Le prédicat insatisfiable du défaut T1 remplace la lecture persistée.
+    t1_pill_wait = (
+        "await page.wait_for_function(\n"
+        "            \"() => { const el=document.getElementById('localPersistenceStatus');\"\n"
+        '            " return !state.persistPrefsTimer && !!el"\n'
+        '            " && /Sauvegarde locale automatique active/.test(el.textContent); }",\n'
+        "            timeout=20_000,\n"
+        "        )"
+    )
+    smoke_pill_wait_mutated = SMOKE_SOURCE.replace(
+        f"last = {SMOKE_PREFS_READ_CALL}", t1_pill_wait, 1
+    )
+    # (e) ...et le même prédicat de pastille *ajouté* devant la lecture persistée.
+    smoke_pill_wait_added = SMOKE_SOURCE.replace(
+        f"        last = {SMOKE_PREFS_READ_CALL}",
+        "        await page.wait_for_function(\n"
+        '            "() => /Sauvegarde locale automatique active/'
+        ".test((document.querySelector('#localPersistenceStatus')||{}).textContent||'')"
+        '",\n'
+        "            timeout=20_000,\n"
+        "        )\n"
+        f"        last = {SMOKE_PREFS_READ_CALL}",
+        1,
+    )
+    # (f–h) Chaque texte croisé servi disparaît des octets servis.
+    cross_text_mutations = tuple(
+        (
+            f"texte croisé servi retiré ({fragment.strip()!r})",
+            SMOKE_SOURCE,
+            SERVED_INDEX.replace(served_literal, "[texte croisé retiré]", 1),
+        )
+        for served_literal, fragment, _ in CROSS_TEXTS
+    )
+    # (i) L'assertion croisée du deep link retire du smoke.
+    served_assertion = CROSS_TEXTS[1][2]
+    smoke_assertion_mutated = SMOKE_SOURCE.replace(
+        served_assertion, "# assertion croisée retirée", 1
+    )
+    mutations = (
+        ("libellé servi renommé", SMOKE_SOURCE, served_label_mutated),
+        (
+            "PERSISTENCE_SAVED_LABEL ramené au message T1 (jamais écrit dans la pastille)",
+            smoke_label_mutated,
+            SERVED_INDEX,
+        ),
+        ("lecteur ne relisant plus `prefs`", smoke_reader_mutated, SERVED_INDEX),
+        (
+            "attente remplacée par le prédicat T1 sur la pastille",
+            smoke_pill_wait_mutated,
+            SERVED_INDEX,
+        ),
+        (
+            "prédicat de pastille ajouté devant la lecture persistée",
+            smoke_pill_wait_added,
+            SERVED_INDEX,
+        ),
+        *cross_text_mutations,
+        ("assertion croisée retirée de la smoke", smoke_assertion_mutated, SERVED_INDEX),
+    )
+    for label, mutated_smoke, mutated_served in mutations:
+        if mutated_smoke == SMOKE_SOURCE and mutated_served == SERVED_INDEX:
+            raise AssertionError(f"la mutation ne change rien (motif introuvable): {label}")
+    rejected: list[tuple[str, str]] = []
+    for label, mutated_smoke, mutated_served in mutations:
+        rejected.append(
+            (label, _assert_persistence_surface_rejects(mutated_smoke, mutated_served, label))
+        )
+    # The delivered smoke and the served bytes still carry the pinned surface:
+    # nothing was mutated on disk.
+    assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
+    assert (ROOT / "site" / "index.html").read_text(encoding="utf-8") == SERVED_INDEX
+    return rejected
+
+
 def check_smoke_shape(smoke) -> None:
     assert smoke.HAND_TOTAL >= MIN_HANDS, smoke.HAND_TOTAL
     assert smoke.PAGE_SIZE_MAX == PAGE_SIZE_MAX, smoke.PAGE_SIZE_MAX
@@ -951,6 +1254,12 @@ def check_smoke_shape(smoke) -> None:
     assert smoke.SORT_CODES == SORT_CODES, smoke.SORT_CODES
     assert smoke.VIEWPORT == (1500, 1000), smoke.VIEWPORT
     assert smoke.FIXTURE.is_file(), smoke.FIXTURE
+    # #395 (backlog-a7j) — la constante *du module* est bien le littéral écrit
+    # par `persistenceStatus` pour l'état ni-erreur ni-busy (le garde textuel de
+    # `check_persistence_surface()` le rejoue sur une copie en mémoire).
+    assert smoke.PERSISTENCE_SAVED_LABEL == _served_persistence_status_labels(SERVED_INDEX)[2], (
+        smoke.PERSISTENCE_SAVED_LABEL,
+    )
     # #395 T5b — la borne basse mesurée : la cible servie, les deux fonctions
     # servies que le smoke relit, la mesure consignée dans l'audit et l'assertion
     # qui échoue si la page repasse sous la cible sans que la hauteur le justifie.
@@ -1099,12 +1408,16 @@ def main() -> None:
     paint = check_paint_causality_and_budget(SMOKE_SOURCE)
     paint_rejections = check_paint_wait_non_vacuity()
     paint_helper = check_paint_read_helper(smoke)
+    persistence = check_persistence_surface(SMOKE_SOURCE, SERVED_INDEX)
+    persistence_rejections = check_persistence_surface_non_vacuity()
     check_smoke_shape(smoke)
     check_ci_registration()
     # La démonstration est consignée dans la sortie : chaque mutation rejouée en
     # mémoire, et la raison exacte pour laquelle le garde la refuse.
     for label, reason in paint_rejections:
         print(f"  refusé (T2): {label} → {reason[:150]}")
+    for label, reason in persistence_rejections:
+        print(f"  refusé (backlog-a7j): {label} → {reason[:150]}")
     print(
         "review inbox large list smoke contract checks: OK "
         f"({len(specs)} mains · {len(SORT_CODES)} tris rejoués par le contrat servi · "
@@ -1120,6 +1433,11 @@ def main() -> None:
         f"{paint['budgets'][VIEW_WAIT_CONSTANT]} / {paint['budgets'][PAINT_WAIT_CONSTANT]} ms "
         f"(plancher {MIN_VIEW_PAINT_TIMEOUT_MS}, {DEFECT_TIMEOUT_MS} refusé · "
         "7 mutations rejouées) · "
+        f"surface de persistance verrouillée "
+        f"(libellé servi {persistence['saved_label']!r} == PERSISTENCE_SAVED_LABEL · "
+        f"préférences lues par {persistence['store_key']} · "
+        f"{len(persistence['cross_texts'])} textes croisés servis · "
+        f"{len(persistence_rejections)} mutations rejouées) · "
         f"fixture={contract['probe']['fixture']})"
     )
 
