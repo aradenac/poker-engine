@@ -783,6 +783,252 @@ def test_schema_locks_the_hierarchical_contract_and_validates_the_outputs():
     ) == []
 
 
+def _two_layer_responses():
+    """The exact-key / pooled-parameter pair used by the two-layer regressions."""
+    context = _stack_variant(100.0)
+    sibling = _stack_variant(60.0)
+    estimate_candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[
+            {"context": context, "hand_id": "exact-1", "action": "RAISE", "target_total_bb": 7.0}
+        ]
+        + _rows(sibling, "sibling", MIN_MARGINAL_OBSERVATIONS, 9.0),
+    )
+    estimate = resolve_exact_context(candidate=estimate_candidate, context=context)
+    strong_candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "strong", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    strong = resolve_exact_context(candidate=strong_candidate, context=context)
+    unresolved_candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[{"context": context, "hand_id": "only", "action": "RAISE",
+                       "target_total_bb": 7.0}],
+    )
+    unresolved = resolve_exact_context(candidate=unresolved_candidate, context=context)
+    return strong, estimate, unresolved
+
+
+def _assert_rejected(response, *, needle):
+    try:
+        validate_response(response)
+    except HierarchicalSizingError as exc:
+        assert needle in str(exc), (needle, str(exc))
+        return
+    raise AssertionError(f"an invalid response must fail closed ({needle!r})")
+
+
+def test_empirical_support_stays_exact_key_only_for_a_hierarchical_estimate():
+    strong, estimate, unresolved = _two_layer_responses()
+
+    # Layer 1: an EXACT_EMPIRICAL_STRONG answer is the requested key's own support.
+    assert strong["status"] == STATUS_EXACT_EMPIRICAL_STRONG
+    support = strong["support"]
+    assert support["source_key"] == strong["requested_key"]
+    assert support["borrowed_from_other_keys"] is False
+    assert support["observations"] >= MIN_MARGINAL_OBSERVATIONS
+    assert support["distinct_hands"] >= MIN_DISTINCT_HANDS
+    assert support["effective_sample_size"] == float(support["distinct_hands"])
+    assert support["denominator"] == sum(support["action_counts"].values())
+
+    # Layer 2: the estimate keeps exact-key counts (possibly below threshold) and
+    # never exports the parent's pooled counts as empirical support.
+    assert estimate["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    pooled_support = estimate["support"]
+    assert pooled_support["source_key"] == estimate["requested_key"]
+    assert pooled_support["borrowed_from_other_keys"] is False
+    assert pooled_support["support_isolation_rule"] == SUPPORT_ISOLATION_RULE
+    assert pooled_support["observations"] == 1
+    assert pooled_support["denominator"] == 1
+    assert pooled_support["action_counts"]["RAISE"] == 1
+    assert pooled_support["distinct_hands"] == 1
+    assert pooled_support["effective_sample_size"] == 1.0
+    assert pooled_support["observations"] < MIN_MARGINAL_OBSERVATIONS
+    assert pooled_support["distinct_hands"] < MIN_DISTINCT_HANDS
+    for leaked in ("source_observations", "source_distinct_hands",
+                   "source_effective_sample_size", "weight_parent", "weight_exact"):
+        assert leaked not in pooled_support
+    assert estimate["pooling"]["source_observations"] > pooled_support["observations"]
+
+    # An abstention still reports its own empty exact-key support.
+    assert unresolved["status"] == STATUS_EXACT_UNRESOLVED
+    assert unresolved["support"]["source_key"] == unresolved["requested_key"]
+    assert unresolved["support"]["observations"] == 1
+    assert unresolved["support"]["denominator"] == 1
+    assert unresolved["support"]["effective_sample_size"] == 1.0
+    assert unresolved["support"]["observations"] < MIN_MARGINAL_OBSERVATIONS
+
+    # A coarse parent key may never be declared as the support source.
+    loaned = copy.deepcopy(estimate)
+    loaned["support"]["source_key"] = estimate["pooling"]["source_key"]
+    try:
+        validate_response(loaned)
+    except SupportIsolationError as exc:
+        assert exc.reason_code == "COARSE_KEY_SUPPORT_LAUNDERING"
+    else:
+        raise AssertionError("borrowed support must fail closed")
+    borrowed = copy.deepcopy(estimate)
+    borrowed["support"]["borrowed_from_other_keys"] = True
+    _assert_rejected(borrowed, needle="borrowed")
+
+
+def test_hierarchical_estimate_pooling_provenance_above_l0_and_same_key():
+    strong, estimate, _unresolved = _two_layer_responses()
+    pooling = estimate["pooling"]
+    # The answer is still for the requested exact key ...
+    assert estimate["requested_key"] == estimate["support"]["source_key"]
+    assert estimate["requested_key"] == pooling["support_source_key"]
+    # ... while the parameters come from a strictly coarser parent key.
+    assert pooling["source_key"] != estimate["requested_key"]
+    assert pooling["level"] != SUPPORT_LEVEL
+    assert POOLING_LEVELS.index(pooling["level"]) > POOLING_LEVELS.index(SUPPORT_LEVEL)
+    assert pooling["rank"] == POOLING_LEVELS.index(pooling["level"])
+    assert estimate["uncertainty"] is not None
+    assert estimate["uncertainty"]["level_used"] == pooling["level"]
+    assert estimate["uncertainty"]["effective_sample_size"] == pooling[
+        "source_effective_sample_size"
+    ]
+    assert set(estimate["uncertainty"]["actions"]) == set(estimate["posterior"])
+    for band in estimate["uncertainty"]["actions"].values():
+        assert band["credible_interval"]["low"] <= band["mean"]
+        assert band["mean"] <= band["credible_interval"]["high"]
+        assert band["std_error"] >= 0.0
+    assert abs(sum(estimate["posterior"].values()) - 1.0) <= 1e-9
+
+    strong_pooling = strong["pooling"]
+    assert strong_pooling["level"] == SUPPORT_LEVEL
+    assert strong_pooling["source_key"] == strong["requested_key"]
+    assert strong_pooling["support_source_key"] == strong["requested_key"]
+
+    mislabelled = copy.deepcopy(estimate)
+    mislabelled["pooling"]["level"] = SUPPORT_LEVEL
+    _assert_rejected(mislabelled, needle="parent level it used")
+    substituted = copy.deepcopy(estimate)
+    substituted["pooling"]["source_key"] = estimate["requested_key"]
+    _assert_rejected(substituted, needle="pool toward a parent")
+
+
+def test_two_layer_response_identity_distinguishes_all_three_statuses():
+    strong, estimate, unresolved = _two_layer_responses()
+
+    # Every answer is still serialized under the exact key that was requested.
+    for response in (strong, estimate, unresolved):
+        assert response["requested_key_granularity"] == "hierarchical_exact_key"
+        assert response["reason_code"] == response["status"]
+        assert response["support"]["source_key"] == response["requested_key"]
+        assert response["requested_key"] == hierarchical_exact_key(_stack_variant(100.0))
+
+    # An exact-support claim is only ever serialized at L0 with its own support.
+    assert strong["status"] == STATUS_EXACT_EMPIRICAL_STRONG
+    assert strong["pooling"]["level"] == SUPPORT_LEVEL
+    assert strong["uncertainty"]["level_used"] == SUPPORT_LEVEL
+    assert strong["pooling"]["source_key"] == strong["requested_key"]
+
+    # The estimate answers the same exact key with pooled parameters ...
+    assert estimate["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    assert estimate["pooling"]["level"] != SUPPORT_LEVEL
+    assert estimate["pooling"]["source_key"] != estimate["requested_key"]
+    assert estimate["uncertainty"]["level_used"] == estimate["pooling"]["level"]
+    assert set(estimate["posterior"]) == set(estimate["uncertainty"]["actions"])
+    # ... and it is never labeled as an exact empirical answer.
+    assert estimate["pooling"]["support_source_key"] == estimate["requested_key"]
+    assert estimate["pooling"]["support_isolation_rule"] == SUPPORT_ISOLATION_RULE
+    assert estimate["granularity"]["support"] == SUPPORT_LEVEL
+    assert estimate["granularity"]["nearest_price_lookup"] is False
+    assert estimate["granularity"]["nearest_context_lookup"] is False
+
+    # An abstention emits no probability and no uncertainty at all.
+    assert unresolved["status"] == STATUS_EXACT_UNRESOLVED
+    assert unresolved["posterior"] is None
+    assert unresolved["uncertainty"] is None
+    assert unresolved["pooling"] is None
+    assert unresolved["unresolved_reason"] in (
+        REASON_NO_ADMISSIBLE_POOLING,
+        REASON_NO_EXACT_SUPPORT_NO_CONTEXT,
+        REASON_RAISE_SIZING_UNRESOLVED,
+    )
+    assert unresolved["reason_detail"]
+    forged = copy.deepcopy(unresolved)
+    forged["posterior"] = {"FOLD": 1.0}
+    _assert_rejected(forged, needle="no probability")
+
+    # The provider never substitutes a representative or interpolated price.
+    assert estimate["raise_sizing"]["nearest_price_used"] is False
+    assert estimate["raise_sizing"]["representative_price_used"] is False
+    assert estimate["raise_sizing"]["interpolation_used"] is False
+    assert estimate["raise_sizing"]["exact_support_only"] is True
+
+
+def test_provider_schema_parity_for_the_two_layer_response():
+    """Acceptance 4: the frozen contract schema mirrors the provider semantics."""
+    schema_path = (
+        ROOT / "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    response = schema["$defs"]["response"]
+    support = response["properties"]["support"]
+    pooling = response["properties"]["pooling"]
+    uncertainty = schema["$defs"]["response"]["properties"]["uncertainty"]
+
+    assert schema["$defs"]["status"]["enum"] == [
+        STATUS_EXACT_EMPIRICAL_STRONG,
+        STATUS_EXACT_HIERARCHICAL_ESTIMATE,
+        STATUS_EXACT_UNRESOLVED,
+    ]
+    assert schema["$defs"]["reasonCode"]["enum"] == [
+        REASON_NO_ADMISSIBLE_POOLING,
+        REASON_RAISE_SIZING_UNRESOLVED,
+        REASON_NO_EXACT_SUPPORT_NO_CONTEXT,
+    ]
+    assert schema["$defs"]["poolingLevel"]["properties"]["level"]["enum"] == list(
+        POOLING_LEVELS
+    )
+    for field in (
+        "observations",
+        "distinct_hands",
+        "effective_sample_size",
+        "source_key",
+        "borrowed_from_other_keys",
+        "support_isolation_rule",
+    ):
+        assert field in support["required"], field
+    for field in ("level", "source_key", "support_source_key"):
+        assert field in pooling["required"], field
+    for field in (
+        "method",
+        "confidence_level",
+        "level_used",
+        "effective_sample_size",
+        "concentration",
+        "actions",
+    ):
+        assert field in uncertainty["required"], field
+    action_band = uncertainty["properties"]["actions"]["additionalProperties"]
+    for field in ("mean", "alpha", "beta", "std_error", "credible_interval"):
+        assert field in action_band["required"], field
+    assert support["properties"]["support_isolation_rule"]["const"] == SUPPORT_ISOLATION_RULE
+    assert pooling["properties"]["support_isolation_rule"]["const"] == SUPPORT_ISOLATION_RULE
+    # No field of a hierarchical estimate may be published as empirical support:
+    # the support block is closed, and every pooled quantity lives under pooling.
+    assert support["additionalProperties"] is False
+    pooled_quantities = (
+        "source_observations",
+        "source_distinct_hands",
+        "source_effective_sample_size",
+        "weight_exact",
+        "weight_parent",
+    )
+    for field in pooled_quantities:
+        assert field not in support["properties"], field
+        assert field in pooling["properties"], field
+    assert pooling["properties"]["level"]["enum"] == list(POOLING_LEVELS)
+
+    response_node = {"$ref": "#/$defs/response"}
+    strong, estimate, unresolved = _two_layer_responses()
+    for response_value in (strong, estimate, unresolved):
+        assert _contract_errors(response_node, response_value, schema) == []
+
+
 if __name__ == "__main__":
     tests = [
         value
