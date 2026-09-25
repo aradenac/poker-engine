@@ -42,14 +42,21 @@ Review inbox **in a browser**:
    and the walk returns that single page; a filtered list that overflows it
    (EVEN here) is walked across every page;
 5. selection — a hand selected from the inbox stays selected when it is painted
-   again after a page round-trip;
+   again after a page round-trip. The targeted hand is picked on the first page
+   of the page-aware walk (never a `page_one` assumed to hold the whole list),
+   and the round trip is computed from the page that really carries it, so it
+   stays valid whatever the measured page size (10–11 here) paints;
 6. deep link — opening a row goes to the Replayer on the *decision* the inbox
    advertises (`data-decision-id` / `data-step-index`), i.e. `state.replayIndex`
    equals the advertised step and the replayer status names it. A hand without
    any comparable decision stays explicit (`Analyse incomplète`, step 0) instead
-   of opening a misleading decision;
+   of opening a misleading decision: the hand is located on the page that
+   paints it (the `EVEN` filter overflows one measured page), not assumed to sit
+   on the current one;
 7. preferences — the sort and the result filter survive a reload and are
    re-applied to the restored list (hands + prefs, both from local storage).
+   The restored list is read page by page, so a restored filter that overflows
+   one measured page is still compared whole instead of from page 1 alone.
 
 Why the review scores are injected
 ----------------------------------
@@ -409,7 +416,7 @@ def assert_page_size_target(page_state: dict, label: str) -> None:
         )
 
 
-async def _walk_pages(page) -> list[dict]:
+async def _walk_pages(page, read=_read) -> list[dict]:
     """Every painted page of the current query, from the first to the last.
 
     A query that fits one measured page hides the pager
@@ -418,18 +425,64 @@ async def _walk_pages(page) -> list[dict]:
     filtered list that does not overflow the served page size (the WIN / LOSS /
     UNKNOWN result filters below). A multi-page query is walked with the same
     `Précédent` / `Suivant` polarity the served pager exposes.
+
+    `read` is the page readout: the default `_read` is the plain DOM read, while
+    a score-dependent query (the EV-loss order) hands in the atomic
+    inject+repaint read so every walked page is the one the injected scores
+    paint. The walk starts from the current page, walks back while the pager
+    still enables « Précédent », then forward — and leaves the pager on the last
+    page, exactly what the callers that rewind afterwards expect.
     """
-    current = await _read(page)
+    current = await read(page)
     if current["pagerHidden"]:
         return [current]
     pages = [current]
     while not pages[0]["prevDisabled"]:
         await page.click("#hhPagePrev")
-        pages.insert(0, await _read(page))
+        pages.insert(0, await read(page))
     while not pages[-1]["nextDisabled"]:
         await page.click("#hhPageNext")
-        pages.append(await _read(page))
+        pages.append(await read(page))
     return pages
+
+
+async def _return_to_first_page(page, read=_read) -> dict:
+    """Walk the pager back to the first page (Précédent disabled) and read it.
+
+    `_walk_pages` leaves the pager on the last page; the deep-link / selection
+    assertions need the page that carries the chosen hand, so this brings the
+    pager back to page 1 the same « Précédent » way the walk walked back.
+    """
+    while not (await read(page))["prevDisabled"]:
+        await page.click("#hhPagePrev")
+    current = await read(page)
+    assert current["page"] == 0, current
+    return current
+
+
+async def _goto_page_holding(page, hand_id: str, label: str, read=_read) -> dict:
+    """#395 T2 — leave the pager on the page that really paints `hand_id`.
+
+    A result filter or a sort can overflow one measured page, so an expected id
+    is never read from the *current* page: the walk visits every painted page of
+    the query, the page that carries the id is located, and the pager is left on
+    it before the caller drives the row. Fails loud with every painted page when
+    no page carries the id.
+    """
+    pages = await _walk_pages(page, read=read)
+    holding = next((entry for entry in pages if hand_id in entry["ids"]), None)
+    assert holding is not None, (
+        f"aucune page ne peint l'id attendu ({label})",
+        hand_id,
+        [(entry["page"], entry["ids"]) for entry in pages],
+    )
+    await _return_to_first_page(page, read=read)
+    while (await read(page))["page"] < holding["page"]:
+        await page.click("#hhPageNext")
+    current = await read(page)
+    assert current["page"] == holding["page"], (label, hand_id, current)
+    assert hand_id in current["ids"], (label, hand_id, current)
+    return current
 
 
 def assert_pagination(pages: list[dict], expected_ids: list[str], label: str) -> None:
@@ -613,10 +666,10 @@ async def run() -> None:
                         "page_1": pages[0]["ids"],
                     }
                     # Coming back to the first page is what the next assertion
-                    # needs; `_walk_pages` left us on the last one.
-                    while not (await _read(page))["prevDisabled"]:
-                        await page.click("#hhPagePrev")
-                    assert (await _read(page))["page"] == 0
+                    # needs; `_walk_pages` left us on the last one, and the walk
+                    # back to page 1 is the same page-aware rewind the selection
+                    # and deep-link sections use.
+                    assert (await _return_to_first_page(page))["page"] == 0
 
                 # --- The result filter ----------------------------------------
                 await page.select_option(SORT_SELECTOR, "recent_desc")
@@ -715,14 +768,36 @@ async def run() -> None:
                 restored = await _read(page)
                 assert restored["sort"] == "loss_desc" and restored["sortValue"] == "loss_desc", restored
                 assert restored["result"] == "LOSS" and restored["resultValue"] == "LOSS", restored
+                # The restore re-applies `reviewInboxPage:0` (both change
+                # handlers reset it), so the restored list starts on page 1.
                 assert restored["page"] == 0, restored
                 wanted_losses = expected_ids_for_result(specs, "LOSS")
-                assert restored["ids"] == [
+                # #395 T2 — la liste restaurée se lit **page par page** : un
+                # filtre `LOSS` assez large pour dépasser la page mesurée garde
+                # la même égalité, la concaténation des pages peintes portant
+                # tout le filtre dans l'ordre `loss_desc`. La page courante seule
+                # ne dit rien de la liste entière.
+                restored_pages = await _walk_pages(page)
+                assert len(restored_pages) == -(-len(wanted_losses) // max(1, restored["pageSize"])), (
+                    "la marche doit visiter toutes les pages du filtre restauré",
+                    restored,
+                    len(restored_pages),
+                )
+                for painted_page in restored_pages:
+                    assert_bounded(painted_page, f"reload page {painted_page['page'] + 1}")
+                    assert_page_size_target(
+                        painted_page, f"reload page {painted_page['page'] + 1}"
+                    )
+                restored_ids = [
+                    hand_id for painted_page in restored_pages for hand_id in painted_page["ids"]
+                ]
+                assert restored_ids == [
                     hand_id for hand_id in expected["loss_desc"] if hand_id in set(wanted_losses)
-                ], restored["ids"]
+                ], restored_ids
                 audit["reload"] = {
                     "sort": restored["sort"], "result": restored["result"],
-                    "ids": restored["ids"], "hands_restored": len(imported),
+                    "ids": restored_ids, "pages": len(restored_pages),
+                    "hands_restored": len(imported),
                 }
 
                 # --- Selection stability + deep link ---------------------------
@@ -732,12 +807,37 @@ async def run() -> None:
                     "() => state.hhSort==='ev_loss_desc' && state.reviewInboxFilters.result===''",
                     timeout=10_000,
                 )
-                page_one = await _read(page)
+                # #395 T2 — la main ciblée est lue sur la **marche page-aware**,
+                # jamais sur un `page_one` supposé tenir toute la liste :
+                # `ev_loss_desc` peint `ceil(32 / taille mesurée)` pages (la
+                # taille mesurée vaut 10–11), donc la page 1 n'est pas la liste.
+                # L'ordre EV dépend des scores injectés, donc la marche relit
+                # chaque page avec la même lecture atomique inject+repaint que
+                # les assertions de sélection ci-dessous.
+                listing = await _walk_pages(
+                    page, read=partial(_inject_and_read, payload=payload)
+                )
+                assert len(listing) >= 2, (
+                    "le va-et-vient de sélection exige une page suivante", listing
+                )
+                page_one = listing[0]
+                assert page_one["page"] == 0, page_one
                 assert_bounded(page_one, "selection")
                 target = next(entry for entry in page_one["deepLinks"])
                 spec = next(row for row in specs if row["hand_id"] == target["handId"])
                 assert target["decisionId"] == f"review:{target['handId']}:{target['stepIndex']}", target
                 assert target["stepIndex"] == spec["decision_step_index"], (target, spec)
+                # `target` is painted by `page_one`; the round-trip below is
+                # derived from *that* page (`target_page`), so the neighbour
+                # assertions stay valid whatever the measured page size paints on
+                # page 1. `_walk_pages` left the pager on the last page, so come
+                # back to the page that carries `target` before opening it.
+                target_page = page_one["page"]
+                rewound = await _return_to_first_page(
+                    page, read=partial(_inject_and_read, payload=payload)
+                )
+                assert rewound["page"] == target_page, (page_one, rewound)
+                assert target["handId"] in rewound["ids"], (target, rewound)
 
                 await page.click(
                     f"#hhHands .hh-hand[data-hand-id='{target['handId']}'] .review-inbox-open"
@@ -764,26 +864,29 @@ async def run() -> None:
                 # the deterministic scores and repaints in the same turn, so the
                 # page it measures is the one this smoke authored.
                 back = await _inject_and_read(page, payload)
-                assert back["page"] == 0, back
+                assert back["page"] == target_page, (target_page, back)
                 assert back["selectedHandId"] == target["handId"], back
                 assert target["handId"] in back["ids"] and target["handId"] in back["selected"], back
 
                 # The selection survives a page round-trip: the hand leaves the
-                # painted page, comes back, and is still the selected one.
+                # painted page, comes back, and is still the selected one. The
+                # neighbour page is derived from `target_page` (never hard-coded
+                # to 1), so the round trip stays valid whatever the measured page
+                # size paints on page 1.
                 await page.click("#hhPageNext")
                 moved = await _inject_and_read(page, payload)
-                assert moved["page"] == 1, moved
+                assert moved["page"] == target_page + 1, (target_page, moved)
                 assert target["handId"] not in moved["ids"], moved
                 assert moved["selectedHandId"] == target["handId"], moved
                 await page.click("#hhPagePrev")
                 returned = await _inject_and_read(page, payload)
-                assert returned["page"] == 0, returned
+                assert returned["page"] == target_page, (target_page, returned)
                 assert returned["selectedHandId"] == target["handId"], returned
                 assert target["handId"] in returned["ids"], returned
                 assert target["handId"] in returned["selected"], returned
                 audit["selection"] = {
-                    "hand_id": target["handId"], "painted_after_round_trip": returned["ids"],
-                    "selected": returned["selected"],
+                    "hand_id": target["handId"], "target_page": target_page,
+                    "painted_after_round_trip": returned["ids"], "selected": returned["selected"],
                 }
 
                 # --- A hand without any comparable decision stays explicit -----
@@ -791,12 +894,24 @@ async def run() -> None:
                 await page.select_option(SORT_SELECTOR, "hand_asc")
                 await page.select_option(RESULT_FILTER_SELECTOR, no_decision["result"])
                 await page.wait_for_function(
-                    "(value) => state.reviewInboxFilters.result===value",
+                    "(value) => state.hhSort==='hand_asc'"
+                    " && state.reviewInboxFilters.result===value",
                     arg=no_decision["result"],
                     timeout=10_000,
                 )
-                assert no_decision["hand_id"] in (await _inject_and_read(page, payload))["ids"], (
-                    no_decision
+                # #395 T2 — le filtre `result` de la main sans décision peut
+                # dépasser une page mesurée (le filtre EVEN en porte 14 ici) : on
+                # ne lit pas `ids` de la page courante, on se place sur la page
+                # qui peint vraiment l'id attendu par la marche page-aware.
+                no_decision_page = await _goto_page_holding(
+                    page, no_decision["hand_id"], "sans décision"
+                )
+                painted_no_decision = await _inject_and_read(page, payload)
+                assert painted_no_decision["page"] == no_decision_page["page"], (
+                    no_decision, no_decision_page, painted_no_decision
+                )
+                assert no_decision["hand_id"] in painted_no_decision["ids"], (
+                    no_decision, painted_no_decision
                 )
                 await page.click(
                     f"#hhHands .hh-hand[data-hand-id='{no_decision['hand_id']}'] .review-inbox-open"
