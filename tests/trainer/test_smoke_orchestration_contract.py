@@ -85,11 +85,13 @@ DOC = (ROOT / "docs/opponent-range-display-contract.md").read_text(encoding="utf
 FIT_EVIDENCE = ROOT / "docs/desktop-modes-fit-evidence.md"
 
 # The browser smokes that smoke_trainer.py must orchestrate: the two numeric
-# smokes of #391 and the desktop modes smoke / overflow audit of #394.
+# smokes of #391, the desktop modes smoke / overflow audit of #394 and the
+# Review-inbox large-list smoke of #395 T7.
 ORCHESTRATED_SMOKES = (
     "tests/trainer/smoke_opponent_range_numeric.py",
     "tests/trainer/smoke_equity_scale_invariance.py",
     "tests/trainer/smoke_modes_desktop.py",
+    "tests/trainer/smoke_review_inbox_large_list.py",
 )
 
 ORCHESTRATED_SMOKE_NAMES = tuple(Path(script).name for script in ORCHESTRATED_SMOKES)

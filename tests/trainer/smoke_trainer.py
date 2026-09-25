@@ -40,6 +40,13 @@ DRIVER_SMOKES = (
     # Hero and the Replayer right-panel keyboard/focus control). It serves its own
     # ephemeral copy of `site/` at the two reference viewports.
     Path(__file__).resolve().parent / "smoke_modes_desktop.py",
+    # #395 T7: Review inbox smoke on a large list (32 hands imported through the
+    # real `#hhFileInput`): bounded rendering without any list scroll, pagination
+    # page by page, the five first-level sort orders, the real-result filter, a
+    # selection that survives a page round-trip, the deep link of a hand and the
+    # sort/filter preferences restored after a reload. It serves its own
+    # ephemeral copy of `site/`.
+    Path(__file__).resolve().parent / "smoke_review_inbox_large_list.py",
 )
 
 

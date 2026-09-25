@@ -1,0 +1,1077 @@
+PokerStars Hand #3950001: Hold'em No Limit (50/100) - 2026/09/01 10:00:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4100 in chips)
+Seat 2: SB (4100 in chips)
+Seat 3: Hero (4100 in chips)
+Seat 4: LJ (4100 in chips)
+Seat 5: HJ (4100 in chips)
+Seat 6: CO (4100 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4000 to 4100 and is all-in
+HJ: calls 3800 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 8250 from pot
+*** SUMMARY ***
+Total pot 8250 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (8250) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950002: Hold'em No Limit (50/100) - 2026/09/01 10:01:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (2200 in chips)
+Seat 2: SB (2200 in chips)
+Seat 3: Hero (2200 in chips)
+Seat 4: LJ (2200 in chips)
+Seat 5: HJ (2200 in chips)
+Seat 6: CO (2200 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 2100 to 2200 and is all-in
+HJ: calls 1900 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 4450 from pot
+*** SUMMARY ***
+Total pot 4450 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (4450) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950003: Hold'em No Limit (50/100) - 2026/09/01 10:02:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (2300 in chips)
+Seat 2: SB (2300 in chips)
+Seat 3: Hero (2300 in chips)
+Seat 4: LJ (2300 in chips)
+Seat 5: HJ (2300 in chips)
+Seat 6: CO (2300 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 2200 to 2300 and is all-in
+HJ: calls 2000 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 2300 from pot
+HJ collected 2350 from pot
+*** SUMMARY ***
+Total pot 4650 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (2300) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (2350) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950004: Hold'em No Limit (50/100) - 2026/09/01 10:03:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (2400 in chips)
+Seat 2: SB (2400 in chips)
+Seat 3: BB (2400 in chips)
+Seat 4: LJ (2400 in chips)
+Seat 5: HJ (2400 in chips)
+Seat 6: Hero (2400 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950005: Hold'em No Limit (50/100) - 2026/09/01 10:04:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4500 in chips)
+Seat 2: SB (4500 in chips)
+Seat 3: Hero (4500 in chips)
+Seat 4: LJ (4500 in chips)
+Seat 5: HJ (4500 in chips)
+Seat 6: CO (4500 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4400 to 4500 and is all-in
+HJ: calls 4200 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 9050 from pot
+*** SUMMARY ***
+Total pot 9050 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (9050) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950006: Hold'em No Limit (50/100) - 2026/09/01 10:05:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (2600 in chips)
+Seat 2: SB (2600 in chips)
+Seat 3: Hero (2600 in chips)
+Seat 4: LJ (2600 in chips)
+Seat 5: HJ (2600 in chips)
+Seat 6: CO (2600 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 2500 to 2600 and is all-in
+HJ: calls 2300 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 5250 from pot
+*** SUMMARY ***
+Total pot 5250 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (5250) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950007: Hold'em No Limit (50/100) - 2026/09/01 10:06:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (2700 in chips)
+Seat 2: SB (2700 in chips)
+Seat 3: Hero (2700 in chips)
+Seat 4: LJ (2700 in chips)
+Seat 5: HJ (2700 in chips)
+Seat 6: CO (2700 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 2600 to 2700 and is all-in
+HJ: calls 2400 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 2700 from pot
+HJ collected 2750 from pot
+*** SUMMARY ***
+Total pot 5450 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (2700) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (2750) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950008: Hold'em No Limit (50/100) - 2026/09/01 10:07:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (2800 in chips)
+Seat 2: SB (2800 in chips)
+Seat 3: BB (2800 in chips)
+Seat 4: LJ (2800 in chips)
+Seat 5: HJ (2800 in chips)
+Seat 6: Hero (2800 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950009: Hold'em No Limit (50/100) - 2026/09/01 10:08:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4900 in chips)
+Seat 2: SB (4900 in chips)
+Seat 3: Hero (4900 in chips)
+Seat 4: LJ (4900 in chips)
+Seat 5: HJ (4900 in chips)
+Seat 6: CO (4900 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4800 to 4900 and is all-in
+HJ: calls 4600 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 9850 from pot
+*** SUMMARY ***
+Total pot 9850 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (9850) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950010: Hold'em No Limit (50/100) - 2026/09/01 10:09:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3000 in chips)
+Seat 2: SB (3000 in chips)
+Seat 3: Hero (3000 in chips)
+Seat 4: LJ (3000 in chips)
+Seat 5: HJ (3000 in chips)
+Seat 6: CO (3000 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 2900 to 3000 and is all-in
+HJ: calls 2700 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 6050 from pot
+*** SUMMARY ***
+Total pot 6050 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (6050) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950011: Hold'em No Limit - 2026/09/01 10:10:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3100 in chips)
+Seat 2: SB (3100 in chips)
+Seat 3: Hero (3100 in chips)
+Seat 4: LJ (3100 in chips)
+Seat 5: HJ (3100 in chips)
+Seat 6: CO (3100 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 3000 to 3100 and is all-in
+HJ: calls 2800 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 6250 from pot
+*** SUMMARY ***
+Total pot 6250 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (6250) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950012: Hold'em No Limit (50/100) - 2026/09/01 10:11:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3200 in chips)
+Seat 2: SB (3200 in chips)
+Seat 3: BB (3200 in chips)
+Seat 4: LJ (3200 in chips)
+Seat 5: HJ (3200 in chips)
+Seat 6: Hero (3200 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950013: Hold'em No Limit (50/100) - 2026/09/01 10:12:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (5300 in chips)
+Seat 2: SB (5300 in chips)
+Seat 3: Hero (5300 in chips)
+Seat 4: LJ (5300 in chips)
+Seat 5: HJ (5300 in chips)
+Seat 6: CO (5300 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 5200 to 5300 and is all-in
+HJ: calls 5000 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 10650 from pot
+*** SUMMARY ***
+Total pot 10650 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (10650) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950014: Hold'em No Limit (50/100) - 2026/09/01 10:13:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3400 in chips)
+Seat 2: SB (3400 in chips)
+Seat 3: Hero (3400 in chips)
+Seat 4: LJ (3400 in chips)
+Seat 5: HJ (3400 in chips)
+Seat 6: CO (3400 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 3300 to 3400 and is all-in
+HJ: calls 3100 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 6850 from pot
+*** SUMMARY ***
+Total pot 6850 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (6850) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950015: Hold'em No Limit (50/100) - 2026/09/01 10:14:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3500 in chips)
+Seat 2: SB (3500 in chips)
+Seat 3: Hero (3500 in chips)
+Seat 4: LJ (3500 in chips)
+Seat 5: HJ (3500 in chips)
+Seat 6: CO (3500 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 3400 to 3500 and is all-in
+HJ: calls 3200 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 3500 from pot
+HJ collected 3550 from pot
+*** SUMMARY ***
+Total pot 7050 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (3500) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (3550) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950016: Hold'em No Limit (50/100) - 2026/09/01 10:15:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3600 in chips)
+Seat 2: SB (3600 in chips)
+Seat 3: BB (3600 in chips)
+Seat 4: LJ (3600 in chips)
+Seat 5: HJ (3600 in chips)
+Seat 6: Hero (3600 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950017: Hold'em No Limit (50/100) - 2026/09/01 10:16:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (5700 in chips)
+Seat 2: SB (5700 in chips)
+Seat 3: Hero (5700 in chips)
+Seat 4: LJ (5700 in chips)
+Seat 5: HJ (5700 in chips)
+Seat 6: CO (5700 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 5600 to 5700 and is all-in
+HJ: calls 5400 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 11450 from pot
+*** SUMMARY ***
+Total pot 11450 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (11450) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950018: Hold'em No Limit (50/100) - 2026/09/01 10:17:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3800 in chips)
+Seat 2: SB (3800 in chips)
+Seat 3: Hero (3800 in chips)
+Seat 4: LJ (3800 in chips)
+Seat 5: HJ (3800 in chips)
+Seat 6: CO (3800 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 3700 to 3800 and is all-in
+HJ: calls 3500 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 7650 from pot
+*** SUMMARY ***
+Total pot 7650 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (7650) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950019: Hold'em No Limit (50/100) - 2026/09/01 10:18:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (3900 in chips)
+Seat 2: SB (3900 in chips)
+Seat 3: Hero (3900 in chips)
+Seat 4: LJ (3900 in chips)
+Seat 5: HJ (3900 in chips)
+Seat 6: CO (3900 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 3800 to 3900 and is all-in
+HJ: calls 3600 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 3900 from pot
+HJ collected 3950 from pot
+*** SUMMARY ***
+Total pot 7850 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (3900) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (3950) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950020: Hold'em No Limit (50/100) - 2026/09/01 10:19:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4000 in chips)
+Seat 2: SB (4000 in chips)
+Seat 3: BB (4000 in chips)
+Seat 4: LJ (4000 in chips)
+Seat 5: HJ (4000 in chips)
+Seat 6: Hero (4000 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950021: Hold'em No Limit (50/100) - 2026/09/01 10:20:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (6100 in chips)
+Seat 2: SB (6100 in chips)
+Seat 3: Hero (6100 in chips)
+Seat 4: LJ (6100 in chips)
+Seat 5: HJ (6100 in chips)
+Seat 6: CO (6100 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 6000 to 6100 and is all-in
+HJ: calls 5800 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 12250 from pot
+*** SUMMARY ***
+Total pot 12250 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (12250) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950022: Hold'em No Limit (50/100) - 2026/09/01 10:21:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4200 in chips)
+Seat 2: SB (4200 in chips)
+Seat 3: Hero (4200 in chips)
+Seat 4: LJ (4200 in chips)
+Seat 5: HJ (4200 in chips)
+Seat 6: CO (4200 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4100 to 4200 and is all-in
+HJ: calls 3900 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 8450 from pot
+*** SUMMARY ***
+Total pot 8450 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (8450) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950023: Hold'em No Limit (50/100) - 2026/09/01 10:22:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4300 in chips)
+Seat 2: SB (4300 in chips)
+Seat 3: Hero (4300 in chips)
+Seat 4: LJ (4300 in chips)
+Seat 5: HJ (4300 in chips)
+Seat 6: CO (4300 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4200 to 4300 and is all-in
+HJ: calls 4000 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 4300 from pot
+HJ collected 4350 from pot
+*** SUMMARY ***
+Total pot 8650 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (4300) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (4350) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950024: Hold'em No Limit (50/100) - 2026/09/01 10:23:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4400 in chips)
+Seat 2: SB (4400 in chips)
+Seat 3: BB (4400 in chips)
+Seat 4: LJ (4400 in chips)
+Seat 5: HJ (4400 in chips)
+Seat 6: Hero (4400 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950025: Hold'em No Limit (50/100) - 2026/09/01 10:24:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (6500 in chips)
+Seat 2: SB (6500 in chips)
+Seat 3: Hero (6500 in chips)
+Seat 4: LJ (6500 in chips)
+Seat 5: HJ (6500 in chips)
+Seat 6: CO (6500 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 6400 to 6500 and is all-in
+HJ: calls 6200 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 13050 from pot
+*** SUMMARY ***
+Total pot 13050 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (13050) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950026: Hold'em No Limit (50/100) - 2026/09/01 10:25:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4600 in chips)
+Seat 2: SB (4600 in chips)
+Seat 3: Hero (4600 in chips)
+Seat 4: LJ (4600 in chips)
+Seat 5: HJ (4600 in chips)
+Seat 6: CO (4600 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4500 to 4600 and is all-in
+HJ: calls 4300 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 9250 from pot
+*** SUMMARY ***
+Total pot 9250 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (9250) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950027: Hold'em No Limit - 2026/09/01 10:26:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4700 in chips)
+Seat 2: SB (4700 in chips)
+Seat 3: Hero (4700 in chips)
+Seat 4: LJ (4700 in chips)
+Seat 5: HJ (4700 in chips)
+Seat 6: CO (4700 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4600 to 4700 and is all-in
+HJ: calls 4400 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 9450 from pot
+*** SUMMARY ***
+Total pot 9450 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (9450) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950028: Hold'em No Limit (50/100) - 2026/09/01 10:27:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (4800 in chips)
+Seat 2: SB (4800 in chips)
+Seat 3: BB (4800 in chips)
+Seat 4: LJ (4800 in chips)
+Seat 5: HJ (4800 in chips)
+Seat 6: Hero (4800 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
+
+PokerStars Hand #3950029: Hold'em No Limit (50/100) - 2026/09/01 10:28:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (6900 in chips)
+Seat 2: SB (6900 in chips)
+Seat 3: Hero (6900 in chips)
+Seat 4: LJ (6900 in chips)
+Seat 5: HJ (6900 in chips)
+Seat 6: CO (6900 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 6800 to 6900 and is all-in
+HJ: calls 6600 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 13850 from pot
+*** SUMMARY ***
+Total pot 13850 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (13850) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and lost with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950030: Hold'em No Limit (50/100) - 2026/09/01 10:29:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (5000 in chips)
+Seat 2: SB (5000 in chips)
+Seat 3: Hero (5000 in chips)
+Seat 4: LJ (5000 in chips)
+Seat 5: HJ (5000 in chips)
+Seat 6: CO (5000 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 4900 to 5000 and is all-in
+HJ: calls 4700 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+HJ collected 10050 from pot
+*** SUMMARY ***
+Total pot 10050 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and lost with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (10050) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950031: Hold'em No Limit (50/100) - 2026/09/01 10:30:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (5100 in chips)
+Seat 2: SB (5100 in chips)
+Seat 3: Hero (5100 in chips)
+Seat 4: LJ (5100 in chips)
+Seat 5: HJ (5100 in chips)
+Seat 6: CO (5100 in chips)
+SB: posts small blind 50
+Hero: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [As Kd]
+LJ: folds
+HJ: raises 200 to 300
+CO: folds
+BTN: folds
+SB: folds
+Hero: raises 5000 to 5100 and is all-in
+HJ: calls 4800 and is all-in
+*** FLOP *** [2c 7d Qh]
+*** TURN *** [2c 7d Qh] [9s]
+*** RIVER *** [2c 7d Qh 9s] [3d]
+*** SHOW DOWN ***
+Hero: shows [As Kd] (high card Ace)
+HJ: shows [8h 8c] (a pair of Eights)
+Hero collected 5100 from pot
+HJ collected 5150 from pot
+*** SUMMARY ***
+Total pot 10250 | Rake 0
+Board [2c 7d Qh 9s 3d]
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: Hero (big blind) showed [As Kd] and won (5100) with high card Ace
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ showed [8h 8c] and won (5150) with a pair of Eights
+Seat 6: CO folded before Flop (didn't bet)
+
+PokerStars Hand #3950032: Hold'em No Limit (50/100) - 2026/09/01 10:31:00 CET
+Table 'Review Inbox Large List' 6-max Seat #1 is the button
+Seat 1: BTN (5200 in chips)
+Seat 2: SB (5200 in chips)
+Seat 3: BB (5200 in chips)
+Seat 4: LJ (5200 in chips)
+Seat 5: HJ (5200 in chips)
+Seat 6: Hero (5200 in chips)
+SB: posts small blind 50
+BB: posts big blind 100
+*** HOLE CARDS ***
+Dealt to Hero [7h 2c]
+LJ: folds
+HJ: folds
+Hero: folds
+BTN: folds
+SB: folds
+*** SUMMARY ***
+Total pot 150 | Rake 0
+Seat 1: BTN (button) folded before Flop (didn't bet)
+Seat 2: SB (small blind) folded before Flop
+Seat 3: BB (big blind) collected (150)
+Seat 4: LJ folded before Flop (didn't bet)
+Seat 5: HJ folded before Flop (didn't bet)
+Seat 6: Hero (cutoff) folded before Flop (didn't bet)
