@@ -66,6 +66,14 @@ def main() -> None:
     range_pane = spotlab.split('id="rangeDisplaySection"', 1)[1].split("</section>", 1)[0]
     assert 'id="matrix"' in range_pane
     assert 'id="rangeEditionBtn"' in range_pane
+    # The tab id that selects the Ranges pane is contractual too: the desktop
+    # smoke (#394 T1) mounts the pane by a real click on `#spotlabRangeTab`
+    # before hit-testing `#rangeDisplaySection` and `#matrix`, so the id has to
+    # exist exactly once inside the Spot Lab shell, wired to the pane it mounts.
+    assert 'id="spotlabRangeTab"' in spotlab
+    assert INDEX.count('id="spotlabRangeTab"') == 1
+    assert 'aria-controls="rangeDisplaySection"' in spotlab
+    assert 'aria-labelledby="spotlabRangeTab"' in spotlab
     # The manual Hero/board picker stays inside the Board pane.
     board_pane = spotlab.split('id="cardsSection"', 1)[1].split("</section>", 1)[0]
     for control in ('id="heroSlots"', 'id="boardSlots"', 'id="deck"', 'id="streetPicker"'):

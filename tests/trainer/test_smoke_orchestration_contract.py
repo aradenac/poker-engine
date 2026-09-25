@@ -33,6 +33,16 @@ failure of the Accueil « Review » click — intercepted by ``#quickNavToggle``
 1366x768, Playwright's default 30 s actionability timeout — and the R1 fix
 (``site/index.html`` plus the static separation guard), while the smoke keeps
 that click a real one (no forced JS click, no retry, no skip).
+
+Since #394 T1 (``backlog-o53``) it also pins the *panel* reachability the human
+review named as never measured at 1366x768 — Spot Lab's ``Range adverse`` pane,
+the three Replayer columns, the Replayer right-panel tabs and the four Training
+rail tabs — on the same instrument as the Review import surface
+(``elementFromPoint`` + ``click(trial=True)``), together with the report bucket
+that carries those measurements (``panel_surfaces``) and the per-viewport
+inventory printed for a green and a red run alike. The block is strictly
+additive: a selector, its ``_assert_panel_surface_hit_testable`` call, the bucket
+or the inventory that disappears fails this guard.
 """
 from __future__ import annotations
 
@@ -301,6 +311,113 @@ def main() -> None:
     assert '"hit_test"' in MODES_SMOKE
     assert 'record["hit_test"]' in MODES_SMOKE
     assert "def _assert_import_surface_hit_testable(" in MODES_SMOKE
+
+    # #394 T1 — the panels the human review named as never measured at 1366x768
+    # are measured with the very same instrument as the import surface, and that
+    # measurement is contractual: this guard fails as soon as a selector, its
+    # `_assert_panel_surface_hit_testable` call, the `panel_surfaces` report
+    # bucket or the per-viewport inventory disappears. Like the T2 block above it
+    # is strictly additive — it only adds required tokens, so none of the checks
+    # of this module (T6, T7, R2) is removed or weakened.
+    assert "def _assert_panel_surface_hit_testable(" in MODES_SMOKE
+    assert "PANEL_SHELLS = {" in MODES_SMOKE
+    # The measurement is scoped to the view shell that owns the panel: a target
+    # laid out outside its own shell is clipped by the fixed-height desktop shell,
+    # whatever the document-level scroll metrics say. The three shells are the
+    # Spot Lab / Replayer / Training ones the panels belong to.
+    for shell in (
+        '\'[data-view-shell="spotlab"]\'',
+        '\'[data-view-shell="replayer"]\'',
+        '\'[data-view-shell="training"]\'',
+    ):
+        assert shell in MODES_SMOKE, shell
+
+    # Spot Lab `Range adverse` (#394 T1): the tab, the pane it mounts and the
+    # 169-cell matrix it owns are the measured selectors — declared verbatim as
+    # the tuple the per-viewport journey hit-tests.
+    assert (
+        'SPOTLAB_RANGE_SURFACE_SELECTORS = ("#spotlabRangeTab", "#rangeDisplaySection", "#matrix")'
+        in MODES_SMOKE
+    )
+    spotlab_surface_block = MODES_SMOKE.split(
+        "SPOTLAB_RANGE_SURFACE_SELECTORS = (", 1
+    )[1].split(")", 1)[0]
+    for selector in ("#spotlabRangeTab", "#rangeDisplaySection", "#matrix"):
+        assert selector in spotlab_surface_block, selector
+
+    # Replayer columns (#394 T1): the left/centre columns and the context panel.
+    replayer_columns_block = MODES_SMOKE.split(
+        "REPLAYER_COLUMN_SELECTORS = (", 1
+    )[1].split(")", 1)[0]
+    for selector in (".replayer-col-left", ".replayer-col-center", "#replayerContextPanel"):
+        assert selector in replayer_columns_block, selector
+
+    # Replayer right-panel tabs (#394 T1): each tab with the pane it mounts. A
+    # hidden pane cannot be hit-tested, so every tab/pane pair is measured after a
+    # real click on its tab.
+    replayer_tabs_block = MODES_SMOKE.split("REPLAYER_TAB_SURFACES = (", 1)[1].split(
+        "\n)", 1
+    )[0]
+    for tab_selector, panel_selector in (
+        ("#replayerDecisionTab", "#replayerDecisionPanel"),
+        ("#replayerRangesTab", "#replayerRangesPanel"),
+        ("#replayerDetailsTab", "#hhReplayDetail"),
+    ):
+        assert tab_selector in replayer_tabs_block, tab_selector
+        assert panel_selector in replayer_tabs_block, panel_selector
+
+    # Training rail tabs and panes (#394 T1): the four rail tabs with their rail
+    # panes, again tab by tab.
+    trainer_rail_block = MODES_SMOKE.split("TRAINER_RAIL_SURFACES = (", 1)[1].split(
+        "\n)", 1
+    )[0]
+    for tab_selector, panel_selector in (
+        ("#trainerCoachingTab", "#trainerCoachPanel"),
+        ("#trainerSessionTab", "#trainerSessionPanel"),
+        ("#trainerProfilesTab", "#trainerProfilesPanel"),
+        ("#trainerTestTab", "#trainerTestPanel"),
+    ):
+        assert tab_selector in trainer_rail_block, tab_selector
+        assert panel_selector in trainer_rail_block, panel_selector
+
+    # The verdicts are measured, never deduced: each panel surface is resolved by
+    # the very hit-test a real mouse click performs, through the shared
+    # `_assert_panel_surface_hit_testable` call — four call sites, each inside the
+    # per-viewport journey (Spot Lab, Replayer columns, Replayer tabs, Training
+    # rail), plus the real clicks that mount the sub-view before it is measured.
+    assert MODES_SMOKE.count("await _assert_panel_surface_hit_testable(") >= 4
+    journey_block = MODES_SMOKE.split("async def run_viewport(", 1)[1].split(
+        "async def run_review_race_viewport(", 1
+    )[0]
+    assert journey_block.count("await _assert_panel_surface_hit_testable(") >= 4, (
+        "the panel hit-tests must run inside the per-viewport journey"
+    )
+    assert "await page.click(\"#spotlabRangeTab\")" in journey_block
+    assert "await page.click(tab_selector)" in journey_block
+    # The per-target verdict reuses the import-surface report (same composer), so
+    # a red panel names its measured rectangle, viewport and elementFromPoint.
+    assert 'label = f"panneau {mode}"' in MODES_SMOKE
+
+    # The new measurements are serialised in their own report bucket, and the
+    # bucket cannot pass by vacuity: `panel_surface` records are routed to
+    # `panel_surfaces`, the verdict requires every target reachable *and* both
+    # reference viewports to have measured the panels, and a per-viewport
+    # inventory is printed from the audit itself (green and red runs alike).
+    assert 'if record.get("panel_surface"):' in MODES_SMOKE
+    assert 'return "panel_surfaces"' in MODES_SMOKE
+    assert '"panel_surfaces": []' in MODES_SMOKE
+    assert 'report["panel_surfaces"]' in MODES_SMOKE
+    assert 'for record in report["panel_surfaces"]' in MODES_SMOKE
+    assert "panels_reachable" in MODES_SMOKE
+    assert "panels_measured" in MODES_SMOKE
+    assert 'record["viewport"] == f"{width}x{height}"' in MODES_SMOKE
+    assert "def panel_inventory_lines(audit: list[dict]) -> list[str]:" in MODES_SMOKE
+    assert "for line in panel_inventory_lines(audit):" in MODES_SMOKE
+    assert "inventaire panneaux viewport={viewport} mesures={len(records)}" in MODES_SMOKE
+    # The frozen job's log carries that inventory: it is what proves the
+    # 1366x768 leg really ran the panel hit-tests, on a green and a red run alike.
+    assert "desktop modes overflow audit" in MODES_SMOKE
+    assert "panneau[{surface}]" in MODES_SMOKE
 
     # The #394 T7 fit evidence is versioned and contractual: since the frozen
     # browser job only runs in CI, this artefact is what a reviewer reads. It
