@@ -1,0 +1,31 @@
+{
+  "amendment": {
+    "amendment_id": "V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE",
+    "revision_of": "poker-hierarchical-frozen-validation-protocol/v1",
+    "superseded_byte_sha256": "508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320",
+    "superseded_canonical_payload_sha256": "a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16",
+    "superseded_kept_content_addressed": true,
+    "superseded_path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json"
+  },
+  "artifact": "FROZEN_VALIDATION_PROTOCOL_V2.json",
+  "bytes_copied_into_this_bundle": false,
+  "frozen_v1": {
+    "byte_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+    "canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
+    "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json"
+  },
+  "gates_weaker_than_v1": false,
+  "kind": "DIGEST_REFERENCE_NOT_A_COPY",
+  "read_rule": "the protocol v2 bytes are the T1 authority and stay the source of record; this bundle records their digest instead of duplicating them, and every --check re-derives the digest from the persisted bytes",
+  "role": "T1_FROZEN_VALIDATION_PROTOCOL_V2",
+  "schema": "poker-hierarchical-integration-reference/v2",
+  "source": {
+    "bundle_index": "analysis/issue419_hierarchical_tree/validation_protocol_v2/ARTIFACTS.json",
+    "byte_sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+    "canonical_payload_sha256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+    "digest_sidecar": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.sha256",
+    "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json",
+    "schema": "poker-hierarchical-frozen-validation-protocol/v2"
+  },
+  "thresholds_moved": false
+}

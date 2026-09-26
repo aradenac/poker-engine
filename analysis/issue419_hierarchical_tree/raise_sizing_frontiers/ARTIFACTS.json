@@ -1,0 +1,11 @@
+{
+  "RAISE_SIZING_FRONTIER_RESOLUTION.json": {
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "object": "sha256/93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e.json",
+    "sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c.md",
+    "sha256": "cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c"
+  }
+}

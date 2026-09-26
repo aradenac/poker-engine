@@ -1,0 +1,2187 @@
+{
+  "blocker_count": 1,
+  "blocker_persisted": true,
+  "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+  "blockers": [
+    {
+      "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+      "blocker_id": "UNRESOLVED_RAISE_SIZING_FRONTIER",
+      "blocks_required_tree_complete": true,
+      "closure_condition": "Every required RAISE frontier must resolve to an exactly supported target whose descendant closure is enumerable without a representative price. Closing the tree also still requires the independent runtime-support-context conditions, so this blocker is necessary but not sufficient.",
+      "coded_reasons": [
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT"
+      ],
+      "distinct_from_blocker_classes": [
+        "INSUFFICIENT_RUNTIME_SUPPORT_CONTEXT"
+      ],
+      "frontier_count": 7,
+      "frontier_node_ids": [
+        "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+        "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+        "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+        "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+        "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+        "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+        "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b"
+      ],
+      "frozen_rule": "#367 exact active structural node empirical translator; missing node or LEGAL_MIN_FALLBACK is unresolved",
+      "independent_of_response_model": true,
+      "necessary_for_tree_closure": true,
+      "not_authorized_here": "This TRAIN-only audit neither fabricates a sizing estimator nor relaxes the rule; resolving the frontier requires a separately frozen exact raise-sizing estimator or an active reference that carries the exact structural node with translatable raise-size statistics.",
+      "observed_evidence": {
+        "reference_nodes": 4554,
+        "reference_nodes_with_translatable_raise_sizing": 0
+      },
+      "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "required_tree_complete": false,
+      "response_model_independence": "The same active reference nodes already carry response-likelihood state (population_model/frequencies, response_model_key, policy169_q_b64) while carrying no raise-size statistic at all; the sizing gap is therefore not a property of any response model and cannot be closed by one.",
+      "status": "OPEN",
+      "sufficient_for_tree_closure": false
+    }
+  ],
+  "enumeration_complete": false,
+  "fixture_sha256": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+  "frontiers": [
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_b4845bc797b1"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_b4845bc797b1",
+          "observed_action_counts": {
+            "CALL": 5,
+            "FOLD": 6
+          },
+          "population_decisions": 11,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_b4845bc797b1"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_b4845bc797b1",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": true,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:FOLD"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_2a816dad5861a8dcee48760db2c45069b6f6cbeaa2073e410cafa3f5377b50ff",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_2a816dad5861a8dcee48760db2c45069b6f6cbeaa2073e410cafa3f5377b50ff",
+      "structural_context": {
+        "actor_position": "BTN",
+        "all_in_positions": [],
+        "family": "LIMPER_VS_ISO",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          }
+        ],
+        "live_positions": [
+          "BTN",
+          "SB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 5,
+            "FOLD": 5,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 10,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.5,
+            "FOLD": 0.5,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 10,
+        "hand_classes": {
+          "42s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "55": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "K7o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "c41b54f07ae1ea199a3137c4ebe967ca81b4030a617faf93a437f1e92bd2f956",
+        "observations": 10,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 10,
+          "non_revealed_fraction": 0.7,
+          "reveal_fraction": 0.3,
+          "revealed_decisions": 3,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.5,
+            "FOLD": -0.5,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 7
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "train_observed_raise_actions": 0,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 5,
+          "FOLD": 5,
+          "JAM": 0,
+          "RAISE": 0
+        },
+        "distinct_hands": 10,
+        "identical_to_issue388_identity_support": true,
+        "observations": 10
+      }
+    },
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_7b89582ba086"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_7b89582ba086",
+          "observed_action_counts": {
+            "CALL": 21,
+            "FOLD": 7,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "population_decisions": 28,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_7b89582ba086"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_7b89582ba086",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": false,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD",
+        "CO:CALL"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_bc1e6aadedd2bd9d0cbcce7a4c54d8f3af4be57e12bcb7027c5d45cab09d5c66",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_abcb7b8b3f1baa168aadc24f680027ca257cf8f9cbf5f0013be927270252b591",
+      "structural_context": {
+        "actor_position": "BTN",
+        "all_in_positions": [],
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          },
+          {
+            "action": "CALL",
+            "position": "CO"
+          }
+        ],
+        "live_positions": [
+          "CO",
+          "BTN",
+          "SB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 20,
+            "FOLD": 8,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 28,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.7142857142857143,
+            "FOLD": 0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 28,
+        "hand_classes": {
+          "77": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "J8s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JJ": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JTs": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q9o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "6e942f7ceb4190519f3cc771bf217b01dfdf5c21eb76033f3bebab05f0e57bbc",
+        "observations": 28,
+        "qualifies": true,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 28,
+          "non_revealed_fraction": 0.7857142857142857,
+          "reveal_fraction": 0.21428571428571427,
+          "revealed_decisions": 6,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.2857142857142857,
+            "FOLD": -0.2857142857142857,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 22
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "train_observed_raise_actions": 0,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 20,
+          "FOLD": 8,
+          "JAM": 0,
+          "RAISE": 0
+        },
+        "distinct_hands": 28,
+        "identical_to_issue388_identity_support": true,
+        "observations": 28
+      }
+    },
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "TRAIN_OBSERVED_RAISE_ACTIONS_NOT_ADMITTED_AS_A_PRICE",
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_a4a233b4a5b4"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_a4a233b4a5b4",
+          "observed_action_counts": {
+            "CALL": 29,
+            "FOLD": 11,
+            "JAM": 0,
+            "RAISE": 1
+          },
+          "population_decisions": 41,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_a4a233b4a5b4"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_a4a233b4a5b4",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": false,
+      "path": [
+        "SB:ISO@5",
+        "BB:FOLD"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_f03eb080b6331092395fd4e69c76adc4706fa9d44fb7054f0c3e35f4ddfc1f78",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_612daad7187d954f3a112fd8f6c0f03c0a6dc8768148eb9dbc6723b113317ed7",
+      "structural_context": {
+        "actor_position": "CO",
+        "all_in_positions": [],
+        "family": "LIMPER_VS_ISO",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          }
+        ],
+        "live_positions": [
+          "CO",
+          "BTN",
+          "SB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 29,
+            "FOLD": 10,
+            "JAM": 0,
+            "RAISE": 1
+          },
+          "denominator": 40,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.725,
+            "FOLD": 0.25,
+            "JAM": 0.0,
+            "RAISE": 0.025
+          }
+        },
+        "distinct_hands": 40,
+        "hand_classes": {
+          "62s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "74s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "77": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "86o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "95s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A4s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A9o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "AQo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "K7s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 2,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 2,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 2
+          },
+          "KTs": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q8s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "a929338cd78d15d4f83ad15433e61cf5bea268820fcc180d76f14d468846feca",
+        "observations": 40,
+        "qualifies": true,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 40,
+          "non_revealed_fraction": 0.7,
+          "reveal_fraction": 0.3,
+          "revealed_decisions": 12,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.275,
+            "FOLD": -0.25,
+            "JAM": 0.0,
+            "RAISE": -0.025
+          },
+          "unrevealed_decisions": 28
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "train_observed_raise_actions": 1,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 29,
+          "FOLD": 10,
+          "JAM": 0,
+          "RAISE": 1
+        },
+        "distinct_hands": 40,
+        "identical_to_issue388_identity_support": true,
+        "observations": 40
+      }
+    },
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_434bc7106329"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_434bc7106329",
+          "observed_action_counts": {
+            "CALL": 2
+          },
+          "population_decisions": 2,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_434bc7106329"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_434bc7106329",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": false,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:FOLD"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_5dbf880a9604d5be9c70e8b19d7e78814e526e38f6936ac5ce402b3ed966e80f",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_d316b38743c712020c11066927af54eec335cee5dbb2166f7d7cee3c364e4200",
+      "structural_context": {
+        "actor_position": "BTN",
+        "all_in_positions": [],
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          },
+          {
+            "action": "CALL",
+            "position": "BB"
+          }
+        ],
+        "live_positions": [
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 0,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 0,
+          "other_count": 0,
+          "rates": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          }
+        },
+        "distinct_hands": 0,
+        "hand_classes": {},
+        "hand_ids_fingerprint_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "observations": 0,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 0,
+          "non_revealed_fraction": null,
+          "reveal_fraction": null,
+          "revealed_decisions": 0,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": null,
+            "FOLD": null,
+            "JAM": null,
+            "RAISE": null
+          },
+          "unrevealed_decisions": 0
+        },
+        "support_state": "ZERO_EXACT_SUPPORT"
+      },
+      "train_observed_raise_actions": 0,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 0,
+          "FOLD": 0,
+          "JAM": 0,
+          "RAISE": 0
+        },
+        "distinct_hands": 0,
+        "identical_to_issue388_identity_support": true,
+        "observations": 0
+      }
+    },
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_103ee6645610"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_103ee6645610",
+          "observed_action_counts": {
+            "CALL": 15,
+            "FOLD": 1
+          },
+          "population_decisions": 16,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_103ee6645610"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_103ee6645610",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": false,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL",
+        "CO:CALL"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_3a6961db2db1ff7ddc4c70bc0cb677dc7b0e98c97b965200b0a3f80356dd4b4b",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_44fda993baaeb94502ffaaa4a24119e692ea3f64bef58b31f5a4e414fbbf2f01",
+      "structural_context": {
+        "actor_position": "BTN",
+        "all_in_positions": [],
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          },
+          {
+            "action": "CALL",
+            "position": "BB"
+          },
+          {
+            "action": "CALL",
+            "position": "CO"
+          }
+        ],
+        "live_positions": [
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 13,
+            "FOLD": 1,
+            "JAM": 0,
+            "RAISE": 0
+          },
+          "denominator": 14,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.9285714285714286,
+            "FOLD": 0.07142857142857142,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 14,
+        "hand_classes": {
+          "88": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "99": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "KJo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "KTs": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "QQ": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "0b223621505fc049dd014f9205b79fd58812202ad2e93f2f2ecebef4d4acd11a",
+        "observations": 14,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 14,
+          "non_revealed_fraction": 0.6428571428571429,
+          "reveal_fraction": 0.35714285714285715,
+          "revealed_decisions": 5,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.0714285714285714,
+            "FOLD": -0.07142857142857142,
+            "JAM": 0.0,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 9
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "train_observed_raise_actions": 0,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 13,
+          "FOLD": 1,
+          "JAM": 0,
+          "RAISE": 0
+        },
+        "distinct_hands": 14,
+        "identical_to_issue388_identity_support": true,
+        "observations": 14
+      }
+    },
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "TRAIN_OBSERVED_RAISE_ACTIONS_NOT_ADMITTED_AS_A_PRICE",
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_28c14e4401b6"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_28c14e4401b6",
+          "observed_action_counts": {
+            "CALL": 16,
+            "FOLD": 2,
+            "JAM": 0,
+            "RAISE": 1
+          },
+          "population_decisions": 19,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_28c14e4401b6"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_28c14e4401b6",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": false,
+      "path": [
+        "SB:ISO@5",
+        "BB:CALL"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_2600c38a4545ff21491d9f51d941b4250503cc2a8e933db210dcfeede37b7a98",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_76b2cbe8305ded1208504738796ca1fb65c6b059e47b6249bfc08fec546c1a2b",
+      "structural_context": {
+        "actor_position": "CO",
+        "all_in_positions": [],
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          },
+          {
+            "action": "CALL",
+            "position": "BB"
+          }
+        ],
+        "live_positions": [
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 14,
+            "FOLD": 0,
+            "JAM": 0,
+            "RAISE": 1
+          },
+          "denominator": 15,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.9333333333333333,
+            "FOLD": 0.0,
+            "JAM": 0.0,
+            "RAISE": 0.06666666666666667
+          }
+        },
+        "distinct_hands": 15,
+        "hand_classes": {
+          "53s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "ATo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "J2o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "KK": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          }
+        },
+        "hand_ids_fingerprint_sha256": "92179efcfe22e577755ad5a744358ea6189ef92050e7c18b1a6e2a5b19bbc0df",
+        "observations": 15,
+        "qualifies": false,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 15,
+          "non_revealed_fraction": 0.7333333333333333,
+          "reveal_fraction": 0.26666666666666666,
+          "revealed_decisions": 4,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.06666666666666665,
+            "FOLD": 0.0,
+            "JAM": 0.0,
+            "RAISE": -0.06666666666666667
+          },
+          "unrevealed_decisions": 11
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "train_observed_raise_actions": 1,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 14,
+          "FOLD": 0,
+          "JAM": 0,
+          "RAISE": 1
+        },
+        "distinct_hands": 15,
+        "identical_to_issue388_identity_support": true,
+        "observations": 15
+      }
+    },
+    {
+      "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
+      "coded_notes": [
+        "NO_EXACT_TARGET_EMITTED"
+      ],
+      "coded_reasons": [
+        "REFERENCE_NODE_PRESENT_BUT_NO_TRANSLATABLE_RAISE_SIZING_STAT",
+        "RUNTIME_TRANSLATOR_RETURNS_LEGAL_MIN_FALLBACK_NOT_EXACT_SUPPORT",
+        "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET"
+      ],
+      "descendant_closure": {
+        "argument": "Enumerating the required descendants requires applying RAISE at an exactly supported target and recursing to preflop closure. The target is not decorative: it sets the post-raise pot, the per-seat commitments and therefore the descendant public states themselves, so without it the descendant states cannot even be enumerated. No exactly supported target exists at this node key, and the pinned reference carries no translatable raise-size statistic at any node (0 of 4554 nodes), so every downstream RAISE edge would also resolve to LEGAL_MIN_FALLBACK. The closure is therefore not enumerable under the frozen rule and stays explicitly unresolved instead of being pruned as zero mass.",
+        "coded_reason": "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
+        "enumerable_without_representative_price": false,
+        "issue388_requirement": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+        "required_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted"
+      },
+      "exact_support": {
+        "admitted_target_bb": null,
+        "exactly_supported_target_bb": null,
+        "issue388_identity_reference_match_count": 1,
+        "issue388_identity_reference_node_ids": [
+          "PF4_7c0f229b6aa2"
+        ],
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "reference_exact_structural_match_count": 1,
+        "reference_node_evidence": {
+          "has_continuous_sizing_block": false,
+          "has_response_likelihood_model": true,
+          "node_id": "PF4_7c0f229b6aa2",
+          "observed_action_counts": {
+            "CALL": 20,
+            "FOLD": 36,
+            "JAM": 1,
+            "RAISE": 0
+          },
+          "population_decisions": 57,
+          "role": "the exact structural node answers the response-likelihood question; it carries no raise-size statistic, which is why sizing stays unresolved"
+        },
+        "reference_node_ids": [
+          "PF4_7c0f229b6aa2"
+        ],
+        "representative_price_substituted": false,
+        "runtime_translator_selected_node_id": "PF4_7c0f229b6aa2",
+        "runtime_translator_sizing_source": "LEGAL_MIN_FALLBACK",
+        "trained_reference_sizing_stat_nodes_total": 0,
+        "translatable_sizing_stat_keys_present": []
+      },
+      "independent_of_the_response_model": true,
+      "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
+      "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
+      "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
+      "legal_interval_reverified_from_engine": [
+        9.0,
+        100.0
+      ],
+      "legal_target_interval_bb": [
+        9.0,
+        100.0
+      ],
+      "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+      "node_key_canonicalization_note": "The value persisted by #388 is the audit canonicalization: public_context() sorts live_positions/all_in_positions before hashing. exact_preflop_node compares the pre-order (PRE_ORDER) lists. Both identities were evaluated against the reference node universe and select the same node set here, so the resolution is identity-robust.",
+      "node_key_identities_agree": false,
+      "path": [
+        "SB:ISO@5"
+      ],
+      "required_tree_complete": false,
+      "resolution_state": "UNRESOLVED",
+      "runtime_exact_preflop_node_key": "MAPNODE_2d1c7cbb86c3fabad985ce36301dc3a3cc378c97595ac77b5221d4e26ebf4415",
+      "runtime_exact_preflop_node_key_decision_form": "MAPNODE_496a56b46c039a51f6e5d75f8e0802df9b4bdce2eaca57d4255bbf3ea4472318",
+      "structural_context": {
+        "actor_position": "BB",
+        "all_in_positions": [],
+        "family": "VS_ISO",
+        "history": [
+          {
+            "action": "LIMP",
+            "position": "CO"
+          },
+          {
+            "action": "LIMP",
+            "position": "BTN"
+          },
+          {
+            "action": "RAISE",
+            "position": "SB"
+          }
+        ],
+        "live_positions": [
+          "CO",
+          "BTN",
+          "SB",
+          "BB"
+        ],
+        "raise_level": 1,
+        "table_size": 6
+      },
+      "target_independence_of_structural_key": {
+        "explanation": "For a fixed public state runtime_exact_preflop_node_key consumes history actions/positions, live and all-in positions, family, actor, table size and raise level only; it never consumes the raise amount. The existence question is therefore well posed for every target in the legal interval, and no unsearched target could unlock exact support at this node.",
+        "structural_key_is_price_independent": true
+      },
+      "train_exact_structural_support": {
+        "actions": {
+          "check_count": 0,
+          "counts": {
+            "CALL": 15,
+            "FOLD": 37,
+            "JAM": 1,
+            "RAISE": 0
+          },
+          "denominator": 53,
+          "other_count": 0,
+          "rates": {
+            "CALL": 0.2830188679245283,
+            "FOLD": 0.6981132075471698,
+            "JAM": 0.018867924528301886,
+            "RAISE": 0.0
+          }
+        },
+        "distinct_hands": 53,
+        "hand_classes": {
+          "72s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A2o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "A3s": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "JTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 0,
+                "FOLD": 0,
+                "JAM": 1,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 0.0,
+                "FOLD": 0.0,
+                "JAM": 1.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "Q6o": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 1,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 1,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 1
+          },
+          "QTo": {
+            "actions": {
+              "check_count": 0,
+              "counts": {
+                "CALL": 2,
+                "FOLD": 0,
+                "JAM": 0,
+                "RAISE": 0
+              },
+              "denominator": 2,
+              "other_count": 0,
+              "rates": {
+                "CALL": 1.0,
+                "FOLD": 0.0,
+                "JAM": 0.0,
+                "RAISE": 0.0
+              }
+            },
+            "observations": 2
+          }
+        },
+        "hand_ids_fingerprint_sha256": "db6db73da351d489acf85c748f5326dcc6c62551a10b9b867ce54a4a1c1e408f",
+        "observations": 53,
+        "qualifies": true,
+        "reveal": {
+          "interpretation": "revealed hand classes are showdown/reveal-selected and are not representative of unrevealed marginal support",
+          "marginal_decisions": 53,
+          "non_revealed_fraction": 0.8679245283018868,
+          "reveal_fraction": 0.1320754716981132,
+          "revealed_decisions": 7,
+          "revealed_vs_marginal_action_rate_delta": {
+            "CALL": 0.5741239892183287,
+            "FOLD": -0.6981132075471698,
+            "JAM": 0.12398921832884097,
+            "RAISE": 0.0
+          },
+          "unrevealed_decisions": 46
+        },
+        "support_state": "EXACT_OBSERVED"
+      },
+      "train_observed_raise_actions": 0,
+      "train_observed_raise_targets": null,
+      "train_structural_support_decision_form_crosscheck": {
+        "action_counts": {
+          "CALL": 15,
+          "FOLD": 37,
+          "JAM": 1,
+          "RAISE": 0
+        },
+        "distinct_hands": 53,
+        "identical_to_issue388_identity_support": true,
+        "observations": 53
+      }
+    }
+  ],
+  "frontiers_total": 7,
+  "frozen_rule": {
+    "nearest_context": false,
+    "nearest_price": false,
+    "raise_sizing": "#367 exact active structural node empirical translator; missing node or LEGAL_MIN_FALLBACK is unresolved",
+    "substitutions_forbidden": {
+      "empirical_observed_target": false,
+      "legal_minimum_fallback": false,
+      "nearest_context": false,
+      "nearest_price": false,
+      "representative_price": false,
+      "target_drift": false
+    },
+    "target_drift": false,
+    "zero_probability": "observed zero counts do not prove zero probability; enumerate every legal action"
+  },
+  "independent_of_the_response_model": true,
+  "issue": 419,
+  "issue388_bindings": {
+    "audit_tool_sha256": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
+    "decision": "UNRESOLVED_EXACT_TREE_GAP",
+    "decision_sha256": "87cf59a2bc258f0d86ef085232b8db6bc422413ee4086dc6c203459560abc374",
+    "required_node_count": 38,
+    "required_tree_artifact_sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+    "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "status": "BLOCKED_SCIENTIFIC",
+    "train_hands_parsed": 19016,
+    "train_support_sha256": "dc6590ae04a9fa3714e3a739d7c850a83fbde33466e2fc31ac56e16864eea1e2",
+    "unresolved_sizing_frontier_count": 7
+  },
+  "key_contract": {
+    "builder": "runtime_exact_preflop_node_key",
+    "consumer": "exact_preflop_node / empirical raise-target lookup",
+    "fields": [
+      "history",
+      "live_positions",
+      "all_in_positions",
+      "family",
+      "actor_position",
+      "table_size",
+      "raise_level"
+    ],
+    "role": "structural raise-sizing identity; not the response-likelihood support key"
+  },
+  "kind": "TRAIN_ONLY_RAISE_SIZING_FRONTIER_RESOLUTION",
+  "protected_files_before_after_sha256": {
+    "after": {
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "before": {
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "unchanged": true
+  },
+  "provenance": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "unique_hands": 27164
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+        "unique_hands": 11896
+      }
+    ],
+    "certification_path": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "certified_hands": 23789,
+    "certified_split_counts": {
+      "TEST": 2449,
+      "TRAIN": 19016,
+      "VALIDATION": 2324
+    },
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c"
+  },
+  "reference_expected_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+  "reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+  "reproduction": {
+    "structural_support_parity_with_issue388": {
+      "mismatches": [],
+      "structural_support_cells_compared": 7,
+      "structural_support_matches_issue388": true
+    },
+    "train_hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+    "train_hands_parsed": 19016,
+    "tree_rederived_equal_issue388": true
+  },
+  "required_tree_complete": false,
+  "required_tree_complete_effect": {
+    "argument": "Each unresolved RAISE frontier is a sizing/structural gap that no response model can close without a representative price: its descendant states depend on the raise target, so the required #388 tree stays open and required_tree_complete stays false until every frontier is exactly resolved and the enumeration is complete. Clearing the frontiers is necessary but not sufficient for closure.",
+    "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+    "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+    "blocking_frontier_count": 7,
+    "blocking_frontier_node_ids": [
+      "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+      "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+      "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+      "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b"
+    ],
+    "blocks_required_tree_complete": true,
+    "effect": "BLOCKS_REQUIRED_TREE_COMPLETE",
+    "enumeration_complete": false,
+    "frontiers_total": 7,
+    "independent_of_the_response_model": true,
+    "necessary_for_tree_closure": true,
+    "propagated_to": [
+      "raise_sizing_frontiers.required_tree_complete",
+      "exact_tree_preflight.required_tree_complete",
+      "terminal_decision.required_tree_complete"
+    ],
+    "representative_price_substituted": false,
+    "required_tree_complete": false,
+    "sufficient_for_tree_closure": false
+  },
+  "resolved_count": 0,
+  "revision": "v2",
+  "scenario_issue": 321,
+  "schema": "poker-raise-sizing-frontier-resolution/v2",
+  "sizing_scan": {
+    "reference_nodes": 4554,
+    "reference_nodes_with_translatable_raise_sizing": 0,
+    "translatable_sizing_key_node_counts": {
+      "action_add_bb": 0,
+      "action_size_pot": 0,
+      "own_size_pot": 0,
+      "raise_add_bb": 0,
+      "raise_size_pot": 0,
+      "raise_to_bb": 0,
+      "target_total_bb": 0
+    }
+  },
+  "source_files_sha256": {
+    "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+    "analysis/issue388_exact_tree/TRAIN_RESPONSE_TREE_SUPPORT.json": "9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053",
+    "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+    "tools/repro_preflop_fixture.py": "1f07d468ab6c34c6232b37d10118ad277b229723357690d2a19a854c01ffe7da",
+    "tools/simulation/game_core.py": "540b38f4b50bf967b17aca6d9c4e3eed42549ec9b60335664d3cf262cd3cb2b7",
+    "tools/simulation/model_a_continuation.py": "498570e6e66ca8abb7441fa07a8fed72fe59f0f6952ce80d060a006e3ec951ff",
+    "tools/training/audit_hierarchical_tree_sparsity.py": "8fd510c24611bc1879871a4b0ba2b4978e5fead28e8d94979963b7b3c765ec11",
+    "tools/training/audit_model_a_exact_tree.py": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
+    "tools/training/resolve_raise_sizing_frontiers.py": "91ebba7897eb6d6c07643293901e85556288292ce7c09fde176c8d0ef8aa645b",
+    "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+  },
+  "source_issue": 388,
+  "split_consumed": "TRAIN",
+  "supersedes_schema": "poker-raise-sizing-frontier-resolution/v1",
+  "supersedes_v1": {
+    "artifacts": {
+      "ARTIFACTS.json": "86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf",
+      "RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "SUMMARY.md": "cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c"
+    },
+    "bundle": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "check": "frozen_v1_raise_sizing_frontier_bytes_re_derived",
+    "never_rewritten": true,
+    "result": "PASS",
+    "schema": "poker-raise-sizing-frontier-resolution/v1",
+    "superseded_by": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+  },
+  "test_consumed": false,
+  "unresolved_count": 7,
+  "unresolved_node_ids": [
+    "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+    "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+    "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+    "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+    "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+    "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+    "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b"
+  ],
+  "validation_consumed": false
+}

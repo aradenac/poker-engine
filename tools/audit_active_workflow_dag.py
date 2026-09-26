@@ -70,13 +70,14 @@ class AuditError(ValueError):
     pass
 
 
-def git(*args: str) -> str:
-    return subprocess.check_output(["git", *args], cwd=ROOT, text=True)
+def git(*args: str, stderr: int | None = None) -> str:
+    return subprocess.check_output(["git", *args], cwd=ROOT, text=True, stderr=stderr)
 
 
 def base_text(path: str) -> str:
     try:
-        return git("show", f"{BASE_SHA}:{path}")
+        # A workflow added after the pinned base is expected (#419); keep the probe quiet.
+        return git("show", f"{BASE_SHA}:{path}", stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         # A workflow may be newer than the pinned base; fall back to the checkout text.
         return (ROOT / path).read_text()

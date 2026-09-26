@@ -1,0 +1,18 @@
+N8N_TASK_RESULT
+active_pointer_mutated: false
+admitted: false
+blockers: REQUIRED_TREE_INCOMPLETE,UNRESOLVED_RAISE_SIZING_FRONTIER,VALIDATION_GATES_FAILED
+candidate_id: model-a-preflop-sizing-hierarchical-candidate-v1
+candidate_sha256: 637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999
+decision: UNRESOLVED_HIERARCHICAL_TREE_GAP
+hero_ev_executed: false
+issue: 419
+issue367_run: false
+next_issue: 367
+primary_blocker: REQUIRED_TREE_INCOMPLETE
+required_tree_complete: false
+required_tree_sha256: 0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25
+status: BLOCKED_SCIENTIFIC
+test_consumed: false
+validation_consumed: true
+validation_outcome: RETAIN_ACTIVE_REFERENCE

@@ -1,0 +1,11 @@
+{
+  "CANDIDATE_CONTRACT.json": {
+    "canonical_payload_sha256": "1c84f6f1159e0d91295cd3e894a811ebd2bd0f977ee1fbc7826082fd857432bf",
+    "object": "sha256/d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3.json",
+    "sha256": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd.md",
+    "sha256": "bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd"
+  }
+}

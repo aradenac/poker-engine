@@ -1,0 +1,11 @@
+{
+  "EVIDENCE_INTEGRITY_CORRECTION.json": {
+    "canonical_payload_sha256": "f1456d92609d5811dbac5584c00b6eb48045665b8f74f6ad7fc0a9edd6bacf6a",
+    "object": "sha256/f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803.json",
+    "sha256": "f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/f65e28fc35c0f61f6ba4c96cb3e7737b680f9b0da53cec8483110eed830981ff.md",
+    "sha256": "f65e28fc35c0f61f6ba4c96cb3e7737b680f9b0da53cec8483110eed830981ff"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "FROZEN_VALIDATION_PROTOCOL_V2.json": {
+    "canonical_payload_sha256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+    "object": "sha256/74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350.json",
+    "revision_of": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+    "sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c.md",
+    "sha256": "44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c"
+  },
+  "history": {
+    "amendment_id": "V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE",
+    "canonical_payload_sha256": "a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16",
+    "cited_by": "FROZEN_VALIDATION_PROTOCOL_V2.json",
+    "digest_sidecar": "history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.sha256",
+    "object": "history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json",
+    "sha256": "508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320",
+    "status": "SUPERSEDED_BY_AMENDMENT"
+  }
+}

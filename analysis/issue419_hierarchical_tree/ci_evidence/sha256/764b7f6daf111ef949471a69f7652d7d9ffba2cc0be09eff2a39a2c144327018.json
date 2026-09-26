@@ -1,0 +1,409 @@
+{
+  "schema": "poker-issue419-ci-evidence/v1",
+  "issue": 419,
+  "bundle_task": "backlog-dak",
+  "planner_key": "T1",
+  "report_date": "2026-09-26",
+  "report_method": "Every fact below is re-verified at source on 2026-09-26 (the local git object store and the GitHub read API). Nothing is copied from the uncommitted task-backlog-zlb (T3) draft, which lacked the content-addressed layer and asserted a PR-body correction that never happened.",
+  "pr": {
+    "number": 420,
+    "url": "https://github.com/aradenac/poker-engine/pull/420",
+    "state": "open",
+    "mergeable": true,
+    "head_branch": "n8n/issue-419-fermer-le-response-tree-limper-vs-iso-par-estimati",
+    "head_sha_at_verification": "d087b5c72619b5279a674045e18dda2c3807e1b5",
+    "base": "main",
+    "base_sha": "23269c0d3edfaaa710b0884382edfa74510b3ddf",
+    "commits": 12,
+    "changed_files": 94,
+    "body_correction_owner_task": "backlog-1vz (T2)"
+  },
+  "delivery": {
+    "worktree_branch": "n8n/issue-419/task-backlog-dak",
+    "worktree_head_sha": "5be7239de8993beef65c019963193c7516ab6e75",
+    "worktree_head_subject": "chore(n8n): task backlog-v3c for issue #419",
+    "remote_pr_head_sha": "d087b5c72619b5279a674045e18dda2c3807e1b5",
+    "commits_ahead_of_remote_pr_head": 11,
+    "pushed": false,
+    "push_attempted": false,
+    "pushed_head_sha": null,
+    "push_owner": "the orchestrator run that holds git credentials; this worker has no git transport, and T2 is the task that may attempt the push",
+    "final_head_ci_proof": "PENDING_ORCHESTRATOR_PUSH"
+  },
+  "workflow_under_test": {
+    "name": "Execute issue 419 hierarchical exact tree",
+    "path": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+    "present_at_worktree_head": true,
+    "present_at_remote_pr_head": false,
+    "absent_at_remote_pr_head_evidence": "git cat-file -e d087b5c72619b5279a674045e18dda2c3807e1b5:.github/workflows/issue-419-hierarchical-exact-tree.yml -> ABSENT",
+    "git_blob_sha1": "a1ac5061b790b36c43532709bf33894cb333879d",
+    "sha256": "375a0cda5ade293d71099fc79fba2c2a3afafa21ad27df0ea9293eb174275c49",
+    "bytes": 12705,
+    "lines": 230,
+    "triggers": [
+      "push",
+      "pull_request",
+      "workflow_dispatch"
+    ],
+    "permissions": "contents: read",
+    "read_only": true,
+    "job": "contract (ubuntu-24.04, timeout-minutes: 60)",
+    "executed_suite_count": 15,
+    "executed_suites": [
+      "tests/simulation/test_issue419_exact_tree_preflight.py",
+      "tests/preflop/test_model_a_sizing_hierarchical.py",
+      "tests/training/test_hierarchical_train_fit.py",
+      "tests/training/test_hierarchical_validation_evaluation.py",
+      "tests/training/test_hierarchical_terminal_decision.py",
+      "tests/training/test_hierarchical_model_spec.py",
+      "tests/training/test_hierarchical_candidate_contract.py",
+      "tests/training/test_hierarchical_exact_context_contract_doc.py",
+      "tests/training/test_hierarchical_tree_sparsity_parity.py",
+      "tests/training/test_frozen_validation_protocol.py",
+      "tests/training/test_frozen_validation_protocol_v2.py",
+      "tests/training/test_raise_sizing_frontier_resolution.py",
+      "tests/training/test_issue419_hierarchical_exact_tree.py",
+      "tests/test_github_workflow_audit.py",
+      "tests/ci/test_consolidation_decision.py"
+    ],
+    "no_op_guard": {
+      "required_tuple_size": 15,
+      "declared_union": "ISSUE_419_SUITES union ISSUE_419_EXTRA_SUITES union tests/ci/test_consolidation_decision.py",
+      "declared_in": "tests/test_github_workflow_audit.py",
+      "fails_if_a_suite_is_not_a_real_step": true
+    },
+    "trigger_paths_covering_this_bundle": "analysis/issue419_hierarchical_tree/**"
+  },
+  "ci_observation": {
+    "status": "NOT_OBSERVED",
+    "authority_required": "a GitHub Actions run of « Execute issue 419 hierarchical exact tree » at the pushed head of n8n/issue-419-fermer-le-response-tree-limper-vs-iso-par-estimati",
+    "run_name_recorded": null,
+    "run_url": null,
+    "run_conclusion": null,
+    "no_run_exists": true,
+    "reason": "no run of this workflow can exist yet: the workflow is absent at the current remote PR head d087b5c (workflow_under_test.present_at_remote_pr_head=false) and the branch has not been pushed past d087b5c, so neither the push/synchronize event nor the workflow_dispatch fallback is reachable from this worker.",
+    "documented_fallback": {
+      "mode": "workflow_dispatch",
+      "command": "gh workflow run 'issue-419-hierarchical-exact-tree.yml' --ref n8n/issue-419-fermer-le-response-tree-limper-vs-iso-par-estimati",
+      "used": false,
+      "why_not_used": "workflow_dispatch requires the workflow to exist on the ref, and the ref is still d087b5c"
+    },
+    "may_not_be_promoted_to_PASS_by": [
+      "a local replay of the workflow steps",
+      "an asserted or declarative evidence file",
+      "the PR body or a PR comment"
+    ]
+  },
+  "reviewed_pr_head_runs": {
+    "head_sha": "d087b5c72619b5279a674045e18dda2c3807e1b5",
+    "event_filter": "pull_request",
+    "count": 4,
+    "none_executes_the_issue419_suites": true,
+    "runs": [
+      {
+        "name": "Project state consistency",
+        "run_number": 153,
+        "conclusion": "success",
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040214",
+        "workflow_path": ".github/workflows/project-state-consistency.yml"
+      },
+      {
+        "name": "Validate preflop context contract",
+        "run_number": 257,
+        "conclusion": "success",
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040196",
+        "workflow_path": ".github/workflows/preflop-contract.yml"
+      },
+      {
+        "name": "Validate sequential independent arena",
+        "run_number": 977,
+        "conclusion": "success",
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040257",
+        "workflow_path": ".github/workflows/sequential-arena.yml"
+      },
+      {
+        "name": "Persisted dataset integrity",
+        "run_number": 627,
+        "conclusion": "success",
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040256",
+        "workflow_path": ".github/workflows/dataset-integrity.yml"
+      }
+    ],
+    "note": "these four are the pull_request-triggered workflow runs recorded at d087b5c; none of them is « Execute issue 419 hierarchical exact tree », which is exactly the missing-coverage blocker raised by the independent review."
+  },
+  "same_sha_other_events": {
+    "total_runs_at_sha": 5,
+    "push_runs_count": 1,
+    "runs": [
+      {
+        "name": "Validate sequential independent arena",
+        "run_number": 976,
+        "conclusion": "success",
+        "event": "push",
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196031300",
+        "workflow_path": ".github/workflows/sequential-arena.yml",
+        "executes_the_issue419_suites": false
+      }
+    ],
+    "note": "the same SHA also carries one push-triggered run; it too does not execute the #419 suites, so the NOT_OBSERVED conclusion holds for both the push and the pull_request event families."
+  },
+  "post_push_verification": [
+    "PR #420 head.sha != d087b5c72619b5279a674045e18dda2c3807e1b5 (the branch was actually pushed past the reviewed head)",
+    "the new head carries .github/workflows/issue-419-hierarchical-exact-tree.yml",
+    "a run named « Execute issue 419 hierarchical exact tree » exists for that head with conclusion=success",
+    "its step « Prove every #419 suite is actually executed (no-op guard) » prints « #419 no-op guard: 15/15 suites executed »",
+    "only after all of the above may ci_observation.status move from NOT_OBSERVED to PASS"
+  ],
+  "failure_mode_coverage": [
+    {
+      "id": 1,
+      "failure_mode": "frozen protocol / hash drift",
+      "executed_by": [
+        "tests/training/test_frozen_validation_protocol.py",
+        "tests/training/test_frozen_validation_protocol_v2.py"
+      ]
+    },
+    {
+      "id": 2,
+      "failure_mode": "TRAIN / VALIDATION / TEST boundary violation",
+      "executed_by": [
+        "tests/training/test_frozen_validation_protocol.py",
+        "tests/training/test_frozen_validation_protocol_v2.py",
+        "tools/training/validation_order_guard.py"
+      ]
+    },
+    {
+      "id": 3,
+      "failure_mode": "support laundering",
+      "executed_by": [
+        "tests/simulation/test_issue419_exact_tree_preflight.py",
+        "tests/preflop/test_model_a_sizing_hierarchical.py"
+      ]
+    },
+    {
+      "id": 4,
+      "failure_mode": "nearest-price / nearest-context substitution",
+      "executed_by": [
+        "tests/simulation/test_issue419_exact_tree_preflight.py",
+        "tests/test_github_workflow_audit.py"
+      ],
+      "note": "tests/test_github_workflow_audit.py carries the workflow drift / substitution / rename negatives; the preflight suite carries the nearest-price / nearest-context refusal."
+    },
+    {
+      "id": 5,
+      "failure_mode": "candidate / pointer identity drift",
+      "executed_by": [
+        "tests/training/test_hierarchical_candidate_contract.py"
+      ]
+    },
+    {
+      "id": 6,
+      "failure_mode": "preflight semantics regression",
+      "executed_by": [
+        "tests/simulation/test_issue419_exact_tree_preflight.py"
+      ]
+    },
+    {
+      "id": 7,
+      "failure_mode": "terminal decision incoherence",
+      "executed_by": [
+        "tests/training/test_hierarchical_terminal_decision.py"
+      ]
+    }
+  ],
+  "local_replay": {
+    "role": "NON_AUTHORITATIVE",
+    "statement": "These commands are a faithful local replay of the workflow's steps on the worktree HEAD. They are NOT merge evidence and neither substitutes for, nor can be promoted to, the GitHub Actions run at the pushed head.",
+    "sandbox": {
+      "interpreter": "host python3 (the runner uses .python-version)",
+      "note": "this sandbox has no git transport and no CI execution; only the checked-in suites were replayed"
+    },
+    "steps": [
+      {
+        "step": "Compile #419 tools and suites (python3 -m py_compile)",
+        "exit_code": 0
+      },
+      {
+        "step": "Frozen protocol/hash drift and TRAIN/VALIDATION/TEST boundary",
+        "command": "PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Frozen protocol v2 drift and boundary",
+        "command": "PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol_v2.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Exact-tree preflight semantics, substitution and support laundering",
+        "command": "PYTHONPATH=. python3 tests/simulation/test_issue419_exact_tree_preflight.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Hierarchical key identity, no nearest-context substitution, fail-closed support",
+        "command": "PYTHONPATH=. python3 tests/preflop/test_model_a_sizing_hierarchical.py",
+        "exit_code": 0
+      },
+      {
+        "step": "TRAIN fit determinism and hierarchy",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_train_fit.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Measured VALIDATION calibration and order guard",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_validation_evaluation.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Candidate identity/pointer and reported-status contract",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_candidate_contract.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Terminal decision coherence",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_terminal_decision.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Hierarchical model spec contract",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_model_spec.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Exact-context contract documentation",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_exact_context_contract_doc.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Tree sparsity parity against the frozen baseline",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_tree_sparsity_parity.py",
+        "exit_code": 0
+      },
+      {
+        "step": "RAISE sizing frontier resolution",
+        "command": "PYTHONPATH=. python3 tests/training/test_raise_sizing_frontier_resolution.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Aggregate #419 exact-tree contract",
+        "command": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Audit decision and DAG evidence mutation guards",
+        "command": "PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Trigger path coverage, no-op and drift/substitution guards",
+        "command": "PYTHONPATH=. python3 tests/test_github_workflow_audit.py",
+        "exit_code": 0
+      },
+      {
+        "step": "Workflow inventory stays regenerable and byte-identical",
+        "command": "python3 tools/audit_github_workflows.py --inventory <tmp> && cmp analysis/workflow_audit/workflows.json <tmp>",
+        "exit_code": 0
+      },
+      {
+        "step": "Active workflow DAG check",
+        "command": "python3 tools/audit_active_workflow_dag.py --check",
+        "exit_code": 0,
+        "output": "Active workflow DAG: PASS (55 workflows; 14 scenarios; decision=NO_FURTHER_CONSOLIDATION_JUSTIFIED)"
+      },
+      {
+        "step": "Terminal decision bundle check",
+        "command": "python3 tools/training/finalize_hierarchical_exact_tree_decision.py --check",
+        "exit_code": 0
+      },
+      {
+        "step": "Frozen preflight bundle check and v2 reproducibility",
+        "command": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+        "exit_code": 0,
+        "output": "check=PASS (frozen v1 preflight custody green, v2 bundle reproducible)"
+      }
+    ],
+    "suites_passed_locally": 15,
+    "suites_failed_locally": 0
+  },
+  "pr_body_state": {
+    "verified_on": "2026-09-26",
+    "verified_via": "GitHub read API get PR #420 (poker-engine)",
+    "body_announces": "Independent review status: PASS",
+    "actual_review_verdict": "NEEDS_FIXES",
+    "review_comment": "https://github.com/aradenac/poker-engine/pull/420#issuecomment-5840570280",
+    "reviewed_head_sha": "d087b5c72619b5279a674045e18dda2c3807e1b5",
+    "body_still_uncorrected": true,
+    "correction_assigned_to": "backlog-1vz (T2)",
+    "this_bundle_makes_no_claim_that_the_body_was_corrected": true
+  },
+  "draft_corrections": [
+    {
+      "draft": "uncommitted task-backlog-zlb (T3) draft",
+      "false_claim": "pr_body_correction.corrected=true, corrected_by=\"GitHub connector update_pull_request on PR #420\", new_claim=\"Independent review status: NEEDS_FIXES\"",
+      "actual_state": "the PR #420 body still announces « Independent review status: PASS »; no correction was applied",
+      "resolution_in_this_bundle": "recorded as still-open and owned by T2 (backlog-1vz); the false corrected=true claim is dropped"
+    },
+    {
+      "draft": "uncommitted task-backlog-zlb (T3) draft",
+      "false_claim": "reviewed_pr_head_run_observation: \"these four runs are every workflow run recorded at d087b5c\"",
+      "actual_state": "d087b5c carries five runs in total: four pull_request runs plus one push run (Validate sequential independent arena #976, 36196031300)",
+      "resolution_in_this_bundle": "the four pull_request runs are recorded as such and the push run is recorded separately under same_sha_other_events"
+    }
+  ],
+  "frozen_evidence_correction": {
+    "record": "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+    "record_byte_sha256": "f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803",
+    "record_schema": "poker-issue419-evidence-integrity-correction/v1",
+    "decision_record": ".project/decisions/20260926-hierarchical-frozen-evidence-correction.md",
+    "mutant_commit": "871e0bd9e66c978932face1accf1aaf22ac9fa1a",
+    "reversal_commit": "c904524",
+    "frozen_bytes_rewritten": false,
+    "frozen_bytes_re_registered": false
+  },
+  "frozen_digests_reverified_at_head": {
+    "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+    "analysis/issue419_hierarchical_tree/exact_tree_preflight/SUMMARY.md": "3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df",
+    "analysis/issue419_hierarchical_tree/exact_tree_preflight/ARTIFACTS.json": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+    "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+    "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4",
+    "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+    "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+    "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+    "analysis/issue419_hierarchical_tree/ARTIFACTS.json": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+    "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
+    "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+    "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+    "analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3"
+  },
+  "discipline": {
+    "pushed": false,
+    "push_attempted_here": false,
+    "frozen_bytes_written": false,
+    "root_index_mutated": false,
+    "listed_in_any_existing_index": false,
+    "registered_into_root_artifacts_json": false,
+    "active_pointer_mutated": false,
+    "registry_mutated": false,
+    "thresholds_changed": false,
+    "validation_reconsumed": false,
+    "test_data_read": false,
+    "hero_ev_executed": false,
+    "issue367_run": false,
+    "recommendation_produced": false,
+    "ci_claim_without_a_run_at_the_pushed_head": false,
+    "local_execution_is_merge_evidence": false
+  },
+  "scientific_terminal_state": {
+    "status": "BLOCKED_SCIENTIFIC",
+    "decision": "UNRESOLVED_HIERARCHICAL_TREE_GAP",
+    "admitted": false,
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "required_tree_complete": false,
+    "validation_consumed": true,
+    "test_consumed": false,
+    "active_pointer_mutated": false,
+    "next_issue": 367,
+    "issue367_run": false,
+    "bundle": "analysis/issue419_hierarchical_tree/terminal_decision"
+  }
+}

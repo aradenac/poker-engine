@@ -100,3 +100,17 @@ Run:
     python3 tests/ranges/test_model_a_posterior_runtime.py
 
 No CENTRAL-UI, Model A refit, #108, VALIDATION or scientific TEST data is consumed or modified.
+
+## Hierarchical exact-context contract
+
+The adapter's fail-closed rule is the runtime half of
+`docs/hierarchical-exact-context-runtime-contract.md` (issue #419). That
+contract is normative: a response whose parameters were shrunk toward a parent
+level (`EXACT_HIERARCHICAL_ESTIMATE`) is an estimate for the requested context,
+never an exact-support claim, and it must carry the pooling level actually used.
+`EXACT_UNRESOLVED` stays a fail-closed state — `UNSUPPORTED`/`degenerate` on this
+adapter — and is never rendered as a default range. The support counts stay the
+requested key's own counts; a coarse runtime key (`RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE`)
+may seed a prior but never certify support for a finer requested context
+(`SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT`). This section adds no model, no
+provider wiring and no promotion: the active Model A pointer is unchanged.

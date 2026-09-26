@@ -1,0 +1,224 @@
+{
+  "schema": "poker-issue419-pre-push-preparation/v1",
+  "issue": 419,
+  "planner_key": "T3",
+  "bundle_task": "backlog-g95",
+  "report_date": "2026-09-26",
+  "purpose": "Record the freeze of the repaired #419 HEAD as *pre-push preparation*, and separate the two kinds of evidence explicitly: what a local replay observed (non-authoritative, never merge evidence) and what the authoritative CI run proves (absent until a run exists at a pushed head).",
+  "ci_observation": {
+    "status": "NOT_OBSERVED",
+    "source_artifact": "analysis/issue419_hierarchical_tree/ci_evidence/CI_EVIDENCE.json",
+    "source_byte_sha256": "764b7f6daf111ef949471a69f7652d7d9ffba2cc0be09eff2a39a2c144327018",
+    "authority_required": "a GitHub Actions run of « Execute issue 419 hierarchical exact tree » at the pushed head of the issue branch",
+    "workflow": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+    "run_name_recorded": null,
+    "run_url_recorded": null,
+    "run_conclusion_recorded": null,
+    "no_run_exists": true,
+    "why_absent": "the workflow is absent at the current remote PR head and this branch has not been pushed past it, so neither the push/synchronize event nor the workflow_dispatch fallback is reachable from this worker; no run of this workflow exists at any head",
+    "may_not_be_promoted_to_PASS_by": [
+      "a local replay of the workflow steps",
+      "an asserted or declarative evidence file",
+      "the PR body or a PR comment",
+      "this pre-push preparation record"
+    ],
+    "this_record_claims_no_ci_status": true
+  },
+  "local_evidence": {
+    "authority": "NON_AUTHORITATIVE",
+    "statement": "Every row below is a faithful replay of a command on the frozen HEAD inside this sandbox. None of it is merge evidence, none of it substitutes for the GitHub Actions run at the pushed head, and no row may be promoted to a CI status.",
+    "sandbox": {
+      "interpreter": "host python3 (the CI runner uses .python-version)",
+      "git_transport": "none; this worker cannot push and no CI job can be triggered from here",
+      "worktree_dirty": true,
+      "note": "only the checked-in suites and generators were replayed; no hand history, no VALIDATION decision row and no #367 run was touched"
+    },
+    "command_count": 21,
+    "green_count": 20,
+    "red_count": 1,
+    "commands": [
+      {
+        "id": "exact_tree_preflight_check",
+        "command": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+        "exit_code": 0,
+        "observed": "check=PASS (frozen v1 preflight custody green, v2 bundle reproducible)"
+      },
+      {
+        "id": "terminal_decision_check",
+        "command": "python3 tools/training/finalize_hierarchical_exact_tree_decision.py --check",
+        "exit_code": 0,
+        "observed": "decision=UNRESOLVED_HIERARCHICAL_TREE_GAP, status=BLOCKED_SCIENTIFIC, v1_decision_sha256=9425f301…"
+      },
+      {
+        "id": "suite_preflight",
+        "command": "PYTHONPATH=. python3 tests/simulation/test_issue419_exact_tree_preflight.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_provider",
+        "command": "PYTHONPATH=. python3 tests/preflop/test_model_a_sizing_hierarchical.py",
+        "exit_code": 0,
+        "observed": "preflop hierarchical sizing contract tests: 23 passed"
+      },
+      {
+        "id": "suite_train_fit",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_train_fit.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_validation_evaluation",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_validation_evaluation.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_terminal_decision",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_terminal_decision.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_model_spec",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_model_spec.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_candidate_contract",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_candidate_contract.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_contract_doc",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_exact_context_contract_doc.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_tree_sparsity_parity",
+        "command": "PYTHONPATH=. python3 tests/training/test_hierarchical_tree_sparsity_parity.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_frozen_protocol_v1",
+        "command": "PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_frozen_protocol_v2",
+        "command": "PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol_v2.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_raise_sizing_frontiers",
+        "command": "PYTHONPATH=. python3 tests/training/test_raise_sizing_frontier_resolution.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "suite_aggregate_exact_tree",
+        "command": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py",
+        "exit_code": 1,
+        "observed": "FAILED (failures=2, errors=1)"
+      },
+      {
+        "id": "suite_workflow_audit",
+        "command": "PYTHONPATH=. python3 tests/test_github_workflow_audit.py",
+        "exit_code": 0,
+        "observed": "OK (15 tests): 0 uncovered paths, 0 fabricated paths, no-op tuple == ISSUE_419_SUITES ∪ ISSUE_419_EXTRA_SUITES ∪ ISSUE_419_CI_SUITES"
+      },
+      {
+        "id": "suite_consolidation_decision",
+        "command": "PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py",
+        "exit_code": 0,
+        "observed": "OK"
+      },
+      {
+        "id": "evidence_integrity_correction_v2_check",
+        "command": "python3 tools/training/build_hierarchical_evidence_integrity_correction_v2.py --check",
+        "exit_code": 0,
+        "observed": "result=PASS (17 digest rows, 4 tool pins, 13 frozen bytes, 0 surviving mutant objects)"
+      },
+      {
+        "id": "workflow_inventory_regeneration",
+        "command": "python3 tools/audit_github_workflows.py --inventory /tmp/workflows.inventory.json && cmp analysis/workflow_audit/workflows.json /tmp/workflows.inventory.json",
+        "exit_code": 0,
+        "observed": "analysis/workflow_audit/workflows.json regenerated byte-identically"
+      },
+      {
+        "id": "active_workflow_dag_check",
+        "command": "python3 tools/audit_active_workflow_dag.py --check",
+        "exit_code": 0,
+        "observed": "Active workflow DAG: PASS (55 workflows; 14 scenarios; decision=NO_FURTHER_CONSOLIDATION_JUSTIFIED)"
+      },
+      {
+        "id": "validation_order_guard_probe",
+        "command": "PYTHONPATH=. python3 -c \"from tools.training import validation_order_guard as g; print(g.validation_result_artifacts())\"",
+        "exit_code": 0,
+        "observed": "['analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json', 'analysis/issue419_hierarchical_tree/validation/sha256/0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68.json'] — exactly the two frozen VALIDATION artifacts, so no new record is classified as a candidate VALIDATION read"
+      }
+    ],
+    "red_checks": [
+      {
+        "id": "suite_aggregate_exact_tree",
+        "command": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py",
+        "exit_code": 1,
+        "cause": "analysis/issue419_hierarchical_tree_v2/ still binds EXACT_TREE_PREFLIGHT_V2.json to 2c07ae32 and DECISION_V2.json to ac291b9e, the revisions that existed when it was authored; 9859c46 and 0f9a6eb later regenerated those bundles, so its pins no longer describe the bytes on disk",
+        "owner": "the #419 integration-bundle task (backlog-oso / T7), not this pre-push preparation",
+        "is_a_frozen_byte": false,
+        "blocks_the_pre_push_freeze": false,
+        "recorded_rather_than_hidden": true
+      }
+    ]
+  },
+  "superseded_earlier_local_observation": {
+    "artifact": "analysis/issue419_hierarchical_tree/ci_evidence/SUMMARY.md",
+    "earlier_claim": "All 15 suites plus the compile step, the workflow-inventory regeneration, the active-workflow DAG check, the terminal-decision check and issue419_exact_tree_preflight.py --check return 0 in this sandbox.",
+    "status": "TRUE AT ITS OWN HEAD, STALE AT THIS HEAD",
+    "why_not_rewritten": "it is another task's recorded observation of its own head; a recorded observation is superseded by a new record, never edited in place",
+    "superseded_by": "analysis/issue419_hierarchical_tree/ci_evidence/PRE_PUSH_PREPARATION.json",
+    "delta": "1 of the 21 replayed commands is red at this HEAD: tests/training/test_issue419_hierarchical_exact_tree.py (the integration-bundle aggregate contract), see local_evidence.red_checks"
+  },
+  "frozen_head": {
+    "commit": "0f9a6eb0e53a5191a2302d5eabb175ae267f7c24",
+    "short_sha": "0f9a6eb",
+    "branch": "n8n/issue-419/task-backlog-g95",
+    "subject": "chore(n8n): task backlog-i8v for issue #419",
+    "is_merge_commit": false,
+    "pushed": false,
+    "push_attempted_here": false,
+    "push_owner": "the orchestrator run that holds git transport; this worker has no git transport",
+    "frozen_for_pre_push_preparation": true,
+    "frozen_head_is_merge_evidence": false
+  },
+  "discipline": {
+    "frozen_byte_written": false,
+    "predecessor_record_edited": false,
+    "root_index_mutated": false,
+    "active_model_pointer_mutated": false,
+    "validation_reconsumed": false,
+    "validation_decision_rows_read": 0,
+    "test_data_read": false,
+    "hand_history_parsed": false,
+    "hero_ev_executed": false,
+    "issue367_run": false,
+    "thresholds_changed": false,
+    "priors_changed": false,
+    "pooling_limits_changed": false,
+    "admission_rules_changed": false,
+    "ci_claim_without_a_run_at_the_pushed_head": false,
+    "local_execution_is_merge_evidence": false
+  },
+  "post_push_verification": [
+    "the branch is actually pushed past the reviewed head",
+    "the pushed head carries .github/workflows/issue-419-hierarchical-exact-tree.yml",
+    "a run named « Execute issue 419 hierarchical exact tree » exists for that head with conclusion=success",
+    "only then may ci_observation.status move from NOT_OBSERVED to a recorded conclusion"
+  ]
+}

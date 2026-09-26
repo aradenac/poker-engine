@@ -1,0 +1,948 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+  "title": "Model-A preflop hierarchical exact-context sizing candidate",
+  "description": "Candidate-only hierarchical exact-context likelihood contract from the frozen #419 spec. Identity and support granularity is hierarchical_exact_key (L0); pooling changes parameters only. Statuses are EXACT_EMPIRICAL_STRONG / EXACT_HIERARCHICAL_ESTIMATE / EXACT_UNRESOLVED. No nearest-price and no nearest-context substitution; no active-model replacement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "identity",
+    "exact_context_granularity",
+    "support_isolation_rule",
+    "nearest_price_fallback",
+    "nearest_context_fallback",
+    "representative_price_fallback",
+    "pooling_levels",
+    "shrinkage",
+    "thresholds",
+    "unresolved_raise_frontiers",
+    "observations"
+  ],
+  "properties": {
+    "schema": {
+      "const": "poker-model-a-preflop-sizing-hierarchical-likelihood/v1"
+    },
+    "identity": {
+      "$ref": "#/$defs/identity"
+    },
+    "exact_context_granularity": {
+      "const": "hierarchical_exact_key"
+    },
+    "support_isolation_rule": {
+      "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+    },
+    "nearest_price_fallback": {
+      "const": false
+    },
+    "nearest_context_fallback": {
+      "const": false
+    },
+    "representative_price_fallback": {
+      "const": false
+    },
+    "pooling_levels": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/$defs/poolingLevel"
+      }
+    },
+    "shrinkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "kappa0", "alpha_per_legal_marginal_action"],
+      "properties": {
+        "method": {
+          "const": "hierarchical_dirichlet_shrinkage"
+        },
+        "kappa0": {
+          "const": 16.0
+        },
+        "alpha_per_legal_marginal_action": {
+          "const": 0.5
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_marginal_observations", "minimum_distinct_hands"],
+      "properties": {
+        "minimum_marginal_observations": {
+          "const": 20
+        },
+        "minimum_distinct_hands": {
+          "const": 20
+        }
+      }
+    },
+    "unresolved_raise_frontiers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^MAPSUP_.*\\|public=[0-9a-f]{64}$"
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    }
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "model_family",
+        "status",
+        "population_id",
+        "feature_contract",
+        "likelihood_contract",
+        "response_contract",
+        "hierarchy_spec_schema",
+        "identity_granularity",
+        "support_isolation_rule",
+        "active_model_replaced",
+        "fit_scope",
+        "data_scope"
+      ],
+      "properties": {
+        "candidate_id": {
+          "const": "model-a-preflop-sizing-hierarchical-candidate-v1"
+        },
+        "model_family": {
+          "const": "MODEL_A_PREFLOP"
+        },
+        "status": {
+          "const": "CANDIDATE_ONLY_NOT_ACTIVE"
+        },
+        "population_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "feature_contract": {
+          "const": "poker-model-a-preflop-sizing-public-context/v1"
+        },
+        "likelihood_contract": {
+          "const": "poker-model-a-preflop-sizing-hierarchical-likelihood/v1"
+        },
+        "response_contract": {
+          "const": "poker-hierarchical-support-response/v1"
+        },
+        "hierarchy_spec_schema": {
+          "const": "poker-hierarchical-exact-context-model-spec/v1"
+        },
+        "identity_granularity": {
+          "const": "hierarchical_exact_key"
+        },
+        "support_isolation_rule": {
+          "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+        },
+        "active_model_replaced": {
+          "const": false
+        },
+        "fit_scope": {
+          "enum": [
+            "SCAFFOLD_ONLY_NO_FINAL_FIT",
+            "TRAIN_EMPIRICAL_FIT"
+          ]
+        },
+        "data_scope": {
+          "enum": [
+            "SYNTHETIC_OR_TRAIN_ONLY",
+            "CERTIFIED_TRAIN_ONLY"
+          ]
+        },
+        "source_report_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "hierarchy_spec_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "poolingLevel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "rank",
+        "purpose",
+        "drops",
+        "retains",
+        "support_source_allowed",
+        "equals_runtime_provider_key",
+        "key_axes"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "L0_EXACT_KEY",
+            "L1_STACK_POOL",
+            "L2_POT_POOL",
+            "L3_RUNTIME_SUPPORT_CONTEXT",
+            "L4_POSITION_PRICE_PRIOR"
+          ]
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "purpose": {
+          "enum": [
+            "SUPPORT_AND_IDENTITY",
+            "PARAMETERS_ONLY",
+            "LAST_RESORT_PARAMETERS_ONLY"
+          ]
+        },
+        "drops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/axis"
+          }
+        },
+        "retains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/axis"
+          }
+        },
+        "support_source_allowed": {
+          "type": "boolean"
+        },
+        "equals_runtime_provider_key": {
+          "type": "boolean"
+        },
+        "key_axes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/axis"
+          }
+        }
+      }
+    },
+    "axis": {
+      "enum": [
+        "requested_key_identity",
+        "actor_position",
+        "aggressor_position",
+        "target_total_bb",
+        "to_call_bb",
+        "effective_stack_bucket",
+        "pot_before_bb",
+        "history",
+        "live_positions",
+        "all_in_positions",
+        "table_size",
+        "raise_level",
+        "limper_count",
+        "caller_count",
+        "family"
+      ]
+    },
+    "whitelist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "actor_position",
+        "aggressor_position",
+        "limper_count",
+        "caller_count",
+        "target_total_bb",
+        "to_call_bb",
+        "table_size",
+        "raise_level",
+        "live_positions",
+        "all_in_positions",
+        "history",
+        "pot_before_bb",
+        "effective_stack_bucket"
+      ],
+      "properties": {
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_position": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aggressor_position": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limper_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "caller_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_total_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "to_call_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "table_size": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "raise_level": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "live_positions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "all_in_positions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["position", "action"],
+            "properties": {
+              "position": {
+                "type": "string",
+                "minLength": 1
+              },
+              "action": {
+                "enum": ["FOLD", "CHECK", "LIMP", "CALL", "RAISE", "JAM"]
+              }
+            }
+          }
+        },
+        "pot_before_bb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "effective_stack_bucket": {
+          "enum": ["LE40", "GT40_LE75", "GT75_LE125", "GT125"]
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "hand_id",
+        "hierarchical_exact_key",
+        "level_keys",
+        "public_context",
+        "action",
+        "target_total_bb"
+      ],
+      "properties": {
+        "observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hand_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hierarchical_exact_key": {
+          "$ref": "#/$defs/exactKey"
+        },
+        "level_keys": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "L0_EXACT_KEY",
+            "L1_STACK_POOL",
+            "L2_POT_POOL",
+            "L3_RUNTIME_SUPPORT_CONTEXT",
+            "L4_POSITION_PRICE_PRIOR"
+          ],
+          "properties": {
+            "L0_EXACT_KEY": {
+              "$ref": "#/$defs/exactKey"
+            },
+            "L1_STACK_POOL": {
+              "type": "string",
+              "minLength": 1
+            },
+            "L2_POT_POOL": {
+              "type": "string",
+              "minLength": 1
+            },
+            "L3_RUNTIME_SUPPORT_CONTEXT": {
+              "type": "string",
+              "pattern": "^MAPSUP_"
+            },
+            "L4_POSITION_PRICE_PRIOR": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "public_context": {
+          "$ref": "#/$defs/whitelist"
+        },
+        "action": {
+          "enum": ["FOLD", "CHECK", "CALL", "RAISE", "JAM"]
+        },
+        "target_total_bb": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reveal_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "exactKey": {
+      "type": "string",
+      "pattern": "^MAPSUP_.*\\|public=[0-9a-f]{64}$"
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "FOLD": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "CHECK": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "CALL": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "RAISE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "JAM": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "candidate_identity",
+        "requested_key",
+        "requested_key_granularity",
+        "status",
+        "reason_code",
+        "reason_detail",
+        "support",
+        "pooling",
+        "pooling_diagnostics",
+        "posterior",
+        "uncertainty",
+        "raise_sizing",
+        "information_boundary",
+        "granularity"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-hierarchical-support-response/v1"
+        },
+        "candidate_identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "requested_key": {
+          "$ref": "#/$defs/exactKey"
+        },
+        "requested_key_granularity": {
+          "const": "hierarchical_exact_key"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "reason_code": {
+          "$ref": "#/$defs/status"
+        },
+        "reason_detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unresolved_reason": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "support": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "observations",
+            "distinct_hands",
+            "effective_sample_size",
+            "action_counts",
+            "denominator",
+            "source_key",
+            "borrowed_from_other_keys",
+            "support_isolation_rule"
+          ],
+          "properties": {
+            "observations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "distinct_hands": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "effective_sample_size": {
+              "type": "number",
+              "minimum": 0
+            },
+            "action_counts": {
+              "$ref": "#/$defs/counts"
+            },
+            "denominator": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "source_key": {
+              "$ref": "#/$defs/exactKey"
+            },
+            "borrowed_from_other_keys": {
+              "const": false
+            },
+            "support_isolation_rule": {
+              "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+            }
+          }
+        },
+        "pooling": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "level",
+            "rank",
+            "purpose",
+            "source_key",
+            "source_observations",
+            "source_distinct_hands",
+            "source_effective_sample_size",
+            "retained_axes",
+            "pooled_axes",
+            "weight_exact",
+            "weight_parent",
+            "parent_dominated",
+            "kappa0",
+            "alpha_per_legal_marginal_action",
+            "support_source_key",
+            "support_isolation_rule"
+          ],
+          "properties": {
+            "level": {
+              "enum": [
+                "L0_EXACT_KEY",
+                "L1_STACK_POOL",
+                "L2_POT_POOL",
+                "L3_RUNTIME_SUPPORT_CONTEXT",
+                "L4_POSITION_PRICE_PRIOR"
+              ]
+            },
+            "rank": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "purpose": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_observations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "source_distinct_hands": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "source_effective_sample_size": {
+              "type": "number",
+              "minimum": 0
+            },
+            "retained_axes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/axis"
+              }
+            },
+            "pooled_axes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/axis"
+              }
+            },
+            "weight_exact": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "weight_parent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "parent_dominated": {
+              "type": "boolean"
+            },
+            "kappa0": {
+              "const": 16.0
+            },
+            "alpha_per_legal_marginal_action": {
+              "const": 0.5
+            },
+            "support_source_key": {
+              "$ref": "#/$defs/exactKey"
+            },
+            "support_isolation_rule": {
+              "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+            }
+          }
+        },
+        "pooling_diagnostics": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "level",
+              "rank",
+              "purpose",
+              "source_key",
+              "source_observations",
+              "source_distinct_hands",
+              "source_effective_sample_size",
+              "action_counts",
+              "qualifies",
+              "support_source_allowed"
+            ],
+            "properties": {
+              "level": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rank": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_observations": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "source_distinct_hands": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "source_effective_sample_size": {
+                "type": "number",
+                "minimum": 0
+              },
+              "action_counts": {
+                "$ref": "#/$defs/counts"
+              },
+              "qualifies": {
+                "type": "boolean"
+              },
+              "support_source_allowed": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "posterior": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "uncertainty": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "confidence_level",
+            "level_used",
+            "effective_sample_size",
+            "concentration",
+            "actions"
+          ],
+          "properties": {
+            "method": {
+              "const": "DIRICHLET_MARGINAL_BETA_CREDIBLE_INTERVAL"
+            },
+            "confidence_level": {
+              "type": "number",
+              "exclusiveMinimum": 0.5,
+              "exclusiveMaximum": 1
+            },
+            "level_used": {
+              "type": "string",
+              "minLength": 1
+            },
+            "effective_sample_size": {
+              "type": "number",
+              "minimum": 0
+            },
+            "concentration": {
+              "type": "number",
+              "minimum": 0
+            },
+            "actions": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["mean", "alpha", "beta", "std_error", "credible_interval"],
+                "properties": {
+                  "mean": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "alpha": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "beta": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "std_error": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "credible_interval": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["level", "low", "high"],
+                    "properties": {
+                      "level": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.5,
+                        "exclusiveMaximum": 1
+                      },
+                      "low": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "high": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "raise_sizing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "state",
+            "supported_targets",
+            "exact_support_only",
+            "nearest_price_used",
+            "representative_price_used",
+            "interpolation_used",
+            "source_key",
+            "structural_node_key",
+            "unresolved"
+          ],
+          "properties": {
+            "policy": {
+              "const": "exact-support-only"
+            },
+            "state": {
+              "enum": [
+                "EXACT_SUPPORTED",
+                "UNRESOLVED_SIZING_FRONTIER",
+                "NO_RAISE_BRANCH",
+                "NO_EXACT_SUPPORT"
+              ]
+            },
+            "supported_targets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["target_total_bb", "observations"],
+                "properties": {
+                  "target_total_bb": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "observations": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "exact_support_only": {
+              "const": true
+            },
+            "nearest_price_used": {
+              "const": false
+            },
+            "representative_price_used": {
+              "const": false
+            },
+            "interpolation_used": {
+              "const": false
+            },
+            "source_key": {
+              "$ref": "#/$defs/exactKey"
+            },
+            "structural_node_key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "unresolved": {
+              "type": "boolean"
+            }
+          }
+        },
+        "information_boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "public_only",
+            "future_cards_consumed",
+            "opponent_hole_cards_consumed",
+            "private_information_consumed"
+          ],
+          "properties": {
+            "public_only": {
+              "const": true
+            },
+            "future_cards_consumed": {
+              "const": false
+            },
+            "opponent_hole_cards_consumed": {
+              "const": false
+            },
+            "private_information_consumed": {
+              "const": false
+            }
+          }
+        },
+        "granularity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "identity",
+            "support",
+            "parameter_pooling_allowed",
+            "nearest_price_lookup",
+            "nearest_context_lookup"
+          ],
+          "properties": {
+            "identity": {
+              "const": "hierarchical_exact_key"
+            },
+            "support": {
+              "const": "L0_EXACT_KEY"
+            },
+            "parameter_pooling_allowed": {
+              "type": "boolean"
+            },
+            "nearest_price_lookup": {
+              "const": false
+            },
+            "nearest_context_lookup": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "EXACT_EMPIRICAL_STRONG",
+        "EXACT_HIERARCHICAL_ESTIMATE",
+        "EXACT_UNRESOLVED"
+      ]
+    },
+    "reasonCode": {
+      "description": "Reason code carried by an EXACT_UNRESOLVED response. The provider never emits a nearest-price or nearest-context substitution code; a coarse-key support borrowing raises COARSE_KEY_SUPPORT_LAUNDERING instead of emitting a response.",
+      "enum": [
+        "NO_ADMISSIBLE_POOLING_LEVEL",
+        "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "NO_EXACT_SUPPORT_AND_NO_CONTEXT"
+      ]
+    }
+  }
+}

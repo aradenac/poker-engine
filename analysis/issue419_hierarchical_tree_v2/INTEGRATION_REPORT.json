@@ -1,0 +1,780 @@
+{
+  "authored_at": "2026-09-26T00:00:00Z",
+  "authorship_note": "every claim below is either re-derived by this tool from the persisted bytes (reverified_by_this_tool), quoted from the digest-referenced T5 CI evidence or recorded as a labelled, non-authoritative local observation",
+  "boundaries": {
+    "active_model_reference_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "active_pointer_mutated": false,
+    "dataset_or_hand_history_opens": [],
+    "decision_rows_read_by_this_bundle": 0,
+    "files_opened": [
+      ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+      "analysis/issue419_hierarchical_tree/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.sha256",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+      "analysis/issue419_hierarchical_tree/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/ci_evidence/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/ci_evidence/CI_EVIDENCE.json",
+      "analysis/issue419_hierarchical_tree/ci_evidence/PRE_PUSH_PREPARATION.json",
+      "analysis/issue419_hierarchical_tree/ci_evidence/PRE_PUSH_PREPARATION.md",
+      "analysis/issue419_hierarchical_tree/ci_evidence/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/ci_evidence/sha256/03281c96f9f3271050818874444981516aca4bb32498d3a727c08bc2f3faa2ef.md",
+      "analysis/issue419_hierarchical_tree/ci_evidence/sha256/4229ea1bd9a8b190dd622e58ba45f1f850c008dd13c19cecde98bda755f34b5d.json",
+      "analysis/issue419_hierarchical_tree/ci_evidence/sha256/529e62fab067f8c8dbda6aa6eca4eaa04891bcf2c577cd81c851f5ae9c97c698.md",
+      "analysis/issue419_hierarchical_tree/ci_evidence/sha256/764b7f6daf111ef949471a69f7652d7d9ffba2cc0be09eff2a39a2c144327018.json",
+      "analysis/issue419_hierarchical_tree/contract/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json",
+      "analysis/issue419_hierarchical_tree/contract/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/contract/sha256/bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd.md",
+      "analysis/issue419_hierarchical_tree/contract/sha256/d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f65e28fc35c0f61f6ba4c96cb3e7737b680f9b0da53cec8483110eed830981ff.md",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/EVIDENCE_INTEGRITY_CORRECTION_V2.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/sha256/0d530ad77555986028c15ebe98cb3bda366d68285afca6ad0633e2a0f3f5a177.json",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/sha256/5f973e1eb508aedd9ccf168bbfa962b8790f8d61fecf9d2c8a918444e217b783.md",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df.md",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6.json",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/sha256/9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2.json",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/sha256/ae130aaf4e1f9e42c66c9cc17b6335b5cfabd6df56959c9c83ffee757fdbdbbb.md",
+      "analysis/issue419_hierarchical_tree/fit/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+      "analysis/issue419_hierarchical_tree/fit/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+      "analysis/issue419_hierarchical_tree/fit/sha256/8774dba57c7e831890cacc2fb9e1263ecf669d22797fa775e15221d263e5c84e.md",
+      "analysis/issue419_hierarchical_tree/fit/sha256/ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5.json",
+      "analysis/issue419_hierarchical_tree/fit/sha256/c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534.json",
+      "analysis/issue419_hierarchical_tree/fit/sha256/d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c.json",
+      "analysis/issue419_hierarchical_tree/model_spec/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/model_spec/HIERARCHICAL_MODEL_SPEC.json",
+      "analysis/issue419_hierarchical_tree/model_spec/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/model_spec/sha256/5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c.json",
+      "analysis/issue419_hierarchical_tree/model_spec/sha256/d29147af03671264fbf53a6ba4f9678dfc81247e4f64ca27989dd859df52ea2e.md",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/sha256/93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e.json",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/sha256/cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c.md",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/sha256/9dbeba451fdb8ae36e7b6d09415884a87cdf5a168db4bcae787569a7a52f14a7.md",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/sha256/9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b.json",
+      "analysis/issue419_hierarchical_tree/sha256/737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8.md",
+      "analysis/issue419_hierarchical_tree/sha256/ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36.json",
+      "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "analysis/issue419_hierarchical_tree/terminal_decision/N8N_TASK_RESULT.txt",
+      "analysis/issue419_hierarchical_tree/terminal_decision/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/terminal_decision/sha256/4fd1ab14ef254dd2ac250f5ab0ead1c54c5d0fe2e289921e326954d0c1d28333.txt",
+      "analysis/issue419_hierarchical_tree/terminal_decision/sha256/9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc.json",
+      "analysis/issue419_hierarchical_tree/terminal_decision/sha256/bb9c1b6f15695bb94b287a940ffd0e542ba575c586725fcea4dad4ecc235ed8f.md",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/DECISION_V2.json",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/N8N_TASK_RESULT.txt",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/sha256/2edf73862cd2cc2e61e8ddd04fbc536ecf83e3c04c8a88d550681a02e1c3926f.txt",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/sha256/3e855b33076601c79c497f202063097bd6ee9c78ec45c92d206d3bc698888349.md",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/sha256/4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882.json",
+      "analysis/issue419_hierarchical_tree/validation/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/validation/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "analysis/issue419_hierarchical_tree/validation/sha256/0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68.json",
+      "analysis/issue419_hierarchical_tree/validation/sha256/794b16baacf3d477dcdef56bd1311b55672f5553e28ee83ddef38cbb6004b9f1.md",
+      "analysis/issue419_hierarchical_tree/validation_protocol/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/validation_protocol/FROZEN_VALIDATION_PROTOCOL.json",
+      "analysis/issue419_hierarchical_tree/validation_protocol/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/validation_protocol/sha256/69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3.json",
+      "analysis/issue419_hierarchical_tree/validation_protocol/sha256/6d7672aa7c0b06d9127aadd45fb901b4f21e7e2a8143496bd23c489333ff8dee.md",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/ARTIFACTS.json",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.sha256",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/SUMMARY.md",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c.md",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350.json",
+      "tools/simulation/issue419_exact_tree_preflight.py",
+      "tools/training/build_hierarchical_integration_bundle_v2.py",
+      "training/models/postflop_population_model_v5.json",
+      "training/models/preflop_population_model_v5.json",
+      "training/populations/registry.json",
+      "training/registry.json"
+    ],
+    "files_opened_count": 104,
+    "hand_histories_parsed_by_this_bundle": 0,
+    "hero_ev_executed": false,
+    "holdout_access_scan": {
+      "forbidden_module_imports": [],
+      "hits": [],
+      "result": "PASS",
+      "scanned": "tools/training/build_hierarchical_integration_bundle_v2.py"
+    },
+    "holdout_reopened_by_this_bundle": false,
+    "issue367_authorized": false,
+    "issue367_boundary_scan": {
+      "forbidden_imports": [],
+      "hits": [],
+      "result": "PASS"
+    },
+    "issue367_run": false,
+    "metrics_recomputed_by_this_bundle": 0,
+    "protected_files_before": {
+      "analysis/issue419_hierarchical_tree/ARTIFACTS.json": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.sha256": "e2e6d5f0d825ee814f2eaa81fba82e6b0f0ecc2bdb05c8cbc30f098d65f950f8",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c",
+      "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+      "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
+      "analysis/issue419_hierarchical_tree/ci_evidence/CI_EVIDENCE.json": "764b7f6daf111ef949471a69f7652d7d9ffba2cc0be09eff2a39a2c144327018",
+      "analysis/issue419_hierarchical_tree/contract/ARTIFACTS.json": "0ff232b3eb6783d21ccaea1edac278d851b28df359b8642972fc5b2641c8891e",
+      "analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json": "f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/ARTIFACTS.json": "503de72340b39052c74a220b20022fcbd3f44f1ad0767aaf70ce41733475c5ec",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/EVIDENCE_INTEGRITY_CORRECTION_V2.json": "0d530ad77555986028c15ebe98cb3bda366d68285afca6ad0633e2a0f3f5a177",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/ARTIFACTS.json": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/ARTIFACTS.json": "8738385f059bab207764586a73fe097ab97cbe8c4123eac2fac8532f04c49bbf",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json": "9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2",
+      "analysis/issue419_hierarchical_tree/fit/ARTIFACTS.json": "3b4097f8607fa4d03ad7cf86fc0e4c745a84de77e9689bdccdfc5c723a61306b",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/ARTIFACTS.json": "26f98749547812bde1e3e9b19ca07344d8d2828b95993292be86b86805c0c795",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+      "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4",
+      "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/ARTIFACTS.json": "44dfc8aeec57d6582c630cc4b9b2f7ab110512d438b59bb570c732d7878bfcbe",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2/DECISION_V2.json": "4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882",
+      "analysis/issue419_hierarchical_tree/validation/ARTIFACTS.json": "4d7081ae6806c5d6fee470b89f4b454e88360b1b18e2255a7c3e26b4eccafccd",
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.sha256": "0e07a64b2948a4ace01415a941331026525f1cd7b1d82b17640aa05979c15b23",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json": "508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320",
+      "training/models/postflop_population_model_v5.json": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "protected_files_unchanged": true,
+    "recommendation_computed": false,
+    "rollouts_executed": 0,
+    "split_consumed": "TRAIN_AND_ONE_FROZEN_VALIDATION_READ",
+    "test_authorized": false,
+    "test_consumed": false,
+    "test_decisions_read": 0,
+    "thresholds_re_selected_by_this_bundle": false,
+    "validation_consumed": true,
+    "validation_read_count": 1
+  },
+  "branch": "n8n/issue-419/task-backlog-oso",
+  "bundle_dir": "analysis/issue419_hierarchical_tree_v2",
+  "bundle_members": {
+    "CANDIDATE_MANIFEST.json": {
+      "bytes": 16388,
+      "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
+      "mode": "BYTE_IDENTICAL_COPY",
+      "role": "T4_CANDIDATE_MANIFEST",
+      "source_byte_sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "source_path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json"
+    },
+    "DECISION_V2.json": {
+      "bytes": 57609,
+      "canonical_payload_sha256": "2eb8b3824023b16566d662d63eb5f830368d483ff30e4ee90210b8c2607167d0",
+      "mode": "BYTE_IDENTICAL_COPY",
+      "role": "T7_TERMINAL_DECISION_V2",
+      "source_byte_sha256": "4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882",
+      "source_path": "analysis/issue419_hierarchical_tree/terminal_decision_v2/DECISION_V2.json"
+    },
+    "EXACT_TREE_PREFLIGHT_V2.json": {
+      "bytes": 886813,
+      "canonical_payload_sha256": "d88d1dba290f9a86033db7a875f8013b813472c24390c8a2736a09b7670b3a5b",
+      "mode": "BYTE_IDENTICAL_COPY",
+      "role": "T8_EXACT_TREE_PREFLIGHT_V2",
+      "source_byte_sha256": "9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2",
+      "source_path": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json"
+    },
+    "FROZEN_VALIDATION_PROTOCOL_V2.json": {
+      "bytes_copied": 0,
+      "canonical_payload_sha256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+      "mode": "DIGEST_REFERENCE_NO_BYTES",
+      "role": "T1_FROZEN_VALIDATION_PROTOCOL_V2",
+      "source_byte_sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+      "source_path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json"
+    },
+    "HIERARCHICAL_MODEL_SPEC.json": {
+      "bytes": 53236,
+      "canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+      "mode": "BYTE_IDENTICAL_COPY",
+      "role": "T2_HIERARCHICAL_MODEL_SPEC",
+      "source_byte_sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c",
+      "source_path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json"
+    },
+    "RAISE_SIZING_FRONTIER_RESOLUTION.json": {
+      "bytes_copied": 0,
+      "canonical_payload_sha256": "cfdc9887a5e71fdf899bce3512e31e501b4fba08d25d6ec8dec4d8d388f1b01d",
+      "mode": "DIGEST_REFERENCE_NO_BYTES",
+      "role": "T1B_RAISE_SIZING_FRONTIER_RESOLUTION_V2",
+      "source_byte_sha256": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+      "source_path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+    },
+    "TRAIN_FIT_REPORT.json": {
+      "bytes": 160687,
+      "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+      "mode": "BYTE_IDENTICAL_COPY",
+      "role": "T3_TRAIN_FIT_REPORT",
+      "source_byte_sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+      "source_path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json"
+    },
+    "VALIDATION_RESULT.json": {
+      "bytes_copied": 0,
+      "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",
+      "mode": "DIGEST_REFERENCE_NO_BYTES",
+      "role": "T6_CONSUMED_VALIDATION_RESULT_V1",
+      "source_byte_sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+      "source_path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json"
+    }
+  },
+  "bundle_task": "backlog-oso",
+  "candidate": {
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+    "candidate_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "candidate_status_at_freeze": "CANDIDATE_ONLY_NOT_ACTIVE",
+    "distinct_from_issue_352": "model-a-preflop-sizing-aware-candidate-v2",
+    "identity_granularity": "hierarchical_exact_key",
+    "model_family": "MODEL_A_PREFLOP",
+    "support_isolation_rule": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+  },
+  "ci_evidence": {
+    "authority_required": "a GitHub Actions run of \u00ab Execute issue 419 hierarchical exact tree \u00bb at the pushed head of n8n/issue-419-fermer-le-response-tree-limper-vs-iso-par-estimati",
+    "bytes_now": 12809,
+    "no_run_exists": true,
+    "none_executes_the_issue419_suites": true,
+    "observed_run_count": 5,
+    "post_push_verification": [
+      "PR #420 head.sha != d087b5c72619b5279a674045e18dda2c3807e1b5 (the branch was actually pushed past the reviewed head)",
+      "the new head carries .github/workflows/issue-419-hierarchical-exact-tree.yml",
+      "a run named \u00ab Execute issue 419 hierarchical exact tree \u00bb exists for that head with conclusion=success",
+      "its step \u00ab Prove every #419 suite is actually executed (no-op guard) \u00bb prints \u00ab #419 no-op guard: 15/15 suites executed \u00bb",
+      "only after all of the above may ci_observation.status move from NOT_OBSERVED to PASS"
+    ],
+    "promotion_forbidden_by": [
+      "a local replay of the workflow steps",
+      "an asserted or declarative evidence file",
+      "the PR body or a PR comment"
+    ],
+    "pull_request": {
+      "base": "main",
+      "base_sha": "23269c0d3edfaaa710b0884382edfa74510b3ddf",
+      "head_sha_at_verification": "d087b5c72619b5279a674045e18dda2c3807e1b5",
+      "number": 420,
+      "url": "https://github.com/aradenac/poker-engine/pull/420"
+    },
+    "reason": "no run of this workflow can exist yet: the workflow is absent at the current remote PR head d087b5c (workflow_under_test.present_at_remote_pr_head=false) and the branch has not been pushed past d087b5c, so neither the push/synchronize event nor the workflow_dispatch fallback is reachable from this worker.",
+    "recorded_run_ids": [
+      153,
+      257,
+      627,
+      976,
+      977
+    ],
+    "recorded_runs": [
+      {
+        "conclusion": "success",
+        "event": "pull_request",
+        "executes_the_issue419_suites": false,
+        "name": "Project state consistency",
+        "run_number": 153,
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040214",
+        "workflow_path": ".github/workflows/project-state-consistency.yml"
+      },
+      {
+        "conclusion": "success",
+        "event": "pull_request",
+        "executes_the_issue419_suites": false,
+        "name": "Validate preflop context contract",
+        "run_number": 257,
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040196",
+        "workflow_path": ".github/workflows/preflop-contract.yml"
+      },
+      {
+        "conclusion": "success",
+        "event": "pull_request",
+        "executes_the_issue419_suites": false,
+        "name": "Persisted dataset integrity",
+        "run_number": 627,
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040256",
+        "workflow_path": ".github/workflows/dataset-integrity.yml"
+      },
+      {
+        "conclusion": "success",
+        "event": "pull_request",
+        "executes_the_issue419_suites": false,
+        "name": "Validate sequential independent arena",
+        "run_number": 977,
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196040257",
+        "workflow_path": ".github/workflows/sequential-arena.yml"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "executes_the_issue419_suites": false,
+        "name": "Validate sequential independent arena",
+        "run_number": 976,
+        "url": "https://github.com/aradenac/poker-engine/actions/runs/36196031300",
+        "workflow_path": ".github/workflows/sequential-arena.yml"
+      }
+    ],
+    "run_name_recorded": null,
+    "run_url_recorded": null,
+    "sha256_now": "8d568f972d5d5c42a282c115af0d35df955d64af5ae4ecb8ea24146ba969c7d3",
+    "source": {
+      "bundle_task": "backlog-dak",
+      "byte_sha256": "764b7f6daf111ef949471a69f7652d7d9ffba2cc0be09eff2a39a2c144327018",
+      "path": "analysis/issue419_hierarchical_tree/ci_evidence/CI_EVIDENCE.json",
+      "planner_key": "T1",
+      "schema": "poker-issue419-ci-evidence/v1"
+    },
+    "status": "NOT_OBSERVED",
+    "workflow_under_test": {
+      "bytes_as_recorded_by_t5": 12705,
+      "executed_suite_count_as_recorded_by_t5": 15,
+      "git_blob_sha1_as_recorded_by_t5": "a1ac5061b790b36c43532709bf33894cb333879d",
+      "lines_as_recorded_by_t5": 230,
+      "name": "Execute issue 419 hierarchical exact tree",
+      "path": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+      "present_at_remote_pr_head": false,
+      "present_at_worktree_head": true,
+      "sha256_as_recorded_by_t5": "375a0cda5ade293d71099fc79fba2c2a3afafa21ad27df0ea9293eb174275c49"
+    }
+  },
+  "ci_proven_claims": [],
+  "ci_proven_claims_note": "empty by construction: no real CI run ID proves any #419 claim, so none may be listed here. Only a push-triggered run of \u00ab Execute issue 419 hierarchical exact tree \u00bb at the pushed head, with conclusion=success, may move ci_observation.status off NOT_OBSERVED",
+  "coherence": {
+    "candidate_id_matches_t4_manifest_and_contract": true,
+    "candidate_sha256_matches_t4_manifest_and_terminal_decision_v2": true,
+    "exact_tree_preflight_check_is_green_at_this_head": true,
+    "exact_tree_preflight_v1_digest": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+    "exact_tree_preflight_v2_digest": "9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2",
+    "frozen_protocol_v1_digest": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+    "frozen_protocol_v2_digest": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+    "protocol_v2_declares_the_superseded_digest_it_replaced": true,
+    "raise_sizing_frontier_v1_digest": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+    "raise_sizing_frontier_v2_digest": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+    "required_tree_sha256_matches_decision_v1_v2_and_preflight_v2": true,
+    "root_artifacts_index_and_summary_bytes_unchanged": true,
+    "t1_sparsity_baseline_digest": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+    "t2_model_spec_digest": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c",
+    "t3_train_fit_report_digest": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+    "t4_candidate_digest": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "t4_candidate_manifest_digest": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+    "terminal_decision_v1_digest": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+    "terminal_decision_v2_binds_repaired_preflight_v2_and_frontier_v2": true,
+    "terminal_decision_v2_digest": "4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882",
+    "upstream_bundles": [
+      "analysis/issue419_hierarchical_tree",
+      "analysis/issue419_hierarchical_tree/model_spec",
+      "analysis/issue419_hierarchical_tree/contract",
+      "analysis/issue419_hierarchical_tree/fit",
+      "analysis/issue419_hierarchical_tree/validation_protocol",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2",
+      "analysis/issue419_hierarchical_tree/validation",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+      "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2",
+      "analysis/issue419_hierarchical_tree/terminal_decision",
+      "analysis/issue419_hierarchical_tree/terminal_decision_v2",
+      "analysis/issue419_hierarchical_tree/ci_evidence",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2"
+    ],
+    "upstream_bundles_verified": 16,
+    "validation_result_digest": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+  },
+  "declared_supersessions": [
+    {
+      "reason": "the v1 payload embeds code.preflight_tool.sha256 of the superseded v1 tool, which no longer exists on disk; v1 is byte-pinned, re-verified and never rewritten, and --revision v1 is refused",
+      "regeneration_possible": false,
+      "superseded": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+      "superseding": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+      "supersession_id": "EXACT_TREE_PREFLIGHT_V1_SUPERSEDED_BY_V2"
+    },
+    {
+      "reason": "the v1 decision is byte-pinned and re-verified on every build; v2 is an additive revision composed of the TRAIN-only preflight v2 and the digest-referenced consumed v1 VALIDATION bytes",
+      "superseded": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "superseded_byte_sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+      "superseding": "analysis/issue419_hierarchical_tree/terminal_decision_v2/DECISION_V2.json",
+      "superseding_byte_sha256": "4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882",
+      "supersession_id": "TERMINAL_DECISION_V1_SUPERSEDED_BY_V2",
+      "v1_rewritten": false
+    }
+  ],
+  "generated_by": {
+    "check": "python3 tools/training/build_hierarchical_integration_bundle_v2.py --check",
+    "path": "tools/training/build_hierarchical_integration_bundle_v2.py",
+    "reproduce": "python3 tools/training/build_hierarchical_integration_bundle_v2.py",
+    "sha256": "b3edb1eefe90609a5b56d2f82ec28b8b5073083b8f73e8cf8ea45c4ee16bfc99"
+  },
+  "issue": 419,
+  "kind": "ISSUE419_HIERARCHICAL_EXACT_TREE_INTEGRATION_BUNDLE_V2",
+  "n8n_task_result": {
+    "active_pointer_mutated": false,
+    "admitted": false,
+    "blockers": [
+      "NO_ADMISSIBLE_POOLING_LEVEL",
+      "UNRESOLVED_RAISE_SIZING_FRONTIER",
+      "REFUSED_CALIBRATION",
+      "REFUSED_COVERAGE_FLOOR"
+    ],
+    "bundle": "analysis/issue419_hierarchical_tree_v2",
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "ci_status": "NOT_OBSERVED",
+    "decision": "UNRESOLVED_HIERARCHICAL_TREE_GAP",
+    "hero_ev_executed": false,
+    "integration_ready": false,
+    "issue": 419,
+    "issue367_run": false,
+    "next_issue": 367,
+    "primary_blocker": "NO_ADMISSIBLE_POOLING_LEVEL",
+    "required_tree_complete": false,
+    "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "status": "BLOCKED_SCIENTIFIC",
+    "test_consumed": false,
+    "type": "N8N_TASK_RESULT",
+    "validation_consumed": true,
+    "validation_outcome": "RETAIN_ACTIVE_REFERENCE",
+    "validation_reference_sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+  },
+  "next_issue": 367,
+  "parent_issue": 314,
+  "planner_key": "T7",
+  "provenance": {
+    "T1_frozen_validation_protocol_v2": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json",
+    "T1_sparsity_baseline": "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+    "T2_hierarchical_model_spec": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+    "T3_train_fit_report": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+    "T4_candidate_contract": "analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json",
+    "T4_candidate_manifest": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+    "T5_ci_evidence": "analysis/issue419_hierarchical_tree/ci_evidence/CI_EVIDENCE.json",
+    "T6_consumed_validation_result": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "T7_terminal_decision_v2": "analysis/issue419_hierarchical_tree/terminal_decision_v2/DECISION_V2.json",
+    "T8_exact_tree_preflight_v2": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+    "evidence_integrity_correction": "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+    "evidence_integrity_correction_v2": "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/EVIDENCE_INTEGRITY_CORRECTION_V2.json",
+    "raise_sizing_frontier_resolution_v1_custody": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "raise_sizing_frontier_resolution_v2": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "required_exact_tree": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json"
+  },
+  "recorded_local_observations": [
+    {
+      "command": "python3 tools/training/finalize_hierarchical_exact_tree_decision.py --check",
+      "observed_exit_code": 0,
+      "observed_result": "PASS"
+    },
+    {
+      "command": "python3 tools/training/write_frozen_validation_protocol_v2.py --check",
+      "observed_exit_code": 0,
+      "observed_result": "PASS (v1_surfaces_verified=10)"
+    },
+    {
+      "command": "python3 tools/training/fit_model_a_preflop_sizing_hierarchical.py --check",
+      "observed_exit_code": 0,
+      "observed_result": "OK (status=BLOCKED_SCIENTIFIC, next_issue=367)"
+    },
+    {
+      "command": "python3 tools/training/audit_hierarchical_candidate_contract.py",
+      "observed_exit_code": 0,
+      "observed_result": "PASS (active_pointer_unchanged=true)"
+    },
+    {
+      "command": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+      "note": "was RED before 9859c46 restored the tool pins",
+      "observed_exit_code": 0,
+      "observed_result": "PASS: the frozen v1 preflight and the protocol v2 custody row are re-derived from the restored bytes (repaired by 9859c46)"
+    },
+    {
+      "command": "python3 tools/training/write_frozen_validation_protocol.py --check",
+      "explained_by": "EXPECTED_AFTER_THE_SINGLE_FROZEN_READ",
+      "observed_exit_code": 1,
+      "observed_result": "FAIL (expected): ValidationOrderError: VALIDATION was already read for the hierarchical candidate; the frozen protocol must be authored before any evaluation"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_issue419_exact_tree_preflight.py",
+      "observed_exit_code": 0,
+      "observed_result": "OK (24 tests; was RED before the 9859c46 pin repair)"
+    },
+    {
+      "command": "python3 tools/training/build_hierarchical_integration_bundle_v2.py --check",
+      "observed_exit_code": 0,
+      "observed_result": "PASS (members re-derived, no drift)"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py",
+      "observed_exit_code": 0,
+      "observed_result": "OK (24 tests; was RED before this regeneration)"
+    },
+    {
+      "command": "python3 tools/training/build_hierarchical_evidence_integrity_correction_v2.py --check",
+      "explained_by": "EVIDENCE_INTEGRITY_CORRECTION_V2_SNAPSHOT_REDERIVATION_DRIFT",
+      "observed_exit_code": 1,
+      "observed_result": "FAIL: bundle member is stale: EVIDENCE_INTEGRITY_CORRECTION_V2.json (its mutant-name survey re-derives from the live tree; bookkeeping only, no frozen byte moved)"
+    }
+  ],
+  "recorded_local_observations_note": "recorded by the task worker inside the isolated worktree sandbox on 2026-09-26; they are NON-AUTHORITATIVE, were not re-executed by this tool and are never merge evidence",
+  "regeneration": {
+    "closes_finding": "INTEGRATION_BUNDLE_V2_PINS_PRE_REPAIR_REVISIONS",
+    "frozen_bytes_rewritten": false,
+    "reason": "the bundle bound the pre-repair EXACT_TREE_PREFLIGHT_V2.json (2c07ae32) and DECISION_V2.json (ac291b9e) revisions; commits 9859c46 and 0f9a6eb regenerated those bundles, so this regeneration re-binds the repaired revisions and re-writes every derived member",
+    "repaired_revisions": {
+      "exact_tree_preflight_v2": {
+        "after": "9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2",
+        "before": "2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691",
+        "written_by": "9859c46"
+      },
+      "terminal_decision_v2": {
+        "after": "4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882",
+        "before": "ac291b9ed363080401e9649a30b157eec7f7b79d5d2dc6df70390ccebc67c4b5",
+        "written_by": "0f9a6eb"
+      }
+    },
+    "thresholds_moved": false
+  },
+  "reproduction": {
+    "build": "python3 tools/training/build_hierarchical_integration_bundle_v2.py",
+    "check": "python3 tools/training/build_hierarchical_integration_bundle_v2.py --check",
+    "tests": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py"
+  },
+  "required_supersessions": [
+    {
+      "claim": "the flat counts_as_a_closed_exact_tree_node=false was replaced by NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS; no threshold and no gate value moved and every gate is equal to or stricter than its v1 homologue",
+      "gates_relaxed": false,
+      "mechanism": "V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE",
+      "subject": "the first authored v2 VALIDATION protocol payload",
+      "superseded": {
+        "byte_sha256": "508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320",
+        "canonical_payload_sha256": "a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16",
+        "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json"
+      },
+      "superseded_kept_content_addressed": true,
+      "superseding": {
+        "byte_sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+        "canonical_payload_sha256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+        "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json"
+      },
+      "supersession_id": "SUPERSEDED_V2_PROTOCOL_PAYLOAD_508A31EC",
+      "thresholds_moved": false
+    },
+    {
+      "claim": "commit 871e0bd rewrote the frozen v1 preflight in place and re-registered its digests; commit c904524 reversed exactly that surface, byte for byte, without touching the pins. The regenerated (restored) bytes are the authority; the duplicate e86b7c6b object no longer exists",
+      "corrected_by": "issue419-evidence-integrity-correction-v1",
+      "corrected_commit": "c904524",
+      "correction_artifact": "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+      "correction_artifact_sha256": "f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803",
+      "follow_on_finding": "V1_PREFLIGHT_PIN_STALE",
+      "follow_on_finding_repaired_by": "9859c46 (task backlog-911)",
+      "follow_on_finding_status": "RESOLVED",
+      "follow_on_findings": [
+        "V1_PREFLIGHT_PIN_STALE",
+        "PROTOCOL_V2_PREFLIGHT_PIN_STALE"
+      ],
+      "frozen_bytes_rewritten_to_fit_a_digest": false,
+      "mutant_commit": "871e0bd9e66c978932face1accf1aaf22ac9fa1a",
+      "mutant_digests": {
+        "ARTIFACTS.json": "4fea09fc5713b9fa490effb39c557962ae1d06146710d954fb21bfd39ef25743",
+        "EXACT_TREE_PREFLIGHT.json": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f",
+        "canonical_payload_sha256": "d027391f636b1ccc41c82b9a6b5d9a332ce44dba8ae2fb1c1ae2419eb340c217"
+      },
+      "mutant_task": "backlog-sd5",
+      "restored_digests": {
+        "ARTIFACTS.json": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+        "EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+        "canonical_payload_sha256": "fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd"
+      },
+      "subject": "analysis/issue419_hierarchical_tree/exact_tree_preflight/",
+      "superseded_by": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+      "supersession_id": "V1_EXACT_TREE_PREFLIGHT_REGENERATION"
+    },
+    {
+      "claim": "the v2 revision (commit 0f9a6eb) adds the per-frontier blocker the frozen v1 bundle lacks; the v1 bytes stay byte-frozen custody, re-verified on every build and never rewritten, and the terminal decision v2 binds the v2 revision for its values while recording v1 only as custody",
+      "gates_relaxed": false,
+      "mechanism": "poker-raise-sizing-frontier-resolution/v2",
+      "subject": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/",
+      "superseded": {
+        "byte_sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+        "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+        "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+      },
+      "superseded_kept_content_addressed": true,
+      "superseding": {
+        "byte_sha256": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "canonical_payload_sha256": "cfdc9887a5e71fdf899bce3512e31e501b4fba08d25d6ec8dec4d8d388f1b01d",
+        "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+      },
+      "supersession_id": "RAISE_SIZING_FRONTIER_RESOLUTION_V1_SUPERSEDED_BY_V2",
+      "thresholds_moved": false
+    }
+  ],
+  "residual_findings": [
+    {
+      "blocks_ready_for_integration": true,
+      "detail": "no run of \u00ab Execute issue 419 hierarchical exact tree \u00bb exists at any head; the five real CI runs at the reviewed PR head execute none of the #419 suites",
+      "finding_id": "CI_NOT_OBSERVED",
+      "owner": "the orchestrator run that holds git transport (push) plus the CI task",
+      "promotion_forbidden_by": [
+        "a local replay of the workflow steps",
+        "an asserted or declarative evidence file",
+        "the PR body or a PR comment"
+      ]
+    },
+    {
+      "blocks_ready_for_integration": false,
+      "detail": "this task adds the analysis/issue419_hierarchical_tree_v2/** trigger glob so the new bundle surface re-runs the authoritative workflow (the #419 path-coverage guard fails otherwise); the workflow bytes therefore differ from the bytes T5 recorded",
+      "finding_id": "WORKFLOW_BYTES_CHANGED_BY_THIS_TASK",
+      "recorded_by_t5_sha256": "375a0cda5ade293d71099fc79fba2c2a3afafa21ad27df0ea9293eb174275c49",
+      "sha256_now": "8d568f972d5d5c42a282c115af0d35df955d64af5ae4ecb8ea24146ba969c7d3",
+      "t5_artifact_rewritten": false
+    },
+    {
+      "blocks_ready_for_integration": false,
+      "cause": "the mutant-name survey re-derives from the live tree",
+      "detail": "the evidence-integrity correction v2 record pins the integration bundle surface it observed, and its own --check re-derives its mutant-name survey from the live tree. Re-binding this bundle to the repaired preflight v2 / decision v2 removes the pre-repair preflight v2 copy that carried two mutant-name mentions, so that survey re-derives with fewer recorded mention paths and the record now reports `bundle member is stale`. The drift is bookkeeping only: the record digest table, tool-pin table, frozen-byte re-verification and order-guard results are byte-identical, and no frozen byte moved. This task may not rewrite a v2 record, so the closure is recorded here and in the decision file instead of editing `analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/EVIDENCE_INTEGRITY_CORRECTION_V2.json`",
+      "detected_by": "python3 tools/training/build_hierarchical_evidence_integrity_correction_v2.py --check",
+      "finding_id": "EVIDENCE_INTEGRITY_CORRECTION_V2_SNAPSHOT_REDERIVATION_DRIFT",
+      "observed": "FAIL: bundle member is stale: EVIDENCE_INTEGRITY_CORRECTION_V2.json",
+      "only_recorded_mentions_changed": true,
+      "owner": "the evidence-integrity correction v2 record; re-derivation is its owner step",
+      "recorded_in": "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/EVIDENCE_INTEGRITY_CORRECTION_V2.json",
+      "recorded_in_byte_sha256": "0d530ad77555986028c15ebe98cb3bda366d68285afca6ad0633e2a0f3f5a177",
+      "touches_a_frozen_byte": false
+    }
+  ],
+  "resolved_findings": [
+    {
+      "blocks_ready_for_integration": false,
+      "detail": "the preflight tool once pinned the pre-correction v1 preflight bytes, which the evidence-integrity correction had restored to a different (authoritative) digest, so issue419_exact_tree_preflight.py --check failed closed on its own frozen surface; commit 9859c46 restored the pins, so the pin now equals the restored authority on disk and the check is GREEN at this head",
+      "detected_by": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+      "finding_id": "V1_PREFLIGHT_PIN_STALE",
+      "introduced_by": "887e46a (task backlog-agg)",
+      "observed_at_this_head": "check PASS (the frozen v1 preflight is re-derived)",
+      "observed_before_repair": "PreflightError: the frozen v1 preflight artifact drifted",
+      "on_disk": {
+        "ARTIFACTS.json": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+        "EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
+      },
+      "owner": "the exact-tree preflight task; repaired at the pin source, no frozen byte moved",
+      "pin_matches_on_disk_bytes": true,
+      "repaired_by": "9859c46 (task backlog-911)",
+      "repaired_by_this_bundle": false,
+      "resolution": "REPAIRED_AT_THE_PIN_SOURCE_NO_FROZEN_BYTE_MOVED",
+      "restored_by": "c904524",
+      "status": "RESOLVED",
+      "tool": "tools/simulation/issue419_exact_tree_preflight.py",
+      "tool_pins": {
+        "V1_INDEX_SHA256": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+        "V1_PREFLIGHT_SHA256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
+      }
+    },
+    {
+      "blocks_ready_for_integration": false,
+      "detail": "the same preflight tool also pinned the pre-correction protocol v2 bytes, which tripped the protocol-v2 custody check inside the preflight suite; commit 9859c46 restored both protocol v2 pins to the amended authority, so the suite is GREEN at this head",
+      "detected_by": "PYTHONPATH=. python3 tests/simulation/test_issue419_exact_tree_preflight.py",
+      "finding_id": "PROTOCOL_V2_PREFLIGHT_PIN_STALE",
+      "introduced_by": "887e46a (task backlog-agg)",
+      "observed_at_this_head": "OK (24 tests)",
+      "observed_before_repair": "AssertionError: PROTOCOL_V2_BYTE_SHA256 74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350 != db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1",
+      "on_disk": {
+        "byte_sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+        "canonical_payload_sha256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de"
+      },
+      "owner": "the exact-tree preflight task; repaired at the pin source, no frozen byte moved",
+      "pin_matches_on_disk_bytes": true,
+      "repaired_by": "9859c46 (task backlog-911)",
+      "repaired_by_this_bundle": false,
+      "resolution": "REPAIRED_AT_THE_PIN_SOURCE_NO_FROZEN_BYTE_MOVED",
+      "restored_by": "c904524",
+      "status": "RESOLVED",
+      "tool": "tools/simulation/issue419_exact_tree_preflight.py",
+      "tool_pins": {
+        "PROTOCOL_V2_BYTE_SHA256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+        "PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de"
+      }
+    },
+    {
+      "after": {
+        "DECISION_V2.json": "4e220ecee2a8e3ac957c6b5d89ee79dd4f1920503de7442ea6b2e2e06ac7c882",
+        "EXACT_TREE_PREFLIGHT_V2.json": "9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2"
+      },
+      "before": {
+        "DECISION_V2.json": "ac291b9ed363080401e9649a30b157eec7f7b79d5d2dc6df70390ccebc67c4b5",
+        "EXACT_TREE_PREFLIGHT_V2.json": "2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691"
+      },
+      "blocks_ready_for_integration": false,
+      "closed_by": "backlog-hvp (this regeneration)",
+      "detail": "the integration bundle v2 bound EXACT_TREE_PREFLIGHT_V2.json and DECISION_V2.json to the pre-repair revisions that existed when it was authored; this regeneration re-binds both copies to the repaired revisions and both members re-verify byte-for-byte",
+      "detected_by": "python3 tools/training/build_hierarchical_integration_bundle_v2.py --check",
+      "finding_id": "INTEGRATION_BUNDLE_V2_PINS_PRE_REPAIR_REVISIONS",
+      "recorded_in": {
+        "byte_sha256": "0d530ad77555986028c15ebe98cb3bda366d68285afca6ad0633e2a0f3f5a177",
+        "finding_id": "INTEGRATION_BUNDLE_V2_PINS_PRE_REPAIR_REVISIONS",
+        "path": "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2/EVIDENCE_INTEGRITY_CORRECTION_V2.json",
+        "recorded_owner": "the #419 integration-bundle task (backlog-oso / T7), not this record"
+      },
+      "repaired_by_this_bundle": true,
+      "status": "CLOSED_BY_THIS_REGENERATION",
+      "touches_a_frozen_byte": false
+    }
+  ],
+  "reverified_by_this_tool": [
+    "the T1/T2/T3/T4/T5/T6/T7/T8 authority digests",
+    "every upstream content-addressed index and its object copies",
+    "the root ARTIFACTS.json / SUMMARY.md frozen bytes",
+    "the active Model A v5 reference and both registries",
+    "no holdout / hand-history file was opened (runtime tripwire)",
+    "no holdout loader symbol or module is referenced (AST scan)",
+    "no #367 Hero EV runner symbol is referenced (AST scan)",
+    "the preflight tool pins now equal the restored v1 / protocol v2 custody bytes (repaired by 9859c46), so issue419_exact_tree_preflight.py --check is GREEN",
+    "the repaired preflight v2 and terminal decision v2 revisions this bundle copies are the ones commits 9859c46 and 0f9a6eb wrote",
+    "the renewed frontier v2 custody the terminal decision v2 binds"
+  ],
+  "scenario_issue": 321,
+  "schema": "poker-hierarchical-integration-report/v2",
+  "source_issue": 388,
+  "verdict": {
+    "admissibility_class_counts": {
+      "EXACT_EMPIRICAL_STRONG": 0,
+      "EXACT_HIERARCHICAL_ESTIMATE": 0,
+      "EXACT_UNRESOLVED": 38
+    },
+    "admissible_exact_node_count": 0,
+    "admitted": false,
+    "blockers": [
+      "NO_ADMISSIBLE_POOLING_LEVEL",
+      "UNRESOLVED_RAISE_SIZING_FRONTIER",
+      "REFUSED_CALIBRATION",
+      "REFUSED_COVERAGE_FLOOR"
+    ],
+    "decision": "UNRESOLVED_HIERARCHICAL_TREE_GAP",
+    "exact_unresolved_node_count": 38,
+    "integration_ready": false,
+    "primary_blocker": "NO_ADMISSIBLE_POOLING_LEVEL",
+    "required_tree_complete": false,
+    "required_tree_node_count": 38,
+    "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "status": "BLOCKED_SCIENTIFIC"
+  }
+}

@@ -1,0 +1,1313 @@
+{
+  "architecture": {
+    "backoff_chain": [
+      "EXACT_HAND_CLASS_EXACT_PRICE",
+      "EXACT_EXACT_KEY_HIERARCHICAL",
+      "POSITIONAL_PRICE_PRIOR",
+      "UNRESOLVED"
+    ],
+    "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+    "contract_candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "estimator": "hierarchical_dirichlet_shrinkage",
+    "frozen_by_spec": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+    "hidden_hand_imputation": false,
+    "hyperparameters": {
+      "alpha_per_legal_marginal_action": 0.5,
+      "hierarchical_strength_kappa0": 16.0,
+      "hyperparameter_search_performed": false,
+      "hyperparameters_immutable_after_freeze": true,
+      "minimum_distinct_hands": 20,
+      "minimum_marginal_observations": 20,
+      "validation_used_for_hyperparameters": false
+    },
+    "identity_granularity": "hierarchical_exact_key",
+    "model_family": "MODEL_A_PREFLOP",
+    "nearest_context_fallback": false,
+    "nearest_price_fallback": false,
+    "pooling_levels": [
+      "L0_EXACT_KEY",
+      "L1_STACK_POOL",
+      "L2_POT_POOL",
+      "L3_RUNTIME_SUPPORT_CONTEXT",
+      "L4_POSITION_PRICE_PRIOR"
+    ],
+    "pseudo_observation": false,
+    "raise_sizing_policy": "exact-support-only",
+    "representative_price_fallback": false,
+    "spec_canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4"
+  },
+  "authoring_order": {
+    "canonical_payload_is_the_frozen_identity": true,
+    "evaluation_split_opened_during_authoring": false,
+    "protocol_written_and_hashed_before_validation_read": true,
+    "validation_read_before_protocol_hash": false
+  },
+  "calibration_and_admission": {
+    "active_pointer_mutation": "FORBIDDEN",
+    "admission_gates": [
+      {
+        "gate": "split_discipline",
+        "rule": "evaluate VALIDATION only; TEST stays unconsumed and unauthorized"
+      },
+      {
+        "gate": "coverage_floor",
+        "rule": "identifiable VALIDATION decisions >= 200 and distinct hands >= 100"
+      },
+      {
+        "gate": "candidate_not_inferior_to_active",
+        "rule": "paired candidate-minus-active 95% CI upper bound <= 0"
+      },
+      {
+        "gate": "candidate_not_inferior_to_v2",
+        "rule": "paired candidate-minus-#352-v2 95% CI upper bound <= 0"
+      },
+      {
+        "gate": "calibration_absolute",
+        "rule": "pooled ECE <= 0.05"
+      },
+      {
+        "gate": "calibration_delta_vs_active",
+        "rule": "candidate ECE minus active ECE <= 0.02"
+      },
+      {
+        "gate": "pooling_discipline",
+        "rule": "every answered decision carries pooling.level and pooling.source_key == requested_key"
+      },
+      {
+        "gate": "support_isolation",
+        "rule": "support.source_key == requested_key for every answered decision"
+      },
+      {
+        "gate": "exact_claim_discipline",
+        "rule": "EXACT_EMPIRICAL_STRONG is emitted only at L0_EXACT_KEY"
+      }
+    ],
+    "automatic_promotion": "FORBIDDEN",
+    "calibration": {
+      "bins_per_action_class": 10,
+      "method": "equal-count reliability bins",
+      "minimum_bin_support_for_a_calibration_claim": 20,
+      "report_pooling_level_always": true
+    },
+    "no_partial_admission": true,
+    "outcome_rule": "ADMIT_CANDIDATE only when every frozen gate passes; otherwise RETAIN_ACTIVE_REFERENCE",
+    "unresolved_nodes_do_not_fail_the_run": "a node that stays EXACT_UNRESOLVED is reported as such; it is neither an admission nor a defect, and it never blocks the outcome decision"
+  },
+  "candidate": {
+    "byte_sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+    "candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+    "canonical_payload_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+    "data_scope": "TRAIN_ONLY",
+    "fit_scope": "TRAIN_ONLY_FIT_COMPLETE",
+    "manifest_path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+    "manifest_sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+    "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json",
+    "status": "CANDIDATE_ONLY_NOT_ACTIVE"
+  },
+  "code": {
+    "cluster_id": "ISSUE419_HIERARCHICAL_VALIDATION_CODE_CLUSTER",
+    "frozen": true,
+    "inputs": [
+      {
+        "path": "tools/training/write_frozen_validation_protocol.py",
+        "role": "PROTOCOL_GENERATOR",
+        "sha256": "91332db8fb2d73d8affc5db270b77b4a69366eb88b33d14133d1656ec96be1b2"
+      },
+      {
+        "path": "tools/training/validation_order_guard.py",
+        "role": "ORDER_GUARD",
+        "sha256": "b64767fbdec889af59eaf5a0dcd66f8ac1925d76922c5a93036f9cf167179805"
+      },
+      {
+        "path": "tools/training/fit_model_a_preflop_sizing_hierarchical.py",
+        "role": "CANDIDATE_FIT_TOOL",
+        "sha256": "bf4f25e94630830aaf8c7915d47d5d7239640a569c1992cec5f3e9890cf3b852"
+      },
+      {
+        "path": "tools/preflop/model_a_sizing_hierarchical.py",
+        "role": "CANDIDATE_MODEL",
+        "sha256": "1cd25c17bc67c16e78d54fc105cf468e92d9dc7b27d4a5b259141715fd34be18"
+      },
+      {
+        "path": "tools/preflop/model_a_sizing_likelihood.py",
+        "role": "RUNTIME_SUPPORT_KEY_CONTRACT",
+        "sha256": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a"
+      },
+      {
+        "path": "tools/training/fit_model_a_preflop_sizing_v2.py",
+        "role": "COMPARATOR_V2_TOOL",
+        "sha256": "4c4a223f0adadb858ac4a38c6cec59d2f5cec5481bff0c4488f73c5a2d649403"
+      },
+      {
+        "path": "tools/training/audit_hierarchical_tree_sparsity.py",
+        "role": "SPARSITY_BASELINE_TOOL",
+        "sha256": "8fd510c24611bc1879871a4b0ba2b4978e5fead28e8d94979963b7b3c765ec11"
+      },
+      {
+        "path": "tools/training/audit_model_a_exact_tree.py",
+        "role": "REQUIRED_TREE_TOOL",
+        "sha256": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e"
+      }
+    ],
+    "order_guard_sha256": "b64767fbdec889af59eaf5a0dcd66f8ac1925d76922c5a93036f9cf167179805",
+    "protocol_generator_sha256": "91332db8fb2d73d8affc5db270b77b4a69366eb88b33d14133d1656ec96be1b2"
+  },
+  "comparators": {
+    "active_reference": {
+      "id": "active-model-a-preflop-v5",
+      "is_mutated_by_this_protocol": false,
+      "path": "training/models/preflop_population_model_v5.json",
+      "role": "ACTIVE_REFERENCE",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "candidate_v2_352": {
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "evidence_pinning": {
+        "fit_artifact": {
+          "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+          "path": "analysis/model_a_preflop_sizing_v2_fit.json",
+          "selected_prior_strength": 1,
+          "sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e"
+        },
+        "validation_evidence": {
+          "active_model_replaced": false,
+          "byte_sha256": "0e93640bd56e37d445438c9b663d2cb77b623f33d01dc91836ed12fd4651bf06",
+          "evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+          "outcome": "ADMIT_CANDIDATE",
+          "path": "analysis/model_a_preflop_sizing_v2_validation.json",
+          "self_reported_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+          "test_consumed": false
+        },
+        "validation_protocol": {
+          "frozen_train_fit_candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+          "path": "analysis/model_a_preflop_sizing_v2_validation_protocol.json",
+          "sha256": "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2",
+          "status": "FROZEN_BEFORE_VALIDATION"
+        }
+      },
+      "id": "model-a-preflop-sizing-aware-candidate-v2",
+      "issue": 352,
+      "re_reads_this_candidate_holdout": false,
+      "reused_role": "DESCRIPTIVE_PREDICTIVE_COMPARATOR_ONLY",
+      "role": "ADMITTED_EXACT_PRICE_COMPARATOR"
+    },
+    "comparator_count": 3,
+    "explicitly_listed": true,
+    "new_candidate": {
+      "byte_sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+      "canonical_payload_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+      "distinct_from_issue352_candidate": true,
+      "id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+      "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json",
+      "role": "CANDIDATE_UNDER_TEST",
+      "status": "CANDIDATE_ONLY_NOT_ACTIVE"
+    }
+  },
+  "evaluation": {
+    "outcome_rule": "ADMIT_CANDIDATE only when every frozen gate passes; otherwise RETAIN_ACTIVE_REFERENCE",
+    "population": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "result_path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "result_schema": "poker-hierarchical-validation-result/v1",
+    "split": "VALIDATION",
+    "test_authorized": false,
+    "test_consumed": false,
+    "universe": "non-Hero public preflop decisions of the #319/#321 focus families where the candidate and every comparator both answer the same exact requested key",
+    "unresolved_policy": "fails-closed decisions are reported and excluded from the paired predictive gates; they never score as correct by defaulting to FOLD"
+  },
+  "forbidden": [
+    "TEST",
+    "HERO_EV",
+    "MODEL_B",
+    "UI",
+    "NEAREST_PRICE",
+    "#314_REAL_OPTIMIZATION",
+    "ACTIVE_POINTER_MUTATION",
+    "AUTOMATIC_PROMOTION",
+    "HYPERPARAMETER_SEARCH_ON_VALIDATION",
+    "THRESHOLD_RELAXATION_AFTER_VALIDATION",
+    "POOLING_LIMIT_RELAXATION_AFTER_VALIDATION",
+    "CROSS_KEY_SUPPORT_BORROWING",
+    "HIDDEN_HAND_IMPUTATION",
+    "PSEUDO_OBSERVATION"
+  ],
+  "frozen_at": "2026-09-25T00:00:00Z",
+  "frozen_at_epoch": 1790294400,
+  "frozen_at_source": "explicit_freeze_timestamp_recorded_before_any_validation_read",
+  "holdout_boundary": {
+    "checks": [
+      {
+        "check": "self_source_scan_for_holdout_loaders",
+        "detail": "AST scan: the generator uses none of the forbidden holdout loader symbols, imports no validation/holdout module and declares no hand-history archive, decision JSONL or fixture snapshot path",
+        "exempt_result_path_literals": [
+          "FROZEN_VALIDATION_PROTOCOL.json",
+          "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+          "analysis/issue419_hierarchical_tree/validation_protocol/ARTIFACTS.json",
+          "analysis/issue419_hierarchical_tree/validation_protocol/FROZEN_VALIDATION_PROTOCOL.json",
+          "analysis/issue419_hierarchical_tree/validation_protocol/SUMMARY.md"
+        ],
+        "forbidden_data_path_shapes": [
+          "training/datasets/",
+          ".jsonl",
+          ".zip",
+          ".snapshots"
+        ],
+        "forbidden_symbols": [
+          "load_validation_records",
+          "validation_records",
+          "validation_hand_ids",
+          "VALIDATION_HANDS",
+          "load_holdout",
+          "holdout_records",
+          "build_validation_decisions",
+          "load_test_records",
+          "TEST_HANDS",
+          "test_hand_ids"
+        ],
+        "hits": [],
+        "holdout_looking_data_path_literals": [],
+        "holdout_looking_imports": [],
+        "result": "PASS"
+      },
+      {
+        "check": "self_source_scan_for_holdout_loaders",
+        "detail": "AST scan: the generator uses none of the forbidden holdout loader symbols, imports no validation/holdout module and declares no hand-history archive, decision JSONL or fixture snapshot path",
+        "exempt_result_path_literals": [
+          ".jsonl",
+          ".snapshots",
+          ".zip",
+          "FROZEN_VALIDATION_RESULT.json",
+          "VALIDATION_RESULT.json",
+          "analysis/issue419_hierarchical_tree/validation",
+          "analysis/issue419_hierarchical_tree/validation/FROZEN_VALIDATION_RESULT.json",
+          "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+          "training/datasets/"
+        ],
+        "forbidden_data_path_shapes": [
+          "training/datasets/",
+          ".jsonl",
+          ".zip",
+          ".snapshots"
+        ],
+        "forbidden_symbols": [
+          "load_validation_records",
+          "validation_records",
+          "validation_hand_ids",
+          "VALIDATION_HANDS",
+          "load_holdout",
+          "holdout_records",
+          "build_validation_decisions",
+          "load_test_records",
+          "TEST_HANDS",
+          "test_hand_ids"
+        ],
+        "hits": [],
+        "holdout_looking_data_path_literals": [],
+        "holdout_looking_imports": [],
+        "result": "PASS"
+      },
+      {
+        "candidate_reference_tokens": [
+          "model-a-preflop-sizing-hierarchical-candidate-v1",
+          "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+          "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999"
+        ],
+        "check": "no_candidate_validation_result_exists_before_freeze",
+        "declared_result_locations": [
+          "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+          "analysis/issue419_hierarchical_tree/validation/FROZEN_VALIDATION_RESULT.json"
+        ],
+        "declared_result_locations_present": [],
+        "excluded_from_scan": "protocol artifacts (schema/kind mentions protocol, or a *protocol* filename) and every result that does not reference the hierarchical candidate \u2014 including the #352 exact-price comparator, which consumed VALIDATION under its own frozen protocol",
+        "guard_id": "VALIDATION_ORDER_GUARD",
+        "result": "PASS",
+        "scanned_tree": "analysis/**/*.json",
+        "violations": []
+      },
+      {
+        "check": "no_hand_level_dataset_read",
+        "dataset_or_holdout_files_opened": [],
+        "detail": "the generator parses no hand-history archive and no decision JSONL; it consumes content-addressed evidence artifacts only. The build ran with a filesystem tripwire: any open under the certified dataset tree or of an archive/decision file aborts the build.",
+        "filesystem_open_tripwire_enabled": true,
+        "result": "PASS",
+        "tripwire_id": "DATASET_ACCESS_TRIPWIRE"
+      }
+    ],
+    "evaluation_split_opened_during_authoring": false,
+    "predecessor_validation_reads": [
+      {
+        "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+        "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+        "issue": 352,
+        "note": "recorded as evidence, not repaired: the #352 split consumption belongs to the exact-price candidate, so it neither violates nor satisfies this candidate order guard",
+        "outcome": "ADMIT_CANDIDATE",
+        "read_before_this_freeze": true,
+        "reads_this_candidate_holdout": false,
+        "scope": "DIFFERENT_CANDIDATE_UNDER_ITS_OWN_FROZEN_PROTOCOL",
+        "validation_evidence_byte_sha256": "0e93640bd56e37d445438c9b663d2cb77b623f33d01dc91836ed12fd4651bf06",
+        "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+        "validation_protocol_sha256": "5c7432e0f7008d27899d6d5ce33becbdd2ef29528f2aef66cc4373369311d6a2"
+      }
+    ],
+    "protocol_frozen_before_holdout_read": true,
+    "split_consumed_for_authoring": "TRAIN",
+    "test_consumed": false,
+    "test_decisions_read": 0,
+    "validation_consumed_for_authoring": false,
+    "validation_decisions_read": 0,
+    "validation_hands_parsed": 0,
+    "validation_read_before_protocol_hash": false
+  },
+  "issue": 419,
+  "issue367_rule": {
+    "authorized_at_freeze": false,
+    "authorized_when": [
+      "the frozen VALIDATION evaluation returns outcome=ADMIT_CANDIDATE",
+      "every frozen gate passes with the threshold values pinned in this protocol",
+      "the VALIDATION result is content-addressed (schema poker-hierarchical-validation-result/v1, embedded protocol_byte_sha256) and pinned in a new explicit #367 protocol revision",
+      "that #367 protocol revision names model_a.candidate_id=model-a-preflop-sizing-hierarchical-candidate-v1 and model_a.candidate_sha256=637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999"
+    ],
+    "consequence_when_forbidden": "no #367 real ISO EV run, no exact-support grid extension and no provider wiring may consume this candidate; #367 keeps its current admitted model",
+    "currently_admitted_model_a_for_367": {
+      "active_model_pointer_mutation": false,
+      "admission_decision": "ADMIT_CANDIDATE",
+      "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+      "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
+    },
+    "forbidden_while": [
+      "the outcome is RETAIN_ACTIVE_REFERENCE or the candidate stays UNRESOLVED",
+      "no ADMIT_CANDIDATE VALIDATION result exists for this candidate",
+      "the candidate SHA differs from the pinned canonical payload digest",
+      "a #367 run would change TEST consumption, Model B, Hero EV or the active Model A pointer"
+    ],
+    "hero_ev_consumed": false,
+    "model_b_consumed": false,
+    "promotion_performed": false,
+    "question": "is a #367 consumption of the hierarchical candidate authorized or forbidden?",
+    "rule_id": "ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE",
+    "test_consumed": false,
+    "unchanged_by_this_freeze": true
+  },
+  "kind": "FROZEN_VALIDATION_PROTOCOL",
+  "metrics": {
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "method": "paired_percentile_bootstrap",
+      "samples": 5000,
+      "seed": 419
+    },
+    "mandatory_reporting": "a pooled estimate is never scored without its pooling level; calibration must not be reported on pooled support as if it were exact support",
+    "paired_unit": "hand_id",
+    "pairing_rule": "a paired delta is computed only on decisions both models answer at the same requested key",
+    "primary": {
+      "definition": "mean over scored decisions of -ln p_hat(observed_action | requested_key)",
+      "epsilon_clip": 1e-12,
+      "name": "multiclass_log_loss",
+      "natural_log": true
+    },
+    "secondary": [
+      {
+        "definition": "sum over legal actions of (p_hat - 1[observed])^2",
+        "name": "brier_score"
+      },
+      {
+        "definition": "expected calibration error, 10 equal-count bins per action class",
+        "name": "ece"
+      },
+      {
+        "definition": "share of in-scope decisions answered with a non-UNRESOLVED reason code",
+        "name": "coverage"
+      },
+      {
+        "definition": "share of in-scope decisions that stay UNRESOLVED and emit no action",
+        "name": "abstain_rate"
+      },
+      {
+        "definition": "mean effective sample size of answered decisions",
+        "name": "mean_effective_sample_size"
+      }
+    ],
+    "stratification": [
+      "by reason_code",
+      "by pooling.level",
+      "by observations bucket",
+      "by distinct-hands bucket"
+    ]
+  },
+  "not_an_admission": "this protocol admits nothing by itself: it fixes the rules, the thresholds and the comparators before the VALIDATION holdout is opened",
+  "order_guard": {
+    "candidate_reference_tokens": [
+      "model-a-preflop-sizing-hierarchical-candidate-v1",
+      "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+      "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999"
+    ],
+    "check": "no_candidate_validation_result_exists_before_freeze",
+    "declared_result_locations": [
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "analysis/issue419_hierarchical_tree/validation/FROZEN_VALIDATION_RESULT.json"
+    ],
+    "declared_result_locations_present": [],
+    "detection": "declared result locations first, then a content scan of analysis/**/*.json for result-shaped payloads that declare a VALIDATION read and reference the candidate",
+    "enforced_by": "tools/training/validation_order_guard.py",
+    "evaluation_side_rule": "the evaluation command must call assert_protocol_frozen_before_validation() before it opens a single VALIDATION hand",
+    "excluded_from_scan": "protocol artifacts (schema/kind mentions protocol, or a *protocol* filename) and every result that does not reference the hierarchical candidate \u2014 including the #352 exact-price comparator, which consumed VALIDATION under its own frozen protocol",
+    "freeze_authored_before_validation": true,
+    "guard_id": "VALIDATION_ORDER_GUARD",
+    "guard_source_sha256": "b64767fbdec889af59eaf5a0dcd66f8ac1925d76922c5a93036f9cf167179805",
+    "result": "PASS",
+    "rule": "the freeze fails closed when a VALIDATION result that references the hierarchical candidate already exists",
+    "scanned_tree": "analysis/**/*.json",
+    "validation_read_before_freeze": false,
+    "violations": []
+  },
+  "output_schema": {
+    "every_decision_must_carry": [
+      "requested_key",
+      "reason_code",
+      "pooling.level",
+      "pooling.source_key",
+      "support.observations",
+      "support.distinct_hands",
+      "support.source_key",
+      "posterior"
+    ],
+    "evidence_digest_rule": "result.evidence_sha256 = canonical sha256 (sorted keys, compact separators) of the result payload without its own evidence_sha256 field",
+    "fixed_flags": {
+      "active_model_replaced": false,
+      "automatic_promotion": false,
+      "hero_ev_consumed": false,
+      "model_b_consumed": false,
+      "production_effect": "NONE",
+      "test_authorized": false,
+      "test_consumed": false
+    },
+    "outcome_enum": [
+      "ADMIT_CANDIDATE",
+      "RETAIN_ACTIVE_REFERENCE"
+    ],
+    "output_must_not_exist_before_the_freeze": true,
+    "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "required_fields": [
+      "schema",
+      "issue",
+      "phase",
+      "protocol_byte_sha256",
+      "protocol_canonical_payload_sha256",
+      "candidate",
+      "comparators",
+      "split",
+      "metrics",
+      "gate",
+      "outcome",
+      "coverage",
+      "evidence_sha256",
+      "test_consumed",
+      "test_authorized",
+      "production_effect",
+      "active_model_replaced",
+      "automatic_promotion",
+      "model_b_consumed",
+      "hero_ev_consumed"
+    ],
+    "schema": "poker-hierarchical-validation-result/v1"
+  },
+  "parent_issue": 314,
+  "pooling_limits": {
+    "acceptable_levels": [
+      {
+        "allowed_in_validation_output": true,
+        "level": "L0_EXACT_KEY",
+        "purpose": "SUPPORT_AND_IDENTITY",
+        "rank": 0,
+        "support_source_allowed": true
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L1_STACK_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 1,
+        "support_source_allowed": false
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L2_POT_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 2,
+        "support_source_allowed": false
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 3,
+        "support_source_allowed": false
+      },
+      {
+        "allowed_in_validation_output": true,
+        "level": "L4_POSITION_PRICE_PRIOR",
+        "purpose": "LAST_RESORT_PARAMETERS_ONLY",
+        "rank": 4,
+        "support_source_allowed": false
+      }
+    ],
+    "alpha_per_legal_marginal_action": 0.5,
+    "discipline": "an estimate reported above L0_EXACT_KEY is labelled EXACT_HIERARCHICAL_ESTIMATE, is never counted as exact support, and never satisfies an exact-support gate",
+    "fixed_shrinkage_strength_kappa0": 16.0,
+    "forbidden": [
+      "cross-key support borrowing",
+      "coarse-key support laundering",
+      "support counts smoothed across levels",
+      "nearest-price or nearest-context substitution",
+      "representative raise price",
+      "hidden-hand imputation",
+      "pseudo-observations",
+      "raising the 20/20 support thresholds after reading VALIDATION"
+    ],
+    "frozen": true,
+    "immutable_after_freeze": true,
+    "maximum_pooling_depth": 4,
+    "maximum_pooling_level_for_a_reported_estimate": "L4_POSITION_PRICE_PRIOR",
+    "maximum_pooling_level_for_an_exact_support_claim": "L0_EXACT_KEY",
+    "only_support_source_level": "L0_EXACT_KEY",
+    "rule_id": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+    "statement": "a key A may never be declared supported by observations of a different key B; support counts are exact and pooling only feeds the prior"
+  },
+  "predecessor_issues": [
+    321,
+    339,
+    352,
+    367,
+    388
+  ],
+  "priors_and_shrinkage": {
+    "base_prior": {
+      "actions": [
+        "FOLD",
+        "CALL",
+        "RAISE",
+        "JAM",
+        "CHECK_if_legal"
+      ],
+      "alpha_per_legal_marginal_action": 0.5,
+      "kind": "dirichlet",
+      "rationale": "weak uniform prior so sparse cells stay wide instead of collapsing to zero"
+    },
+    "blend": "p_hat(L_j) = (n_j * phat_j + kappa0 * p_hat(L_{j+1})) / (n_j + kappa0)",
+    "constraints": [
+      "a parent never changes actor/aggressor/target/to_call",
+      "a parent never adds support observations to the requested key",
+      "no cross-level smoothing of the support counts themselves"
+    ],
+    "estimator": "hierarchical_dirichlet_shrinkage",
+    "exact_weight": "w_exact = n0 / (n0 + kappa0), non-decreasing in n0",
+    "frozen": true,
+    "kappa0": 16.0,
+    "no_hidden_hand_imputation": true,
+    "no_pseudo_observation": true
+  },
+  "protocol_byte_sha256_location": "the protocol digest cannot live inside the protocol payload; it is recorded in FROZEN_VALIDATION_PROTOCOL.sha256 and validation_protocol/ARTIFACTS.json and re-verified by the evaluation-side order guard",
+  "protocol_name": "FROZEN_VALIDATION_PROTOCOL.json",
+  "publication": {
+    "active_model_pointer_mutation": false,
+    "active_reference_mutation": "FORBIDDEN",
+    "automatic_promotion": "FORBIDDEN",
+    "downstream": "only an ADMIT_CANDIDATE outcome may be consumed downstream; a rejected candidate leaves the active Model A v5 pointer unchanged",
+    "production_effect": "NONE"
+  },
+  "reproduction": {
+    "check_command": "python3 tools/training/write_frozen_validation_protocol.py --check",
+    "command": "python3 tools/training/write_frozen_validation_protocol.py"
+  },
+  "requirement_manifest": {
+    "every_node_must_be_answered_or_fail_closed": true,
+    "identity_granularity": "hierarchical_exact_key",
+    "manifest_canonical_sha256": "84997722e494f1cd8e63afa89e3898c9052307d5ff2dddb038d0a37b418fcd0a",
+    "manifest_id": "REQUIRED_TREE_NODES_38",
+    "node_count": 38,
+    "nodes": [
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+        "edge_count": 5,
+        "id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+        "path": "SB:ISO@5",
+        "runtime_exact_preflop_node_key": "MAPNODE_2d1c7cbb86c3fabad985ce36301dc3a3cc378c97595ac77b5221d4e26ebf4415",
+        "runtime_support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=ebdd6e0b41a62e1bc9f7dbb07345b3ec888c99efc29bed92515160fc99ab8fc2",
+        "edge_count": 5,
+        "id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+        "path": "SB:ISO@5:BB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_2600c38a4545ff21491d9f51d941b4250503cc2a8e933db210dcfeede37b7a98",
+        "runtime_support_context_key": "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4|public=a7e233cbb17db340a8f39361b08ba90c5e3422cfdfd0224dd6aca033bee5254a",
+        "edge_count": 5,
+        "id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_3a6961db2db1ff7ddc4c70bc0cb677dc7b0e98c97b965200b0a3f80356dd4b4b",
+        "runtime_support_context_key": "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2bd5e9af76e08890db692868f41e4cc4330677c546de73e52f0ef71cdc2247f",
+        "edge_count": 5,
+        "id": "f205810c4839cc1008610bb1ad87a6a296cf513cc8b8b3592c44249b3ab33ea4",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_70179831e2627b530b70b0f6444cc3dce1d25a8ddebe72ede48ea2892ba4c8d9",
+        "runtime_support_context_key": "MAPSUP_7f63b466f83f14f22a86:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=1c047e14f02bd05ff2f6ec45f2adc0b07db0576449ea4a7537dcd22e50c9067c",
+        "edge_count": 5,
+        "id": "b01046512efee292a217dde5bd3dc5549b5f1d1a22f4de6c6e3baa6c10bec67a",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100:SB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_ad0be264bf2a4374e53434ff9c805620bb4321dedba6b9b6d5cad67bacae8b11",
+        "runtime_support_context_key": "MAPSUP_977078c5cd1d396ffdde:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=3|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95|public=178a05fcc6bffba15bc408d0eb5ca9755663717c7578921f9b2e860e38a95d8b",
+        "edge_count": 5,
+        "id": "6911c7cb48a6a2fb8bb9778f39cf29bad91b7abaefae911f383514932dd2b598",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100:SB:CALL:BB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_74a325468e56813480ce4667d01909aee2943c302abd30947405731f514e0996",
+        "runtime_support_context_key": "MAPSUP_481f6bad2fba9a94b48f:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=4|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=0020904a47247270b12c055022c3700a94559316f8317e5a935d1072495356c4",
+        "edge_count": 5,
+        "id": "4087f0c8efc91c1b2a3f445302cc8bdba8b8a6e69324ff017ada2f43fb95508b",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100:SB:CALL:BB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_aea4e9624221cac57ded2f68d993b28a912b44d8b40095425674cfe1080db192",
+        "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=b2ece05f288c624dc10bf0dd60878fef7e0bf8c4acbe3ec7e7f4f253bd7d3b60",
+        "edge_count": 5,
+        "id": "c7030a04aebdd344027d7546c431aa7a13cc6f66247daea6e2b43ce3120b5703",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100:SB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_cbd2e3c40de0daff30750a417a70db43c6d0399bbe02c89ac6171bc66494c669",
+        "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95|public=c9550cf9d780bda980875292c067d269921b6de0de12497d84478996274874eb",
+        "edge_count": 5,
+        "id": "2d12402d24411ccd4e6027ab70a84cd579441467211acf5fd1d1f5866f6ccd87",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100:SB:FOLD:BB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_df120f28fee332733637e97b0ae90f9ace30b517915d0b3b76a0fef176d1f22c",
+        "runtime_support_context_key": "MAPSUP_35d624455b1e41782d8a:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=3|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=bcff9e5463ad7428c54f3f13e3895d3509128346d71bef7d3f7fa1342f18f031",
+        "edge_count": 5,
+        "id": "bb7e6df64e700d39a8d49b34f84b2766d0af617b8e64c33ae4db54d26a9f3e02",
+        "path": "SB:ISO@5:BB:CALL:CO:CALL:BTN:JAM@100:SB:FOLD:BB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_a77b3dc5aed3ffb51ba85370f763810bc3aea99d4c8b7b621d886442b9a22626",
+        "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=298241d5d97f8eacaaf46ecf11e688982d9c9ddbd343559db86d1635727a8225",
+        "edge_count": 5,
+        "id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+        "path": "SB:ISO@5:BB:CALL:CO:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_5dbf880a9604d5be9c70e8b19d7e78814e526e38f6936ac5ce402b3ed966e80f",
+        "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=223692443a9fa62fb78a818e80c9b20fb7f9f7e14f434e3f3d402d68e80a3b73",
+        "edge_count": 5,
+        "id": "df10c340efa286e36dcd5a6be2f07940a49ac786eae0c13c9b1c986dd29752a8",
+        "path": "SB:ISO@5:BB:CALL:CO:FOLD:BTN:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_0c7ed0428548306d80e08650cf70cb8d41c14ba73de04b48d33f5e6d83db5bdd",
+        "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=e936fc7e3647208d474ae69dfdf53c154b04c5a1bed941038ba198de7b946990",
+        "edge_count": 5,
+        "id": "6a7a98c82478e0cc739c9c9a50751b892b087e3902c2e5085f2a9adb5dc596d6",
+        "path": "SB:ISO@5:BB:CALL:CO:FOLD:BTN:JAM@100:SB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_e6714d167bd4be7f480aea90b91369f6ea056ff242f0611f980efcf42a85014e",
+        "runtime_support_context_key": "MAPSUP_0e1e89d7674e31372608:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=12386f31933668bfda35be438f6b3f29e3cedef9f6e084863cd8296bf515e078",
+        "edge_count": 5,
+        "id": "7ae0579a66304ad900f044afd7bfa04029cd7c4899875367a8721a62cf053a05",
+        "path": "SB:ISO@5:BB:CALL:CO:FOLD:BTN:JAM@100:SB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_6328d3e9f61a79d35d033d9343fd34fbb05de24f354beb71038ed4915a8f92bf",
+        "runtime_support_context_key": "MAPSUP_0a2bb2b3de4e00f07e2c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=BTN|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99|public=3483fabfd76ec1b2386dc74d1f3741a503c1e872ecd817810a069002c01317af",
+        "edge_count": 5,
+        "id": "734eeb07d849a9c5b3f111465fa13af71d78cd6ec6384ac10c1d0c9545776653",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_7c695a96787a44ed221db879075da4abf50ff559f178ca79857405354a5e85b7",
+        "runtime_support_context_key": "MAPSUP_93130b468f51ec39cfce:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=1|target=100|call=99"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=b1905749ed944a88c739ab90e09120b835a15b1e979061406506e849aace5ce5",
+        "edge_count": 5,
+        "id": "629727be5d7f746dd5dbb941effd9e16823cb93e1c2e19d55c0d4b77f56310bd",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100:BTN:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_806a27fb587429c24de30428cc3bd64d8677215d8bb4f1ba44f4f5c698d82bf4",
+        "runtime_support_context_key": "MAPSUP_ec92d49ccfe9a4277400:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95|public=5496e4c6be2c9d0750c25614da33b00b0a31ccbb3b9781f730731b29f57eb56d",
+        "edge_count": 5,
+        "id": "ae9030283b711afc8b60df92ea7bdd735b9c22d8d1967c57d70e7c9c4309f3f8",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100:BTN:CALL:SB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_6d07606210679083e98030c2c6b3270738846b7ec266cc1eb818e5f03aedadaa",
+        "runtime_support_context_key": "MAPSUP_8b9bf74986cfc53161b0:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=3|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=53e3ae16c00237f50f3d70dc4d8b7267d89f56c3802c36c46617ebe8f56749af",
+        "edge_count": 5,
+        "id": "66ed6f9352caf94fa236005162437dd4e9976f61a0c7f7de9f0ced1378be47c5",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100:BTN:CALL:SB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_3f7ab17316a2be6f6c08a16f956c2960c23f1bc2c9955fa00b39da5d3b4a6c49",
+        "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=c8e5b82391c0a00facb4e469459b737fa7ce410f8a91276cbccafd7a7ed6cc7f",
+        "edge_count": 5,
+        "id": "4d28d3cc7b63d5c7f74c42db1d4ae640a6ffc7cd7d042459cf3e5c519fc49b97",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100:BTN:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_f0c6e0270b5bef47ba7a3e8020483e904d115f608776708b537be11f904f76f6",
+        "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95|public=2516f2969a5e1c12ae53b3bbec37e1aa7178dcf78954c1462d68302e62745745",
+        "edge_count": 5,
+        "id": "47bdce68db1066fa54b2b40cd515bbf90662d9b50920f860541f56d1ea79da03",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100:BTN:FOLD:SB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_f9a06738e268e0f071587b40605c21fe5912289fc4138156202669272673beab",
+        "runtime_support_context_key": "MAPSUP_558c232bc50d6b7606e3:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=ad63c474fb8050b62a313bc4e8d4a9420174e2506b5bb8415d922a24e9d3a2c6",
+        "edge_count": 5,
+        "id": "3bba27143b49488f94c1a844c6dcf8d87a7a57bf8569be05fae0921fea9ed624",
+        "path": "SB:ISO@5:BB:CALL:CO:JAM@100:BTN:FOLD:SB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_2e21dfd7dc29d779e514b66cc357d80ef5ff66bd29ad99c478bd4fccf5c68723",
+        "runtime_support_context_key": "MAPSUP_2bad795691453491e334:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BB|aggressor=CO|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+        "edge_count": 5,
+        "id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+        "path": "SB:ISO@5:BB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_f03eb080b6331092395fd4e69c76adc4706fa9d44fb7054f0c3e35f4ddfc1f78",
+        "runtime_support_context_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=2b7c76eb49290b98d296d593a3f6c948c89a6bc71c93fdf55a62e7e25e54f69a",
+        "edge_count": 5,
+        "id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+        "path": "SB:ISO@5:BB:FOLD:CO:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_bc1e6aadedd2bd9d0cbcce7a4c54d8f3af4be57e12bcb7027c5d45cab09d5c66",
+        "runtime_support_context_key": "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=a98f4400811e36d77d9805677f205460d2a02b6219d51f1fc286ec346330005e",
+        "edge_count": 5,
+        "id": "4910b50cf1cdd1b97cfa26c1240e77aca8533ab773cd3926c09c60eb161cdece",
+        "path": "SB:ISO@5:BB:FOLD:CO:CALL:BTN:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_5feca1ad47f8e16e9e36fb6f38ca32e4a4fa75bc6847fa2c1296a5ad39f31c43",
+        "runtime_support_context_key": "MAPSUP_9ca12c6c595dc8381e2d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95|public=2e60666acae349984b67131e988825c257ce6bfa7675eb442186db9083644ec9",
+        "edge_count": 5,
+        "id": "c11e7e28432fc6ddc45b8d5943af30c6c0929dc288479e59601c77f26af02e19",
+        "path": "SB:ISO@5:BB:FOLD:CO:CALL:BTN:JAM@100:SB:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_a55ac22c3a38cd8156eb49d6c531845da4a1ecfb16a569e135591d4fedc535c9",
+        "runtime_support_context_key": "MAPSUP_b977edc6ea072a642c53:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95|public=ea05ac20d26ec53baa6330de73738c753610023f6891f514da6fcb1df8e8d305",
+        "edge_count": 5,
+        "id": "2b0b325852d542d87bcbe7ba9304db02db08bde65a7fab8bcf9db01cac63e6ad",
+        "path": "SB:ISO@5:BB:FOLD:CO:CALL:BTN:JAM@100:SB:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_b7bb2ea2fed23f7b43fc26cbe9170eef759be3ed41f7eb792ef103bcba37e0fa",
+        "runtime_support_context_key": "MAPSUP_804cae994a678c020d81:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BTN|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=bdad5deb937783aa8476196ec2e1c4c464d7221f1d6294d969906b68e0097b1f",
+        "edge_count": 5,
+        "id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+        "path": "SB:ISO@5:BB:FOLD:CO:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_2a816dad5861a8dcee48760db2c45069b6f6cbeaa2073e410cafa3f5377b50ff",
+        "runtime_support_context_key": "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95|public=f1713216c63d825dd796dbb37d839cf7ccf50a9f78d004e79f1ff27d2e5a033d",
+        "edge_count": 5,
+        "id": "3fd9ad542318313526bcc60e68ea07e536c20bc633598acdd0f61658fb0858b0",
+        "path": "SB:ISO@5:BB:FOLD:CO:FOLD:BTN:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_0a9dc47b5aad9c9902ec96c458166d331e4d30001687ff2a4a960b7cecbddbd0",
+        "runtime_support_context_key": "MAPSUP_4d86b5e7f1b41a98b330:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BTN|limpers=2|callers=0|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99|public=7d020171231b8dd37b5e37a7d66c4581fdef49e3e853294fe6eac52c4535bd2a",
+        "edge_count": 5,
+        "id": "af292e858c4e3ab89c1faaa4265fd220ef5bad5343eb5d473f88a20f8176ed49",
+        "path": "SB:ISO@5:BB:FOLD:CO:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_ae5454e47e2ab37e41567fe6bd82cf32a0fc4f05df499aea1b85449a317be533",
+        "runtime_support_context_key": "MAPSUP_1838dd2de778863f5f87:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=CO|limpers=2|callers=0|target=100|call=99"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95|public=484959c3f47532580632859efa53057a02d0b518212f023b07fc82166e3b478e",
+        "edge_count": 5,
+        "id": "7d26ac51d011e3fa724de90c68e063a7445eed1cd89fb2dfe91a469cc3897a00",
+        "path": "SB:ISO@5:BB:FOLD:CO:JAM@100:BTN:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_2bca64ee66905dc7a96cc42ff2ee92d99db0595e425424771cccb9ff94813e08",
+        "runtime_support_context_key": "MAPSUP_bc85a660ec7805f5ce9d:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95|public=c8b96c9cd625da7f93490ca5753e4a7558666a3e5155609a11489686c2ee2d68",
+        "edge_count": 5,
+        "id": "8abcc6ed6d665213f0ca942c803d149072bcf8571ea6ae85139284df9f70d8c1",
+        "path": "SB:ISO@5:BB:FOLD:CO:JAM@100:BTN:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_e138dd583cd0af30c485f419e7a8e74bd316d7550f24c25529019e5aedab3030",
+        "runtime_support_context_key": "MAPSUP_45040ea051da223529fd:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=CO|limpers=2|callers=0|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=33fabc7346d1e70256efde230154c21080d40b206f76c0d8f0c4c1c9ecc17d64",
+        "edge_count": 5,
+        "id": "d7d6ca98a026242055e196699a2bbe77d9be48beb229c2d5d9b34e0255248ada",
+        "path": "SB:ISO@5:BB:JAM@100",
+        "runtime_exact_preflop_node_key": "MAPNODE_da5e3bca849f8cbcaa8952f57df6354d0ce99dbb565f1a7ba44a41431f04c78e",
+        "runtime_support_context_key": "MAPSUP_b39c9d9c05289571370c:family=CALLER_VS_SQUEEZE_OR_3BET|actor=CO|aggressor=BB|limpers=2|callers=0|target=100|call=99"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99|public=d062b9d8f0c739e7a2da63ab6f97d03135fa65e524a1e452473898b588bfd617",
+        "edge_count": 5,
+        "id": "857419f1860beb31906c980849a219bab6d2feab9604fc8545bbaa8efe343aab",
+        "path": "SB:ISO@5:BB:JAM@100:CO:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_8f22f720aa1621127c72f0bf5b9e9ef7c54e1ab2ed545c749ff59c8cba09eff4",
+        "runtime_support_context_key": "MAPSUP_48681c5b3cbe931f253d:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=1|target=100|call=99"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95|public=683092a612139c237e14e7515450f95cdf49d38068a0f7b2632af5b996055a66",
+        "edge_count": 5,
+        "id": "b1dc19c37214e8abfd75784132d1f6f519ef6934c008dbcffd7fa302541cdcf6",
+        "path": "SB:ISO@5:BB:JAM@100:CO:CALL:BTN:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_db22d93e3aeb493ab24ca1f5129fa5d6431f2b1c73b6078b6f709b044e408a73",
+        "runtime_support_context_key": "MAPSUP_e80886ed50b9ab97df51:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=2|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=7db167a29a0566237d4cd914609c5dfd49335a54929ac09355fa1ead58dcac1e",
+        "edge_count": 5,
+        "id": "4d0a924f8d2997df417e6cb66d16486bf8e07180915376f014c06607bea123f4",
+        "path": "SB:ISO@5:BB:JAM@100:CO:CALL:BTN:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_42bd68ce6f69e67a391a83fdcb6ebfbf063bbca11ce410dfb10ad980b16e139e",
+        "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99|public=a00499e81ff19cbc7dcaf4e3755fbc446ea59108cea73b7ec44346236270e3e5",
+        "edge_count": 5,
+        "id": "e3bdbcf92a3e45dc48dec6de365cda2d365a85ef238b0ce2f2974bba98739bae",
+        "path": "SB:ISO@5:BB:JAM@100:CO:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_857c59a53ec46ee7cb315334a15f5827410703e755e1a645b51aa54f1bda2b79",
+        "runtime_support_context_key": "MAPSUP_f42c6bd796b68c0ad5d2:family=CALLER_VS_SQUEEZE_OR_3BET|actor=BTN|aggressor=BB|limpers=2|callers=0|target=100|call=99"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95|public=ea2ecf1bc79c21f91e303caa79cd33c585855b8cef19c954a1d65b977841d672",
+        "edge_count": 5,
+        "id": "8b3ba0ac09e6229be6b4e8dd044a4f1484cbe8f56d46de6dc783d87de699d1a9",
+        "path": "SB:ISO@5:BB:JAM@100:CO:FOLD:BTN:CALL",
+        "runtime_exact_preflop_node_key": "MAPNODE_bb7f2d3f3ea3feddb1ef5d1caaf348f863fb53c84746d76dcb478dfc0c84c8f4",
+        "runtime_support_context_key": "MAPSUP_247d2f854180b715ce49:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=1|target=100|call=95"
+      },
+      {
+        "actions": [
+          "CALL",
+          "CHECK",
+          "FOLD",
+          "JAM",
+          "RAISE"
+        ],
+        "audit_exact_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95|public=fdb55cdac03e5208165b695f305bc5d92011341ee29b4f94bda2fff94057771c",
+        "edge_count": 5,
+        "id": "ab9a36e3aca3b45bb9b84678d9802336393cd0e4d4f01efd54106aefcbddd61f",
+        "path": "SB:ISO@5:BB:JAM@100:CO:FOLD:BTN:FOLD",
+        "runtime_exact_preflop_node_key": "MAPNODE_a5c4aec10f59da739eac1eccacdeb9cd6c4628ef4cc724e2ca25ff5307dc22e2",
+        "runtime_support_context_key": "MAPSUP_7c3bf20b685228d7e29f:family=OPENER_OR_ISO_VS_3BET|actor=SB|aggressor=BB|limpers=2|callers=0|target=100|call=95"
+      }
+    ],
+    "reference_artifact": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+    "reference_issue": 388,
+    "required_tree_byte_sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+    "required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "support_isolation_rule": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+    "tree_enumeration_complete": false,
+    "unresolved_sizing_frontier_count": 7
+  },
+  "schema": "poker-hierarchical-frozen-validation-protocol/v1",
+  "seeds": {
+    "deterministic_reproduction": true,
+    "policy": "DETERMINISTIC_NO_RANDOMNESS",
+    "purpose": "the frozen estimator is a closed-form Dirichlet shrinkage; the recorded seed only pins observation ordering and tie-breaking, no sampling is performed",
+    "random_seed": 419,
+    "rng_algorithm": "none",
+    "stochastic_draws": 0
+  },
+  "spec_frozen_date": "2026-09-25",
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "thresholds": {
+    "abstention_is_not_a_failure": true,
+    "coverage_is_not_an_admission_gate": "a lower coverage than the active reference never counts as an admission and never justifies lowering a frozen support threshold; fail-closed abstention is correctness",
+    "exact_claim_requires": "L0_EXACT_KEY meeting both the 20-observation and 20-distinct-hands thresholds",
+    "frozen": true,
+    "immutable_after_freeze": true,
+    "maximum_absolute_ece": 0.05,
+    "maximum_ece_delta_vs_active": 0.02,
+    "minimum_distinct_hands": 20,
+    "minimum_identifiable_validation_decisions": 200,
+    "minimum_identifiable_validation_hands": 100,
+    "minimum_marginal_observations": 20,
+    "non_inferiority_ci_upper_bound": 0.0
+  },
+  "train_corpus": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "unique_hands": 27164
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+        "unique_hands": 11896
+      }
+    ],
+    "certification": {
+      "certified_split_counts": {
+        "TEST": 2449,
+        "TRAIN": 19016,
+        "VALIDATION": 2324
+      },
+      "path": "training/datasets/NLHE_100-200/population_certification.json",
+      "sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6"
+    },
+    "consumed_artifacts": [
+      {
+        "canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+        "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+        "role": "FROZEN_ARCHITECTURE_SPEC",
+        "sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c"
+      },
+      {
+        "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+        "role": "TRAIN_SPARSITY_BASELINE",
+        "sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36"
+      },
+      {
+        "canonical_payload_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+        "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json",
+        "role": "TRAIN_FIT_CANDIDATE",
+        "sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534"
+      },
+      {
+        "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+        "role": "TRAIN_FIT_MANIFEST",
+        "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
+      },
+      {
+        "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+        "role": "TRAIN_FIT_REPORT",
+        "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+      },
+      {
+        "canonical_payload_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+        "path": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+        "role": "REQUIRED_TREE",
+        "sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c"
+      },
+      {
+        "canonical_payload_sha256": "dc6590ae04a9fa3714e3a739d7c850a83fbde33466e2fc31ac56e16864eea1e2",
+        "path": "analysis/issue388_exact_tree/TRAIN_RESPONSE_TREE_SUPPORT.json",
+        "role": "TRAIN_SUPPORT_MATRIX",
+        "sha256": "9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053"
+      },
+      {
+        "canonical_payload_sha256": "87cf59a2bc258f0d86ef085232b8db6bc422413ee4086dc6c203459560abc374",
+        "path": "analysis/issue388_exact_tree/DECISION.json",
+        "role": "FEASIBILITY_DECISION",
+        "sha256": "7eb50d70b6a0af70e18895183303795d94951d44d5fd1971ab7d28b909c52472"
+      }
+    ],
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "split_consumed_for_authoring": "TRAIN",
+    "test_consumed_for_authoring": false,
+    "train_decision_rows_parsed": 101848,
+    "train_hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+    "train_hands_parsed": 19016,
+    "validation_consumed_for_authoring": false
+  }
+}

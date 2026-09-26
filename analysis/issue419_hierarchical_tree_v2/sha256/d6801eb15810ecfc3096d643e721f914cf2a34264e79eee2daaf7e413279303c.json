@@ -1,0 +1,396 @@
+{
+  "active_model_pointer": {
+    "after": {
+      "training/models/postflop_population_model_v5.json": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "before": {
+      "training/models/postflop_population_model_v5.json": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+      "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+      "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    },
+    "mutated": false,
+    "protected_files": [
+      "training/registry.json",
+      "training/populations/registry.json",
+      "training/models/preflop_population_model_v5.json",
+      "training/models/postflop_population_model_v5.json"
+    ]
+  },
+  "aggregate": {
+    "nodes_total": 38,
+    "pooling_level_counts": {},
+    "raise_sizing_unresolved_nodes": 7,
+    "resolved_nodes": 0,
+    "status_counts": {
+      "EXACT_UNRESOLVED": 38
+    },
+    "unresolved_nodes": 38,
+    "unresolved_reason_counts": {
+      "NO_ADMISSIBLE_POOLING_LEVEL": 31,
+      "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE": 7
+    }
+  },
+  "candidate": {
+    "active_model_replaced": false,
+    "artifact": {
+      "canonical_payload_sha256": "637302885b8119e6b0246d827462c36eb707c6e234d0b652483c956f03360999",
+      "distinct_exact_keys": 106,
+      "observations": 192,
+      "path": "CANDIDATE.json",
+      "sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
+      "unresolved_raise_frontier_paths": [
+        [
+          "SB:ISO@5"
+        ],
+        [
+          "SB:ISO@5",
+          "BB:CALL"
+        ],
+        [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL"
+        ],
+        [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:FOLD"
+        ],
+        [
+          "SB:ISO@5",
+          "BB:FOLD"
+        ],
+        [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:CALL"
+        ],
+        [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:FOLD"
+        ]
+      ],
+      "unresolved_raise_frontiers": [
+        "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+        "MAPSUP_6fceb0ce24639d1f2781:family=LIMPER_VS_ISO_CALLERS|actor=CO|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=ebdd6e0b41a62e1bc9f7dbb07345b3ec888c99efc29bed92515160fc99ab8fc2",
+        "MAPSUP_c186370bb758f81933ad:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=2|target=5|call=4|public=a7e233cbb17db340a8f39361b08ba90c5e3422cfdfd0224dd6aca033bee5254a",
+        "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+        "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=298241d5d97f8eacaaf46ecf11e688982d9c9ddbd343559db86d1635727a8225",
+        "MAPSUP_c6d4a8d38f48d52660e8:family=LIMPER_VS_ISO_CALLERS|actor=BTN|aggressor=SB|limpers=2|callers=1|target=5|call=4|public=2b7c76eb49290b98d296d593a3f6c948c89a6bc71c93fdf55a62e7e25e54f69a",
+        "MAPSUP_d5960fe1435a1294a896:family=LIMPER_VS_ISO|actor=BTN|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=bdad5deb937783aa8476196ec2e1c4c464d7221f1d6294d969906b68e0097b1f"
+      ]
+    },
+    "candidate_instance_id": "model-a-preflop-sizing-hierarchical-train-fit-419-v1",
+    "contract_candidate_id": "model-a-preflop-sizing-hierarchical-candidate-v1",
+    "distinct_from": {
+      "exact_price_candidate_ids": [
+        "model-a-preflop-sizing-aware-candidate-v1",
+        "model-a-preflop-sizing-aware-candidate-v2"
+      ],
+      "issue_352_candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "issue_352_candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "issue_388_artifact": "analysis/issue388_exact_tree/DECISION.json",
+      "issue_388_decision": "UNRESOLVED_EXACT_TREE_GAP",
+      "issue_388_fit_created": false
+    },
+    "identity_granularity": "hierarchical_exact_key",
+    "model_family": "MODEL_A_PREFLOP",
+    "nearest_context_fallback": false,
+    "nearest_price_fallback": false,
+    "representative_price_fallback": false,
+    "status": "CANDIDATE_ONLY_NOT_ACTIVE",
+    "support_isolation_rule": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+    "support_level": "L0_EXACT_KEY"
+  },
+  "code": {
+    "dependencies": [
+      {
+        "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+        "sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c"
+      },
+      {
+        "path": "analysis/issue419_hierarchical_tree/model_spec/ARTIFACTS.json",
+        "sha256": "02e4217acc5b9155a5d75f932592efb300f2c4189f11eb5a555fde8ceb83afd0"
+      },
+      {
+        "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+        "sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36"
+      },
+      {
+        "path": "analysis/issue419_hierarchical_tree/ARTIFACTS.json",
+        "sha256": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768"
+      },
+      {
+        "path": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+        "sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c"
+      },
+      {
+        "path": "analysis/issue388_exact_tree/TRAIN_RESPONSE_TREE_SUPPORT.json",
+        "sha256": "9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053"
+      },
+      {
+        "path": "analysis/issue388_exact_tree/DECISION.json",
+        "sha256": "7eb50d70b6a0af70e18895183303795d94951d44d5fd1971ab7d28b909c52472"
+      },
+      {
+        "path": "analysis/issue388_exact_tree/ARTIFACTS.json",
+        "sha256": "9bbb027216d2f978d98ec4c7411563abab6b563e681e3d2962b92bb260757a45"
+      },
+      {
+        "path": "analysis/model_a_preflop_sizing_v2_fit.json",
+        "sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e"
+      },
+      {
+        "path": "analysis/preflop_sizing_support_train.full.json.gz",
+        "sha256": "5793d417676dfb556d1f8c9fda84ac648463e0dedfba2c4d23e9922ac3e5236c"
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/population_certification.json",
+        "sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6"
+      },
+      {
+        "path": "training/models/preflop_population_model_v5.json",
+        "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+      },
+      {
+        "path": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+        "sha256": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf"
+      },
+      {
+        "path": "tools/preflop/model_a_sizing_hierarchical.py",
+        "sha256": "1cd25c17bc67c16e78d54fc105cf468e92d9dc7b27d4a5b259141715fd34be18"
+      },
+      {
+        "path": "tools/preflop/model_a_sizing_likelihood.py",
+        "sha256": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a"
+      },
+      {
+        "path": "tools/preflop/policy_context.py",
+        "sha256": "3377462b58f20ece74782c9f13a21f7b9de9b79b507ec441e4676c001d7f4ebe"
+      },
+      {
+        "path": "tools/training/audit_model_a_exact_tree.py",
+        "sha256": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e"
+      },
+      {
+        "path": "tools/training/audit_hierarchical_tree_sparsity.py",
+        "sha256": "8fd510c24611bc1879871a4b0ba2b4978e5fead28e8d94979963b7b3c765ec11"
+      },
+      {
+        "path": "tools/training/write_hierarchical_model_spec.py",
+        "sha256": "e0d2f7a44c3a2adfb5f7681b3396733cc07596e747b9740c3b7ddd23f3e829ff"
+      },
+      {
+        "path": "tools/training/increment_decisions.py",
+        "sha256": "2074f28eac4b2c844bd4eb27bfc6afba2c07c1636112e4d1fe328a9a7efea3e5"
+      },
+      {
+        "path": "tools/training/audit_hero_preflop_coverage.py",
+        "sha256": "2544732d39776a9b8d75bba4bddca29462a1b9c8d26e607693a59e25e0cf7184"
+      },
+      {
+        "path": "tools/training/fit_model_a_preflop_sizing_hierarchical.py",
+        "sha256": "bf4f25e94630830aaf8c7915d47d5d7239640a569c1992cec5f3e9890cf3b852"
+      }
+    ],
+    "fit_tool": {
+      "path": "tools/training/fit_model_a_preflop_sizing_hierarchical.py",
+      "sha256": "bf4f25e94630830aaf8c7915d47d5d7239640a569c1992cec5f3e9890cf3b852"
+    }
+  },
+  "corpus": {
+    "archives": [
+      {
+        "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+        "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+        "unique_hands": 27164
+      },
+      {
+        "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+        "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+        "unique_hands": 11896
+      }
+    ],
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "certified_split_counts": {
+      "TEST": 2449,
+      "TRAIN": 19016,
+      "VALIDATION": 2324
+    },
+    "in_scope_observations": 192,
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "train_decision_rows_parsed": 101848,
+    "train_hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+    "train_hands_parsed": 19016
+  },
+  "evidence_bindings": {
+    "canonical_fixture_sha256": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+    "hierarchy_spec_canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+    "hierarchy_spec_schema": "poker-hierarchical-exact-context-model-spec/v1",
+    "issue319_support_report_sha256": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+    "issue352_fit_artifact_sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e",
+    "issue388_decision_sha256": "87cf59a2bc258f0d86ef085232b8db6bc422413ee4086dc6c203459560abc374",
+    "issue388_required_tree_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+    "issue388_train_support_sha256": "dc6590ae04a9fa3714e3a739d7c850a83fbde33466e2fc31ac56e16864eea1e2",
+    "reference_model_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "sparsity_baseline_canonical_payload_sha256": "2d3fccc0a84e130ba483b8766ff96bc6467ad8260cfa64ae8c36e9cf662b6e2f"
+  },
+  "fit": {
+    "data_scope": "TRAIN_ONLY",
+    "observation_scope": "REQUIRED_HIERARCHICAL_TREE_KEYS",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "scope": "TRAIN_ONLY_FIT_COMPLETE",
+    "split_consumed": "TRAIN",
+    "test_consumed": false,
+    "test_decisions_read": 0,
+    "validation_consumed": false,
+    "validation_decisions_read": 0
+  },
+  "fit_report": {
+    "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+    "path": "TRAIN_FIT_REPORT.json",
+    "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+  },
+  "holdout_boundary": {
+    "holdout_access_scan": "PASS",
+    "spec_hash_pinned_before_fit": true,
+    "split_consumed": "TRAIN",
+    "test_consumed": false,
+    "test_decisions_read": 0,
+    "validation_consumed": false,
+    "validation_decisions_read": 0
+  },
+  "hyperparameters": {
+    "alpha_per_legal_marginal_action": 0.5,
+    "blend": "p_hat(L_j) = (n_j * phat_j + kappa0 * p_hat(L_{j+1})) / (n_j + kappa0)",
+    "confidence_level": 0.9,
+    "estimator": "hierarchical_dirichlet_shrinkage",
+    "exact_weight": "w_exact = n0 / (n0 + kappa0), non-decreasing in n0",
+    "frozen": true,
+    "frozen_by_spec": "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
+    "hierarchical_strength_kappa0": 16.0,
+    "hyperparameter_search_performed": false,
+    "minimum_distinct_hands": 20,
+    "minimum_marginal_observations": 20,
+    "parent_dominated_flag_below": 0.5,
+    "pooling_levels": [
+      {
+        "drops": [],
+        "equals_runtime_provider_key": false,
+        "level": "L0_EXACT_KEY",
+        "purpose": "SUPPORT_AND_IDENTITY",
+        "rank": 0,
+        "support_source_allowed": true
+      },
+      {
+        "drops": [
+          "effective_stack_bucket"
+        ],
+        "equals_runtime_provider_key": false,
+        "level": "L1_STACK_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 1,
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb"
+        ],
+        "equals_runtime_provider_key": false,
+        "level": "L2_POT_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 2,
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level"
+        ],
+        "equals_runtime_provider_key": true,
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 3,
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "equals_runtime_provider_key": false,
+        "level": "L4_POSITION_PRICE_PRIOR",
+        "purpose": "LAST_RESORT_PARAMETERS_ONLY",
+        "rank": 4,
+        "support_source_allowed": false
+      }
+    ],
+    "recursion": "resolved bottom-up from L4; L4 prior is the base Dirichlet; a parent is only entered when the child level is below threshold",
+    "validation_used_for_hyperparameters": false
+  },
+  "issue": 419,
+  "kind": "TRAIN_ONLY_FITTED_CANDIDATE_MANIFEST",
+  "priors_and_shrinkage": {
+    "base_prior": {
+      "actions": [
+        "FOLD",
+        "CALL",
+        "RAISE",
+        "JAM",
+        "CHECK_if_legal"
+      ],
+      "alpha_per_legal_marginal_action": 0.5,
+      "kind": "dirichlet",
+      "rationale": "weak uniform prior so sparse cells stay wide instead of collapsing to zero"
+    },
+    "blend": "p_hat(L_j) = (n_j * phat_j + kappa0 * p_hat(L_{j+1})) / (n_j + kappa0)",
+    "constraints": [
+      "a parent never changes actor/aggressor/target/to_call",
+      "a parent never adds support observations to the requested key",
+      "no cross-level smoothing of the support counts themselves"
+    ],
+    "estimator": "hierarchical_dirichlet_shrinkage",
+    "exact_weight": "w_exact = n0 / (n0 + kappa0), non-decreasing in n0",
+    "kappa0": 16.0,
+    "kappa0_continuity": "kappa0=16 toward the same support_context_key marginal reproduces the #352/#388 prospective_shrinkage rule; here that parent is the explicit level L3_RUNTIME_SUPPORT_CONTEXT",
+    "no_hidden_hand_imputation": true,
+    "no_pseudo_observation": true
+  },
+  "reproduction": {
+    "check_command": "python3 tools/training/fit_model_a_preflop_sizing_hierarchical.py --check",
+    "command": "python3 tools/training/fit_model_a_preflop_sizing_hierarchical.py"
+  },
+  "schema": "poker-hierarchical-candidate-manifest/v1",
+  "seeds": {
+    "deterministic_reproduction": true,
+    "policy": "DETERMINISTIC_NO_RANDOMNESS",
+    "purpose": "the frozen estimator is a closed-form Dirichlet shrinkage; the recorded seed only pins observation ordering and tie-breaking, no sampling is performed",
+    "random_seed": 419,
+    "rng_algorithm": "none",
+    "stochastic_draws": 0
+  },
+  "thresholds": {
+    "frozen": true,
+    "minimum_distinct_hands": 20,
+    "minimum_marginal_observations": 20
+  }
+}

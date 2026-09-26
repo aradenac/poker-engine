@@ -1,0 +1,11 @@
+{
+  "HIERARCHICAL_MODEL_SPEC.json": {
+    "canonical_payload_sha256": "d4885e9d148e3a0246968168e246644d4dc81965383447bc74b3c8ca3c3541d4",
+    "object": "sha256/5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c.json",
+    "sha256": "5be122e54e9ee07313a7efa0e0a6dbf4e195eceacf78287a9ac5a448964d105c"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/d29147af03671264fbf53a6ba4f9678dfc81247e4f64ca27989dd859df52ea2e.md",
+    "sha256": "d29147af03671264fbf53a6ba4f9678dfc81247e4f64ca27989dd859df52ea2e"
+  }
+}

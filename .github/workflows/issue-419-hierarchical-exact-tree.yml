@@ -1,0 +1,232 @@
+name: Execute issue 419 hierarchical exact tree
+
+# Issue #419 delivers the hierarchical exact-context model A preflop sizing
+# candidate. Every claim it makes is asserted by a frozen, offline suite:
+#
+#   * `tests/training/test_frozen_validation_protocol.py` and
+#     `tests/training/test_frozen_validation_protocol_v2.py` fail closed on
+#     protocol/hash drift, on a VALIDATION/TEST re-run and on the TRAIN /
+#     VALIDATION / TEST boundary;
+#   * `tests/simulation/test_issue419_exact_tree_preflight.py` fails closed on
+#     exact-tree preflight semantics, on nearest-price/context substitution and
+#     on support laundering, and asserts the absence of a Hero EV;
+#   * `tests/preflop/test_model_a_sizing_hierarchical.py` fails closed on key
+#     identity, admissible-support collapse and pooling provenance;
+#   * `test_hierarchical_candidate_contract` / `_model_spec` /
+#     `_tree_sparsity_parity` fail closed on candidate and pointer identity;
+#   * `test_hierarchical_terminal_decision` fails closed on decision coherence;
+#   * `test_hierarchical_train_fit` / `_validation_evaluation` /
+#     `_exact_context_contract_doc` / `test_raise_sizing_frontier_resolution`
+#     pin the fit, the measured VALIDATION calibration, the documented contract
+#     and the unresolved RAISE sizing frontiers.
+#
+# This workflow is the authoritative runner: it executes each of those suites as
+# a real step (not a declaration) and then re-proves that no suite went missing.
+# The no-op guard's `required` tuple spans the union the audit declares
+# (`ISSUE_419_SUITES ∪ ISSUE_419_EXTRA_SUITES` in
+# `tests/test_github_workflow_audit.py`) plus `tests/ci/test_consolidation_decision.py`,
+# the #204 consolidation-decision mutation guard the branch modified and no other
+# workflow runs.
+# Its `paths` filters must cover every file #419 ships; that coverage, the
+# no-op guard, and the simulated drift/substitution negatives are asserted by
+# `tests/test_github_workflow_audit.py`, run as its own visible step below.
+# It is read-only: it publishes no artifact and mutates no evidence digest.
+# `HISTORICAL_EVIDENCE_SHA256` in tools/audit_github_workflows.py is never
+# touched by this change.
+
+on:
+  push:
+    paths:
+      # production surface: the hierarchical provider, the exact-tree preflight
+      # and every tools/training helper #419 ships (`*hierarchical*` is the
+      # family glob, the frozen-protocol/wall/order/frontier scripts are named).
+      - 'tools/preflop/model_a_sizing_hierarchical.py'
+      - 'tools/simulation/issue419_exact_tree_preflight.py'
+      - 'tools/training/*hierarchical*'
+      - 'tools/training/write_frozen_validation_protocol.py'
+      - 'tools/training/write_frozen_validation_protocol_v2.py'
+      - 'tools/training/validation_order_guard.py'
+      - 'tools/training/resolve_raise_sizing_frontiers.py'
+      # the two audit generators this job actually executes
+      - 'tools/audit_github_workflows.py'
+      - 'tools/audit_active_workflow_dag.py'
+      # candidate contract (the #419 contract and its #388 sibling)
+      - 'contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json'
+      - 'contracts/training/model-a-preflop-sizing-likelihood.schema.json'
+      # the entire #419 test surface
+      - 'tests/**'
+      # documentation
+      - 'docs/hierarchical-exact-context-*.md'
+      - 'docs/model-a-posterior-runtime.md'
+      - 'docs/reviewer-preflop-iso-analysis.md'
+      - 'docs/ci-workflow-dag.md'
+      # decision records
+      - '.project/decisions/*hierarchical*.md'
+      - '.project/decisions/*exact-tree*.md'
+      # content-addressed evidence
+      - 'analysis/issue419_hierarchical_tree/**'
+      - 'analysis/issue419_hierarchical_tree_v2/**'
+      - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
+      - 'analysis/workflow_audit/workflows.json'
+      - 'analysis/workflow_audit/active_workflow_dag_v2.json'
+      - 'analysis/workflow_audit/consolidation_decision_v1.json'
+      - '.github/workflows/issue-419-hierarchical-exact-tree.yml'
+  pull_request:
+    paths:
+      - 'tools/preflop/model_a_sizing_hierarchical.py'
+      - 'tools/simulation/issue419_exact_tree_preflight.py'
+      - 'tools/training/*hierarchical*'
+      - 'tools/training/write_frozen_validation_protocol.py'
+      - 'tools/training/write_frozen_validation_protocol_v2.py'
+      - 'tools/training/validation_order_guard.py'
+      - 'tools/training/resolve_raise_sizing_frontiers.py'
+      - 'tools/audit_github_workflows.py'
+      - 'tools/audit_active_workflow_dag.py'
+      - 'contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json'
+      - 'contracts/training/model-a-preflop-sizing-likelihood.schema.json'
+      - 'tests/**'
+      - 'docs/hierarchical-exact-context-*.md'
+      - 'docs/model-a-posterior-runtime.md'
+      - 'docs/reviewer-preflop-iso-analysis.md'
+      - 'docs/ci-workflow-dag.md'
+      - '.project/decisions/*hierarchical*.md'
+      - '.project/decisions/*exact-tree*.md'
+      - 'analysis/issue419_hierarchical_tree/**'
+      - 'analysis/issue419_hierarchical_tree_v2/**'
+      - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
+      - 'analysis/workflow_audit/workflows.json'
+      - 'analysis/workflow_audit/active_workflow_dag_v2.json'
+      - 'analysis/workflow_audit/consolidation_decision_v1.json'
+      - '.github/workflows/issue-419-hierarchical-exact-tree.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-419-hierarchical-exact-tree-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so the path-coverage guard can diff the runner's
+          # triggers against the real #419 change surface instead of a list.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - name: Compile #419 tools and suites
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/preflop/model_a_sizing_hierarchical.py \
+            tools/simulation/issue419_exact_tree_preflight.py \
+            tools/training/write_frozen_validation_protocol.py \
+            tools/training/write_frozen_validation_protocol_v2.py \
+            tools/training/write_hierarchical_model_spec.py \
+            tools/training/finalize_hierarchical_exact_tree_decision.py \
+            tools/training/resolve_raise_sizing_frontiers.py \
+            tools/training/fit_model_a_preflop_sizing_hierarchical.py \
+            tools/training/validate_hierarchical_validation.py \
+            tools/training/validation_order_guard.py \
+            tools/training/audit_hierarchical_candidate_contract.py \
+            tools/training/audit_hierarchical_tree_sparsity.py \
+            tests/simulation/test_issue419_exact_tree_preflight.py \
+            tests/preflop/test_model_a_sizing_hierarchical.py \
+            tests/training/test_hierarchical_train_fit.py \
+            tests/training/test_hierarchical_validation_evaluation.py \
+            tests/training/test_hierarchical_terminal_decision.py \
+            tests/training/test_hierarchical_model_spec.py \
+            tests/training/test_hierarchical_candidate_contract.py \
+            tests/training/test_hierarchical_exact_context_contract_doc.py \
+            tests/training/test_hierarchical_tree_sparsity_parity.py \
+            tests/training/test_frozen_validation_protocol.py \
+            tests/training/test_frozen_validation_protocol_v2.py \
+            tests/training/test_raise_sizing_frontier_resolution.py \
+            tests/training/test_issue419_hierarchical_exact_tree.py \
+            tests/ci/test_consolidation_decision.py
+      - name: Frozen protocol/hash drift and TRAIN/VALIDATION/TEST boundary
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol.py
+          PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol_v2.py
+      - name: Exact-tree preflight semantics, substitution and support laundering
+        run: PYTHONPATH=. python3 tests/simulation/test_issue419_exact_tree_preflight.py
+      - name: Hierarchical key identity, no nearest-context substitution, fail-closed support
+        run: PYTHONPATH=. python3 tests/preflop/test_model_a_sizing_hierarchical.py
+      - name: TRAIN fit determinism and hierarchy
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_train_fit.py
+      - name: Measured VALIDATION calibration and order guard
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_validation_evaluation.py
+      - name: Candidate identity/pointer and reported-status contract
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_candidate_contract.py
+      - name: Terminal decision coherence
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_terminal_decision.py
+      - name: Hierarchical model spec contract
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_model_spec.py
+      - name: Exact-context contract documentation
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_exact_context_contract_doc.py
+      - name: Tree sparsity parity against the frozen baseline
+        run: PYTHONPATH=. python3 tests/training/test_hierarchical_tree_sparsity_parity.py
+      - name: RAISE sizing frontier resolution
+        run: PYTHONPATH=. python3 tests/training/test_raise_sizing_frontier_resolution.py
+      - name: Aggregate #419 exact-tree contract
+        run: PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py
+      - name: Audit decision and DAG evidence mutation guards
+        run: PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py
+      - name: Prove every #419 suite is actually executed (no-op guard)
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/issue-419-hierarchical-exact-tree.yml').read_text(encoding='utf-8')
+          executed = '\n'.join(
+              line for line in workflow.splitlines() if not line.lstrip().startswith('#'))
+          required = (
+              'tests/simulation/test_issue419_exact_tree_preflight.py',
+              'tests/preflop/test_model_a_sizing_hierarchical.py',
+              'tests/training/test_hierarchical_train_fit.py',
+              'tests/training/test_hierarchical_validation_evaluation.py',
+              'tests/training/test_hierarchical_terminal_decision.py',
+              'tests/training/test_hierarchical_model_spec.py',
+              'tests/training/test_hierarchical_candidate_contract.py',
+              'tests/training/test_hierarchical_exact_context_contract_doc.py',
+              'tests/training/test_hierarchical_tree_sparsity_parity.py',
+              'tests/training/test_frozen_validation_protocol.py',
+              'tests/training/test_frozen_validation_protocol_v2.py',
+              'tests/training/test_raise_sizing_frontier_resolution.py',
+              'tests/training/test_issue419_hierarchical_exact_tree.py',
+              'tests/test_github_workflow_audit.py',
+              'tests/ci/test_consolidation_decision.py',
+          )
+          missing = [suite for suite in required
+                     if not re.search(r'python3\s+' + re.escape(suite) + r'(?:\s|$)', executed)]
+          assert not missing, f'suite declared in paths but never executed: {missing}'
+          print(f'#419 no-op guard: {len(required)}/{len(required)} suites executed')
+          PY
+      - name: Trigger path coverage, no-op and drift/substitution guards
+        run: PYTHONPATH=. python3 tests/test_github_workflow_audit.py
+      - name: Workflow audit and DAG evidence stay regenerable
+        run: |
+          set -euo pipefail
+          python3 tools/audit_github_workflows.py --inventory /tmp/workflows.inventory.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          committed_path = Path('analysis/workflow_audit/workflows.json')
+          regenerated_path = Path('/tmp/workflows.inventory.json')
+          committed = json.loads(committed_path.read_text(encoding='utf-8'))
+          regenerated = json.loads(regenerated_path.read_text(encoding='utf-8'))
+          assert committed == regenerated, 'analysis/workflow_audit/workflows.json is stale'
+          assert committed_path.read_bytes() == regenerated_path.read_bytes(), (
+              'analysis/workflow_audit/workflows.json is not byte-stable')
+          print('workflow inventory: regenerable and byte-identical')
+          PY
+          python3 tools/audit_active_workflow_dag.py --check
