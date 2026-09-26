@@ -19,11 +19,38 @@ SCHEMA = "model-b-preflop-sensitivity-harness-request/v1"
 REPORT_SCHEMA = "model-b-preflop-sensitivity-harness-report/v1"
 CANONICAL_DECISION_SCHEMA = "poker-preflop-decision/v1"
 SOURCE_KIND = "SYNTHETIC_HARNESS_ONLY"
+# Additive #425 consumer projection: the harness stays synthetic-only, the
+# projected request keeps its own source kind so evidence provenance is legible.
+SOURCE_KIND_ROBUSTNESS_PROJECTED = "SYNTHETIC_ROBUSTNESS_PROJECTED"
+SUPPORTED_SOURCE_KINDS = (SOURCE_KIND, SOURCE_KIND_ROBUSTNESS_PROJECTED)
+HERO_ROBUSTNESS_INPUT_SCHEMA = "hero-model-b-robustness-input/v1"
+HERO_ROBUSTNESS_INPUT_SOURCE_KIND = "SYNTHETIC_ROBUSTNESS_SHAPED"
+# Every #425 boundary flag is pinned false; the projection never coerces a
+# missing/true flag into the harness boundary.
+HERO_ROBUSTNESS_BOUNDARY_FLAGS = (
+    "hero_ev_consumed",
+    "model_a_consumed",
+    "recommendation_consumed",
+    "route_as_predictive_target",
+    "future_cards_consumed",
+    "opponent_hole_cards_consumed",
+)
+HERO_ROBUSTNESS_PROVENANCE_FLAGS = (
+    "real_issue_367_consumed",
+    "real_issue_314_consumed",
+    "validation_consumed",
+    "test_consumed",
+)
+# #425 robustness-shaped fields that may never leak into a #344 alternative.
+FORBIDDEN_ALTERNATIVE_LEAK_FIELDS = frozenset({
+    "route", "source", "ev_bb", "uncertainty", "paired_delta_vs_best_bb",
+    "support", "posterior_refs",
+})
 FORBIDDEN_MODEL_FEATURES = {
     "ev_bb", "uncertainty", "confidence", "recommended_action",
     "recommended_sizing", "recommendation", "model_a", "model_a_ev",
     "model_a_policy", "model_a_recommendation", "hero_ev",
-    "hero_recommendation",
+    "hero_recommendation", "route",
 }
 SUPPORTED_HERO_ACTIONS = {"FOLD", "OVERLIMP", "ISO"}
 
@@ -50,17 +77,26 @@ def _finite(value: Any, *, name: str, nonnegative: bool = True) -> float:
     return x
 
 
-def _forbidden_keys(value: Any, path: str = "$") -> list[str]:
+def _forbidden_keys(
+    value: Any,
+    path: str = "$",
+    *,
+    extra: frozenset[str] = frozenset(),
+) -> list[str]:
     found: list[str] = []
     if isinstance(value, Mapping):
         for key, child in value.items():
             lowered = str(key).lower()
-            if lowered in FORBIDDEN_MODEL_FEATURES or lowered.startswith("model_a"):
+            if (
+                lowered in FORBIDDEN_MODEL_FEATURES
+                or lowered in extra
+                or lowered.startswith("model_a")
+            ):
                 found.append(f"{path}.{key}")
-            found.extend(_forbidden_keys(child, f"{path}.{key}"))
+            found.extend(_forbidden_keys(child, f"{path}.{key}", extra=extra))
     elif isinstance(value, list):
         for index, child in enumerate(value):
-            found.extend(_forbidden_keys(child, f"{path}[{index}]"))
+            found.extend(_forbidden_keys(child, f"{path}[{index}]", extra=extra))
     return found
 
 
@@ -126,10 +162,131 @@ def project_canonical_decision(
     return request
 
 
+def project_robustness_input(
+    input: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project a #425 robustness input into an additive #344 harness request.
+
+    Only public action identity crosses the boundary: each alternative's
+    ``alternative_id`` and ``action`` plus the derived exact ``target_total_bb``
+    (from the robustness ``sizing``) and ``incremental_cost_bb`` (versus the
+    public Hero contribution of ``context``). The synthetic EV envelope,
+    uncertainty, route, source, paired delta, support verdict and posterior
+    references are deliberately dropped, never copied and never defaulted.
+
+    The request keeps ``synthetic_fixture=true`` and an all-false information
+    boundary, so ``validate_request`` still accepts synthetic inputs only.
+    """
+    if not isinstance(input, Mapping):
+        raise ValueError("robustness input must be an object")
+    if input.get("schema") != HERO_ROBUSTNESS_INPUT_SCHEMA:
+        raise ValueError(f"expected robustness input schema {HERO_ROBUSTNESS_INPUT_SCHEMA}")
+    if (
+        input.get("source_kind") != HERO_ROBUSTNESS_INPUT_SOURCE_KIND
+        or input.get("synthetic_fixture") is not True
+    ):
+        raise ValueError("issue #425 projection accepts synthetic robustness inputs only")
+
+    boundary = input.get("information_boundary")
+    if not isinstance(boundary, Mapping):
+        raise ValueError("robustness input information_boundary is required")
+    for key in HERO_ROBUSTNESS_BOUNDARY_FLAGS:
+        if boundary.get(key) is not False:
+            raise ValueError(
+                "robustness information boundary must explicitly forbid "
+                f"EV/Model-A/route/private information: {key}"
+            )
+
+    provenance = input.get("provenance")
+    if not isinstance(provenance, Mapping) or provenance.get("synthetic_fixture") is not True:
+        raise ValueError("robustness input requires a synthetic provenance block")
+    for key in HERO_ROBUSTNESS_PROVENANCE_FLAGS:
+        if provenance.get(key) is not False:
+            raise ValueError(f"robustness provenance must not consume real evidence: {key}")
+
+    decision = input.get("decision")
+    if not isinstance(decision, Mapping):
+        raise ValueError("robustness input decision is required")
+    context_id = str(decision.get("context_id") or "")
+    if not context_id:
+        raise ValueError("robustness input decision.context_id is required")
+    decision_position = str(decision.get("hero_position") or "").upper()
+    context_position = str(context.get("hero_position") or "").upper()
+    if decision_position != context_position:
+        raise ValueError("robustness decision/context hero_position mismatch")
+
+    hero_before = _finite(
+        context.get("hero_contribution_before_bb"),
+        name="hero_contribution_before_bb",
+    )
+
+    raw_alternatives = input.get("alternatives")
+    if not isinstance(raw_alternatives, list) or not raw_alternatives:
+        raise ValueError("robustness input alternatives are required")
+
+    projected = []
+    seen = set()
+    for raw in raw_alternatives:
+        if not isinstance(raw, Mapping):
+            raise ValueError("robustness alternative must be an object")
+        alternative_id = str(raw.get("alternative_id") or "")
+        if not alternative_id or alternative_id in seen:
+            raise ValueError("robustness alternative id missing or duplicate")
+        seen.add(alternative_id)
+        action = str(raw.get("action") or "").upper()
+        if action not in SUPPORTED_HERO_ACTIONS:
+            raise ValueError(f"unsupported Hero action for sensitivity harness: {action!r}")
+        sizing = raw.get("sizing")
+        if action == "FOLD":
+            # The harness FOLD contract is "no target, zero incremental cost";
+            # a non-zero #425 sizing for FOLD is a contradiction, not a target.
+            if sizing is not None and _finite(sizing, name=f"{alternative_id}.sizing") != 0:
+                raise ValueError(f"{alternative_id} FOLD sizing must be null")
+            target = None
+            incremental = 0.0
+        else:
+            target = _finite(sizing, name=f"{alternative_id}.sizing")
+            incremental = target - hero_before
+            if incremental < 0:
+                raise ValueError(
+                    f"{alternative_id} sizing is below Hero current contribution"
+                )
+        projected.append({
+            "alternative_id": alternative_id,
+            "action": action,
+            "target_total_bb": target,
+            "incremental_cost_bb": float(incremental),
+        })
+
+    request = {
+        "schema": SCHEMA,
+        "source_kind": SOURCE_KIND_ROBUSTNESS_PROJECTED,
+        "synthetic_fixture": True,
+        "decision_ref": {
+            "canonical_schema": CANONICAL_DECISION_SCHEMA,
+            "decision_id": decision.get("decision_id"),
+            "context_id": context_id,
+        },
+        "public_context": copy.deepcopy(dict(context)),
+        "alternatives": projected,
+        "information_boundary": {
+            "hero_ev_consumed": False,
+            "model_a_consumed": False,
+            "recommendation_consumed": False,
+            "future_cards_consumed": False,
+            "opponent_hole_cards_consumed": False,
+        },
+    }
+    validate_request(request)
+    return request
+
+
 def validate_request(request: Mapping[str, Any]) -> None:
     if request.get("schema") != SCHEMA:
         raise ValueError(f"expected request schema {SCHEMA}")
-    if request.get("source_kind") != SOURCE_KIND or request.get("synthetic_fixture") is not True:
+    if request.get("source_kind") not in SUPPORTED_SOURCE_KINDS or request.get("synthetic_fixture") is not True:
         raise ValueError("issue #344 accepts synthetic harness inputs only")
     boundary = request.get("information_boundary") or {}
     for key in (
@@ -204,7 +361,11 @@ def validate_request(request: Mapping[str, Any]) -> None:
             if raw.get("target_total_bb") is not None or float(raw.get("incremental_cost_bb", -1)) != 0:
                 raise ValueError(f"{alternative_id} FOLD sizing contract invalid")
 
-    forbidden = _forbidden_keys(context) + _forbidden_keys(alternatives, "$.alternatives")
+    forbidden = _forbidden_keys(context) + _forbidden_keys(
+        alternatives,
+        "$.alternatives",
+        extra=FORBIDDEN_ALTERNATIVE_LEAK_FIELDS,
+    )
     if forbidden:
         raise ValueError(f"forbidden Model A/EV/recommendation feature injected: {forbidden}")
 

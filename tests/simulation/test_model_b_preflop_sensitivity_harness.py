@@ -12,8 +12,10 @@ sys.path.insert(0, str(ROOT))
 
 from tools.simulation.model_b_preflop_sensitivity_harness import (
     SOURCE_KIND,
+    SOURCE_KIND_ROBUSTNESS_PROJECTED,
     load_json,
     project_canonical_decision,
+    project_robustness_input,
     run_harness,
     validate_request,
     verify_issue_340_identity,
@@ -21,6 +23,7 @@ from tools.simulation.model_b_preflop_sensitivity_harness import (
 
 DECISION = ROOT / "tests/fixtures/iso-sizing-diagnostics/canonical_decision.json"
 CONTEXT = ROOT / "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json"
+ROBUSTNESS_FIXTURES = ROOT / "tests/fixtures/model_b_robustness_consumer"
 RUN340 = ROOT / "training/runs/20260919_model_b_preflop_response_to_price_2a"
 CANDIDATE = RUN340 / "model/candidate.json"
 REFERENCE = RUN340 / "model/price_agnostic_reference.json"
@@ -37,6 +40,18 @@ def inputs():
         "result": load_json(RESULT),
         "provenance": load_json(PROVENANCE),
     }
+
+
+def _all_keys(value):
+    keys = set()
+    if isinstance(value, dict):
+        for key, child in value.items():
+            keys.add(key)
+            keys |= _all_keys(child)
+    elif isinstance(value, list):
+        for child in value:
+            keys |= _all_keys(child)
+    return keys
 
 
 def main():
@@ -172,6 +187,90 @@ def main():
         assert "hash mismatch" in str(exc)
     else:
         raise AssertionError("tampered #340 candidate must fail closed")
+
+    # Additive #425 consumer projection: a robustness-shaped input yields a
+    # valid synthetic #344 request that keeps only public action identity.
+    for fixture in sorted(ROBUSTNESS_FIXTURES.glob("*.json")):
+        robustness_input = load_json(fixture)
+        assert robustness_input["schema"] == "hero-model-b-robustness-input/v1"
+        projected = project_robustness_input(robustness_input, context=context)
+        validate_request(projected)
+        assert projected["source_kind"] == SOURCE_KIND_ROBUSTNESS_PROJECTED
+        assert projected["synthetic_fixture"] is True
+        assert projected["decision_ref"]["canonical_schema"] == "poker-preflop-decision/v1"
+        assert projected["decision_ref"]["context_id"] == robustness_input["decision"]["context_id"]
+        for boundary_flag in projected["information_boundary"].values():
+            assert boundary_flag is False
+        leaked = _all_keys(projected) & {
+            "ev_bb", "uncertainty", "confidence", "route", "source", "sizing",
+            "paired_delta_vs_best_bb", "support", "posterior_refs", "selected_id",
+        }
+        assert not leaked, leaked
+        for alternative in projected["alternatives"]:
+            assert set(alternative) == {
+                "alternative_id", "action", "target_total_bb", "incremental_cost_bb",
+            }
+            if alternative["action"] == "FOLD":
+                assert alternative["target_total_bb"] is None
+                assert alternative["incremental_cost_bb"] == 0
+            else:
+                assert alternative["incremental_cost_bb"] == (
+                    alternative["target_total_bb"] - context["hero_contribution_before_bb"]
+                )
+        assert [x["alternative_id"] for x in projected["alternatives"]] == [
+            x["alternative_id"] for x in robustness_input["alternatives"]
+        ]
+
+    # The #314 canonical default is preserved: still SYNTHETIC_HARNESS_ONLY.
+    assert request["source_kind"] == SOURCE_KIND == "SYNTHETIC_HARNESS_ONLY"
+    assert SOURCE_KIND_ROBUSTNESS_PROJECTED != SOURCE_KIND
+
+    robustness_input = load_json(ROBUSTNESS_FIXTURES / "multiple_sizings.json")
+    projected = project_robustness_input(robustness_input, context=context)
+    projected_report = run_harness(projected, **docs)
+    assert projected_report["status"] == "SYNTHETIC_HARNESS_ONLY"
+    assert all(projected_report["scope"][key] is False for key in (
+        "real_issue_314_consumed", "hero_ev_consumed", "model_a_consumed",
+        "recommendation_consumed", "train_consumed", "validation_consumed",
+        "test_consumed", "active_model_b_changed", "automatic_promotion", "ui_modified",
+    ))
+    assert projected_report["scope"]["production_effect"] == "NONE"
+
+    # Projection and request validation stay fail-closed on non-synthetic input.
+    for mutate in (
+        lambda doc: doc.__setitem__("source_kind", "REAL_ISSUE_314"),
+        lambda doc: doc.__setitem__("synthetic_fixture", False),
+        lambda doc: doc["information_boundary"].__setitem__("route_as_predictive_target", True),
+        lambda doc: doc["information_boundary"].__setitem__("hero_ev_consumed", None),
+        lambda doc: doc["provenance"].__setitem__("real_issue_314_consumed", True),
+        lambda doc: doc["decision"].__setitem__("hero_position", "BTN"),
+    ):
+        bad = copy.deepcopy(robustness_input)
+        mutate(bad)
+        try:
+            project_robustness_input(bad, context=context)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("non-synthetic robustness input must fail closed")
+
+    bad = copy.deepcopy(projected)
+    bad["source_kind"] = "REAL_ISSUE_314"
+    try:
+        validate_request(bad)
+    except ValueError as exc:
+        assert "synthetic" in str(exc)
+    else:
+        raise AssertionError("non-synthetic request must fail closed")
+
+    bad = copy.deepcopy(projected)
+    bad["alternatives"][0]["route"] = "leaked_robustness_route"
+    try:
+        validate_request(bad)
+    except ValueError as exc:
+        assert "forbidden" in str(exc).lower()
+    else:
+        raise AssertionError("route leak into the harness request must fail closed")
 
     print("Issue #344 synthetic Model B sensitivity harness: PASS")
 
