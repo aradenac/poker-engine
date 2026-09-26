@@ -25,6 +25,7 @@ import hashlib
 import io
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -1177,11 +1178,30 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertFalse(declared['regeneration_possible'])
         self.assertEqual(declared['superseded_revision'], 'v1')
         self.assertEqual(declared['superseding_revision'], 'v2')
-        # The pre-refresh v1 revision is recorded as history only: it is neither
-        # on disk nor restorable, and the pin kept here is the current frozen v1.
-        self.assertEqual(len(declared['predecessor_byte_sha256']), 64)
-        self.assertNotEqual(
-            declared['predecessor_byte_sha256'], preflight_tool.V1_PREFLIGHT_SHA256
+        # The declaration is factual: v1 is the restored custody revision, so the
+        # pin kept here *is* the pre-mutant revision the evidence-integrity
+        # correction put back on disk -- it is not a "history only" digest that a
+        # different byte was silently re-pinned against.
+        self.assertEqual(
+            declared['custody_revision'], 'RESTORED_PRE_MUTANT_CUSTODY_REVISION'
+        )
+        restoration = declared['custody_restoration']
+        self.assertEqual(
+            restoration['restored_preflight_sha256'], preflight_tool.V1_PREFLIGHT_SHA256
+        )
+        self.assertEqual(
+            restoration['restored_index_sha256'], preflight_tool.V1_INDEX_SHA256
+        )
+        self.assertEqual(
+            restoration['restored_protocol_v2_byte_sha256'],
+            preflight_tool.PROTOCOL_V2_BYTE_SHA256,
+        )
+        self.assertEqual(
+            restoration['mutant_commit'], '871e0bd9e66c978932face1accf1aaf22ac9fa1a'
+        )
+        self.assertEqual(
+            restoration['correction_record'],
+            'analysis/issue419_hierarchical_tree/evidence_integrity_correction',
         )
         self.assertEqual(
             hashlib.sha256((preflight_tool.OUTPUT / preflight_tool.NAME).read_bytes()).hexdigest(),
@@ -1304,6 +1324,108 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertEqual(self.preflight['scenario']['root_path'], ['SB:ISO@5'])
         self.assertEqual(self.preflight['scenario']['root_actor_position'], 'BB')
         self.assertEqual(self.preflight['scenario']['hero_position'], 'SB')
+
+    def test_custody_pins_are_single_sourced_against_disk_and_frozen_protocol(self):
+        """One assertion chain: tool pin == frozen bytes == frozen v2 custody row.
+
+        The tool constant, the SHA256 of the persisted frozen bytes and the frozen
+        v2 protocol ``v1_custody`` row are cross-checked together, so a future edit
+        that moves only one of the three fails here instead of silently re-pinning
+        a byte to a digest that no longer describes it.
+        """
+        agreement = preflight_tool.verify_custody_pin_agreement()
+        self.assertEqual(agreement['result'], 'PASS')
+        self.assertEqual(
+            agreement, self.preflight['frozen_v1_preflight']['pin_single_source']
+        )
+        protocol_v2 = json.loads(preflight_tool.PROTOCOL_V2_PATH.read_bytes())
+        custody_rows = {
+            row['role']: row['sha256'] for row in protocol_v2['v1_custody']['v1_surfaces']
+        }
+        expected = {
+            'V1_PREFLIGHT_SHA256': (
+                preflight_tool.OUTPUT / preflight_tool.NAME,
+                preflight_tool.V1_PREFLIGHT_SHA256,
+                preflight_tool.V1_CUSTODY_ROLE,
+            ),
+            'V1_INDEX_SHA256': (
+                preflight_tool.OUTPUT / preflight_tool.INDEX_NAME,
+                preflight_tool.V1_INDEX_SHA256,
+                None,
+            ),
+            'V1_SUMMARY_SHA256': (
+                preflight_tool.OUTPUT / preflight_tool.SUMMARY_NAME,
+                preflight_tool.V1_SUMMARY_SHA256,
+                None,
+            ),
+            'PROTOCOL_V2_BYTE_SHA256': (
+                preflight_tool.PROTOCOL_V2_PATH,
+                preflight_tool.PROTOCOL_V2_BYTE_SHA256,
+                None,
+            ),
+        }
+        self.assertEqual(set(agreement['sources']), set(expected))
+        for pin_name, (path, pinned, role) in expected.items():
+            with self.subTest(pin=pin_name):
+                on_disk = hashlib.sha256(path.read_bytes()).hexdigest()
+                self.assertEqual(len(pinned), 64)
+                self.assertEqual(pinned, on_disk)
+                self.assertEqual(agreement['sources'][pin_name]['pin'], pinned)
+                self.assertEqual(
+                    agreement['sources'][pin_name]['on_disk_sha256'], on_disk
+                )
+                if role is not None:
+                    self.assertEqual(custody_rows[role], pinned)
+                    self.assertEqual(
+                        agreement['sources'][pin_name]['protocol_v2_custody_role'], role
+                    )
+                    self.assertEqual(
+                        agreement['sources'][pin_name]['protocol_v2_custody_sha256'],
+                        custody_rows[role],
+                    )
+        # The published pins are exactly the restored custody digests, so the
+        # mutant pins can never come back unnoticed.
+        self.assertEqual(
+            preflight_tool.V1_PREFLIGHT_SHA256,
+            '456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6',
+        )
+        self.assertEqual(
+            preflight_tool.V1_INDEX_SHA256,
+            '97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be',
+        )
+        self.assertEqual(
+            preflight_tool.PROTOCOL_V2_BYTE_SHA256,
+            '74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350',
+        )
+        self.assertEqual(
+            preflight_tool.PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256,
+            'cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de',
+        )
+
+    def test_custody_pin_agreement_fails_closed_when_a_surface_drifts(self):
+        """A drifted pin, byte or custody row is a failure, never a re-pin."""
+        for name in (
+            'V1_PREFLIGHT_SHA256',
+            'V1_INDEX_SHA256',
+            'V1_SUMMARY_SHA256',
+            'PROTOCOL_V2_BYTE_SHA256',
+        ):
+            with self.subTest(pin=name):
+                with mock.patch.object(preflight_tool, name, '0' * 64):
+                    with self.assertRaises(preflight_tool.PreflightError):
+                        preflight_tool.verify_custody_pin_agreement()
+        # A frozen v2 protocol whose custody row stops describing the pin fails too,
+        # even though the tool constant and the bytes on disk still agree.
+        drifted = json.loads(preflight_tool.PROTOCOL_V2_PATH.read_text())
+        for row in drifted['v1_custody']['v1_surfaces']:
+            if row['role'] == preflight_tool.V1_CUSTODY_ROLE:
+                row['sha256'] = '0' * 64
+        with tempfile.TemporaryDirectory() as tmp:
+            drifted_path = Path(tmp) / 'FROZEN_VALIDATION_PROTOCOL_V2.json'
+            drifted_path.write_text(json.dumps(drifted))
+            with mock.patch.object(preflight_tool, 'PROTOCOL_V2_PATH', drifted_path):
+                with self.assertRaises(preflight_tool.PreflightError):
+                    preflight_tool.verify_custody_pin_agreement()
 
     def test_frozen_v2_protocol_contract_is_re_derived(self):
         loaded = preflight_tool.load_frozen_v2_protocol()
