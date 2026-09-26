@@ -3,24 +3,24 @@
 Issue #421. The machine-readable source of truth is
 `analysis/issue421_generalized_response/GENERALIZED_RESPONSE_MODEL_SPEC.json`
 (`poker-generalized-response-model-spec/v1`), content-addressed as
-`analysis/issue421_generalized_response/sha256/4d392697e80c08e263b5329e35fc21b4ac208f4dedb6d33e5b7c58e2630c408c.json`
+`analysis/issue421_generalized_response/sha256/486ef55e14cdc1160faef7e53ac29631f1e13a9953b4f4996a8b3b052b185abf.json`
 and pinned by
 `analysis/issue421_generalized_response/GENERALIZED_RESPONSE_MODEL_SPEC.sha256`.
 The ten required artifacts are bound by
 `analysis/issue421_generalized_response/ARTIFACTS.json`; the human summary is
 `analysis/issue421_generalized_response/SUMMARY.md`
-(`4c73491a207206fa618e39e506965a55d5c781e012731df919127cc858f43de6`). This
+(`0c0a2031e7e4649a75af866ab3e705db1204b51397443dce953817b2cc61a7ba`). This
 document explains the spec and the cycle; it is not itself normative. The JSON
 wins, and the spec digest is recorded outside its own payload.
 
 Provenance is environment-independent: every recorded path — including
 `evidence_bindings.runtime_module_path` and every `registry_source` embedded in
 `ISSUE367_PREFLIGHT.json` (object digest
-`68b014cd05e0b99104b93ed0579c5ee205989c8308129ff5209f6f22f2d3687e`) — is a
+`4b7c757f9f4bd8f2aac83d2ec1f4106dbb67a4ab5a5df31c30c02fbdac9cb7d1`) — is a
 repository-relative POSIX path, never an absolute host path, so the regenerated
 digests are reproducible across hosts and worktrees. The runtime module it pins
 (`tools/preflop/generalized_response_runtime.py`) hashes to
-`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538`. The
+`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`. The
 terminal decision is unchanged: `RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT`.
 
 Reproduce: `python3 tools/training/build_issue421_evidence_bundle.py`.
@@ -90,6 +90,63 @@ uncertainty per query, generates quantiles, and fails closed with a reason code
 when the window is empty below the stack — it never substitutes a nearest price.
 All seven #388/#419 raise-sizing frontiers are resolved by this channel in the
 frozen report, with zero illegal generated sizings.
+
+### 4b. A queried raise target outside the legal window is refused, never silent
+
+The RAISE/JAM gain of the discrete-choice core is conditioned on the queried
+raise target, and the research surface
+(`generalized_response_model.predict` / `sizing_gain`) bounds that gain at
+`sizing_gain_bounds = [0.125, 8.0]`. A target that leaves the engine's legal
+raise window was therefore previously conditioned on a clamped gain with no
+signal — the defect this section closes. The frozen model module
+(`runtime_format.module_sha256` in `CANDIDATE_MANIFEST.json`) is not edited: the
+explicit behaviour belongs to the runtime provider, which is the surface a
+consumer reads, and the in-window distribution is untouched.
+
+Two refusal regimes are declared and kept apart:
+
+* **declared verdict.** Every runtime decision document carries `sizing_window`
+  (`poker-generalized-response-sizing-window-legality/v1`): the window the query
+  was compared against (`min_raise_to_bb` / `max_raise_to_bb` /
+  `legal_target_interval_bb` when the caller supplies the engine interval,
+  otherwise the documented conservative derived floor and the effective stack as
+  the cap), `queried`, `queried_target_bb`, `inside_legal_window` and a stable
+  `violation` code — `TARGET_BELOW_LEGAL_MINIMUM`, `TARGET_ABOVE_LEGAL_CAP`,
+  `LEGAL_WINDOW_UNVERIFIED` or `null`. Nothing is snapped to a neighbouring
+  price; `substituted` is `false`.
+* **fail-closed.** When the context is otherwise answerable and the queried
+  target leaves that window, `resolve_generalized_response` raises with
+  `ILLEGAL_SIZING_GENERATED` *before* any document is returned, exactly as the
+  module header documents. The distribution is never returned as if the
+  requested sizing were legal. A context that is out of the calibrated domain
+  keeps the frozen `OOD_ABSTAIN` document (no selected action, no sizing) and
+  still declares the target's window verdict, so a *domain* refusal is never
+  reclassified as a *request* error.
+
+Coverage. `tests/preflop/test_generalized_response_runtime.py` pins both sides
+of the window (target below the engine minimum, target beyond the stack cap),
+the in-window declaration, the no-target case, the unverifiable window and the
+OOD-precedence case; `tests/preflop/test_generalized_response_sizing.py` pins
+the channel-side declaration (`inside_window=false` with
+`TARGET_OUTSIDE_LEGAL_WINDOW`) and the legality of everything it generates.
+
+Invariance. The frozen probe set
+`analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json`
+(an additional frozen evidence file beside the ten required artifacts, bound to
+the frozen candidate and model module it names)
+holds nine in-window probes (both aggressive branches, a derived and a supplied
+engine window, a limped family, three stack depths) with the exact runtime
+probabilities, the selected action, the recommended and generated sizings and
+the canonical digests of the runtime and model predictions of each. The entries
+were captured from the runtime revision
+`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538` and
+re-computed bit for bit after the legal-window declaration was added (revision
+`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`): every
+probability, selected sizing and digest is unchanged, and only the declared
+`sizing_window` block is new. Regenerate the reference with
+`python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference`
+(it re-captures the unchanged surface; the entry digest is
+`bc34f4a36e0c4978cea57dee686f268d97040d05822f4b82bf69af58e495834a`).
 
 ## 5. Evaluation, freeze and one-shot VALIDATION
 

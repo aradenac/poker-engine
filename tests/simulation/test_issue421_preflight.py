@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.preflop import generalized_response_model as model  # noqa: E402
+from tools.preflop import generalized_response_runtime as runtime_provider  # noqa: E402
 from tools.simulation import issue421_issue367_preflight as preflight_tool  # noqa: E402
 
 
@@ -430,8 +431,22 @@ class Issue421Issue367PreflightTests(unittest.TestCase):
         misread_paths = {tuple(row["path"]) for row in guard["misreading_would_abstain_nodes"]}
         self.assertEqual(guard["misreading_would_abstain_count"], len(misread_paths))
         self.assertTrue(misread_paths)
+        # Every misread path is refused, and the refusal is *declared*: either the
+        # frozen OOD gate abstained (the misread target also leaves the calibrated
+        # domain) or the legal-window declaration failed closed because the misread
+        # target is not a legal raise target of that actor.
+        codes: dict[str, int] = {}
         for row in guard["misreading_would_abstain_nodes"]:
-            self.assertIn("EXTRAPOLATION_SIZING", row["hard_reasons"])
+            codes[row["code"]] = codes.get(row["code"], 0) + 1
+            if row["code"] == runtime_provider.OOD_ABSTAIN_REASON:
+                self.assertIn("EXTRAPOLATION_SIZING", row["hard_reasons"])
+            else:
+                self.assertEqual(row["code"], runtime_provider.FAIL_CLOSED_ILLEGAL_SIZING)
+                self.assertEqual(row["hard_reasons"], [])
+        self.assertEqual(codes, guard["misreading_refusal_codes"])
+        self.assertEqual(sum(codes.values()), guard["misreading_would_abstain_count"])
+        self.assertIn(runtime_provider.FAIL_CLOSED_ILLEGAL_SIZING, codes)
+        self.assertIn(runtime_provider.OOD_ABSTAIN_REASON, codes)
         by_path = {
             tuple(record["node_identity"]["path"]): record for record in self.document["nodes"]
         }

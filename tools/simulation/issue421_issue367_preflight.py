@@ -1218,21 +1218,31 @@ def faced_price_mapping_guard(
     the faced price as a queried sizing therefore asks the sizing axis about a
     price the actor never chose; the guard records what that misreading would do
     so the mapping stays auditable instead of silent.
+
+    Two refusals are recorded, and both are declared by the runtime: the frozen
+    OOD gate abstains when the misread target also leaves the calibrated domain
+    (``EXTRAPOLATION_SIZING``), and the legal-window declaration fails closed
+    with ``ILLEGAL_SIZING_GENERATED`` when the context is otherwise answerable
+    but the misread target is not a legal raise target of that actor.
     """
     abstaining: list[dict[str, Any]] = []
+    refusal_codes: dict[str, int] = {}
     for node in nodes:
         context = node_request_context(node)
         context["target_total_bb"] = context["faced_target_total_bb"]
         document, error = _base_query(runtime, context)
         if document is not None and document["usable"]:
             continue
+        code = (
+            ((document or {}).get("fail_closed_reason"))
+            or (error or {}).get("code")
+            or "UNKNOWN"
+        )
+        refusal_codes[str(code)] = refusal_codes.get(str(code), 0) + 1
         abstaining.append(
             {
                 "path": list(node["path"]),
-                "code": (
-                    ((document or {}).get("fail_closed_reason"))
-                    or (error or {}).get("code")
-                ),
+                "code": code,
                 "hard_reasons": (
                     [] if document is None else list(document["ood"]["hard_reasons"])
                 ),
@@ -1251,6 +1261,7 @@ def faced_price_mapping_guard(
         },
         "misreading_would_abstain_count": len(abstaining),
         "misreading_would_abstain_nodes": abstaining,
+        "misreading_refusal_codes": dict(sorted(refusal_codes.items())),
         "misreading_is_not_used": True,
     }
 

@@ -48,7 +48,10 @@ scientifique, pas comme modèle actif : le modèle admis pour #367 reste
   sizing et catégorie jamais vue ⇒ abstention ; contexte exact absent mais
   in-domain ⇒ haute incertitude, jamais abstenu par définition.
 - Sizing conditionnel : 7/7 frontières #388/#419 résolues, 0 fail-closed,
-  27627 sizings générés dont 0 illégal (plafond gelé `0.0`).
+  27627 sizings générés dont 0 illégal (plafond gelé `0.0`). Depuis `backlog-jj0`,
+  une cible de raise hors fenêtre légale sur un contexte répondable est refusée
+  en fail-closed (`ILLEGAL_SIZING_GENERATED`) au lieu d'être conditionnée sur un
+  gain clampé sans signal, et chaque document déclare `sizing_window`.
 
 ## Preflight #367 (preuve, pas exécution)
 
@@ -66,28 +69,38 @@ dans `analysis/issue421_generalized_response/sha256/`, indexés par
 
 | artefact | SHA256 octets |
 | --- | --- |
-| GENERALIZED_RESPONSE_MODEL_SPEC.json | `4d392697e80c08e263b5329e35fc21b4ac208f4dedb6d33e5b7c58e2630c408c` |
+| GENERALIZED_RESPONSE_MODEL_SPEC.json | `486ef55e14cdc1160faef7e53ac29631f1e13a9953b4f4996a8b3b052b185abf` |
 | TRAIN_CV_REPORT.json | `43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff` |
 | CANDIDATE_MANIFEST.json | `06f8380ea898d41efc9f7dbe65968292fd1277fe750229e0059b4df5918f8fea` |
 | FROZEN_VALIDATION_PROTOCOL.json | `ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5` |
 | VALIDATION_RESULT.json | `6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3` |
 | OOD_CALIBRATION_REPORT.json | `a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71` |
 | RAISE_SIZING_MODEL_REPORT.json | `955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6` |
-| ISSUE367_PREFLIGHT.json | `68b014cd05e0b99104b93ed0579c5ee205989c8308129ff5209f6f22f2d3687e` |
+| ISSUE367_PREFLIGHT.json | `4b7c757f9f4bd8f2aac83d2ec1f4106dbb67a4ab5a5df31c30c02fbdac9cb7d1` |
 | DECISION.json | `8783fbc871853821270ed5fe92cda22a8e69c229af557383894c883d507211ea` |
-| SUMMARY.md | `4c73491a207206fa618e39e506965a55d5c781e012731df919127cc858f43de6` |
+| SUMMARY.md | `0c0a2031e7e4649a75af866ab3e705db1204b51397443dce953817b2cc61a7ba` |
 
 Les copies `sha256/<digest>.json|.md` sont régénérées avec ces digests et les
 objets devenus orphelins (l'ancien `16d8b75d….json`, ainsi que les copies
 obsolètes de la spec et du résumé) sont purgés : aucun digest n'est édité à la
-main.
+main. Le dernier incrément (#421 `backlog-jj0`, fenêtre légale explicite) a
+rejoué la même chaîne : le module runtime a changé, donc la préflight et les
+dix artefacts ont été régénérés, et les anciens objets `sha256/4d392697….json`,
+`68b014cd….json` et `4c73491a….md` ont été remplacés par les digests ci-dessus.
+Le nouveau module runtime
+(`tools/preflop/generalized_response_runtime.py`,
+`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`) déclare la
+fenêtre légale de la cible de raise et refuse en fail-closed
+(`ILLEGAL_SIZING_GENERATED`) une cible hors fenêtre sur un contexte
+autrement répondable ; la distribution in-window est inchangée, bit à bit
+(`analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json`).
 
 ## Provenance indépendante de l'environnement
 
 Depuis le correctif de provenance du runtime, chaque chemin enregistré par la
 preflight est un chemin POSIX relatif au dépôt, jamais un chemin absolu d'hôte :
 `evidence_bindings.runtime_module_path` (`tools/preflop/generalized_response_runtime.py`,
-`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538`) et chaque
+`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`) et chaque
 `registry_source` (`analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json`)
 sont désormais identiques sur tout hôte et dans tout worktree. Les artefacts
 régénérés ne contiennent plus aucune occurrence de `/home/`, et

@@ -48,12 +48,37 @@ A :class:`GeneralizedResponseRuntimeError` carries a stable machine-readable
 ``NO_LEGAL_ACTION``
     the context carries no legal response action at all;
 ``ILLEGAL_SIZING_GENERATED``
-    the conditional sizing model produced a target outside its legal window
-    (defensive invariant: never silently accepted).
+    an answerable context queried a raise target outside the engine's legal
+    raise window, or the conditional sizing model produced a target outside
+    that window (defensive invariant: never silently accepted).
 
 An out-of-domain context is *not* an exception: it yields a normal document
 with ``status="OOD_ABSTAIN"``, ``usable=false``, no selected action and no
 sizing.
+
+Queried raise target and the legal window
+-----------------------------------------
+
+The response distribution of an aggressive branch is conditioned on the queried
+raise target, so the runtime never lets a target that leaves the engine's legal
+raise window pass unannounced.  Every document carries ``sizing_window``
+(``poker-generalized-response-sizing-window-legality/v1``): the window the
+target was compared against, whether a target was queried at all, and, when one
+was, ``inside_legal_window`` plus the stable ``violation`` code
+``TARGET_BELOW_LEGAL_MINIMUM`` / ``TARGET_ABOVE_LEGAL_CAP`` /
+``LEGAL_WINDOW_UNVERIFIED``.  The window is the caller-supplied engine interval
+(``min_raise_to_bb`` / ``max_raise_to_bb`` / ``legal_target_interval_bb``) when
+present, otherwise the model's documented conservative derived floor and the
+effective stack as the cap; nothing is ever substituted.
+
+Two refusal regimes are kept apart, and the declaration is present in both:
+
+* a context outside the calibrated domain abstains through the frozen OOD gate
+  and still reports the queried target's window verdict;
+* a context that is otherwise answerable but whose queried target leaves the
+  legal window fails closed with ``ILLEGAL_SIZING_GENERATED`` *before* a
+  document is returned: the distribution is never returned as if the requested
+  sizing were legal.
 
 Only the Python standard library is used.
 """
@@ -102,6 +127,7 @@ RUNTIME_DECISION_REQUIRED_KEYS: tuple[str, ...] = (
     "normalization",
     "selected_action",
     "selected_sizing_bb",
+    "sizing_window",
     "uncertainty",
     "ood",
     "sizing",
@@ -147,6 +173,28 @@ FAIL_CLOSED_TEST_SPLIT = "TEST_SPLIT_NOT_CONSUMABLE"
 FAIL_CLOSED_ILLEGAL_ACTION = "ILLEGAL_ACTION_REQUEST"
 FAIL_CLOSED_NO_LEGAL_ACTION = "NO_LEGAL_ACTION"
 FAIL_CLOSED_ILLEGAL_SIZING = "ILLEGAL_SIZING_GENERATED"
+
+#: Machine-readable reason codes of a queried raise target that leaves the
+#: engine's legal raise window (see :meth:`GeneralizedResponseRuntime.sizing_window_legality`).
+SIZING_WINDOW_TARGET_BELOW_MINIMUM = "TARGET_BELOW_LEGAL_MINIMUM"
+SIZING_WINDOW_TARGET_ABOVE_CAP = "TARGET_ABOVE_LEGAL_CAP"
+SIZING_WINDOW_UNVERIFIED = "LEGAL_WINDOW_UNVERIFIED"
+
+#: Every stable window verdict code a decision document can declare.
+SIZING_WINDOW_VIOLATIONS: tuple[str, ...] = (
+    SIZING_WINDOW_TARGET_BELOW_MINIMUM,
+    SIZING_WINDOW_TARGET_ABOVE_CAP,
+    SIZING_WINDOW_UNVERIFIED,
+)
+
+#: Schema of the ``sizing_window`` legality declaration carried by every document.
+SIZING_WINDOW_SCHEMA = "poker-generalized-response-sizing-window-legality/v1"
+
+#: What the runtime does with a queried target outside the legal window.
+SIZING_WINDOW_POLICY = "FAIL_CLOSED_ILLEGAL_SIZING_GENERATED"
+
+#: Tolerance of the window comparison, identical to the sizing channel's own.
+SIZING_WINDOW_TOLERANCE = 1e-9
 
 FAIL_CLOSED_CODES: tuple[str, ...] = (
     FAIL_CLOSED_CANDIDATE_NOT_FOUND,
@@ -251,6 +299,25 @@ def _round(value: Any, digits: int = 6) -> float | None:
 def _level(value: Any) -> str:
     text = str(value).strip().upper() if value is not None else ""
     return text or model.MISSING
+
+
+def _queried_sizing_target(context: Mapping[str, Any]) -> float | None:
+    """The raise target the caller queried, in the model's documented precedence.
+
+    ``target_total_bb`` wins over ``raise_target_total_bb``; a missing field
+    means the caller asked for the marginal response and no target is judged.
+    A non-numeric or non-finite value is left to the model's own validation.
+    """
+    for field in ("target_total_bb", "raise_target_total_bb"):
+        raw = context.get(field)
+        if raw is None:
+            continue
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return None
+        return value if math.isfinite(value) else None
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -706,6 +773,59 @@ class GeneralizedResponseRuntime:
             )
         return model.raise_sizing_query(self.candidate, context, action=action)
 
+    def sizing_window_legality(
+        self, context: Mapping[str, Any], *, action: str = "RAISE"
+    ) -> dict[str, Any]:
+        """Machine-readable legality of the raise target queried in ``context``.
+
+        The verdict is computed from the *same* engine window the conditional
+        sizing channel uses (:func:`tools.preflop.generalized_response_model.raise_sizing_window`):
+        the caller-supplied ``min_raise_to_bb`` / ``max_raise_to_bb`` /
+        ``legal_target_interval_bb`` when present, otherwise the model's
+        documented conservative derived floor and the effective stack as the
+        cap.  Nothing is substituted and no neighbouring price or context is
+        consulted: the queried target is compared with the window it belongs to
+        and the verdict, the window and the policy are reported verbatim.
+        """
+        if action not in AGGRESSIVE_ACTIONS:
+            raise GeneralizedResponseRuntimeError(
+                FAIL_CLOSED_ILLEGAL_ACTION,
+                f"the legal raise window is defined for {AGGRESSIVE_ACTIONS}, not {action!r}",
+            )
+        target = _queried_sizing_target(context)
+        window = model.raise_sizing_window(
+            context, action=action, config=self.candidate["config"]
+        )
+        declaration: dict[str, Any] = {
+            "schema": SIZING_WINDOW_SCHEMA,
+            "action": action,
+            "queried": target is not None,
+            "queried_target_bb": None if target is None else _round(target),
+            "inside_legal_window": None,
+            "violation": None,
+            "violations": list(SIZING_WINDOW_VIOLATIONS),
+            "policy": SIZING_WINDOW_POLICY,
+            "substituted": False,
+            "legal_window": window,
+        }
+        if target is None:
+            return declaration
+        if window["fail_closed"]:
+            declaration["inside_legal_window"] = False
+            declaration["violation"] = SIZING_WINDOW_UNVERIFIED
+            return declaration
+        floor = float(window["floor_bb"])
+        cap = float(window["cap_bb"])
+        if target < floor - SIZING_WINDOW_TOLERANCE:
+            declaration["inside_legal_window"] = False
+            declaration["violation"] = SIZING_WINDOW_TARGET_BELOW_MINIMUM
+        elif target > cap + SIZING_WINDOW_TOLERANCE:
+            declaration["inside_legal_window"] = False
+            declaration["violation"] = SIZING_WINDOW_TARGET_ABOVE_CAP
+        else:
+            declaration["inside_legal_window"] = True
+        return declaration
+
     # -- the decision surface ------------------------------------------------
 
     def resolve(
@@ -757,6 +877,25 @@ class GeneralizedResponseRuntime:
         if not usable:
             selected = None
 
+        # The distribution of an aggressive branch is conditioned on the queried
+        # raise target.  An answerable context whose target leaves the engine's
+        # legal raise window is refused here, never answered with a clamped gain;
+        # an out-of-domain context keeps the frozen OOD abstention (precedence)
+        # and still declares the queried target's window verdict.
+        sizing_window = self.sizing_window_legality(
+            context, action=selected if selected in AGGRESSIVE_ACTIONS else "RAISE"
+        )
+        if usable and sizing_window["queried"] and not sizing_window["inside_legal_window"]:
+            window = sizing_window["legal_window"]
+            raise GeneralizedResponseRuntimeError(
+                FAIL_CLOSED_ILLEGAL_SIZING,
+                "the queried raise target "
+                f"{sizing_window['queried_target_bb']} is outside the legal window "
+                f"[{window['floor_bb']}, {window['cap_bb']}] "
+                f"({sizing_window['violation']}); the response distribution is never "
+                "conditioned on a clamped sizing gain",
+            )
+
         sizing: dict[str, Any] | None = None
         selected_sizing_bb: float | None = None
         if include_sizing and usable and selected in AGGRESSIVE_ACTIONS:
@@ -791,6 +930,7 @@ class GeneralizedResponseRuntime:
             "normalization": prediction["normalization"],
             "selected_action": selected,
             "selected_sizing_bb": selected_sizing_bb,
+            "sizing_window": sizing_window,
             "uncertainty": self._uncertainty(gate, probabilities, prediction, sizing, selected),
             "ood": gate,
             "sizing": sizing,

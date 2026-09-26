@@ -1,0 +1,372 @@
+{
+  "boundary": {
+    "active_pointer_mutated": false,
+    "issue367_executed": false,
+    "test_consumed": false,
+    "validation_split_reopened": false
+  },
+  "candidate_canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+  "candidate_id": "generalized-adverse-response-candidate-v1",
+  "captured_at_runtime_module_sha256": "e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538",
+  "entries": [
+    {
+      "action": "RAISE",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 70.975,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        2.0,
+        70.975
+      ],
+      "model_prediction_sha256": "6baf3cc49d71fa47e92f78a835da311d35ffa4c5e82b0a8982ed3ded3c50d42d",
+      "model_probabilities": {
+        "CALL": 0.3495352733202476,
+        "FOLD": 0.5432556229824147,
+        "JAM": 0.0009611245756500075,
+        "RAISE": 0.10624797912168772
+      },
+      "probe_id": "free_unopened_raise_floor",
+      "runtime_generated_sizings_sha256": "1583e2dcafea72d58b0931af53787523089c70e1e42c3da4cb1870a278b0bcb1",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "0e03cbbe8b804955e2b8669491b47b01211afde06557a0f2b441129c1b102708",
+      "runtime_probabilities": {
+        "CALL": 0.3495352733202476,
+        "FOLD": 0.5432556229824147,
+        "JAM": 0.0009611245756500075,
+        "RAISE": 0.10624797912168772
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "RAISE",
+      "runtime_selected_sizing_bb": 6.260645,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED",
+      "runtime_usable": true,
+      "target_total_bb": 2.0
+    },
+    {
+      "action": "RAISE",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 70.975,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        2.0,
+        70.975
+      ],
+      "model_prediction_sha256": "e37654eefd5fea55d3b514fe86c074914a8f28f06899aca59c948da3ece01cdb",
+      "model_probabilities": {
+        "CALL": 0.35836843928398743,
+        "FOLD": 0.5569843291955411,
+        "JAM": 0.0009854133199814763,
+        "RAISE": 0.08366181820048998
+      },
+      "probe_id": "free_unopened_raise_default_relative",
+      "runtime_generated_sizings_sha256": "1583e2dcafea72d58b0931af53787523089c70e1e42c3da4cb1870a278b0bcb1",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "16b571aa838bf69383f5d5569ac8860afb109fe2dbda60f19221296f84fe76c9",
+      "runtime_probabilities": {
+        "CALL": 0.35836843928398743,
+        "FOLD": 0.5569843291955411,
+        "JAM": 0.0009854133199814763,
+        "RAISE": 0.08366181820048998
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "RAISE",
+      "runtime_selected_sizing_bb": 6.260645,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED",
+      "runtime_usable": true,
+      "target_total_bb": 3.0
+    },
+    {
+      "action": "JAM",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 70.975,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        2.0,
+        70.975
+      ],
+      "model_prediction_sha256": "c52a1c0256a7724d2eca3bffa85d388bffc7bed83ad775ab02861d8a16e9dd3c",
+      "model_probabilities": {
+        "CALL": 0.38381794802071395,
+        "FOLD": 0.5965385309561733,
+        "JAM": 0.008443139003719957,
+        "RAISE": 0.011200382019392878
+      },
+      "probe_id": "free_unopened_jam_effective_stack",
+      "runtime_generated_sizings_sha256": "02865385569048571d290ff376de2f6dd3e64f43a5adc94eb27aa37ee16b8aa7",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "6acab32594fea932748c707c9a630669b583996386fd66617a6414bc03b0e212",
+      "runtime_probabilities": {
+        "CALL": 0.38381794802071395,
+        "FOLD": 0.5965385309561733,
+        "JAM": 0.008443139003719957,
+        "RAISE": 0.011200382019392878
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "JAM",
+      "runtime_selected_sizing_bb": 47.527076,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED_HIGH_UNCERTAINTY",
+      "runtime_usable": true,
+      "target_total_bb": 70.975
+    },
+    {
+      "action": "RAISE",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "engine_max_raise_to",
+        "min": "engine_interval"
+      },
+      "effective_stack_bb": 70.975,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        9.0,
+        60.0
+      ],
+      "model_prediction_sha256": "c793473c11154ebf0878c44cffc728414c95b0170300e9b486d779e68fb22a8b",
+      "model_probabilities": {
+        "CALL": 0.3866746020079299,
+        "FOLD": 0.6009784071573037,
+        "JAM": 0.0010632473776944762,
+        "RAISE": 0.011283743457071956
+      },
+      "probe_id": "explicit_interval_raise_interior",
+      "runtime_generated_sizings_sha256": "a21ea388f6212161ed74821ccfc1929eff69cab4dcca7d857914157603d66895",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "6c9455cdec6b5041f801d1772e3b7abd3865a434646fda1162cfbaddb016656b",
+      "runtime_probabilities": {
+        "CALL": 0.3866746020079299,
+        "FOLD": 0.6009784071573037,
+        "JAM": 0.0010632473776944762,
+        "RAISE": 0.011283743457071956
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "RAISE",
+      "runtime_selected_sizing_bb": 28.401151,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED",
+      "runtime_usable": true,
+      "target_total_bb": 12.0
+    },
+    {
+      "action": "JAM",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "engine_max_raise_to",
+        "min": "engine_interval"
+      },
+      "effective_stack_bb": 70.975,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        9.0,
+        60.0
+      ],
+      "model_prediction_sha256": "6d0f2da557ce0d8951dd529d4cddd43dfcec173459fc96f71add38b8e5bc08e4",
+      "model_probabilities": {
+        "CALL": 0.38381794802071395,
+        "FOLD": 0.5965385309561733,
+        "JAM": 0.008443139003719957,
+        "RAISE": 0.011200382019392878
+      },
+      "probe_id": "explicit_interval_jam_cap",
+      "runtime_generated_sizings_sha256": "df4d62e567ba0bea35d205da7f6fc569ac14b0b864e1f1282e1f20a87027ffce",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "81862552cdb3c4641d9574c3c515a145f483255f1e4245e125caf29ad9c9d031",
+      "runtime_probabilities": {
+        "CALL": 0.38381794802071395,
+        "FOLD": 0.5965385309561733,
+        "JAM": 0.008443139003719957,
+        "RAISE": 0.011200382019392878
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "JAM",
+      "runtime_selected_sizing_bb": 42.18677,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED_HIGH_UNCERTAINTY",
+      "runtime_usable": true,
+      "target_total_bb": 60.0
+    },
+    {
+      "action": "RAISE",
+      "actor_position": "BB",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 70.975,
+      "family": "VS_LIMPERS",
+      "legal_window_bb": [
+        2.5,
+        70.975
+      ],
+      "model_prediction_sha256": "24abbb8c9d7fc4593b9d4097702b6d5a419512dd87a3e3aa69ac7add595bab60",
+      "model_probabilities": {
+        "CALL": 0.38452007484377504,
+        "FOLD": 0.41189529029966204,
+        "JAM": 0.003886528164895875,
+        "RAISE": 0.19969810669166707
+      },
+      "probe_id": "vs_limpers_bb_raise_3bb",
+      "runtime_generated_sizings_sha256": "d3c4059a63ac2946e86e44cfb5bcc298aef76ac7ac92bc5f31d030de45c982a5",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "122aa8dba2f6109427c8df6771ac2e14943e8edf3ada94e075679ef904dfc0c6",
+      "runtime_probabilities": {
+        "CALL": 0.38452007484377504,
+        "FOLD": 0.41189529029966204,
+        "JAM": 0.003886528164895875,
+        "RAISE": 0.19969810669166707
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "RAISE",
+      "runtime_selected_sizing_bb": 7.073598,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED_HIGH_UNCERTAINTY",
+      "runtime_usable": true,
+      "target_total_bb": 3.0
+    },
+    {
+      "action": "RAISE",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 20.0,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        2.0,
+        20.0
+      ],
+      "model_prediction_sha256": "0f4b65d1f2422e2d81c86e068d47af2e23697bac581840ae390db17182a553bf",
+      "model_probabilities": {
+        "CALL": 0.38279510101767034,
+        "FOLD": 0.6006456813860758,
+        "JAM": 0.005464283356628075,
+        "RAISE": 0.011094934239625777
+      },
+      "probe_id": "short_stack_raise_15bb",
+      "runtime_generated_sizings_sha256": "01a5ba640a64189fcb73690e3f96897a2c74182371e78f5f7f37838297690350",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "24e448252b48a374bbd1d3d0f35fb3be31dac648f93b867a838fb90d3a352423",
+      "runtime_probabilities": {
+        "CALL": 0.38279510101767034,
+        "FOLD": 0.6006456813860758,
+        "JAM": 0.005464283356628075,
+        "RAISE": 0.011094934239625777
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "RAISE",
+      "runtime_selected_sizing_bb": 4.326613,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED",
+      "runtime_usable": true,
+      "target_total_bb": 15.0
+    },
+    {
+      "action": "JAM",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 20.0,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        2.0,
+        20.0
+      ],
+      "model_prediction_sha256": "71d527c3f278f12ab3d55b02e67f66758dc54acc9b9027cf405971c58c30515b",
+      "model_probabilities": {
+        "CALL": 0.379799829105396,
+        "FOLD": 0.5959457854524506,
+        "JAM": 0.01324626617170599,
+        "RAISE": 0.0110081192704474
+      },
+      "probe_id": "short_stack_jam_cap",
+      "runtime_generated_sizings_sha256": "fcdf8c814aaf13779cf38fe2bcf60a9b425220ce41575c237a1f50dcff20f077",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "640a143ff25b63d3fc3724367ec8684af2423577a723484a115ebc65d052b043",
+      "runtime_probabilities": {
+        "CALL": 0.379799829105396,
+        "FOLD": 0.5959457854524506,
+        "JAM": 0.01324626617170599,
+        "RAISE": 0.0110081192704474
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "JAM",
+      "runtime_selected_sizing_bb": 14.87146,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED",
+      "runtime_usable": true,
+      "target_total_bb": 20.0
+    },
+    {
+      "action": "RAISE",
+      "actor_position": "LJ",
+      "bounds_source": {
+        "max": "effective_stack_bb_conservative",
+        "min": "derived_conservative_floor"
+      },
+      "effective_stack_bb": 150.0,
+      "family": "UNOPENED",
+      "legal_window_bb": [
+        2.0,
+        150.0
+      ],
+      "model_prediction_sha256": "96347e60136b1c1cefbd3126a9a623a8040126fdf51faf8b8029116a820b2597",
+      "model_probabilities": {
+        "CALL": 0.37763394911025583,
+        "FOLD": 0.61020378886889,
+        "JAM": 0.0009074412588571112,
+        "RAISE": 0.01125482076199706
+      },
+      "probe_id": "deep_stack_raise_9bb",
+      "runtime_generated_sizings_sha256": "160263e16ec7551573076f19587dbe11ae3520bf2f8cf6c83a0e122657123072",
+      "runtime_illegal_mass": 0.0,
+      "runtime_inside_legal_window": true,
+      "runtime_prediction_sha256": "463c1b92a619db934efadb90792b1a57058b689bbb121aff253923673e6507ea",
+      "runtime_probabilities": {
+        "CALL": 0.37763394911025583,
+        "FOLD": 0.61020378886889,
+        "JAM": 0.0009074412588571112,
+        "RAISE": 0.01125482076199706
+      },
+      "runtime_probability_sum": 1.0,
+      "runtime_selected_action": "RAISE",
+      "runtime_selected_sizing_bb": 19.167792,
+      "runtime_sizing_status": "RESOLVED",
+      "runtime_status": "RESOLVED",
+      "runtime_usable": true,
+      "target_total_bb": 9.0
+    }
+  ],
+  "entries_sha256": "bc34f4a36e0c4978cea57dee686f268d97040d05822f4b82bf69af58e495834a",
+  "issue": 421,
+  "kind": "IN_WINDOW_PREDICTION_REFERENCE",
+  "model_module_sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
+  "purpose": "Freeze the in-window RAISE/JAM response predictions so that the explicit legal-window declaration (and any later revision) is proved not to move the in-window distribution.",
+  "regeneration": "python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference",
+  "rule": "an in-window query keeps the same action distribution and the same selected sizing as before the legal-window declaration was added; only the declared sizing_window verdict, never a probability, is new",
+  "schema": "poker-generalized-response-in-window-reference/v1"
+}

@@ -10,6 +10,11 @@ Covers every acceptance criterion of the runtime task:
   abstains: ``OOD_ABSTAIN``, ``usable=false``, no selected action, no sizing;
 * illegal actions never receive probability mass and are never selected, and
   every generated RAISE/JAM target is legal;
+* the queried raise target is always compared with the engine's legal raise
+  window and declared (``sizing_window``): an answerable context whose target
+  leaves the window fails closed with ``ILLEGAL_SIZING_GENERATED`` instead of
+  being answered through a clamped sizing gain, while an out-of-domain context
+  keeps the frozen ``OOD_ABSTAIN`` document and still declares the verdict;
 * a candidate / hash mismatch fails closed *before* any evaluation, and the
   document is machine-readable enough for #367 to consume.
 """
@@ -512,7 +517,7 @@ class ConditionalSizingTests(RuntimeFixtures):
 
     def test_the_explicit_engine_interval_is_authoritative(self) -> None:
         document = self.runtime.resolve(
-            base_context(target_total_bb=5.0, min_raise_to_bb=9.0, max_raise_to_bb=60.0),
+            base_context(target_total_bb=12.0, min_raise_to_bb=9.0, max_raise_to_bb=60.0),
             action="RAISE",
         )
         window = document["sizing"]["legal_window"]
@@ -522,6 +527,14 @@ class ConditionalSizingTests(RuntimeFixtures):
         for target in document["sizing"]["generated_sizings_bb"]:
             self.assertGreaterEqual(target, 9.0 - 1e-9)
             self.assertLessEqual(target, 60.0 + 1e-9)
+        # The queried target is compared with that same window and declared.
+        declaration = document["sizing_window"]
+        self.assertTrue(declaration["queried"])
+        self.assertEqual(declaration["queried_target_bb"], 12.0)
+        self.assertTrue(declaration["inside_legal_window"])
+        self.assertIsNone(declaration["violation"])
+        self.assertEqual(declaration["legal_window"]["floor_bb"], 9.0)
+        self.assertEqual(declaration["legal_window"]["cap_bb"], 60.0)
 
     def test_a_non_aggressive_selection_has_no_sizing_request(self) -> None:
         document = self.runtime.resolve(base_context())
@@ -556,6 +569,101 @@ class ConditionalSizingTests(RuntimeFixtures):
             )
             self.assertEqual(document["sizing"]["generated_sizings_bb"], [])
             self.assertIsNone(document["selected_sizing_bb"])
+
+
+# ---------------------------------------------------------------------------
+# queried raise target vs. the engine's legal raise window
+# ---------------------------------------------------------------------------
+
+
+class LegalRaiseWindowTests(RuntimeFixtures):
+    """A queried target outside the legal window is declared, never silent.
+
+    Both sides of the window are covered: a target below the engine minimum
+    raise and a target beyond the effective-stack cap.  The runtime refuses to
+    answer such a request (``ILLEGAL_SIZING_GENERATED``) because an answerable
+    context would otherwise be conditioned on a clamped sizing gain, and the
+    frozen OOD abstention keeps precedence so a domain refusal is never
+    reclassified as a request error.
+    """
+
+    def test_a_target_below_the_legal_minimum_fails_closed(self) -> None:
+        context = base_context(target_total_bb=5.0, min_raise_to_bb=9.0, max_raise_to_bb=60.0)
+        # The model's own window is the authority: 5.0 is below the minimum.
+        window = model.raise_sizing_window(context, action="RAISE")
+        self.assertFalse(window["fail_closed"])
+        self.assertEqual((window["floor_bb"], window["cap_bb"]), (9.0, 60.0))
+        with self.assertRaises(runtime.GeneralizedResponseRuntimeError) as caught:
+            self.runtime.resolve(context, action="RAISE")
+        self.assertEqual(caught.exception.code, runtime.FAIL_CLOSED_ILLEGAL_SIZING)
+        self.assertIn(runtime.SIZING_WINDOW_TARGET_BELOW_MINIMUM, caught.exception.message)
+
+    def test_a_target_beyond_the_effective_stack_cap_fails_closed(self) -> None:
+        # 100 bb is inside the calibrated sizing domain (ratio 40 < trained max)
+        # but beyond the effective stack, i.e. it is not a legal raise target.
+        context = base_context(target_total_bb=100.0)
+        window = model.raise_sizing_window(context, action="RAISE")
+        self.assertEqual(window["cap_bb"], 70.975)
+        with self.assertRaises(runtime.GeneralizedResponseRuntimeError) as caught:
+            self.runtime.resolve(context, action="RAISE")
+        self.assertEqual(caught.exception.code, runtime.FAIL_CLOSED_ILLEGAL_SIZING)
+        self.assertIn(runtime.SIZING_WINDOW_TARGET_ABOVE_CAP, caught.exception.message)
+
+    def test_an_in_window_target_is_declared_inside_the_window(self) -> None:
+        for target in (2.0, 3.0, 70.975):
+            with self.subTest(target=target):
+                document = self.runtime.resolve(
+                    base_context(target_total_bb=target), action="RAISE"
+                )
+                declaration = document["sizing_window"]
+                self.assertEqual(declaration["schema"], runtime.SIZING_WINDOW_SCHEMA)
+                self.assertTrue(declaration["queried"])
+                self.assertEqual(declaration["queried_target_bb"], target)
+                self.assertTrue(declaration["inside_legal_window"])
+                self.assertIsNone(declaration["violation"])
+                self.assertFalse(declaration["substituted"])
+                self.assertEqual(declaration["policy"], runtime.SIZING_WINDOW_POLICY)
+                window = declaration["legal_window"]
+                self.assertLessEqual(window["floor_bb"], target)
+                self.assertGreaterEqual(window["cap_bb"], target)
+
+    def test_a_context_without_a_queried_target_judges_no_target(self) -> None:
+        document = self.runtime.resolve(base_context(), action="RAISE")
+        declaration = document["sizing_window"]
+        self.assertFalse(declaration["queried"])
+        self.assertIsNone(declaration["queried_target_bb"])
+        self.assertIsNone(declaration["inside_legal_window"])
+        self.assertIsNone(declaration["violation"])
+        self.assertEqual(declaration["legal_window"]["floor_bb"], 2.0)
+
+    def test_an_out_of_domain_context_keeps_ood_precedence_and_declares_the_verdict(self) -> None:
+        # Far beyond the window *and* beyond the calibrated sizing domain: the
+        # frozen OOD abstention is the answer, and the verdict is still stated.
+        document = self.runtime.resolve(base_context(target_total_bb=5000.0), action="RAISE")
+        self.assertEqual(document["status"], runtime.STATUS_ABSTAIN)
+        self.assertFalse(document["usable"])
+        self.assertIsNone(document["sizing"])
+        declaration = document["sizing_window"]
+        self.assertTrue(declaration["queried"])
+        self.assertFalse(declaration["inside_legal_window"])
+        self.assertEqual(declaration["violation"], runtime.SIZING_WINDOW_TARGET_ABOVE_CAP)
+
+    def test_an_unverifiable_window_is_declared_not_assumed_legal(self) -> None:
+        # A non-free regime without the actor's commitment: the model cannot
+        # verify the minimum raise, so a queried target is never assumed legal.
+        context = base_context(raise_level=2, target_total_bb=3.0)
+        declaration = self.runtime.sizing_window_legality(context)
+        self.assertTrue(declaration["legal_window"]["fail_closed"])
+        self.assertEqual(
+            declaration["legal_window"]["fail_closed_reason"],
+            "MISSING_MIN_RAISE_TO_UNVERIFIED_COMMITMENT",
+        )
+        self.assertFalse(declaration["inside_legal_window"])
+        self.assertEqual(declaration["violation"], runtime.SIZING_WINDOW_UNVERIFIED)
+        with self.assertRaises(runtime.GeneralizedResponseRuntimeError) as caught:
+            self.runtime.resolve(context, action="RAISE")
+        self.assertEqual(caught.exception.code, runtime.FAIL_CLOSED_ILLEGAL_SIZING)
+        self.assertIn(runtime.SIZING_WINDOW_UNVERIFIED, caught.exception.message)
 
 
 # ---------------------------------------------------------------------------
