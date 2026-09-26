@@ -336,4 +336,37 @@ jobs:
         self.assertIs(row["fail_closed_safe"],True)
         self.assertEqual("SAFE_CANDIDATE_NOT_APPLIED",row["recommendation_state"])
         self.assertTrue(row["blockers"])
+
+    def test_dag_evidence_is_regenerable_and_covers_the_issue419_workflow(self):
+        """DAG half of the committed-evidence parity: the versioned DAG, its decision artifact
+        and its rendered Markdown must all be the deterministic output of the generators at
+        HEAD, and the #419 runner must appear as an active, read-only workflow.
+
+        ``test_committed_inventory_is_regenerable`` pins the inventory and the #419 workflow's
+        path filters pin its triggers; this ties the two together so a workflow added to the
+        checkout can never silently drift out of the DAG evidence or its documentation.
+        """
+        inventory_bytes=(ROOT/"analysis/workflow_audit/workflows.json").read_bytes()
+        data=dag.build(); decision=dag.build_decision(data)
+        self.assertEqual(data,json.loads((ROOT/dag.OUTPUT).read_text()),f"{dag.OUTPUT} is stale")
+        self.assertEqual(decision,json.loads((ROOT/dag.DECISION).read_text()),f"{dag.DECISION} is stale")
+        self.assertEqual(dag.markdown(data,decision),(ROOT/dag.DOC).read_text(),f"{dag.DOC} is stale")
+        # The DAG is bound to the committed inventory, not to a private copy of it.
+        self.assertEqual(hashlib.sha256(inventory_bytes).hexdigest(),data["inventory_sha256"])
+        inventory=json.loads(inventory_bytes)
+        self.assertEqual(inventory["aggregate"]["automatic_trigger_workflows"],data["active_workflow_count"])
+        self.assertEqual(inventory["aggregate"]["manual_only_workflows"],data["manual_only_count"])
+        path=ISSUE_419_WORKFLOW
+        # The new workflow is active (not quarantined) and classified like the inventory does.
+        self.assertNotIn(path,data["excluded_manual_only_workflows"])
+        inventory_row=next(r for r in inventory["workflows"] if r["path"]==path)
+        self.assertTrue(inventory_row["automatic"])
+        self.assertEqual("current",inventory_row["lifecycle"])
+        dag_row=next((r for r in data["workflows"] if r["path"]==path),None)
+        self.assertIsNotNone(dag_row,f"{path} missing from the active DAG")
+        self.assertEqual(inventory_row["role"],dag_row["role"])
+        self.assertEqual("validation_or_utility",dag_row["role"])
+        self.assertEqual("READ_ONLY",dag_row["side_effect_class"])
+        self.assertTrue(dag_row["concurrency_recommendation"]["safe_candidate_for_future_cancellation_change"])
+
 if __name__=="__main__": unittest.main()
