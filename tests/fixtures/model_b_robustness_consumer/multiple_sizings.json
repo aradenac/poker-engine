@@ -1,0 +1,141 @@
+{
+  "schema": "hero-model-b-robustness-input/v1",
+  "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+  "synthetic_fixture": true,
+  "decision": {
+    "decision_id": "synthetic-robustness-multiple-sizings-001",
+    "context_id": "synthetic-robustness-context-multiple-sizings-001",
+    "hero_position": "SB",
+    "action": "ISO",
+    "sizing": 5.0
+  },
+  "alternatives": [
+    {
+      "alternative_id": "ISO@5",
+      "action": "ISO",
+      "sizing": 5.0,
+      "route": "synthetic_robustness_route_iso_5",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": 1.28,
+      "uncertainty": {
+        "ci95": [1.25, 1.31],
+        "width_bb": 0.06,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": 0.0,
+      "support": {
+        "status": "SENSITIVE",
+        "tier": "MEDIUM",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-multiple-sizings-iso-5-01"
+      ]
+    },
+    {
+      "alternative_id": "ISO@4",
+      "action": "ISO",
+      "sizing": 4.0,
+      "route": "synthetic_robustness_route_iso_4",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": 1.1,
+      "uncertainty": {
+        "ci95": [1.06, 1.14],
+        "width_bb": 0.08,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -0.18,
+      "support": {
+        "status": "SENSITIVE",
+        "tier": "MEDIUM",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-multiple-sizings-iso-4-01"
+      ]
+    },
+    {
+      "alternative_id": "ISO@6",
+      "action": "ISO",
+      "sizing": 6.0,
+      "route": "synthetic_robustness_route_iso_6",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": 0.91,
+      "uncertainty": {
+        "ci95": [0.87, 0.95],
+        "width_bb": 0.08,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -0.37,
+      "support": {
+        "status": "SENSITIVE",
+        "tier": "MEDIUM",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-multiple-sizings-iso-6-01"
+      ]
+    },
+    {
+      "alternative_id": "OVERLIMP@1",
+      "action": "OVERLIMP",
+      "sizing": 1.0,
+      "route": "synthetic_robustness_route_overlimp_1",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": 0.26,
+      "uncertainty": {
+        "ci95": [0.22, 0.3],
+        "width_bb": 0.08,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -1.02,
+      "support": {
+        "status": "CONSISTENT",
+        "tier": "HIGH",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-multiple-sizings-overlimp-1-01"
+      ]
+    },
+    {
+      "alternative_id": "FOLD",
+      "action": "FOLD",
+      "sizing": null,
+      "route": "synthetic_robustness_route_fold",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": -0.02,
+      "uncertainty": {
+        "ci95": [-0.06, 0.02],
+        "width_bb": 0.08,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -1.3,
+      "support": {
+        "status": "CONSISTENT",
+        "tier": "HIGH",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-multiple-sizings-fold-01"
+      ]
+    }
+  ],
+  "provenance": {
+    "parent_issue": 314,
+    "upstream_result_schema": "poker-issue367-real-iso-ev-result/v1",
+    "synthetic_fixture": true,
+    "real_issue_367_consumed": false,
+    "real_issue_314_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false
+  },
+  "information_boundary": {
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false,
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false
+  }
+}

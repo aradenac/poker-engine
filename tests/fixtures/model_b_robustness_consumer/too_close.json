@@ -1,0 +1,75 @@
+{
+  "schema": "hero-model-b-robustness-input/v1",
+  "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+  "synthetic_fixture": true,
+  "decision": {
+    "decision_id": "synthetic-robustness-too-close-001",
+    "context_id": "synthetic-robustness-context-too-close-001",
+    "hero_position": "SB",
+    "action": "ISO",
+    "sizing": 5.0
+  },
+  "alternatives": [
+    {
+      "alternative_id": "ISO@5",
+      "action": "ISO",
+      "sizing": 5.0,
+      "route": "synthetic_robustness_route_iso_5",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": 1.18,
+      "uncertainty": {
+        "ci95": [1.15, 1.21],
+        "width_bb": 0.06,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": 0.0,
+      "support": {
+        "status": "TOO_CLOSE",
+        "tier": "MEDIUM",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-too-close-iso-5-01"
+      ]
+    },
+    {
+      "alternative_id": "ISO@4",
+      "action": "ISO",
+      "sizing": 4.0,
+      "route": "synthetic_robustness_route_iso_4",
+      "source": "synthetic_monte_carlo_paired_v1",
+      "ev_bb": 1.17,
+      "uncertainty": {
+        "ci95": [1.14, 1.2],
+        "width_bb": 0.06,
+        "source": "synthetic_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -0.01,
+      "support": {
+        "status": "TOO_CLOSE",
+        "tier": "MEDIUM",
+        "ood": false
+      },
+      "posterior_refs": [
+        "synthetic-posterior-too-close-iso-4-01"
+      ]
+    }
+  ],
+  "provenance": {
+    "parent_issue": 314,
+    "upstream_result_schema": "poker-issue367-real-iso-ev-result/v1",
+    "synthetic_fixture": true,
+    "real_issue_367_consumed": false,
+    "real_issue_314_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false
+  },
+  "information_boundary": {
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false,
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "schema": "hero-model-b-robustness-input/v1",
+  "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+  "synthetic_fixture": true,
+  "decision": {
+    "decision_id": "synthetic-robustness-sparse-high-uncertainty-001",
+    "context_id": "synthetic-robustness-context-sparse-high-uncertainty-001",
+    "hero_position": "SB",
+    "action": "ISO",
+    "sizing": 4.0
+  },
+  "alternatives": [
+    {
+      "alternative_id": "ISO@4",
+      "action": "ISO",
+      "sizing": 4.0,
+      "route": "synthetic_robustness_route_iso_4",
+      "source": "synthetic_sparse_monte_carlo_v1",
+      "ev_bb": 0.48,
+      "uncertainty": {
+        "ci95": [-2.52, 3.48],
+        "width_bb": 6.0,
+        "source": "synthetic_sparse_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": 0.0,
+      "support": {
+        "status": "INSUFFICIENT_SUPPORT",
+        "tier": "LOW",
+        "ood": false
+      },
+      "posterior_refs": null
+    },
+    {
+      "alternative_id": "ISO@5",
+      "action": "ISO",
+      "sizing": 5.0,
+      "route": "synthetic_robustness_route_iso_5",
+      "source": "synthetic_sparse_monte_carlo_v1",
+      "ev_bb": 0.42,
+      "uncertainty": {
+        "ci95": [-2.58, 3.42],
+        "width_bb": 6.0,
+        "source": "synthetic_sparse_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -0.06,
+      "support": {
+        "status": "INSUFFICIENT_SUPPORT",
+        "tier": "LOW",
+        "ood": false
+      },
+      "posterior_refs": null
+    },
+    {
+      "alternative_id": "ISO@6",
+      "action": "ISO",
+      "sizing": 6.0,
+      "route": "synthetic_robustness_route_iso_6",
+      "source": "synthetic_sparse_monte_carlo_v1",
+      "ev_bb": 0.36,
+      "uncertainty": {
+        "ci95": [-2.64, 3.36],
+        "width_bb": 6.0,
+        "source": "synthetic_sparse_paired_ci95_v1"
+      },
+      "paired_delta_vs_best_bb": -0.12,
+      "support": {
+        "status": "INSUFFICIENT_SUPPORT",
+        "tier": "LOW",
+        "ood": false
+      },
+      "posterior_refs": null
+    }
+  ],
+  "provenance": {
+    "parent_issue": 314,
+    "upstream_result_schema": "poker-issue367-real-iso-ev-result/v1",
+    "synthetic_fixture": true,
+    "real_issue_367_consumed": false,
+    "real_issue_314_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false
+  },
+  "information_boundary": {
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false,
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false
+  }
+}
