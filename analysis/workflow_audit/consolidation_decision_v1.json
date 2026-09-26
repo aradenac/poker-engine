@@ -27,14 +27,14 @@
     "workflow_files_modified": false
   },
   "counts": {
-    "active_automatic_workflow_count": 55,
+    "active_automatic_workflow_count": 56,
     "blocked_not_applied_count": 11,
-    "cancel_in_progress_false_count": 11,
+    "cancel_in_progress_false_count": 12,
     "cancel_in_progress_true_count": 28,
-    "duplicate_push_and_pull_request_exposure_count": 35,
-    "inventory_workflow_count": 70,
+    "duplicate_push_and_pull_request_exposure_count": 36,
+    "inventory_workflow_count": 71,
     "manual_only_count": 15,
-    "safe_candidate_not_applied_count": 16,
+    "safe_candidate_not_applied_count": 17,
     "without_concurrency_count": 16
   },
   "dag_evidence": "analysis/workflow_audit/active_workflow_dag_v2.json",
@@ -49,8 +49,8 @@
     ".github/workflows/project-state-consistency.yml is never modified",
     "job and artifact names are preserved and digest-pinned for every workflow"
   ],
-  "frozen_name_digest": "d5f5a55db90cf9bc438b8f29ef82c198367756bf090a8cf9414177d6b1162c7a",
-  "inventory_sha256": "c3f1b1dbc86f80725c427f20dcaa5afc01b576d61ddbcf2e52fe2e02990d1d30",
+  "frozen_name_digest": "c203626987fa9e5da8825f2cc69530c8c5b4654b54fea187e76633eb570d9e6c",
+  "inventory_sha256": "57697e3c37dd6c04ee6af39c8bd4c605692cb4db3d7a16c95f6ba74f3d440c81",
   "inventory_source": "analysis/workflow_audit/workflows.json",
   "issue": 382,
   "measurement_method": {
@@ -80,7 +80,7 @@
     "without_concurrency": 19
   },
   "planner_estimate_delta": {
-    "active_automatic": 2,
+    "active_automatic": 3,
     "cancel_in_progress_true": -9,
     "manual_only": 0,
     "without_concurrency": -3
@@ -114,6 +114,7 @@
       ".github/workflows/issue-367-real-iso-ev-observable.yml",
       ".github/workflows/issue-367-real-iso-ev.yml",
       ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+      ".github/workflows/issue-421-generalized-response-model.yml",
       ".github/workflows/model-a-continuation.yml",
       ".github/workflows/model-b-card-aware-runtime.yml",
       ".github/workflows/model-b-reveal-aware.yml",
@@ -123,7 +124,7 @@
       ".github/workflows/project-state-consistency.yml",
       ".github/workflows/user-artifact-bundle.yml"
     ],
-    "unapplied_count": 27
+    "unapplied_count": 28
   },
   "scenario_count": 14,
   "scenarios": [
@@ -1725,6 +1726,114 @@
       ],
       "name": "Execute issue 419 hierarchical exact tree",
       "path": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/simulation/issue421_issue367_preflight.py",
+            "tools/training/audit_generalized_response_features.py",
+            "tools/training/build_generalized_response_dataset.py",
+            "tools/training/build_issue421_evidence_bundle.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "tools/training/freeze_generalized_validation_protocol.py",
+            "tools/training/validate_generalized_response.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-model.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "contracts/training/generalized-validation-protocol.schema.json",
+            "tests/ci/test_issue421_contract_guards.py",
+            "tests/preflop/test_generalized_response_*.py",
+            "tests/preflop/test_issue421_mandatory_contracts.py",
+            "tests/simulation/test_issue421_preflight.py",
+            "tests/training/test_*generalized*.py",
+            "tests/training/test_issue421_evidence_bundle.py",
+            "tests/training/test_issue421_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "tests/ci/test_consolidation_decision.py",
+            "docs/generalized-opponent-response-model.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*generalized*.md",
+            "analysis/issue421_generalized_response/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-421-generalized-response-model.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/simulation/issue421_issue367_preflight.py",
+            "tools/training/audit_generalized_response_features.py",
+            "tools/training/build_generalized_response_dataset.py",
+            "tools/training/build_issue421_evidence_bundle.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "tools/training/freeze_generalized_validation_protocol.py",
+            "tools/training/validate_generalized_response.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-model.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "contracts/training/generalized-validation-protocol.schema.json",
+            "tests/ci/test_issue421_contract_guards.py",
+            "tests/preflop/test_generalized_response_*.py",
+            "tests/preflop/test_issue421_mandatory_contracts.py",
+            "tests/simulation/test_issue421_preflight.py",
+            "tests/training/test_*generalized*.py",
+            "tests/training/test_issue421_evidence_bundle.py",
+            "tests/training/test_issue421_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "tests/ci/test_consolidation_decision.py",
+            "docs/generalized-opponent-response-model.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*generalized*.md",
+            "analysis/issue421_generalized_response/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-421-generalized-response-model.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Execute issue 421 generalized response model",
+      "path": ".github/workflows/issue-421-generalized-response-model.yml",
       "proposed_change": "keep the existing group and set cancel-in-progress: true",
       "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
       "role": "validation_or_utility",

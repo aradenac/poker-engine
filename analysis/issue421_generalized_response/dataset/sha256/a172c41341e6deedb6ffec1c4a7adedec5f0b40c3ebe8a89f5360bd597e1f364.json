@@ -1,0 +1,91 @@
+{
+  "archives": [
+    {
+      "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+      "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6"
+    },
+    {
+      "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+      "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb"
+    }
+  ],
+  "certification": {
+    "certification_schema": "poker-population-certification/v1",
+    "path": "training/datasets/NLHE_100-200/population_certification.json",
+    "sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6"
+  },
+  "certified_hands": 23789,
+  "certified_split_counts": {
+    "TEST": 2449,
+    "TRAIN": 19016,
+    "VALIDATION": 2324
+  },
+  "consumed_splits": [
+    "TRAIN",
+    "VALIDATION"
+  ],
+  "loader_evidence": {
+    "TRAIN": {
+      "hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+      "hands": 19016,
+      "loader": "tools/training/audit_hero_preflop_coverage.load_train_records",
+      "loader_provenance": {
+        "archives": [
+          {
+            "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+            "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+            "unique_hands": 27164
+          },
+          {
+            "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+            "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+            "unique_hands": 11896
+          }
+        ],
+        "certification_path": "training/datasets/NLHE_100-200/population_certification.json",
+        "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+        "certified_hands": 23789,
+        "certified_split_counts": {
+          "TEST": 2449,
+          "TRAIN": 19016,
+          "VALIDATION": 2324
+        },
+        "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c"
+      }
+    },
+    "VALIDATION": {
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands": 2324,
+      "loader": "tools/training/fit_model_a_preflop_sizing.load_certified_split",
+      "loader_provenance": {
+        "archives": [
+          {
+            "path": "training/datasets/NLHE_100-200/source/NLHE 100-200.zip",
+            "sha256": "6effd27d6e9f8257f3e87c68f0218b8edc72a2b487cb57da2c37ff85bc8ce4c6",
+            "unique_hands": 27164
+          },
+          {
+            "path": "training/datasets/NLHE_100-200/snapshots/20260912/source/RoiDePiqueNique.zip",
+            "sha256": "374f8dedf5eeeee26b2cd049b1729f80bd2877c6f7ccef806c580019c5f94fcb",
+            "unique_hands": 11896
+          }
+        ],
+        "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+        "hands": 2324,
+        "split": "VALIDATION"
+      }
+    }
+  },
+  "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "refused_splits": [
+    "TEST"
+  ],
+  "response_rows_by_split": {
+    "TRAIN": 94160,
+    "VALIDATION": 11538
+  },
+  "response_rows_total": 105698,
+  "schema": "poker-generalized-response-corpus-hashes/v1",
+  "test_hands_consumed": 0
+}

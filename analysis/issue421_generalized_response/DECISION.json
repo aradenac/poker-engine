@@ -1,0 +1,320 @@
+{
+  "active_model_pointer_mutation": false,
+  "active_pointer_mutated": false,
+  "automatic_promotion": "FORBIDDEN",
+  "candidate": {
+    "architecture": "regularized_multinomial_spline",
+    "candidate_id": "generalized-adverse-response-candidate-v1",
+    "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+    "status": "CANDIDATE_ONLY_NOT_ACTIVE"
+  },
+  "canonical_payload_sha256": "8f68483ec52517b7897b5dc7f32a4344081c18cd1f6132bccf56c784f3725379",
+  "comparisons": {
+    "candidate_minus_active_model_a_v5": {
+      "delta_log_loss_bits_per_decision": 0.0012123432,
+      "hands": 2324,
+      "left": "candidate_generalized",
+      "n": 11538,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0046920887,
+          0.0069549188
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 0.347,
+        "samples": 5000,
+        "seed": 421
+      },
+      "right": "active_model_a_v5"
+    },
+    "candidate_minus_alternate_architecture_hierarchical_eb": {
+      "delta_log_loss_bits_per_decision": -0.0128461418,
+      "hands": 2324,
+      "left": "candidate_generalized",
+      "n": 11538,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0194064333,
+          -0.0086878096
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 1.0,
+        "samples": 5000,
+        "seed": 424
+      },
+      "right": "alternate_architecture_hierarchical_eb"
+    },
+    "candidate_minus_fit_global_prior_baseline": {
+      "delta_log_loss_bits_per_decision": -0.0666902883,
+      "hands": 2324,
+      "left": "candidate_generalized",
+      "n": 11538,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0758366993,
+          -0.0576900794
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 1.0,
+        "samples": 5000,
+        "seed": 423
+      },
+      "right": "fit_global_prior_baseline"
+    },
+    "candidate_minus_model_a_preflop_sizing_aware_candidate_v2": {
+      "delta_log_loss_bits_per_decision": 0.006683435,
+      "hands": 2323,
+      "left": "candidate_generalized",
+      "n": 9854,
+      "paired_bootstrap": {
+        "ci95": [
+          0.0009497274,
+          0.0122203446
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 0.0106,
+        "samples": 5000,
+        "seed": 422
+      },
+      "right": "model_a_preflop_sizing_aware_candidate_v2"
+    }
+  },
+  "comparisons_present": [
+    "candidate_minus_active_model_a_v5",
+    "candidate_minus_alternate_architecture_hierarchical_eb",
+    "candidate_minus_fit_global_prior_baseline",
+    "candidate_minus_model_a_preflop_sizing_aware_candidate_v2"
+  ],
+  "criteria_passed": 8,
+  "criteria_total": 10,
+  "decided_at": "2026-09-26T00:00:00Z",
+  "decision": "RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT",
+  "downstream": "only an admitted outcome may be consumed by #367; a retained candidate leaves the active Model A pointer unchanged and authorizes no #367 ISO EV run, no support-grid extension and no provider wiring",
+  "failed_gates": [
+    "non_inferiority_vs_active_model_a_preflop_population",
+    "calibration_within_frozen_ceiling"
+  ],
+  "gates": [
+    {
+      "detail": "the protocol bytes and canonical payload digest were re-derived and the ordering guard passed before the read",
+      "id": "protocol_frozen_before_validation",
+      "observed": {
+        "declared_result_locations_present": [],
+        "protocol_byte_sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5"
+      },
+      "passed": true,
+      "rule_id": "VALIDATION_ORDER_GUARD",
+      "threshold": {
+        "protocol_byte_sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5"
+      }
+    },
+    {
+      "detail": "TEST is refused statically by the AST self-scan and dynamically by the certified loader and the response model",
+      "id": "test_never_consumed",
+      "observed": {
+        "test_consumed": false,
+        "test_rows_seen": 0
+      },
+      "passed": true,
+      "rule_id": "TEST_IS_NOT_AUTHORIZED",
+      "threshold": {
+        "test_rows_seen": 0
+      }
+    },
+    {
+      "detail": "VALIDATION was opened once, after the freeze, and the read is the certified fold registered in the frozen dataset manifest",
+      "id": "validation_read_exactly_once",
+      "observed": {
+        "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+        "reads": 1,
+        "rows": 11538
+      },
+      "passed": true,
+      "rule_id": "VALIDATION_READ_ONCE",
+      "threshold": {
+        "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+        "reads": 1,
+        "rows": 11538
+      }
+    },
+    {
+      "detail": "share of in-scope VALIDATION decisions answered with a legal, non-OOD distribution",
+      "id": "coverage_floor",
+      "observed": 1.0,
+      "passed": true,
+      "rule_id": "COVERAGE_FLOOR",
+      "threshold": 0.5
+    },
+    {
+      "detail": "minimum number of scored VALIDATION decisions",
+      "id": "minimum_scored_decisions",
+      "observed": 11538,
+      "passed": true,
+      "rule_id": "COVERAGE_FLOOR",
+      "threshold": 500
+    },
+    {
+      "detail": "minimum number of distinct scored VALIDATION hands",
+      "id": "minimum_distinct_hands",
+      "observed": 2324,
+      "passed": true,
+      "rule_id": "COVERAGE_FLOOR",
+      "threshold": 100
+    },
+    {
+      "detail": "paired (candidate - fit global action prior) 95% CI upper bound <= 0",
+      "id": "non_inferiority_vs_fit_global_prior_baseline",
+      "observed": {
+        "ci95_upper": -0.0576900794,
+        "margin_bits": 0.0
+      },
+      "passed": true,
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "threshold": {
+        "ci95_upper_max": 0.0
+      }
+    },
+    {
+      "detail": "paired (candidate - hierarchical empirical Bayes) 95% CI upper bound <= the preregistered cross-validation tolerance",
+      "id": "non_inferiority_vs_alternate_architecture_hierarchical_eb",
+      "observed": {
+        "ci95_upper": -0.0086878096,
+        "margin_bits": 0.005
+      },
+      "passed": true,
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "threshold": {
+        "ci95_upper_max": 0.005
+      }
+    },
+    {
+      "detail": "paired (candidate - active Model A v5) 95% CI upper bound <= 0",
+      "id": "non_inferiority_vs_active_model_a_preflop_population",
+      "observed": {
+        "ci95_upper": 0.0069549188,
+        "margin_bits": 0.0
+      },
+      "passed": false,
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "threshold": {
+        "ci95_upper_max": 0.0
+      }
+    },
+    {
+      "detail": "equal-count reliability bins per action class, pooled over the frozen VALIDATION decisions and compared against the active reference",
+      "id": "calibration_within_frozen_ceiling",
+      "observed": {
+        "active_ece": 0.014743239356,
+        "active_ece_on_same_support": 0.014743239356,
+        "bins_meeting_minimum_support": 40,
+        "claim_supportable": true,
+        "ece": 0.036227855199,
+        "ece_delta_vs_active": 0.0214846158,
+        "pooled_support_rows": 11538
+      },
+      "passed": false,
+      "rule_id": "CALIBRATION_WITHIN_FROZEN_CEILING",
+      "threshold": {
+        "maximum_absolute_ece": 0.05,
+        "maximum_ece_delta_vs_active": 0.02,
+        "minimum_bin_support_for_a_claim": 20
+      }
+    }
+  ],
+  "issue": 421,
+  "issue367_authorized": false,
+  "metrics": {
+    "brier_score": {
+      "active_model_a_v5": 0.5257180063,
+      "alternate_architecture_hierarchical_eb": 0.5306143008,
+      "candidate_generalized": 0.5242836174,
+      "fit_global_prior_baseline": 0.5534494285,
+      "model_a_preflop_sizing_aware_candidate_v2": 0.5382575033
+    },
+    "coverage": {
+      "abstain_rate": 0.0,
+      "answered_decisions": 11538,
+      "distinct_hands_answered": 2324,
+      "limiters_vs_iso": {
+        "abstain_rate": 0.0,
+        "answered": 364,
+        "coverage": 1.0,
+        "n": 364
+      },
+      "total": 1.0
+    },
+    "expected_calibration_error": {
+      "active_model_a_v5": 0.0147432394,
+      "alternate_architecture_hierarchical_eb": 0.0399200791,
+      "candidate_generalized": 0.0362278552,
+      "fit_global_prior_baseline": 0.0077336625,
+      "model_a_preflop_sizing_aware_candidate_v2": 0.0115710569
+    },
+    "log_loss_bits_per_decision": {
+      "active_model_a_v5": 1.2677704885,
+      "alternate_architecture_hierarchical_eb": 1.2818289735,
+      "candidate_generalized": 1.2689828317,
+      "fit_global_prior_baseline": 1.33567312,
+      "model_a_preflop_sizing_aware_candidate_v2": 1.3013433248
+    },
+    "strata": {
+      "exact_absent_in_domain": 0.0232275958,
+      "exact_absent_out_of_domain": 0.0,
+      "frequent_exact": 0.8710348414,
+      "rare_exact": 0.1057375628
+    }
+  },
+  "passed_gates": [
+    "protocol_frozen_before_validation",
+    "test_never_consumed",
+    "validation_read_exactly_once",
+    "coverage_floor",
+    "minimum_scored_decisions",
+    "minimum_distinct_hands",
+    "non_inferiority_vs_fit_global_prior_baseline",
+    "non_inferiority_vs_alternate_architecture_hierarchical_eb"
+  ],
+  "protocol_outcome": "RETAIN_ACTIVE_REFERENCE",
+  "publication": {
+    "declared_protocol_result_path": "analysis/issue421_generalized_response/validation/VALIDATION_RESULT.json",
+    "declared_result_locations_present": [],
+    "note": "the protocol's declared fenced location is intentionally empty; the terminal evidence lives beside the protocol so the freeze stays re-verifiable"
+  },
+  "rationale": "the candidate fails non_inferiority_vs_active_model_a_preflop_population, calibration_within_frozen_ceiling on the one-shot VALIDATION evaluation; the active Model A reference is retained and the generalization evidence is insufficient for admission",
+  "references": {
+    "active_model_a_v5": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "role": "ACTIVE_MODEL_A_POINTER",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "candidate_generalized": {
+      "architecture": "regularized_multinomial_spline",
+      "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+      "role": "#421_GENERALIZED_RESPONSE_CANDIDATE"
+    },
+    "model_a_sizing_aware_candidate_v2_352": {
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "role": "#352_ADMITTED_MODEL_A_CANDIDATE",
+      "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
+    }
+  },
+  "rollback": "no production state was mutated: the terminal decision is a new evidence artifact and can be withdrawn by reverting this commit; the active Model A pointer was never written",
+  "schema": "poker-generalized-response-terminal-decision/v1",
+  "split": "VALIDATION",
+  "terminal": true,
+  "test_authorized": false,
+  "test_consumed": false,
+  "validation_consumed": true,
+  "validation_reads": 1,
+  "validation_result_canonical_payload_sha256": "48a166f30854d88b693fa2c70fe32c1d3cfb41c2e23ddeacf57ea37e6f9d18c6",
+  "validation_result_path": "analysis/issue421_generalized_response/VALIDATION_RESULT.json",
+  "validation_result_sha256": "6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3"
+}

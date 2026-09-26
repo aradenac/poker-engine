@@ -1,0 +1,505 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/generalized-response-model.schema.json",
+  "title": "Generalized public-only adverse preflop response model contract",
+  "description": "Contract of issue #421's generalizing response model library (tools/preflop/generalized_response_model.py). One file covers every document the library produces: the fitted candidate (persisted with its canonical payload hash), the predict() response, the direct evaluation report, the architecture comparison and the direct price/sizing response curve. Two architectures are in scope and share this contract: regularized_multinomial_spline (A) and hierarchical_empirical_bayes_dirichlet (B). The contract is stdlib-validated in tests/preflop/test_generalized_response_model.py, consistent with the repository rule that jsonschema is not a declared dependency.",
+  "oneOf": [
+    {"$ref": "#/$defs/candidate"},
+    {"$ref": "#/$defs/prediction"},
+    {"$ref": "#/$defs/evaluation"},
+    {"$ref": "#/$defs/comparison"},
+    {"$ref": "#/$defs/priceResponse"},
+    {"$ref": "#/$defs/fitReport"}
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "action": {
+      "enum": ["FOLD", "CALL", "RAISE", "JAM"]
+    },
+    "architecture": {
+      "enum": ["regularized_multinomial_spline", "hierarchical_empirical_bayes_dirichlet"]
+    },
+    "probabilityVector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["FOLD", "CALL", "RAISE", "JAM"],
+      "properties": {
+        "FOLD": {"type": "number", "minimum": 0, "maximum": 1},
+        "CALL": {"type": "number", "minimum": 0, "maximum": 1},
+        "RAISE": {"type": "number", "minimum": 0, "maximum": 1},
+        "JAM": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "description": "Normalized legal distribution: the sum is exactly 1.0 and every masked action is exactly 0.0."
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Fully materialized, hash-covered fit configuration. Every key is required so a candidate can always be re-checked against its own tuning contract.",
+      "required": [
+        "smoothing_mass", "interaction_smoothing_mass", "interaction_min_support", "interaction_max_cells",
+        "interaction_block_weight", "lift_scale_grid", "deviation_scale_grid", "deviation_clip",
+        "hierarchical_strength_bounds", "hierarchical_min_cells", "holdout_modulus", "tuning_max_rows",
+        "default_target_to_pot_ratio", "sizing_gain_bounds", "sizing_smoothing_mass", "spline_knots",
+        "sizing_axis_knots"
+      ],
+      "properties": {
+        "smoothing_mass": {"type": "number", "exclusiveMinimum": 0},
+        "interaction_smoothing_mass": {"type": "number", "exclusiveMinimum": 0},
+        "interaction_min_support": {"type": "integer", "minimum": 1},
+        "interaction_max_cells": {"type": "integer", "minimum": 1},
+        "interaction_block_weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "lift_scale_grid": {"$ref": "#/$defs/grid"},
+        "deviation_scale_grid": {"$ref": "#/$defs/grid"},
+        "deviation_clip": {"type": "number", "exclusiveMinimum": 0},
+        "hierarchical_strength_bounds": {"$ref": "#/$defs/bounds"},
+        "hierarchical_min_cells": {"type": "integer", "minimum": 1},
+        "holdout_modulus": {"type": "integer", "minimum": 1},
+        "tuning_max_rows": {"type": "integer", "minimum": 1},
+        "default_target_to_pot_ratio": {"type": "number", "exclusiveMinimum": 0},
+        "sizing_gain_bounds": {"$ref": "#/$defs/bounds"},
+        "sizing_smoothing_mass": {"type": "number", "exclusiveMinimum": 0},
+        "spline_knots": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["to_call_bb", "pot_before_bb", "effective_stack_bb"],
+          "properties": {
+            "to_call_bb": {"$ref": "#/$defs/knots"},
+            "pot_before_bb": {"$ref": "#/$defs/knots"},
+            "effective_stack_bb": {"$ref": "#/$defs/knots"}
+          }
+        },
+        "sizing_axis_knots": {"$ref": "#/$defs/knots"}
+      }
+    },
+    "grid": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "number", "exclusiveMinimum": 0}
+    },
+    "bounds": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {"type": "number", "exclusiveMinimum": 0}
+    },
+    "knots": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"type": "number", "minimum": 0}
+    },
+    "block": {
+      "description": "One feature block. Architecture A stores smoothed multinomial lifts, architecture B stores the raw multinomial counts its Dirichlet-multinomial posterior means are recomputed from; a block matches exactly one of the two branches.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "basis", "transform", "knots", "nodes", "support"],
+      "oneOf": [{"required": ["lift"]}, {"required": ["counts"]}],
+      "properties": {
+        "kind": {"enum": ["primary", "interaction"]},
+        "basis": {"enum": ["categorical", "spline"]},
+        "transform": {"type": ["string", "null"]},
+        "knots": {"type": ["array", "null"], "items": {"type": "number"}},
+        "nodes": {"type": "array", "items": {"type": "string"}},
+        "support": {"type": "array", "items": {"type": "integer", "minimum": 0}},
+        "lift": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/fourNumbers"}
+        },
+        "counts": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "fourNumbers": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"type": "number"}
+    },
+    "densityTable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "density"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "density": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "actionDensities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["RAISE", "JAM"],
+      "properties": {
+        "RAISE": {"$ref": "#/$defs/densityTable"},
+        "JAM": {"$ref": "#/$defs/densityTable"}
+      }
+    },
+    "sizingChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["axis_knots", "actions", "global", "families"],
+      "description": "Conditional sizing density of the aggressive branches: a partition-of-unity spline over the queried target_total_bb / (pot_before_bb + to_call_bb) axis, smoothed toward the global per-action density. It is sampled at the exact queried sizing, so a sizing variation is recomputed directly and never snapped to a neighbouring cell.",
+      "properties": {
+        "axis_knots": {"$ref": "#/$defs/knots"},
+        "actions": {"const": ["RAISE", "JAM"]},
+        "global": {"$ref": "#/$defs/actionDensities"},
+        "families": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/actionDensities"}
+        }
+      }
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "blocks", "block_strengths", "sizing_channel", "estimator", "regularization"],
+      "properties": {
+        "prior": {"$ref": "#/$defs/probabilityVector"},
+        "blocks": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/block"},
+          "required": [
+            "family", "actor_position", "aggressor_position", "caller_count", "limper_count",
+            "raise_level", "live_position_count", "to_call_bb", "pot_before_bb", "effective_stack_bb",
+            "family_x_actor_position", "family_x_aggressor_position", "family_x_to_call_bb",
+            "family_x_effective_stack_bb"
+          ],
+          "properties": {
+            "family": {"$ref": "#/$defs/block"},
+            "actor_position": {"$ref": "#/$defs/block"},
+            "aggressor_position": {"$ref": "#/$defs/block"},
+            "caller_count": {"$ref": "#/$defs/block"},
+            "limper_count": {"$ref": "#/$defs/block"},
+            "raise_level": {"$ref": "#/$defs/block"},
+            "live_position_count": {"$ref": "#/$defs/block"},
+            "to_call_bb": {"$ref": "#/$defs/block"},
+            "pot_before_bb": {"$ref": "#/$defs/block"},
+            "effective_stack_bb": {"$ref": "#/$defs/block"},
+            "family_x_actor_position": {"$ref": "#/$defs/block"},
+            "family_x_aggressor_position": {"$ref": "#/$defs/block"},
+            "family_x_to_call_bb": {"$ref": "#/$defs/block"},
+            "family_x_effective_stack_bb": {"$ref": "#/$defs/block"}
+          },
+          "description": "The frozen node grid: seven categorical axes, three log1p spline axes on the current price/stack and four support-pruned interaction cells from a bounded whitelist."
+        },
+        "block_strengths": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["prior_strength", "basis"],
+            "properties": {
+              "prior_strength": {"type": ["number", "null"]},
+              "basis": {"const": "method_of_moments"}
+            }
+          }
+        },
+        "sizing_channel": {"$ref": "#/$defs/sizingChannel"},
+        "estimator": {
+          "enum": ["m_estimate_dirichlet_lift", "empirical_bayes_dirichlet_posterior_mean"]
+        },
+        "regularization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "scale"],
+          "properties": {
+            "kind": {"enum": ["lift_scale", "deviation_scale"]},
+            "scale": {"type": "number", "exclusiveMinimum": 0}
+          },
+          "description": "Single holdout-selected regularization scale. kind=lift_scale scales the log-odds lifts of architecture A; kind=deviation_scale scales the probability-space block deviations of architecture B."
+        }
+      }
+    },
+    "laneResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scale", "holdout_log_loss_bits_per_decision"],
+      "properties": {
+        "scale": {"type": "number", "exclusiveMinimum": 0},
+        "holdout_log_loss_bits_per_decision": {"type": ["number", "null"]}
+      }
+    },
+    "tuning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grid", "results", "selected", "selected_holdout_log_loss_bits_per_decision", "baseline_log_loss_bits_per_decision"],
+      "properties": {
+        "grid": {"$ref": "#/$defs/grid"},
+        "results": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/laneResult"}},
+        "selected": {"type": "number", "exclusiveMinimum": 0},
+        "selected_holdout_log_loss_bits_per_decision": {"type": ["number", "null"]},
+        "baseline_log_loss_bits_per_decision": {"type": ["number", "null"]}
+      }
+    },
+    "fitSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rows", "distinct_hands", "fit_rows", "holdout_rows", "tuning_rows", "holdout_modulus",
+        "action_counts", "action_rates", "tuning", "baseline_log_loss_bits_per_decision",
+        "holdout_log_loss_bits_per_decision", "holdout_gain_bits_per_decision", "interaction_cells",
+        "sizing_channel"
+      ],
+      "properties": {
+        "rows": {"type": "integer", "minimum": 1},
+        "distinct_hands": {"type": "integer", "minimum": 1},
+        "fit_rows": {"type": "integer", "minimum": 0},
+        "holdout_rows": {"type": "integer", "minimum": 0},
+        "tuning_rows": {"type": "integer", "minimum": 0},
+        "holdout_modulus": {"type": "integer", "minimum": 1},
+        "action_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "action_rates": {"type": "object", "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}},
+        "tuning": {"$ref": "#/$defs/tuning"},
+        "baseline_log_loss_bits_per_decision": {"type": ["number", "null"]},
+        "holdout_log_loss_bits_per_decision": {"type": ["number", "null"]},
+        "holdout_gain_bits_per_decision": {"type": ["number", "null"]},
+        "interaction_cells": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "sizing_channel": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["global_total", "families"],
+            "properties": {
+              "global_total": {"type": "integer", "minimum": 0},
+              "families": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "candidate": {
+      "title": "Fitted generalized response candidate",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "architecture", "seed", "config", "action_space", "params", "fit_summary", "canonical_payload_sha256"],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-model/v1"},
+        "architecture": {"$ref": "#/$defs/architecture"},
+        "seed": {"type": "integer"},
+        "config": {"$ref": "#/$defs/config"},
+        "action_space": {"const": ["FOLD", "CALL", "RAISE", "JAM"]},
+        "params": {"$ref": "#/$defs/params"},
+        "fit_summary": {"$ref": "#/$defs/fitSummary"},
+        "canonical_payload_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sizingQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["conditioned", "source", "target_total_bb", "sizing_ratio", "jam_ratio", "gains", "gain_bounds", "basis", "interpolation"],
+      "properties": {
+        "conditioned": {"type": "boolean"},
+        "source": {"enum": ["context", "default_pot_relative"]},
+        "target_total_bb": {"type": ["number", "null"]},
+        "sizing_ratio": {"type": ["number", "null"]},
+        "jam_ratio": {"type": ["number", "null"]},
+        "gains": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["RAISE", "JAM"],
+          "properties": {
+            "RAISE": {"type": "number", "exclusiveMinimum": 0},
+            "JAM": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "gain_bounds": {"$ref": "#/$defs/bounds"},
+        "basis": {"const": "conditional_sizing_density_ratio"},
+        "interpolation": {"const": "linear_spline_partition_of_unity"}
+      }
+    },
+    "prediction": {
+      "title": "Direct response prediction of one public context",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "model_schema", "architecture", "candidate_canonical_payload_sha256", "legal_actions",
+        "masked_actions", "probabilities", "probability_sum", "normalization", "sizing", "support",
+        "P(FOLD)", "P(CALL)", "P(RAISE)", "P(JAM)"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-action-probabilities/v1"},
+        "model_schema": {"const": "poker-generalized-response-model/v1"},
+        "architecture": {"$ref": "#/$defs/architecture"},
+        "candidate_canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+        "legal_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/action"}
+        },
+        "masked_actions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/action"}
+        },
+        "probabilities": {"$ref": "#/$defs/probabilityVector"},
+        "probability_sum": {"type": "number", "minimum": 1, "maximum": 1},
+        "normalization": {"enum": ["legal_normalized", "uniform_legal_fallback"]},
+        "sizing": {"$ref": "#/$defs/sizingQuery"},
+        "support": {"type": "integer", "minimum": 0},
+        "P(FOLD)": {"type": "number", "minimum": 0, "maximum": 1},
+        "P(CALL)": {"type": "number", "minimum": 0, "maximum": 1},
+        "P(RAISE)": {"type": "number", "minimum": 0, "maximum": 1},
+        "P(JAM)": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "familyMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n", "log_loss_bits_per_decision", "baseline_log_loss_bits_per_decision"],
+      "properties": {
+        "n": {"type": "integer", "minimum": 1},
+        "log_loss_bits_per_decision": {"type": ["number", "null"]},
+        "baseline_log_loss_bits_per_decision": {"type": ["number", "null"]}
+      }
+    },
+    "evaluation": {
+      "title": "Direct evaluation of one candidate",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "architecture", "candidate_canonical_payload_sha256", "n", "sizing_mode",
+        "queried_target_total_bb",
+        "log_loss_bits_per_decision", "baseline_log_loss_bits_per_decision", "gain_bits_per_decision",
+        "brier_score", "accuracy", "probability_sum_max_abs_error", "illegal_mass_max",
+        "observed_action_counts", "mean_observed_probability", "by_family"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-evaluation/v1"},
+        "architecture": {"$ref": "#/$defs/architecture"},
+        "candidate_canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+        "n": {"type": "integer", "minimum": 1},
+        "sizing_mode": {"enum": ["marginal", "observed_where_available"]},
+        "queried_target_total_bb": {"type": ["number", "null"], "minimum": 0},
+        "log_loss_bits_per_decision": {"type": ["number", "null"], "minimum": 0},
+        "baseline_log_loss_bits_per_decision": {"type": ["number", "null"], "minimum": 0},
+        "gain_bits_per_decision": {"type": ["number", "null"]},
+        "brier_score": {"type": ["number", "null"], "minimum": 0},
+        "accuracy": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "probability_sum_max_abs_error": {"type": ["number", "null"], "minimum": 0, "maximum": 1e-09},
+        "illegal_mass_max": {"type": ["number", "null"], "minimum": 0, "maximum": 1e-09},
+        "observed_action_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "mean_observed_probability": {"type": "object", "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}},
+        "by_family": {"type": "object", "additionalProperties": {"$ref": "#/$defs/familyMetrics"}}
+      }
+    },
+    "comparison": {
+      "title": "Architecture comparison on the same rows",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "sizing_mode", "rows", "candidates", "ranking", "best", "log_loss_delta_vs_best_bits_per_decision"],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-comparison/v1"},
+        "sizing_mode": {"enum": ["marginal", "observed_where_available"]},
+        "rows": {"type": "integer", "minimum": 1},
+        "candidates": {"type": "object", "additionalProperties": {"$ref": "#/$defs/evaluation"}},
+        "ranking": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "best": {"type": "string", "minLength": 1},
+        "log_loss_delta_vs_best_bits_per_decision": {
+          "type": "object",
+          "additionalProperties": {"type": ["number", "null"]}
+        }
+      }
+    },
+    "pricePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_total_bb", "probabilities", "sizing_ratio", "gains"],
+      "properties": {
+        "target_total_bb": {"type": ["number", "null"]},
+        "probabilities": {"$ref": "#/$defs/probabilityVector"},
+        "sizing_ratio": {"type": ["number", "null"]},
+        "gains": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["RAISE", "JAM"],
+          "properties": {
+            "RAISE": {"type": "number", "exclusiveMinimum": 0},
+            "JAM": {"type": "number", "exclusiveMinimum": 0}
+          }
+        }
+      }
+    },
+    "priceResponse": {
+      "title": "Direct price/sizing response curve",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "architecture", "targets", "points", "distinct_probability_vectors",
+        "monotone_target_axis", "direct_recalculation", "interpolation",
+        "max_adjacent_probability_jump", "max_adjacent_jump_action"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-price-response/v1"},
+        "architecture": {"$ref": "#/$defs/architecture"},
+        "targets": {"type": "array", "minItems": 1, "items": {"type": "number", "minimum": 0}},
+        "points": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/pricePoint"}},
+        "distinct_probability_vectors": {"type": "integer", "minimum": 1},
+        "monotone_target_axis": {"const": true},
+        "direct_recalculation": {"const": true},
+        "interpolation": {"const": "linear_spline_partition_of_unity"},
+        "max_adjacent_probability_jump": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "max_adjacent_jump_action": {"type": ["string", "null"]}
+      }
+    },
+    "persistedEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes", "canonical_payload_sha256", "architecture"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+        "architecture": {"$ref": "#/$defs/architecture"}
+      }
+    },
+    "candidateSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["architecture", "canonical_payload_sha256", "fit_summary"],
+      "properties": {
+        "architecture": {"$ref": "#/$defs/architecture"},
+        "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+        "fit_summary": {"$ref": "#/$defs/fitSummary"}
+      }
+    },
+    "fitReport": {
+      "title": "Persisted fit report of the model directory",
+      "description": "What one `--fit` invocation produced: the pinned dataset/module/contract hashes, the fully materialized config, the two candidate summaries and the direct comparison on the evaluation split.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "seed", "dataset", "dataset_sha256", "module_sha256", "contract_sha256",
+        "train_split", "eval_split", "config", "candidates", "persisted", "comparison"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-fit-report/v1"},
+        "seed": {"type": "integer"},
+        "dataset": {"type": "string", "minLength": 1},
+        "dataset_sha256": {"$ref": "#/$defs/sha256"},
+        "module_sha256": {"$ref": "#/$defs/sha256"},
+        "contract_sha256": {"$ref": "#/$defs/sha256"},
+        "train_split": {"enum": ["TRAIN", "VALIDATION"]},
+        "eval_split": {"enum": ["TRAIN", "VALIDATION", ""]},
+        "config": {"$ref": "#/$defs/config"},
+        "candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/candidateSummary"}},
+        "persisted": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/persistedEntry"}},
+        "comparison": {"anyOf": [{"$ref": "#/$defs/comparison"}, {"type": "object", "maxProperties": 0}]}
+      }
+    }
+  }
+}

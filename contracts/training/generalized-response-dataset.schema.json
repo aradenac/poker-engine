@@ -1,0 +1,336 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/generalized-response-dataset.schema.json",
+  "title": "Generalized public-only adverse preflop response dataset",
+  "description": "Feature contract for issue #421. One contract file covers the three persisted artifacts: every line of GENERALIZED_RESPONSE_DATASET.jsonl is a responseRow, GENERALIZED_RESPONSE_DATASET.json is a datasetManifest and CORPUS_HASHES.json is a corpusHashes document. Rows are strictly public: they may only contain the information observable immediately before the adverse actor's voluntary action, restricted to TRAIN and VALIDATION certified folds. TEST is refused by the loader and never appears.",
+  "oneOf": [
+    {"$ref": "#/$defs/responseRow"},
+    {"$ref": "#/$defs/datasetManifest"},
+    {"$ref": "#/$defs/corpusHashes"}
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "splitName": {"enum": ["TRAIN", "VALIDATION"]},
+    "responseRow": {
+      "title": "Public adverse preflop response row",
+      "description": "Adverse (non-Hero) preflop response projected onto public pre-action information only. Hole cards, board cards, opponent hand classes, raw action history, actor identity and any post-decision state are absent by construction. Information boundary: hand_id, split, table_size, family, actor_position, aggressor_position, limper_count, caller_count, live_positions, raise_level, to_call_bb, pot_before_bb, pot_odds, price_to_pot and effective_stack_bb are the public state immediately before the action; action plus its target_total_bb/observed_sizing_bb describe the observed response itself. All four legal response actions are always present in the public legal action space, and rows are never Hero rows.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hand_id", "split", "table_size", "family", "actor_position", "aggressor_position",
+        "limper_count", "caller_count", "live_positions", "raise_level", "to_call_bb",
+        "pot_before_bb", "pot_odds", "price_to_pot", "effective_stack_bb", "target_total_bb",
+        "observed_sizing_bb", "action"
+      ],
+      "properties": {
+        "hand_id": {"type": "string", "minLength": 1, "pattern": "^[0-9]+$"},
+        "split": {"$ref": "#/$defs/splitName"},
+        "table_size": {"type": "integer", "minimum": 2},
+        "family": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Public preflop family immediately before the action (UNOPENED, VS_RFI, VS_RFI_CALLERS, VS_LIMPERS, VS_ISO, ...)."
+        },
+        "actor_position": {"type": "string", "minLength": 1},
+        "aggressor_position": {
+          "type": ["string", "null"],
+          "description": "Position of the most recent raiser/jammer before the action, or null when the pot is still unraised."
+        },
+        "limper_count": {"type": "integer", "minimum": 0},
+        "caller_count": {"type": "integer", "minimum": 0},
+        "live_positions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Players still live (not folded, not all-in) before the action; a single element is normal when the actor is the last player facing an all-in."
+        },
+        "raise_level": {"type": "integer", "minimum": 0},
+        "to_call_bb": {"type": "number", "minimum": 0},
+        "pot_before_bb": {"type": "number", "minimum": 0},
+        "pot_odds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1,
+          "description": "to_call_bb / (pot_before_bb + to_call_bb); null when the denominator is zero."
+        },
+        "price_to_pot": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "to_call_bb / pot_before_bb; null when pot_before_bb is zero."
+        },
+        "effective_stack_bb": {"type": "number", "minimum": 0},
+        "target_total_bb": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Observed total contribution after the action for RAISE/JAM; null for FOLD/CALL."
+        },
+        "observed_sizing_bb": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Observed incremental cost of the RAISE/JAM action; null for FOLD/CALL."
+        },
+        "action": {
+          "enum": ["FOLD", "CALL", "RAISE", "JAM"],
+          "description": "Observed adverse response, always inside the public legal action space. A limp is normalized to CALL; CHECK is not a response family and is excluded from the dataset."
+        }
+      }
+    },
+    "splitSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hands", "hand_ids_fingerprint_sha256", "response_rows"],
+      "properties": {
+        "hands": {"type": "integer", "minimum": 0},
+        "hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+        "response_rows": {"type": "integer", "minimum": 0}
+      }
+    },
+    "splitAccounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hand_ids_fingerprint_sha256", "hands_parsed", "adverse_preflop_decisions", "response_rows",
+        "hero_decisions_skipped", "non_preflop_decisions_skipped", "non_response_action_rows_skipped"
+      ],
+      "properties": {
+        "hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+        "hands_parsed": {"type": "integer", "minimum": 0},
+        "adverse_preflop_decisions": {"type": "integer", "minimum": 0},
+        "response_rows": {"type": "integer", "minimum": 0},
+        "hero_decisions_skipped": {"type": "integer", "minimum": 0},
+        "non_preflop_decisions_skipped": {"type": "integer", "minimum": 0},
+        "non_response_action_rows_skipped": {"type": "integer", "minimum": 0}
+      }
+    },
+    "totalAccounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hands_loaded", "hands_parsed", "adverse_preflop_decisions", "response_rows",
+        "hero_decisions_skipped", "non_preflop_decisions_skipped", "non_response_action_rows_skipped",
+        "distinct_hands", "test_hands_consumed"
+      ],
+      "properties": {
+        "hands_loaded": {"type": "integer", "minimum": 0},
+        "hands_parsed": {"type": "integer", "minimum": 0},
+        "adverse_preflop_decisions": {"type": "integer", "minimum": 0},
+        "response_rows": {"type": "integer", "minimum": 0},
+        "hero_decisions_skipped": {"type": "integer", "minimum": 0},
+        "non_preflop_decisions_skipped": {"type": "integer", "minimum": 0},
+        "non_response_action_rows_skipped": {"type": "integer", "minimum": 0},
+        "distinct_hands": {"type": "integer", "minimum": 0},
+        "test_hands_consumed": {"const": 0}
+      }
+    },
+    "datasetManifest": {
+      "title": "Generalized response dataset manifest",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "population_id", "builder", "scope", "contract", "corpus", "dataset", "splits", "accounting", "row_contract"],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-dataset/v1"},
+        "population_id": {"type": "string", "minLength": 1},
+        "builder": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {"const": "tools/training/build_generalized_response_dataset.py"},
+            "sha256": {"$ref": "#/$defs/sha256"}
+          },
+          "description": "Generator identity, so a consumer can pin which builder revision produced the dataset."
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "consumed_splits", "refused_splits", "test_consumed", "state_timing", "player_role",
+            "response_actions", "excluded_actions", "public_only", "hole_cards_consumed",
+            "future_information_consumed", "purpose"
+          ],
+          "properties": {
+            "consumed_splits": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/splitName"}
+            },
+            "refused_splits": {"const": ["TEST"]},
+            "test_consumed": {"const": false},
+            "state_timing": {"const": "BEFORE_ACTION"},
+            "player_role": {"const": "ADVERSE_NON_HERO"},
+            "response_actions": {"const": ["FOLD", "CALL", "RAISE", "JAM"]},
+            "excluded_actions": {"const": ["CHECK"]},
+            "public_only": {"const": true},
+            "hole_cards_consumed": {"const": false},
+            "future_information_consumed": {"const": false},
+            "purpose": {"type": "string", "minLength": 1}
+          }
+        },
+        "contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {"const": "contracts/training/generalized-response-dataset.schema.json"},
+            "sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        "corpus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "population_fingerprint_sha256", "certification_sha256"],
+          "properties": {
+            "path": {"const": "CORPUS_HASHES.json"},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "population_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+            "certification_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        "dataset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "format", "sha256", "bytes", "rows", "canonical_payload_sha256", "field_order_independent"],
+          "properties": {
+            "path": {"const": "GENERALIZED_RESPONSE_DATASET.jsonl"},
+            "format": {"const": "application/x-ndjson"},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "bytes": {"type": "integer", "minimum": 0},
+            "rows": {"type": "integer", "minimum": 0},
+            "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+            "field_order_independent": {"const": true}
+          }
+        },
+        "splits": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "TRAIN": {"$ref": "#/$defs/splitSummary"},
+            "VALIDATION": {"$ref": "#/$defs/splitSummary"}
+          }
+        },
+        "accounting": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["total"],
+          "properties": {
+            "TRAIN": {"$ref": "#/$defs/splitAccounting"},
+            "VALIDATION": {"$ref": "#/$defs/splitAccounting"},
+            "total": {"$ref": "#/$defs/totalAccounting"}
+          }
+        },
+        "row_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fields", "additional_properties", "forbidden_keys"],
+          "properties": {
+            "fields": {
+              "const": [
+                "hand_id", "split", "table_size", "family", "actor_position", "aggressor_position",
+                "limper_count", "caller_count", "live_positions", "raise_level", "to_call_bb",
+                "pot_before_bb", "pot_odds", "price_to_pot", "effective_stack_bb", "target_total_bb",
+                "observed_sizing_bb", "action"
+              ]
+            },
+            "additional_properties": {"const": false},
+            "forbidden_keys": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "corpusHashes": {
+      "title": "Certified corpus hashes consumed by the dataset",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "population_id", "certification", "archives", "population_fingerprint_sha256",
+        "certified_hands", "certified_split_counts", "consumed_splits", "refused_splits",
+        "test_hands_consumed", "loader_evidence", "response_rows_by_split", "response_rows_total"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-corpus-hashes/v1"},
+        "population_id": {"type": "string", "minLength": 1},
+        "certification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "certification_schema"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "certification_schema": {"const": "poker-population-certification/v1"}
+          }
+        },
+        "archives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        "population_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+        "certified_hands": {"type": "integer", "minimum": 0},
+        "certified_split_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["TRAIN", "VALIDATION", "TEST"],
+          "properties": {
+            "TRAIN": {"type": "integer", "minimum": 0},
+            "VALIDATION": {"type": "integer", "minimum": 0},
+            "TEST": {"type": "integer", "minimum": 0}
+          }
+        },
+        "consumed_splits": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/splitName"}
+        },
+        "refused_splits": {"const": ["TEST"]},
+        "test_hands_consumed": {"const": 0},
+        "loader_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "TRAIN": {"$ref": "#/$defs/loaderEvidence"},
+            "VALIDATION": {"$ref": "#/$defs/loaderEvidence"}
+          }
+        },
+        "response_rows_by_split": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "TRAIN": {"type": "integer", "minimum": 0},
+            "VALIDATION": {"type": "integer", "minimum": 0}
+          }
+        },
+        "response_rows_total": {"type": "integer", "minimum": 0}
+      }
+    },
+    "loaderEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loader", "hands", "hand_ids_fingerprint_sha256", "loader_provenance"],
+      "properties": {
+        "loader": {"type": "string", "minLength": 1},
+        "hands": {"type": "integer", "minimum": 0},
+        "hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+        "loader_provenance": {"type": "object"}
+      }
+    }
+  }
+}
