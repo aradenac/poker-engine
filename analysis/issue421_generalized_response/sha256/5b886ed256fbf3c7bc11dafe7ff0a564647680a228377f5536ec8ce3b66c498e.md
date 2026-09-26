@@ -81,7 +81,18 @@ Every digest this bundle persists is recomputed from the persisted bytes: 36 cro
 - `VALIDATION_CONSUMED=true` exactly once (the frozen one-shot read, `validation_reads=1`); it is never re-opened, re-scored or re-tuned and no threshold moved after the read.
 - #367 is neither executed nor authorized by this bundle; no Hero EV, no Model B and no rollout are computed.
 
-## 10. Reproduce and verify
+## 10. Cross-interpreter verification (interpreter-independent bytes)
+
+No persisted #421 artifact carries a raw interpreter-dependent float: every float the runtime emits is quantised on its fixed decimal grid and every legal distribution is re-closed with `math.fsum`, so the frozen model module's `sum`-based closure is reproduced, never re-emitted. The whole pipeline -- the runtime's decision documents, `ISSUE367_PREFLIGHT.json` and `IN_WINDOW_PREDICTION_REFERENCE.json` -- replays byte-for-byte with `builtins.sum` replaced by the naive left-to-right fold of CPython <= 3.11, the semantics the workflow's pinned interpreter runs (`tests/preflop/test_generalized_response_runtime.py`, `CrossInterpreterPipelineTests`), and the same replay fails once the runtime canonicalisation is disabled (negative control: the guard cannot pass vacuously).
+
+| replayed artifact | byte SHA256 |
+| --- | --- |
+| `ISSUE367_PREFLIGHT.json` | `415d65dfeac78fd7c54931e0cebd0cea6a9df35d3607333c60c2142c04de7220` |
+| `IN_WINDOW_PREDICTION_REFERENCE.json` | `873e429b72bf81ab180b416811480bff04863aed10d699791d39524a952b8312` |
+
+Frozen frontiers and boundary re-checked on the replayed surface: #388/#419 raise-sizing frontiers `7/7` resolved with `0` illegal generated sizings, `TEST_CONSUMED=false`, `VALIDATION_CONSUMED=true` on the single one-shot read, `ACTIVE_POINTER_MUTATED=false`, and #367 neither executed nor authorized.
+
+## 11. Reproduce and verify
 
 ```text
 python3 tools/training/build_issue421_evidence_bundle.py

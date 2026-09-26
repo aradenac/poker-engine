@@ -1144,6 +1144,12 @@ artefacts exigés — `TRAIN_CV_REPORT.json` (`43d9ffff…`),
 que `SUMMARY.md` (`bbe2a44d…`) sont byte-identiques (digests recalculés). En
 particulier :
 
+> Note (ajoutée par `backlog-4xx`, T6) : ces digests décrivent l'état **à
+> l'incrément T3/T5**. `SUMMARY.md` a été régénéré depuis (§9.4) — son octet
+> courant est `5b886ed2…` — parce que T6 y consigne la vérification finale.
+> Aucun autre artefact de cette liste n'a bougé, et `bbe2a44d…` reste la preuve
+> historique reproductible par `git show b56ed9e:analysis/issue421_generalized_response/SUMMARY.md`.
+
 - **Evidence TRAIN/CV** : `TRAIN_CV_REPORT.json` inchangé ; aucune main
   re-splitée, aucun fold recomputé, aucune sélection rejouée.
 - **Evidence VALIDATION** : `FROZEN_VALIDATION_PROTOCOL.json` et
@@ -1222,6 +1228,12 @@ depuis `backlog-k78` ; elle est corrigée en §4 et rappelée ici. Les digests d
 issues closes antérieures (#394, #419, audits CI) sont des instantanés
 historiques liés à leur propre HEAD et ne sont pas réécrits par cette tâche.
 
+> Note (ajoutée par `backlog-4xx`, T6) : ce recensement est l'instantané de
+> l'incrément T5. T6 ajoute des jetons (digests de la régression croisée-
+> interpréteur : `5b886ed2…`, `65d0d05f…`, `4c18872f…`) sans réécrire ceux
+> recensés ici ; les relancer sur l'arbre T6 donnerait donc des comptes plus
+> élevés, pas une divergence.
+
 ### 8.7 Frontière
 
 Le seul diff de T5 est du texte (dont un jeton périmé corrigé) dans ce decision
@@ -1229,3 +1241,163 @@ record et dans `docs/generalized-opponent-response-model.md` ; aucun artefact
 d'evidence, aucun digest d'objet et aucun module gelé n'est modifié. Cette
 section **n'affirme aucun état CI ni push** : le `SUCCESS` du run CI #421 reste
 une **porte externe** non observée ici, et aucune promotion n'est implicite.
+
+## 9. Vérification finale croisée-interpréteur (`backlog-4xx`, T6)
+
+T6 ferme la boucle ouverte en §6 : la représentation canonique du runtime
+(`backlog-k78`) et la référence in-window re-pinnée (`backlog-bvi`) sont
+désormais **prouvées de bout en bout**, pas seulement échantillon par
+échantillon, par une régression qui rejoue le pipeline entier sous la
+sémantique naïve de `sum`, plus la vérification complète des suites du
+workflow.
+
+### 9.1 Ce qui a été ajouté
+
+Une seule suite de tests est modifiée —
+`tests/preflop/test_generalized_response_runtime.py`, **déjà exécutée** par
+`.github/workflows/issue-421-generalized-response-model.yml` — qui gagne la
+classe `CrossInterpreterPipelineTests` (2 tests) :
+
+- `test_the_pipeline_replays_byte_for_byte_under_naive_sum` rejoue **tout** le
+  pipeline avec `builtins.sum` remplacé par une accumulation naïve
+  gauche-droite (la sémantique de CPython ≤ 3.11, celle de `.python-version` =
+  `3.11.9`) et exige l'identité d'octets des trois flux persistés :
+  les **documents du runtime** (les 97 contextes de la surface canonique —
+  5 sondes du runtime + 38 nœuds #321 + 38 contextes pile alternative + 7
+  frontières de sizing + 9 sondes in-window — × 2 requêtes `None`/`RAISE`,
+  soit 194 documents), `ISSUE367_PREFLIGHT.json` reconstruit par son propre
+  outil, et `IN_WINDOW_PREDICTION_REFERENCE.json` reconstruit par son propre
+  générateur. Les deux artefacts adressés par contenu sont en outre comparés
+  **octet pour octet** aux fichiers persistés.
+- `test_disabling_the_runtime_canonicalisation_breaks_the_replay` est le
+  **contrôle négatif** : `runtime.canonical_float` — l'unique canonicalisation
+  numérique du runtime, que `canonical_floats`, `canonical_legal_distribution`,
+  `canonical_prediction` et `canonicalize_decision_document` lisent tous via le
+  global du module — est ramené à l'identité (« canonicalisation retirée »), et
+  le même replay doit alors échouer sur les **trois** flux. Sans ce contrôle, le
+  test positif ne prouverait rien.
+
+Aucune autre suite n'est déclarée et **aucun fichier YAML de workflow n'est
+modifié** : la couverture de `paths` et le garde-fou « toutes les suites
+déclarées sont réellement exécutées » de
+`tests/test_github_workflow_audit.py` restent valides sans changement (23 tests
+verts, y compris les négatifs drift/substitution et le contrôle de complétude
+des filtres).
+
+### 9.2 Vérification complète exécutée
+
+Interpréteur local : **CPython 3.14.4** (sommation compensée). L'émulation
+« 3.11 » remplace `builtins.sum` par la boucle naïve **avant** le chargement de
+chaque suite, depuis la racine du dépôt, avec `PYTHONPATH=.`.
+
+| suite | native 3.14.4 | émulation 3.11 |
+| --- | --- | --- |
+| `tests/training/test_build_generalized_response_dataset.py` | OK (22) | OK (22) |
+| `tests/training/test_audit_generalized_response_features.py` | OK | OK |
+| `tests/preflop/test_generalized_response_model.py` | OK (46) | OK (46) |
+| `tests/training/test_evaluate_generalized_response_cv.py` | OK (26) | OK (26) |
+| `tests/preflop/test_generalized_response_sizing.py` | OK (29) | OK (29) |
+| `tests/preflop/test_generalized_response_ood.py` | OK (28) | OK (28) |
+| `tests/training/test_frozen_generalized_validation_protocol.py` | OK (26) | OK (26) |
+| `tests/training/test_validate_generalized_response.py` | OK (23) | OK (23) |
+| `tests/preflop/test_generalized_response_runtime.py` | OK (60) | OK (60) |
+| `tests/simulation/test_issue421_preflight.py` | OK (21) | OK (21) |
+| `tests/preflop/test_issue421_mandatory_contracts.py` | OK (14) | OK (14) |
+| `tests/ci/test_issue421_contract_guards.py` | OK (11) | OK (11) |
+| `tests/training/test_issue421_evidence_bundle.py` | OK (10) | OK (10) |
+| `tests/training/test_issue421_n8n_result.py` | OK (9) | OK (9) |
+| `tests/test_github_workflow_audit.py` | OK (23) | OK (23) |
+| `tests/ci/test_consolidation_decision.py` | OK (12) | OK (12) |
+
+Les deux étapes d'audit non-unitaires du job passent aussi dans les deux
+sémantiques : `tools/audit_github_workflows.py --inventory` reproduit
+`analysis/workflow_audit/workflows.json` **byte-à-byte** (`cmp` silencieux) et
+`tools/audit_active_workflow_dag.py --check` retourne 0.
+
+Deux suites portent un `skip` **identique dans les deux sémantiques** : les
+regénérations complètes optionnelles, gardées par variable d'environnement
+(`POKER_GENERALIZED_RESPONSE_FULL_REGEN=1` pour le dataset,
+`POKER_GENERALIZED_RESPONSE_CV_FULL=1` pour le rapport CV) et le contrôle
+d'attribution de diff #419 (la branche ne porte aucun commit estampillé #419).
+Exécutées **avec** leur variable dans les deux sémantiques, elles passent (22
+tests et 26 tests) : elles réémettent les octets persistés à l'identique.
+
+### 9.3 Rapport de vérification
+
+**Aucun float brut dépendant de l'interpréteur dans les artefacts persistés.**
+Balayage des 40 fichiers JSON du bundle : **27 926** feuilles flottantes, dont
+**24** seulement ne sont pas sur la grille décimale fixe du runtime ; chacune
+des 24 est reproduite **exactement** comme le résidu d'ancre
+`1.0 - math.fsum(...)` de sa propre distribution légale (`0` divergence sur
+56 distributions). Autrement dit, la seule valeur hors grille est la clôture
+correctement arrondie de `math.fsum`, jamais un flottant produit par `sum`.
+Recoupé par des regénérations complètes, identiques sous les deux sémantiques :
+`RAISE_SIZING_MODEL_REPORT.json` (`955b926a…`),
+`OOD_CALIBRATION_REPORT.json` (`a8f1b181…`), le dataset régénéré
+(`4c18872f…`, identique à `GENERALIZED_RESPONSE_DATASET.jsonl` et à la valeur
+pinnée par `GENERALIZED_RESPONSE_DATASET.json`) et `TRAIN_CV_REPORT.json`
+(`43d9ffff…`).
+
+**Décision, résultat de validation et bloc n8n identiques.**
+
+| artefact | byte SHA256 | native | émulation 3.11 |
+| --- | --- | --- | --- |
+| `DECISION.json` | `8783fbc871853821270ed5fe92cda22a8e69c229af557383894c883d507211ea` | identique | identique |
+| `VALIDATION_RESULT.json` | `6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3` | identique | identique |
+| `N8N_TASK_RESULT.json` | `65d0d05ffb2bfa3c056dc4ec20491b3fc5c1e11aa73012f3fd18b508857f137e` | identique | identique |
+
+Décision terminale inchangée : `RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT`
+(`RETAIN_ACTIVE_REFERENCE`, 8/10) ; `validation_consumed=true`
+(`validation_reads=1`, lecture one-shot **non rouverte**) ; `test_consumed=false`,
+`test_authorized=false` ; `active_pointer_mutated=false` (et
+`active_model_pointer_mutation=false`) ; `#367` **non exécuté**
+(`issue367_executed=false`, `hero_ev_executed=false`, `rollouts_executed=0`,
+`ev_values_computed=0`, admission `FORBIDDEN` / `ABSTAIN_BLOCKED_ADMISSION`).
+
+**Frontières gelées intactes.** Module modèle
+`92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3`, module
+runtime `36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`,
+candidat `c3f3573f…` / octets `ea93e8c3…` : inchangés. Les 7/7 frontières
+RAISE de #388/#419 restent résolues avec **0** sizing illégal généré, et
+`ISSUE367_PREFLIGHT.json` (`415d65df…`) et
+`IN_WINDOW_PREDICTION_REFERENCE.json` (`873e429b…`) sont rejoués octet pour octet
+par la nouvelle régression.
+
+### 9.4 Consignation dans `SUMMARY.md` (bundle régénéré, aucun gel touché)
+
+`SUMMARY.md` est **généré** (il doit être identique à une reconstruction
+déterministe, cf. `test_the_bundle_is_byte_identical_to_a_fresh_deterministic_build`),
+donc le résultat T6 y est consigné par la voie prévue : une section
+« 10. Cross-interpreter verification (interpreter-independent bytes) » a été
+ajoutée à `tools/training/build_issue421_evidence_bundle.py`, puis le bundle a
+été réémis par son propre outil
+(`python3 tools/training/build_issue421_evidence_bundle.py`, `--check`
+repassant `OK`). Le diff d'index se limite aux champs qui adressent `SUMMARY.md`
+(`artifacts["SUMMARY.md"]`, `summary`, `generated_by.tool_sha256`) et à
+l'objet `sha256/<digest>.md` ; `SUMMARY.md` passe de `8544` à `9959` octets,
+digest `bbe2a44d…` → `5b886ed2…`.
+
+Les neuf autres artefacts obligatoires (`GENERALIZED_RESPONSE_MODEL_SPEC.json`
+`7f7dde23…`, `TRAIN_CV_REPORT.json` `43d9ffff…`, `CANDIDATE_MANIFEST.json`
+`06f8380e…`, `FROZEN_VALIDATION_PROTOCOL.json` `ff91421b…`,
+`VALIDATION_RESULT.json` `6a8f02b6…`, `OOD_CALIBRATION_REPORT.json`
+`a8f1b181…`, `RAISE_SIZING_MODEL_REPORT.json` `955b926a…`,
+`ISSUE367_PREFLIGHT.json` `415d65df…`, `DECISION.json` `8783fbc8…`) restent
+**byte-identiques** (digests recalculés). La reproduction complète du bundle
+sous l'émulation 3.11 redonne les mêmes octets (`spec`, `summary` et `index`
+identiques). `bbe2a44d…` reste la preuve historique reproductible par
+`git show b56ed9e:analysis/issue421_generalized_response/SUMMARY.md`.
+
+### 9.5 Frontière
+
+Le diff de T6 est : `tests/preflop/test_generalized_response_runtime.py` (la
+régression + son contrôle négatif), `tools/training/build_issue421_evidence_bundle.py`
+(la section de résumé, elle-même déterministe), le bundle réémis par cet outil
+(`SUMMARY.md`, `ARTIFACTS.json`, le nouvel objet `sha256/5b886ed2….md` en
+remplacement de `sha256/bbe2a44d….md`), `docs/generalized-opponent-response-model.md`
+(le digest courant de `SUMMARY.md` + un renvoi vers la régression) et ce
+decision record. Aucun fichier YAML de workflow, aucun module gelé, aucune
+frontière de sizing, aucun seuil, aucun digest d'évidence scientifique n'est
+modifié ; la lecture one-shot VALIDATION n'est pas rouverte et #367 n'est ni
+exécuté ni autorisé. Comme en §8.7, cette section n'affirme **aucun état CI ni
+push**.

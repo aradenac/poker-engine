@@ -84,6 +84,9 @@ DATASET_MANIFEST_REL = (
 CORPUS_HASHES_REL = "analysis/issue421_generalized_response/dataset/CORPUS_HASHES.json"
 FIT_REPORT_REL = "analysis/issue421_generalized_response/model/FIT_REPORT.json"
 V2_352_VALIDATION_REL = "analysis/model_a_preflop_sizing_v2_validation.json"
+IN_WINDOW_REFERENCE_REL = (
+    "analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json"
+)
 
 #: ``(name, role)`` of the ten artifacts the ticket enumerates, in ticket order.
 REQUIRED_ARTIFACTS: tuple[tuple[str, str], ...] = (
@@ -771,6 +774,7 @@ def summary_text(inputs: Mapping[str, Any], spec_digest: str, spec: Mapping[str,
     ]
     sizing = docs["RAISE_SIZING_MODEL_REPORT.json"]
     preflight = docs["ISSUE367_PREFLIGHT.json"]
+    in_window_reference_digest = sha256_bytes((ROOT / IN_WINDOW_REFERENCE_REL).read_bytes())
     candidate = manifest["candidate"]
     limper = coverage["limiters_vs_iso"]
     differences = validation["non_inferiority"]
@@ -988,7 +992,36 @@ def summary_text(inputs: Mapping[str, Any], spec_digest: str, spec: Mapping[str,
         "- #367 is neither executed nor authorized by this bundle; no Hero EV, no Model B and no "
         "rollout are computed.",
         "",
-        "## 10. Reproduce and verify",
+        "## 10. Cross-interpreter verification (interpreter-independent bytes)",
+        "",
+        "No persisted #421 artifact carries a raw interpreter-dependent float: every float the "
+        "runtime emits is quantised on its fixed decimal grid and every legal distribution is "
+        "re-closed with `math.fsum`, so the frozen model module's `sum`-based closure is "
+        "reproduced, never re-emitted. The whole pipeline -- the runtime's decision documents, "
+        "`ISSUE367_PREFLIGHT.json` and `IN_WINDOW_PREDICTION_REFERENCE.json` -- replays "
+        "byte-for-byte with `builtins.sum` replaced by the naive left-to-right fold of "
+        "CPython <= 3.11, the semantics the workflow's pinned interpreter runs "
+        "(`tests/preflop/test_generalized_response_runtime.py`, "
+        "`CrossInterpreterPipelineTests`), and the same replay fails once the runtime "
+        "canonicalisation is disabled (negative control: the guard cannot pass vacuously).",
+        "",
+        "| replayed artifact | byte SHA256 |",
+        "| --- | --- |",
+        "| `ISSUE367_PREFLIGHT.json` | `" + digests["ISSUE367_PREFLIGHT.json"] + "` |",
+        "| `IN_WINDOW_PREDICTION_REFERENCE.json` | `" + in_window_reference_digest + "` |",
+        "",
+        "Frozen frontiers and boundary re-checked on the replayed surface: #388/#419 raise-sizing "
+        "frontiers `" + str(sizing["guarantees"]["frontiers_resolved"]) + "/"
+        + str(
+            sizing["guarantees"]["frontiers_resolved"]
+            + sizing["guarantees"]["frontiers_fail_closed"]
+        )
+        + "` resolved with `" + str(sizing["metrics"]["illegal_generated_sizings"])
+        + "` illegal generated sizings, `TEST_CONSUMED=false`, `VALIDATION_CONSUMED=true` on the "
+        "single one-shot read, `ACTIVE_POINTER_MUTATED=false`, and #367 neither executed nor "
+        "authorized.",
+        "",
+        "## 11. Reproduce and verify",
         "",
         "```text",
         "python3 tools/training/build_issue421_evidence_bundle.py",

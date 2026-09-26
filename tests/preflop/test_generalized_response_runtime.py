@@ -1176,6 +1176,135 @@ class CanonicalSurfaceTests(RuntimeFixtures):
 
 
 # ---------------------------------------------------------------------------
+# cross-interpreter pipeline replay (the whole #421 surface, not a sample)
+# ---------------------------------------------------------------------------
+
+#: The two content-addressed artifacts the pipeline replay has to reproduce,
+#: addressed through the same constants their own tools publish.
+PREFLIGHT_PATH = preflight_tool.OUTPUT_DIR / preflight_tool.NAME
+IN_WINDOW_REFERENCE_PATH = sizing_reference.REFERENCE_PATH
+
+
+def serialize_in_window_reference(document: object) -> bytes:
+    """The exact bytes the sizing generator writes for the frozen reference."""
+    return (json.dumps(document, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+def pipeline_byte_streams() -> dict[str, bytes]:
+    """Replay the whole #421 pipeline and return its three persisted byte streams.
+
+    * ``runtime`` -- the decision documents a consumer reads, over every probe
+      context the canonical surface is pinned on (the runtime's own price
+      probes, the full #367 preflight context set and the nine frozen in-window
+      sizing probes), for both the unqueried and the ``RAISE`` request;
+    * ``preflight`` -- ``ISSUE367_PREFLIGHT.json``, rebuilt by its own tool;
+    * ``reference`` -- ``IN_WINDOW_PREDICTION_REFERENCE.json``, rebuilt by its
+      own generator.
+
+    Each stream is a deterministic serialisation of the *whole* document, so a
+    single divergent float anywhere on the surface moves the bytes.
+    """
+    handle = runtime.GeneralizedResponseRuntime(
+        candidate_id=manifest_candidate()["candidate_id"]
+    )
+    documents: list[bytes] = []
+    for label, context in canonical_probe_contexts():
+        for action in (None, "RAISE"):
+            document, code = resolve_probe(handle, context, action)
+            documents.append(
+                json.dumps(
+                    {"probe": label, "action": action, "code": code, "document": document},
+                    sort_keys=True,
+                ).encode("utf-8")
+            )
+    preflight_document, _summary = preflight_tool.build()
+    return {
+        "runtime": b"\n".join(documents),
+        "preflight": preflight_tool.serialize(preflight_document),
+        "reference": serialize_in_window_reference(
+            sizing_reference.build_in_window_reference()
+        ),
+    }
+
+
+@contextlib.contextmanager
+def canonicalisation_disabled():
+    """The runtime with its grid quantisation switched off (the pre-corrective state).
+
+    ``canonical_float`` is the *only* numeric canonicalisation of the runtime:
+    :func:`runtime.canonical_floats`,
+    :func:`runtime.canonical_legal_distribution`,
+    :func:`runtime.canonical_prediction` and
+    :func:`runtime.canonicalize_decision_document` all read it through the
+    module global.  Making it the identity therefore restores exactly what the
+    runtime emitted before the canonical surface existed -- the raw floats of
+    the frozen model module, whose last bits depend on the interpreter's
+    builtin ``sum``.
+    """
+    original = runtime.canonical_float
+
+    def identity(value: object, *, decimals: int = runtime.CANONICAL_DECIMALS) -> float | None:
+        return None if value is None else float(value)  # type: ignore[arg-type]
+
+    runtime.canonical_float = identity  # type: ignore[assignment]
+    try:
+        yield
+    finally:
+        runtime.canonical_float = original  # type: ignore[assignment]
+
+
+class CrossInterpreterPipelineTests(RuntimeFixtures):
+    """#421 T6: the whole pipeline, not a chosen sample, is interpreter-free.
+
+    The canonical-surface tests above prove the decision document survives the
+    pre-3.12 naive ``sum`` semantics context by context.  This class replays
+    the three persisted byte streams end to end -- the runtime's decision
+    documents, ``ISSUE367_PREFLIGHT.json`` and
+    ``IN_WINDOW_PREDICTION_REFERENCE.json`` -- and requires the replay with
+    ``builtins.sum`` replaced by a naive left-to-right fold (CPython <= 3.11,
+    the semantics the workflow's pinned ``.python-version`` runs) to reproduce
+    the persisted bytes exactly.  A negative control disables the runtime's
+    canonicalisation and proves the very same comparison then fails, so the
+    guard can never pass vacuously.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.native = pipeline_byte_streams()
+
+    def test_the_pipeline_replays_byte_for_byte_under_naive_sum(self) -> None:
+        with naive_sum_semantics():
+            emulated = pipeline_byte_streams()
+        self.assertEqual(sorted(self.native), sorted(emulated))
+        for part in sorted(self.native):
+            with self.subTest(part=part):
+                self.assertEqual(self.native[part], emulated[part], part)
+                self.assertGreater(len(self.native[part]), 0, part)
+        # ... and the native replay is the persisted evidence itself, byte for
+        # byte: both artifacts are content-addressed, so no divergent float can
+        # hide behind a re-serialisation.
+        self.assertEqual(self.native["preflight"], PREFLIGHT_PATH.read_bytes())
+        self.assertEqual(self.native["reference"], IN_WINDOW_REFERENCE_PATH.read_bytes())
+
+    def test_disabling_the_runtime_canonicalisation_breaks_the_replay(self) -> None:
+        """Negative control: the byte identity is the canonicalisation's work."""
+        with canonicalisation_disabled(), naive_sum_semantics():
+            perturbed = pipeline_byte_streams()
+        diverged = [part for part in sorted(self.native) if self.native[part] != perturbed[part]]
+        self.assertTrue(
+            diverged,
+            "removing the runtime canonicalisation changed no byte: the "
+            "interpreter-independence guard would be vacuous",
+        )
+        # The pre-corrective state must not reproduce the content-addressed
+        # evidence either -- that is exactly the red CI this guard pins.
+        self.assertNotEqual(perturbed["runtime"], self.native["runtime"])
+        self.assertNotEqual(perturbed["preflight"], PREFLIGHT_PATH.read_bytes())
+        self.assertNotEqual(perturbed["reference"], IN_WINDOW_REFERENCE_PATH.read_bytes())
+
+
+# ---------------------------------------------------------------------------
 # determinism and split / seed guards
 # ---------------------------------------------------------------------------
 

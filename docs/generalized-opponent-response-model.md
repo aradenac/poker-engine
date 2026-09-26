@@ -9,9 +9,11 @@ and pinned by
 The ten required artifacts are bound by
 `analysis/issue421_generalized_response/ARTIFACTS.json`; the human summary is
 `analysis/issue421_generalized_response/SUMMARY.md`
-(`bbe2a44de0f3d159b6fc00e5e2c7665b075c521cbba1e73d4afddaee21de0b7c`). This
-document explains the spec and the cycle; it is not itself normative. The JSON
-wins, and the spec digest is recorded outside its own payload.
+(`5b886ed256fbf3c7bc11dafe7ff0a564647680a228377f5536ec8ce3b66c498e`) — its
+pre-T6 bytes are `bbe2a44de0f3d159b6fc00e5e2c7665b075c521cbba1e73d4afddaee21de0b7c`,
+kept as the historical proof of `backlog-bvi`. This document explains the spec
+and the cycle; it is not itself normative. The JSON wins, and the spec digest is
+recorded outside its own payload.
 
 Provenance is environment-independent: every recorded path — including
 `evidence_bindings.runtime_module_path` and every `registry_source` embedded in
@@ -168,6 +170,14 @@ the reference with
 `python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference`
 (it re-captures the canonical surface; the entry digest is
 `a48c280c9cd7607d06752fedb0fa264ec9b082fdf2529b8dfee594219937cb79`).
+
+The whole pipeline — not a sample — is re-proved interpreter-independent by
+`tests/preflop/test_generalized_response_runtime.py` (`CrossInterpreterPipelineTests`,
+run by the #421 workflow): the runtime decision documents,
+`ISSUE367_PREFLIGHT.json` and this reference all replay byte-for-byte with
+`builtins.sum` replaced by the naive left-to-right fold of CPython <= 3.11, and
+that same replay fails once the runtime canonicalisation is disabled (negative
+control).
 
 ## 5. Evaluation, freeze and one-shot VALIDATION
 
