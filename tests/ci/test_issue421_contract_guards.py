@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""#421 T11 -- contract guardrails around the mandatory suite.
+"""#421 T11/T13 -- contract guardrails around the mandatory suite.
 
 These guards do not re-test the model.  They pin the cross-cutting properties
 the ticket makes non-negotiable:
@@ -11,7 +11,12 @@ the ticket makes non-negotiable:
   frozen validation protocol;
 * ``TEST_CONSUMED`` is false everywhere, and no TEST row is reachable;
 * the mandatory suite passes with every network primitive blocked, and none of
-  the relevant modules imports a network client.
+  the relevant modules imports a network client;
+* no artifact the #421 bundle persists leaks an absolute host path: the guard
+  scans the raw bytes *and* the decoded JSON values of every persisted file
+  (``sha256/`` objects and ``.sha256`` sidecars included) for a CI runner home,
+  the checkout root, a macOS home, a Windows separator or a drive letter, and
+  carries a negative control proving it catches the pre-corrective defect.
 """
 from __future__ import annotations
 
@@ -20,11 +25,14 @@ import contextlib
 import importlib.util
 import io
 import json
+import re
 import socket
 import sys
+import tempfile
 import unittest
 import urllib.request
 from pathlib import Path
+from typing import NamedTuple
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -94,6 +102,169 @@ SCANNED_SOURCES = (
 #: every other scanned module must import none at all.
 SELF_PATH = ROOT / "tests/ci/test_issue421_contract_guards.py"
 NETWORK_IMPORTS_ALLOWED_FOR_THE_TRIPWIRE = frozenset({"socket", "urllib"})
+
+# --------------------------------------------------------------------------
+# #421 T13 -- absolute host path leak guard
+# --------------------------------------------------------------------------
+#
+# Provenance in the bundle is deliberately repository-relative POSIX: an
+# absolute host path (a CI runner home, the checkout root, a Windows drive)
+# makes the regenerated digests host-dependent and leaks the runner layout.
+# The scanner below names no host of its own -- it is machine-independent --
+# and is applied to the raw bytes *and* to the decoded JSON values of every
+# file the bundle persists, so a leak cannot hide behind an escape sequence.
+
+BUNDLE_DIR = ROOT / "analysis/issue421_generalized_response"
+JSON_SUFFIXES = frozenset({".json", ".jsonl"})
+
+#: The defect this regression pins: the pre-corrective bundle recorded its
+#: candidate manifest by absolute host path instead of repository-relative.
+PRE_FIX_REGISTRY_SOURCE = (
+    "/home/ci/runner/x/analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json"
+)
+
+#: The artifact the pre-corrective defect was recorded in: the #367 preflight
+#: embeds one `registry_source` per queried node.
+PREFLIGHT_PATH = BUNDLE_DIR / "ISSUE367_PREFLIGHT.json"
+
+#: Escape-proof markers: a JSON escape sequence can neither forge nor hide one.
+PLAIN_HOST_MARKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("posix home root", re.compile(r"/home/")),
+    ("macos home root", re.compile(r"/Users/")),
+    ("orchestrator worktree root", re.compile(r"\.cache/poker-engine-orchestrator")),
+)
+
+#: Backslash markers: only meaningful once JSON escapes are resolved, so they
+#: are applied to decoded JSON values and to non-JSON bodies, never to the raw
+#: text of a JSON document where `\n` is a newline escape, not a separator.
+WINDOWS_HOST_MARKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("windows drive letter", re.compile(r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]")),
+    ("windows path separator", re.compile(r"[A-Za-z0-9_.\-]\\[A-Za-z0-9_.\-]")),
+    ("windows unc prefix", re.compile(r"\\\\[A-Za-z0-9_.\-]")),
+)
+
+
+class HostPathFinding(NamedTuple):
+    """One absolute host path found in a persisted #421 artifact."""
+
+    artifact: str
+    origin: str
+    marker: str
+    snippet: str
+
+    def render(self) -> str:
+        return f"{self.artifact} [{self.origin}] {self.marker}: {self.snippet}"
+
+
+def checkout_path_markers(root: Path = ROOT) -> tuple[str, ...]:
+    """Absolute paths that name *this* machine: the checkout root and HOME."""
+    candidates: set[str] = {str(root), root.as_posix()}
+    with contextlib.suppress(RuntimeError, OSError):
+        candidates.add(str(Path.home()))
+    return tuple(
+        sorted(marker for marker in candidates if len(marker) > 1 and marker not in {"/", "\\"})
+    )
+
+
+def _snippet(text: str, start: int, end: int, width: int = 100) -> str:
+    """The offending text with enough context to be pasted straight into a report."""
+    return " ".join(text[max(0, start - width) : min(len(text), end + width)].split())
+
+
+def host_path_findings(
+    text: str,
+    *,
+    artifact: str = "<memory>",
+    origin: str = "raw text",
+    windows: bool = True,
+    root: Path = ROOT,
+) -> list[HostPathFinding]:
+    """Every absolute host path the given body carries, with the offending text."""
+    findings: list[HostPathFinding] = []
+    markers = PLAIN_HOST_MARKERS + (WINDOWS_HOST_MARKERS if windows else ())
+    for label, pattern in markers:
+        for match in pattern.finditer(text):
+            findings.append(
+                HostPathFinding(artifact, origin, label, _snippet(text, *match.span()))
+            )
+    for marker in checkout_path_markers(root):
+        start = text.find(marker)
+        while start != -1:
+            findings.append(
+                HostPathFinding(
+                    artifact,
+                    origin,
+                    "checkout root",
+                    _snippet(text, start, start + len(marker)),
+                )
+            )
+            start = text.find(marker, start + 1)
+    return list({(item.marker, item.origin, item.snippet): item for item in findings}.values())
+
+
+def _json_string_values(text: str, suffix: str) -> list[str] | None:
+    """Every string a JSON/JSONL body carries, or None when it is not JSON."""
+    if suffix not in JSON_SUFFIXES:
+        return None
+    try:
+        if suffix == ".jsonl":
+            documents = [json.loads(line) for line in text.splitlines() if line.strip()]
+        else:
+            documents = [json.loads(text)]
+    except ValueError:  # unparsable: keep the plain-text scan, escapes unresolved
+        return None
+    values: list[str] = []
+
+    def walk(node: object) -> None:
+        if isinstance(node, str):
+            values.append(node)
+        elif isinstance(node, dict):
+            for key, item in node.items():
+                values.append(str(key))
+                walk(item)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+
+    for document in documents:
+        walk(document)
+    return values
+
+
+def scan_body(
+    text: str, *, artifact: str = "<body>", suffix: str = "", root: Path = ROOT
+) -> list[HostPathFinding]:
+    """Scan one artifact body: its raw text, then its decoded JSON values."""
+    decoded = _json_string_values(text, suffix)
+    findings = host_path_findings(
+        text, artifact=artifact, origin="raw text", windows=decoded is None, root=root
+    )
+    for value in decoded or ():
+        findings.extend(
+            host_path_findings(value, artifact=artifact, origin="json value", root=root)
+        )
+    return list({(item.marker, item.origin, item.snippet): item for item in findings}.values())
+
+
+def scan_artifact(path: Path, *, root: Path = ROOT) -> list[HostPathFinding]:
+    """Scan one persisted file, reporting it by repository-relative path."""
+    name = path.relative_to(root).as_posix() if path.is_relative_to(root) else path.as_posix()
+    body = path.read_bytes().decode("utf-8", errors="replace")
+    return scan_body(body, artifact=name, suffix=path.suffix, root=root)
+
+
+def bundle_artifacts(bundle_dir: Path = BUNDLE_DIR) -> list[Path]:
+    """Every file the bundle persists, ``sha256/`` objects and sidecars included."""
+    return sorted(path for path in bundle_dir.rglob("*") if path.is_file())
+
+
+def scan_bundle(
+    bundle_dir: Path = BUNDLE_DIR, *, root: Path = ROOT
+) -> tuple[list[Path], list[HostPathFinding]]:
+    """Every persisted artifact and every absolute host path it carries."""
+    artifacts = bundle_artifacts(bundle_dir)
+    findings = [item for path in artifacts for item in scan_artifact(path, root=root)]
+    return artifacts, findings
 
 
 def load_mandatory_suite():
@@ -295,6 +466,125 @@ class Issue421ContractGuardTests(unittest.TestCase):
                 self.assertEqual(
                     manifest_split["hand_ids_fingerprint_sha256"], fingerprint(hands[split])
                 )
+
+    # ---------------------------------------- absolute host path leak guard
+    def test_the_persisted_bundle_carries_no_absolute_host_path(self) -> None:
+        """Every persisted artifact, sidecars and sha256 objects included, is clean."""
+        artifacts, findings = scan_bundle()
+        relative = {path.relative_to(BUNDLE_DIR).as_posix() for path in artifacts}
+        self.assertGreater(len(artifacts), 20, sorted(relative))
+        self.assertTrue(
+            any(part.startswith("sha256/") or "/sha256/" in part for part in relative),
+            f"the bundle must persist content-addressed objects under sha256/: {sorted(relative)}",
+        )
+        self.assertTrue(
+            any(part.endswith(".sha256") for part in relative),
+            f"the bundle must persist .sha256 sidecars: {sorted(relative)}",
+        )
+        self.assertEqual([], [finding.render() for finding in findings])
+
+    def test_the_host_path_scanner_catches_the_pre_fix_registry_source(self) -> None:
+        """Negative control: the scanner must catch the pre-corrective payload."""
+        payload = f"registry_source = '{PRE_FIX_REGISTRY_SOURCE}'"
+        findings = host_path_findings(payload, artifact="CANDIDATE_MANIFEST.json")
+        self.assertTrue(findings, "the scanner missed the pre-fix registry_source payload")
+        self.assertTrue(
+            any(PRE_FIX_REGISTRY_SOURCE in finding.snippet for finding in findings),
+            [finding.render() for finding in findings],
+        )
+        # The same leak through a persisted JSON artifact, plain or escaped: the
+        # decoded values are scanned too, so `\/` cannot smuggle it past the guard.
+        document = json.dumps({"registry_source": PRE_FIX_REGISTRY_SOURCE})
+        for body in (
+            document,
+            document.replace("/", r"\/"),
+            document.replace("/", r"\u002f"),
+        ):
+            with self.subTest(body=body):
+                self.assertTrue(
+                    scan_body(body, artifact="CANDIDATE_MANIFEST.json", suffix=".json"),
+                    "an escaped JSON string must not evade the host path guard",
+                )
+        # A Windows host is the same defect on another platform.
+        for body in (
+            '"registry_source": "C:\\\\ci\\\\runner\\\\x\\\\CANDIDATE_MANIFEST.json"',
+            '{"registry_source": "C:/ci/runner/x/CANDIDATE_MANIFEST.json"}',
+        ):
+            with self.subTest(body=body):
+                findings = scan_body(body, artifact="CANDIDATE_MANIFEST.json", suffix=".json")
+                self.assertTrue(findings, [body])
+                self.assertIn("windows drive letter", {finding.marker for finding in findings})
+        # Positive control: the repository-relative form the bundle persists is clean.
+        clean = (
+            "registry_source = 'analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json'"
+        )
+        self.assertEqual([], scan_body(clean, artifact="SUMMARY.md", suffix=".md"))
+        self.assertEqual(
+            [],
+            scan_body(
+                json.dumps(
+                    {
+                        "registry_source": (
+                            "analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json"
+                        )
+                    }
+                ),
+                artifact="CANDIDATE_MANIFEST.json",
+                suffix=".json",
+            ),
+        )
+
+    def test_the_bundle_scan_fails_closed_on_every_leaked_artifact_kind(self) -> None:
+        """The pre-fix payload inside a bundle layout: manifest, sha256 object, sidecar."""
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle = Path(tmp) / "issue421_generalized_response"
+            (bundle / "sha256").mkdir(parents=True)
+            payload = json.dumps({"registry_source": PRE_FIX_REGISTRY_SOURCE}, indent=2)
+            manifest = bundle / "CANDIDATE_MANIFEST.json"
+            manifest.write_text(payload, encoding="utf-8")
+            obj = bundle / "sha256" / ("a" * 64 + ".json")
+            obj.write_text(payload, encoding="utf-8")
+            sidecar = bundle / "CANDIDATE_MANIFEST.sha256"
+            sidecar.write_text(f"{'b' * 64}  {PRE_FIX_REGISTRY_SOURCE}\n", encoding="utf-8")
+            artifacts, findings = scan_bundle(bundle)
+            self.assertEqual({manifest, obj, sidecar}, set(artifacts))
+            self.assertEqual(
+                {manifest.as_posix(), obj.as_posix(), sidecar.as_posix()},
+                {finding.artifact for finding in findings},
+                [finding.render() for finding in findings],
+            )
+            for finding in findings:
+                self.assertIn("CANDIDATE_MANIFEST.json", finding.snippet)
+
+    def test_the_pre_fix_registry_source_is_caught_inside_the_persisted_preflight(self) -> None:
+        """The defect lived in ISSUE367_PREFLIGHT.json: reword it and the guard still fires."""
+        document = json.loads(PREFLIGHT_PATH.read_text(encoding="utf-8"))
+        node = document["nodes"][0]
+        candidate = node["model"]["provenance"]["candidate"]
+        # The persisted form is exactly the repository-relative one, so it is clean.
+        self.assertEqual(
+            "analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json",
+            candidate["registry_source"],
+        )
+        candidate["registry_source"] = PRE_FIX_REGISTRY_SOURCE
+        findings = scan_body(
+            json.dumps(document),
+            artifact=PREFLIGHT_PATH.relative_to(ROOT).as_posix(),
+            suffix=".json",
+        )
+        self.assertEqual(
+            {"posix home root"},
+            {finding.marker for finding in findings},
+            [finding.render() for finding in findings],
+        )
+        self.assertEqual(
+            {PREFLIGHT_PATH.relative_to(ROOT).as_posix()},
+            {finding.artifact for finding in findings},
+        )
+        self.assertTrue(
+            any(PRE_FIX_REGISTRY_SOURCE in finding.snippet for finding in findings),
+            [finding.render() for finding in findings],
+        )
 
 
 if __name__ == "__main__":
