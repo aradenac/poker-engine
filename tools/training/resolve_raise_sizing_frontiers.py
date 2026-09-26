@@ -85,6 +85,17 @@ SUBSTITUTIONS_FORBIDDEN = {
     'representative_price': False,
 }
 
+# The distinct, machine-readable blocker every unresolved frontier exposes. The
+# value is the frozen #419 sizing abstention reason code (no nearest/representative
+# price is ever substituted); it is mirrored here as a literal so this TRAIN-only
+# audit stays independent of any response model or provider module.
+BLOCKER_REASON_CODE = 'RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE'
+BLOCKER_CLASS = 'RAISE_SIZING_EXACT_SUPPORT'
+# The frontier class is a *necessary* condition for tree closure: an unresolved
+# frontier forces ``required_tree_complete=false`` regardless of any response
+# likelihood, and never suffices to close the tree on its own.
+REQUIRED_TREE_COMPLETE_EFFECT = 'BLOCKS_REQUIRED_TREE_COMPLETE'
+
 
 def structural_projection(context: Mapping[str, Any]) -> dict[str, Any]:
     """The ``runtime_exact_preflop_node_key`` field projection, as given.
@@ -307,6 +318,31 @@ def resolve_frontier(
         raise ValueError(
             'frontier unexpectedly resolvable; this tool persists only an exact supported target'
         )
+    # Each frontier is exposed as an explicit, independent blocker. It carries no
+    # numeric target and no representative/nearest price, it is a property of the
+    # active structural reference (never of a response model) and it forces
+    # ``required_tree_complete=false`` while it stays unresolved.
+    blocker = {
+        'reason_code': BLOCKER_REASON_CODE,
+        'blocker_class': BLOCKER_CLASS,
+        'status': 'OPEN',
+        'independent_of_the_response_model': True,
+        'independent_of_the_response_model_scope': (
+            'a property of the active structural reference node key, not of any '
+            'response-likelihood model'
+        ),
+        'blocks_required_tree_complete': True,
+        'blocks_what': 'required_tree_complete',
+        'required_tree_complete': False,
+        'necessary_for_tree_closure': True,
+        'sufficient_for_tree_closure': False,
+        'exactly_supported_target_bb': None,
+        'admitted_target_bb': None,
+        'representative_price_substituted': False,
+        'nearest_price_substituted': False,
+        'nearest_context_substituted': False,
+        'legal_minimum_fallback_substituted': False,
+    }
     return {
         'node_id': frontier['node_id'],
         'path': list(tree_node['path']),
@@ -367,6 +403,11 @@ def resolve_frontier(
         },
         'train_observed_raise_actions': observed_raise_actions,
         'train_observed_raise_targets': None,
+        'blocker': blocker,
+        'blocker_reason_code': BLOCKER_REASON_CODE,
+        'independent_of_the_response_model': True,
+        'blocks_required_tree_complete': True,
+        'required_tree_complete': False,
         'coded_notes': (
             ([OBSERVED_RAISES_NOT_ADMITTED] if observed_raise_actions else [])
             + ['NO_EXACT_TARGET_EMITTED']
@@ -405,6 +446,16 @@ def unprotected(frontiers: Sequence[Mapping[str, Any]]) -> bool:
                      'nearest_context_substituted', 'legal_minimum_fallback_substituted'):
             if support[flag]:
                 return True
+        # The exposed blocker must never smuggle a target or a substituted price.
+        blocker = frontier.get('blocker', {})
+        if blocker.get('exactly_supported_target_bb') is not None:
+            return True
+        if blocker.get('admitted_target_bb') is not None:
+            return True
+        for flag in ('representative_price_substituted', 'nearest_price_substituted',
+                     'nearest_context_substituted', 'legal_minimum_fallback_substituted'):
+            if blocker.get(flag):
+                return True
     return False
 
 
@@ -431,6 +482,14 @@ def build_resolution(
     if protected_before != protected_after:
         raise ValueError('active reference/registry mutation')
     blocker_reasons = sorted({r for f in unresolved for r in f['coded_reasons']})
+    enumeration_complete = bool(tree.get('enumeration_complete'))
+    # The frontier effect on tree completeness is propagated explicitly: as long
+    # as any frontier is unresolved the required tree cannot be complete, while
+    # clearing every frontier is necessary but not sufficient (the enumeration
+    # must also be complete, which this TRAIN-only audit never claims).
+    required_tree_complete = bool(not unresolved) and enumeration_complete
+    if required_tree_complete:
+        assert not unresolved and enumeration_complete
     return {
         'schema': SCHEMA,
         'issue': 419,
@@ -456,16 +515,49 @@ def build_resolution(
         'resolved_count': len(frontiers) - len(unresolved),
         'unresolved_count': len(unresolved),
         'unresolved_node_ids': [f['node_id'] for f in unresolved],
-        'enumeration_complete': False,
+        'enumeration_complete': enumeration_complete,
+        'required_tree_complete': required_tree_complete,
+        'required_tree_complete_effect': {
+            'required_tree_complete': required_tree_complete,
+            'blocker_reason_code': BLOCKER_REASON_CODE,
+            'blocker_class': BLOCKER_CLASS,
+            'independent_of_the_response_model': True,
+            'representative_price_substituted': False,
+            'blocks_required_tree_complete': bool(unresolved),
+            'effect': REQUIRED_TREE_COMPLETE_EFFECT if unresolved else 'NO_EFFECT',
+            'blocking_frontier_count': len(unresolved),
+            'blocking_frontier_node_ids': [f['node_id'] for f in unresolved],
+            'frontiers_total': len(frontiers),
+            'enumeration_complete': enumeration_complete,
+            'necessary_for_tree_closure': True,
+            'sufficient_for_tree_closure': False,
+            'propagated_to': [
+                'raise_sizing_frontiers.required_tree_complete',
+                'exact_tree_preflight.required_tree_complete',
+                'terminal_decision.required_tree_complete',
+            ],
+            'argument': (
+                'Each unresolved RAISE frontier is a sizing/structural gap that no response model can '
+                'close without a representative price: its descendant states depend on the raise '
+                'target, so the required #388 tree stays open and required_tree_complete stays false '
+                'until every frontier is exactly resolved and the enumeration is complete. Clearing '
+                'the frontiers is necessary but not sufficient for closure.'
+            ),
+        },
         'blocker_persisted': bool(unresolved),
         'blocker_count': 1 if unresolved else 0,
+        'blocker_reason_code': BLOCKER_REASON_CODE,
+        'independent_of_the_response_model': True,
         'blockers': [{
             'blocker_id': 'UNRESOLVED_RAISE_SIZING_FRONTIER',
-            'blocker_class': 'RAISE_SIZING_EXACT_SUPPORT',
+            'reason_code': BLOCKER_REASON_CODE,
+            'blocker_class': BLOCKER_CLASS,
             'status': 'OPEN',
             'independent_of_response_model': True,
             'necessary_for_tree_closure': True,
             'sufficient_for_tree_closure': False,
+            'blocks_required_tree_complete': bool(unresolved),
+            'required_tree_complete': required_tree_complete,
             'distinct_from_blocker_classes': ['INSUFFICIENT_RUNTIME_SUPPORT_CONTEXT'],
             'frontier_count': len(unresolved),
             'frontier_node_ids': [f['node_id'] for f in unresolved],
@@ -674,11 +766,13 @@ def summary_text(resolution: Mapping[str, Any]) -> str:
         '`exactly_supported_target_bb=null` and `admitted_target_bb=null`. TRAIN RAISE actions '
         'observed at some structural keys are recorded as counts only, never as a price.',
         '',
-        'The frontier set is persisted as a distinct blocker `UNRESOLVED_RAISE_SIZING_FRONTIER` '
-        '(class `RAISE_SIZING_EXACT_SUPPORT`): necessary but not sufficient for tree closure, and '
-        'independent of the response model — the same reference nodes already carry response '
-        'likelihoods (`population_model`, `response_model_key`, `policy169_q_b64`) while carrying no '
-        'raise sizing.',
+        'Every frontier is exposed as a distinct blocker '
+        '`RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE` (blocker id '
+        '`UNRESOLVED_RAISE_SIZING_FRONTIER`, class `RAISE_SIZING_EXACT_SUPPORT`) with '
+        '`independent_of_the_response_model=true`: it is necessary but not sufficient for tree '
+        'closure and it forces `required_tree_complete=false` while it stays open. The same '
+        'reference nodes already carry response likelihoods (`population_model`, '
+        '`response_model_key`, `policy169_q_b64`) while carrying no raise sizing.',
         '',
         'No VALIDATION or TEST decision was parsed or evaluated (`split_consumed=TRAIN`, '
         '`validation_consumed=false`, `test_consumed=false`); active registries and the active '

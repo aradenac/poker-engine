@@ -8,7 +8,7 @@ The pinned active reference has 0 of 4554 nodes carrying any translatable raise 
 
 No representative price, nearest price, nearest context, target drift, observed empirical raise target, or legal-minimum substitution is introduced: every frontier persists `exactly_supported_target_bb=null` and `admitted_target_bb=null`. TRAIN RAISE actions observed at some structural keys are recorded as counts only, never as a price.
 
-The frontier set is persisted as a distinct blocker `UNRESOLVED_RAISE_SIZING_FRONTIER` (class `RAISE_SIZING_EXACT_SUPPORT`): necessary but not sufficient for tree closure, and independent of the response model — the same reference nodes already carry response likelihoods (`population_model`, `response_model_key`, `policy169_q_b64`) while carrying no raise sizing.
+Every frontier is exposed as a distinct blocker `RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE` (blocker id `UNRESOLVED_RAISE_SIZING_FRONTIER`, class `RAISE_SIZING_EXACT_SUPPORT`) with `independent_of_the_response_model=true`: it is necessary but not sufficient for tree closure and it forces `required_tree_complete=false` while it stays open. The same reference nodes already carry response likelihoods (`population_model`, `response_model_key`, `policy169_q_b64`) while carrying no raise sizing.
 
 No VALIDATION or TEST decision was parsed or evaluated (`split_consumed=TRAIN`, `validation_consumed=false`, `test_consumed=false`); active registries and the active reference are unchanged before/after. This artifact records evidence only; it admits nothing.
 

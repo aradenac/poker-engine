@@ -28,9 +28,17 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.preflop import model_a_sizing_hierarchical as H  # noqa: E402
+from tools.simulation import issue419_exact_tree_preflight as preflight_tool  # noqa: E402
 from tools.training import audit_hierarchical_candidate_contract as tool  # noqa: E402
 
 RESPONSE_REF = {"$ref": "#/$defs/response"}
+PREFLIGHT_PATH = (
+    ROOT / "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json"
+)
+PREFLIGHT_V2_PATH = (
+    ROOT
+    / "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json"
+)
 
 
 class HierarchicalCandidateContractTests(unittest.TestCase):
@@ -42,6 +50,8 @@ class HierarchicalCandidateContractTests(unittest.TestCase):
             (cls.output / tool.CONTRACT_NAME).read_text(encoding="utf-8")
         )
         cls.hierarchical_schema, cls.exact_schema = tool.load_schemas()
+        cls.preflight = json.loads(PREFLIGHT_PATH.read_text(encoding="utf-8"))
+        cls.preflight_v2 = json.loads(PREFLIGHT_V2_PATH.read_text(encoding="utf-8"))
 
     # 1. persisted, content-addressed contract artifact --------------------------
     def test_persisted_contract_is_content_addressed_and_reproducible(self):
@@ -250,6 +260,201 @@ class HierarchicalCandidateContractTests(unittest.TestCase):
         replacement = copy.deepcopy(scenario["candidate"])
         replacement["identity"]["active_model_replaced"] = True
         self.assertTrue(tool.schema_errors(self.hierarchical_schema, replacement))
+
+    # 7. two-layer provider/schema/preflight parity -----------------------------
+    def test_two_layer_fields_parity_provider_schema_preflight(self):
+        scenarios = tool.build_provider_scenarios()
+        self.assertEqual(
+            sorted(scenarios),
+            ["exact_empirical_strong", "hierarchical_estimate", "unresolved"],
+        )
+        for name, scenario in scenarios.items():
+            response = scenario["response"]
+            with self.subTest(scenario=name):
+                # provider -> schema: the machine-readable response validates and
+                # the frozen status/reason labels are the schema enum members.
+                self.assertEqual(
+                    tool.schema_errors(self.hierarchical_schema, response, RESPONSE_REF), []
+                )
+                self.assertIn(
+                    response["status"], self.hierarchical_schema["$defs"]["status"]["enum"]
+                )
+                self.assertEqual(response["reason_code"], response["status"])
+
+                # Layer A - empirical support. The preflight's `empirical_support`
+                # projection is exactly the provider `support` layer, credited at
+                # the hand level and never borrowed from another key.
+                support = preflight_tool.support_record(response)
+                self.assertEqual(support["observations"], response["support"]["observations"])
+                self.assertEqual(support["distinct_hands"], response["support"]["distinct_hands"])
+                self.assertEqual(
+                    support["effective_sample_size"],
+                    response["support"]["effective_sample_size"],
+                )
+                self.assertEqual(
+                    response["support"]["effective_sample_size"],
+                    float(response["support"]["distinct_hands"]),
+                )
+                self.assertEqual(support["source_key"], response["support"]["source_key"])
+                self.assertEqual(support["source_key"], response["requested_key"])
+                self.assertFalse(support["borrowed_from_other_keys"])
+                self.assertEqual(support["support_isolation_rule"], H.SUPPORT_ISOLATION_RULE)
+                self.assertEqual(
+                    support["meets_observation_threshold"],
+                    response["support"]["observations"] >= H.MIN_MARGINAL_OBSERVATIONS,
+                )
+                self.assertEqual(
+                    support["meets_distinct_hand_threshold"],
+                    response["support"]["distinct_hands"] >= H.MIN_DISTINCT_HANDS,
+                )
+                self.assertEqual(
+                    support["qualifies_as_exact_support"],
+                    support["meets_observation_threshold"]
+                    and support["meets_distinct_hand_threshold"],
+                )
+
+                # Layer B - pooling provenance. The provider `pooling` layer and
+                # the preflight `pooling_provenance` projection agree field for
+                # field, and an exact-support answer is the only one that counts
+                # as exact support.
+                pooling = preflight_tool.pooling_record(response)
+                if response["pooling"] is None:
+                    self.assertIsNone(pooling)
+                else:
+                    for field in (
+                        "level",
+                        "source_key",
+                        "source_observations",
+                        "source_distinct_hands",
+                        "source_effective_sample_size",
+                        "retained_axes",
+                        "pooled_axes",
+                    ):
+                        self.assertEqual(pooling[field], response["pooling"][field], field)
+                    self.assertEqual(
+                        pooling["counts_as_exact_support"],
+                        response["pooling"]["level"] == H.SUPPORT_LEVEL,
+                    )
+                    self.assertEqual(
+                        response["pooling"]["support_source_key"],
+                        response["support"]["source_key"],
+                    )
+
+                # Uncertainty obligation (layer B): an answered decision reports
+                # its band at the level actually used; an unresolved decision
+                # emits none and the preflight reports none either.
+                if response["status"] == H.STATUS_EXACT_UNRESOLVED:
+                    self.assertIsNone(response["uncertainty"])
+                    self.assertIsNone(preflight_tool.uncertainty_record(response))
+                else:
+                    self.assertIsNotNone(response["uncertainty"])
+                    self.assertEqual(
+                        response["uncertainty"]["method"],
+                        self.hierarchical_schema["$defs"]["response"]["properties"][
+                            "uncertainty"
+                        ]["properties"]["method"]["const"],
+                    )
+                    self.assertEqual(
+                        response["uncertainty"]["level_used"], response["pooling"]["level"]
+                    )
+                    self.assertGreater(response["uncertainty"]["effective_sample_size"], 0)
+                    self.assertEqual(
+                        set(response["uncertainty"]["actions"]), set(response["posterior"])
+                    )
+
+                # Admissibility / posterior identity / status: the preflight's
+                # structured verdict names the same status and posterior, and
+                # carries the layer-B gate vocabulary.
+                closure = preflight_tool.admissibility(response)
+                self.assertEqual(closure["status"], response["status"])
+                self.assertEqual(closure["posterior_present"], response["posterior"] is not None)
+                self.assertEqual(closure["rule_id"], preflight_tool.NODE_CLOSURE_RULE_ID)
+                identity = preflight_tool.posterior_identity(response)
+                self.assertEqual(identity["status"], response["status"])
+                self.assertEqual(identity["reason_code"], response["reason_code"])
+                self.assertEqual(identity["posterior"], response["posterior"])
+                self.assertEqual(
+                    identity["posterior_sha256"],
+                    None
+                    if response["posterior"] is None
+                    else H.canonical_sha256(response["posterior"]),
+                )
+
+        # The persisted v2 preflight materializes the same two-layer families for
+        # every required node, keyed by the exact identity.
+        self.assertEqual(self.preflight_v2["schema"], "poker-issue419-exact-tree-preflight/v2")
+        for node in self.preflight_v2["nodes"]:
+            with self.subTest(node=node["index"]):
+                self.assertEqual(
+                    node["empirical_support"]["source_key"], node["exact_key"]
+                )
+                self.assertEqual(
+                    node["empirical_support"]["support_isolation_rule"],
+                    H.SUPPORT_ISOLATION_RULE,
+                )
+                self.assertIn(node["posterior_identity"]["status"], H.STATUSES)
+                self.assertEqual(
+                    node["admissibility_class"],
+                    node["node_closure"]["admissibility_class"],
+                )
+                self.assertEqual(
+                    node["node_closure"]["status"], node["posterior_identity"]["status"]
+                )
+                # A node that is not admissible exact support never claims it.
+                if not node["counts_as_exact_support"]:
+                    self.assertNotEqual(
+                        node["admissibility_class"], H.STATUS_EXACT_EMPIRICAL_STRONG
+                    )
+
+    def test_pooled_estimate_is_never_relabelled_exact_empirical_strong(self):
+        scenarios = tool.build_provider_scenarios()
+        strong = scenarios["exact_empirical_strong"]["response"]
+        estimate = scenarios["hierarchical_estimate"]["response"]
+
+        # Layer A is genuinely L0/20-20 and closes as exact empirical support.
+        self.assertEqual(strong["status"], H.STATUS_EXACT_EMPIRICAL_STRONG)
+        self.assertEqual(strong["pooling"]["level"], H.SUPPORT_LEVEL)
+        self.assertGreaterEqual(strong["support"]["observations"], H.MIN_MARGINAL_OBSERVATIONS)
+        self.assertGreaterEqual(strong["support"]["distinct_hands"], H.MIN_DISTINCT_HANDS)
+        strong_closure = preflight_tool.admissibility(strong)
+        self.assertEqual(
+            strong_closure["admissibility_class"], H.STATUS_EXACT_EMPIRICAL_STRONG
+        )
+        self.assertTrue(strong_closure["counts_as_exact_support"])
+
+        # Layer B is a shrunk estimate over a parent level: it is never relabelled.
+        self.assertEqual(estimate["status"], H.STATUS_EXACT_HIERARCHICAL_ESTIMATE)
+        self.assertNotEqual(estimate["pooling"]["level"], H.SUPPORT_LEVEL)
+        estimate_closure = preflight_tool.admissibility(estimate)
+        self.assertNotEqual(
+            estimate_closure["admissibility_class"], H.STATUS_EXACT_EMPIRICAL_STRONG
+        )
+        self.assertFalse(estimate_closure["counts_as_exact_support"])
+        self.assertTrue(
+            estimate_closure["layer_b_gates"]["EXACT_KEY_IDENTITY"]["applies_to_answer"]
+        )
+
+        # The provider refuses the relabelling outright: an EXACT_EMPIRICAL_STRONG
+        # claim requires pooling.level == L0_EXACT_KEY, which a pooled estimate is
+        # not, so validate_response fails closed.
+        relabelled = copy.deepcopy(estimate)
+        relabelled["status"] = H.STATUS_EXACT_EMPIRICAL_STRONG
+        relabelled["reason_code"] = H.STATUS_EXACT_EMPIRICAL_STRONG
+        with self.assertRaises(H.HierarchicalSizingError):
+            H.validate_response(relabelled)
+        relabelled_closure = preflight_tool.admissibility(relabelled)
+        self.assertNotEqual(
+            relabelled_closure["admissibility_class"], H.STATUS_EXACT_EMPIRICAL_STRONG
+        )
+        self.assertFalse(relabelled_closure["counts_as_exact_support"])
+
+        # The two labels are distinct members of the frozen status enum.
+        self.assertNotEqual(
+            H.STATUS_EXACT_HIERARCHICAL_ESTIMATE, H.STATUS_EXACT_EMPIRICAL_STRONG
+        )
+        self.assertEqual(
+            self.hierarchical_schema["$defs"]["status"]["enum"], list(H.STATUSES)
+        )
 
 
 if __name__ == "__main__":

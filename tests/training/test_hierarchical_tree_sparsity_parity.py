@@ -17,6 +17,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.training import audit_hierarchical_tree_sparsity as baseline_tool
+from tools.training import resolve_raise_sizing_frontiers as resolution_tool
+
+PREFLIGHT_PATH = (
+    ROOT / 'analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json'
+)
 
 
 class HierarchicalTreeSparsityParityTests(unittest.TestCase):
@@ -162,6 +167,53 @@ class HierarchicalTreeSparsityParityTests(unittest.TestCase):
         tree = baseline_tool.rederive_tree()
         self.assertEqual(tree, self.issue388['tree'])
         self.assertEqual(baseline_tool.stable_hash(tree), baseline_tool.ISSUE388_REQUIRED_TREE_SHA256)
+
+    def test_frontier_blocker_forces_required_tree_incomplete(self):
+        # The baseline already binds the seven unresolved frontiers and an
+        # incomplete enumeration: the tree cannot be complete while a sizeable
+        # RAISE frontier is open.
+        bindings = self.baseline['issue388_bindings']
+        self.assertEqual(bindings['unresolved_sizing_frontier_count'], resolution_tool.UNRESOLVED_FRONTIERS)
+        self.assertFalse(bindings['enumeration_complete'])
+
+        resolution = json.loads(
+            (resolution_tool.OUTPUT / resolution_tool.ARTIFACT_NAME).read_text()
+        )
+        self.assertEqual(resolution['unresolved_count'], resolution_tool.UNRESOLVED_FRONTIERS)
+        self.assertFalse(resolution['required_tree_complete'])
+        # Each frontier is exposed as the independent sizing blocker, without a
+        # representative price, and propagates the effect on required_tree_complete.
+        self.assertEqual(resolution['blocker_reason_code'], resolution_tool.BLOCKER_REASON_CODE)
+        self.assertEqual(
+            resolution['blockers'][0]['reason_code'], resolution_tool.BLOCKER_REASON_CODE
+        )
+        self.assertTrue(resolution['blockers'][0]['independent_of_response_model'])
+        for frontier in resolution['frontiers']:
+            with self.subTest(node=frontier['node_id'][:12]):
+                self.assertEqual(frontier['blocker']['reason_code'], resolution_tool.BLOCKER_REASON_CODE)
+                self.assertTrue(frontier['blocker']['independent_of_the_response_model'])
+                self.assertIsNone(frontier['blocker']['exactly_supported_target_bb'])
+                self.assertIsNone(frontier['blocker']['admitted_target_bb'])
+                self.assertFalse(frontier['blocker']['representative_price_substituted'])
+        effect = resolution['required_tree_complete_effect']
+        self.assertEqual(effect['blocking_frontier_count'], resolution['unresolved_count'])
+        self.assertTrue(effect['blocks_required_tree_complete'])
+        self.assertFalse(effect['required_tree_complete'])
+
+        # The effect cascades end to end: the T8 preflight also stays incomplete
+        # solely because no unresolved raise-sizing frontier is allowed to close.
+        preflight = json.loads(PREFLIGHT_PATH.read_text())
+        self.assertEqual(preflight['required_tree_complete'], resolution['required_tree_complete'])
+        self.assertFalse(preflight['required_tree_complete'])
+        self.assertFalse(
+            preflight['admissibility']['conditions']['no_unresolved_raise_sizing_frontier'][
+                'satisfied'
+            ]
+        )
+        self.assertEqual(
+            preflight['required_tree']['required_tree_sha256'],
+            bindings['required_tree_sha256'],
+        )
 
     def test_full_train_rederivation_reproduces_persisted_baseline(self):
         # Expensive: parses every certified TRAIN hand once.

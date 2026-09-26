@@ -20,6 +20,10 @@ sys.path.insert(0, str(ROOT))
 
 from tools.training import resolve_raise_sizing_frontiers as resolution_tool
 
+PREFLIGHT_PATH = (
+    ROOT / 'analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json'
+)
+
 
 class RaiseSizingFrontierResolutionTests(unittest.TestCase):
     @classmethod
@@ -30,6 +34,7 @@ class RaiseSizingFrontierResolutionTests(unittest.TestCase):
             (cls.output / resolution_tool.ARTIFACT_NAME).read_text()
         )
         cls.issue388 = resolution_tool.issue419_baseline.load_issue388()
+        cls.preflight = json.loads(PREFLIGHT_PATH.read_text())
         cls.frontier_nodes = {
             frontier['node_id'] for frontier in cls.issue388['tree']['unresolved_sizing_frontiers']
         }
@@ -288,6 +293,84 @@ class RaiseSizingFrontierResolutionTests(unittest.TestCase):
         self.assertNotIn('model_a_sizing_hierarchical', source)
         for relabelling in ('EXACT_HIERARCHICAL_ESTIMATE', 'EXACT_EMPIRICAL_STRONG'):
             self.assertNotIn(relabelling, source)
+
+    def test_each_frontier_is_exposed_as_an_independent_sizing_blocker(self):
+        self.assertEqual(
+            resolution_tool.BLOCKER_REASON_CODE, 'RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE'
+        )
+        for frontier in self.resolution['frontiers']:
+            with self.subTest(node=frontier['node_id'][:12]):
+                blocker = frontier['blocker']
+                # Every frontier is an explicit blocker carrying the frozen reason
+                # code, and it is a property of the structural reference alone.
+                self.assertEqual(blocker['reason_code'], resolution_tool.BLOCKER_REASON_CODE)
+                self.assertEqual(frontier['blocker_reason_code'], blocker['reason_code'])
+                self.assertEqual(blocker['blocker_class'], resolution_tool.BLOCKER_CLASS)
+                self.assertEqual(blocker['status'], 'OPEN')
+                self.assertTrue(blocker['independent_of_the_response_model'])
+                self.assertTrue(frontier['independent_of_the_response_model'])
+                # No representative / nearest price and no admitted target exists.
+                self.assertIsNone(blocker['exactly_supported_target_bb'])
+                self.assertIsNone(blocker['admitted_target_bb'])
+                for flag in (
+                    'representative_price_substituted',
+                    'nearest_price_substituted',
+                    'nearest_context_substituted',
+                    'legal_minimum_fallback_substituted',
+                ):
+                    self.assertFalse(blocker[flag], flag)
+                # The blocker forces the tree open and never closes it by itself.
+                self.assertTrue(blocker['blocks_required_tree_complete'])
+                self.assertFalse(blocker['required_tree_complete'])
+                self.assertTrue(blocker['necessary_for_tree_closure'])
+                self.assertFalse(blocker['sufficient_for_tree_closure'])
+        self.assertEqual(self.resolution['blocker_reason_code'], resolution_tool.BLOCKER_REASON_CODE)
+        self.assertTrue(self.resolution['independent_of_the_response_model'])
+        self.assertEqual(
+            self.resolution['blockers'][0]['reason_code'], resolution_tool.BLOCKER_REASON_CODE
+        )
+        # The exposure is not vacuous: all seven frontiers are unresolved here.
+        self.assertEqual(self.resolution['unresolved_count'], resolution_tool.UNRESOLVED_FRONTIERS)
+        self.assertEqual(self.resolution['resolved_count'], 0)
+
+    def test_blocker_propagates_the_effect_on_required_tree_complete(self):
+        effect = self.resolution['required_tree_complete_effect']
+        self.assertEqual(effect['effect'], resolution_tool.REQUIRED_TREE_COMPLETE_EFFECT)
+        self.assertEqual(effect['blocker_reason_code'], resolution_tool.BLOCKER_REASON_CODE)
+        self.assertTrue(effect['independent_of_the_response_model'])
+        self.assertFalse(effect['representative_price_substituted'])
+        self.assertFalse(self.resolution['required_tree_complete'])
+        self.assertFalse(effect['required_tree_complete'])
+        self.assertTrue(effect['blocks_required_tree_complete'])
+        self.assertTrue(effect['necessary_for_tree_closure'])
+        self.assertFalse(effect['sufficient_for_tree_closure'])
+        self.assertEqual(effect['blocking_frontier_count'], self.resolution['unresolved_count'])
+        self.assertEqual(
+            sorted(effect['blocking_frontier_node_ids']),
+            sorted(self.resolution['unresolved_node_ids']),
+        )
+        self.assertEqual(effect['frontiers_total'], resolution_tool.UNRESOLVED_FRONTIERS)
+        # The effect is derived from the #388 tree, never asserted in the void.
+        self.assertFalse(self.issue388['tree']['enumeration_complete'])
+        self.assertFalse(effect['enumeration_complete'])
+        # The same frontier gap keeps the required tree open in the T8 preflight,
+        # so the effect is propagated end to end (frontier -> required_tree_complete).
+        self.assertFalse(self.preflight['required_tree_complete'])
+        frontier_condition = self.preflight['admissibility']['conditions'][
+            'no_unresolved_raise_sizing_frontier'
+        ]
+        self.assertFalse(frontier_condition['satisfied'])
+        self.assertEqual(
+            frontier_condition['unresolved_frontiers'], self.resolution['unresolved_count']
+        )
+        # Every required tree-completeness condition stays false because of it.
+        self.assertEqual(
+            self.preflight['required_tree_complete'],
+            all(
+                condition['satisfied']
+                for condition in self.preflight['admissibility']['conditions'].values()
+            ),
+        )
 
 
 if __name__ == '__main__':
