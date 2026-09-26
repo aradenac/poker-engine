@@ -84,6 +84,43 @@ shape with the future real upstream result, but it is not that result.
 Synthetic probabilities or EVs validated through this contract must not be
 reused as evidence about real Hero strategy.
 
+## Consumer (task T5)
+
+`tools/simulation/model_b_hero_robustness_consumer.py` is the fail-closed
+end-to-end consumer of the chain. For one fixture it:
+
+1. validates the T1 contract fail-closed (schema / `source_kind` mismatch, a
+   missing `provenance` or a missing per-alternative `support` raise an explicit
+   error carrying a `reason_code`);
+2. projects the fixture onto the #344 request with the T4 adapter and refuses
+   any forbidden Model A / EV / recommendation / route feature or non-false
+   information boundary flag;
+3. runs the #344 harness against the persisted #340 candidate and price-agnostic
+   reference (given as arguments);
+4. classifies the fixture through T3 and writes one deterministic report
+   (`hero-model-b-robustness-consumer-report/v1`) holding `decision_id`,
+   `status`, `reason_codes`, a `sensitivity` block (`issue_340_identity`,
+   `request_sha256`, `report_sha256`), an `independence` block and the
+   `classification_evidence` of T3.
+
+```
+# one fixture
+PYTHONPATH=. python3 tools/simulation/model_b_hero_robustness_consumer.py \
+  --fixture tests/fixtures/model_b_robustness_consumer/too_close.json \
+  --out /tmp/too_close.consumer.json
+
+# the whole T2 fixture folder (one report per fixture plus BATCH_SUMMARY.json)
+PYTHONPATH=. python3 tools/simulation/model_b_hero_robustness_consumer.py \
+  --batch --out-dir /tmp/consumer-batch
+```
+
+`--context`, `--model-b-run`, `--candidate`, `--reference`, `--summary`,
+`--result` and `--provenance` override the synthetic public context and the
+persisted #340 evidence. The consumer never opens an artifact of the real ISO EV
+run of issue #367: such a source path is refused before the file is read. The
+report carries no timestamp and no host path, so two runs over the same inputs
+are byte-identical.
+
 ## Issue #315 status
 
 Issue **#315 remains open**. This contract only standardizes the robustness
