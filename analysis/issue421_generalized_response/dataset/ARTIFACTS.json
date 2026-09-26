@@ -1,0 +1,23 @@
+{
+  "CORPUS_HASHES.json": {
+    "canonical_payload_sha256": "3fd463b3be6261818fdac37cb4bf9b2877e5ee52ecb1db36b2b5e19aafa99883",
+    "object": "sha256/a172c41341e6deedb6ffec1c4a7adedec5f0b40c3ebe8a89f5360bd597e1f364.json",
+    "sha256": "a172c41341e6deedb6ffec1c4a7adedec5f0b40c3ebe8a89f5360bd597e1f364"
+  },
+  "GENERALIZED_RESPONSE_DATASET.json": {
+    "canonical_payload_sha256": "0d169f95123563efbadcda858b882c8d22a07ebbe8f751e2d3ecd6e4b645a2b3",
+    "object": "sha256/ec1cec7a52be980e0857c2be3ff1201df55d69cceee793b44073c5ea656ecef1.json",
+    "sha256": "ec1cec7a52be980e0857c2be3ff1201df55d69cceee793b44073c5ea656ecef1"
+  },
+  "GENERALIZED_RESPONSE_DATASET.jsonl": {
+    "bytes": 41279660,
+    "content_addressed": false,
+    "object": null,
+    "rows": 105698,
+    "sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/cf7c2a52f7a4dad9e9b96973f8225bcfa128cacebaa80424df88d614a4e66e4b.md",
+    "sha256": "cf7c2a52f7a4dad9e9b96973f8225bcfa128cacebaa80424df88d614a4e66e4b"
+  }
+}

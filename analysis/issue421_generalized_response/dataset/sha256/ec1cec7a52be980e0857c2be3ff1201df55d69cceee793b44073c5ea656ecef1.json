@@ -1,0 +1,133 @@
+{
+  "accounting": {
+    "TRAIN": {
+      "adverse_preflop_decisions": 101848,
+      "hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+      "hands_parsed": 19016,
+      "hero_decisions_skipped": 19412,
+      "non_preflop_decisions_skipped": 121456,
+      "non_response_action_rows_skipped": 7688,
+      "response_rows": 94160
+    },
+    "VALIDATION": {
+      "adverse_preflop_decisions": 12445,
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands_parsed": 2324,
+      "hero_decisions_skipped": 2375,
+      "non_preflop_decisions_skipped": 14776,
+      "non_response_action_rows_skipped": 907,
+      "response_rows": 11538
+    },
+    "total": {
+      "adverse_preflop_decisions": 114293,
+      "distinct_hands": 21340,
+      "hands_loaded": 21340,
+      "hands_parsed": 21340,
+      "hero_decisions_skipped": 21787,
+      "non_preflop_decisions_skipped": 136232,
+      "non_response_action_rows_skipped": 8595,
+      "response_rows": 105698,
+      "test_hands_consumed": 0
+    }
+  },
+  "builder": {
+    "path": "tools/training/build_generalized_response_dataset.py",
+    "sha256": "39e7c8f83fdafac1bafa75f3b62f78c60a5602fb58b565e8a3c8fb98ff900097"
+  },
+  "contract": {
+    "path": "contracts/training/generalized-response-dataset.schema.json",
+    "sha256": "15f35cb3a40a6b48a60e0add252d2f0a31bc6d138964e94e9842f7c2a3757255"
+  },
+  "corpus": {
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "path": "CORPUS_HASHES.json",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "sha256": "a172c41341e6deedb6ffec1c4a7adedec5f0b40c3ebe8a89f5360bd597e1f364"
+  },
+  "dataset": {
+    "bytes": 41279660,
+    "canonical_payload_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+    "field_order_independent": true,
+    "format": "application/x-ndjson",
+    "path": "GENERALIZED_RESPONSE_DATASET.jsonl",
+    "rows": 105698,
+    "sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2"
+  },
+  "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+  "row_contract": {
+    "additional_properties": false,
+    "fields": [
+      "hand_id",
+      "split",
+      "table_size",
+      "family",
+      "actor_position",
+      "aggressor_position",
+      "limper_count",
+      "caller_count",
+      "live_positions",
+      "raise_level",
+      "to_call_bb",
+      "pot_before_bb",
+      "pot_odds",
+      "price_to_pot",
+      "effective_stack_bb",
+      "target_total_bb",
+      "observed_sizing_bb",
+      "action"
+    ],
+    "forbidden_keys": [
+      "board",
+      "boards",
+      "cards",
+      "future_actions",
+      "hand_class",
+      "hero_cards",
+      "history",
+      "hole_cards",
+      "is_hero",
+      "known_cards",
+      "known_hand_class",
+      "player",
+      "showdown"
+    ]
+  },
+  "schema": "poker-generalized-response-dataset/v1",
+  "scope": {
+    "consumed_splits": [
+      "TRAIN",
+      "VALIDATION"
+    ],
+    "excluded_actions": [
+      "CHECK"
+    ],
+    "future_information_consumed": false,
+    "hole_cards_consumed": false,
+    "player_role": "ADVERSE_NON_HERO",
+    "public_only": true,
+    "purpose": "public-only generalized adverse preflop response dataset (issue #421)",
+    "refused_splits": [
+      "TEST"
+    ],
+    "response_actions": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "state_timing": "BEFORE_ACTION",
+    "test_consumed": false
+  },
+  "splits": {
+    "TRAIN": {
+      "hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+      "hands": 19016,
+      "response_rows": 94160
+    },
+    "VALIDATION": {
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands": 2324,
+      "response_rows": 11538
+    }
+  }
+}

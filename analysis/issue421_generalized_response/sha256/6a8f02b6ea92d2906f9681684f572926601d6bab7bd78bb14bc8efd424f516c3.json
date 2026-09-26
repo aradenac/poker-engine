@@ -1,0 +1,1123 @@
+{
+  "active_pointer_mutated": false,
+  "active_pointer_mutation": false,
+  "automatic_promotion": "FORBIDDEN",
+  "candidate": {
+    "architecture": "regularized_multinomial_spline",
+    "candidate_id": "generalized-adverse-response-candidate-v1",
+    "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+    "status": "CANDIDATE_ONLY_NOT_ACTIVE"
+  },
+  "canonical_payload_sha256": "48a166f30854d88b693fa2c70fe32c1d3cfb41c2e23ddeacf57ea37e6f9d18c6",
+  "comparisons": {
+    "candidate_minus_active_model_a_v5": {
+      "delta_log_loss_bits_per_decision": 0.0012123432,
+      "hands": 2324,
+      "left": "candidate_generalized",
+      "n": 11538,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0046920887,
+          0.0069549188
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 0.347,
+        "samples": 5000,
+        "seed": 421
+      },
+      "right": "active_model_a_v5"
+    },
+    "candidate_minus_alternate_architecture_hierarchical_eb": {
+      "delta_log_loss_bits_per_decision": -0.0128461418,
+      "hands": 2324,
+      "left": "candidate_generalized",
+      "n": 11538,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0194064333,
+          -0.0086878096
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 1.0,
+        "samples": 5000,
+        "seed": 424
+      },
+      "right": "alternate_architecture_hierarchical_eb"
+    },
+    "candidate_minus_fit_global_prior_baseline": {
+      "delta_log_loss_bits_per_decision": -0.0666902883,
+      "hands": 2324,
+      "left": "candidate_generalized",
+      "n": 11538,
+      "paired_bootstrap": {
+        "ci95": [
+          -0.0758366993,
+          -0.0576900794
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 1.0,
+        "samples": 5000,
+        "seed": 423
+      },
+      "right": "fit_global_prior_baseline"
+    },
+    "candidate_minus_model_a_preflop_sizing_aware_candidate_v2": {
+      "delta_log_loss_bits_per_decision": 0.006683435,
+      "hands": 2323,
+      "left": "candidate_generalized",
+      "n": 9854,
+      "paired_bootstrap": {
+        "ci95": [
+          0.0009497274,
+          0.0122203446
+        ],
+        "confidence_level": 0.95,
+        "method": "paired_percentile_bootstrap",
+        "paired_unit": "hand_id",
+        "probability_candidate_better": 0.0106,
+        "samples": 5000,
+        "seed": 422
+      },
+      "right": "model_a_preflop_sizing_aware_candidate_v2"
+    }
+  },
+  "decision": "RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT",
+  "evaluation_universe": {
+    "answered_rows": 11538,
+    "definition": "non-Hero public preflop response decisions of the certified VALIDATION fold where the candidate and every comparator answer the same requested public context",
+    "in_scope_hands": 2324,
+    "in_scope_rows": 11538,
+    "paired_rows_active": 11538,
+    "paired_rows_all_references": 9854,
+    "paired_rows_v2": 9854,
+    "rows_dropped_observed_action_illegal_in_projected_context": 0
+  },
+  "gate": {
+    "all_gates_pass": false,
+    "criteria_passed": 8,
+    "criteria_total": 10,
+    "failed": [
+      "non_inferiority_vs_active_model_a_preflop_population",
+      "calibration_within_frozen_ceiling"
+    ],
+    "passed": [
+      "protocol_frozen_before_validation",
+      "test_never_consumed",
+      "validation_read_exactly_once",
+      "coverage_floor",
+      "minimum_scored_decisions",
+      "minimum_distinct_hands",
+      "non_inferiority_vs_fit_global_prior_baseline",
+      "non_inferiority_vs_alternate_architecture_hierarchical_eb"
+    ],
+    "rule_id": "FROZEN_TEN_CRITERIA_ADMISSION"
+  },
+  "gates": {
+    "calibration_within_frozen_ceiling": {
+      "detail": "equal-count reliability bins per action class, pooled over the frozen VALIDATION decisions and compared against the active reference",
+      "id": "calibration_within_frozen_ceiling",
+      "observed": {
+        "active_ece": 0.014743239356,
+        "active_ece_on_same_support": 0.014743239356,
+        "bins_meeting_minimum_support": 40,
+        "claim_supportable": true,
+        "ece": 0.036227855199,
+        "ece_delta_vs_active": 0.0214846158,
+        "pooled_support_rows": 11538
+      },
+      "passed": false,
+      "rule_id": "CALIBRATION_WITHIN_FROZEN_CEILING",
+      "threshold": {
+        "maximum_absolute_ece": 0.05,
+        "maximum_ece_delta_vs_active": 0.02,
+        "minimum_bin_support_for_a_claim": 20
+      }
+    },
+    "coverage_floor": {
+      "detail": "share of in-scope VALIDATION decisions answered with a legal, non-OOD distribution",
+      "id": "coverage_floor",
+      "observed": 1.0,
+      "passed": true,
+      "rule_id": "COVERAGE_FLOOR",
+      "threshold": 0.5
+    },
+    "minimum_distinct_hands": {
+      "detail": "minimum number of distinct scored VALIDATION hands",
+      "id": "minimum_distinct_hands",
+      "observed": 2324,
+      "passed": true,
+      "rule_id": "COVERAGE_FLOOR",
+      "threshold": 100
+    },
+    "minimum_scored_decisions": {
+      "detail": "minimum number of scored VALIDATION decisions",
+      "id": "minimum_scored_decisions",
+      "observed": 11538,
+      "passed": true,
+      "rule_id": "COVERAGE_FLOOR",
+      "threshold": 500
+    },
+    "non_inferiority_vs_active_model_a_preflop_population": {
+      "detail": "paired (candidate - active Model A v5) 95% CI upper bound <= 0",
+      "id": "non_inferiority_vs_active_model_a_preflop_population",
+      "observed": {
+        "ci95_upper": 0.0069549188,
+        "margin_bits": 0.0
+      },
+      "passed": false,
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "threshold": {
+        "ci95_upper_max": 0.0
+      }
+    },
+    "non_inferiority_vs_alternate_architecture_hierarchical_eb": {
+      "detail": "paired (candidate - hierarchical empirical Bayes) 95% CI upper bound <= the preregistered cross-validation tolerance",
+      "id": "non_inferiority_vs_alternate_architecture_hierarchical_eb",
+      "observed": {
+        "ci95_upper": -0.0086878096,
+        "margin_bits": 0.005
+      },
+      "passed": true,
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "threshold": {
+        "ci95_upper_max": 0.005
+      }
+    },
+    "non_inferiority_vs_fit_global_prior_baseline": {
+      "detail": "paired (candidate - fit global action prior) 95% CI upper bound <= 0",
+      "id": "non_inferiority_vs_fit_global_prior_baseline",
+      "observed": {
+        "ci95_upper": -0.0576900794,
+        "margin_bits": 0.0
+      },
+      "passed": true,
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "threshold": {
+        "ci95_upper_max": 0.0
+      }
+    },
+    "protocol_frozen_before_validation": {
+      "detail": "the protocol bytes and canonical payload digest were re-derived and the ordering guard passed before the read",
+      "id": "protocol_frozen_before_validation",
+      "observed": {
+        "declared_result_locations_present": [],
+        "protocol_byte_sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5"
+      },
+      "passed": true,
+      "rule_id": "VALIDATION_ORDER_GUARD",
+      "threshold": {
+        "protocol_byte_sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5"
+      }
+    },
+    "test_never_consumed": {
+      "detail": "TEST is refused statically by the AST self-scan and dynamically by the certified loader and the response model",
+      "id": "test_never_consumed",
+      "observed": {
+        "test_consumed": false,
+        "test_rows_seen": 0
+      },
+      "passed": true,
+      "rule_id": "TEST_IS_NOT_AUTHORIZED",
+      "threshold": {
+        "test_rows_seen": 0
+      }
+    },
+    "validation_read_exactly_once": {
+      "detail": "VALIDATION was opened once, after the freeze, and the read is the certified fold registered in the frozen dataset manifest",
+      "id": "validation_read_exactly_once",
+      "observed": {
+        "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+        "reads": 1,
+        "rows": 11538
+      },
+      "passed": true,
+      "rule_id": "VALIDATION_READ_ONCE",
+      "threshold": {
+        "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+        "reads": 1,
+        "rows": 11538
+      }
+    }
+  },
+  "inputs": {
+    "active_model_a_v5": {
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "unchanged_during_evaluation": true
+    },
+    "alternate_candidate": {
+      "architecture": "hierarchical_empirical_bayes_dirichlet",
+      "canonical_payload_sha256": "7eb7b4794d9e42bcf151f7e1cf21c337a7f2393bfaf4a1ecc6b310793d2c302f",
+      "path": "analysis/issue421_generalized_response/model/candidate_hierarchical_empirical_bayes_dirichlet.json",
+      "sha256": "3cffaa69b63cd8972ebbd55a055fda26d802c838f5c565bf79c0818b30aa3ce6"
+    },
+    "candidate": {
+      "architecture": "regularized_multinomial_spline",
+      "candidate_id": "generalized-adverse-response-candidate-v1",
+      "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+      "path": "analysis/issue421_generalized_response/model/candidate_regularized_multinomial_spline.json",
+      "sha256": "ea93e8c35e2604debd943495474cdb9262d724efb4a5caefe3723b53f23a59e7"
+    },
+    "dataset": {
+      "path": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+      "sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2"
+    },
+    "dataset_manifest": {
+      "path": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.json",
+      "sha256": "ec1cec7a52be980e0857c2be3ff1201df55d69cceee793b44073c5ea656ecef1"
+    },
+    "fit_report": {
+      "path": "analysis/issue421_generalized_response/model/FIT_REPORT.json",
+      "sha256": "90afe4fae92009d40d14586cf7ab0967db3a050d16b5b1211c4c3fd274a3b2aa"
+    },
+    "model_a_sizing_aware_v2_352": {
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "fit_path": "analysis/model_a_preflop_sizing_v2_fit.json",
+      "fit_sha256": "cd2a29a6574ff03ca09a39e3995d6df9fbd9e677e7e63a27e7d2438df1fb260e",
+      "test_consumed": false,
+      "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496",
+      "validation_path": "analysis/model_a_preflop_sizing_v2_validation.json",
+      "validation_sha256": "0e93640bd56e37d445438c9b663d2cb77b623f33d01dc91836ed12fd4651bf06"
+    },
+    "ood_calibration_report": {
+      "calibration_canonical_payload_sha256": "d1c6154bee555b727ccee4a9747863912acd09a2b589058946b7631832cc70b6",
+      "path": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+      "sha256": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71"
+    },
+    "protocol": {
+      "canonical_payload_sha256": "7c703fd934629b239293932fd0a7349957b0fdd48538154429f4597da74883ce",
+      "path": "analysis/issue421_generalized_response/FROZEN_VALIDATION_PROTOCOL.json",
+      "sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5"
+    },
+    "raise_sizing_report": {
+      "path": "analysis/issue421_generalized_response/RAISE_SIZING_MODEL_REPORT.json",
+      "sha256": "955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6"
+    },
+    "train_cv_report": {
+      "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+      "sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff"
+    }
+  },
+  "issue": 421,
+  "metrics": {
+    "accuracy": {
+      "active_model_a_v5": 0.5868434737,
+      "alternate_architecture_hierarchical_eb": 0.5882301959,
+      "candidate_generalized": 0.5916970012,
+      "fit_global_prior_baseline": 0.5466285318,
+      "model_a_preflop_sizing_aware_candidate_v2": 0.5707326974
+    },
+    "brier_score": {
+      "active_model_a_v5": 0.5257180063,
+      "alternate_architecture_hierarchical_eb": 0.5306143008,
+      "candidate_generalized": 0.5242836174,
+      "fit_global_prior_baseline": 0.5534494285,
+      "model_a_preflop_sizing_aware_candidate_v2": 0.5382575033
+    },
+    "by_family": {
+      "AGGRESSOR_VS_4BET": {
+        "answered_metrics": {
+          "accuracy": 0.55,
+          "baseline_log_loss_bits_per_decision": 2.5088886304,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.6867048541,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.2309674403,
+          "gain_bits_per_decision": 0.4961905877,
+          "log_loss_bits_per_decision": 2.0126980427,
+          "n": 20
+        },
+        "coverage": 1.0,
+        "n": 20,
+        "share": 0.0017334027
+      },
+      "CALLER_VS_4BET": {
+        "answered_metrics": {
+          "accuracy": 0.6428571429,
+          "baseline_log_loss_bits_per_decision": 1.135584148,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.4684873266,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.1604145033,
+          "gain_bits_per_decision": 0.1207107001,
+          "log_loss_bits_per_decision": 1.0148734479,
+          "n": 14
+        },
+        "coverage": 1.0,
+        "n": 14,
+        "share": 0.0012133819
+      },
+      "CALLER_VS_SQUEEZE_OR_3BET": {
+        "answered_metrics": {
+          "accuracy": 0.6593406593,
+          "baseline_log_loss_bits_per_decision": 1.1810789501,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.4711012471,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.0821411629,
+          "gain_bits_per_decision": 0.1484601921,
+          "log_loss_bits_per_decision": 1.032618758,
+          "n": 91
+        },
+        "coverage": 1.0,
+        "n": 91,
+        "share": 0.0078869821
+      },
+      "COLD_VS_3BET": {
+        "answered_metrics": {
+          "accuracy": 0.7605633803,
+          "baseline_log_loss_bits_per_decision": 1.1357353763,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.3665580033,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.0640141945,
+          "gain_bits_per_decision": 0.2314756884,
+          "log_loss_bits_per_decision": 0.9042596879,
+          "n": 142
+        },
+        "coverage": 1.0,
+        "n": 142,
+        "share": 0.012307159
+      },
+      "COLD_VS_4BET": {
+        "answered_metrics": {
+          "accuracy": 0.5,
+          "baseline_log_loss_bits_per_decision": 1.135584148,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.7247361707,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.2928565329,
+          "gain_bits_per_decision": -0.3157541357,
+          "log_loss_bits_per_decision": 1.4513382838,
+          "n": 2
+        },
+        "coverage": 1.0,
+        "n": 2,
+        "share": 0.0001733403
+      },
+      "LIMPER_VS_ISO": {
+        "answered_metrics": {
+          "accuracy": 0.7197802198,
+          "baseline_log_loss_bits_per_decision": 1.2459808597,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.4380808281,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0811517422,
+          "gain_bits_per_decision": 0.26697079,
+          "log_loss_bits_per_decision": 0.9790100697,
+          "n": 364
+        },
+        "coverage": 1.0,
+        "n": 364,
+        "share": 0.0315479286
+      },
+      "LIMPER_VS_ISO_CALLERS": {
+        "answered_metrics": {
+          "accuracy": 0.7135135135,
+          "baseline_log_loss_bits_per_decision": 1.363122327,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.461055442,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0872929321,
+          "gain_bits_per_decision": 0.2876173512,
+          "log_loss_bits_per_decision": 1.0755049758,
+          "n": 370
+        },
+        "coverage": 1.0,
+        "n": 370,
+        "share": 0.0320679494
+      },
+      "OPENER_OR_ISO_VS_3BET": {
+        "answered_metrics": {
+          "accuracy": 0.5555555556,
+          "baseline_log_loss_bits_per_decision": 1.8858294576,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.6319569771,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.1345161636,
+          "gain_bits_per_decision": 0.0858788001,
+          "log_loss_bits_per_decision": 1.7999506575,
+          "n": 81
+        },
+        "coverage": 1.0,
+        "n": 81,
+        "share": 0.0070202808
+      },
+      "UNOPENED": {
+        "answered_metrics": {
+          "accuracy": 0.5463963964,
+          "baseline_log_loss_bits_per_decision": 1.3635636379,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5614875276,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0491957351,
+          "gain_bits_per_decision": -0.0077730747,
+          "log_loss_bits_per_decision": 1.3713367125,
+          "n": 4440
+        },
+        "coverage": 1.0,
+        "n": 4440,
+        "share": 0.3848153926
+      },
+      "VS_5BET": {
+        "answered_metrics": {
+          "accuracy": 0.5555555556,
+          "baseline_log_loss_bits_per_decision": 1.2245015326,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.4677025213,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.2535171196,
+          "gain_bits_per_decision": 0.150305414,
+          "log_loss_bits_per_decision": 1.0741961186,
+          "n": 9
+        },
+        "coverage": 1.0,
+        "n": 9,
+        "share": 0.0007800312
+      },
+      "VS_6BET_PLUS": {
+        "answered_metrics": {
+          "accuracy": 0.3333333333,
+          "baseline_log_loss_bits_per_decision": 1.2245015326,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.595328294,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.2966195422,
+          "gain_bits_per_decision": -0.0964526994,
+          "log_loss_bits_per_decision": 1.320954232,
+          "n": 3
+        },
+        "coverage": 1.0,
+        "n": 3,
+        "share": 0.0002600104
+      },
+      "VS_ISO": {
+        "answered_metrics": {
+          "accuracy": 0.6656534954,
+          "baseline_log_loss_bits_per_decision": 1.1893982075,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.4569689771,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0426134635,
+          "gain_bits_per_decision": 0.0843268922,
+          "log_loss_bits_per_decision": 1.1050713153,
+          "n": 658
+        },
+        "coverage": 1.0,
+        "n": 658,
+        "share": 0.0570289478
+      },
+      "VS_ISO_CALLERS": {
+        "answered_metrics": {
+          "accuracy": 0.637037037,
+          "baseline_log_loss_bits_per_decision": 1.2109926988,
+          "bins_meeting_minimum_support": 0,
+          "brier_score": 0.4825867349,
+          "claim_supportable": false,
+          "expected_calibration_error": 0.0700942908,
+          "gain_bits_per_decision": 0.0674157517,
+          "log_loss_bits_per_decision": 1.143576947,
+          "n": 135
+        },
+        "coverage": 1.0,
+        "n": 135,
+        "share": 0.011700468
+      },
+      "VS_LIMPERS": {
+        "answered_metrics": {
+          "accuracy": 0.5721547585,
+          "baseline_log_loss_bits_per_decision": 1.3971753672,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5384550686,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0464808986,
+          "gain_bits_per_decision": 0.0952723835,
+          "log_loss_bits_per_decision": 1.3019029837,
+          "n": 3541
+        },
+        "coverage": 1.0,
+        "n": 3541,
+        "share": 0.3068989426
+      },
+      "VS_RFI": {
+        "answered_metrics": {
+          "accuracy": 0.6604110813,
+          "baseline_log_loss_bits_per_decision": 1.1990518726,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.4577111578,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0320008064,
+          "gain_bits_per_decision": 0.0954667521,
+          "log_loss_bits_per_decision": 1.1035851205,
+          "n": 1119
+        },
+        "coverage": 1.0,
+        "n": 1119,
+        "share": 0.0969838794
+      },
+      "VS_RFI_CALLERS": {
+        "answered_metrics": {
+          "accuracy": 0.6302367942,
+          "baseline_log_loss_bits_per_decision": 1.2005293736,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.4874265503,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0320032471,
+          "gain_bits_per_decision": 0.0477831178,
+          "log_loss_bits_per_decision": 1.1527462558,
+          "n": 549
+        },
+        "coverage": 1.0,
+        "n": 549,
+        "share": 0.0475819033
+      }
+    },
+    "coverage": {
+      "abstain_rate": 0.0,
+      "abstained_decisions": 0,
+      "answered_decisions": 11538,
+      "by_family": {
+        "AGGRESSOR_VS_4BET": {
+          "abstain_rate": 0.0,
+          "answered": 20,
+          "coverage": 1.0,
+          "n": 20
+        },
+        "CALLER_VS_4BET": {
+          "abstain_rate": 0.0,
+          "answered": 14,
+          "coverage": 1.0,
+          "n": 14
+        },
+        "CALLER_VS_SQUEEZE_OR_3BET": {
+          "abstain_rate": 0.0,
+          "answered": 91,
+          "coverage": 1.0,
+          "n": 91
+        },
+        "COLD_VS_3BET": {
+          "abstain_rate": 0.0,
+          "answered": 142,
+          "coverage": 1.0,
+          "n": 142
+        },
+        "COLD_VS_4BET": {
+          "abstain_rate": 0.0,
+          "answered": 2,
+          "coverage": 1.0,
+          "n": 2
+        },
+        "LIMPER_VS_ISO": {
+          "abstain_rate": 0.0,
+          "answered": 364,
+          "coverage": 1.0,
+          "n": 364
+        },
+        "LIMPER_VS_ISO_CALLERS": {
+          "abstain_rate": 0.0,
+          "answered": 370,
+          "coverage": 1.0,
+          "n": 370
+        },
+        "OPENER_OR_ISO_VS_3BET": {
+          "abstain_rate": 0.0,
+          "answered": 81,
+          "coverage": 1.0,
+          "n": 81
+        },
+        "UNOPENED": {
+          "abstain_rate": 0.0,
+          "answered": 4440,
+          "coverage": 1.0,
+          "n": 4440
+        },
+        "VS_5BET": {
+          "abstain_rate": 0.0,
+          "answered": 9,
+          "coverage": 1.0,
+          "n": 9
+        },
+        "VS_6BET_PLUS": {
+          "abstain_rate": 0.0,
+          "answered": 3,
+          "coverage": 1.0,
+          "n": 3
+        },
+        "VS_ISO": {
+          "abstain_rate": 0.0,
+          "answered": 658,
+          "coverage": 1.0,
+          "n": 658
+        },
+        "VS_ISO_CALLERS": {
+          "abstain_rate": 0.0,
+          "answered": 135,
+          "coverage": 1.0,
+          "n": 135
+        },
+        "VS_LIMPERS": {
+          "abstain_rate": 0.0,
+          "answered": 3541,
+          "coverage": 1.0,
+          "n": 3541
+        },
+        "VS_RFI": {
+          "abstain_rate": 0.0,
+          "answered": 1119,
+          "coverage": 1.0,
+          "n": 1119
+        },
+        "VS_RFI_CALLERS": {
+          "abstain_rate": 0.0,
+          "answered": 549,
+          "coverage": 1.0,
+          "n": 549
+        }
+      },
+      "by_position": {
+        "BB": {
+          "abstain_rate": 0.0,
+          "answered": 922,
+          "coverage": 1.0,
+          "n": 922
+        },
+        "BTN": {
+          "abstain_rate": 0.0,
+          "answered": 2048,
+          "coverage": 1.0,
+          "n": 2048
+        },
+        "CO": {
+          "abstain_rate": 0.0,
+          "answered": 2125,
+          "coverage": 1.0,
+          "n": 2125
+        },
+        "HJ": {
+          "abstain_rate": 0.0,
+          "answered": 2118,
+          "coverage": 1.0,
+          "n": 2118
+        },
+        "LJ": {
+          "abstain_rate": 0.0,
+          "answered": 2278,
+          "coverage": 1.0,
+          "n": 2278
+        },
+        "SB": {
+          "abstain_rate": 0.0,
+          "answered": 2047,
+          "coverage": 1.0,
+          "n": 2047
+        }
+      },
+      "coverage": 1.0,
+      "definition": "share of in-scope VALIDATION decisions the frozen candidate answers with a legal, non-OOD distribution; abstaining is fail-closed and counted as non-covered",
+      "distinct_hands_answered": 2324,
+      "limiters_vs_iso": {
+        "abstain_rate": 0.0,
+        "answered": 364,
+        "coverage": 1.0,
+        "n": 364
+      },
+      "ood_status_counts": {
+        "MODEL_OOD_ABSTAIN": 0,
+        "MODEL_SUPPORTED": 9777,
+        "MODEL_SUPPORTED_HIGH_UNCERTAINTY": 1761
+      },
+      "universe_rows": 11538
+    },
+    "expected_calibration_error": {
+      "bins_per_action_class": 10,
+      "detail": {
+        "active_model_a_v5": {
+          "bins_meeting_minimum_support": 40,
+          "bins_per_action_class": 10,
+          "claim_supportable": true,
+          "ece": 0.014743239356,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.024538855685,
+            "FOLD": 0.025977722045,
+            "JAM": 0.003178626374,
+            "RAISE": 0.005277753319
+          },
+          "pooled_support_rows": 11538
+        },
+        "alternate_architecture_hierarchical_eb": {
+          "bins_meeting_minimum_support": 40,
+          "bins_per_action_class": 10,
+          "claim_supportable": true,
+          "ece": 0.039920079056,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.032060699526,
+            "FOLD": 0.047069966929,
+            "JAM": 0.010666978283,
+            "RAISE": 0.069882671486
+          },
+          "pooled_support_rows": 11538
+        },
+        "candidate_generalized": {
+          "bins_meeting_minimum_support": 40,
+          "bins_per_action_class": 10,
+          "claim_supportable": true,
+          "ece": 0.036227855199,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.027137865574,
+            "FOLD": 0.042238656486,
+            "JAM": 0.009968528033,
+            "RAISE": 0.065566370704
+          },
+          "pooled_support_rows": 11538
+        },
+        "fit_global_prior_baseline": {
+          "bins_meeting_minimum_support": 40,
+          "bins_per_action_class": 10,
+          "claim_supportable": true,
+          "ece": 0.007733662507,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.012948231583,
+            "FOLD": 0.010422730109,
+            "JAM": 0.001486071416,
+            "RAISE": 0.006077616918
+          },
+          "pooled_support_rows": 11538
+        },
+        "model_a_preflop_sizing_aware_candidate_v2": {
+          "bins_meeting_minimum_support": 40,
+          "bins_per_action_class": 10,
+          "claim_supportable": true,
+          "ece": 0.011571056931,
+          "minimum_bin_support": 20,
+          "per_action_class": {
+            "CALL": 0.017696797717,
+            "FOLD": 0.018018991045,
+            "JAM": 0.003928434852,
+            "RAISE": 0.006640004111
+          },
+          "pooled_support_rows": 9854
+        }
+      },
+      "frozen_ceiling_comparison_on_paired_support": {
+        "active_ece": 0.014743239356,
+        "candidate_ece": 0.036227855199,
+        "delta_vs_active": 0.0214846158,
+        "rows": 11538,
+        "support": "paired_active_model_a_v5"
+      },
+      "global": {
+        "active_model_a_v5": 0.0147432394,
+        "alternate_architecture_hierarchical_eb": 0.0399200791,
+        "candidate_generalized": 0.0362278552,
+        "fit_global_prior_baseline": 0.0077336625,
+        "model_a_preflop_sizing_aware_candidate_v2": 0.0115710569
+      },
+      "method": "equal_count_reliability_bins",
+      "minimum_bin_support_for_a_claim": 20
+    },
+    "primary": {
+      "direction": "lower_is_better",
+      "epsilon_clip": 1e-12,
+      "name": "multiclass_log_loss",
+      "paired_unit": "hand_id",
+      "per_model": {
+        "active_model_a_v5": {
+          "accuracy": 0.5868434737,
+          "baseline_log_loss_bits_per_decision": 1.33567312,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5257180063,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0147432394,
+          "gain_bits_per_decision": 0.0679026315,
+          "log_loss_bits_per_decision": 1.2677704885,
+          "n": 11538
+        },
+        "alternate_architecture_hierarchical_eb": {
+          "accuracy": 0.5882301959,
+          "baseline_log_loss_bits_per_decision": 1.33567312,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5306143008,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0399200791,
+          "gain_bits_per_decision": 0.0538441466,
+          "log_loss_bits_per_decision": 1.2818289735,
+          "n": 11538
+        },
+        "candidate_generalized": {
+          "accuracy": 0.5916970012,
+          "baseline_log_loss_bits_per_decision": 1.33567312,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5242836174,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0362278552,
+          "gain_bits_per_decision": 0.0666902883,
+          "log_loss_bits_per_decision": 1.2689828317,
+          "n": 11538
+        },
+        "fit_global_prior_baseline": {
+          "accuracy": 0.5466285318,
+          "baseline_log_loss_bits_per_decision": 1.33567312,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5534494285,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0077336625,
+          "gain_bits_per_decision": 0.0,
+          "log_loss_bits_per_decision": 1.33567312,
+          "n": 11538
+        },
+        "model_a_preflop_sizing_aware_candidate_v2": {
+          "accuracy": 0.5707326974,
+          "baseline_log_loss_bits_per_decision": 1.3509754272,
+          "bins_meeting_minimum_support": 40,
+          "brier_score": 0.5382575033,
+          "claim_supportable": true,
+          "expected_calibration_error": 0.0115710569,
+          "gain_bits_per_decision": 0.0496321023,
+          "log_loss_bits_per_decision": 1.3013433248,
+          "n": 9854
+        }
+      },
+      "unit": "bits_per_decision",
+      "values": {
+        "active_model_a_v5": 1.2677704885,
+        "alternate_architecture_hierarchical_eb": 1.2818289735,
+        "candidate_generalized": 1.2689828317,
+        "fit_global_prior_baseline": 1.33567312,
+        "model_a_preflop_sizing_aware_candidate_v2": 1.3013433248
+      }
+    },
+    "sizing": {
+      "criteria_id": "SIZING_NOT_INFERIOR_TO_FROZEN_TRAIN_EVIDENCE",
+      "frozen_train_evidence": {
+        "crps_bb": 4.702839,
+        "fail_closed": 174,
+        "illegal_generated_rate": 0.0,
+        "nll_bits_per_sizing": 2.683351,
+        "nll_gain_vs_uniform_bits": 3.380691,
+        "path": "analysis/issue421_generalized_response/RAISE_SIZING_MODEL_REPORT.json",
+        "pit_max_abs_bin_error": 0.233682,
+        "rows": 7813,
+        "scored": 7639,
+        "sha256": "955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6"
+      },
+      "gate": false,
+      "note": "the frozen protocol defines the raise-sizing criterion against the pinned TRAIN evidence; the candidate's frozen sizing channel is exercised inside the discrete predictions (a gain is applied to the RAISE/JAM branches of every scored row).  The VALIDATION sizing numbers below are diagnostic only and are not an admission gate, so no size threshold is relaxed or invented after the read",
+      "validation_diagnostic": {
+        "crps_bb": 13.621002,
+        "fail_closed": 11,
+        "illegal_generated_rate": 0.0,
+        "nll_bits_per_sizing": 4.269129,
+        "nll_gain_vs_uniform_bits": 1.474918,
+        "not_an_admission_gate": true,
+        "pit_max_abs_bin_error": 0.310439,
+        "rows": 854,
+        "scored": 843
+      }
+    },
+    "strata": {
+      "counts": {
+        "exact_absent_in_domain": 268,
+        "exact_absent_out_of_domain": 0,
+        "frequent_exact": 10050,
+        "rare_exact": 1220
+      },
+      "definition": "generalisation strata of the frozen TRAIN-only OOD calibration: frequent exacts (exact cell support >= 20), rare exacts (0 < support < 20), exact cell absent but every single-feature label in-domain, and exact-absent out-of-domain / extrapolation",
+      "frequent_exact_min_support": 20,
+      "share": {
+        "exact_absent_in_domain": 0.0232275958,
+        "exact_absent_out_of_domain": 0.0,
+        "frequent_exact": 0.8710348414,
+        "rare_exact": 0.1057375628
+      },
+      "strata": {
+        "exact_absent_in_domain": {
+          "abstain_rate": 0.0,
+          "answered_metrics": {
+            "accuracy": 0.6417910448,
+            "baseline_log_loss_bits_per_decision": 1.5451306003,
+            "bins_meeting_minimum_support": 40,
+            "brier_score": 0.5127406321,
+            "claim_supportable": true,
+            "expected_calibration_error": 0.0948698695,
+            "gain_bits_per_decision": 0.2024479992,
+            "log_loss_bits_per_decision": 1.3426826011,
+            "n": 268
+          },
+          "coverage": 1.0,
+          "metric_status": "scored",
+          "n": 268,
+          "share": 0.0232275958
+        },
+        "exact_absent_out_of_domain": {
+          "abstain_rate": null,
+          "answered_metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "bins_meeting_minimum_support": 0,
+            "brier_score": null,
+            "claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0
+          },
+          "coverage": null,
+          "metric_status": "insufficient_support",
+          "n": 0,
+          "share": 0.0
+        },
+        "frequent_exact": {
+          "abstain_rate": 0.0,
+          "answered_metrics": {
+            "accuracy": 0.5764179104,
+            "baseline_log_loss_bits_per_decision": 1.3360383867,
+            "bins_meeting_minimum_support": 40,
+            "brier_score": 0.535497783,
+            "claim_supportable": true,
+            "expected_calibration_error": 0.0371633052,
+            "gain_bits_per_decision": 0.0402032335,
+            "log_loss_bits_per_decision": 1.2958351531,
+            "n": 10050
+          },
+          "coverage": 1.0,
+          "metric_status": "scored",
+          "n": 10050,
+          "share": 0.8710348414
+        },
+        "rare_exact": {
+          "abstain_rate": 0.0,
+          "answered_metrics": {
+            "accuracy": 0.706557377,
+            "baseline_log_loss_bits_per_decision": 1.2866521905,
+            "bins_meeting_minimum_support": 40,
+            "brier_score": 0.4344403023,
+            "claim_supportable": true,
+            "expected_calibration_error": 0.0536158281,
+            "gain_bits_per_decision": 0.2550606443,
+            "log_loss_bits_per_decision": 1.0315915462,
+            "n": 1220
+          },
+          "coverage": 1.0,
+          "metric_status": "scored",
+          "n": 1220,
+          "share": 0.1057375628
+        }
+      }
+    }
+  },
+  "non_inferiority": {
+    "active_model_a_v5": {
+      "ci95_upper": 0.0069549188,
+      "margin_bits": 0.0
+    },
+    "alternate_architecture_hierarchical_eb": {
+      "ci95_upper": -0.0086878096,
+      "margin_bits": 0.005
+    },
+    "fit_global_prior_baseline": {
+      "ci95_upper": -0.0576900794,
+      "margin_bits": 0.0
+    }
+  },
+  "outcome": "RETAIN_ACTIVE_REFERENCE",
+  "outcome_rule": "ADMIT_GENERALIZED_RESPONSE_MODEL only when every frozen gate passes; otherwise RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT",
+  "prior": {
+    "CALL": 0.378316,
+    "FOLD": 0.54759,
+    "JAM": 0.012322,
+    "RAISE": 0.061772
+  },
+  "protocol": {
+    "declared_result_locations": [
+      "analysis/issue421_generalized_response/validation/VALIDATION_RESULT.json",
+      "analysis/issue421_generalized_response/validation/FROZEN_VALIDATION_RESULT.json"
+    ],
+    "declared_result_locations_present": [],
+    "detail": "the pinned protocol bytes and canonical payload digest were re-derived before a single VALIDATION hand was parsed; the declared fenced-result locations are empty",
+    "frozen_at": "2026-09-26T00:00:00Z",
+    "frozen_at_epoch": 1790380800,
+    "guard_id": "VALIDATION_ORDER_GUARD",
+    "protocol_byte_sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5",
+    "protocol_canonical_payload_sha256": "7c703fd934629b239293932fd0a7349957b0fdd48538154429f4597da74883ce",
+    "protocol_path": "analysis/issue421_generalized_response/FROZEN_VALIDATION_PROTOCOL.json",
+    "result": "PASS",
+    "status": "FROZEN_BEFORE_VALIDATION",
+    "validation_read_before_protocol_hash": false
+  },
+  "publication": {
+    "decision_path": "analysis/issue421_generalized_response/DECISION.json",
+    "declared_protocol_result_path": "analysis/issue421_generalized_response/validation/VALIDATION_RESULT.json",
+    "declared_result_locations_present": [],
+    "reason": "the protocol's VALIDATION_ORDER_GUARD fails closed as soon as a fenced result exists at its declared locations, which would make the frozen protocol no longer re-verifiable by tools/training/freeze_generalized_validation_protocol.py --check.  The T8 terminal evidence is therefore published beside the protocol at the paths named by the T8 scope, and the declared locations stay empty so the freeze remains checkable.  The order guard is still re-run before the read.",
+    "result_path": "analysis/issue421_generalized_response/VALIDATION_RESULT.json"
+  },
+  "reported_reference_metrics": {
+    "active_model_a_v5": {
+      "exact_match_rows": 11523,
+      "matched_rows": 11538,
+      "mean_dropped_non_response_mass": 0.0067512458,
+      "path": "training/models/preflop_population_model_v5.json",
+      "present": true,
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "candidate_generalized": {
+      "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+      "present": true
+    },
+    "model_a_sizing_aware_candidate_v2": {
+      "answered_rows_without_v2_support": 1684,
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "matched_rows": 9854,
+      "present": true
+    }
+  },
+  "schema": "poker-generalized-response-validation-result/v1",
+  "split": "VALIDATION",
+  "split_opened": true,
+  "test_authorized": false,
+  "test_consumed": false,
+  "test_scan": {
+    "check": "self_source_scan_for_test_loaders",
+    "detail": "AST scan: this evaluation command declares none of the forbidden TEST/holdout loader symbols; VALIDATION is read through the certified split loader, which fails closed on any non-VALIDATION record, and the model itself refuses TEST rows",
+    "forbidden_symbols": [
+      "load_test_records",
+      "TEST_HANDS",
+      "test_hand_ids",
+      "test_decisions",
+      "load_holdout",
+      "holdout_records"
+    ],
+    "hits": [],
+    "result": "PASS"
+  },
+  "validation_read": {
+    "distinct_hands": 2324,
+    "expected_hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+    "expected_hands": 2324,
+    "expected_rows": 11538,
+    "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+    "hands_parsed": 2324,
+    "loader": "tools/training/fit_model_a_preflop_sizing.load_certified_split",
+    "loader_provenance": {
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands": 2324,
+      "split": "VALIDATION"
+    },
+    "reads": 1,
+    "rows": 11538,
+    "split": "VALIDATION",
+    "test_consumed": false,
+    "test_rows_seen": 0
+  },
+  "validation_reads": 1
+}

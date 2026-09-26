@@ -1,0 +1,16 @@
+{
+  "active_pointer_mutated": false,
+  "candidate_id": "generalized-adverse-response-candidate-v1",
+  "candidate_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+  "decision": "RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT",
+  "issue": 421,
+  "issue367_preflight_passed": false,
+  "limper_vs_iso_coverage": 1.0,
+  "next_issue": 367,
+  "ood_abstain_rate": 0.0,
+  "raise_sizing_gate_passed": true,
+  "status": "BLOCKED_SCIENTIFIC",
+  "test_consumed": false,
+  "validation_consumed": true,
+  "validation_coverage": 1.0
+}

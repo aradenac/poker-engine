@@ -1,0 +1,261 @@
+name: Execute issue 421 generalized response model
+
+# Issue #421 replaces Model A's exact-cell response lookup with a learned,
+# public-only preflop adverse-response model.  Every claim the ticket makes is
+# asserted by a frozen, offline suite:
+#
+#   * `tests/training/test_build_generalized_response_dataset.py` fails closed
+#     on the public-only projection, on the hand-grouped split and on TEST;
+#   * `tests/training/test_audit_generalized_response_features.py` fails closed
+#     on a TRAIN-only fragmentation audit with keep/aggregate/remove verdicts;
+#   * `tests/preflop/test_generalized_response_model.py` fails closed on the two
+#     architectures, on determinism, on legal masking and on direct sizing;
+#   * `tests/training/test_evaluate_generalized_response_cv.py` fails closed on
+#     hand-grouped CV, on the three decision strata and on TEST;
+#   * `tests/preflop/test_generalized_response_sizing.py` fails closed on the
+#     legal raise/JAM window and on nearest-price substitution;
+#   * `tests/preflop/test_generalized_response_ood.py` fails closed on the
+#     frozen OOD/uncertainty statuses and on TRAIN-only calibration;
+#   * `tests/training/test_frozen_generalized_validation_protocol.py` fails
+#     closed on protocol/manifest/candidate hash drift;
+#   * `tests/training/test_validate_generalized_response.py` pins the one-shot
+#     VALIDATION read, the ten admission criteria and the terminal boundaries;
+#   * `tests/preflop/test_generalized_response_runtime.py` fails closed on the
+#     runtime provider, on recomputation instead of imitation and on OOD;
+#   * `tests/simulation/test_issue421_preflight.py` fails closed on the
+#     #421 -> #367 preflight (no Hero EV, no nearest lookup, TEST unconsumed);
+#   * `tests/preflop/test_issue421_mandatory_contracts.py` is the consolidated
+#     mandatory suite, guarded by `tests/ci/test_issue421_contract_guards.py`;
+#   * `tests/training/test_issue421_evidence_bundle.py` pins the ten
+#     content-addressed artifacts and their recomputed digests.
+#
+# This workflow is the authoritative runner: it executes each of those suites
+# as a real step (not a declaration) and then re-proves that no suite went
+# missing.  The no-op guard's `required` tuple spans the union the audit
+# declares (`ISSUE_421_SUITES ∪ ISSUE_421_EXTRA_SUITES ∪ ISSUE_421_CI_SUITES`
+# in `tests/test_github_workflow_audit.py`).
+# Its `paths` filters must cover every file #421 ships; that coverage, the
+# no-op guard, and the simulated drift/substitution negatives are asserted by
+# `tests/test_github_workflow_audit.py`, run as its own visible step below.
+# It is read-only: it publishes no artifact and mutates no evidence digest.
+# `HISTORICAL_EVIDENCE_SHA256` in tools/audit_github_workflows.py is never
+# touched by this change, and no #421 evidence artifact is rewritten here.
+
+on:
+  push:
+    paths:
+      # production surface: the frozen model, the runtime provider, the
+      # preflight and every tools/training generator #421 ships.
+      - 'tools/preflop/generalized_response_model.py'
+      - 'tools/preflop/generalized_response_runtime.py'
+      - 'tools/simulation/issue421_issue367_preflight.py'
+      - 'tools/training/audit_generalized_response_features.py'
+      - 'tools/training/build_generalized_response_dataset.py'
+      - 'tools/training/build_issue421_evidence_bundle.py'
+      - 'tools/training/evaluate_generalized_response_cv.py'
+      - 'tools/training/freeze_generalized_validation_protocol.py'
+      - 'tools/training/validate_generalized_response.py'
+      # the two workflow-audit generators this job actually executes
+      - 'tools/audit_github_workflows.py'
+      - 'tools/audit_active_workflow_dag.py'
+      # candidate, dataset, OOD-gate and protocol contracts
+      - 'contracts/training/generalized-response-dataset.schema.json'
+      - 'contracts/training/generalized-response-model.schema.json'
+      - 'contracts/training/generalized-response-ood-gate.schema.json'
+      - 'contracts/training/generalized-validation-protocol.schema.json'
+      # the entire #421 test surface (the audit guard itself included)
+      - 'tests/ci/test_issue421_contract_guards.py'
+      - 'tests/preflop/test_generalized_response_*.py'
+      - 'tests/preflop/test_issue421_mandatory_contracts.py'
+      - 'tests/simulation/test_issue421_preflight.py'
+      - 'tests/training/test_*generalized*.py'
+      - 'tests/training/test_issue421_evidence_bundle.py'
+      - 'tests/training/test_issue421_n8n_result.py'
+      - 'tests/test_github_workflow_audit.py'
+      # resolved inputs the runner consumes but the issue does not ship
+      - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
+      - 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json'
+      - 'tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json'
+      # the shared #204 consolidation-decision guard this job re-proves last
+      - 'tests/ci/test_consolidation_decision.py'
+      # documentation
+      - 'docs/generalized-opponent-response-model.md'
+      - 'docs/ci-workflow-dag.md'
+      # decision records
+      - '.project/decisions/*generalized*.md'
+      # content-addressed evidence
+      - 'analysis/issue421_generalized_response/**'
+      - 'analysis/workflow_audit/workflows.json'
+      - 'analysis/workflow_audit/active_workflow_dag_v2.json'
+      - 'analysis/workflow_audit/consolidation_decision_v1.json'
+      - '.github/workflows/issue-421-generalized-response-model.yml'
+  pull_request:
+    paths:
+      - 'tools/preflop/generalized_response_model.py'
+      - 'tools/preflop/generalized_response_runtime.py'
+      - 'tools/simulation/issue421_issue367_preflight.py'
+      - 'tools/training/audit_generalized_response_features.py'
+      - 'tools/training/build_generalized_response_dataset.py'
+      - 'tools/training/build_issue421_evidence_bundle.py'
+      - 'tools/training/evaluate_generalized_response_cv.py'
+      - 'tools/training/freeze_generalized_validation_protocol.py'
+      - 'tools/training/validate_generalized_response.py'
+      - 'tools/audit_github_workflows.py'
+      - 'tools/audit_active_workflow_dag.py'
+      - 'contracts/training/generalized-response-dataset.schema.json'
+      - 'contracts/training/generalized-response-model.schema.json'
+      - 'contracts/training/generalized-response-ood-gate.schema.json'
+      - 'contracts/training/generalized-validation-protocol.schema.json'
+      - 'tests/ci/test_issue421_contract_guards.py'
+      - 'tests/preflop/test_generalized_response_*.py'
+      - 'tests/preflop/test_issue421_mandatory_contracts.py'
+      - 'tests/simulation/test_issue421_preflight.py'
+      - 'tests/training/test_*generalized*.py'
+      - 'tests/training/test_issue421_evidence_bundle.py'
+      - 'tests/training/test_issue421_n8n_result.py'
+      - 'tests/test_github_workflow_audit.py'
+      - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
+      - 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json'
+      - 'tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json'
+      - 'tests/ci/test_consolidation_decision.py'
+      - 'docs/generalized-opponent-response-model.md'
+      - 'docs/ci-workflow-dag.md'
+      - '.project/decisions/*generalized*.md'
+      - 'analysis/issue421_generalized_response/**'
+      - 'analysis/workflow_audit/workflows.json'
+      - 'analysis/workflow_audit/active_workflow_dag_v2.json'
+      - 'analysis/workflow_audit/consolidation_decision_v1.json'
+      - '.github/workflows/issue-421-generalized-response-model.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so the path-coverage guard can attribute the branch
+          # diff to the #421 commits instead of trusting a curated list.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - name: Compile #421 tools and suites
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/preflop/generalized_response_model.py \
+            tools/preflop/generalized_response_runtime.py \
+            tools/simulation/issue421_issue367_preflight.py \
+            tools/training/audit_generalized_response_features.py \
+            tools/training/build_generalized_response_dataset.py \
+            tools/training/build_issue421_evidence_bundle.py \
+            tools/training/evaluate_generalized_response_cv.py \
+            tools/training/freeze_generalized_validation_protocol.py \
+            tools/training/validate_generalized_response.py \
+            tests/training/test_build_generalized_response_dataset.py \
+            tests/training/test_audit_generalized_response_features.py \
+            tests/preflop/test_generalized_response_model.py \
+            tests/training/test_evaluate_generalized_response_cv.py \
+            tests/preflop/test_generalized_response_sizing.py \
+            tests/preflop/test_generalized_response_ood.py \
+            tests/training/test_frozen_generalized_validation_protocol.py \
+            tests/training/test_validate_generalized_response.py \
+            tests/preflop/test_generalized_response_runtime.py \
+            tests/simulation/test_issue421_preflight.py \
+            tests/preflop/test_issue421_mandatory_contracts.py \
+            tests/ci/test_issue421_contract_guards.py \
+            tests/training/test_issue421_evidence_bundle.py \
+            tests/training/test_issue421_n8n_result.py \
+            tests/test_github_workflow_audit.py \
+            tests/ci/test_consolidation_decision.py
+      - name: Public-only dataset, hand-grouped split and TEST refusal
+        run: PYTHONPATH=. python3 tests/training/test_build_generalized_response_dataset.py
+      - name: TRAIN-only fragmentation audit and representation verdicts
+        run: PYTHONPATH=. python3 tests/training/test_audit_generalized_response_features.py
+      - name: Two architectures, determinism, legal masking and direct sizing
+        run: PYTHONPATH=. python3 tests/preflop/test_generalized_response_model.py
+      - name: Hand-grouped cross-validation and decision strata
+        run: PYTHONPATH=. python3 tests/training/test_evaluate_generalized_response_cv.py
+      - name: Conditional raise/JAM sizing window and no nearest price
+        run: PYTHONPATH=. python3 tests/preflop/test_generalized_response_sizing.py
+      - name: Frozen OOD gate and TRAIN-only calibration
+        run: PYTHONPATH=. python3 tests/preflop/test_generalized_response_ood.py
+      - name: Frozen candidate manifest and hash-frozen VALIDATION protocol
+        run: PYTHONPATH=. python3 tests/training/test_frozen_generalized_validation_protocol.py
+      - name: One-shot VALIDATION evaluation and terminal decision
+        run: PYTHONPATH=. python3 tests/training/test_validate_generalized_response.py
+      - name: Runtime provider determinism, recomputation and fail-closed OOD
+        run: PYTHONPATH=. python3 tests/preflop/test_generalized_response_runtime.py
+      - name: #421 -> #367 preflight (no Hero EV, no nearest lookup)
+        run: PYTHONPATH=. python3 tests/simulation/test_issue421_preflight.py
+      - name: Consolidated mandatory contract suite
+        run: PYTHONPATH=. python3 tests/preflop/test_issue421_mandatory_contracts.py
+      - name: Mandatory-suite guardrails and frozen pointer identity
+        run: PYTHONPATH=. python3 tests/ci/test_issue421_contract_guards.py
+      - name: Content-addressed #421 evidence bundle
+        run: PYTHONPATH=. python3 tests/training/test_issue421_evidence_bundle.py
+      - name: n8n output block (N8N_TASK_RESULT) matches the terminal evidence
+        run: PYTHONPATH=. python3 tests/training/test_issue421_n8n_result.py
+      - name: Prove every #421 suite is actually executed (no-op guard)
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/issue-421-generalized-response-model.yml').read_text(encoding='utf-8')
+          executed = '\n'.join(
+              line for line in workflow.splitlines() if not line.lstrip().startswith('#'))
+          required = (
+              'tests/training/test_build_generalized_response_dataset.py',
+              'tests/training/test_audit_generalized_response_features.py',
+              'tests/preflop/test_generalized_response_model.py',
+              'tests/training/test_evaluate_generalized_response_cv.py',
+              'tests/preflop/test_generalized_response_sizing.py',
+              'tests/preflop/test_generalized_response_ood.py',
+              'tests/training/test_frozen_generalized_validation_protocol.py',
+              'tests/training/test_validate_generalized_response.py',
+              'tests/preflop/test_generalized_response_runtime.py',
+              'tests/simulation/test_issue421_preflight.py',
+              'tests/preflop/test_issue421_mandatory_contracts.py',
+              'tests/ci/test_issue421_contract_guards.py',
+              'tests/training/test_issue421_evidence_bundle.py',
+              'tests/training/test_issue421_n8n_result.py',
+              'tests/test_github_workflow_audit.py',
+              'tests/ci/test_consolidation_decision.py',
+          )
+          missing = [suite for suite in required
+                     if not re.search(r'python3\s+' + re.escape(suite) + r'(?:\s|$)', executed)]
+          assert not missing, f'suite declared in paths but never executed: {missing}'
+          print(f'#421 no-op guard: {len(required)}/{len(required)} suites executed')
+          PY
+      - name: Trigger path coverage, no-op and drift/substitution guards
+        run: PYTHONPATH=. python3 tests/test_github_workflow_audit.py
+      - name: Workflow audit and DAG evidence stay regenerable
+        run: |
+          set -euo pipefail
+          python3 tools/audit_github_workflows.py --inventory /tmp/workflows.inventory.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          committed_path = Path('analysis/workflow_audit/workflows.json')
+          regenerated_path = Path('/tmp/workflows.inventory.json')
+          committed = json.loads(committed_path.read_text(encoding='utf-8'))
+          regenerated = json.loads(regenerated_path.read_text(encoding='utf-8'))
+          assert committed == regenerated, 'analysis/workflow_audit/workflows.json is stale'
+          assert committed_path.read_bytes() == regenerated_path.read_bytes(), (
+              'analysis/workflow_audit/workflows.json is not byte-stable')
+          print('workflow inventory: regenerable and byte-identical')
+          PY
+          python3 tools/audit_active_workflow_dag.py --check
+      - name: Workflow audit and DAG evidence mutation guards
+        run: PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py

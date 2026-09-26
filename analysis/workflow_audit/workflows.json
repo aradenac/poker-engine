@@ -1,9 +1,9 @@
 {
   "active_definition": "workflow file present in the audited default-branch snapshot",
   "aggregate": {
-    "automatic_trigger_workflows": 55,
+    "automatic_trigger_workflows": 56,
     "concurrency": {
-      "cancel_false_count": 13,
+      "cancel_false_count": 14,
       "cancel_true_count": 38,
       "groups": {
         "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}": [
@@ -55,6 +55,9 @@
         ],
         "issue-419-hierarchical-exact-tree-${{ github.event_name }}-${{ github.ref }}": [
           ".github/workflows/issue-419-hierarchical-exact-tree.yml"
+        ],
+        "issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}": [
+          ".github/workflows/issue-421-generalized-response-model.yml"
         ],
         "materialize-certified-population-${{ github.ref }}": [
           ".github/workflows/materialize-certified-population.yml"
@@ -160,17 +163,17 @@
     },
     "cost_band_counts": {
       "high": 11,
-      "low": 41,
+      "low": 42,
       "medium": 18
     },
     "duplication_primitives": {
-      "checkout": 116,
+      "checkout": 117,
       "download_artifact": 43,
       "npm_install": 0,
       "pip_install": 8,
       "playwright_install": 8,
       "setup_node": 8,
-      "setup_python": 71,
+      "setup_python": 72,
       "upload_artifact": 53
     },
     "explicit_workflow_run_edges": [
@@ -211,7 +214,7 @@
       ".github/workflows/v84-strategy-candidate.yml"
     ],
     "lifecycle_counts": {
-      "current": 47,
+      "current": 48,
       "frozen_current": 8,
       "historical_candidate": 15
     },
@@ -225,29 +228,29 @@
       "release_promotion": 3,
       "simulation_benchmark": 5,
       "training_orchestration": 2,
-      "validation_or_utility": 13
+      "validation_or_utility": 14
     },
     "trigger_event_counts": {
-      "pull_request": 45,
-      "push": 45,
+      "pull_request": 46,
+      "push": 46,
       "workflow_call": 1,
-      "workflow_dispatch": 47,
+      "workflow_dispatch": 48,
       "workflow_run": 2
     }
   },
   "path_detail": "path_scopes are normalized top-level scopes for overlap review; tools/audit_github_workflows.py emits exact event path filters from a checkout",
   "refresh_note": {
-    "automatic_trigger_workflows": 55,
+    "automatic_trigger_workflows": 56,
     "current_main_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
     "generator": "tools/audit_github_workflows.py --inventory analysis/workflow_audit/workflows.json",
     "manual_only_workflows": 15,
     "previous_snapshot_base_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
-    "workflow_count_current": 70,
+    "workflow_count_current": 71,
     "workflow_count_previous": 54
   },
   "schema": "poker-engine-workflow-inventory/v1",
   "snapshot_base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
-  "workflow_count": 70,
+  "workflow_count": 71,
   "workflows": [
     {
       "artifacts": [],
@@ -905,6 +908,41 @@
       "lifecycle": "current",
       "name": "Execute issue 419 hierarchical exact tree",
       "path": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
+      "path_scopes": [
+        ".github",
+        ".project",
+        "analysis",
+        "contracts",
+        "docs",
+        "tests",
+        "tools"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Execute issue 421 generalized response model",
+      "path": ".github/workflows/issue-421-generalized-response-model.yml",
       "path_scopes": [
         ".github",
         ".project",

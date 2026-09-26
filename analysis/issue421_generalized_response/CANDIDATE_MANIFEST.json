@@ -1,0 +1,1008 @@
+{
+  "active_references": {
+    "active_model_a_preflop": {
+      "mutated_by_this_freeze": false,
+      "path": "training/models/preflop_population_model_v5.json",
+      "role": "ACTIVE_MODEL_A_POINTER",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "active_model_b_postflop": {
+      "mutated_by_this_freeze": false,
+      "path": "training/models/postflop_population_model_v5.json",
+      "role": "ACTIVE_MODEL_B_POINTER",
+      "sha256": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae"
+    },
+    "admitted_model_a_candidate_for_367": {
+      "active_model_pointer_mutation": false,
+      "admission_decision": "ADMIT_CANDIDATE",
+      "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+      "mutated_by_this_freeze": false,
+      "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
+    },
+    "issue419_frozen_validation_protocol": {
+      "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+      "role": "PREDECESSOR_FROZEN_PROTOCOL",
+      "sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "populations_registry": {
+      "mutated_by_this_freeze": false,
+      "path": "training/populations/registry.json",
+      "role": "POPULATIONS_REGISTRY",
+      "sha256": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4"
+    },
+    "training_registry": {
+      "mutated_by_this_freeze": false,
+      "path": "training/registry.json",
+      "role": "TRAINING_REGISTRY",
+      "sha256": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
+    }
+  },
+  "architecture": {
+    "action_space": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "aggressive_actions": [
+      "RAISE",
+      "JAM"
+    ],
+    "alternative_architectures": [
+      {
+        "architecture": "hierarchical_empirical_bayes_dirichlet",
+        "canonical_payload_sha256": "7eb7b4794d9e42bcf151f7e1cf21c337a7f2393bfaf4a1ecc6b310793d2c302f",
+        "path": "analysis/issue421_generalized_response/model/candidate_hierarchical_empirical_bayes_dirichlet.json",
+        "role": "ALTERNATE_ARCHITECTURE_COMPARATOR",
+        "sha256": "3cffaa69b63cd8972ebbd55a055fda26d802c838f5c565bf79c0818b30aa3ce6"
+      }
+    ],
+    "architecture": "regularized_multinomial_spline",
+    "baseline_object": "TRAIN global action distribution (fit-fold action prior)",
+    "candidate_id": "generalized-adverse-response-candidate-v1",
+    "conditional_sizing_channel": true,
+    "discrete_choice_core": true,
+    "hidden_hand_imputation": false,
+    "identity_granularity": "public_preflop_response_context",
+    "model_family": "MODEL_A_PREFLOP_RESPONSE",
+    "nearest_context_fallback": false,
+    "nearest_price_fallback": false,
+    "pseudo_observation": false
+  },
+  "calibration_max": {
+    "bins_per_action_class": 10,
+    "claim_requires": "every reported ECE is pooled over the frozen VALIDATION decisions and compared against the active reference ECE on the same pooled support",
+    "maximum_absolute_ece": 0.05,
+    "maximum_ece_delta_vs_active": 0.02,
+    "method": "equal_count_reliability_bins",
+    "minimum_bin_support_for_a_claim": 20,
+    "rule_id": "CALIBRATION_WITHIN_FROZEN_CEILING",
+    "train_out_of_fold_ece": 0.02662,
+    "train_out_of_fold_evidence": {
+      "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+      "sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff"
+    }
+  },
+  "candidate": {
+    "action_space": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "active_model_replaced": false,
+    "architecture": "regularized_multinomial_spline",
+    "bytes": 59853,
+    "candidate_id": "generalized-adverse-response-candidate-v1",
+    "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+    "model_family": "MODEL_A_PREFLOP_RESPONSE",
+    "path": "analysis/issue421_generalized_response/model/candidate_regularized_multinomial_spline.json",
+    "seed": 421,
+    "selected_by": "TRAIN-only hand-grouped five-fold cross-validation",
+    "selection_evidence": {
+      "evidence_basis": "out_of_fold_holdout_only",
+      "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+      "ranking": [
+        "regularized_multinomial_spline",
+        "hierarchical_empirical_bayes_dirichlet"
+      ],
+      "selected": "regularized_multinomial_spline",
+      "sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff"
+    },
+    "sha256": "ea93e8c35e2604debd943495474cdb9262d724efb4a5caefe3723b53f23a59e7",
+    "status": "CANDIDATE_ONLY_NOT_ACTIVE"
+  },
+  "corpus": {
+    "certification_path": "training/datasets/NLHE_100-200/population_certification.json",
+    "certification_sha256": "6b3c967b982a712ab0da3fd2bc21c242b1b08a802222f7d4b6587a0dfa2dace6",
+    "corpus_hashes_path": "analysis/issue421_generalized_response/dataset/CORPUS_HASHES.json",
+    "corpus_hashes_sha256": "a172c41341e6deedb6ffec1c4a7adedec5f0b40c3ebe8a89f5360bd597e1f364",
+    "dataset_bytes": 41279660,
+    "dataset_manifest_path": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.json",
+    "dataset_manifest_sha256": "ec1cec7a52be980e0857c2be3ff1201df55d69cceee793b44073c5ea656ecef1",
+    "dataset_path": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+    "dataset_rows": 105698,
+    "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+    "population_fingerprint_sha256": "4661c200fab5a24ce67a45f0801acd0238c701f55e8dbeeaf3e8299fa250119c",
+    "population_id": "pokerstars_nlhe_100-200_zoom_play_6max_v1",
+    "split_consumed_for_authoring": "TRAIN",
+    "test": {
+      "consumed": false,
+      "hands": 2449,
+      "refused": true,
+      "split": "TEST"
+    },
+    "test_consumed_for_authoring": false,
+    "train": {
+      "consumed_for_fit": true,
+      "hand_ids_fingerprint_sha256": "4b4739d11c30455085e14e040f21a1ed70068403825d38dd1cc1b3ecbf9db5a8",
+      "hands": 19016,
+      "response_rows": 94160,
+      "split": "TRAIN"
+    },
+    "validation": {
+      "consumed_for_fit": false,
+      "hand_ids_fingerprint_sha256": "e0980444de231d5e38d07980ffdc238a48b6261691575715a5f458a8ebcd03ba",
+      "hands": 2324,
+      "reserved_for": "the fenced VALIDATION admission evaluation",
+      "response_rows": 11538,
+      "split": "VALIDATION"
+    },
+    "validation_consumed_for_authoring": false
+  },
+  "cv_procedure": {
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "fold_assignment": "int(stable_hash('grm-cv/421/<hand_id>')[:8], 16) % 5",
+    "folds": 5,
+    "forbidden_splits": [
+      "TEST"
+    ],
+    "group_key": "hand_id",
+    "kind": "hand_grouped_k_fold_cross_validation",
+    "main_split": "TRAIN",
+    "model_config_source": "library_default",
+    "no_leak": {
+      "assertion": "assert not (holdout_hands_i & train_hands_i) for every fold i, and assert the holdout hand sets partition the hand universe",
+      "checked_at_runtime": true,
+      "folds": 5,
+      "group_key": "hand_id",
+      "hands": 19016,
+      "hands_assigned_to_exactly_one_fold": true,
+      "holdout_hands_pairwise_disjoint": true,
+      "holdout_hands_per_fold": [
+        3788,
+        3838,
+        3772,
+        3809,
+        3809
+      ],
+      "max_hand_overlap_between_fit_and_holdout": 0
+    },
+    "preregistered_selection_criteria": {
+      "consumed_splits": [
+        "TRAIN"
+      ],
+      "direction": "lower_is_better",
+      "evidence_basis": "out_of_fold_holdout_only",
+      "preregistered": true,
+      "registered_before_evaluation": true,
+      "runtime_complexity_rank": {
+        "hierarchical_empirical_bayes_dirichlet": 2,
+        "regularized_multinomial_spline": 1
+      },
+      "steps": [
+        {
+          "metric": "out_of_fold.log_loss_bits_per_decision",
+          "name": "out_of_fold_performance",
+          "rule": "keep every architecture whose pooled out-of-fold multiclass log loss is within the preregistered tolerance of the best one",
+          "step": 1,
+          "tolerance": 0.005
+        },
+        {
+          "metric": "out_of_fold.expected_calibration_error.ece",
+          "name": "calibration",
+          "rule": "among the survivors, keep the architectures within the ECE tolerance of the best",
+          "step": 2,
+          "tolerance": 0.002
+        },
+        {
+          "metric": "out_of_fold.brier_score",
+          "name": "brier",
+          "rule": "among the survivors, keep the architectures within the Brier tolerance of the best",
+          "step": 3,
+          "tolerance": 0.001
+        },
+        {
+          "metric": "stability.fold_log_loss_stddev",
+          "name": "stability",
+          "rule": "among the survivors, keep the architectures with the most stable fold-to-fold log loss",
+          "step": 4,
+          "tolerance": 0.005
+        },
+        {
+          "metric": "runtime.complexity_rank",
+          "name": "runtime_simplicity",
+          "rule": "among the survivors, keep the lowest predeclared runtime complexity rank",
+          "step": 5,
+          "tolerance": 0.0
+        },
+        {
+          "metric": "architecture",
+          "name": "deterministic_tiebreak",
+          "rule": "final deterministic tiebreak on the architecture name",
+          "step": 6,
+          "tolerance": 0.0
+        }
+      ],
+      "test_consumed": false,
+      "validation_consumed": false
+    },
+    "report_path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+    "report_sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff",
+    "seed": 421,
+    "selected_architecture": "regularized_multinomial_spline",
+    "selection_evidence_basis": "out_of_fold_holdout_only",
+    "sizing_mode": "observed_where_available"
+  },
+  "features": {
+    "categorical_blocks": [
+      "family",
+      "actor_position",
+      "aggressor_position",
+      "caller_count",
+      "limper_count",
+      "raise_level",
+      "live_position_count"
+    ],
+    "excluded_actions": [
+      "CHECK"
+    ],
+    "feature_audit_report_path": "analysis/issue421_generalized_response/GENERALIZED_RESPONSE_DATASET_REPORT.json",
+    "feature_audit_report_sha256": "81f1314af83df1453155d83993afcf7c23ce2cbe74b54f0c9fd23207d13409d8",
+    "forbidden_keys": [
+      "board",
+      "boards",
+      "cards",
+      "future_actions",
+      "hand_class",
+      "hero_cards",
+      "history",
+      "hole_cards",
+      "is_hero",
+      "known_cards",
+      "known_hand_class",
+      "player",
+      "showdown"
+    ],
+    "interaction_blocks": [
+      "family_x_actor_position",
+      "family_x_aggressor_position",
+      "family_x_to_call_bb",
+      "family_x_effective_stack_bb"
+    ],
+    "ood_feature_blocks": [
+      "family",
+      "actor_position",
+      "aggressor_position",
+      "caller_count",
+      "limper_count",
+      "raise_level",
+      "live_position_count",
+      "to_call_bucket",
+      "effective_stack_bucket",
+      "pot_bucket"
+    ],
+    "ood_numeric_axes": [
+      "to_call_bb",
+      "pot_before_bb",
+      "effective_stack_bb",
+      "sizing_ratio"
+    ],
+    "outcome_dimensions_excluded": [
+      "target_total_bb",
+      "observed_sizing_bb"
+    ],
+    "public_only": true,
+    "refused_splits": [
+      "TEST"
+    ],
+    "response_actions": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "row_contract_fields": [
+      "hand_id",
+      "split",
+      "table_size",
+      "family",
+      "actor_position",
+      "aggressor_position",
+      "limper_count",
+      "caller_count",
+      "live_positions",
+      "raise_level",
+      "to_call_bb",
+      "pot_before_bb",
+      "pot_odds",
+      "price_to_pot",
+      "effective_stack_bb",
+      "target_total_bb",
+      "observed_sizing_bb",
+      "action"
+    ],
+    "row_contract_path": "contracts/training/generalized-response-dataset.schema.json",
+    "row_contract_sha256": "15f35cb3a40a6b48a60e0add252d2f0a31bc6d138964e94e9842f7c2a3757255",
+    "spline_blocks": [
+      "to_call_bb",
+      "pot_before_bb",
+      "effective_stack_bb"
+    ],
+    "split_scope": [
+      "TRAIN",
+      "VALIDATION"
+    ],
+    "state_timing": "BEFORE_ACTION"
+  },
+  "forbidden": [
+    "TEST",
+    "HERO_EV",
+    "MODEL_B",
+    "UI",
+    "NEAREST_PRICE",
+    "NEAREST_CONTEXT",
+    "ACTIVE_POINTER_MUTATION",
+    "AUTOMATIC_PROMOTION",
+    "HYPERPARAMETER_SEARCH_ON_VALIDATION",
+    "THRESHOLD_RELAXATION_AFTER_VALIDATION",
+    "COVERAGE_FLOOR_RELAXATION_AFTER_VALIDATION",
+    "OOD_THRESHOLD_RELAXATION_AFTER_VALIDATION",
+    "SIZING_CRITERIA_RELAXATION_AFTER_VALIDATION",
+    "HIDDEN_HAND_IMPUTATION",
+    "PSEUDO_OBSERVATION"
+  ],
+  "frozen_at": "2026-09-26T00:00:00Z",
+  "frozen_at_epoch": 1790380800,
+  "frozen_at_source": "explicit_freeze_timestamp_recorded_before_the_fenced_validation_evaluation",
+  "generated_by": {
+    "schema_path": "contracts/training/generalized-validation-protocol.schema.json",
+    "schema_sha256": "c339bcaf3a40703f653b200bfd81d76aa9f1b6e8b6d85c229bd50a491721d50f",
+    "tool_path": "tools/training/freeze_generalized_validation_protocol.py",
+    "tool_sha256": "5e2820352bcc103baf5c0a26b92d7ce4d45fa0bc6ba41fe276fba6928fabd8e5"
+  },
+  "hyperparameters": {
+    "default_target_to_pot_ratio": 1.2,
+    "deviation_clip": 0.5,
+    "deviation_scale_grid": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.45
+    ],
+    "estimator": "regularized_additive_multinomial_log_linear",
+    "frozen": true,
+    "frozen_by_candidate": "analysis/issue421_generalized_response/model/candidate_regularized_multinomial_spline.json",
+    "hierarchical_min_cells": 2,
+    "hierarchical_strength_bounds": [
+      1.0,
+      400.0
+    ],
+    "holdout_modulus": 5,
+    "hyperparameter_search_performed_on_validation": false,
+    "interaction_block_weight": 0.5,
+    "interaction_max_cells": 48,
+    "interaction_min_support": 20,
+    "interaction_smoothing_mass": 8.0,
+    "lift_scale_grid": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      6.0,
+      8.0
+    ],
+    "selected_on": "TRAIN-only hand-grouped five-fold cross-validation",
+    "sizing_axis_knots": [
+      0.1,
+      0.25,
+      0.5,
+      0.8,
+      1.2,
+      2.0,
+      3.5,
+      7.0,
+      15.0
+    ],
+    "sizing_gain_bounds": [
+      0.125,
+      8.0
+    ],
+    "sizing_smoothing_mass": 8.0,
+    "smoothing_mass": 8.0,
+    "spline_knots": {
+      "effective_stack_bb": [
+        1.0,
+        5.0,
+        10.0,
+        20.0,
+        35.0,
+        60.0,
+        100.0,
+        160.0,
+        300.0
+      ],
+      "pot_before_bb": [
+        1.0,
+        2.0,
+        3.5,
+        6.0,
+        10.0,
+        20.0,
+        40.0,
+        80.0,
+        160.0
+      ],
+      "to_call_bb": [
+        0.25,
+        0.5,
+        1.0,
+        2.0,
+        4.0,
+        8.0,
+        16.0,
+        40.0,
+        100.0
+      ]
+    },
+    "tuning_max_rows": 8000
+  },
+  "issue": 421,
+  "issue367_consumption_rule": {
+    "active_model_pointer_mutation": false,
+    "authorized_at_freeze": false,
+    "authorized_when": [
+      "the frozen VALIDATION evaluation returns outcome=ADMIT_CANDIDATE",
+      "every frozen gate passes with the threshold values pinned in this protocol",
+      "the VALIDATION result is content-addressed (schema poker-generalized-response-validation-result/v1, embedded protocol_byte_sha256) and pinned in a new explicit #367 protocol revision",
+      "that #367 protocol revision names model_a.candidate_id=generalized-adverse-response-candidate-v1 and model_a.candidate_sha256=c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc"
+    ],
+    "consequence_when_forbidden": "no #367 real ISO EV run, no support-grid extension and no provider wiring may consume this candidate; #367 keeps its current admitted model",
+    "currently_admitted_model_a_for_367": {
+      "active_model_pointer_mutation": false,
+      "admission_decision": "ADMIT_CANDIDATE",
+      "candidate_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "candidate_sha256": "9115165c3141d16152946dd1ee7a049f219fef1a1d79c0e1c7b1249c45326f19",
+      "fit_evidence_sha256": "cacf97c80f44856da6e787b230ab1b564d5c0c83821a894e57b70aba92145738",
+      "validation_evidence_sha256": "54f6e2affb0a088aa5148c981331abafe705ce7793433f89accbf304dc6f7496"
+    },
+    "forbidden_while": [
+      "the outcome is RETAIN_ACTIVE_REFERENCE or the candidate stays unresolved",
+      "no ADMIT_CANDIDATE VALIDATION result exists for this candidate",
+      "the candidate SHA differs from the pinned canonical payload digest",
+      "a #367 run would change TEST consumption, Model B, Hero EV or the active Model A pointer"
+    ],
+    "hero_ev_consumed": false,
+    "model_b_consumed": false,
+    "promotion_performed": false,
+    "question": "is a #367 consumption of the generalized adverse-response candidate authorized or forbidden?",
+    "rule_id": "ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE",
+    "test_consumed": false,
+    "unchanged_by_this_freeze": true
+  },
+  "kind": "CANDIDATE_MANIFEST",
+  "metrics": {
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "method": "paired_percentile_bootstrap",
+      "samples": 5000,
+      "seed": 421
+    },
+    "cv_report_metrics": {
+      "accuracy": "mean arg-max agreement",
+      "baseline_log_loss_bits_per_decision": "same loss under the fit-fold action prior",
+      "brier_score": "mean sum over the four actions of (P(action) - 1[observed])^2",
+      "coverage": "provisional, predeclared OOD gate: accept a held-out decision iff every single-feature node label of the decision was observed in the fit fold (feature-level in-domain) AND the fit fold saw the decision's exact context signature at least 5 times; coverage is the accepted share of the held-out fold",
+      "expected_calibration_error": "equal-count reliability bins per action class (frozen T2 definition of tools/training/validate_hierarchical_validation.py::expected_calibration_error): for each action, sort rows by predicted probability, cut 10 equal-count bins, accumulate bin-mass-weighted |mean predicted - mean observed| and average over the four action classes",
+      "log_loss_bits_per_decision": "mean -log2 P(observed action), base-2 bits per decision"
+    },
+    "mandatory_reporting": "a pooled estimate is never scored without its OOD status; an abstained decision is reported, never scored as correct by defaulting to FOLD",
+    "paired_unit": "hand_id",
+    "pairing_rule": "a paired delta is computed only on the decisions both sides answer at the same requested public context",
+    "primary": {
+      "definition": "mean over scored decisions of -log2 P(observed action)",
+      "direction": "lower_is_better",
+      "epsilon_clip": 1e-12,
+      "name": "multiclass_log_loss",
+      "unit": "bits_per_decision"
+    },
+    "secondary": [
+      {
+        "definition": "mean sum over the four actions of (P(action) - 1[observed])^2",
+        "name": "brier_score"
+      },
+      {
+        "definition": "equal-count reliability bins per action class",
+        "name": "expected_calibration_error"
+      },
+      {
+        "definition": "mean arg-max agreement",
+        "name": "accuracy"
+      },
+      {
+        "definition": "share of in-scope decisions answered with a legal, non-OOD distribution",
+        "name": "coverage"
+      },
+      {
+        "definition": "share of in-scope decisions that abstain (OOD or fail-closed)",
+        "name": "abstain_rate"
+      }
+    ],
+    "stratification": [
+      "by family",
+      "by actor_position",
+      "by sizing_bucket",
+      "by ood_status",
+      "by support_tier"
+    ]
+  },
+  "non_inferiority_rule": {
+    "bootstrap_samples": 5000,
+    "ci_upper_bound": 0.0,
+    "comparisons": [
+      {
+        "against": "fit_global_prior_baseline",
+        "margin_bits": 0.0,
+        "rule": "paired (candidate - FIT global action prior) 95% CI upper bound <= 0"
+      },
+      {
+        "against": "alternate_architecture_hierarchical_eb",
+        "margin_bits": 0.005,
+        "rule": "paired (candidate - hierarchical_empirical_bayes_dirichlet) 95% CI upper bound <= the preregistered cross-validation tolerance"
+      },
+      {
+        "against": "active_model_a_preflop_population",
+        "margin_bits": 0.0,
+        "rule": "paired candidate-minus-active 95% CI upper bound <= 0"
+      }
+    ],
+    "confidence_level": 0.95,
+    "direction": "lower_is_better",
+    "method": "paired_percentile_bootstrap",
+    "metric": "multiclass_log_loss_bits_per_decision",
+    "paired_unit": "hand_id",
+    "pairing_rule": "a paired delta is computed only on the decisions both sides answer at the same requested public context",
+    "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+    "seed": 421
+  },
+  "ood_gate": {
+    "abstain_policy": "an OOD-abstaining decision is reported and excluded from the paired predictive gates; it never scores as correct and never falls back to the global prior",
+    "calibration_kind": "train_only_ood_uncertainty_gate_calibration",
+    "calibration_report_path": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+    "calibration_report_sha256": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71",
+    "contract_path": "contracts/training/generalized-response-ood-gate.schema.json",
+    "contract_sha256": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+    "gate_schema": "poker-generalized-response-ood-gate/v1",
+    "hard_reason_codes": [
+      "UNSEEN_CATEGORY",
+      "EXTRAPOLATION_STACK",
+      "EXTRAPOLATION_SIZING",
+      "EXTRAPOLATION_PRICE",
+      "MISSING_DOMAIN_AXIS"
+    ],
+    "never_seen_category_abstains": true,
+    "sizing_extrapolation_abstains": true,
+    "soft_reason_codes": [
+      "SPLINE_BOUNDARY_EXTRAPOLATION",
+      "DOMAIN_DISTANCE",
+      "LOW_FEATURE_SUPPORT",
+      "LOW_EXACT_CONTEXT_SUPPORT",
+      "HIGH_PREDICTIVE_ENTROPY",
+      "LOW_MODEL_NODE_SUPPORT",
+      "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+    ],
+    "stack_extrapolation_abstains": true,
+    "statuses": [
+      "MODEL_SUPPORTED",
+      "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+      "MODEL_OOD_ABSTAIN"
+    ],
+    "thresholds": {
+      "domain_distance": 0.751332979,
+      "extrapolation_margin": 0.0,
+      "min_exact_context_share": 1.0620221e-05,
+      "min_feature_share": 0.012854930305,
+      "min_model_node_support_per_row": 2.054783430736,
+      "normalized_entropy": 0.682886897,
+      "support_floor_share": 1.0620221e-05
+    }
+  },
+  "reproduction": {
+    "check_command": "python3 tools/training/freeze_generalized_validation_protocol.py --check",
+    "command": "python3 tools/training/freeze_generalized_validation_protocol.py"
+  },
+  "runtime_format": {
+    "action_space": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "contract_path": "contracts/training/generalized-response-model.schema.json",
+    "contract_sha256": "878ca051069342fdff07be2a1b905119ab534ba77076c272cdbe2f75e0ce5c83",
+    "deterministic": true,
+    "entrypoints": {
+      "evaluate": "tools/preflop/generalized_response_model.py::evaluate",
+      "fit": "tools/preflop/generalized_response_model.py::fit",
+      "generate_raise_sizings": "tools/preflop/generalized_response_model.py::generate_raise_sizings",
+      "load_candidate": "tools/preflop/generalized_response_model.py::load_candidate",
+      "ood_gate_decision": "tools/preflop/generalized_response_model.py::ood_gate_decision",
+      "predict": "tools/preflop/generalized_response_model.py::predict",
+      "price_response": "tools/preflop/generalized_response_model.py::price_response",
+      "score_raise_sizing": "tools/preflop/generalized_response_model.py::score_raise_sizing",
+      "validate_candidate": "tools/preflop/generalized_response_model.py::validate_candidate"
+    },
+    "evaluation_schema": "poker-generalized-response-evaluation/v1",
+    "illegal_mass_max": 0.0,
+    "input_fields": [
+      "hand_id",
+      "split",
+      "table_size",
+      "family",
+      "actor_position",
+      "aggressor_position",
+      "limper_count",
+      "caller_count",
+      "live_positions",
+      "raise_level",
+      "to_call_bb",
+      "pot_before_bb",
+      "pot_odds",
+      "price_to_pot",
+      "effective_stack_bb",
+      "target_total_bb",
+      "observed_sizing_bb",
+      "action"
+    ],
+    "legal_masking": true,
+    "model_schema": "poker-generalized-response-model/v1",
+    "module_path": "tools/preflop/generalized_response_model.py",
+    "module_sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
+    "optional_input_fields": [
+      "target_total_bb",
+      "raise_target_total_bb",
+      "legal_actions"
+    ],
+    "output_fields": [
+      "probabilities",
+      "P(FOLD)",
+      "P(CALL)",
+      "P(RAISE)",
+      "P(JAM)",
+      "probability_sum",
+      "legal_actions",
+      "masked_actions",
+      "normalization",
+      "sizing",
+      "support",
+      "architecture",
+      "candidate_canonical_payload_sha256"
+    ],
+    "prediction_schema": "poker-generalized-response-action-probabilities/v1",
+    "price_response_schema": "poker-generalized-response-price-response/v1",
+    "probability_sum_tolerance": 1e-09,
+    "standard_library_only": true,
+    "test_refused_fail_closed": true
+  },
+  "schema": "poker-generalized-response-candidate-manifest/v1",
+  "seeds": {
+    "candidate_seed": 421,
+    "deterministic_reproduction": true,
+    "policy": "DETERMINISTIC_NO_RANDOMNESS",
+    "purpose": "the frozen estimator, its partition-of-unity sizing spline and every OOD threshold are closed-form; the recorded seed only pins observation ordering, fold assignment and tie-breaking, no sampling is performed",
+    "random_seed": 421,
+    "rng_algorithm": "none",
+    "stochastic_draws": 0
+  },
+  "sizing_criteria": {
+    "basis": "piecewise_linear_log1p_partition_of_unity_restricted_to_the_legal_window",
+    "criteria_id": "SIZING_NOT_INFERIOR_TO_FROZEN_TRAIN_EVIDENCE",
+    "fail_closed_policy": "ABSTAIN_OR_FAIL_CLOSED_NEVER_SUBSTITUTE_NEAREST_PRICE_OR_CONTEXT",
+    "generation_quantile_levels": [
+      0.1,
+      0.25,
+      0.5,
+      0.75,
+      0.9
+    ],
+    "maximum_crps_bb": 5.2,
+    "maximum_illegal_generated_rate": 0.0,
+    "maximum_nll_bits_per_sizing": 2.9,
+    "maximum_pit_abs_bin_error": 0.3,
+    "minimum_nll_gain_vs_uniform_bits": 2.0,
+    "no_nearest_context_substitution": true,
+    "no_nearest_price_substitution": true,
+    "sizing_quantile_levels": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "target_axis": "target_total_bb divided by (pot_before_bb + to_call_bb)",
+    "train_evidence": {
+      "crps_bb": 4.702839,
+      "fail_closed": 174,
+      "illegal_generated_rate": 0.0,
+      "nll_bits_per_sizing": 2.683351,
+      "nll_gain_vs_uniform_bits": 3.380691,
+      "path": "analysis/issue421_generalized_response/RAISE_SIZING_MODEL_REPORT.json",
+      "pit_max_abs_bin_error": 0.233682,
+      "rows": 7813,
+      "scored": 7639,
+      "sha256": "955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6"
+    },
+    "window_rule": "min_raise_to = max(2*current_bet - max(commitment, BB), current_bet + BB), a conservative upper bound of the engine minimum raise; cap = max_raise_to_bb when supplied else effective_stack_bb"
+  },
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "thresholds": {
+    "calibration": {
+      "bins_per_action_class": 10,
+      "claim_requires": "every reported ECE is pooled over the frozen VALIDATION decisions and compared against the active reference ECE on the same pooled support",
+      "maximum_absolute_ece": 0.05,
+      "maximum_ece_delta_vs_active": 0.02,
+      "method": "equal_count_reliability_bins",
+      "minimum_bin_support_for_a_claim": 20,
+      "rule_id": "CALIBRATION_WITHIN_FROZEN_CEILING",
+      "train_out_of_fold_ece": 0.02662,
+      "train_out_of_fold_evidence": {
+        "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+        "sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff"
+      }
+    },
+    "coverage": {
+      "coverage_is_an_admission_gate": true,
+      "definition": "share of in-scope VALIDATION decisions the frozen candidate answers with a legal, non-OOD distribution; abstaining is fail-closed and is counted as non-covered",
+      "minimum_coverage": 0.5,
+      "minimum_distinct_hands": 100,
+      "minimum_scored_decisions": 500,
+      "train_out_of_fold_coverage": 0.930055
+    },
+    "frozen": true,
+    "immutable_after_validation_read": true,
+    "non_inferiority": {
+      "bootstrap_samples": 5000,
+      "ci_upper_bound": 0.0,
+      "comparisons": [
+        {
+          "against": "fit_global_prior_baseline",
+          "margin_bits": 0.0,
+          "rule": "paired (candidate - FIT global action prior) 95% CI upper bound <= 0"
+        },
+        {
+          "against": "alternate_architecture_hierarchical_eb",
+          "margin_bits": 0.005,
+          "rule": "paired (candidate - hierarchical_empirical_bayes_dirichlet) 95% CI upper bound <= the preregistered cross-validation tolerance"
+        },
+        {
+          "against": "active_model_a_preflop_population",
+          "margin_bits": 0.0,
+          "rule": "paired candidate-minus-active 95% CI upper bound <= 0"
+        }
+      ],
+      "confidence_level": 0.95,
+      "direction": "lower_is_better",
+      "method": "paired_percentile_bootstrap",
+      "metric": "multiclass_log_loss_bits_per_decision",
+      "paired_unit": "hand_id",
+      "pairing_rule": "a paired delta is computed only on the decisions both sides answer at the same requested public context",
+      "rule_id": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS",
+      "seed": 421
+    },
+    "ood": {
+      "abstain_policy": "an OOD-abstaining decision is reported and excluded from the paired predictive gates; it never scores as correct and never falls back to the global prior",
+      "calibration_kind": "train_only_ood_uncertainty_gate_calibration",
+      "calibration_report_path": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+      "calibration_report_sha256": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71",
+      "contract_path": "contracts/training/generalized-response-ood-gate.schema.json",
+      "contract_sha256": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+      "gate_schema": "poker-generalized-response-ood-gate/v1",
+      "hard_reason_codes": [
+        "UNSEEN_CATEGORY",
+        "EXTRAPOLATION_STACK",
+        "EXTRAPOLATION_SIZING",
+        "EXTRAPOLATION_PRICE",
+        "MISSING_DOMAIN_AXIS"
+      ],
+      "never_seen_category_abstains": true,
+      "sizing_extrapolation_abstains": true,
+      "soft_reason_codes": [
+        "SPLINE_BOUNDARY_EXTRAPOLATION",
+        "DOMAIN_DISTANCE",
+        "LOW_FEATURE_SUPPORT",
+        "LOW_EXACT_CONTEXT_SUPPORT",
+        "HIGH_PREDICTIVE_ENTROPY",
+        "LOW_MODEL_NODE_SUPPORT",
+        "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+      ],
+      "stack_extrapolation_abstains": true,
+      "statuses": [
+        "MODEL_SUPPORTED",
+        "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+        "MODEL_OOD_ABSTAIN"
+      ],
+      "thresholds": {
+        "domain_distance": 0.751332979,
+        "extrapolation_margin": 0.0,
+        "min_exact_context_share": 1.0620221e-05,
+        "min_feature_share": 0.012854930305,
+        "min_model_node_support_per_row": 2.054783430736,
+        "normalized_entropy": 0.682886897,
+        "support_floor_share": 1.0620221e-05
+      }
+    },
+    "sizing": {
+      "basis": "piecewise_linear_log1p_partition_of_unity_restricted_to_the_legal_window",
+      "criteria_id": "SIZING_NOT_INFERIOR_TO_FROZEN_TRAIN_EVIDENCE",
+      "fail_closed_policy": "ABSTAIN_OR_FAIL_CLOSED_NEVER_SUBSTITUTE_NEAREST_PRICE_OR_CONTEXT",
+      "generation_quantile_levels": [
+        0.1,
+        0.25,
+        0.5,
+        0.75,
+        0.9
+      ],
+      "maximum_crps_bb": 5.2,
+      "maximum_illegal_generated_rate": 0.0,
+      "maximum_nll_bits_per_sizing": 2.9,
+      "maximum_pit_abs_bin_error": 0.3,
+      "minimum_nll_gain_vs_uniform_bits": 2.0,
+      "no_nearest_context_substitution": true,
+      "no_nearest_price_substitution": true,
+      "sizing_quantile_levels": [
+        0.05,
+        0.1,
+        0.15,
+        0.2,
+        0.25,
+        0.3,
+        0.35,
+        0.4,
+        0.45,
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95
+      ],
+      "target_axis": "target_total_bb divided by (pot_before_bb + to_call_bb)",
+      "train_evidence": {
+        "crps_bb": 4.702839,
+        "fail_closed": 174,
+        "illegal_generated_rate": 0.0,
+        "nll_bits_per_sizing": 2.683351,
+        "nll_gain_vs_uniform_bits": 3.380691,
+        "path": "analysis/issue421_generalized_response/RAISE_SIZING_MODEL_REPORT.json",
+        "pit_max_abs_bin_error": 0.233682,
+        "rows": 7813,
+        "scored": 7639,
+        "sha256": "955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6"
+      },
+      "window_rule": "min_raise_to = max(2*current_bet - max(commitment, BB), current_bet + BB), a conservative upper bound of the engine minimum raise; cap = max_raise_to_bb when supplied else effective_stack_bb"
+    },
+    "support": {
+      "minimum_distinct_hands": 20,
+      "minimum_marginal_observations": 20
+    }
+  },
+  "transformations": {
+    "axis_transform": "log1p",
+    "categorical_level_rules": {
+      "coarse_buckets": {
+        "effective_stack_bucket": [
+          5.0,
+          20.0,
+          60.0,
+          160.0
+        ],
+        "to_call_bucket": [
+          0.25,
+          1.0,
+          4.0,
+          16.0
+        ]
+      },
+      "count_caps": {
+        "caller_count": 3,
+        "limper_count": 3,
+        "live_position_count": 5,
+        "raise_level": 3
+      },
+      "public_levels": [
+        "family",
+        "actor_position",
+        "aggressor_position"
+      ]
+    },
+    "continuous_recompute_on_query": true,
+    "no_nearest_cell_substitution": true,
+    "partition_of_unity": true,
+    "sizing_axis_knots": [
+      0.1,
+      0.25,
+      0.5,
+      0.8,
+      1.2,
+      2.0,
+      3.5,
+      7.0,
+      15.0
+    ],
+    "sizing_ratio_cap": 10000.0,
+    "sizing_target_axis": "target_total_bb divided by (pot_before_bb + to_call_bb)",
+    "spline_axis_knots": {
+      "effective_stack_bb": [
+        1.0,
+        5.0,
+        10.0,
+        20.0,
+        35.0,
+        60.0,
+        100.0,
+        160.0,
+        300.0
+      ],
+      "pot_before_bb": [
+        1.0,
+        2.0,
+        3.5,
+        6.0,
+        10.0,
+        20.0,
+        40.0,
+        80.0,
+        160.0
+      ],
+      "to_call_bb": [
+        0.25,
+        0.5,
+        1.0,
+        2.0,
+        4.0,
+        8.0,
+        16.0,
+        40.0,
+        100.0
+      ]
+    }
+  }
+}

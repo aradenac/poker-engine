@@ -2,7 +2,7 @@
 
 Generated for issue #204 (DAG v2, originally #382) from base `4559315b08fd224409c5469a4073e07ee89225b3` against inventory snapshot `4559315b08fd224409c5469a4073e07ee89225b3`. This is a static model, not billed-minute telemetry.
 
-Active workflows: **55** (automatic triggers); manual-only excluded: **15**; jobs: **97**; cost proxy: **603**.
+Active workflows: **56** (automatic triggers); manual-only excluded: **15**; jobs: **98**; cost proxy: **608**.
 
 The active DAG is exactly the set of workflows carrying at least one automatic trigger (`push`, `pull_request`, `workflow_run`, ...). The #373 historical quarantine migrated the `workflow_dispatch`-only workflows to manual-only; they are listed as excluded below and never contribute to the active runs/jobs/cost counts.
 
@@ -29,6 +29,7 @@ The active DAG is exactly the set of workflows carrying at least one automatic t
 | `.github/workflows/issue-367-real-iso-ev-observable.yml` | validation_or_utility | pull_request | 1 | ARTIFACT_ONLY | REPRO_NOT_VERIFIED | `issue-367-real-iso-ev-observable-${{ github.sha }}` / cancel=false |
 | `.github/workflows/issue-367-real-iso-ev.yml` | validation_or_utility | pull_request, push | 2 | ARTIFACT_ONLY | REPRO_NOT_VERIFIED | `issue-367-real-iso-ev-${{ github.event_name }}-${{ github.ref }}` / cancel=false |
 | `.github/workflows/issue-419-hierarchical-exact-tree.yml` | validation_or_utility | push, pull_request, workflow_dispatch | 1 | READ_ONLY | REPRO_NOT_VERIFIED | `issue-419-hierarchical-exact-tree-${{ github.event_name }}-${{ github.ref }}` / cancel=false |
+| `.github/workflows/issue-421-generalized-response-model.yml` | validation_or_utility | push, pull_request, workflow_dispatch | 1 | READ_ONLY | REPRO_NOT_VERIFIED | `issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}` / cancel=false |
 | `.github/workflows/materialize-certified-population.yml` | dataset_population | push, pull_request | 3 | REPOSITORY_WRITE | REPRO_STRONG_IDENTITY_BOUND | `materialize-certified-population-${{ github.ref }}` / cancel=true |
 | `.github/workflows/model-a-continuation.yml` | validation_or_utility | pull_request, push, workflow_dispatch | 1 | READ_ONLY | REPRO_HELPER_VERIFIED | none |
 | `.github/workflows/model-b-aggressive-tail.yml` | model_b | workflow_dispatch, push | 1 | REPOSITORY_WRITE | REPRO_NOT_VERIFIED | `model-b-aggressive-tail-issue-298` / cancel=true |
@@ -139,6 +140,7 @@ Recommendations are read-only. `UNKNOWN`, repository-write, and publication-capa
 | `.github/workflows/issue-367-real-iso-ev-observable.yml` | true | `issue-367-real-iso-ev-observable-${{ github.sha }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
 | `.github/workflows/issue-367-real-iso-ev.yml` | true | `issue-367-real-iso-ev-${{ github.event_name }}-${{ github.ref }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD; ARTIFACT_DISCARD_RISK |
 | `.github/workflows/issue-419-hierarchical-exact-tree.yml` | true | `issue-419-hierarchical-exact-tree-${{ github.event_name }}-${{ github.ref }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
+| `.github/workflows/issue-421-generalized-response-model.yml` | true | `issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}` | False | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
 | `.github/workflows/materialize-certified-population.yml` | true | `materialize-certified-population-${{ github.ref }}` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
 | `.github/workflows/model-a-continuation.yml` | false | none | None | yes | SAFE_CANDIDATE_NOT_APPLIED | NO_MEASURED_IMPROVEMENT; FROZEN_TELEMETRY_PREDATES_HEAD |
 | `.github/workflows/model-b-aggressive-tail.yml` | true | `model-b-aggressive-tail-issue-298` | True | no | ALREADY_CANCEL_IN_PROGRESS | none |
@@ -186,14 +188,14 @@ Method: Every run/job/cost figure here is a static structural proxy, not GitHub-
 
 | Measure | Value |
 |---|---:|
-| Inventory workflows | 70 |
-| Active automatic workflows | 55 |
+| Inventory workflows | 71 |
+| Active automatic workflows | 56 |
 | Manual-only workflows excluded | 15 |
 | Active workflows without a concurrency block | 16 |
 | Active workflows with `cancel-in-progress: true` | 28 |
-| Active workflows with `cancel-in-progress: false` | 11 |
-| Active workflows exposed to a same-ref push+pull_request duplicate | 35 |
-| Fail-closed safe candidates left unapplied | 16 |
+| Active workflows with `cancel-in-progress: false` | 12 |
+| Active workflows exposed to a same-ref push+pull_request duplicate | 36 |
+| Fail-closed safe candidates left unapplied | 17 |
 | Blocked recommendations left unapplied | 11 |
 
 ### Planner estimate reconciliation
@@ -202,7 +204,7 @@ The planner key T4 estimate is reconciled against the HEAD measurements; no delt
 
 | Measure | Planner estimate | Measured at HEAD | Delta |
 |---|---:|---:|---:|
-| active_automatic | 53 | 55 | 2 |
+| active_automatic | 53 | 56 | 3 |
 | manual_only | 15 | 15 | 0 |
 | without_concurrency | 19 | 16 | -3 |
 | cancel_in_progress_true | 37 | 28 | -9 |
@@ -229,6 +231,7 @@ Every concurrency recommendation stays unapplied. `safe=yes` means only that the
 | `.github/workflows/issue-367-real-iso-ev-observable.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
 | `.github/workflows/issue-367-real-iso-ev.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD`, `ARTIFACT_DISCARD_RISK` |
 | `.github/workflows/issue-419-hierarchical-exact-tree.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
+| `.github/workflows/issue-421-generalized-response-model.yml` | keep the existing group and set cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
 | `.github/workflows/model-a-continuation.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
 | `.github/workflows/model-b-card-aware-runtime.yml` | add a concurrency group with cancel-in-progress: true | yes | `NO_MEASURED_IMPROVEMENT`, `FROZEN_TELEMETRY_PREDATES_HEAD` |
 | `.github/workflows/model-b-response-audit.yml` | add a concurrency group with cancel-in-progress: true | no | `FAIL_CLOSED_UNSAFE_SIDE_EFFECT` |
@@ -263,7 +266,7 @@ Scenario-set sums across the 14 representative scenarios (a workflow may be matc
 
 Method sensitivity: the proxy inputs are `checkout, download_artifact, npm_install, pip_install, playwright_install, setup_node, setup_python, upload_artifact`; concurrency-sensitive inputs: `[]`. A concurrency-only edit therefore cannot move the measured figures, which is why no improvement is claimed and no change is applied.
 
-Job and artifact names are preserved and digest-pinned (`d5f5a55db90cf9bc438b8f29ef82c198367756bf090a8cf9414177d6b1162c7a`); the declared change surface contains no `.github/workflows/**` file, no write/publication/scientific widening, and never touches `.github/workflows/project-state-consistency.yml`.
+Job and artifact names are preserved and digest-pinned (`c203626987fa9e5da8825f2cc69530c8c5b4654b54fea187e76633eb570d9e6c`); the declared change surface contains no `.github/workflows/**` file, no write/publication/scientific widening, and never touches `.github/workflows/project-state-consistency.yml`.
 
 ## Static-model boundary
 
