@@ -1,0 +1,22 @@
+{
+  "FIT_REPORT.json": {
+    "bytes": 17851,
+    "sha256": "942594831344d2a74171bf1ff1aa1e9c0074212b76b5e24fd23d486c6c344dd3"
+  },
+  "SUMMARY.md": {
+    "bytes": 2160,
+    "sha256": "223ad5c1f300d08e18af9f963ffa3258c3ce78373197a4331fa333668052b271"
+  },
+  "candidate_hierarchical_empirical_bayes_dirichlet.json": {
+    "architecture": "hierarchical_empirical_bayes_dirichlet",
+    "bytes": 58214,
+    "canonical_payload_sha256": "7eb7b4794d9e42bcf151f7e1cf21c337a7f2393bfaf4a1ecc6b310793d2c302f",
+    "sha256": "3cffaa69b63cd8972ebbd55a055fda26d802c838f5c565bf79c0818b30aa3ce6"
+  },
+  "candidate_regularized_multinomial_spline.json": {
+    "architecture": "regularized_multinomial_spline",
+    "bytes": 59853,
+    "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
+    "sha256": "ea93e8c35e2604debd943495474cdb9262d724efb4a5caefe3723b53f23a59e7"
+  }
+}
